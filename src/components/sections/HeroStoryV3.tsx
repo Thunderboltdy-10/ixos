@@ -147,7 +147,7 @@ export function HeroStoryV3() {
                             </div>
 
                             {/* Headline - using display font */}
-                            <h1 className="text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight leading-[1.05]">
+                            <h1 className="text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.05]">
                                 <span className="heading-gradient">Find anything</span>
                                 <br />
                                 <span className="text-fg-porcelain">on your computer.</span>

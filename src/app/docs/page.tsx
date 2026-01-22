@@ -30,7 +30,7 @@ export default function DocsPage() {
                 {/* Content */}
                 <div className="flex-1 max-w-3xl space-y-12">
                     <div className="space-y-6">
-                        <h1 className="text-4xl font-bold text-white">Installation</h1>
+                        <h1 className="text-4xl font-semibold text-white">Installation</h1>
                         <p className="text-lg text-text-secondary">
                             Get up and running with Ixos in seconds.
                         </p>

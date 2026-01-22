@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { SectionDivider } from "@/components/ui/SectionDivider";
 
+import { FadeInView } from "@/components/effects/FadeInView";
+
 export function Pricing() {
     const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
 
@@ -14,59 +16,67 @@ export function Pricing() {
 
             <div className="py-24 container mx-auto px-6">
                 <div className="text-center max-w-2xl mx-auto mb-16">
-                    <h2 className="text-3xl md:text-4xl font-semibold mb-6">
-                        Simple, transparent <span className="heading-gradient-magenta">ownership</span>
-                    </h2>
+                    <FadeInView direction="up">
+                        <h2 className="text-3xl md:text-4xl font-semibold mb-6">
+                            Simple, transparent <span className="heading-gradient-magenta">ownership</span>
+                        </h2>
+                    </FadeInView>
 
                     {/* Toggle Switch */}
-                    <div className="flex justify-center items-center gap-4">
-                        <span className={cn("text-sm transition-colors", billing === "monthly" ? "text-fg-porcelain" : "text-fg-muted")}>Monthly</span>
-                        <button
-                            onClick={() => setBilling(b => b === "monthly" ? "annual" : "monthly")}
-                            className="relative w-14 h-7 bg-white/5 rounded-full border border-white/10 p-1 transition-colors hover:border-accent-magenta/50"
-                        >
-                            <div className={cn(
-                                "w-4 h-4 rounded-full bg-accent-magenta shadow-glow-magenta transition-all duration-300",
-                                billing === "annual" ? "translate-x-7" : "translate-x-0"
-                            )} />
-                        </button>
-                        <span className={cn("text-sm transition-colors", billing === "annual" ? "text-fg-porcelain" : "text-fg-muted")}>Annual <span className="text-accent-magenta text-xs font-mono ml-1">-20%</span></span>
-                    </div>
+                    <FadeInView direction="up" delay={100}>
+                        <div className="flex justify-center items-center gap-4">
+                            <span className={cn("text-sm transition-colors", billing === "monthly" ? "text-fg-porcelain" : "text-fg-muted")}>Monthly</span>
+                            <button
+                                onClick={() => setBilling(b => b === "monthly" ? "annual" : "monthly")}
+                                className="relative w-14 h-7 bg-white/5 rounded-full border border-white/10 p-1 transition-colors hover:border-accent-magenta/50"
+                            >
+                                <div className={cn(
+                                    "w-4 h-4 rounded-full bg-accent-magenta shadow-glow-magenta transition-all duration-300",
+                                    billing === "annual" ? "translate-x-7" : "translate-x-0"
+                                )} />
+                            </button>
+                            <span className={cn("text-sm transition-colors", billing === "annual" ? "text-fg-porcelain" : "text-fg-muted")}>Annual <span className="text-accent-magenta text-xs font-mono ml-1">-20%</span></span>
+                        </div>
+                    </FadeInView>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
                     {/* Free Tier */}
-                    <PricingCard
-                        title="COMMUNITY"
-                        price="$0"
-                        period="/ forever"
-                        desc="For personal use on a single device."
-                        features={[
-                            "Local semantic search",
-                            "Standard extensions (PDF, TXT, MD)",
-                            "Basic update support",
-                            "Community access"
-                        ]}
-                    />
-
-                    {/* Pro Tier */}
-                    <div className="relative group">
-                        <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />
+                    <FadeInView direction="up" delay={200} className="h-full">
                         <PricingCard
-                            title="PROFESSIONAL"
-                            price={billing === "monthly" ? "$7.99" : "$6.35"}
-                            period="/ month"
-                            desc="For power users and developers."
-                            highlighted
+                            title="COMMUNITY"
+                            price="$0"
+                            period="/ forever"
+                            desc="For personal use on a single device."
                             features={[
-                                "Priority semantic indexing",
-                                "Developer file types (TS, PY, RS)",
-                                "OCR for images/screenshots",
-                                "Multiple machine sync (P2P)",
-                                "Early access to beta models"
+                                "Local semantic search",
+                                "Standard extensions (PDF, TXT, MD)",
+                                "Basic update support",
+                                "Community access"
                             ]}
                         />
-                    </div>
+                    </FadeInView>
+
+                    {/* Pro Tier */}
+                    <FadeInView direction="up" delay={300} className="h-full">
+                        <div className="relative group h-full">
+                            <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />
+                            <PricingCard
+                                title="PROFESSIONAL"
+                                price={billing === "monthly" ? "$7.99" : "$6.35"}
+                                period="/ month"
+                                desc="For power users and developers."
+                                highlighted
+                                features={[
+                                    "Priority semantic indexing",
+                                    "Developer file types (TS, PY, RS)",
+                                    "OCR for images/screenshots",
+                                    "Multiple machine sync (P2P)",
+                                    "Early access to beta models"
+                                ]}
+                            />
+                        </div>
+                    </FadeInView>
                 </div>
             </div>
         </div>
@@ -90,7 +100,7 @@ function PricingCard({
 }) {
     return (
         <div className={cn(
-            "relative h-full flex flex-col p-8 rounded-sm border backdrop-blur-md overflow-hidden transition-all duration-300",
+            "relative h-full flex flex-col p-8 rounded-sm border backdrop-blur-md overflow-hidden transition-all duration-300 hover-glow-subtle",
             highlighted
                 ? "bg-bg-graphite-1/90 border-accent-magenta/40 shadow-glow-magenta/20"
                 : "bg-bg-graphite-2/50 border-white/10 hover:border-white/20"

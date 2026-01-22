@@ -47,7 +47,7 @@ export function Benchmarks() {
                     </div>
 
                     {/* Main Technical Panel */}
-                    <div className="relative rounded-sm border border-white/10 bg-bg-graphite-2/60 backdrop-blur-md p-0 overflow-hidden shadow-2xl">
+                    <div className="relative rounded-sm border border-white/10 bg-bg-graphite-2/60 backdrop-blur-md p-0 overflow-hidden shadow-2xl hover-glow-subtle">
                         {/* Status Bar */}
                         <div className="h-6 bg-white/5 border-b border-white/10 flex items-center justify-between px-3">
                             <span className="text-[9px] font-mono text-fg-muted uppercase">Latency_Check_Routine</span>
@@ -175,7 +175,7 @@ function StatCard({
 }) {
     return (
         <div
-            className="p-4 rounded-sm border border-white/10 bg-bg-graphite-1/50 backdrop-blur hover:border-accent-violet/30 transition-colors group"
+            className="p-4 rounded-sm border border-white/10 bg-bg-graphite-1/50 backdrop-blur hover:border-accent-violet/30 transition-colors group hover-glow-subtle"
             style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? "translateY(0)" : "translateY(10px)",

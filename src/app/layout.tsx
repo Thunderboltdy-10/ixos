@@ -1,13 +1,20 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono } from "next/font/google"; // Removed Playfair
+import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google"; // New premium font system
 import "./globals.css";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { ArcNoiseBackground } from "@/components/effects/ArcNoiseBackground";
 import { ParticlesFieldV3 } from "@/components/effects/ParticlesFieldV3";
 import { ElectricTracesV3 } from "@/components/effects/ElectricTracesV3";
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-ixo-heading",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-ixo-mono",
+  weight: ["400", "500", "600"],
   subsets: ["latin"],
   display: "swap",
 });
@@ -24,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${jetbrainsMono.variable} antialiased`}
+        className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} antialiased`}
       >
         <SmoothScrollProvider>
           {/* bg-root: fixed particle canvas only - no texture overlays */}

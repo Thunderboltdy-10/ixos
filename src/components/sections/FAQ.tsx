@@ -8,32 +8,38 @@ import {
 } from "@/components/ui/accordion";
 import { SectionDivider } from "@/components/ui/SectionDivider";
 
+import { FadeInView } from "@/components/effects/FadeInView";
+
 export function FAQ() {
     return (
         <div className="relative">
             <SectionDivider accent="amber" label="COMMON_QUERIES" />
 
             <div className="py-24 container mx-auto px-6 max-w-4xl">
-                <h2 className="text-3xl font-semibold text-center mb-12">
-                    Questions? <span className="text-accent-amber">Answers.</span>
-                </h2>
+                <FadeInView direction="up">
+                    <h2 className="text-3xl font-semibold text-center mb-12">
+                        Questions? <span className="text-accent-amber">Answers.</span>
+                    </h2>
+                </FadeInView>
 
-                <div className="rounded-sm border border-white/10 bg-bg-graphite-1/50 backdrop-blur overflow-hidden">
-                    <Accordion type="single" collapsible className="w-full">
-                        {faqItems.map((item, i) => (
-                            <AccordionItem key={i} value={`item-${i}`} className="border-b border-white/10 last:border-0 px-6 data-[state=open]:bg-white/5 transition-colors">
-                                <AccordionTrigger className="hover:no-underline py-6">
-                                    <span className="text-left font-medium text-fg-porcelain hover:text-accent-amber transition-colors font-mono text-sm tracking-wide">
-                                        {item.question}
-                                    </span>
-                                </AccordionTrigger>
-                                <AccordionContent className="text-fg-muted leading-relaxed pb-6">
-                                    {item.answer}
-                                </AccordionContent>
-                            </AccordionItem>
-                        ))}
-                    </Accordion>
-                </div>
+                <FadeInView direction="up" delay={200}>
+                    <div className="rounded-sm border border-white/10 bg-bg-graphite-1/50 backdrop-blur overflow-hidden hover-glow-subtle">
+                        <Accordion type="single" collapsible className="w-full">
+                            {faqItems.map((item, i) => (
+                                <AccordionItem key={i} value={`item-${i}`} className="border-b border-white/10 last:border-0 px-6 data-[state=open]:bg-white/5 transition-colors">
+                                    <AccordionTrigger className="hover:no-underline py-6">
+                                        <span className="text-left font-medium text-fg-porcelain hover:text-accent-amber transition-colors font-mono text-sm tracking-wide">
+                                            {item.question}
+                                        </span>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="text-fg-muted leading-relaxed pb-6">
+                                        {item.answer}
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
+                    </div>
+                </FadeInView>
             </div>
         </div>
     );

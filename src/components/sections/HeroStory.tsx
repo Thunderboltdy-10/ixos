@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Button } from "@/components/ui/Button";
@@ -16,19 +16,13 @@ export function HeroStory() {
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
 
+    const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+    const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+
     useEffect(() => {
         // Scroll Choreography
         const ctx = gsap.context(() => {
-
-            // 1. Video Autoplay on scroll
-            ScrollTrigger.create({
-                trigger: ".hero-story",
-                start: "top top",
-                end: "+=100",
-                onEnter: () => videoRef.current?.play(),
-            });
-
-            // 2. Pin Hero Deck
+            // Pin Hero Deck - Only pin logic here now
             ScrollTrigger.create({
                 trigger: ".hero-deck-wrapper",
                 start: "center center",
@@ -42,6 +36,65 @@ export function HeroStory() {
 
         return () => ctx.revert();
     }, []);
+
+    // Video Control Logic
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        // Valid start ensuring first frame
+        const handleLoadedMetadata = () => {
+            video.currentTime = 0.001; // Tiny seek to force render
+            video.pause();
+            // Start fade in slightly after to allow render
+            requestAnimationFrame(() => setIsVideoLoaded(true));
+        };
+
+        video.addEventListener('loadedmetadata', handleLoadedMetadata);
+
+        // Check if already ready
+        if (video.readyState >= 1) {
+            handleLoadedMetadata();
+        }
+
+        const handleScroll = () => {
+            const scrollY = window.scrollY;
+            const threshold = 50;
+            const resetMargin = 100;
+
+            if (scrollY > threshold) {
+                // Should be playing
+                if (video.paused) {
+                    video.play().catch(() => { });
+                    setIsVideoPlaying(true);
+                    window.dispatchEvent(new CustomEvent('ixos-video-play'));
+                }
+            } else if (scrollY <= resetMargin) {
+                // Should be paused at start
+                if (!video.paused || video.currentTime > 0.1) {
+                    video.pause();
+                    video.currentTime = 0;
+                    setIsVideoPlaying(false);
+                    window.dispatchEvent(new CustomEvent('ixos-video-reset'));
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        };
+    }, []);
+
+    const handleWatchDemo = () => {
+        if (videoRef.current) {
+            videoRef.current.currentTime = 0;
+            videoRef.current.play();
+            setIsVideoPlaying(true);
+            window.dispatchEvent(new CustomEvent('ixos-video-play'));
+        }
+    };
 
     return (
         <section ref={containerRef} className="hero-story relative min-h-[150vh] w-full pt-32 pb-24">
@@ -81,7 +134,7 @@ export function HeroStory() {
                         <Button size="lg" hasParticleMagnet className="min-w-[180px]">
                             Download for Windows
                         </Button>
-                        <Button variant="secondary" size="lg">
+                        <Button variant="secondary" size="lg" onClick={handleWatchDemo}>
                             Watch Demo
                         </Button>
                     </div>
@@ -108,8 +161,8 @@ export function HeroStory() {
                             loop
                             muted
                             playsInline
-                            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
-                            poster="/assets/hero-poster-fallback.jpg"
+                            preload="auto"
+                            className={`w-full h-full object-cover transition-opacity duration-700 pointer-events-none ${isVideoLoaded ? 'opacity-90 group-hover:opacity-100' : 'opacity-0'}`}
                         />
 
                         {/* Overlay Gradient */}

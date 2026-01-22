@@ -5,6 +5,8 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Button } from "@/components/ui/Button";
 import { ScribbleStrike } from "@/components/effects/ScribbleStrike";
+import { cn } from "@/lib/utils";
+import { SectionDivider } from "@/components/ui/SectionDivider";
 
 // Register ScrollTrigger
 if (typeof window !== "undefined") {
@@ -13,30 +15,40 @@ if (typeof window !== "undefined") {
 
 const PIPELINE_STEPS = [
     {
-        step: "01",
+        id: "01",
+        code: "[Q]",
+        label: "INPUT_LAYER",
         title: "Natural Language Search",
-        description: "Type exactly how you think. \"Files from last week about the merger\" or \"PDFs with budget tables\". No complex syntax required.",
+        description: "Type exactly how you think. \"Files about the merger\" or \"PDFs with budget tables\". No query syntax.",
     },
     {
-        step: "02",
+        id: "02",
+        code: "[M]",
+        label: "EMBEDDING_ENGINE",
         title: "Just-in-Time Intelligence",
-        description: "Ixos computes lightweight embeddings on the fly using our optimized micro-models. It runs 100% on your CPU/NPU.",
+        description: "Ixos computes lightweight embeddings on the fly using CPU-optimized micro-models.",
     },
     {
-        step: "03",
+        id: "03",
+        code: "[S]",
+        label: "SEMANTIC_RANK",
         title: "Ranked Locally",
-        description: "Results are ranked by semantic relevance to your intent, not just keyword matching. The most relevant files bubble to the top instantly.",
+        description: "Results are ranked by semantic intent, not just keyword matching. Relevant docs bubble to top.",
     },
     {
-        step: "04",
+        id: "04",
+        code: "[X]",
+        label: "PRIVACY_GUARD",
         title: "No Indexing Required",
         isScribble: true,
-        description: "Once the search is done, the embeddings are discarded. We never build a persistent index of your drive. Your storage stays yours.",
+        description: "Embeddings are discarded immediately after search. We never build a persistent index of your drive.",
     },
     {
-        step: "05",
+        id: "05",
+        code: "[R]",
+        label: "IO_STREAM",
         title: "Instant Access",
-        description: "Click to open, drag to drop, or hit Enter. It integrates seamlessly with Explorer and Finder.",
+        description: "Click to open, drag to drop. Integrates seamlessly with Explorer, Finder, and terminal.",
     },
 ];
 
@@ -50,17 +62,12 @@ export function HeroJourney() {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [videoReady, setVideoReady] = useState(false);
     const [activeStep, setActiveStep] = useState(0);
-    const [showPipeline, setShowPipeline] = useState(false);
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
         setPrefersReducedMotion(mediaQuery.matches);
-
-        const handleChange = (e: MediaQueryListEvent) => {
-            setPrefersReducedMotion(e.matches);
-        };
-
+        const handleChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
         mediaQuery.addEventListener("change", handleChange);
         return () => mediaQuery.removeEventListener("change", handleChange);
     }, []);
@@ -68,9 +75,7 @@ export function HeroJourney() {
     useEffect(() => {
         if (!containerRef.current || prefersReducedMotion) return;
 
-        // Force a refresh to ensure pin spacing is calculated
         ScrollTrigger.refresh();
-
         const ctx = gsap.context(() => {
             const deck = deckRef.current;
             const heroContent = heroContentRef.current;
@@ -78,263 +83,172 @@ export function HeroJourney() {
 
             if (!deck || !heroContent || !stepsContainer) return;
 
-            // Master timeline for the entire journey
             const masterTL = gsap.timeline({
                 scrollTrigger: {
                     trigger: containerRef.current,
                     start: "top top",
-                    end: "+=350%", // Extended for better spacing and to prevent overlap
-                    scrub: 1.5,
+                    end: "+=350%",
+                    scrub: 1,
                     pin: true,
-                    pinSpacing: true, // Explicitly enforce spacing
+                    pinSpacing: true,
                     anticipatePin: 1,
                     onUpdate: (self) => {
-                        // Play video when scroll starts
+                        // Video Playback
                         if (self.progress > 0.02 && videoRef.current?.paused) {
                             videoRef.current?.play();
                         }
 
-                        // Show pipeline after flip
-                        setShowPipeline(self.progress > 0.35);
-
-                        // Calculate active step - spread out more evenly
-                        if (self.progress > 0.35) {
-                            const stepProgress = (self.progress - 0.35) / 0.65;
-                            const step = Math.min(4, Math.floor(stepProgress * 5));
+                        // Step Calculation
+                        // Map progress 0.35 -> 0.95 to steps 0 -> 4
+                        // Extended range ensures 01 is visible early and 05 stays visible
+                        if (self.progress > 0.30) {
+                            const stepProgress = (self.progress - 0.30) / 0.65;
+                            const step = Math.min(4, Math.max(0, Math.floor(stepProgress * 5)));
                             setActiveStep(step);
                         }
                     },
                 },
             });
 
-            // Phase 1: Hero content fades as deck moves (0-25%)
-            masterTL.to(heroContent, {
-                opacity: 0,
-                y: -50,
-                duration: 0.25,
-                ease: "power2.inOut",
-            }, 0);
+            // 1. Hero Content Exit & Deck Movement (0-20%)
+            masterTL.to(heroContent, { opacity: 0, y: -40, duration: 0.2, ease: "power2.inOut" }, 0);
+            // Reduced scale for smaller screens to ensure it fits
+            masterTL.to(deck, { x: "0%", y: "0%", scale: window.innerWidth < 1024 ? 0.8 : 0.85, duration: 0.2, ease: "power2.inOut" }, 0);
 
-            // Phase 1: Deck moves to right side position (0-25%)
-            masterTL.to(deck, {
-                x: "10%",
-                y: "10%",
-                scale: 0.85,
-                duration: 0.25,
-                ease: "power2.inOut",
-            }, 0);
+            // 2. Deck Flip (25-30%)
+            masterTL.to(deck, { rotateX: 180, duration: 0.1, ease: "power3.inOut" }, 0.25);
 
-            // Phase 2: Deck flips (25-35%)
-            masterTL.to(deck, {
-                rotateX: 180,
-                duration: 0.1,
-                ease: "power3.inOut",
-            }, 0.25);
+            // 3. Deck Expansion (30-35%)
+            // Expand strictly to 70vh (60vh on small screens) to fit laptop screens without overflow
+            masterTL.to(deck, { height: window.innerWidth < 768 ? "55vh" : "70vh", duration: 0.1, ease: "power2.out" }, 0.30);
 
-            // Phase 3: Steps container fades in (35-45%)
+            // 4. Reveal Steps (30-35%)
             masterTL.fromTo(stepsContainer,
-                { opacity: 0, x: -30 },
+                { opacity: 0, x: -20 },
                 { opacity: 1, x: 0, duration: 0.1, ease: "power2.out" },
-                0.35);
+                0.30
+            );
 
-            // Phase 4: Steps scroll through (45-100%)
-            const stepElements = stepsContainer.querySelectorAll(".journey-step");
-            stepElements.forEach((step, i) => {
-                // Stagger steps more widely
-                const startProgress = 0.4 + (i * 0.12);
-                masterTL.fromTo(step,
-                    { opacity: 0.3, y: 30 },
-                    { opacity: 1, y: 0, duration: 0.08, ease: "power2.out" },
-                    startProgress);
-
-                // Fade out previous step
-                if (i > 0) {
-                    masterTL.to(stepElements[i - 1],
-                        { opacity: 0.3, duration: 0.05 },
-                        startProgress);
-                }
-            });
+            // 5. Keep alive until end
+            masterTL.to(stepsContainer, { opacity: 1, duration: 0.5 }, 0.4); // Filler to hold state
 
         }, containerRef);
 
         return () => ctx.revert();
     }, [prefersReducedMotion]);
 
-    const handleVideoCanPlay = () => {
-        setVideoReady(true);
-    };
-
-    const handleDownload = () => {
-        window.open("/download", "_blank");
-    };
+    const handleVideoCanPlay = () => setVideoReady(true);
+    const handleDownload = () => window.open("/download", "_blank");
 
     return (
-        <section
-            ref={containerRef}
-            id="hero-journey"
-            className="section-hero relative min-h-screen w-full overflow-hidden"
-        >
-            <div className="relative min-h-screen w-full pt-32 pb-16">
-                <div className="container mx-auto px-6 relative z-10">
+        <section ref={containerRef} id="hero-journey" className="section-hero relative min-h-screen w-full overflow-hidden bg-bg-graphite-0">
+            <div className="relative min-h-screen w-full pt-24 lg:pt-32 px-6">
+                <div className="container mx-auto h-full">
 
-                    {/* Grid: Left = Hero Content / Steps, Right = Deck/Pipeline */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start min-h-[85vh]">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start h-full">
 
-                        {/* Left Column: Hero Content (fades to Steps) */}
-                        <div className="lg:col-span-5 relative">
-                            {/* Hero Content - visible initially */}
-                            <div
-                                ref={heroContentRef}
-                                className="space-y-6"
-                            >
-                                {/* Availability badge */}
-                                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-bg-graphite-2/80 border border-stroke-hairline backdrop-blur-sm">
-                                    <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-amber opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-amber"></span>
-                                    </span>
-                                    <span className="text-xs font-medium text-fg-muted tracking-wider uppercase">
-                                        v1.0 Now Available
+                        {/* LEFT: Hero Content / Steps */}
+                        <div className="lg:col-span-5 relative min-h-[50vh] lg:min-h-[80vh] flex flex-col justify-center">
+
+                            {/* --- CONTENT A: HERO --- */}
+                            <div ref={heroContentRef} className="space-y-8 relative z-20">
+                                <div className="inline-flex items-center gap-3 px-3 py-1.5 rounded-sm bg-white/5 border border-white/10 backdrop-blur-sm">
+                                    <div className="w-1.5 h-1.5 bg-accent-amber rounded-sm animate-pulse" />
+                                    <span className="text-[10px] font-mono text-fg-muted tracking-widest uppercase opacity-80">
+                                        v1.0 Available
                                     </span>
                                 </div>
-
-                                {/* Headline - Fancy display font */}
-                                <h1 className="text-5xl md:text-6xl lg:text-7xl font-medium tracking-tight leading-[1.05]">
-                                    <span className="heading-gradient-amber">Find anything</span>
-                                    <br />
-                                    <span className="text-fg-porcelain">on your computer.</span>
+                                <h1 className="text-5xl md:text-6xl lg:text-7xl font-sans font-semibold tracking-tight leading-[1.05] text-fg-porcelain">
+                                    Find anything<br />
+                                    <span className="text-fg-muted">on your computer.</span>
                                 </h1>
-
-                                {/* Subhead */}
-                                <p className="text-lg text-fg-muted max-w-md leading-relaxed">
-                                    Ixos uses local-first semantic search to find files the way you
-                                    think about them. Private, secure, and lightning fast.
+                                <p className="text-lg text-bg-muted max-w-md leading-relaxed text-fg-muted/80">
+                                    Ixos uses local-first semantic search to index and retrieve your files. Private, secure, and lightning fast.
                                 </p>
-
-                                {/* CTAs */}
-                                <div className="flex flex-wrap gap-4 pt-2">
-                                    <Button
-                                        size="lg"
-                                        hasParticleMagnet
-                                        className="min-w-[180px] bg-accent-amber hover:bg-accent-amber/90 text-black shadow-glow-amber"
-                                        onClick={handleDownload}
-                                    >
-                                        Download for Windows
+                                <div className="flex flex-wrap gap-4 pt-4">
+                                    <Button size="lg" hasParticleMagnet className="bg-accent-amber text-bg-graphite-0 hover:bg-accent-amber/90 font-medium min-w-[160px]">
+                                        Download
                                     </Button>
-                                    <Button
-                                        variant="secondary"
-                                        size="lg"
-                                        className="border-accent-amber/30 hover:bg-accent-amber/10"
-                                    >
+                                    <Button variant="secondary" size="lg" className="border-white/10 hover:bg-white/5">
                                         Watch Demo
                                     </Button>
                                 </div>
-
-                                {/* System requirements */}
-                                <div className="pt-4 text-xs text-text-subtle font-mono">
-                                    Requires Windows 10+ or macOS 12+ •
-                                    <span className="text-fg-muted ml-1">Local AI • No Cloud</span>
-                                </div>
                             </div>
 
-                            {/* Steps Content - appears after flip */}
-                            <div
-                                ref={stepsContainerRef}
-                                className="absolute inset-0 space-y-8 pt-8 opacity-0 pointer-events-none"
-                            >
-                                <h2 className="text-3xl font-semibold text-fg-porcelain mb-8">
-                                    How it works
-                                </h2>
+                            {/* --- CONTENT B: STEPS (Revealed on Scroll) --- */}
+                            <div ref={stepsContainerRef} className="absolute inset-x-0 top-0 lg:top-auto opacity-0 pointer-events-none space-y-1 lg:space-y-2">
+                                <h2 className="text-3xl md:text-4xl font-semibold text-fg-porcelain mb-4 lg:mb-8 pl-4">How it works</h2>
 
-                                {PIPELINE_STEPS.map((item, i) => (
-                                    <div
-                                        key={i}
-                                        className={`journey-step transition-all duration-300 ${activeStep === i ? 'opacity-100' : 'opacity-30'}`}
-                                    >
-                                        <div className="text-accent-teal font-mono mb-2 text-lg">{item.step}</div>
-                                        <h3 className="text-2xl md:text-3xl font-semibold mb-3 text-fg-porcelain">
-                                            {item.isScribble ? (
-                                                <>
-                                                    <span className="text-fg-muted mr-2">No</span>
-                                                    <ScribbleStrike>INDEXING</ScribbleStrike>
-                                                    <span className="text-fg-muted ml-2">Required</span>
-                                                </>
-                                            ) : (
-                                                item.title
+                                <div className="space-y-4">
+                                    {PIPELINE_STEPS.map((item, i) => (
+                                        <div
+                                            key={i}
+                                            className={cn(
+                                                "relative pl-6 py-2 lg:py-3 border-l-2 transition-all duration-300",
+                                                activeStep === i
+                                                    ? "border-accent-teal opacity-100 translate-x-2"
+                                                    : "border-white/5 opacity-30"
                                             )}
-                                        </h3>
-                                        <p className="text-fg-muted leading-relaxed max-w-md">
-                                            {item.description}
-                                        </p>
-                                    </div>
-                                ))}
+                                        >
+                                            <div className="flex justify-between items-center mb-1">
+                                                <span className={cn(
+                                                    "font-mono text-xs tracking-widest",
+                                                    activeStep === i ? "text-accent-teal" : "text-fg-muted"
+                                                )}>{item.label}</span>
+                                                <span className="font-mono text-[10px] text-white/20">{item.code}</span>
+                                            </div>
+                                            <h3 className="text-base lg:text-lg font-medium text-fg-porcelain mb-1">
+                                                {item.isScribble ? (
+                                                    <span className="flex items-center gap-2">
+                                                        No <ScribbleStrike>Indexing</ScribbleStrike> Required
+                                                    </span>
+                                                ) : item.title}
+                                            </h3>
+                                            <p className="text-xs lg:text-sm text-fg-muted leading-relaxed max-w-sm hidden md:block">
+                                                {item.description}
+                                            </p>
+                                            <p className="text-xs text-fg-muted leading-relaxed max-w-sm md:hidden block line-clamp-2">
+                                                {item.description}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
 
-                        {/* Right Column: Deck / Pipeline */}
-                        <div className="lg:col-span-7 relative perspective-[1200px] lg:sticky lg:top-0 lg:h-screen flex items-center">
+                        {/* RIGHT: Deck / Pipeline */}
+                        <div className="lg:col-span-7 relative h-[60vh] lg:h-screen flex items-center justify-center perspective-[1200px] sticky top-0">
                             <div
                                 ref={deckRef}
-                                className="relative w-full aspect-[16/9] transform-style-preserve-3d"
-                                style={{ transformStyle: "preserve-3d" }}
+                                className="relative w-full max-w-2xl bg-bg-graphite-1 rounded-sm border border-white/10 shadow-2xl transition-all duration-500 ease-out"
+                                style={{ transformStyle: "preserve-3d", aspectRatio: "16/9" }}
                             >
-                                {/* Front face - Video */}
-                                <div
-                                    ref={deckFrontRef}
-                                    className="absolute inset-0 shadow-lift rounded-lg overflow-hidden border border-white/10 bg-bg-graphite-2"
-                                    style={{ backfaceVisibility: "hidden" }}
-                                >
-                                    {/* Fake Window Bar */}
-                                    <div className="h-8 w-full bg-bg-graphite-1 border-b border-white/10 flex items-center px-4 gap-2">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
-                                        <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
-                                        <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
-                                        <span className="ml-3 text-[10px] text-fg-muted font-mono opacity-50">ixos_demo.mp4</span>
+                                {/* FRONT: VIDEO */}
+                                <div ref={deckFrontRef} className="absolute inset-0 bg-bg-graphite-0 rounded-sm overflow-hidden" style={{ backfaceVisibility: "hidden" }}>
+                                    <div className="h-6 border-b border-white/10 flex items-center px-4 gap-2 bg-white/5">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                                        <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                                        <span className="ml-auto text-[10px] font-mono text-white/30">DEMO_PLAYBACK_V1</span>
                                     </div>
-
-                                    {/* Video Content */}
-                                    <div className="relative w-full h-[calc(100%-2rem)] bg-bg-graphite-2 group">
-                                        <video
-                                            ref={videoRef}
-                                            src="/assets/hero.mp4"
-                                            poster="/assets/hero-poster-fallback.jpg"
-                                            muted
-                                            playsInline
-                                            preload="auto"
-                                            onCanPlayThrough={handleVideoCanPlay}
-                                            className={`w-full h-full object-cover transition-opacity duration-700 ${videoReady ? "opacity-100" : "opacity-0"}`}
-                                        />
-
-                                        {/* Play hint overlay (fades out on scroll/play) */}
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500"
-                                            style={{ opacity: videoRef.current?.paused ? 1 : 0 }}>
-                                            <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur border border-white/20 flex items-center justify-center">
-                                                <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[14px] border-l-white border-b-[8px] border-b-transparent ml-1" />
-                                            </div>
-                                        </div>
-
-                                        {/* Loading skeleton */}
-                                        {!videoReady && (
-                                            <div className="absolute inset-0 flex items-center justify-center bg-bg-graphite-2">
-                                                <div className="absolute inset-0 bg-gradient-to-br from-accent-amber/5 to-transparent animate-pulse" />
-                                            </div>
-                                        )}
-                                    </div>
+                                    <video
+                                        ref={videoRef}
+                                        src="/assets/hero.mp4"
+                                        poster="/assets/hero-poster-fallback.jpg"
+                                        muted
+                                        playsInline
+                                        className={cn("w-full h-[calc(100%-1.5rem)] object-cover transition-opacity duration-500", videoReady ? "opacity-100" : "opacity-0")}
+                                        onCanPlayThrough={handleVideoCanPlay}
+                                    />
+                                    {!videoReady && <div className="absolute inset-0 bg-bg-graphite-1 animate-pulse" />}
                                 </div>
 
-                                {/* Back face - Pipeline Diagram */}
-                                <div
-                                    ref={deckBackRef}
-                                    className="absolute inset-0 shadow-lift rounded-lg overflow-hidden border border-white/10 bg-bg-graphite-1"
-                                    style={{
-                                        backfaceVisibility: "hidden",
-                                        transform: "rotateX(180deg)",
-                                    }}
-                                >
-                                    <PipelineDiagram activeStep={activeStep} />
+                                {/* BACK: TECHNICAL PIPELINE */}
+                                <div ref={deckBackRef} className="absolute inset-0 bg-bg-graphite-1/90 backdrop-blur-md rounded-sm border border-white/5 overflow-hidden flex flex-col" style={{ transform: "rotateX(180deg)", backfaceVisibility: "hidden" }}>
+                                    <TechnicalPipelinePanel activeStep={activeStep} />
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -342,47 +256,90 @@ export function HeroJourney() {
     );
 }
 
-// Pipeline diagram component for the back of the card
-function PipelineDiagram({ activeStep }: { activeStep: number }) {
+// Compact Technical Pipeline Panel matches Benchmarks.tsx aesthetic
+function TechnicalPipelinePanel({ activeStep }: { activeStep: number }) {
     return (
-        <div className="w-full h-full p-8 flex flex-col justify-center bg-bg-graphite-1/90 backdrop-blur-sm">
-            <h3 className="text-xl font-semibold text-fg-porcelain mb-8 text-center">
-                Ixos Pipeline
-            </h3>
+        <div className="flex flex-col h-full w-full">
+            {/* Header */}
+            <div className="h-8 border-b border-white/10 flex items-center justify-between px-4 bg-white/5">
+                <span className="text-[10px] font-mono text-accent-teal tracking-widest">REALTIME_PIPELINE</span>
+                <div className="flex gap-1">
+                    {[0, 1, 2].map(i => <div key={i} className="w-1 h-1 bg-white/20 rounded-full" />)}
+                </div>
+            </div>
 
-            <div className="relative space-y-6 pl-8">
-                {/* Connecting line */}
-                <div
-                    className="absolute left-4 top-4 bottom-4 w-0.5 bg-gradient-to-b from-accent-amber via-accent-teal to-accent-violet opacity-30"
-                    style={{ marginLeft: "0.125rem" }}
+            {/* Content Area - Vertical Flow */}
+            <div className="flex-1 p-8 flex flex-col justify-center relative">
+                {/* Background Grid */}
+                <div className="absolute inset-0 opacity-10"
+                    style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0)', backgroundSize: '24px 24px' }}
                 />
 
-                {PIPELINE_STEPS.map((item, i) => (
-                    <div
-                        key={i}
-                        className={`relative flex items-center gap-4 p-4 rounded-lg transition-all duration-300 ${activeStep === i
-                            ? "bg-bg-graphite-2 border border-accent-teal/50 shadow-glow-teal"
-                            : "bg-bg-graphite-2/30 border border-stroke-hairline opacity-60"
-                            }`}
-                    >
-                        {/* Node dot */}
-                        <div
-                            className={`absolute -left-4 w-4 h-4 rounded-full z-10 transition-all duration-300 ${activeStep === i
-                                ? "bg-accent-teal shadow-glow-teal"
-                                : "bg-bg-primary border-2 border-stroke-hairline"
-                                }`}
-                            style={{ marginLeft: "-0.5rem" }}
-                        />
+                <div className="relative z-10 space-y-6 max-w-sm mx-auto w-full">
+                    {PIPELINE_STEPS.map((step, i) => (
+                        <div key={i} className="group flex items-center gap-4">
+                            {/* Mono Code Box */}
+                            <div className={cn(
+                                "w-8 h-8 flex items-center justify-center border text-xs font-mono transition-all duration-300",
+                                activeStep === i
+                                    ? "border-accent-teal bg-accent-teal/10 text-accent-teal shadow-[0_0_15px_rgba(20,184,166,0.2)]"
+                                    : activeStep > i
+                                        ? "border-white/20 bg-white/5 text-fg-muted"
+                                        : "border-white/5 text-white/10"
+                            )}>
+                                {step.code}
+                            </div>
 
-                        <span className={`font-mono text-sm ${activeStep === i ? "text-accent-teal" : "text-fg-muted"}`}>
-                            {item.step}
-                        </span>
-                        <span className="font-medium text-sm text-fg-porcelain">
-                            {item.isScribble ? "No Indexing" : item.title.split(" ").slice(0, 2).join(" ")}
-                        </span>
-                    </div>
-                ))}
+                            {/* Connection Line segment (except last) */}
+                            {i < PIPELINE_STEPS.length - 1 && (
+                                <div className={cn(
+                                    "absolute left-4 w-px h-6 bg-white/10 -bottom-6 transition-colors duration-500 delay-100",
+                                    activeStep > i ? "bg-accent-teal/50" : ""
+                                )} />
+                            )}
+
+                            {/* Label & Progress */}
+                            <div className="flex-1">
+                                <div className="flex justify-between items-center text-xs font-mono mb-1">
+                                    <span className={cn(
+                                        "transition-colors duration-300",
+                                        activeStep === i ? "text-fg-porcelain" : "text-fg-muted/60"
+                                    )}>{step.label}</span>
+                                    <span className={cn(
+                                        "text-[10px]",
+                                        activeStep === i ? "text-accent-teal animate-pulse" : "text-white/10"
+                                    )}>
+                                        {activeStep === i ? "[PROCESSING]" : activeStep > i ? "[COMPLETE]" : "[WAITING]"}
+                                    </span>
+                                </div>
+                                {/* Bar */}
+                                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                    <div className={cn(
+                                        "h-full bg-accent-teal transition-all duration-500 ease-out",
+                                        activeStep > i ? "w-full" : activeStep === i ? "w-2/3" : "w-0"
+                                    )} />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
+
+            {/* Footer Stats */}
+            <div className="h-8 border-t border-white/10 flex items-center justify-between px-4 text-[10px] font-mono text-fg-muted bg-bg-graphite-2/50">
+                <div className="flex gap-4">
+                    <span>LATENCY: <span className="text-fg-porcelain">~12ms</span></span>
+                    <span>MEMORY: <span className="text-fg-porcelain">FLUSHED</span></span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-accent-teal animate-pulse" />
+                    <span className="text-accent-teal">SYSTEM_ONLINE</span>
+                </div>
+            </div>
+
+            {/* Corner Accents */}
+            <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20" />
+            <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20" />
         </div>
     );
 }

@@ -6,7 +6,7 @@ export default function PrivacyPage() {
         <>
             <Nav />
             <main className="pt-32 pb-24 container mx-auto px-6 max-w-4xl">
-                <h1 className="text-4xl md:text-5xl font-bold mb-8 text-white">Privacy at Ixos</h1>
+                <h1 className="text-4xl md:text-5xl font-semibold mb-8 text-white">Privacy at Ixos</h1>
 
                 <div className="prose prose-invert prose-lg max-w-none space-y-12">
 

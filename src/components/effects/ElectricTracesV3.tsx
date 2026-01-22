@@ -20,7 +20,9 @@ export function ElectricTracesV3({ className }: ElectricTracesV3Props) {
     const containerRef = useRef<HTMLDivElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
     const pathRefs = useRef<Map<string, SVGPathElement>>(new Map());
+    const glowPathRefs = useRef<Map<string, SVGPathElement>>(new Map());
     const [dimensions, setDimensions] = useState({ width: 1920, height: 4000 });
+    const [isGlowing, setIsGlowing] = useState(false);
 
     // Semantic Semantic Paths (Manhattan Routing)
     // Grid-based logic assuming standard 1920px width reference, scaled later
@@ -129,6 +131,34 @@ export function ElectricTracesV3({ className }: ElectricTracesV3Props) {
         return () => ctx.revert();
     }, [dimensions]);
 
+    // Handle Glow Event from Video
+    useEffect(() => {
+        const handlePlay = () => setIsGlowing(true);
+        const handleReset = () => setIsGlowing(false);
+
+        window.addEventListener('ixos-video-play', handlePlay);
+        window.addEventListener('ixos-video-reset', handleReset);
+
+        return () => {
+            window.removeEventListener('ixos-video-play', handlePlay);
+            window.removeEventListener('ixos-video-reset', handleReset);
+        };
+    }, []);
+
+    // Animate Glow
+    useEffect(() => {
+        const glowPaths = Array.from(glowPathRefs.current.values());
+        if (glowPaths.length === 0) return;
+
+        gsap.to(glowPaths, {
+            strokeOpacity: isGlowing ? 0.6 : 0.1,
+            strokeWidth: isGlowing ? 6 : 4,
+            filter: isGlowing ? "url(#trace-glow-strong)" : "url(#trace-glow)",
+            duration: 0.5,
+            ease: "power2.out"
+        });
+    }, [isGlowing]);
+
     const getColor = (name: string) => {
         switch (name) {
             case 'amber': return 'var(--color-accent-amber)';
@@ -157,12 +187,19 @@ export function ElectricTracesV3({ className }: ElectricTracesV3Props) {
                         <feGaussianBlur stdDeviation="3" result="blur" />
                         <feComposite in="SourceGraphic" in2="blur" operator="over" />
                     </filter>
+                    <filter id="trace-glow-strong" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="6" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
                 </defs>
 
                 {traceSegments.map((segment) => (
                     <g key={segment.id}>
                         {/* Wider Glow Path */}
                         <path
+                            ref={(el) => {
+                                if (el) glowPathRefs.current.set(segment.id, el);
+                            }}
                             d={segment.points}
                             stroke={getColor(segment.color)}
                             strokeWidth="4"

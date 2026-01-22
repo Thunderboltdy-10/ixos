@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Hide native video controls globally */
+video::-webkit-media-controls,
+video::-webkit-media-controls-enclosure,
+video::-webkit-media-controls-panel,
+video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
+video::-moz-media-controls {
+  display: none !important;
+}
+
 @theme {
   /* GRAPHITE BACKGROUNDS (base only, sections are transparent) */
   --color-bg-graphite-0: #050507;
@@ -72,9 +85,9 @@
     0 4px 16px rgba(0, 0, 0, 0.5);
 
   /* FONTS */
-  --font-sans: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
-  --font-display: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-sans: var(--font-ixo-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-mono: var(--font-ixo-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-display: var(--font-ixo-heading), ui-sans-serif, system-ui, sans-serif;
 
   /* ANIMATION */
   --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -117,7 +130,7 @@
   body {
     background-color: var(--color-bg-graphite-0);
     color: var(--color-fg-porcelain);
-    font-family: var(--font-sans);
+    font-family: var(--font-ixo-mono), monospace;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     line-height: 1.7;
     /* Noise now handled by ArcNoiseBackground component */
@@ -136,13 +149,13 @@
   h5,
   h6 {
     color: var(--color-fg-porcelain);
+    font-family: var(--font-ixo-heading), sans-serif;
     font-weight: 600;
   }
 
   h1 {
-    font-family: var(--font-display);
     letter-spacing: -0.04em;
-    font-weight: 500;
+    font-weight: 600;
   }
 
   p {
@@ -311,4 +324,91 @@
 
 .accent-magenta {
   --accent: var(--color-accent-magenta);
+}
+
+/* How It Works Step Cards - Redesign */
+@utility step-card-active {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, transparent 50%);
+  border-color: rgba(20, 184, 166, 0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(20, 184, 166, 0.1),
+    0 0 30px rgba(20, 184, 166, 0.1);
+}
+
+/* Pipeline node animations */
+@keyframes node-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px rgba(20, 184, 166, 0);
+  }
+}
+
+.animate-node-pulse {
+  animation: node-pulse 2s ease-in-out infinite;
+}
+
+/* Heading gradient for teal accent */
+@utility heading-gradient-teal {
+  background: linear-gradient(180deg, #FFFFFF 0%, #5EEAD4 60%, #14B8A6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Dynamic Glow Utilities */
+@utility hover-glow-subtle {
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+
+  &:hover {
+    /* Requires --accent-rgb to be defined in scope */
+    box-shadow: 0 0 40px rgba(var(--accent-rgb), 0.15);
+    transform: scale(1.01);
+  }
+}
+
+@utility delay-100 {
+  transition-delay: 100ms;
+}
+
+@utility delay-200 {
+  transition-delay: 200ms;
+}
+
+@utility delay-300 {
+  transition-delay: 300ms;
+}
+
+@utility delay-500 {
+  transition-delay: 500ms;
+}
+
+/* RGB Variables for alpha transparency usage */
+@layer base {
+  :root {
+    --accent-amber-rgb: 246, 185, 76;
+    --accent-teal-rgb: 20, 184, 166;
+    --accent-violet-rgb: 167, 139, 250;
+    --accent-magenta-rgb: 244, 114, 182;
+  }
+
+  .accent-amber {
+    --accent-rgb: var(--accent-amber-rgb);
+  }
+
+  .accent-teal {
+    --accent-rgb: var(--accent-teal-rgb);
+  }
+
+  .accent-violet {
+    --accent-rgb: var(--accent-violet-rgb);
+  }
+
+  .accent-magenta {
+    --accent-rgb: var(--accent-magenta-rgb);
+  }
 }

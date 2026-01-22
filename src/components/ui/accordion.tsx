@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 const Accordion = React.forwardRef<
     HTMLDivElement,
     React.HTMLAttributes<HTMLDivElement> & { type?: "single" | "multiple"; collapsible?: boolean }
->(({ className, ...props }, ref) => (
+>(({ className, type, collapsible, ...props }, ref) => (
     <div ref={ref} className={cn("space-y-1", className)} {...props} />
 ))
 Accordion.displayName = "Accordion"

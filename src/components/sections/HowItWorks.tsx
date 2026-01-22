@@ -65,7 +65,7 @@ export function HowItWorks() {
                 {/* Sticky Pipeline Diagram (Left) */}
                 <div className="hidden lg:block lg:col-span-5 relative">
                     <div className="sticky top-32 space-y-8 p-8 bg-bg-graphite-2 backdrop-blur-sm border border-stroke-hairline rounded-2xl shadow-lift">
-                        <h2 className="text-3xl font-normal mb-8 text-fg-porcelain">How it works</h2>
+                        <h2 className="text-3xl font-semibold mb-8 text-fg-porcelain">How it works</h2>
 
                         <div className="relative space-y-12 pl-8 border-l-2 border-stroke-hairline">
                             {['Query Typed', 'JIT Embeddings', 'Local Search', 'Instant Delete', 'Results Stream'].map((label, i) => (
@@ -85,7 +85,7 @@ export function HowItWorks() {
 
                     <div className="how-step group">
                         <div className="text-accent-teal font-mono mb-4 text-xl">01</div>
-                        <h3 className="text-4xl font-bold mb-4">Natural Language Search</h3>
+                        <h3 className="text-4xl font-semibold mb-4">Natural Language Search</h3>
                         <p className="text-xl text-text-secondary leading-relaxed max-w-lg">
                             Type exactly how you think. "Files from last week about the merger" or "PDFs with budget tables". No complex syntax required.
                         </p>
@@ -93,7 +93,7 @@ export function HowItWorks() {
 
                     <div className="how-step group">
                         <div className="text-accent-teal font-mono mb-4 text-xl">02</div>
-                        <h3 className="text-4xl font-bold mb-4">Just-in-Time Intelligence</h3>
+                        <h3 className="text-4xl font-semibold mb-4">Just-in-Time Intelligence</h3>
                         <p className="text-xl text-text-secondary leading-relaxed max-w-lg">
                             Ixos computes lightweight embeddings on the fly using our optimized micro-models. It runs 100% on your CPU/NPU.
                         </p>
@@ -101,7 +101,7 @@ export function HowItWorks() {
 
                     <div className="how-step group">
                         <div className="text-accent-teal font-mono mb-4 text-xl">03</div>
-                        <h3 className="text-4xl font-bold mb-4">Ranked Locally</h3>
+                        <h3 className="text-4xl font-semibold mb-4">Ranked Locally</h3>
                         <p className="text-xl text-text-secondary leading-relaxed max-w-lg">
                             Results are ranked by semantic relevance to your intent, not just keyword matching. The most relevant files bubble to the top instantly.
                         </p>
@@ -109,7 +109,7 @@ export function HowItWorks() {
 
                     <div className="how-step group">
                         <div className="text-accent-teal font-mono mb-4 text-xl">04</div>
-                        <h3 className="text-4xl font-bold mb-4">
+                        <h3 className="text-4xl font-semibold mb-4">
                             <span className="text-text-subtle mr-2">No</span>
                             <ScribbleStrike>INDEXING</ScribbleStrike>
                             <span className="text-text-subtle ml-2">Required</span>
@@ -126,7 +126,7 @@ export function HowItWorks() {
 
                     <div className="how-step group">
                         <div className="text-accent-teal font-mono mb-4 text-xl">05</div>
-                        <h3 className="text-4xl font-bold mb-4">Instant Access</h3>
+                        <h3 className="text-4xl font-semibold mb-4">Instant Access</h3>
                         <p className="text-xl text-text-secondary leading-relaxed max-w-lg">
                             Click to open, drag to drop, or hit Enter. It integrates seamlessly with Explorer and Finder.
                         </p>

@@ -1,0 +1,314 @@
+@import "tailwindcss";
+
+@theme {
+  /* GRAPHITE BACKGROUNDS (base only, sections are transparent) */
+  --color-bg-graphite-0: #050507;
+  --color-bg-graphite-1: #0A0C10;
+  --color-bg-graphite-2: #12151A;
+
+  --color-primary: #050507;
+  --color-secondary: #F3F5F7;
+
+  --color-bg-primary: #050507;
+  --color-bg-secondary: #0A0C10;
+  --color-bg-tertiary: #12151A;
+  --color-bg-elevated: hsl(220 10% 12%);
+
+  /* FOREGROUND COLORS */
+  --color-fg-porcelain: #F3F5F7;
+  --color-fg-muted: rgba(243, 245, 247, 0.72);
+  --color-stroke-hairline: rgba(243, 245, 247, 0.14);
+
+  --color-text-primary: #F3F5F7;
+  --color-text-secondary: rgba(243, 245, 247, 0.72);
+  --color-text-muted: hsl(40 10% 55%);
+  --color-text-subtle: hsl(40 5% 40%);
+
+  /* ACCENT COLORS - Section-specific - VIBRANT */
+  /* Amber - Hero/Trust */
+  --color-accent-amber: #F6B94C;
+  --color-accent-amber-glow: hsl(45 100% 70%);
+
+  /* Teal - How It Works */
+  --color-accent-teal: #14B8A6;
+  /* Brighter teal */
+  --color-accent-teal-dim: hsl(175 60% 28%);
+  --color-accent-teal-glow: hsl(175 80% 55%);
+
+  /* Violet - Meeting/Benchmarks */
+  --color-accent-violet: #A78BFA;
+  /* Brighter violet */
+  --color-accent-violet-glow: hsl(255 100% 75%);
+
+  /* Magenta - Pricing */
+  --color-accent-magenta: #F472B6;
+  /* Brighter pink/magenta */
+  --color-accent-magenta-glow: hsl(290 90% 75%);
+
+  /* Legacy */
+  --color-accent-spark: #F6B94C;
+  --color-accent-arc: #5EA3FF;
+  --color-accent-ion: #9B7DFF;
+
+  --color-border-subtle: rgba(243, 245, 247, 0.15);
+  /* More visible borders */
+  --color-border-medium: rgba(243, 245, 247, 0.25);
+
+  /* SHADOWS */
+  --shadow-sm: 0 2px 8px hsla(0, 0%, 0%, 0.3);
+  --shadow-md: 0 4px 16px hsla(0, 0%, 0%, 0.4);
+  --shadow-lg: 0 8px 32px hsla(0, 0%, 0%, 0.5);
+
+  /* Vibrant Glows */
+  --shadow-glow-amber: 0 0 50px hsla(45, 100%, 50%, 0.15);
+  --shadow-glow-teal: 0 0 50px hsla(170, 100%, 40%, 0.15);
+  --shadow-glow-violet: 0 0 50px hsla(255, 90%, 60%, 0.15);
+  --shadow-glow-magenta: 0 0 50px hsla(320, 90%, 60%, 0.15);
+
+  /* LIFTED SHADOW */
+  --shadow-lift:
+    0 0 0 1px rgba(243, 245, 247, 0.12),
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    0 4px 16px rgba(0, 0, 0, 0.5);
+
+  /* FONTS */
+  --font-sans: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-display: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+
+  /* ANIMATION */
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom Utilities */
+@utility text-balance {
+  text-wrap: balance;
+}
+
+@utility heading-gradient {
+  background: linear-gradient(180deg, #FFFFFF 0%, #D4D4D8 60%, #A1A1AA 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility heading-gradient-amber {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FCD34D 60%, #F59E0B 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility shadow-lift {
+  box-shadow: var(--shadow-lift);
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+}
+
+/* Base Styles */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--color-bg-graphite-0);
+  }
+
+  body {
+    background-color: var(--color-bg-graphite-0);
+    color: var(--color-fg-porcelain);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    line-height: 1.7;
+    /* Noise now handled by ArcNoiseBackground component */
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: var(--color-accent-amber);
+    color: black;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-fg-porcelain);
+    font-weight: 600;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    letter-spacing: -0.04em;
+    font-weight: 500;
+  }
+
+  p {
+    color: var(--color-fg-muted);
+  }
+}
+
+/* SECTION BACKGROUNDS - STRONGER VISIBILITY */
+/* Added backdrop-filter and clearer gradients */
+
+.section-hero {
+  position: relative;
+  background: transparent;
+}
+
+.section-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 100% 80% at 50% 0%, rgba(246, 185, 76, 0.15) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.section-how {
+  position: relative;
+  background: transparent;
+}
+
+.section-how::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 30% 20%, rgba(20, 184, 166, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.section-meeting {
+  position: relative;
+  /* Darker base to make violet pop */
+  background: radial-gradient(circle at 100% 50%, rgba(167, 139, 250, 0.03) 0%, transparent 50%);
+}
+
+.section-meeting::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 80% 50%, rgba(167, 139, 250, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.section-benchmarks {
+  position: relative;
+  background: transparent;
+}
+
+.section-benchmarks::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 100% 80% at 50% 100%, rgba(167, 139, 250, 0.1) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.section-pricing {
+  position: relative;
+  background: transparent;
+}
+
+.section-pricing::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(244, 114, 182, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.section-trust {
+  position: relative;
+  background: transparent;
+}
+
+.section-trust::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 100% 100% at 50% 100%, rgba(246, 185, 76, 0.1) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Animation utilities */
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes draw-trace {
+  from {
+    stroke-dashoffset: 1000;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes spark-flash {
+
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-spark {
+  animation: spark-flash 0.3s ease-out;
+}
+
+/* Utilities for JS consumption */
+.accent-amber {
+  --accent: var(--color-accent-amber);
+}
+
+.accent-teal {
+  --accent: var(--color-accent-teal);
+}
+
+.accent-violet {
+  --accent: var(--color-accent-violet);
+}
+
+.accent-magenta {
+  --accent: var(--color-accent-magenta);
+}

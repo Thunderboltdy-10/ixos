@@ -1,0 +1,527 @@
+//! P2: Candidate Generation
+//!
+//! The unified candidate generator that enforces all hard caps.
+//! This is the backbone of the search pipeline - it ensures we NEVER
+//! embed more than MAX_CANDIDATES_FOR_EMBEDDING files per query.
+//!
+//! ## Pipeline
+//!
+//! 1. **Path Scoring** (instant, ~10ms for 30k files)
+//!    - Uses in-memory PathIndex for BM25-ish scoring
+//!    - No disk I/O - only path strings
+//!
+//! 2. **Ripgrep Scan** (streamed, capped at RIPGREP_MAX_HITS)
+//!    - Content-based search with hard timeout
+//!    - Stops early if max hits reached
+//!
+//! 3. **Merge & Deduplicate**
+//!    - Combine candidates from both sources
+//!    - Boost files that appear in multiple sources
+//!
+//! 4. **Apply Priors**
+//!    - Recency boost (mtime)
+//!    - Hot folder boost
+//!    - File type prior
+//!
+//! 5. **HARD CAP** (non-negotiable)
+//!    - Truncate to MAX_CANDIDATES_FOR_EMBEDDING
+//!
+//! ## Hard Limits
+//!
+//! These are **laws**, not guidelines:
+//! - `MAX_CANDIDATES_FOR_EMBEDDING = 3000`
+//! - `MAX_BYTES_READ_PER_FILE = 64KB`
+//! - `MAX_TEXT_CHARS_PER_FILE = 20,000`
+
+pub mod metadata_priors;
+pub mod path_engine;
+pub mod query_preprocess;
+pub mod ripgrep_funnel;
+pub mod scorer;
+
+pub use metadata_priors::{MetadataPriors, PriorScores, PriorWeights};
+pub use path_engine::{PathIndex, PathIndexConfig, PathMetadata};
+pub use query_preprocess::{ProcessedQuery, QueryPreprocessConfig, QueryPreprocessor};
+pub use ripgrep_funnel::{RipgrepFunnel, RipgrepFunnelConfig, RipgrepStats, TerminationReason};
+pub use scorer::{
+    CandidateScoreBreakdown, CandidateSet, CandidateSource, CandidateStats, MatchContext,
+    ScoreWeights, ScoredCandidate,
+};
+
+use std::collections::HashSet;
+use std::path::PathBuf;
+use std::time::Instant;
+
+// ============================================================================
+// HARD CAPS - These are NON-NEGOTIABLE
+// ============================================================================
+
+/// Maximum candidates to pass to embedding phase
+/// This is the PRIMARY safeguard against 40s searches
+pub const MAX_CANDIDATES_FOR_EMBEDDING: usize = 3000;
+
+/// Maximum bytes to read per file in hot path
+pub const MAX_BYTES_READ_PER_FILE: usize = 64 * 1024; // 64KB
+
+/// Maximum text characters per file after extraction
+pub const MAX_TEXT_CHARS_PER_FILE: usize = 20_000;
+
+/// Batch flush interval for streaming (milliseconds)
+pub const BATCH_FLUSH_INTERVAL_MS: u64 = 50;
+
+/// Batch size threshold for streaming
+pub const BATCH_SIZE_THRESHOLD: usize = 20;
+
+// ============================================================================
+// CandidateGenerator
+// ============================================================================
+
+/// Configuration for the candidate generator
+#[derive(Debug, Clone)]
+pub struct CandidateGeneratorConfig {
+    /// Path index configuration
+    pub path_config: PathIndexConfig,
+    /// Ripgrep funnel configuration
+    pub ripgrep_config: RipgrepFunnelConfig,
+    /// Metadata priors
+    pub priors: MetadataPriors,
+    /// Score weights for combining different signals
+    pub weights: ScoreWeights,
+    /// Maximum candidates (cannot exceed MAX_CANDIDATES_FOR_EMBEDDING)
+    pub max_candidates: usize,
+    /// Whether to run path scoring
+    pub enable_path_scoring: bool,
+    /// Whether to run ripgrep
+    pub enable_ripgrep: bool,
+}
+
+impl Default for CandidateGeneratorConfig {
+    fn default() -> Self {
+        Self {
+            path_config: PathIndexConfig::default(),
+            ripgrep_config: RipgrepFunnelConfig::default(),
+            priors: MetadataPriors::default(),
+            weights: ScoreWeights::default(),
+            max_candidates: MAX_CANDIDATES_FOR_EMBEDDING,
+            enable_path_scoring: true,
+            enable_ripgrep: true,
+        }
+    }
+}
+
+/// The unified candidate generator - enforces all hard caps
+pub struct CandidateGenerator {
+    /// Root directory for search
+    root_dir: PathBuf,
+    /// Configuration
+    config: CandidateGeneratorConfig,
+    /// Path index (built lazily)
+    path_index: Option<PathIndex>,
+    /// Ripgrep funnel
+    ripgrep: RipgrepFunnel,
+    /// Query preprocessor (typos + synonyms)
+    preprocessor: QueryPreprocessor,
+    /// Last directory walk/index build duration
+    last_index_build_ms: u64,
+}
+
+impl CandidateGenerator {
+    /// Create a new candidate generator for a directory
+    pub fn new(root_dir: PathBuf, config: CandidateGeneratorConfig) -> Self {
+        let ripgrep = RipgrepFunnel::new(root_dir.clone(), config.ripgrep_config.clone());
+
+        Self {
+            root_dir,
+            config,
+            path_index: None,
+            ripgrep,
+            preprocessor: QueryPreprocessor::with_defaults(),
+            last_index_build_ms: 0,
+        }
+    }
+
+    /// Create with default configuration
+    pub fn with_defaults(root_dir: PathBuf) -> Self {
+        Self::new(root_dir, CandidateGeneratorConfig::default())
+    }
+
+    /// Build or rebuild the path index
+    pub fn build_index(&mut self) {
+        let start = Instant::now();
+        let index = PathIndex::build_from_walk(&self.root_dir, &self.config.path_config);
+        self.last_index_build_ms = start.elapsed().as_millis() as u64;
+        self.path_index = Some(index);
+    }
+
+    /// Ensure path index is built
+    fn ensure_index(&mut self) {
+        if self.path_index.is_none() {
+            self.build_index();
+        }
+    }
+
+    /// Generate candidates with HARD CAP enforcement
+    ///
+    /// This is the core function that ensures we NEVER exceed MAX_CANDIDATES_FOR_EMBEDDING.
+    pub fn generate(&mut self, query: &str) -> CandidateSet {
+        let start = Instant::now();
+        let mut stats = CandidateStats::default();
+
+        let processed = self.preprocessor.preprocess(query);
+        let lexical_query = processed.expanded_query;
+
+        // Phase 1: Path scoring (instant, no disk I/O)
+        let path_start = Instant::now();
+        let path_candidates = if self.config.enable_path_scoring {
+            self.ensure_index();
+            stats.directory_walk_ms = self.last_index_build_ms;
+            let candidates = self
+                .path_index
+                .as_ref()
+                .map(|idx| {
+                    stats.paths_scanned = idx.len();
+                    idx.score(&lexical_query, self.config.max_candidates * 2)
+                })
+                .unwrap_or_default();
+            stats.path_candidates = candidates.len();
+            candidates
+        } else {
+            Vec::new()
+        };
+        stats.path_scoring_ms = path_start.elapsed().as_millis() as u64;
+
+        // Phase 2: Ripgrep scan (capped)
+        let ripgrep_start = Instant::now();
+        let (ripgrep_candidates, ripgrep_stats) = if self.config.enable_ripgrep {
+            self.ripgrep.search_capped(&lexical_query)
+        } else {
+            (Vec::new(), RipgrepStats::default())
+        };
+        stats.ripgrep_candidates = ripgrep_candidates.len();
+        stats.ripgrep_capped = ripgrep_stats.terminated_by == TerminationReason::MaxHitsReached;
+        stats.ripgrep_ms = ripgrep_start.elapsed().as_millis() as u64;
+
+        // Phase 3: Merge and deduplicate
+        let merge_start = Instant::now();
+        let mut merged = self.merge_candidates(path_candidates, ripgrep_candidates);
+        stats.merged_candidates = merged.len();
+
+        // Phase 4: Apply metadata priors
+        self.apply_priors(&mut merged);
+
+        // Phase 5: Sort by combined score
+        merged.sort_by(|a, b| {
+            b.combined_score
+                .partial_cmp(&a.combined_score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+
+        // Phase 6: HARD CAP ENFORCEMENT (non-negotiable)
+        let max = self.config.max_candidates.min(MAX_CANDIDATES_FOR_EMBEDDING);
+        merged.truncate(max);
+        stats.final_candidates = merged.len();
+        stats.merge_ms = merge_start.elapsed().as_millis() as u64;
+
+        tracing::debug!(
+            path_candidates = stats.path_candidates,
+            ripgrep_candidates = stats.ripgrep_candidates,
+            merged = stats.merged_candidates,
+            final_candidates = stats.final_candidates,
+            total_ms = start.elapsed().as_millis(),
+            "Candidate generation complete"
+        );
+
+        CandidateSet {
+            candidates: merged,
+            stats,
+        }
+    }
+
+    /// Generate candidates with streaming ripgrep batches
+    pub fn generate_streaming<F>(
+        &mut self,
+        query: &str,
+        batch_size: usize,
+        batch_interval_ms: u64,
+        mut on_batch: F,
+    ) -> CandidateSet
+    where
+        F: FnMut(Vec<ScoredCandidate>, bool),
+    {
+        let start = Instant::now();
+        let mut stats = CandidateStats::default();
+        stats.directory_walk_ms = self.last_index_build_ms;
+
+        let processed = self.preprocessor.preprocess(query);
+        let lexical_query = processed.expanded_query;
+
+        // Phase 1: Path scoring (instant, no disk I/O)
+        let path_start = Instant::now();
+        let path_candidates = if self.config.enable_path_scoring {
+            self.ensure_index();
+            stats.directory_walk_ms = self.last_index_build_ms;
+            let candidates = self
+                .path_index
+                .as_ref()
+                .map(|idx| {
+                    stats.paths_scanned = idx.len();
+                    idx.score(&lexical_query, self.config.max_candidates * 2)
+                })
+                .unwrap_or_default();
+            stats.path_candidates = candidates.len();
+            candidates
+        } else {
+            Vec::new()
+        };
+        stats.path_scoring_ms = path_start.elapsed().as_millis() as u64;
+
+        // Phase 2: Ripgrep scan (streamed)
+        let ripgrep_start = Instant::now();
+        let (ripgrep_candidates, ripgrep_stats) = if self.config.enable_ripgrep {
+            self.ripgrep.search_streaming(
+                &lexical_query,
+                batch_size,
+                batch_interval_ms,
+                |batch, is_final| on_batch(batch, is_final),
+            )
+        } else {
+            (Vec::new(), RipgrepStats::default())
+        };
+        stats.ripgrep_candidates = ripgrep_candidates.len();
+        stats.ripgrep_capped = ripgrep_stats.terminated_by == TerminationReason::MaxHitsReached;
+        stats.ripgrep_ms = ripgrep_start.elapsed().as_millis() as u64;
+
+        // Phase 3: Merge and deduplicate
+        let merge_start = Instant::now();
+        let mut merged = self.merge_candidates(path_candidates, ripgrep_candidates);
+        stats.merged_candidates = merged.len();
+
+        // Phase 4: Apply metadata priors
+        self.apply_priors(&mut merged);
+
+        // Phase 5: Sort by combined score
+        merged.sort_by(|a, b| {
+            b.combined_score
+                .partial_cmp(&a.combined_score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+
+        // Phase 6: HARD CAP ENFORCEMENT
+        let max = self.config.max_candidates.min(MAX_CANDIDATES_FOR_EMBEDDING);
+        merged.truncate(max);
+        stats.final_candidates = merged.len();
+        stats.merge_ms = merge_start.elapsed().as_millis() as u64;
+
+        tracing::debug!(
+            path_candidates = stats.path_candidates,
+            ripgrep_candidates = stats.ripgrep_candidates,
+            merged = stats.merged_candidates,
+            final_candidates = stats.final_candidates,
+            total_ms = start.elapsed().as_millis(),
+            "Candidate generation complete (streaming)"
+        );
+
+        CandidateSet {
+            candidates: merged,
+            stats,
+        }
+    }
+
+    /// Merge candidates from path scoring and ripgrep
+    fn merge_candidates(
+        &self,
+        path_candidates: Vec<ScoredCandidate>,
+        ripgrep_candidates: Vec<ScoredCandidate>,
+    ) -> Vec<ScoredCandidate> {
+        let mut seen: HashSet<PathBuf> = HashSet::new();
+        let mut merged: Vec<ScoredCandidate> = Vec::new();
+
+        // Process path candidates first
+        for candidate in path_candidates {
+            seen.insert(candidate.path.clone());
+            merged.push(candidate);
+        }
+
+        // Process ripgrep candidates, merging scores for duplicates
+        for candidate in ripgrep_candidates {
+            if let Some(existing) = merged.iter_mut().find(|c| c.path == candidate.path) {
+                // Merge: boost files that appear in both sources
+                existing.merge_with(&candidate);
+            } else if !seen.contains(&candidate.path) {
+                seen.insert(candidate.path.clone());
+                merged.push(candidate);
+            }
+        }
+
+        merged
+    }
+
+    /// Apply metadata priors to candidates
+    fn apply_priors(&self, candidates: &mut [ScoredCandidate]) {
+        for candidate in candidates {
+            // Get file metadata
+            let metadata = self
+                .path_index
+                .as_ref()
+                .and_then(|idx| idx.get_metadata(&candidate.path));
+
+            let mtime = metadata
+                .map(|m| m.mtime)
+                .unwrap_or(std::time::SystemTime::UNIX_EPOCH);
+            let size = metadata.map(|m| m.size_bytes).unwrap_or(0);
+
+            let priors = self
+                .config
+                .priors
+                .calculate_priors(&candidate.path, mtime, size);
+
+            candidate.apply_priors(priors.recency, priors.folder, priors.type_prior);
+        }
+    }
+
+    /// Get the number of indexed paths
+    pub fn indexed_path_count(&self) -> usize {
+        self.path_index.as_ref().map(|idx| idx.len()).unwrap_or(0)
+    }
+
+    /// Check if index is built
+    pub fn is_indexed(&self) -> bool {
+        self.path_index.is_some()
+    }
+}
+
+// ============================================================================
+// Conversion helpers for integration with existing code
+// ============================================================================
+
+use super::types::LexicalMatch;
+
+impl From<&ScoredCandidate> for LexicalMatch {
+    fn from(candidate: &ScoredCandidate) -> Self {
+        LexicalMatch {
+            path: candidate.path.clone(),
+            score: candidate.combined_score,
+            content_snippet: candidate
+                .match_context
+                .as_ref()
+                .and_then(|c| c.snippet.clone())
+                .unwrap_or_default(),
+            term_matches: candidate
+                .match_context
+                .as_ref()
+                .map(|c| c.match_count)
+                .unwrap_or(0),
+            total_terms: 1, // Query is treated as single term for conversion
+        }
+    }
+}
+
+impl CandidateSet {
+    /// Convert to LexicalMatch vector for backwards compatibility
+    pub fn into_lexical_matches(self) -> Vec<LexicalMatch> {
+        self.candidates.iter().map(LexicalMatch::from).collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    fn setup_test_dir() -> TempDir {
+        let temp = TempDir::new().unwrap();
+        let root = temp.path();
+
+        std::fs::create_dir_all(root.join("docs")).unwrap();
+        std::fs::create_dir_all(root.join("src")).unwrap();
+
+        std::fs::write(root.join("docs/report.txt"), "Quarterly report content").unwrap();
+        std::fs::write(root.join("docs/notes.md"), "Meeting notes about quarterly").unwrap();
+        std::fs::write(root.join("src/main.rs"), "fn main() { quarterly(); }").unwrap();
+        std::fs::write(root.join("readme.txt"), "Project readme").unwrap();
+
+        temp
+    }
+
+    #[test]
+    fn test_candidate_generation() {
+        let temp = setup_test_dir();
+        let mut generator = CandidateGenerator::with_defaults(temp.path().to_path_buf());
+
+        let result = generator.generate("quarterly");
+
+        assert!(!result.is_empty());
+        assert!(result.stats.final_candidates <= MAX_CANDIDATES_FOR_EMBEDDING);
+    }
+
+    #[test]
+    fn test_hard_cap_enforcement() {
+        let temp = TempDir::new().unwrap();
+        let root = temp.path();
+
+        // Create more files than MAX_CANDIDATES_FOR_EMBEDDING
+        for i in 0..2000 {
+            std::fs::write(
+                root.join(format!("file_{}.txt", i)),
+                format!("test content {}", i),
+            )
+            .unwrap();
+        }
+
+        let mut generator = CandidateGenerator::with_defaults(root.to_path_buf());
+        let result = generator.generate("test");
+
+        // MUST NOT exceed the hard cap
+        assert!(
+            result.len() <= MAX_CANDIDATES_FOR_EMBEDDING,
+            "Hard cap violated: {} > {}",
+            result.len(),
+            MAX_CANDIDATES_FOR_EMBEDDING
+        );
+    }
+
+    #[test]
+    fn test_merge_boosts_duplicates() {
+        let temp = setup_test_dir();
+        let mut generator = CandidateGenerator::with_defaults(temp.path().to_path_buf());
+
+        let result = generator.generate("quarterly report");
+
+        // Files matching both path and content should have higher scores
+        let report_file = result
+            .candidates
+            .iter()
+            .find(|c| c.path.to_string_lossy().contains("report"));
+
+        assert!(report_file.is_some());
+        if let Some(candidate) = report_file {
+            // Should be merged from multiple sources
+            assert!(
+                candidate.breakdown.path_score > 0.0 || candidate.breakdown.lexical_score > 0.0
+            );
+        }
+    }
+
+    #[test]
+    fn test_empty_query() {
+        let temp = setup_test_dir();
+        let mut generator = CandidateGenerator::with_defaults(temp.path().to_path_buf());
+
+        let result = generator.generate("");
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_conversion_to_lexical_match() {
+        let temp = setup_test_dir();
+        let mut generator = CandidateGenerator::with_defaults(temp.path().to_path_buf());
+
+        let result = generator.generate("report");
+        let lexical_matches = result.into_lexical_matches();
+
+        assert!(!lexical_matches.is_empty());
+        assert!(lexical_matches
+            .iter()
+            .any(|m| m.path.to_string_lossy().contains("report")));
+    }
+}

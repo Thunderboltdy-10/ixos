@@ -1,0 +1,182 @@
+{
+  "generated_at": "2026-01-16T23:45:41.740329100+00:00",
+  "corpus": {
+    "total_files": 100,
+    "total_size_mb": 0.1883869171142578,
+    "file_types": [
+      [
+        "txt",
+        100
+      ]
+    ],
+    "avg_file_size_bytes": 1975
+  },
+  "summary": {
+    "ttfr": {
+      "p50_ms": 7,
+      "p95_ms": 13,
+      "p99_ms": 13
+    },
+    "ttsi": {
+      "p50_ms": 7,
+      "p95_ms": 13,
+      "p99_ms": 13
+    },
+    "total": {
+      "p50_ms": 10,
+      "p95_ms": 78,
+      "p99_ms": 78
+    },
+    "avg_cache_hit_rate": 0.21111111,
+    "avg_candidates_embedded": 9
+  },
+  "stages": {
+    "directory_walk": {
+      "p50_ms": 5,
+      "p95_ms": 5,
+      "p99_ms": 5
+    },
+    "path_scoring": {
+      "p50_ms": 0,
+      "p95_ms": 0,
+      "p99_ms": 0
+    },
+    "ripgrep_scan": {
+      "p50_ms": 7,
+      "p95_ms": 13,
+      "p99_ms": 13
+    },
+    "candidate_selection": {
+      "p50_ms": 0,
+      "p95_ms": 0,
+      "p99_ms": 0
+    },
+    "embedding": {
+      "p50_ms": 2,
+      "p95_ms": 23,
+      "p99_ms": 23
+    },
+    "ranking": {
+      "p50_ms": 0,
+      "p95_ms": 42,
+      "p99_ms": 42
+    }
+  },
+  "runs": [
+    {
+      "ttfr_ms": 13,
+      "ttsi_ms": 13,
+      "total_ms": 78,
+      "stages": {
+        "directory_walk_ms": 5,
+        "path_scoring_ms": 0,
+        "ripgrep_scan_ms": 13,
+        "candidate_selection_ms": 0,
+        "embedding_ms": 23,
+        "ranking_ms": 42,
+        "ipc_overhead_ms": 0
+      },
+      "resources": {
+        "peak_ram_mb": 0,
+        "io_read_mb": 0.066497802734375,
+        "cpu_percent": 0.0,
+        "cache_hit_rate": 0.0,
+        "files_scanned": 100,
+        "candidates_generated": 36,
+        "candidates_embedded": 36
+      }
+    },
+    {
+      "ttfr_ms": 7,
+      "ttsi_ms": 7,
+      "total_ms": 8,
+      "stages": {
+        "directory_walk_ms": 5,
+        "path_scoring_ms": 0,
+        "ripgrep_scan_ms": 7,
+        "candidate_selection_ms": 0,
+        "embedding_ms": 0,
+        "ranking_ms": 0,
+        "ipc_overhead_ms": 0
+      },
+      "resources": {
+        "peak_ram_mb": 0,
+        "io_read_mb": 0.002727508544921875,
+        "cpu_percent": 0.0,
+        "cache_hit_rate": 0.0,
+        "files_scanned": 100,
+        "candidates_generated": 1,
+        "candidates_embedded": 1
+      }
+    },
+    {
+      "ttfr_ms": 7,
+      "ttsi_ms": 7,
+      "total_ms": 7,
+      "stages": {
+        "directory_walk_ms": 5,
+        "path_scoring_ms": 0,
+        "ripgrep_scan_ms": 7,
+        "candidate_selection_ms": 0,
+        "embedding_ms": 0,
+        "ranking_ms": 0,
+        "ipc_overhead_ms": 0
+      },
+      "resources": {
+        "peak_ram_mb": 0,
+        "io_read_mb": 0.0,
+        "cpu_percent": 0.0,
+        "cache_hit_rate": 0.0,
+        "files_scanned": 100,
+        "candidates_generated": 0,
+        "candidates_embedded": 0
+      }
+    },
+    {
+      "ttfr_ms": 7,
+      "ttsi_ms": 7,
+      "total_ms": 10,
+      "stages": {
+        "directory_walk_ms": 5,
+        "path_scoring_ms": 0,
+        "ripgrep_scan_ms": 7,
+        "candidate_selection_ms": 0,
+        "embedding_ms": 2,
+        "ranking_ms": 0,
+        "ipc_overhead_ms": 0
+      },
+      "resources": {
+        "peak_ram_mb": 0,
+        "io_read_mb": 0.008709907531738281,
+        "cpu_percent": 0.0,
+        "cache_hit_rate": 0.5555556,
+        "files_scanned": 100,
+        "candidates_generated": 9,
+        "candidates_embedded": 4
+      }
+    },
+    {
+      "ttfr_ms": 8,
+      "ttsi_ms": 8,
+      "total_ms": 11,
+      "stages": {
+        "directory_walk_ms": 5,
+        "path_scoring_ms": 0,
+        "ripgrep_scan_ms": 7,
+        "candidate_selection_ms": 0,
+        "embedding_ms": 3,
+        "ranking_ms": 0,
+        "ipc_overhead_ms": 0
+      },
+      "resources": {
+        "peak_ram_mb": 0,
+        "io_read_mb": 0.010938644409179688,
+        "cpu_percent": 0.0,
+        "cache_hit_rate": 0.5,
+        "files_scanned": 100,
+        "candidates_generated": 12,
+        "candidates_embedded": 6
+      }
+    }
+  ]
+}

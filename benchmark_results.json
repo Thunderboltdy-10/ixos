@@ -1,0 +1,159 @@
+{
+  "timestamp": "2026-01-12T23:08:09",
+  "results": [
+    {
+      "name": "potion-base-8M-int8",
+      "path": "C:\\Users\\pablo\\Downloads\\Ixos\\models\\potion-base-8M-int8",
+      "size_mb": 7.6388654708862305,
+      "load_time_ms": 234.02,
+      "embed_speed_per_sec": 11074.0,
+      "avg_embed_time_ms": 0.09,
+      "dimensions": 256,
+      "similarity_accuracy": 25.0,
+      "semantic_tests": [
+        {
+          "phrase_a": "hello world",
+          "phrase_b": "greetings planet",
+          "similarity": 0.613,
+          "expected": "high",
+          "actual": "medium",
+          "correct": false
+        },
+        {
+          "phrase_a": "programming code",
+          "phrase_b": "software development",
+          "similarity": 0.516,
+          "expected": "high",
+          "actual": "medium",
+          "correct": false
+        },
+        {
+          "phrase_a": "machine learning",
+          "phrase_b": "artificial intelligence",
+          "similarity": 0.303,
+          "expected": "high",
+          "actual": "low",
+          "correct": false
+        },
+        {
+          "phrase_a": "the quick brown fox",
+          "phrase_b": "fast auburn dog",
+          "similarity": 0.216,
+          "expected": "medium",
+          "actual": "low",
+          "correct": false
+        },
+        {
+          "phrase_a": "search file query",
+          "phrase_b": "find document keyword",
+          "similarity": 0.495,
+          "expected": "high",
+          "actual": "medium",
+          "correct": false
+        },
+        {
+          "phrase_a": "hello world",
+          "phrase_b": "quantum physics equations",
+          "similarity": 0.09,
+          "expected": "low",
+          "actual": "low",
+          "correct": true
+        },
+        {
+          "phrase_a": "programming code",
+          "phrase_b": "cooking recipes",
+          "similarity": 0.157,
+          "expected": "low",
+          "actual": "low",
+          "correct": true
+        },
+        {
+          "phrase_a": "file search",
+          "phrase_b": "database query",
+          "similarity": 0.301,
+          "expected": "medium",
+          "actual": "low",
+          "correct": false
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "ixos-embedder-v1 (Qwen)",
+      "path": "C:\\Users\\pablo\\Downloads\\Ixos\\models\\ixos-embedder-v1",
+      "size_mb": 14.190202713012695,
+      "load_time_ms": 388.08,
+      "embed_speed_per_sec": 9691.4,
+      "avg_embed_time_ms": 0.103,
+      "dimensions": 256,
+      "similarity_accuracy": 37.5,
+      "semantic_tests": [
+        {
+          "phrase_a": "hello world",
+          "phrase_b": "greetings planet",
+          "similarity": 0.664,
+          "expected": "high",
+          "actual": "medium",
+          "correct": false
+        },
+        {
+          "phrase_a": "programming code",
+          "phrase_b": "software development",
+          "similarity": 0.671,
+          "expected": "high",
+          "actual": "medium",
+          "correct": false
+        },
+        {
+          "phrase_a": "machine learning",
+          "phrase_b": "artificial intelligence",
+          "similarity": 0.685,
+          "expected": "high",
+          "actual": "medium",
+          "correct": false
+        },
+        {
+          "phrase_a": "the quick brown fox",
+          "phrase_b": "fast auburn dog",
+          "similarity": 0.772,
+          "expected": "medium",
+          "actual": "high",
+          "correct": false
+        },
+        {
+          "phrase_a": "search file query",
+          "phrase_b": "find document keyword",
+          "similarity": 0.658,
+          "expected": "high",
+          "actual": "medium",
+          "correct": false
+        },
+        {
+          "phrase_a": "hello world",
+          "phrase_b": "quantum physics equations",
+          "similarity": 0.153,
+          "expected": "low",
+          "actual": "low",
+          "correct": true
+        },
+        {
+          "phrase_a": "programming code",
+          "phrase_b": "cooking recipes",
+          "similarity": 0.284,
+          "expected": "low",
+          "actual": "low",
+          "correct": true
+        },
+        {
+          "phrase_a": "file search",
+          "phrase_b": "database query",
+          "similarity": 0.569,
+          "expected": "medium",
+          "actual": "medium",
+          "correct": true
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

@@ -1,0 +1,261 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IXOS DESIGN SYSTEM - Base Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer base {
+  * {
+    @apply border-stroke-hairline;
+  }
+
+  html {
+    @apply bg-graphite-0 text-porcelain antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  body {
+    @apply min-h-screen bg-graphite-0 font-sans;
+  }
+
+  /* Custom scrollbar - graphite theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-graphite-3 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-fg-muted;
+  }
+
+  /* Focus styles - accent-teal ring */
+  button:focus-visible {
+    @apply outline-none ring-2 ring-accent-teal ring-offset-2 ring-offset-graphite-0;
+  }
+
+  /* Remove all outlines from inputs */
+  input:focus,
+  input:focus-visible,
+  textarea:focus,
+  textarea:focus-visible {
+    @apply outline-none ring-0;
+  }
+
+  /* Selection - accent-teal */
+  ::selection {
+    @apply bg-accent-teal/30 text-porcelain;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Component Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer components {
+  /* Keyboard hint badges */
+  .kbd {
+    @apply inline-flex items-center justify-center px-1.5 py-0.5 text-2xs font-mono
+           bg-graphite-3 text-fg-muted rounded border border-stroke-hairline
+           min-w-[1.5rem];
+  }
+
+  /* Gradient button */
+  .btn-gradient {
+    @apply bg-gradient-teal text-graphite-0 font-medium px-4 py-2 rounded-lg
+           transition-all duration-200 hover:opacity-90
+           shadow-glow-teal;
+  }
+
+  /* Glass morphism card */
+  .glass-card {
+    @apply bg-graphite-2/60 backdrop-blur-lg border border-stroke-hairline
+           rounded-xl shadow-lift transition-all duration-200;
+  }
+
+  .glass-card:hover {
+    @apply bg-graphite-2/70 border-border-medium;
+    box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.1), 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Glow effects for different accents */
+  .glow-secure {
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 10px rgba(20, 184, 166, 0.3);
+  }
+
+  .glow-journalist {
+    box-shadow: 0 0 10px rgba(217, 70, 239, 0.3);
+  }
+
+  /* Floating glass hub for Search Deck */
+  .glass-hub {
+    @apply bg-gradient-to-b from-white/[0.03] to-graphite-2/70;
+    @apply backdrop-blur-xl;
+    @apply ring-1 ring-white/[0.08];
+    @apply shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)];
+    @apply rounded-2xl;
+  }
+
+  /* Stage capsule pill styling */
+  .stage-capsule {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-full;
+    @apply transition-colors duration-300;
+  }
+
+  /* Streaming badge animation */
+  .streaming-badge {
+    @apply inline-flex items-center gap-1.5 px-2 py-1 rounded-full;
+    @apply bg-accent-teal/10;
+  }
+
+  /* Gradient border on focus - pointer-events none to not block clicks */
+  .gradient-border-focus {
+    @apply relative;
+  }
+
+  .gradient-border-focus::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(135deg, #14B8A6, #06D6C1);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .gradient-border-focus:focus-within::before {
+    opacity: 1;
+  }
+
+  /* Score bar segments */
+  .score-bar {
+    @apply h-2 rounded-full overflow-hidden flex;
+  }
+
+  .score-segment {
+    @apply h-full transition-all duration-300;
+  }
+
+  /* Result card hover */
+  .result-card {
+    @apply bg-graphite-2 border border-stroke-hairline rounded-lg
+           transition-all duration-200 ease-out
+           hover:bg-graphite-3 hover:border-accent-teal/30;
+  }
+
+  .result-card:hover {
+    box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Gradient accent on hover */
+  .hover-gradient-accent {
+    @apply relative overflow-hidden;
+  }
+
+  .hover-gradient-accent::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(20, 184, 166, 0.1), transparent);
+    transition: left 0.3s;
+  }
+
+  .hover-gradient-accent:hover::after {
+    left: 100%;
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     Heading Gradients (from ixos-site)
+     ═════════════════════════════════════════════════════════════════════════ */
+
+  .heading-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #F3F5F7 0%, rgba(243, 245, 247, 0.72) 100%);
+  }
+
+  .heading-gradient-teal {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #14B8A6 0%, #06D6C1 100%);
+  }
+
+  .heading-gradient-amber {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #F6B94C 0%, #F59E0B 100%);
+  }
+
+  .heading-gradient-violet {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
+  }
+
+  .heading-gradient-magenta {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #D946EF 0%, #EC4899 100%);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Animation Utilities
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer utilities {
+  /* Backdrop blur for overlay */
+  .backdrop-blur-overlay {
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+  }
+
+  /* Window drag regions - handled via data-tauri-drag-region attribute */
+  [data-tauri-drag-region] {
+    -webkit-app-region: drag;
+    app-region: drag;
+  }
+
+  /* Hide scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Font display utility */
+  .font-display {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+  }
+
+  /* Shadow lift utility */
+  .shadow-lift {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
+  }
+
+  /* Text stroke for outline text effect */
+  .text-stroke {
+    -webkit-text-stroke: 1px currentColor;
+    -webkit-text-fill-color: transparent;
+  }
+}

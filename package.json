@@ -1,0 +1,19 @@
+{
+  "name": "ixos",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Privacy-first semantic file search",
+  "scripts": {
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "dev": "cd ui && npm run dev",
+    "build": "cd ui && npm run build"
+  },
+  "workspaces": [
+    "ui"
+  ],
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

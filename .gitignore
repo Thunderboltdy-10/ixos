@@ -1,0 +1,48 @@
+# Rust build artifacts
+target/
+**/*.rs.bk
+Cargo.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+*.log
+/tmp/
+
+# Model files (large binaries)
+*.onnx
+models/
+dataset/
+
+# Local config
+.env
+.env.*
+!.env.example
+
+# Coverage
+/coverage/
+*.profrawP
+*.profdata
+
+# Benchmarks
+/criterion/
+
+# Dependencies (all subprojects)
+node_modules/
+
+# Next.js / web builds
+.next/
+out/
+dist/
+build/
+
+# Vercel CLI
+.vercel/

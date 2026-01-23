@@ -1,0 +1,634 @@
+//! CLI command definitions for Ixos
+//!
+//! Defines all CLI commands and arguments using clap derive macros.
+//!
+//! ## Commands
+//!
+//! - `search` - Search files semantically
+//! - `index` - Index directories for faster search
+//! - `config` - Show or modify configuration
+//! - `daemon` - Run background daemon
+//! - `compliance` - Privacy and compliance management
+//! - `version` - Show version and diagnostics
+
+use clap::{Parser, Subcommand, ValueEnum};
+use std::path::PathBuf;
+
+// =============================================================================
+// Main CLI
+// =============================================================================
+
+/// Ixos - Privacy-first semantic file search
+#[derive(Parser, Debug)]
+#[command(name = "ixos")]
+#[command(about = "Privacy-first semantic file search", long_about = None)]
+#[command(version)]
+#[command(propagate_version = true)]
+pub struct Cli {
+    /// Subcommand to execute
+    #[command(subcommand)]
+    pub command: Commands,
+
+    /// Path to configuration file
+    #[arg(long, global = true)]
+    pub config: Option<PathBuf>,
+
+    /// Enable verbose logging
+    #[arg(short, long, global = true)]
+    pub verbose: bool,
+
+    /// Suppress all output except errors
+    #[arg(short, long, global = true)]
+    pub quiet: bool,
+}
+
+// =============================================================================
+// Commands
+// =============================================================================
+
+/// Cache mode for embedding storage (CLI compatible)
+#[derive(Clone, Copy, Debug, Default, ValueEnum)]
+pub enum CliCacheMode {
+    /// JIT mode: embeddings in memory only (maximum privacy)
+    #[default]
+    Jit,
+    /// Cache mode: persist embeddings to ADS/xattr
+    Cache,
+}
+
+impl From<CliCacheMode> for crate::ixos_rank::semantic_engine::CacheMode {
+    fn from(mode: CliCacheMode) -> Self {
+        match mode {
+            CliCacheMode::Jit => crate::ixos_rank::semantic_engine::CacheMode::Jit,
+            CliCacheMode::Cache => crate::ixos_rank::semantic_engine::CacheMode::Cache,
+        }
+    }
+}
+
+/// P1.3: Embedding model type selector (CLI compatible)
+#[derive(Clone, Copy, Debug, Default, ValueEnum)]
+pub enum CliModelType {
+    /// Potion-8M-int8: Simple, reliable, fast (~7.5MB)
+    #[default]
+    Potion,
+    /// Qwen-distilled: Experimental, potentially better quality (~5-10MB)
+    Qwen,
+    /// Ixos-Flash-v2: Distilled flash model (fast)
+    IxosFlashV2,
+    /// Ixos-Pro-v1: Distilled pro model (higher quality)
+    IxosProV1,
+}
+
+impl From<CliModelType> for crate::ixos_embed::ModelType {
+    fn from(model: CliModelType) -> Self {
+        match model {
+            CliModelType::Potion => crate::ixos_embed::ModelType::Potion,
+            CliModelType::Qwen => crate::ixos_embed::ModelType::Qwen,
+            CliModelType::IxosFlashV2 => crate::ixos_embed::ModelType::IxosFlashV2,
+            CliModelType::IxosProV1 => crate::ixos_embed::ModelType::IxosProV1,
+        }
+    }
+}
+
+/// Available commands
+#[derive(Subcommand, Debug)]
+pub enum Commands {
+    /// Search files semantically
+    Search {
+        /// Search query
+        query: String,
+
+        /// Maximum number of results to return
+        #[arg(short, long, default_value = "20")]
+        limit: usize,
+
+        /// Output format
+        #[arg(short, long, value_enum, default_value = "human")]
+        format: CliOutputFormat,
+
+        /// Directory to search in
+        #[arg(short, long)]
+        dir: Option<PathBuf>,
+
+        /// Output as JSON (shorthand for --format json)
+        #[arg(long)]
+        json: bool,
+
+        /// Show progressive results (lexical then semantic)
+        #[arg(long)]
+        progressive: bool,
+
+        /// Show score breakdown in output
+        #[arg(long)]
+        show_scores: bool,
+
+        /// Restrict search to specific directory (sandbox mode)
+        #[arg(long)]
+        sandbox: Option<PathBuf>,
+
+        /// Minimum similarity score (0.0-1.0) to include in results
+        #[arg(long)]
+        min_score: Option<f32>,
+
+        /// Disable secure ranking (faster but less secure)
+        #[arg(long)]
+        no_secure_ranking: bool,
+
+        /// Cache mode: jit (memory only) or cache (persist to ADS/xattr)
+        #[arg(long, value_enum, default_value = "jit")]
+        cache_mode: CliCacheMode,
+
+        /// Use stub model for testing (fast, no semantic understanding)
+        #[arg(long)]
+        stub_model: bool,
+
+        /// P1.3: Embedding model to use (potion, qwen)
+        ///
+        /// - potion: Use potion-base-8M-int8 (simple, reliable, ~7.5MB)
+        /// - qwen: Use Qwen-distilled embedder (experimental, potentially better)
+        ///
+        /// Run `python scripts/distill_model.py` to create local models.
+        #[arg(long, value_enum, default_value = "potion")]
+        model: CliModelType,
+
+        /// Enable secure timing mode (100ms floor for timing attack protection)
+        ///
+        /// By default, embeddings are as fast as possible. Enable this flag
+        /// when processing sensitive data that may be exposed to timing analysis.
+        #[arg(long)]
+        secure_timing: bool,
+
+        /// Number of lines of context to show around matches (default: 5)
+        #[arg(short = 'C', long, default_value = "5")]
+        context: usize,
+
+        /// Enable journalist mode (maximum privacy, memory-only, auto-clear)
+        ///
+        /// In journalist mode:
+        /// - Forces JIT cache mode (no persistent storage)
+        /// - All data cleared after search
+        /// - No forensic artifacts
+        #[arg(long)]
+        journalist_mode: bool,
+    },
+
+    /// Index directories for faster search
+    Index {
+        /// Directories to index
+        dirs: Vec<PathBuf>,
+
+        /// Use xattr/ADS caching when available
+        #[arg(long)]
+        use_xattr: bool,
+
+        /// Watch directories for changes after indexing
+        #[arg(long)]
+        watch: bool,
+
+        /// Show progress during indexing
+        #[arg(long)]
+        progress: bool,
+
+        /// Clear existing index before indexing
+        #[arg(long)]
+        clear: bool,
+    },
+
+    /// Show or modify configuration
+    Config {
+        /// Get a configuration value (e.g., search.default_limit)
+        #[arg(long)]
+        get: Option<String>,
+
+        /// Set a configuration value (e.g., search.default_limit=50)
+        #[arg(long)]
+        set: Option<String>,
+
+        /// List all configuration values
+        #[arg(long)]
+        list: bool,
+
+        /// Reset configuration to defaults
+        #[arg(long)]
+        reset: bool,
+
+        /// Show configuration file path
+        #[arg(long)]
+        path: bool,
+    },
+
+    /// Run background daemon for file watching
+    Daemon {
+        /// Run in foreground (don't daemonize)
+        #[arg(long)]
+        foreground: bool,
+
+        /// Stop running daemon
+        #[arg(long)]
+        stop: bool,
+
+        /// Show daemon status
+        #[arg(long)]
+        status: bool,
+    },
+
+    /// Manage embedding cache (P5)
+    Cache {
+        /// Cache action
+        #[command(subcommand)]
+        action: CacheCommands,
+    },
+
+    /// Compliance and privacy management
+    Compliance {
+        /// Compliance action
+        #[command(subcommand)]
+        action: ComplianceCommands,
+    },
+
+    /// Show version and diagnostics
+    Version {
+        /// Show detailed system information
+        #[arg(long)]
+        verbose: bool,
+    },
+}
+
+// =============================================================================
+// Output Format
+// =============================================================================
+
+/// CLI output format (clap-compatible)
+#[derive(Clone, Copy, Debug, Default, ValueEnum)]
+pub enum CliOutputFormat {
+    /// Human-readable output with colors
+    #[default]
+    Human,
+    /// JSON output for scripting
+    Json,
+    /// CSV output for spreadsheets
+    Csv,
+    /// Ripgrep-compatible output for fzf
+    Ripgrep,
+    /// Zotero CSV format
+    Zotero,
+    /// Mendeley XML format
+    Mendeley,
+    /// BibTeX format
+    Bibtex,
+}
+
+impl From<CliOutputFormat> for super::output::OutputFormat {
+    fn from(f: CliOutputFormat) -> Self {
+        match f {
+            CliOutputFormat::Human => super::output::OutputFormat::Human,
+            CliOutputFormat::Json => super::output::OutputFormat::Json,
+            CliOutputFormat::Csv => super::output::OutputFormat::Csv,
+            CliOutputFormat::Ripgrep => super::output::OutputFormat::Ripgrep,
+            CliOutputFormat::Zotero => super::output::OutputFormat::Zotero,
+            CliOutputFormat::Mendeley => super::output::OutputFormat::Mendeley,
+            CliOutputFormat::Bibtex => super::output::OutputFormat::Bibtex,
+        }
+    }
+}
+
+// =============================================================================
+// Cache Commands (P5)
+// =============================================================================
+
+/// Cache management subcommands
+#[derive(Subcommand, Debug)]
+pub enum CacheCommands {
+    /// Show cache statistics
+    Stats {
+        /// Directory to check (default: all watched directories)
+        #[arg(short, long)]
+        dir: Option<PathBuf>,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+
+    /// Clear cached embeddings
+    Clear {
+        /// Directory to clear (default: all)
+        #[arg(short, long)]
+        dir: Option<PathBuf>,
+
+        /// Skip confirmation prompt
+        #[arg(long)]
+        force: bool,
+
+        /// Only clear stale entries (older than N days)
+        #[arg(long)]
+        stale_days: Option<u32>,
+    },
+
+    /// Show cache health and disk usage
+    Audit {
+        /// Show detailed per-file information
+        #[arg(long)]
+        detailed: bool,
+
+        /// Check for corruption
+        #[arg(long)]
+        verify: bool,
+    },
+
+    /// Set cache mode preference
+    Mode {
+        /// Mode: ephemeral (memory-only) or persistent (ADS/xattr)
+        mode: CliCacheModePreference,
+    },
+
+    /// Rebuild cache for a directory
+    Rebuild {
+        /// Directory to rebuild
+        dir: PathBuf,
+
+        /// Number of parallel workers
+        #[arg(long, default_value = "4")]
+        workers: usize,
+
+        /// Skip confirmation prompt
+        #[arg(long)]
+        force: bool,
+    },
+}
+
+/// Cache mode preference for CLI
+#[derive(Clone, Copy, Debug, ValueEnum)]
+pub enum CliCacheModePreference {
+    /// Memory-only, no persistence (maximum privacy)
+    Ephemeral,
+    /// Persist to ADS/xattr when available
+    Persistent,
+}
+
+// =============================================================================
+// Compliance Commands
+// =============================================================================
+
+/// Compliance subcommands
+#[derive(Subcommand, Debug)]
+pub enum ComplianceCommands {
+    /// Manage AI processing consent
+    Consent {
+        /// Show current consent status
+        #[arg(long)]
+        status: bool,
+
+        /// Grant consent for AI processing
+        #[arg(long)]
+        grant: bool,
+
+        /// Withdraw consent
+        #[arg(long)]
+        withdraw: bool,
+    },
+
+    /// GDPR data subject rights (EU)
+    Gdpr {
+        /// GDPR action
+        #[command(subcommand)]
+        action: GdprCommands,
+    },
+
+    /// CCPA consumer rights (California)
+    Ccpa {
+        /// CCPA action
+        #[command(subcommand)]
+        action: CcpaCommands,
+    },
+
+    /// Generate technical documentation
+    Docs {
+        /// Output format: json or markdown
+        #[arg(short, long, default_value = "json")]
+        format: String,
+
+        /// Output file path
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+    },
+
+    /// View audit log
+    Audit {
+        /// Number of days to show
+        #[arg(short, long, default_value = "7")]
+        days: u32,
+
+        /// Show counts only
+        #[arg(long)]
+        summary: bool,
+    },
+}
+
+/// GDPR subcommands
+#[derive(Subcommand, Debug)]
+pub enum GdprCommands {
+    /// Request access to your data (Article 15)
+    Access,
+
+    /// Request data erasure (Article 17)
+    Erase {
+        /// Scope: all, history, cache, consent
+        #[arg(long, default_value = "all")]
+        scope: String,
+
+        /// Skip confirmation prompt
+        #[arg(long)]
+        force: bool,
+    },
+
+    /// Export data in portable format (Article 20)
+    Export {
+        /// Output file path
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+    },
+}
+
+/// CCPA subcommands
+#[derive(Subcommand, Debug)]
+pub enum CcpaCommands {
+    /// View collected data categories (Right to Know)
+    Know,
+
+    /// Request deletion of data
+    Delete {
+        /// Skip confirmation prompt
+        #[arg(long)]
+        force: bool,
+    },
+
+    /// Opt out of data sales (N/A but required for compliance)
+    OptOut,
+
+    /// View CCPA privacy notice
+    Notice,
+}
+
+// =============================================================================
+// Tests
+// =============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use clap::CommandFactory;
+
+    #[test]
+    fn test_cli_parse() {
+        // Test that CLI can be constructed
+        Cli::command().debug_assert();
+    }
+
+    #[test]
+    fn test_search_command() {
+        let cli = Cli::try_parse_from(["ixos", "search", "test query"]).unwrap();
+        match cli.command {
+            Commands::Search { query, limit, .. } => {
+                assert_eq!(query, "test query");
+                assert_eq!(limit, 20); // default
+            }
+            _ => panic!("Expected Search command"),
+        }
+    }
+
+    #[test]
+    fn test_search_with_options() {
+        let cli = Cli::try_parse_from([
+            "ixos",
+            "search",
+            "test",
+            "--limit",
+            "50",
+            "--format",
+            "json",
+            "--progressive",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Commands::Search {
+                limit,
+                format,
+                progressive,
+                ..
+            } => {
+                assert_eq!(limit, 50);
+                assert!(matches!(format, CliOutputFormat::Json));
+                assert!(progressive);
+            }
+            _ => panic!("Expected Search command"),
+        }
+    }
+
+    #[test]
+    fn test_config_command() {
+        let cli = Cli::try_parse_from(["ixos", "config", "--list"]).unwrap();
+        match cli.command {
+            Commands::Config { list, .. } => {
+                assert!(list);
+            }
+            _ => panic!("Expected Config command"),
+        }
+    }
+
+    #[test]
+    fn test_version_command() {
+        let cli = Cli::try_parse_from(["ixos", "version", "--verbose"]).unwrap();
+        match cli.command {
+            Commands::Version { verbose } => {
+                assert!(verbose);
+            }
+            _ => panic!("Expected Version command"),
+        }
+    }
+
+    #[test]
+    fn test_index_command() {
+        let cli = Cli::try_parse_from([
+            "ixos",
+            "index",
+            "/path/to/dir1",
+            "/path/to/dir2",
+            "--use-xattr",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Commands::Index {
+                dirs, use_xattr, ..
+            } => {
+                assert_eq!(dirs.len(), 2);
+                assert!(use_xattr);
+            }
+            _ => panic!("Expected Index command"),
+        }
+    }
+
+    #[test]
+    fn test_global_options() {
+        let cli = Cli::try_parse_from(["ixos", "--verbose", "version"]).unwrap();
+        assert!(cli.verbose);
+    }
+
+    #[test]
+    fn test_output_format_conversion() {
+        use super::super::output::OutputFormat;
+
+        assert!(matches!(
+            OutputFormat::from(CliOutputFormat::Human),
+            OutputFormat::Human
+        ));
+        assert!(matches!(
+            OutputFormat::from(CliOutputFormat::Json),
+            OutputFormat::Json
+        ));
+    }
+
+    #[test]
+    fn test_search_cache_mode() {
+        let cli = Cli::try_parse_from([
+            "ixos",
+            "search",
+            "test",
+            "--cache-mode",
+            "cache",
+            "--stub-model",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Commands::Search {
+                cache_mode,
+                stub_model,
+                ..
+            } => {
+                assert!(matches!(cache_mode, CliCacheMode::Cache));
+                assert!(stub_model);
+            }
+            _ => panic!("Expected Search command"),
+        }
+    }
+
+    #[test]
+    fn test_cache_mode_default() {
+        let cli = Cli::try_parse_from(["ixos", "search", "test"]).unwrap();
+
+        match cli.command {
+            Commands::Search {
+                cache_mode,
+                stub_model,
+                ..
+            } => {
+                assert!(matches!(cache_mode, CliCacheMode::Jit));
+                assert!(!stub_model);
+            }
+            _ => panic!("Expected Search command"),
+        }
+    }
+}

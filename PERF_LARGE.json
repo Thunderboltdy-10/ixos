@@ -1,0 +1,396 @@
+{
+  "generated_at": "2026-01-16T23:46:01.190515+00:00",
+  "corpus": {
+    "total_files": 65509,
+    "total_size_mb": 17660.85438156128,
+    "file_types": [
+      [
+        "js",
+        22085
+      ],
+      [
+        "map",
+        9871
+      ],
+      [
+        "ts",
+        6749
+      ],
+      [
+        "o",
+        4871
+      ],
+      [
+        "unknown",
+        4686
+      ],
+      [
+        "json",
+        3042
+      ],
+      [
+        "mjs",
+        2142
+      ],
+      [
+        "timestamp",
+        1764
+      ],
+      [
+        "d",
+        1647
+      ],
+      [
+        "rmeta",
+        1420
+      ],
+      [
+        "txt",
+        1045
+      ],
+      [
+        "rlib",
+        994
+      ],
+      [
+        "cjs",
+        927
+      ],
+      [
+        "mts",
+        922
+      ],
+      [
+        "md",
+        813
+      ],
+      [
+        "toml",
+        509
+      ],
+      [
+        "pdb",
+        363
+      ],
+      [
+        "exe",
+        266
+      ],
+      [
+        "tsx",
+        139
+      ],
+      [
+        "lib",
+        138
+      ],
+      [
+        "exp",
+        106
+      ],
+      [
+        "dll",
+        105
+      ],
+      [
+        "bin",
+        102
+      ],
+      [
+        "rs",
+        98
+      ],
+      [
+        "cts",
+        86
+      ],
+      [
+        "ps1",
+        67
+      ],
+      [
+        "cmd",
+        66
+      ],
+      [
+        "png",
+        60
+      ],
+      [
+        "svg",
+        58
+      ],
+      [
+        "wasm",
+        43
+      ],
+      [
+        "lock",
+        38
+      ],
+      [
+        "css",
+        36
+      ],
+      [
+        "woff2",
+        30
+      ],
+      [
+        "gz",
+        28
+      ],
+      [
+        "yml",
+        27
+      ],
+      [
+        "html",
+        21
+      ],
+      [
+        "glsl",
+        18
+      ],
+      [
+        "pack",
+        17
+      ],
+      [
+        "a",
+        16
+      ],
+      [
+        "sample",
+        14
+      ],
+      [
+        "node",
+        6
+      ],
+      [
+        "markdown",
+        6
+      ],
+      [
+        "coffee",
+        6
+      ],
+      [
+        "flow",
+        6
+      ],
+      [
+        "ttf",
+        5
+      ],
+      [
+        "old",
+        5
+      ],
+      [
+        "spdx",
+        5
+      ],
+      [
+        "1",
+        5
+      ],
+      [
+        "py",
+        4
+      ],
+      [
+        "c",
+        4
+      ],
+      [
+        "rc",
+        3
+      ],
+      [
+        "safetensors",
+        3
+      ],
+      [
+        "mp4",
+        2
+      ],
+      [
+        "bnf",
+        2
+      ],
+      [
+        "h",
+        2
+      ],
+      [
+        "applescript",
+        2
+      ],
+      [
+        "expr",
+        2
+      ],
+      [
+        "0",
+        2
+      ],
+      [
+        "drc",
+        2
+      ],
+      [
+        "xml",
+        2
+      ],
+      [
+        "docx",
+        1
+      ],
+      [
+        "tag",
+        1
+      ],
+      [
+        "example",
+        1
+      ],
+      [
+        "ico",
+        1
+      ],
+      [
+        "bak",
+        1
+      ],
+      [
+        "icns",
+        1
+      ]
+    ],
+    "avg_file_size_bytes": 282690
+  },
+  "summary": {
+    "ttfr": {
+      "p50_ms": 378,
+      "p95_ms": 601,
+      "p99_ms": 601
+    },
+    "ttsi": {
+      "p50_ms": 378,
+      "p95_ms": 601,
+      "p99_ms": 601
+    },
+    "total": {
+      "p50_ms": 566,
+      "p95_ms": 727,
+      "p99_ms": 727
+    },
+    "avg_cache_hit_rate": 0.35775337,
+    "avg_candidates_embedded": 158
+  },
+  "stages": {
+    "directory_walk": {
+      "p50_ms": 4077,
+      "p95_ms": 4077,
+      "p99_ms": 4077
+    },
+    "path_scoring": {
+      "p50_ms": 16,
+      "p95_ms": 17,
+      "p99_ms": 17
+    },
+    "ripgrep_scan": {
+      "p50_ms": 300,
+      "p95_ms": 300,
+      "p99_ms": 300
+    },
+    "candidate_selection": {
+      "p50_ms": 61,
+      "p95_ms": 284,
+      "p99_ms": 284
+    },
+    "embedding": {
+      "p50_ms": 89,
+      "p95_ms": 117,
+      "p99_ms": 117
+    },
+    "ranking": {
+      "p50_ms": 36,
+      "p95_ms": 71,
+      "p99_ms": 71
+    }
+  },
+  "runs": [
+    {
+      "ttfr_ms": 378,
+      "ttsi_ms": 378,
+      "total_ms": 566,
+      "stages": {
+        "directory_walk_ms": 4077,
+        "path_scoring_ms": 16,
+        "ripgrep_scan_ms": 300,
+        "candidate_selection_ms": 61,
+        "embedding_ms": 117,
+        "ranking_ms": 71,
+        "ipc_overhead_ms": 0
+      },
+      "resources": {
+        "peak_ram_mb": 0,
+        "io_read_mb": 1.5329399108886719,
+        "cpu_percent": 0.0,
+        "cache_hit_rate": 0.0,
+        "files_scanned": 28728,
+        "candidates_generated": 223,
+        "candidates_embedded": 223
+      }
+    },
+    {
+      "ttfr_ms": 601,
+      "ttsi_ms": 601,
+      "total_ms": 727,
+      "stages": {
+        "directory_walk_ms": 4077,
+        "path_scoring_ms": 17,
+        "ripgrep_scan_ms": 300,
+        "candidate_selection_ms": 284,
+        "embedding_ms": 89,
+        "ranking_ms": 36,
+        "ipc_overhead_ms": 0
+      },
+      "resources": {
+        "peak_ram_mb": 0,
+        "io_read_mb": 0.4796609878540039,
+        "cpu_percent": 0.0,
+        "cache_hit_rate": 0.07326008,
+        "files_scanned": 28728,
+        "candidates_generated": 273,
+        "candidates_embedded": 253
+      }
+    },
+    {
+      "ttfr_ms": 300,
+      "ttsi_ms": 300,
+      "total_ms": 300,
+      "stages": {
+        "directory_walk_ms": 4077,
+        "path_scoring_ms": 0,
+        "ripgrep_scan_ms": 300,
+        "candidate_selection_ms": 0,
+        "embedding_ms": 0,
+        "ranking_ms": 0,
+        "ipc_overhead_ms": 0
+      },
+      "resources": {
+        "peak_ram_mb": 0,
+        "io_read_mb": 0.0,
+        "cpu_percent": 0.0,
+        "cache_hit_rate": 1.0,
+        "files_scanned": 28728,
+        "candidates_generated": 3,
+        "candidates_embedded": 0
+      }
+    }
+  ]
+}

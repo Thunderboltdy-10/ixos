@@ -9,24 +9,23 @@ export function ComplianceSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-text-primary mb-4">Compliance</h2>
-        <p className="text-sm text-text-secondary">
+        <h2 className="text-lg font-semibold text-porcelain mb-4">Compliance</h2>
+        <p className="text-sm text-fg-muted">
           Manage your data rights under GDPR, CCPA, and EU AI Act regulations.
         </p>
       </div>
 
-      {/* Consent Status */}
-      <div className="bg-surface rounded-lg border border-border p-4">
+      <div className="bg-graphite-2 rounded-lg border border-stroke-hairline p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {consent?.hasConsent ? (
-              <CheckCircle className="w-5 h-5 text-secure" />
+              <CheckCircle className="w-5 h-5 text-success" />
             ) : (
               <XCircle className="w-5 h-5 text-warning" />
             )}
             <div>
-              <p className="text-sm font-medium text-text-primary">AI Processing Consent</p>
-              <p className="text-xs text-text-muted mt-0.5">
+              <p className="text-sm font-medium text-porcelain">AI Processing Consent</p>
+              <p className="text-xs text-fg-dim mt-0.5">
                 {consent?.hasConsent
                   ? 'You have consented to AI-powered search'
                   : 'Consent required for semantic search'}
@@ -38,7 +37,7 @@ export function ComplianceSettings() {
           </Badge>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-border flex gap-2">
+        <div className="mt-4 pt-4 border-t border-stroke-hairline flex gap-2">
           {consent?.hasConsent ? (
             <Button
               variant="outline"
@@ -61,9 +60,8 @@ export function ComplianceSettings() {
         </div>
       </div>
 
-      {/* GDPR Rights */}
-      <div className="bg-surface rounded-lg border border-border p-4">
-        <h3 className="text-sm font-medium text-text-primary mb-3 flex items-center gap-2">
+      <div className="bg-graphite-2 rounded-lg border border-stroke-hairline p-4">
+        <h3 className="text-sm font-medium text-porcelain mb-3 flex items-center gap-2">
           <FileText className="w-4 h-4" />
           Your Data Rights (GDPR)
         </h3>
@@ -85,34 +83,32 @@ export function ComplianceSettings() {
         </div>
       </div>
 
-      {/* Transparency */}
-      <div className="bg-surface rounded-lg border border-border p-4">
-        <h3 className="text-sm font-medium text-text-primary mb-3">
+      <div className="bg-graphite-2 rounded-lg border border-stroke-hairline p-4">
+        <h3 className="text-sm font-medium text-porcelain mb-3">
           AI Transparency (EU AI Act)
         </h3>
 
         <dl className="space-y-3 text-sm">
           <div className="flex justify-between">
-            <dt className="text-text-secondary">AI System</dt>
-            <dd className="text-text-primary">Local Embedding Model</dd>
+            <dt className="text-fg-dim">AI System</dt>
+            <dd className="text-porcelain">Local Embedding Model</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-text-secondary">Model</dt>
-            <dd className="text-text-primary font-mono text-xs">Model2Vec Potion Base 8M</dd>
+            <dt className="text-fg-dim">Model</dt>
+            <dd className="text-porcelain font-mono text-xs">Model2Vec Potion Base 8M</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-text-secondary">Processing</dt>
-            <dd className="text-text-primary">100% Local</dd>
+            <dt className="text-fg-dim">Processing</dt>
+            <dd className="text-porcelain">100% Local</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-text-secondary">Data Sent Externally</dt>
-            <dd className="text-secure">None</dd>
+            <dt className="text-fg-dim">Data Sent Externally</dt>
+            <dd className="text-success">None</dd>
           </div>
         </dl>
       </div>
 
-      {/* Info */}
-      <p className="text-2xs text-text-muted">
+      <p className="text-2xs text-fg-dim">
         For questions about data processing, contact privacy@ixos.io
       </p>
     </div>
@@ -140,19 +136,19 @@ function DataRightButton({
       className={`w-full flex items-center gap-3 p-3 rounded-md border text-left transition-colors ${
         variant === 'danger'
           ? 'border-danger/30 hover:bg-danger/5 hover:border-danger/50'
-          : 'border-border hover:bg-elevated'
+          : 'border-stroke-hairline hover:bg-graphite-3'
       }`}
     >
       <Icon
         className={`w-4 h-4 flex-shrink-0 ${
-          variant === 'danger' ? 'text-danger' : 'text-text-tertiary'
+          variant === 'danger' ? 'text-danger' : 'text-fg-dim'
         }`}
       />
       <div>
-        <p className={`text-sm font-medium ${variant === 'danger' ? 'text-danger' : 'text-text-primary'}`}>
+        <p className={`text-sm font-medium ${variant === 'danger' ? 'text-danger' : 'text-porcelain'}`}>
           {label}
         </p>
-        <p className="text-xs text-text-muted">{description}</p>
+        <p className="text-xs text-fg-dim">{description}</p>
       </div>
     </button>
   );

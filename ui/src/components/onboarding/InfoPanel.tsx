@@ -94,8 +94,8 @@ export function InfoPanel() {
   return (
     <div className="space-y-8">
       <header className="space-y-2">
-        <h3 className="text-xl font-semibold text-text-primary">Everything Ixos Can Do</h3>
-        <p className="text-text-secondary">
+        <h3 className="text-xl font-semibold text-porcelain">Everything Ixos Can Do</h3>
+        <p className="text-fg-muted">
           This guide is your full map of features, modes, and advanced capabilities.
         </p>
       </header>
@@ -104,14 +104,14 @@ export function InfoPanel() {
         {sections.map((section) => {
           const Icon = section.icon;
           return (
-            <div key={section.title} className="bg-surface-1 border border-border rounded-xl p-5">
+            <div key={section.title} className="bg-graphite-1 border border-stroke-hairline rounded-xl p-5">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-lg bg-surface-2 flex items-center justify-center">
-                  <Icon className="w-4 h-4 text-brand-teal" />
+                <div className="w-9 h-9 rounded-lg bg-graphite-2 flex items-center justify-center">
+                  <Icon className="w-4 h-4 text-accent-teal" />
                 </div>
-                <h4 className="text-base font-semibold text-text-primary">{section.title}</h4>
+                <h4 className="text-base font-semibold text-porcelain">{section.title}</h4>
               </div>
-              <ul className="space-y-2 text-sm text-text-secondary">
+              <ul className="space-y-2 text-sm text-fg-muted">
                 {section.items.map((item) => (
                   <li key={item} className="leading-relaxed">
                     • {item}
@@ -123,30 +123,30 @@ export function InfoPanel() {
         })}
       </div>
 
-      <div className="bg-surface-2 border border-border rounded-xl p-6">
-        <h4 className="text-base font-semibold text-text-primary mb-3">Testing & Benchmarking</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-text-secondary">
+      <div className="bg-graphite-2 border border-stroke-hairline rounded-xl p-6">
+        <h4 className="text-base font-semibold text-porcelain mb-3">Testing & Benchmarking</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-fg-muted">
           <div>
-            <p className="font-semibold text-text-primary mb-1">Run Tests</p>
-            <code className="block bg-surface-1 border border-border rounded-md px-3 py-2 text-xs text-text-primary">
+            <p className="font-semibold text-porcelain mb-1">Run Tests</p>
+            <code className="block bg-graphite-1 border border-stroke-hairline rounded-md px-3 py-2 text-xs text-porcelain">
               cargo test --lib
             </code>
           </div>
           <div>
-            <p className="font-semibold text-text-primary mb-1">Run Benchmarks</p>
-            <code className="block bg-surface-1 border border-border rounded-md px-3 py-2 text-xs text-text-primary">
+            <p className="font-semibold text-porcelain mb-1">Run Benchmarks</p>
+            <code className="block bg-graphite-1 border border-stroke-hairline rounded-md px-3 py-2 text-xs text-porcelain">
               cargo bench
             </code>
           </div>
           <div>
-            <p className="font-semibold text-text-primary mb-1">Model Evaluation</p>
-            <code className="block bg-surface-1 border border-border rounded-md px-3 py-2 text-xs text-text-primary">
+            <p className="font-semibold text-porcelain mb-1">Model Evaluation</p>
+            <code className="block bg-graphite-1 border border-stroke-hairline rounded-md px-3 py-2 text-xs text-porcelain">
               python scripts/ixos_eval.py --suite both
             </code>
           </div>
           <div>
-            <p className="font-semibold text-text-primary mb-1">Perf Baseline</p>
-            <code className="block bg-surface-1 border border-border rounded-md px-3 py-2 text-xs text-text-primary">
+            <p className="font-semibold text-porcelain mb-1">Perf Baseline</p>
+            <code className="block bg-graphite-1 border border-stroke-hairline rounded-md px-3 py-2 text-xs text-porcelain">
               cargo bench --bench search_e2e
             </code>
           </div>

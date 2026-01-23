@@ -32,7 +32,7 @@ export function SearchOverlay() {
 
   return (
     <div
-      className="fixed inset-0 flex items-start justify-center pt-[12vh] bg-black/70 backdrop-blur-overlay"
+      className="fixed inset-0 flex items-start justify-center pt-[10vh] bg-black/70 backdrop-blur-overlay"
       onClick={handleBackdropClick}
     >
       <SearchCorridor />
@@ -41,17 +41,15 @@ export function SearchOverlay() {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -20, scale: 0.95 }}
         transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-2xl bg-surface rounded-xl shadow-2xl border border-border overflow-hidden"
+        className="w-full max-w-3xl bg-graphite-1/95 rounded-2xl shadow-lift border border-stroke-hairline overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header with journalist badge */}
         {search.journalistMode && (
-          <div className="flex items-center justify-end px-4 py-2 border-b border-border bg-base/50">
+          <div className="flex items-center justify-end px-5 py-3 border-b border-stroke-hairline bg-graphite-1/70">
             <JournalistBadge />
           </div>
         )}
 
-        {/* Search Input */}
         <div ref={searchBarRef} className="w-full">
           <SearchInput
             value={search.query}
@@ -65,15 +63,13 @@ export function SearchOverlay() {
           />
         </div>
 
-        {/* Search Deck - Status panel */}
         {(search.query.trim().length >= 2 || search.phase !== 'idle') && (
-          <div className="px-2">
+          <div className="px-3">
             <SearchDeck />
           </div>
         )}
 
-        {/* Results */}
-        <div className="max-h-[400px] overflow-y-auto scrollbar-hide">
+        <div className="max-h-[420px] overflow-y-auto scrollbar-hide">
           <AnimatePresence mode="popLayout">
             {search.errorMessage ? (
               <motion.div
@@ -100,14 +96,13 @@ export function SearchOverlay() {
                 exit={{ opacity: 0 }}
                 className="p-8 text-center"
               >
-                <p className="text-text-secondary">No results found</p>
-                <p className="text-text-muted text-sm mt-1">Try a different search term</p>
+                <p className="text-fg-muted">No results found</p>
+                <p className="text-fg-dim text-sm mt-1">Try a different search term</p>
               </motion.div>
             ) : null}
           </AnimatePresence>
         </div>
 
-        {/* Footer with keyboard hints */}
         <KeyboardHints />
       </motion.div>
     </div>

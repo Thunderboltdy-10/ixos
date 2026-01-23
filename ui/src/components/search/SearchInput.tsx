@@ -199,13 +199,11 @@ export function SearchInput({
 
   return (
     <div ref={containerRef} className={cn('w-full relative', centered && 'max-w-3xl mx-auto px-8')}>
-      {/* Main search input with gradient border focus and energy pulse */}
       <div className="relative" ref={searchBarRef}>
-        {/* Energy pulse glow when search intent is active */}
         <motion.div
-          className="absolute -inset-[2px] rounded-xl pointer-events-none"
+          className="absolute -inset-[2px] rounded-2xl pointer-events-none"
           style={{
-            background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.3) 0%, rgba(6, 214, 193, 0.2) 100%)',
+            background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.22) 0%, rgba(6, 214, 193, 0.12) 100%)',
           }}
           initial={{ opacity: 0 }}
           animate={{
@@ -215,12 +213,11 @@ export function SearchInput({
           transition={{ duration: 0.2 }}
         />
 
-        {/* Animated pulse ring */}
         {(hasSearchIntent || isSearching) && (
           <motion.div
-            className="absolute -inset-[3px] rounded-xl pointer-events-none"
+            className="absolute -inset-[4px] rounded-2xl pointer-events-none"
             style={{
-              border: '1px solid rgba(20, 184, 166, 0.4)',
+              border: '1px solid rgba(20, 184, 166, 0.35)',
             }}
             animate={{
               opacity: [0.5, 0.2, 0.5],
@@ -235,16 +232,14 @@ export function SearchInput({
         )}
 
         <div className={cn(
-          'relative gradient-border-focus rounded-xl overflow-visible',
-          'bg-graphite-2 border border-stroke-hairline',
+          'relative gradient-border-focus rounded-2xl overflow-visible',
+          'bg-graphite-2 border border-stroke-hairline shadow-lift',
           'transition-all duration-200',
           hasSearchIntent || isSearching
-            ? 'border-accent-teal/40 shadow-[0_0_20px_rgba(20,184,166,0.15)]'
-            : 'hover:border-accent-teal/30'
+            ? 'border-accent-teal/40 shadow-glow-teal'
+            : 'hover:border-border-medium'
         )}>
-          {/* Search input row */}
-          <div className="flex items-center gap-3 px-4 py-4">
-            {/* Search icon / loading spinner */}
+          <div className="flex items-center gap-4 px-5 py-5">
             <div className="flex-shrink-0">
               {isSearching ? (
                 <Loader2 className="w-5 h-5 text-accent-teal animate-spin" />
@@ -260,28 +255,31 @@ export function SearchInput({
               )}
             </div>
 
-            {/* Input */}
-            <input
-              ref={inputRef}
-              type="text"
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onFocus={() => value.length >= 1 && suggestions.length > 0 && setShowSuggestions(true)}
-              placeholder="Ask a question or search keywords..."
-              className={cn(
-                'flex-1 bg-transparent text-lg text-porcelain',
-                'placeholder:text-fg-dim/50',
-                'focus:outline-none'
-              )}
-              autoFocus
-              spellCheck={false}
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-            />
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] uppercase tracking-[0.3em] text-fg-dim mb-2">
+                Query
+              </div>
+              <input
+                ref={inputRef}
+                type="text"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onFocus={() => value.length >= 1 && suggestions.length > 0 && setShowSuggestions(true)}
+                placeholder="Ask a question or search keywords..."
+                className={cn(
+                  'w-full bg-transparent text-xl text-porcelain font-display',
+                  'placeholder:text-fg-dim/60',
+                  'focus:outline-none'
+                )}
+                autoFocus
+                spellCheck={false}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+              />
+            </div>
 
-            {/* Clear / Cancel button */}
             {(value || isSearching) && (
               <button
                 onClick={() => {
@@ -292,7 +290,7 @@ export function SearchInput({
                   }
                 }}
                 className={cn(
-                  'flex-shrink-0 p-1.5 rounded-md',
+                  'flex-shrink-0 p-2 rounded-md',
                   'text-fg-dim hover:text-porcelain hover:bg-graphite-3',
                   'transition-colors duration-150'
                 )}
@@ -303,10 +301,8 @@ export function SearchInput({
             )}
           </div>
 
-          {/* Controls row: Folder picker + Quality + Privacy mode */}
-          <div className="px-4 pb-3 pt-1 flex items-center gap-2 flex-wrap">
-            {/* Folder picker */}
-            <div className="flex-1 min-w-[160px]">
+          <div className="px-5 pb-4 pt-1 flex items-center gap-2 flex-wrap border-t border-stroke-hairline/70">
+            <div className="flex-1 min-w-[180px]">
               <FolderPicker
                 value={directory}
                 onChange={onDirectoryChange}
@@ -314,7 +310,6 @@ export function SearchInput({
               />
             </div>
 
-            {/* Quality switcher (Flash/Auto/Pro) */}
             <div className="flex-shrink-0">
               <QualitySwitcher
                 value={qualityMode}
@@ -322,7 +317,6 @@ export function SearchInput({
               />
             </div>
 
-            {/* Mode switcher - full dropdown */}
             <div className="flex-shrink-0">
               <ModeSwitcher
                 value={mode}
@@ -333,7 +327,6 @@ export function SearchInput({
         </div>
       </div>
 
-      {/* Search Suggestions Dropdown */}
       <SearchSuggestions
         isOpen={showSuggestions && suggestions.length > 0}
         onSelect={handleSuggestionSelect}

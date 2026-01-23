@@ -22,7 +22,7 @@ const defaultConfig: IxosConfig = {
   search: {
     defaultLimit: 20,
     defaultDirectory: null,
-    timeoutSeconds: 15,
+    timeoutSeconds: 30,
     enableSecureRanking: true,
     progressiveByDefault: true,
     cacheMode: 'jit',
@@ -57,6 +57,31 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const config = await tauri.getConfig();
+
+
+      // Fix for proModelType being set to flash (user report: "logs show flash")
+      // If the user has "ixos-flash-v2" as their Pro Model, it defeats the purpose.
+      // We automatically migrate them back to "ixos-pro-v1" to fix the "logic error" they perceive.
+      let needsUpdate = false;
+      if (config.search.proModelType === 'ixos-flash-v2') {
+        config.search.proModelType = 'ixos-pro-v1';
+        needsUpdate = true;
+      }
+
+      // Auto-increase timeout if it's too low (user report: "always exceeded")
+      if (config.search.timeoutSeconds < 15) {
+        config.search.timeoutSeconds = 30;
+        needsUpdate = true;
+      }
+
+      if (needsUpdate) {
+        try {
+          await tauri.updateConfig(config);
+        } catch (e) {
+          console.warn('Failed to auto-update config fix:', e);
+        }
+      }
+
       set({ config, isLoading: false });
     } catch (error) {
       console.error('Failed to load config:', error);

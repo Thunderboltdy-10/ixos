@@ -96,12 +96,12 @@ export function PhaseTimeline({ className }: PhaseTimelineProps) {
                         >
                             {/* Inner dot or checkmark */}
                             {isCompleted ? (
-                                <Check className="w-2 h-2 text-brand-teal" />
+                                <Check className="w-2 h-2 text-accent-teal" />
                             ) : (
                                 <motion.div
                                     className={cn(
                                         "w-1.5 h-1.5 rounded-full",
-                                        isActive ? "bg-brand-cyan" : "bg-text-muted/30"
+                                        isActive ? "bg-accent-teal" : "bg-fg-dim/30"
                                     )}
                                     animate={isActive ? {
                                         scale: [1, 1.3, 1],
@@ -115,23 +115,21 @@ export function PhaseTimeline({ className }: PhaseTimelineProps) {
                                 />
                             )}
 
-                            {/* Active glow ring */}
                             {isActive && (
                                 <motion.div
-                                    className="absolute inset-0 rounded-full border border-brand-cyan/40"
+                                    className="absolute inset-0 rounded-full border border-accent-teal/40"
                                     animate={{ scale: [1, 1.4, 1], opacity: [0.5, 0, 0.5] }}
                                     transition={{ duration: 2, repeat: Infinity }}
                                 />
                             )}
                         </motion.div>
 
-                        {/* Label (only show for active/completed) */}
                         <motion.span
                             className={cn(
                                 "text-[8px] font-medium uppercase tracking-wider mt-0.5",
-                                isCompleted ? "text-brand-teal/50" :
-                                    isActive ? "text-brand-cyan/80" :
-                                        "text-text-muted/20"
+                                isCompleted ? "text-accent-teal/60" :
+                                    isActive ? "text-accent-teal/80" :
+                                        "text-fg-dim/20"
                             )}
                             animate={{ opacity: isActive || isCompleted ? 1 : 0.4 }}
                         >
@@ -141,7 +139,6 @@ export function PhaseTimeline({ className }: PhaseTimelineProps) {
                 );
             })}
 
-            {/* Final connecting line */}
             <motion.div
                 className="w-px h-3"
                 animate={{
@@ -151,7 +148,6 @@ export function PhaseTimeline({ className }: PhaseTimelineProps) {
                 transition={{ duration: 0.3 }}
             />
 
-            {/* Done node */}
             <motion.div
                 className={cn(
                     "flex items-center justify-center",
@@ -164,15 +160,15 @@ export function PhaseTimeline({ className }: PhaseTimelineProps) {
                 }}
             >
                 {isComplete ? (
-                    <Check className="w-2.5 h-2.5 text-emerald-400" />
+                    <Check className="w-2.5 h-2.5 text-success" />
                 ) : (
-                    <div className="w-1.5 h-1.5 rounded-full bg-text-muted/20" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-fg-dim/20" />
                 )}
             </motion.div>
             <motion.span
                 className={cn(
                     "text-[8px] font-medium uppercase tracking-wider mt-0.5",
-                    isComplete ? "text-emerald-400/60" : "text-text-muted/20"
+                    isComplete ? "text-success/60" : "text-fg-dim/20"
                 )}
             >
                 Done

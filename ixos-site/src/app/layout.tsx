@@ -4,7 +4,7 @@ import "./globals.css";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { ArcNoiseBackground } from "@/components/effects/ArcNoiseBackground";
 import { ParticlesFieldV3 } from "@/components/effects/ParticlesFieldV3";
-import { TraceLayer } from "@/components/effects/TraceLayer";
+// import { TraceLayer } from "@/components/effects/TraceLayer";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-ixo-heading",
@@ -42,7 +42,7 @@ export default function RootLayout({
           >
             <ArcNoiseBackground />
             <ParticlesFieldV3 />
-            <TraceLayer />
+            {/* <TraceLayer /> */}
           </div>
 
           {/* app-root: relative, z-10 */}

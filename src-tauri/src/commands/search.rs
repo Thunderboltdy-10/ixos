@@ -170,6 +170,7 @@ pub struct SearchOptions {
     pub model_type: Option<String>,
     pub pro_model_type: Option<String>,
     pub search_mode: Option<String>,
+    pub timeout_seconds: Option<u64>,
 }
 
 // =============================================================================
@@ -261,6 +262,12 @@ pub async fn search_progressive(
         context_lines: options.context_lines.unwrap_or(3),
         ..Default::default()
     };
+
+    // Override timeout if provided
+    if let Some(secs) = options.timeout_seconds {
+        config.semantic_timeout = std::time::Duration::from_secs(secs);
+    }
+
     config.search_mode = match options.search_mode.as_deref() {
         Some("flash") => SearchMode::Flash,
         Some("pro") => SearchMode::Pro,

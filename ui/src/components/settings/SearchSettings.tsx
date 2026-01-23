@@ -8,13 +8,13 @@ export function SearchSettings() {
   const { config, updateConfig, resetConfig, isLoading } = useSettingsStore();
 
   if (!config) {
-    return <div className="text-text-muted">Loading...</div>;
+    return <div className="text-fg-dim">Loading...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-text-primary mb-4">Search Settings</h2>
+        <h2 className="text-lg font-semibold text-porcelain mb-4">Search Settings</h2>
       </div>
 
       {/* Default limit */}
@@ -120,7 +120,7 @@ export function SearchSettings() {
               search: { ...config.search, searchMode: e.target.value as typeof config.search.searchMode },
             })
           }
-          className="w-32 bg-surface-2 border border-border rounded-md px-2 py-1 text-sm text-text-primary"
+          className="w-32 bg-graphite-2 border border-stroke-hairline rounded-md px-2 py-1 text-xs text-porcelain"
         >
           <option value="flash">Flash</option>
           <option value="auto">Auto</option>
@@ -140,7 +140,7 @@ export function SearchSettings() {
               search: { ...config.search, proModelType: e.target.value as typeof config.search.proModelType },
             })
           }
-          className="w-44 bg-surface-2 border border-border rounded-md px-2 py-1 text-sm text-text-primary"
+          className="w-44 bg-graphite-2 border border-stroke-hairline rounded-md px-2 py-1 text-xs text-porcelain"
         >
           <option value="ixos-pro-v1">Ixos Pro v1</option>
           <option value="ixos-flash-v2">Ixos Flash v2</option>
@@ -165,7 +165,7 @@ export function SearchSettings() {
       </SettingRow>
 
       {/* Reset button */}
-      <div className="pt-4 border-t border-border">
+      <div className="pt-4 border-t border-stroke-hairline">
         <Button
           variant="outline"
           onClick={resetConfig}
@@ -186,10 +186,10 @@ interface SettingRowProps {
 
 function SettingRow({ label, description, children }: SettingRowProps) {
   return (
-    <div className="flex items-center justify-between py-3 border-b border-border last:border-b-0">
+    <div className="flex items-center justify-between py-3 border-b border-stroke-hairline last:border-b-0">
       <div>
-        <p className="text-sm font-medium text-text-primary">{label}</p>
-        <p className="text-xs text-text-muted mt-0.5">{description}</p>
+        <p className="text-sm font-medium text-porcelain">{label}</p>
+        <p className="text-xs text-fg-dim mt-0.5">{description}</p>
       </div>
       {children}
     </div>

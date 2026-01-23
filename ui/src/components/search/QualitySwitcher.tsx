@@ -20,35 +20,35 @@ interface QualityOption {
   bgColor: string;
 }
 
-const modes: QualityOption[] = [
-  {
-    id: 'flash',
-    icon: Zap,
-    label: 'Flash Mode',
-    shortLabel: 'Flash',
-    description: 'Fastest model only. Lowest latency.',
-    color: 'text-amber-500',
-    bgColor: 'bg-amber-500/10',
-  },
-  {
-    id: 'auto',
-    icon: Sparkles,
-    label: 'Auto Mode',
-    shortLabel: 'Auto',
-    description: 'Starts fast, refines with Pro when uncertain.',
-    color: 'text-brand-teal',
-    bgColor: 'bg-brand-teal/10',
-  },
-  {
-    id: 'pro',
-    icon: Layers,
-    label: 'Pro Mode',
-    shortLabel: 'Pro',
-    description: 'Always use Pro model. Highest quality.',
-    color: 'text-brand-cyan',
-    bgColor: 'bg-brand-cyan/10',
-  },
-];
+  const modes: QualityOption[] = [
+    {
+      id: 'flash',
+      icon: Zap,
+      label: 'Flash Mode',
+      shortLabel: 'Flash',
+      description: 'Fastest model only. Lowest latency.',
+      color: 'text-accent-amber',
+      bgColor: 'bg-accent-amber/10',
+    },
+    {
+      id: 'auto',
+      icon: Sparkles,
+      label: 'Auto Mode',
+      shortLabel: 'Auto',
+      description: 'Starts fast, refines with Pro when uncertain.',
+      color: 'text-accent-teal',
+      bgColor: 'bg-accent-teal/10',
+    },
+    {
+      id: 'pro',
+      icon: Layers,
+      label: 'Pro Mode',
+      shortLabel: 'Pro',
+      description: 'Always use Pro model. Highest quality.',
+      color: 'text-accent-violet',
+      bgColor: 'bg-accent-violet/10',
+    },
+  ];
 
 export function QualitySwitcher({ value, onChange, className }: QualitySwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -65,20 +65,20 @@ export function QualitySwitcher({ value, onChange, className }: QualitySwitcherP
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'flex items-center gap-2 px-3 py-1.5 rounded-lg',
-          'bg-surface-2 hover:bg-surface-3',
-          'border border-border hover:border-border-accent',
+          'flex items-center gap-2 px-3 py-2 rounded-md',
+          'bg-graphite-2 hover:bg-graphite-3',
+          'border border-stroke-hairline hover:border-border-medium',
           'transition-all duration-200',
-          'text-sm min-w-[120px]'
+          'text-xs uppercase tracking-[0.16em] min-w-[120px]'
         )}
       >
-        <SelectedIcon className={cn('w-4 h-4', selectedMode.color)} />
-        <span className="text-text-primary flex-1 text-left">
+        <SelectedIcon className={cn('w-3.5 h-3.5', selectedMode.color)} />
+        <span className="text-porcelain flex-1 text-left">
           {selectedMode.shortLabel}
         </span>
         <ChevronDown
           className={cn(
-            'w-3 h-3 text-text-muted transition-transform duration-200',
+            'w-3 h-3 text-fg-dim transition-transform duration-200',
             isOpen && 'rotate-180'
           )}
         />
@@ -96,8 +96,8 @@ export function QualitySwitcher({ value, onChange, className }: QualitySwitcherP
               className={cn(
                 'absolute top-full right-0 mt-2 z-50',
                 'w-64',
-                'bg-surface-2 rounded-lg border border-border',
-                'shadow-xl overflow-hidden'
+                'bg-graphite-2 rounded-xl border border-stroke-hairline',
+                'shadow-lift overflow-hidden'
               )}
             >
               {modes.map((mode) => {
@@ -107,27 +107,27 @@ export function QualitySwitcher({ value, onChange, className }: QualitySwitcherP
                     key={mode.id}
                     onClick={() => handleSelect(mode.id)}
                     className={cn(
-                      'w-full flex items-start gap-3 px-3 py-3',
-                      'hover:bg-surface-3 transition-colors duration-150',
+                      'w-full flex items-start gap-3 px-4 py-3',
+                      'hover:bg-graphite-3 transition-colors duration-150',
                       'text-left',
-                      mode.id === value && 'bg-surface-3'
+                      mode.id === value && 'bg-graphite-3'
                     )}
                   >
-                    <div className={cn('p-1.5 rounded-md mt-0.5', mode.bgColor)}>
+                    <div className={cn('p-2 rounded-md mt-0.5', mode.bgColor)}>
                       <Icon className={cn('w-4 h-4', mode.color)} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-text-primary">
+                        <span className="text-sm font-semibold text-porcelain">
                           {mode.label}
                         </span>
                         {mode.id === 'auto' && (
-                          <span className="text-2xs px-1.5 py-0.5 rounded bg-brand-teal/20 text-brand-teal">
+                          <span className="text-2xs px-1.5 py-0.5 rounded bg-accent-teal/20 text-accent-teal">
                             Default
                           </span>
                         )}
                       </div>
-                      <div className="text-2xs text-text-secondary mt-1 leading-relaxed">
+                      <div className="text-2xs text-fg-muted mt-1 leading-relaxed">
                         {mode.description}
                       </div>
                     </div>

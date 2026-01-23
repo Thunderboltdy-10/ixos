@@ -31,9 +31,9 @@ export function SearchSuggestions({ isOpen, onSelect, selectedIndex }: SearchSug
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.15 }}
-        className="absolute top-full left-0 right-0 mt-2 bg-surface-2 border border-border rounded-lg shadow-lg overflow-hidden z-50"
+        className="absolute top-full left-0 right-0 mt-3 bg-graphite-2 border border-stroke-hairline rounded-xl shadow-lift overflow-hidden z-50"
       >
-        <div className="py-1">
+        <div className="py-2">
           {suggestions.map((suggestion, index) => (
             <motion.button
               key={`${suggestion.query}-${suggestion.timestamp}`}
@@ -41,17 +41,17 @@ export function SearchSuggestions({ isOpen, onSelect, selectedIndex }: SearchSug
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.03 }}
               onClick={() => onSelect(suggestion)}
-              className={`w-full px-4 py-2 flex items-center gap-3 text-left hover:bg-surface-3 transition-colors ${
-                index === selectedIndex ? 'bg-surface-3' : ''
+              className={`w-full px-5 py-3 flex items-center gap-3 text-left hover:bg-graphite-3 transition-colors ${
+                index === selectedIndex ? 'bg-graphite-3' : ''
               }`}
             >
-              <Clock className="w-4 h-4 text-text-muted shrink-0" />
+              <Clock className="w-4 h-4 text-fg-dim shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <Search className="w-3 h-3 text-text-muted" />
-                  <span className="font-medium truncate text-text-primary">{suggestion.query}</span>
+                  <Search className="w-3 h-3 text-fg-dim" />
+                  <span className="font-medium truncate text-porcelain">{suggestion.query}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-text-muted">
+                <div className="flex items-center gap-2 text-xs text-fg-dim">
                   <FolderOpen className="w-3 h-3" />
                   <span className="truncate">{suggestion.directory}</span>
                   <span>•</span>

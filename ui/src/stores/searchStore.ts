@@ -198,6 +198,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       const modelType = settings?.modelType || 'ixos-flash-v2';
       const proModelType = settings?.proModelType || 'ixos-pro-v1';
       const searchMode = settings?.searchMode || 'auto';
+      const timeoutSeconds = settings?.timeoutSeconds || 30;
 
       await tauri.searchProgressive(state.query, state.directory, {
         journalistMode: state.journalistMode,
@@ -206,6 +207,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
         modelType: modelType,
         proModelType: proModelType,
         searchMode: searchMode,
+        timeoutSeconds: timeoutSeconds,
       });
     } catch (error) {
       set({

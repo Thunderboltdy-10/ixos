@@ -325,22 +325,19 @@ export function SearchDeck() {
   const isSpinning = currentStage === 'priming' || currentStage === 'enumerating';
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -8, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -8, scale: 0.98 }}
-      transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-      className={cn(
-        "w-full mt-3 rounded-2xl overflow-hidden",
-        // Floating glass hub styling
-        "bg-gradient-to-b from-white/[0.03] to-graphite-2/70",
-        "backdrop-blur-xl",
-        // Soft glow border instead of harsh outline
-        "ring-1 ring-white/[0.08]",
-        // Premium shadow with inner highlight
-        "shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)]"
-      )}
-    >
+      <motion.div
+        initial={{ opacity: 0, y: -8, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -8, scale: 0.98 }}
+        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+        className={cn(
+          "w-full mt-4 rounded-2xl overflow-hidden",
+          "bg-gradient-to-b from-white/[0.03] to-graphite-2/70",
+          "backdrop-blur-xl",
+          "ring-1 ring-white/[0.08]",
+          "shadow-lift"
+        )}
+      >
       {/* Animated height for expand/collapse */}
       <motion.div
         animate={{ height: isExpanded ? 'auto' : 44 }}
@@ -360,7 +357,7 @@ export function SearchDeck() {
                 )}
                 style={{
                   backgroundColor: stageConfig.bgColor,
-                  boxShadow: `0 0 12px ${stageConfig.glowColor}`
+                  boxShadow: `0 0 18px ${stageConfig.glowColor}`
                 }}
               >
                 <motion.div

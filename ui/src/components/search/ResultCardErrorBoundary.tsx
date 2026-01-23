@@ -37,16 +37,16 @@ export class ResultCardErrorBoundary extends Component<Props, State> {
             return (
                 <div
                     className={cn(
-                        'px-4 py-3 flex items-center gap-3 bg-surface-2/50 border border-border/50 rounded-md',
+                        'px-4 py-3 flex items-center gap-3 bg-graphite-2/60 border border-stroke-hairline/70 rounded-md',
                         this.props.fallbackClassName
                     )}
                 >
                     <AlertTriangle className="w-4 h-4 text-warning flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm text-text-secondary">
+                        <p className="text-sm text-fg-muted">
                             Unable to display this result
                         </p>
-                        <p className="text-xs text-text-muted truncate">
+                        <p className="text-xs text-fg-dim truncate">
                             {this.state.error?.message || 'An error occurred while rendering'}
                         </p>
                     </div>

@@ -95,21 +95,23 @@ export function SearchResults({
 
   return (
     <div>
-      {/* Results header */}
-      <div className="flex items-center justify-between py-3 px-1 border-b border-border mb-2">
-        <span className="text-sm text-text-secondary">
-          {displayResults.length} {displayResults.length === 1 ? 'result' : 'results'}
-          {isSemanticPhase && <span className="text-brand-teal ml-1">Semantic</span>}
-        </span>
+      <div className="flex items-center justify-between py-4 px-1 border-b border-stroke-hairline/70 mb-2">
+        <div>
+          <span className="text-xs uppercase tracking-[0.2em] text-fg-dim">Results</span>
+          <div className="text-sm text-porcelain mt-1">
+            {displayResults.length} {displayResults.length === 1 ? 'result' : 'results'}
+            {isSemanticPhase && <span className="text-accent-teal ml-2 text-xs uppercase tracking-[0.2em]">Semantic</span>}
+          </div>
+        </div>
         <button
           type="button"
           onClick={handleStarClick}
           className={cn(
-            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm',
-            'transition-all duration-150',
+            'flex items-center gap-2 px-3 py-2 rounded-md text-xs uppercase tracking-[0.18em]',
+            'transition-all duration-150 border',
             isStarred
-              ? 'text-warning bg-warning/10 border border-warning/30'
-              : 'text-text-muted hover:text-warning hover:bg-surface-3 border border-transparent'
+              ? 'text-warning bg-warning/10 border-warning/30'
+              : 'text-fg-dim hover:text-warning hover:bg-graphite-3 border-transparent'
           )}
           title={isStarred ? 'Remove from starred' : 'Star this search'}
         >
@@ -118,8 +120,7 @@ export function SearchResults({
         </button>
       </div>
 
-      {/* Results list with smooth reordering transitions */}
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-stroke-hairline/70">
         <AnimatePresence mode="popLayout">
           {displayResults.map((result, index) => (
             <motion.div

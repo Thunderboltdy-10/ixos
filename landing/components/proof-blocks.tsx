@@ -30,8 +30,8 @@ const PROOF_BLOCKS: ProofBlock[] = [
     {
         icon: <HardDrive className="w-5 h-5" />,
         claim: "No index database to corrupt",
-        metric: "225 bytes/file",
-        caption: "Stored in file metadata",
+        metric: "No index",
+        caption: "JIT embeddings + metadata cache",
     },
     {
         icon: <Shield className="w-5 h-5" />,

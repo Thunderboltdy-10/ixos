@@ -1,0 +1,16 @@
+[run]
+runs = 6
+seed = 1337
+cache_mode = "jit"
+model = "ixos-flash-v2"
+queries = ["report", "analysis", "invoice", "project", "meeting", "summary", "budget", "design"]
+out_dir = "bench/results"
+
+[corpora.small]
+size = 1000
+
+[corpora.medium]
+size = 10000
+
+[corpora.huge]
+size = 50000

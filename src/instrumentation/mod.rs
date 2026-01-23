@@ -24,9 +24,11 @@
 pub mod metrics;
 pub mod profile;
 pub mod reporter;
+pub mod sampler;
 pub mod spans;
 
 pub use metrics::*;
 pub use profile::*;
 pub use reporter::*;
+pub use sampler::*;
 pub use spans::*;

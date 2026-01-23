@@ -3,6 +3,7 @@
 //! Provides progressive search with streaming results to the frontend.
 
 use crate::state::AppState;
+use ixos_protocol::instrumentation::ipc_send_span;
 use ixos_protocol::ixos_rank::{
     progressive::{SearchEvent, SearchMode, StreamEventKind, StreamStage},
     CandidateLexicalEngine, ProgressiveSearchConfig, ProgressiveSearchEngine, RankedResult,
@@ -394,6 +395,20 @@ pub async fn search_progressive(
                 },
             };
 
+            let (batch_num, result_count) = match &payload {
+                SearchEventPayload::LexicalResults { results, .. } => (0, results.len()),
+                SearchEventPayload::LexicalBatch {
+                    results,
+                    batch_number,
+                    ..
+                } => (*batch_number as usize, results.len()),
+                SearchEventPayload::SemanticResults { results, .. } => (0, results.len()),
+                SearchEventPayload::StreamUpdate { events, .. } => (0, events.len()),
+                SearchEventPayload::LateResult { .. } => (0, 1),
+                _ => (0, 0),
+            };
+            let _span = ipc_send_span(batch_num as u32, result_count);
+            let _enter = _span.enter();
             // Emit to frontend
             if let Err(e) = window_clone.emit("search-event", &payload) {
                 tracing::error!("Failed to emit search event: {}", e);

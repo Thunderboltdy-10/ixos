@@ -70,7 +70,7 @@ async fn main() -> anyhow::Result<()> {
             json,
             progressive,
             show_scores,
-            sandbox: _,
+            sandbox,
             min_score,
             no_secure_ranking,
             cache_mode,
@@ -88,6 +88,7 @@ async fn main() -> anyhow::Result<()> {
                 json,
                 progressive || config.search.progressive_by_default,
                 show_scores || config.output.show_scores,
+                sandbox,
                 min_score,
                 !no_secure_ranking && config.search.enable_secure_ranking,
                 cache_mode.into(),
@@ -157,6 +158,7 @@ async fn handle_search(
     json: bool,
     progressive: bool,
     show_scores: bool,
+    sandbox: Option<PathBuf>,
     min_score: Option<f32>,
     secure_ranking: bool,
     cache_mode: ixos_protocol::CacheMode,
@@ -213,6 +215,29 @@ async fn handle_search(
     let search_dir = dir
         .or_else(|| config.search.default_directory.clone())
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+
+    // Enforce sandbox if provided
+    if let Some(sandbox_dir) = sandbox {
+        if !sandbox_dir.exists() {
+            formatter.format_error(
+                &format!("Sandbox directory not found: {}", sandbox_dir.display()),
+                &mut stdout,
+            )?;
+            return Ok(());
+        }
+        let sandbox_config = ixos_protocol::security::sandbox::SandboxConfig::with_directories([
+            sandbox_dir.clone(),
+        ]);
+        let sandbox = ixos_protocol::security::sandbox::Sandbox::new(sandbox_config)
+            .map_err(|e| anyhow::anyhow!("{}", e))?;
+        if let Err(e) = sandbox.validate_path(&search_dir) {
+            formatter.format_error(
+                &format!("Search directory outside sandbox: {}", e),
+                &mut stdout,
+            )?;
+            return Ok(());
+        }
+    }
 
     if !search_dir.exists() {
         formatter.format_error(

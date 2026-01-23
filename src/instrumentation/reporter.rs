@@ -46,6 +46,10 @@ pub struct SummaryMetrics {
     pub avg_cache_hit_rate: f32,
     /// Average candidates embedded
     pub avg_candidates_embedded: usize,
+    /// Average CPU utilization
+    pub avg_cpu_percent: f32,
+    /// Peak RAM usage across runs (MB)
+    pub peak_ram_mb: u64,
 }
 
 /// Detailed breakdown by pipeline stage
@@ -102,12 +106,26 @@ impl PerformanceBaseline {
                 / runs.len()
         };
 
+        let avg_cpu_percent = if runs.is_empty() {
+            0.0
+        } else {
+            runs.iter().map(|r| r.resources.cpu_percent).sum::<f32>() / runs.len() as f32
+        };
+
+        let peak_ram_mb = runs
+            .iter()
+            .map(|r| r.resources.peak_ram_mb)
+            .max()
+            .unwrap_or(0);
+
         SummaryMetrics {
             ttfr: calculate_percentiles(&mut ttfr_values),
             ttsi: calculate_percentiles(&mut ttsi_values),
             total: calculate_percentiles(&mut total_values),
             avg_cache_hit_rate,
             avg_candidates_embedded,
+            avg_cpu_percent,
+            peak_ram_mb,
         }
     }
 
@@ -181,6 +199,14 @@ impl PerformanceBaseline {
         md.push_str(&format!(
             "- **Avg Candidates Embedded:** {}\n\n",
             self.summary.avg_candidates_embedded
+        ));
+        md.push_str(&format!(
+            "- **Avg CPU:** {:.1}%\n",
+            self.summary.avg_cpu_percent
+        ));
+        md.push_str(&format!(
+            "- **Peak RAM:** {} MB\n\n",
+            self.summary.peak_ram_mb
         ));
 
         // Stage breakdown

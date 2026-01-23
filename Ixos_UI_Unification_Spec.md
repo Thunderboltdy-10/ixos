@@ -66,14 +66,6 @@ This is the only scalable way to ensure:
 - desktop UI improvements automatically apply to the landing mock
 - future redesigns don’t break parity
 
-### Token checklist (CSS variables)
-- `--bg-0`, `--bg-1`, `--bg-2` (elevations)
-- `--border-0`, `--border-1`
-- `--text-0`, `--text-1`, `--text-muted`
-- `--accent-teal`
-- `--radius-1`, `--radius-2`
-- `--shadow-1` (very subtle)
-
 ---
 
 ## 4) Desktop UI redesign: concrete component upgrades

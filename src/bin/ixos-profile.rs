@@ -7,7 +7,9 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use clap::{Parser, ValueEnum};
-use ixos_protocol::instrumentation::{CorpusStats, MetricsCollector, ProfileBundle, ProfileRunConfig};
+use ixos_protocol::instrumentation::{
+    CorpusStats, MetricsCollector, ProfileBundle, ProfileRunConfig, ResourceSampler,
+};
 use ixos_protocol::optimization::SystemSpecs;
 use ixos_protocol::ixos_embed::MmapModel2VecEmbedder;
 use ixos_protocol::ixos_rank::{
@@ -22,10 +24,10 @@ enum ProfileCacheMode {
     Cache,
 }
 
-#[derive(Clone, Copy, Debug, Default, ValueEnum)]
+#[derive(Clone, Copy, Debug, ValueEnum)]
 enum ProfileModelType {
-    #[default]
     Stub,
+    #[default]
     Potion,
     Qwen,
     IxosFlashV2,
@@ -46,14 +48,40 @@ struct ProfileArgs {
     #[arg(long, value_enum, default_value = "jit")]
     cache_mode: ProfileCacheMode,
     /// Model to use
-    #[arg(long, value_enum, default_value = "stub")]
+    #[arg(long, value_enum, default_value = "potion")]
     model: ProfileModelType,
+    /// Allow stub model usage (explicit opt-in)
+    #[arg(long)]
+    allow_stub: bool,
     /// Optional query list (comma-separated)
     #[arg(long)]
     queries: Option<String>,
     /// Output profile bundle path
     #[arg(long, default_value = "profile_bundle.json")]
     out: PathBuf,
+    /// Optional slow-query threshold (ms) to emit a slow query report
+    #[arg(long)]
+    slow_threshold_ms: Option<u64>,
+    /// Output path for slow query report (JSON)
+    #[arg(long, default_value = "slow_queries.json")]
+    slow_out: PathBuf,
+}
+
+#[derive(Debug, Serialize)]
+struct SlowQueryReport {
+    generated_at: String,
+    threshold_ms: u64,
+    queries: Vec<SlowQuery>,
+}
+
+#[derive(Debug, Serialize)]
+struct SlowQuery {
+    query: String,
+    ttfr_ms: u64,
+    ttsi_ms: Option<u64>,
+    total_ms: u64,
+    stages: ixos_protocol::instrumentation::StageMetrics,
+    resources: ixos_protocol::instrumentation::ResourceMetrics,
 }
 
 fn collect_corpus_stats(root: &Path) -> CorpusStats {
@@ -142,20 +170,34 @@ async fn main() -> anyhow::Result<()> {
         ProfileCacheMode::Cache => CacheMode::Cache,
     };
 
+    if matches!(args.model, ProfileModelType::Stub) && !args.allow_stub {
+        anyhow::bail!("Stub model is disabled. Pass --allow-stub to opt in.");
+    }
+
     let mut semantic = match args.model {
         ProfileModelType::Stub => StubSemanticEngine::with_stub_model_and_mode(cache_mode),
-        ProfileModelType::Potion => load_model_semantic(ixos_protocol::ixos_embed::ModelType::Potion, cache_mode),
-        ProfileModelType::Qwen => load_model_semantic(ixos_protocol::ixos_embed::ModelType::Qwen, cache_mode),
-        ProfileModelType::IxosFlashV2 => load_model_semantic(ixos_protocol::ixos_embed::ModelType::IxosFlashV2, cache_mode),
-        ProfileModelType::IxosProV1 => load_model_semantic(ixos_protocol::ixos_embed::ModelType::IxosProV1, cache_mode),
+        ProfileModelType::Potion => {
+            load_model_semantic(ixos_protocol::ixos_embed::ModelType::Potion, cache_mode)?
+        }
+        ProfileModelType::Qwen => {
+            load_model_semantic(ixos_protocol::ixos_embed::ModelType::Qwen, cache_mode)?
+        }
+        ProfileModelType::IxosFlashV2 => {
+            load_model_semantic(ixos_protocol::ixos_embed::ModelType::IxosFlashV2, cache_mode)?
+        }
+        ProfileModelType::IxosProV1 => {
+            load_model_semantic(ixos_protocol::ixos_embed::ModelType::IxosProV1, cache_mode)?
+        }
     };
 
     semantic.index_directory(&dir).await?;
 
     let mut runs = Vec::new();
+    let mut slow_queries = Vec::new();
     for run_idx in 0..args.runs {
         let query = &queries[run_idx % queries.len()];
         let mut collector = MetricsCollector::new();
+        let sampler = ResourceSampler::default();
 
         let candidate_start = Instant::now();
         let candidate_set = generator.generate(query);
@@ -203,10 +245,26 @@ async fn main() -> anyhow::Result<()> {
         resources.files_scanned = candidate_stats.paths_scanned;
         resources.candidates_generated = candidate_stats.merged_candidates;
         resources.candidates_embedded = semantic_metrics.candidates_embedded;
+        let sample = sampler.stop();
+        resources.peak_ram_mb = sample.peak_ram_mb;
+        resources.cpu_percent = sample.avg_cpu_percent;
         collector.update_resources(resources);
 
         let _ = candidate_elapsed;
-        runs.push(collector.finalize());
+        let finalized = collector.finalize();
+        if let Some(threshold) = args.slow_threshold_ms {
+            if finalized.total_ms >= threshold {
+                slow_queries.push(SlowQuery {
+                    query: query.to_string(),
+                    ttfr_ms: finalized.ttfr_ms,
+                    ttsi_ms: finalized.ttsi_ms,
+                    total_ms: finalized.total_ms,
+                    stages: finalized.stages.clone(),
+                    resources: finalized.resources.clone(),
+                });
+            }
+        }
+        runs.push(finalized);
 
         if matches!(cache_mode, CacheMode::Cache) {
             semantic.clear_memory_cache().await;
@@ -225,6 +283,20 @@ async fn main() -> anyhow::Result<()> {
         .save_to_file(&args.out)
         .map_err(anyhow::Error::msg)?;
 
+    if let Some(threshold) = args.slow_threshold_ms {
+        let report = SlowQueryReport {
+            generated_at: chrono::Utc::now().to_rfc3339(),
+            threshold_ms: threshold,
+            queries: slow_queries,
+        };
+        let content = serde_json::to_string_pretty(&report)?;
+        if let Some(parent) = args.slow_out.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::write(&args.slow_out, content)?;
+        println!("Wrote {}", args.slow_out.display());
+    }
+
     println!("Wrote {}", args.out.display());
     Ok(())
 }
@@ -232,20 +304,13 @@ async fn main() -> anyhow::Result<()> {
 fn load_model_semantic(
     model_type: ixos_protocol::ixos_embed::ModelType,
     cache_mode: CacheMode,
-) -> StubSemanticEngine {
+) -> anyhow::Result<StubSemanticEngine> {
     let model = MmapModel2VecEmbedder::new_with_type(model_type);
     match model {
         Ok(model) => {
             let embedder = SecureEmbedder::new_fast(std::sync::Arc::new(model));
-            StubSemanticEngine::with_cache_mode(embedder, cache_mode)
+            Ok(StubSemanticEngine::with_cache_mode(embedder, cache_mode))
         }
-        Err(e) => {
-            tracing::warn!(
-                "Profile model load failed ({}), using stub: {}",
-                model_type,
-                e
-            );
-            StubSemanticEngine::with_stub_model_and_mode(cache_mode)
-        }
+        Err(e) => Err(anyhow::anyhow!("Model load failed ({}): {}", model_type, e)),
     }
 }

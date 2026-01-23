@@ -152,11 +152,11 @@ export const FAQ_ITEMS = [
     },
     {
         question: "What's the difference between Flash and Auto mode?",
-        answer: "Flash mode runs Ixos-Flash-v2 on every query for instant results (181ms P50). Auto mode starts with Flash, then automatically refines ambiguous queries using learned fusion weights for higher accuracy (0.88 MRR@10).",
+        answer: "Flash mode runs Ixos-Flash-v2 on every query for instant results. Auto mode starts with Flash, then refines ambiguous queries in the background for higher accuracy.",
     },
     {
         question: "How much disk space does the index use?",
-        answer: "Only 225 bytes per file. Ixos stores embeddings in file metadata (xattr on macOS/Linux, ADS on Windows). No separate database or index files needed.",
+        answer: "Ixos stores embeddings in file metadata (xattr on macOS/Linux, ADS on Windows). There is no separate database or index directory.",
     },
     {
         question: "What file types are supported?",

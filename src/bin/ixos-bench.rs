@@ -7,7 +7,9 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use clap::{Parser, ValueEnum};
-use ixos_protocol::instrumentation::{CorpusStats, MetricsCollector, PerformanceBaseline};
+use ixos_protocol::instrumentation::{
+    CorpusStats, MetricsCollector, PerformanceBaseline, ResourceSampler,
+};
 use ixos_protocol::ixos_embed::MmapModel2VecEmbedder;
 use ixos_protocol::ixos_rank::{
     CacheMode, CandidateGenerator, CandidateGeneratorConfig, SemanticEngine, StubSemanticEngine,
@@ -26,6 +28,8 @@ enum BenchModelType {
     #[default]
     Potion,
     Qwen,
+    IxosFlashV2,
+    IxosProV1,
 }
 
 #[derive(Parser, Debug)]
@@ -136,6 +140,8 @@ async fn main() -> anyhow::Result<()> {
     let model_type = match args.model {
         BenchModelType::Potion => ixos_protocol::ixos_embed::ModelType::Potion,
         BenchModelType::Qwen => ixos_protocol::ixos_embed::ModelType::Qwen,
+        BenchModelType::IxosFlashV2 => ixos_protocol::ixos_embed::ModelType::IxosFlashV2,
+        BenchModelType::IxosProV1 => ixos_protocol::ixos_embed::ModelType::IxosProV1,
     };
     let model = MmapModel2VecEmbedder::new_with_type(model_type)
         .map_err(|e| anyhow::anyhow!("Model load failed: {}", e))?;
@@ -153,6 +159,7 @@ async fn main() -> anyhow::Result<()> {
         let query = &queries[run_idx % queries.len()];
         let mut collector = MetricsCollector::new();
 
+        let sampler = ResourceSampler::default();
         let candidate_start = Instant::now();
         let candidate_set = generator.generate(query);
         let candidate_stats = candidate_set.stats.clone();
@@ -199,6 +206,9 @@ async fn main() -> anyhow::Result<()> {
         resources.files_scanned = candidate_stats.paths_scanned;
         resources.candidates_generated = candidate_stats.merged_candidates;
         resources.candidates_embedded = semantic_metrics.candidates_embedded;
+        let sample = sampler.stop();
+        resources.peak_ram_mb = sample.peak_ram_mb;
+        resources.cpu_percent = sample.avg_cpu_percent;
         collector.update_resources(resources);
 
         let _ = candidate_elapsed;

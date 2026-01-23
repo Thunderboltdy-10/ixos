@@ -66,25 +66,24 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <div className="h-screen flex flex-col bg-graphite-0 overflow-hidden">
       {/* Titlebar */}
-      <div className="h-10 flex items-center justify-between bg-graphite-1 border-b border-stroke-hairline relative">
-        {/* Drag region - absolute positioned behind everything */}
-        <div
-          className="absolute inset-0 z-0"
-          data-tauri-drag-region
-        />
+      <div className="h-12 flex items-center justify-between bg-graphite-1 border-b border-stroke-hairline relative">
+        <div className="absolute inset-0 z-0" data-tauri-drag-region />
 
-        {/* Left: Logo and Title - positioned above drag region */}
-        <div className="flex items-center gap-2 px-3 relative z-10">
-          <div className="w-5 h-5 rounded bg-gradient-teal p-[1px]">
-            <div className="w-full h-full rounded bg-graphite-2 flex items-center justify-center">
-              <img src={ixosIcon} alt="Ixos" className="w-3.5 h-3.5" />
+        {/* Left: Logo and Title */}
+        <div className="flex items-center gap-3 px-4 relative z-10">
+          <div className="w-6 h-6 rounded-md bg-gradient-teal p-[1px] shadow-glow-teal">
+            <div className="w-full h-full rounded-[6px] bg-graphite-2 flex items-center justify-center">
+              <img src={ixosIcon} alt="Ixos" className="w-4 h-4" />
             </div>
           </div>
-          <h1 className="text-xs font-medium text-fg-muted select-none">Ixos Protocol</h1>
+          <div className="flex flex-col leading-tight select-none">
+            <h1 className="text-xs font-semibold text-porcelain tracking-[0.08em] uppercase">Ixos Protocol</h1>
+            <span className="text-[10px] text-fg-dim">Search Instrument</span>
+          </div>
         </div>
 
-        {/* Right: Window Controls - positioned above drag region */}
-        <div className="flex items-center gap-0.5 px-2 relative z-10 pointer-events-auto">
+        {/* Right: Window Controls */}
+        <div className="flex items-center gap-0.5 px-3 relative z-10 pointer-events-auto">
           <button
             type="button"
             onMouseDown={(e) => {
@@ -93,7 +92,7 @@ export function AppShell({ children }: AppShellProps) {
               setShowSettings(!showSettings);
             }}
             className={cn(
-              "w-8 h-8 flex items-center justify-center rounded",
+              "w-8 h-8 flex items-center justify-center rounded-md",
               "text-fg-muted hover:text-porcelain hover:bg-graphite-2",
               "transition-colors duration-150 cursor-pointer select-none"
             )}
@@ -116,7 +115,7 @@ export function AppShell({ children }: AppShellProps) {
               }
             }}
             className={cn(
-              "w-8 h-8 flex items-center justify-center rounded",
+              "w-8 h-8 flex items-center justify-center rounded-md",
               "text-fg-muted hover:text-porcelain hover:bg-graphite-2",
               "transition-colors duration-150 cursor-pointer select-none"
             )}
@@ -136,7 +135,7 @@ export function AppShell({ children }: AppShellProps) {
               }
             }}
             className={cn(
-              "w-8 h-8 flex items-center justify-center rounded",
+              "w-8 h-8 flex items-center justify-center rounded-md",
               "text-fg-muted hover:text-porcelain hover:bg-graphite-2",
               "transition-colors duration-150 cursor-pointer select-none"
             )}
@@ -156,7 +155,7 @@ export function AppShell({ children }: AppShellProps) {
               }
             }}
             className={cn(
-              "w-8 h-8 flex items-center justify-center rounded",
+              "w-8 h-8 flex items-center justify-center rounded-md",
               "text-fg-muted hover:text-white hover:bg-danger",
               "transition-colors duration-150 cursor-pointer select-none"
             )}
@@ -168,7 +167,6 @@ export function AppShell({ children }: AppShellProps) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
         <Sidebar
           onNewSearch={handleNewSearch}
           onOpenGuide={() => {
@@ -177,21 +175,26 @@ export function AppShell({ children }: AppShellProps) {
           }}
         />
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col overflow-hidden relative">
-          {children}
+        <div className="flex-1 flex flex-col overflow-hidden relative bg-graphite-0">
+          <div className="pointer-events-none absolute inset-0 opacity-80 bg-gradient-noise-teal" />
+          <div className="pointer-events-none absolute inset-0 opacity-60 bg-gradient-noise-amber" />
+          <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
+            {children}
+          </div>
 
-          {/* Settings Panel Overlay */}
           {showSettings && (
-            <div className="absolute inset-0 z-50 bg-graphite-0/80 backdrop-blur-xl">
-              <div className="h-full overflow-auto p-6">
-                <div className="max-w-2xl mx-auto">
+            <div className="absolute inset-0 z-50 bg-graphite-0/85 backdrop-blur-xl">
+              <div className="h-full overflow-auto p-8">
+                <div className="max-w-3xl mx-auto glass-card p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-semibold text-porcelain">Settings</h2>
+                    <div>
+                      <h2 className="text-lg font-semibold text-porcelain">Settings</h2>
+                      <p className="text-sm text-fg-muted">Tune search, privacy, and compliance controls.</p>
+                    </div>
                     <button
                       type="button"
                       onClick={() => setShowSettings(false)}
-                      className="p-2 rounded hover:bg-graphite-2 text-fg-muted hover:text-porcelain cursor-pointer"
+                      className="p-2 rounded-md hover:bg-graphite-2 text-fg-muted hover:text-porcelain cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -203,15 +206,18 @@ export function AppShell({ children }: AppShellProps) {
           )}
 
           {showInfo && (
-            <div className="absolute inset-0 z-50 bg-graphite-0/80 backdrop-blur-xl">
-              <div className="h-full overflow-auto p-6">
-                <div className="max-w-4xl mx-auto">
+            <div className="absolute inset-0 z-50 bg-graphite-0/85 backdrop-blur-xl">
+              <div className="h-full overflow-auto p-8">
+                <div className="max-w-4xl mx-auto glass-card p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-semibold text-porcelain">Ixos Guide</h2>
+                    <div>
+                      <h2 className="text-lg font-semibold text-porcelain">Ixos Guide</h2>
+                      <p className="text-sm text-fg-muted">Learn the protocol and shortcuts.</p>
+                    </div>
                     <button
                       type="button"
                       onClick={() => setShowInfo(false)}
-                      className="p-2 rounded hover:bg-graphite-2 text-fg-muted hover:text-porcelain cursor-pointer"
+                      className="p-2 rounded-md hover:bg-graphite-2 text-fg-muted hover:text-porcelain cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>

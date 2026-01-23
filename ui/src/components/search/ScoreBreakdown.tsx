@@ -7,10 +7,10 @@ interface ScoreBreakdownProps {
 }
 
 const segments = [
-  { key: 'semantic', label: 'Semantic', color: 'bg-blue-500', weight: 0.4 },
-  { key: 'integrity', label: 'Integrity', color: 'bg-green-500', weight: 0.3 },
-  { key: 'temporal', label: 'Age', color: 'bg-amber-500', weight: 0.1 },
-  { key: 'behavior', label: 'Pattern', color: 'bg-purple-500', weight: 0.2 },
+  { key: 'semantic', label: 'Semantic', color: 'bg-accent-teal', weight: 0.4 },
+  { key: 'integrity', label: 'Integrity', color: 'bg-success', weight: 0.3 },
+  { key: 'temporal', label: 'Age', color: 'bg-accent-amber', weight: 0.1 },
+  { key: 'behavior', label: 'Pattern', color: 'bg-accent-violet', weight: 0.2 },
 ] as const;
 
 export function ScoreBreakdown({ breakdown, className }: ScoreBreakdownProps) {
@@ -34,14 +34,13 @@ export function ScoreBreakdown({ breakdown, className }: ScoreBreakdownProps) {
   return (
     <div className={cn('space-y-2', className)}>
       <div className="flex items-center justify-between">
-        <p className="text-xs text-text-secondary font-medium">Score Breakdown</p>
-        <p className="text-xs text-text-muted">
+        <p className="text-xs text-fg-muted font-medium uppercase tracking-[0.2em]">Score Breakdown</p>
+        <p className="text-xs text-fg-dim">
           Total: {Math.round(totalScore * 100)}%
         </p>
       </div>
 
-      {/* Horizontal bar chart */}
-      <div className="h-2 rounded-full overflow-hidden flex bg-muted">
+      <div className="h-2 rounded-full overflow-hidden flex bg-graphite-3">
         {segments.map(({ key, color, weight }) => {
           const value = getScore(key);
           const contribution = value * weight;
@@ -57,13 +56,12 @@ export function ScoreBreakdown({ breakdown, className }: ScoreBreakdownProps) {
         })}
       </div>
 
-      {/* Legend */}
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-2xs">
         {segments.map(({ key, label, color }) => (
           <div key={key} className="flex items-center gap-1.5">
             <div className={cn('w-2 h-2 rounded-full', color)} />
-            <span className="text-text-muted">{label}</span>
-            <span className="text-text-primary font-mono">
+            <span className="text-fg-dim">{label}</span>
+            <span className="text-porcelain font-mono">
               {Math.round(getScore(key) * 100)}%
             </span>
           </div>

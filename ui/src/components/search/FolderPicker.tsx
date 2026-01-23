@@ -36,12 +36,12 @@ export function FolderPicker({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={cn(
-          'flex-1 h-8 px-3 py-1 rounded-md',
-          'bg-surface-3 border border-border',
-          'text-text-secondary text-xs font-mono',
-          'placeholder:text-text-muted',
-          'focus:outline-none focus:border-brand-teal/50',
-          'hover:border-border-accent',
+          'flex-1 h-9 px-3 py-1 rounded-md',
+          'bg-graphite-3 border border-stroke-hairline',
+          'text-fg-muted text-xs font-mono',
+          'placeholder:text-fg-dim',
+          'focus:outline-none focus:border-accent-teal/50',
+          'hover:border-border-medium',
           'transition-all duration-200'
         )}
         spellCheck={false}
@@ -51,9 +51,9 @@ export function FolderPicker({
         onClick={handleBrowse}
         title="Browse for folder"
         className={cn(
-          'flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md',
-          'bg-surface-3 border border-border',
-          'text-text-muted hover:text-text-primary hover:bg-surface-2 hover:border-brand-teal/30',
+          'flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-md',
+          'bg-graphite-3 border border-stroke-hairline',
+          'text-fg-dim hover:text-porcelain hover:bg-graphite-2 hover:border-border-medium',
           'transition-all duration-150 cursor-pointer'
         )}
       >

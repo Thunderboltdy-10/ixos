@@ -62,7 +62,7 @@ function SkeletonRow({ index, variant, isEnergizing }: SkeletonRowProps) {
       exit={{ opacity: 0, y: -4, transition: { duration: 0.12 } }}
       transition={{ duration: 0.2, delay: index * 0.025, ease: 'easeOut' }}
       className={cn(
-        "relative px-4 py-2.5",
+        "relative px-5 py-3",
         "overflow-hidden"
       )}
     >
@@ -82,7 +82,7 @@ function SkeletonRow({ index, variant, isEnergizing }: SkeletonRowProps) {
         {/* Index number placeholder */}
         <div className="w-5 flex-shrink-0 flex justify-center">
           <div
-            className="w-3.5 h-3.5 rounded bg-surface-3/40"
+            className="w-3.5 h-3.5 rounded bg-graphite-3/40"
             style={{
               animation: `pulse 2s ease-in-out ${shimmerDelay}s infinite`
             }}
@@ -91,7 +91,7 @@ function SkeletonRow({ index, variant, isEnergizing }: SkeletonRowProps) {
 
         {/* File icon placeholder */}
         <div
-          className="w-4 h-4 rounded bg-surface-3/50 flex-shrink-0"
+          className="w-4 h-4 rounded bg-graphite-3/50 flex-shrink-0"
           style={{
             animation: `pulse 2s ease-in-out ${shimmerDelay + 0.1}s infinite`
           }}
@@ -101,15 +101,14 @@ function SkeletonRow({ index, variant, isEnergizing }: SkeletonRowProps) {
         <div className="flex-1 min-w-0 space-y-1.5">
           {/* Filename placeholder - varies by variant */}
           <div
-            className="h-3 rounded-sm bg-surface-3/50"
+            className="h-3 rounded-sm bg-graphite-3/50"
             style={{
               width: `${config.filename + (index * 7) % 15}%`,
               animation: `pulse 2s ease-in-out ${shimmerDelay + 0.15}s infinite`
             }}
           />
-          {/* Path placeholder - varies by variant */}
           <div
-            className="h-2 rounded-sm bg-surface-3/30"
+            className="h-2 rounded-sm bg-graphite-3/30"
             style={{
               width: `${config.path + (index * 11) % 20}%`,
               animation: `pulse 2s ease-in-out ${shimmerDelay + 0.2}s infinite`
@@ -120,7 +119,7 @@ function SkeletonRow({ index, variant, isEnergizing }: SkeletonRowProps) {
         {/* Score badge placeholder - only some rows */}
         {config.showScore && (
           <div
-            className="w-10 h-5 rounded-full bg-surface-3/35 flex-shrink-0"
+            className="w-10 h-5 rounded-full bg-graphite-3/35 flex-shrink-0"
             style={{
               animation: `pulse 2s ease-in-out ${shimmerDelay + 0.25}s infinite`
             }}
@@ -129,7 +128,7 @@ function SkeletonRow({ index, variant, isEnergizing }: SkeletonRowProps) {
 
         {/* Chevron placeholder */}
         <div
-          className="w-3.5 h-3.5 rounded bg-surface-3/20 flex-shrink-0"
+          className="w-3.5 h-3.5 rounded bg-graphite-3/20 flex-shrink-0"
           style={{
             animation: `pulse 2s ease-in-out ${shimmerDelay + 0.3}s infinite`
           }}
@@ -171,7 +170,7 @@ export function GhostScaffold({ count = 8, visible }: GhostScaffoldProps) {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto py-2">
+    <div className="w-full max-w-4xl mx-auto py-2">
       <AnimatePresence mode="popLayout">
         {visible && Array.from({ length: count }, (_, i) => (
           <SkeletonRow

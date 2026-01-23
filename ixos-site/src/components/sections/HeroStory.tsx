@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Button } from "@/components/ui/Button";
-import { ElectricTraces } from "@/components/effects/ElectricTraces";
-import { RipplePulse } from "@/components/effects/RipplePulse";
+// import { ElectricTraces } from "@/components/effects/ElectricTraces";
+// import { RipplePulse } from "@/components/effects/RipplePulse";
 
 // Register ScrollTrigger
 if (typeof window !== "undefined") {
@@ -100,11 +100,11 @@ export function HeroStory() {
         <section ref={containerRef} className="hero-story relative min-h-[150vh] w-full pt-32 pb-24">
 
             {/* Electric Traces Layer */}
-            <ElectricTraces />
+            {/* <ElectricTraces /> */}
 
             {/* Ripple Layer */}
             <div className="absolute top-[40vh] left-1/2 -translate-x-1/2 z-0">
-                <RipplePulse />
+                {/* <RipplePulse /> */}
             </div>
 
             <div className="container mx-auto px-6 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">

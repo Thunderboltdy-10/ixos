@@ -7,14 +7,14 @@ export function PrivacySettings() {
   const { config, updateConfig } = useSettingsStore();
 
   if (!config) {
-    return <div className="text-text-muted">Loading...</div>;
+    return <div className="text-fg-dim">Loading...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-text-primary mb-4">Privacy Settings</h2>
-        <p className="text-sm text-text-secondary">
+        <h2 className="text-lg font-semibold text-porcelain mb-4">Privacy Settings</h2>
+        <p className="text-sm text-fg-muted">
           Configure privacy and security options for sensitive searches.
         </p>
       </div>
@@ -22,7 +22,7 @@ export function PrivacySettings() {
       {/* Secure Timing */}
       <SettingCard
         icon={Clock}
-        iconColor="text-amber-500"
+        iconColor="text-accent-amber"
         title="Secure Timing"
         description="Add a minimum processing time floor (100ms) to prevent timing attacks. Reduces performance but increases security."
       >
@@ -35,12 +35,12 @@ export function PrivacySettings() {
       </SettingCard>
 
       {/* Integrity Verification */}
-      <SettingCard
-        icon={Shield}
-        iconColor="text-green-500"
-        title="Integrity Verification"
-        description="Verify file integrity using SHA-256 hashes. Detects tampering and suspicious modifications."
-      >
+       <SettingCard
+         icon={Shield}
+         iconColor="text-success"
+         title="Integrity Verification"
+         description="Verify file integrity using SHA-256 hashes. Detects tampering and suspicious modifications."
+       >
         <Switch
           checked={config.security.verifyIntegrity}
           onCheckedChange={(checked) =>
@@ -51,7 +51,7 @@ export function PrivacySettings() {
 
       <SettingCard
         icon={AlertTriangle}
-        iconColor="text-amber-500"
+        iconColor="text-accent-amber"
         title="Crash Telemetry (Opt-In)"
         description="Save local crash reports with timing-only diagnostics. No file content is included."
       >
@@ -64,12 +64,12 @@ export function PrivacySettings() {
       </SettingCard>
 
       {/* Privacy Notice */}
-      <div className="bg-accent/5 border border-accent/20 rounded-lg p-4">
+      <div className="bg-accent-amber/10 border border-accent-amber/20 rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+          <AlertTriangle className="w-5 h-5 text-accent-amber flex-shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="text-text-primary font-medium mb-1">Your data stays local</p>
-            <p className="text-text-secondary">
+            <p className="text-porcelain font-medium mb-1">Your data stays local</p>
+            <p className="text-fg-muted">
               Ixos processes all files locally on your device. No file content or search
               queries are ever sent to external servers. Embeddings are generated using
               a local model.
@@ -91,13 +91,13 @@ interface SettingCardProps {
 
 function SettingCard({ icon: Icon, iconColor, title, description, children }: SettingCardProps) {
   return (
-    <div className="bg-surface rounded-lg border border-border p-4">
+    <div className="bg-graphite-2 rounded-lg border border-stroke-hairline p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="flex gap-3">
           <Icon className={cn('w-5 h-5 flex-shrink-0 mt-0.5', iconColor)} />
           <div>
-            <p className="text-sm font-medium text-text-primary">{title}</p>
-            <p className="text-xs text-text-muted mt-1">{description}</p>
+            <p className="text-sm font-medium text-porcelain">{title}</p>
+            <p className="text-xs text-fg-dim mt-1">{description}</p>
           </div>
         </div>
         <div className="flex-shrink-0">{children}</div>

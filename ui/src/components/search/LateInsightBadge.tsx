@@ -18,10 +18,10 @@ export function LateInsightBadge({ count, onReveal }: LateInsightBadgeProps) {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={onReveal}
-        className="fixed bottom-6 right-6 flex items-center gap-2 bg-accent text-text-primary px-4 py-2.5 rounded-full shadow-lg hover:shadow-xl transition-shadow z-50"
+        className="fixed bottom-6 right-6 flex items-center gap-2 bg-accent-teal text-graphite-0 px-4 py-2.5 rounded-full shadow-glow-teal transition-shadow z-50 text-xs uppercase tracking-[0.18em]"
       >
         <Sparkles className="w-4 h-4" />
-        <span className="font-medium">
+        <span className="font-semibold">
           {count} New Insight{count > 1 ? 's' : ''} Found
         </span>
       </motion.button>

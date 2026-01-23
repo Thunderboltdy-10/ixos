@@ -61,23 +61,20 @@ export function MainSearchView() {
   }, [setJournalistMode, setCacheMode]);
 
   return (
-    <div className="relative w-full h-full bg-base text-text-primary overflow-hidden flex flex-col">
+    <div className="relative w-full h-full bg-graphite-0 text-porcelain overflow-hidden flex flex-col">
+      <div className="pointer-events-none absolute inset-0 opacity-70 bg-gradient-noise-teal" />
+      <div className="pointer-events-none absolute inset-0 opacity-60 bg-gradient-noise-violet" />
 
-      {/* Search Corridor - Background animation layer */}
       <SearchCorridor />
 
-      {/* Main Content */}
       <div className="relative z-10 flex flex-col w-full h-full">
-
-        {/* Search Bar Area - consistent width, animated position */}
         <div
           ref={searchBarRef}
           className={cn(
-            "w-full max-w-3xl mx-auto px-4 transition-all duration-300 ease-out z-50",
-            hasActiveSearch ? "pt-4" : "pt-[30vh]"
+            "w-full max-w-4xl mx-auto px-6 transition-all duration-300 ease-out z-50",
+            hasActiveSearch ? "pt-6" : "pt-[26vh]"
           )}
         >
-          {/* Search Input */}
           <div className="w-full">
             <SearchInput
               value={query}
@@ -93,18 +90,14 @@ export function MainSearchView() {
             />
           </div>
 
-          {/* Search Deck - Status panel with stage, focus line, metrics, and electric underline */}
           {showDeck && <SearchDeck />}
         </div>
 
-        {/* Results Layer */}
         <div className="flex-1 overflow-hidden relative w-full">
-          {/* Ghost Scaffold - Skeleton placeholders while searching */}
           <GhostScaffold visible={showGhostScaffold} count={8} />
 
-          {/* Actual Results */}
           {showResults && (
-            <div className="absolute inset-0 overflow-y-auto px-6 py-4">
+            <div className="absolute inset-0 overflow-y-auto px-8 py-6">
               <SearchResults
                 results={results}
                 selectedIndex={selectedIndex}
@@ -114,7 +107,6 @@ export function MainSearchView() {
                 phase={searchPhase}
               />
 
-              {/* Late Insights Badge */}
               {hasLateInsights && (
                 <div className="fixed bottom-6 right-6 z-50">
                   <LateInsightBadge
@@ -126,11 +118,10 @@ export function MainSearchView() {
             </div>
           )}
 
-          {/* No results message */}
           {!showResults && query.length > 0 && searchPhase === 'complete' && (
-            <div className="w-full max-w-3xl mx-auto px-6 py-8 text-center">
-              <p className="text-text-secondary">No results found</p>
-              <p className="text-text-muted text-sm mt-1">Try a different search term</p>
+            <div className="w-full max-w-3xl mx-auto px-6 py-10 text-center">
+              <p className="text-fg-muted">No results found</p>
+              <p className="text-fg-dim text-sm mt-1">Try a different search term</p>
             </div>
           )}
         </div>

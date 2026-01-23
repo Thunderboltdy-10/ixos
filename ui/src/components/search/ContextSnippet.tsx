@@ -27,46 +27,43 @@ export function ContextSnippet({ context, className }: ContextSnippetProps) {
   const startLine = lineNumber - beforeLines.length;
 
   return (
-    <div className={cn('rounded-md bg-base overflow-hidden', className)}>
-      <div className="px-3 py-1.5 bg-muted/50 border-b border-border">
-        <span className="text-xs text-text-muted">
+    <div className={cn('rounded-md bg-graphite-2/80 overflow-hidden border border-stroke-hairline/70', className)}>
+      <div className="px-3 py-1.5 bg-graphite-3/60 border-b border-stroke-hairline">
+        <span className="text-xs text-fg-dim uppercase tracking-[0.2em]">
           Line {lineNumber}
         </span>
       </div>
 
-      <div className="p-2 font-mono text-xs overflow-x-auto">
-        {/* Before lines */}
+      <div className="p-3 font-mono text-xs overflow-x-auto">
         {beforeLines.map((line, i) => (
           <div key={`before-${i}`} className="flex">
-            <span className="w-8 flex-shrink-0 text-text-muted text-right pr-3 select-none">
+            <span className="w-8 flex-shrink-0 text-fg-dim text-right pr-3 select-none">
               {startLine + i}
             </span>
-            <span className="text-text-tertiary">{line || ' '}</span>
+            <span className="text-fg-muted">{line || ' '}</span>
           </div>
         ))}
 
-        {/* Matched lines */}
         {matchedLines.map((line, i) => (
           <div
             key={`match-${i}`}
-            className="flex bg-accent/10 -mx-2 px-2 border-l-2 border-l-accent"
+            className="flex bg-accent-teal/10 -mx-3 px-3 border-l-2 border-l-accent-teal"
           >
-            <span className="w-8 flex-shrink-0 text-accent text-right pr-3 select-none font-medium">
+            <span className="w-8 flex-shrink-0 text-accent-teal text-right pr-3 select-none font-semibold">
               {lineNumber + i}
             </span>
-            <span className="text-text-primary whitespace-pre">
+            <span className="text-porcelain whitespace-pre">
               {highlightMatch(line || '')}
             </span>
           </div>
         ))}
 
-        {/* After lines */}
         {afterLines.map((line, i) => (
           <div key={`after-${i}`} className="flex">
-            <span className="w-8 flex-shrink-0 text-text-muted text-right pr-3 select-none">
+            <span className="w-8 flex-shrink-0 text-fg-dim text-right pr-3 select-none">
               {lineNumber + matchedLines.length + i}
             </span>
-            <span className="text-text-tertiary">{line || ' '}</span>
+            <span className="text-fg-muted">{line || ' '}</span>
           </div>
         ))}
       </div>

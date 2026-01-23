@@ -23,38 +23,38 @@ interface ModeOption {
   bgColor: string;
 }
 
-const modes: ModeOption[] = [
-  {
-    id: 'jit',
-    icon: Zap,
-    label: 'JIT Mode',
-    shortLabel: 'JIT',
-    description: 'Just-In-Time (Default)',
-    details: 'Computes embeddings on-the-fly. No data written to disk. Maximum privacy.',
-    color: 'text-brand-cyan',
-    bgColor: 'bg-brand-cyan/10',
-  },
-  {
-    id: 'cache',
-    icon: Shield,
-    label: 'Cache Mode',
-    shortLabel: 'Cache',
-    description: 'Persistent Cache',
-    details: 'Stores embeddings in ADS (Windows) or xattr (Mac/Linux). Faster repeat searches.',
-    color: 'text-brand-teal',
-    bgColor: 'bg-brand-teal/10',
-  },
-  {
-    id: 'journalist',
-    icon: Lock,
-    label: 'Journalist Mode',
-    shortLabel: 'Secure',
-    description: 'Maximum Security',
-    details: 'JIT + encrypted history + emergency clear (Ctrl+Shift+X). For sensitive investigations.',
-    color: 'text-journalist',
-    bgColor: 'bg-journalist/10',
-  }
-];
+  const modes: ModeOption[] = [
+    {
+      id: 'jit',
+      icon: Zap,
+      label: 'JIT Mode',
+      shortLabel: 'JIT',
+      description: 'Just-In-Time (Default)',
+      details: 'Computes embeddings on-the-fly. No data written to disk. Maximum privacy.',
+      color: 'text-accent-teal',
+      bgColor: 'bg-accent-teal/10',
+    },
+    {
+      id: 'cache',
+      icon: Shield,
+      label: 'Cache Mode',
+      shortLabel: 'Cache',
+      description: 'Persistent Cache',
+      details: 'Stores embeddings in ADS (Windows) or xattr (Mac/Linux). Faster repeat searches.',
+      color: 'text-accent-amber',
+      bgColor: 'bg-accent-amber/10',
+    },
+    {
+      id: 'journalist',
+      icon: Lock,
+      label: 'Journalist Mode',
+      shortLabel: 'Secure',
+      description: 'Maximum Security',
+      details: 'JIT + encrypted history + emergency clear (Ctrl+Shift+X). For sensitive investigations.',
+      color: 'text-accent-magenta',
+      bgColor: 'bg-accent-magenta/10',
+    }
+  ];
 
 export function ModeSwitcher({ value, onChange, className, compact = false }: ModeSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -69,7 +69,7 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
   if (compact) {
     // Compact inline version for search bar area
     return (
-      <div className={cn('flex items-center gap-1 p-1 bg-surface-2 rounded-lg overflow-hidden', className)}>
+      <div className={cn('flex items-center gap-1 p-1 bg-graphite-2 rounded-md overflow-hidden border border-stroke-hairline', className)}>
         {modes.map((mode) => (
           <button
             key={mode.id}
@@ -77,10 +77,10 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
             onMouseEnter={() => setShowTooltip(mode.id)}
             onMouseLeave={() => setShowTooltip(null)}
             className={cn(
-              'relative px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-150',
+              'relative px-2.5 py-1.5 rounded-md text-[10px] uppercase tracking-[0.14em] transition-all duration-150',
               mode.id === value
                 ? `${mode.bgColor} ${mode.color}`
-                : 'text-text-muted hover:text-text-secondary hover:bg-surface-3'
+                : 'text-fg-dim hover:text-porcelain hover:bg-graphite-3'
             )}
           >
             <div className="flex items-center gap-1.5">
@@ -88,7 +88,6 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
               <span>{mode.shortLabel}</span>
             </div>
 
-            {/* Tooltip */}
             <AnimatePresence>
               {showTooltip === mode.id && (
                 <motion.div
@@ -98,17 +97,17 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
                   className={cn(
                     'absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50',
                     'w-48 p-2 rounded-lg',
-                    'bg-surface-3 border border-border shadow-xl',
+                    'bg-graphite-2 border border-stroke-hairline shadow-lift',
                     'pointer-events-none'
                   )}
                 >
                   <div className={cn('text-xs font-medium mb-1', mode.color)}>
                     {mode.label}
                   </div>
-                  <div className="text-2xs text-text-secondary leading-relaxed">
+                  <div className="text-2xs text-fg-dim leading-relaxed">
                     {mode.details}
                   </div>
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-surface-3 border-r border-b border-border" />
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-graphite-2 border-r border-b border-stroke-hairline" />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -121,40 +120,36 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
   // Full dropdown version
   return (
     <div className={cn('relative', className)}>
-      {/* Trigger button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'flex items-center gap-2 px-3 py-1.5 rounded-lg',
-          'bg-surface-2 hover:bg-surface-3',
-          'border border-border hover:border-border-accent',
+          'flex items-center gap-2 px-3 py-2 rounded-md',
+          'bg-graphite-2 hover:bg-graphite-3',
+          'border border-stroke-hairline hover:border-border-medium',
           'transition-all duration-200',
-          'text-sm min-w-[100px] max-w-[130px]'
+          'text-xs uppercase tracking-[0.16em] min-w-[110px] max-w-[140px]'
         )}
       >
-        <selectedMode.icon className={cn('w-4 h-4', selectedMode.color)} />
-        <span className="text-text-primary flex-1 text-left">
+        <selectedMode.icon className={cn('w-3.5 h-3.5', selectedMode.color)} />
+        <span className="text-porcelain flex-1 text-left">
           {selectedMode.shortLabel}
         </span>
         <ChevronDown
           className={cn(
-            'w-3 h-3 text-text-muted transition-transform duration-200',
+            'w-3 h-3 text-fg-dim transition-transform duration-200',
             isOpen && 'rotate-180'
           )}
         />
       </button>
 
-      {/* Dropdown menu */}
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Backdrop */}
             <div
               className="fixed inset-0 z-40"
               onClick={() => setIsOpen(false)}
             />
 
-            {/* Menu */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -162,9 +157,9 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
               transition={{ duration: 0.15 }}
               className={cn(
                 'absolute top-full left-0 mt-2 z-50',
-                'w-72',
-                'bg-surface-2 rounded-lg border border-border',
-                'shadow-xl overflow-hidden'
+                'w-80',
+                'bg-graphite-2 rounded-xl border border-stroke-hairline',
+                'shadow-lift overflow-hidden'
               )}
             >
               {modes.map((mode) => (
@@ -172,27 +167,27 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
                   key={mode.id}
                   onClick={() => handleSelect(mode.id)}
                   className={cn(
-                    'w-full flex items-start gap-3 px-3 py-3',
-                    'hover:bg-surface-3 transition-colors duration-150',
+                    'w-full flex items-start gap-3 px-4 py-3',
+                    'hover:bg-graphite-3 transition-colors duration-150',
                     'text-left',
-                    mode.id === value && 'bg-surface-3'
+                    mode.id === value && 'bg-graphite-3'
                   )}
                 >
-                  <div className={cn('p-1.5 rounded-md mt-0.5', mode.bgColor)}>
+                  <div className={cn('p-2 rounded-md mt-0.5', mode.bgColor)}>
                     <mode.icon className={cn('w-4 h-4', mode.color)} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-text-primary">
+                      <span className="text-sm font-semibold text-porcelain">
                         {mode.label}
                       </span>
                       {mode.id === 'jit' && (
-                        <span className="text-2xs px-1.5 py-0.5 rounded bg-brand-teal/20 text-brand-teal">
+                        <span className="text-2xs px-1.5 py-0.5 rounded bg-accent-teal/20 text-accent-teal">
                           Default
                         </span>
                       )}
                     </div>
-                    <div className="text-2xs text-text-secondary mt-1 leading-relaxed">
+                    <div className="text-2xs text-fg-muted mt-1 leading-relaxed">
                       {mode.details}
                     </div>
                   </div>
@@ -202,9 +197,8 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
                 </button>
               ))}
 
-              {/* Info footer */}
-              <div className="px-3 py-2 bg-surface-1 border-t border-border">
-                <div className="flex items-start gap-2 text-2xs text-text-muted">
+              <div className="px-4 py-3 bg-graphite-1 border-t border-stroke-hairline">
+                <div className="flex items-start gap-2 text-2xs text-fg-dim">
                   <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
                   <span>
                     JIT is recommended for privacy. Cache mode is faster for repeated searches in the same directory.

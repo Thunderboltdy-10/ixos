@@ -154,118 +154,111 @@ export function ShortcutSettings() {
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-lg font-semibold text-text-primary mb-2">
-                    Keyboard Shortcuts
-                </h2>
-                <p className="text-sm text-text-secondary">
-                    Customize the global shortcut to show/hide Ixos from anywhere.
-                </p>
+        <h2 className="text-lg font-semibold text-porcelain mb-2">
+          Keyboard Shortcuts
+        </h2>
+        <p className="text-sm text-fg-muted">
+          Customize the global shortcut to show/hide Ixos from anywhere.
+        </p>
+      </div>
+
+      <div className="bg-graphite-2 rounded-lg p-4 border border-stroke-hairline space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-md bg-accent-teal/10">
+              <Keyboard className="w-5 h-5 text-accent-teal" />
+            </div>
+            <div>
+              <div className="text-sm font-medium text-porcelain">
+                Toggle Ixos
+              </div>
+              <div className="text-xs text-fg-dim">
+                Show or hide the search window
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div
+              className={cn(
+                'px-3 py-1.5 rounded-md text-sm font-mono',
+                isRecording
+                  ? 'bg-accent-teal/20 text-accent-teal border border-accent-teal animate-pulse'
+                  : pendingConfig
+                    ? 'bg-accent-amber/20 text-accent-amber border border-accent-amber/50'
+                    : 'bg-graphite-3 text-porcelain border border-stroke-hairline'
+              )}
+            >
+              {isRecording
+                ? 'Press keys...'
+                : pendingConfig
+                  ? formatShortcut(pendingConfig)
+                  : config
+                    ? formatShortcut(config)
+                    : 'Loading...'}
             </div>
 
-            <div className="bg-surface rounded-lg p-4 border border-border space-y-4">
-                {/* Current Shortcut Display */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-md bg-accent/10">
-                            <Keyboard className="w-5 h-5 text-accent" />
-                        </div>
-                        <div>
-                            <div className="text-sm font-medium text-text-primary">
-                                Toggle Ixos
-                            </div>
-                            <div className="text-xs text-text-secondary">
-                                Show or hide the search window
-                            </div>
-                        </div>
-                    </div>
+            {!isRecording && !pendingConfig && (
+              <button
+                onClick={startRecording}
+                className="px-3 py-1.5 text-xs uppercase tracking-[0.16em] bg-accent-teal/10 hover:bg-accent-teal/20 text-accent-teal rounded-md transition-colors"
+              >
+                Change
+              </button>
+            )}
 
-                    <div className="flex items-center gap-2">
-                        {/* Current/Pending shortcut display */}
-                        <div
-                            className={cn(
-                                'px-3 py-1.5 rounded-md text-sm font-mono',
-                                isRecording
-                                    ? 'bg-accent/20 text-accent border border-accent animate-pulse'
-                                    : pendingConfig
-                                        ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50'
-                                        : 'bg-elevated text-text-primary border border-border'
-                            )}
-                        >
-                            {isRecording
-                                ? 'Press keys...'
-                                : pendingConfig
-                                    ? formatShortcut(pendingConfig)
-                                    : config
-                                        ? formatShortcut(config)
-                                        : 'Loading...'}
-                        </div>
-
-                        {/* Action buttons */}
-                        {!isRecording && !pendingConfig && (
-                            <button
-                                onClick={startRecording}
-                                className="px-3 py-1.5 text-sm bg-accent/10 hover:bg-accent/20 text-accent rounded-md transition-colors"
-                            >
-                                Change
-                            </button>
-                        )}
-
-                        {isRecording && (
-                            <button
-                                onClick={cancelRecording}
-                                className="px-3 py-1.5 text-sm bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-md transition-colors"
-                            >
-                                Cancel
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                {/* Pending changes actions */}
-                {pendingConfig && !isRecording && (
-                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
-                        <button
-                            onClick={cancelRecording}
-                            className="px-3 py-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors"
-                            disabled={isSaving}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={saveShortcut}
-                            disabled={isSaving}
-                            className="px-3 py-1.5 text-sm bg-accent hover:bg-accent/90 text-white rounded-md transition-colors disabled:opacity-50"
-                        >
-                            {isSaving ? 'Saving...' : 'Save'}
-                        </button>
-                    </div>
-                )}
-
-                {/* Error display */}
-                {error && (
-                    <div className="text-sm text-red-400 bg-red-500/10 px-3 py-2 rounded-md">
-                        {error}
-                    </div>
-                )}
-            </div>
-
-            {/* Reset button */}
-            <div className="flex justify-end">
-                <button
-                    onClick={resetToDefault}
-                    disabled={isSaving}
-                    className="flex items-center gap-2 px-3 py-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50"
-                >
-                    <RotateCcw className="w-4 h-4" />
-                    Reset to Default (Ctrl + Space)
-                </button>
-            </div>
-
-            {/* Usage hint */}
-            <div className="text-xs text-text-muted bg-elevated/50 px-3 py-2 rounded-md">
-                <strong>Tip:</strong> The shortcut works globally - you can press it from any application
-                to instantly access Ixos search.
-            </div>
+            {isRecording && (
+              <button
+                onClick={cancelRecording}
+                className="px-3 py-1.5 text-xs uppercase tracking-[0.16em] bg-danger/10 hover:bg-danger/20 text-danger rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
         </div>
-    );
+
+        {pendingConfig && !isRecording && (
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-stroke-hairline">
+            <button
+              onClick={cancelRecording}
+              className="px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-fg-dim hover:text-porcelain transition-colors"
+              disabled={isSaving}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={saveShortcut}
+              disabled={isSaving}
+              className="px-3 py-1.5 text-xs uppercase tracking-[0.16em] bg-accent-teal hover:bg-accent-teal/90 text-graphite-0 rounded-md transition-colors disabled:opacity-50"
+            >
+              {isSaving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        )}
+
+        {error && (
+          <div className="text-sm text-danger bg-danger/10 px-3 py-2 rounded-md">
+            {error}
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          onClick={resetToDefault}
+          disabled={isSaving}
+          className="flex items-center gap-2 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-fg-dim hover:text-porcelain transition-colors disabled:opacity-50"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Reset to Default (Ctrl + Space)
+        </button>
+      </div>
+
+      <div className="text-xs text-fg-dim bg-graphite-2/60 px-3 py-2 rounded-md border border-stroke-hairline">
+        <strong>Tip:</strong> The shortcut works globally - you can press it from any application
+        to instantly access Ixos search.
+      </div>
+    </div>
+  );
 }

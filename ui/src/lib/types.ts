@@ -121,6 +121,7 @@ export interface SearchOptions {
   modelType?: ModelType;
   proModelType?: ModelType;
   searchMode?: SearchMode;
+  timeoutSeconds?: number;
 }
 
 /**

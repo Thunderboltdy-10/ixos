@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "corpus": "corpus_tiny",
+  "expected": [
+    {
+      "query_id": "project_plan_2025",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/docs/project_plan_2025.md"],
+      "must_include": ["corpus_tiny/docs/project_plan_2025.md"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "meeting_notes_date",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/docs/meeting_notes_2024-11-15.txt"],
+      "must_include": ["corpus_tiny/docs/meeting_notes_2024-11-15.txt"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "q1_financial_report",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/docs/q1_financial_report.md"],
+      "must_include": ["corpus_tiny/docs/q1_financial_report.md"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "q2_financial_report",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/docs/q2_financial_report.md"],
+      "must_include": ["corpus_tiny/docs/q2_financial_report.md"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "privacy_policy",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/docs/privacy_policy.md"],
+      "must_include": ["corpus_tiny/docs/privacy_policy.md"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "api_reference",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/docs/api_reference.md"],
+      "must_include": ["corpus_tiny/docs/api_reference.md"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "search_engine",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/code/search_engine.rs"],
+      "must_include": ["corpus_tiny/code/search_engine.rs"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "secure_embedder",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/code/embedder.rs"],
+      "must_include": ["corpus_tiny/code/embedder.rs"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "cli_flags",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/code/cli_flags.rs"],
+      "must_include": ["corpus_tiny/code/cli_flags.rs"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "watcher_python",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/code/watcher.py"],
+      "must_include": ["corpus_tiny/code/watcher.py"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "landing_page_html",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/web/index.html"],
+      "must_include": ["corpus_tiny/web/index.html"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "pricing_tiers",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/web/pricing.html"],
+      "must_include": ["corpus_tiny/web/pricing.html"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "config_json",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/data/config.json"],
+      "must_include": ["corpus_tiny/data/config.json"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "users_json",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/data/users.json"],
+      "must_include": ["corpus_tiny/data/users.json"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "metric_ttfr",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/data/metrics.json"],
+      "must_include": ["corpus_tiny/data/metrics.json"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "roadmap_phase",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/markdown/roadmap.md"],
+      "must_include": ["corpus_tiny/markdown/roadmap.md"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "changelog",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/misc/changelog.txt"],
+      "must_include": ["corpus_tiny/misc/changelog.txt"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "todo_refine",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/misc/todo.md"],
+      "must_include": ["corpus_tiny/misc/todo.md"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "license",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/misc/license.txt"],
+      "must_include": ["corpus_tiny/misc/license.txt"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "logs_streamed",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/logs/app.log"],
+      "must_include": ["corpus_tiny/logs/app.log"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "unicode_notes",
+      "top_k": 1,
+      "top_paths": ["corpus_tiny/nested/level1/level2/über/ñandú_notes.txt"],
+      "must_include": ["corpus_tiny/nested/level1/level2/über/ñandú_notes.txt"],
+      "must_exclude": []
+    },
+    {
+      "query_id": "negative_none",
+      "top_k": 0,
+      "top_paths": [],
+      "must_include": [],
+      "must_exclude": []
+    },
+    {
+      "query_id": "q1_financial_tie",
+      "top_k": 0,
+      "top_paths": [],
+      "must_include": [
+        "corpus_tiny/docs/q1_financial_report.md",
+        "corpus_tiny/docs/q1_financial_summary.txt"
+      ],
+      "must_exclude": []
+    }
+  ]
+}

@@ -52,6 +52,11 @@ use std::collections::HashSet;
 use std::path::PathBuf;
 use std::time::Instant;
 
+use crate::instrumentation::{
+    candidate_merge_span, directory_walk_span, metadata_priors_span, path_scoring_span,
+    ripgrep_scan_span,
+};
+
 // ============================================================================
 // HARD CAPS - These are NON-NEGOTIABLE
 // ============================================================================
@@ -148,6 +153,8 @@ impl CandidateGenerator {
     /// Build or rebuild the path index
     pub fn build_index(&mut self) {
         let start = Instant::now();
+        let _span = directory_walk_span(&self.root_dir);
+        let _enter = _span.enter();
         let index = PathIndex::build_from_walk(&self.root_dir, &self.config.path_config);
         self.last_index_build_ms = start.elapsed().as_millis() as u64;
         self.path_index = Some(index);
@@ -173,6 +180,13 @@ impl CandidateGenerator {
         // Phase 1: Path scoring (instant, no disk I/O)
         let path_start = Instant::now();
         let path_candidates = if self.config.enable_path_scoring {
+            let path_count = self
+                .path_index
+                .as_ref()
+                .map(|idx| idx.len())
+                .unwrap_or(0);
+            let _span = path_scoring_span(path_count);
+            let _enter = _span.enter();
             self.ensure_index();
             stats.directory_walk_ms = self.last_index_build_ms;
             let candidates = self
@@ -193,6 +207,8 @@ impl CandidateGenerator {
         // Phase 2: Ripgrep scan (capped)
         let ripgrep_start = Instant::now();
         let (ripgrep_candidates, ripgrep_stats) = if self.config.enable_ripgrep {
+            let _span = ripgrep_scan_span(&lexical_query);
+            let _enter = _span.enter();
             self.ripgrep.search_capped(&lexical_query)
         } else {
             (Vec::new(), RipgrepStats::default())
@@ -203,10 +219,14 @@ impl CandidateGenerator {
 
         // Phase 3: Merge and deduplicate
         let merge_start = Instant::now();
+        let _merge_span = candidate_merge_span(path_candidates.len(), ripgrep_candidates.len());
+        let _merge_enter = _merge_span.enter();
         let mut merged = self.merge_candidates(path_candidates, ripgrep_candidates);
         stats.merged_candidates = merged.len();
 
         // Phase 4: Apply metadata priors
+        let _priors_span = metadata_priors_span(merged.len());
+        let _priors_enter = _priors_span.enter();
         self.apply_priors(&mut merged);
 
         // Phase 5: Sort by combined score
@@ -258,6 +278,13 @@ impl CandidateGenerator {
         // Phase 1: Path scoring (instant, no disk I/O)
         let path_start = Instant::now();
         let path_candidates = if self.config.enable_path_scoring {
+            let path_count = self
+                .path_index
+                .as_ref()
+                .map(|idx| idx.len())
+                .unwrap_or(0);
+            let _span = path_scoring_span(path_count);
+            let _enter = _span.enter();
             self.ensure_index();
             stats.directory_walk_ms = self.last_index_build_ms;
             let candidates = self
@@ -278,6 +305,8 @@ impl CandidateGenerator {
         // Phase 2: Ripgrep scan (streamed)
         let ripgrep_start = Instant::now();
         let (ripgrep_candidates, ripgrep_stats) = if self.config.enable_ripgrep {
+            let _span = ripgrep_scan_span(&lexical_query);
+            let _enter = _span.enter();
             self.ripgrep.search_streaming(
                 &lexical_query,
                 batch_size,
@@ -293,10 +322,14 @@ impl CandidateGenerator {
 
         // Phase 3: Merge and deduplicate
         let merge_start = Instant::now();
+        let _merge_span = candidate_merge_span(path_candidates.len(), ripgrep_candidates.len());
+        let _merge_enter = _merge_span.enter();
         let mut merged = self.merge_candidates(path_candidates, ripgrep_candidates);
         stats.merged_candidates = merged.len();
 
         // Phase 4: Apply metadata priors
+        let _priors_span = metadata_priors_span(merged.len());
+        let _priors_enter = _priors_span.enter();
         self.apply_priors(&mut merged);
 
         // Phase 5: Sort by combined score

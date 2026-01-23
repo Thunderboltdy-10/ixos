@@ -188,15 +188,10 @@ export const PRICING_TIERS = [
 
 ### Adding Benchmark Data
 
-All performance claims must come from `IXOS_MODEL_LAB_REPORT.md`. Add verified numbers to `lib/verified-benchmarks.ts`:
+All performance claims must come from `IXOS_MODEL_LAB_REPORT.md`. Update `lib/verified-benchmarks.json` (or run the Phase 1 script to regenerate it):
 
-```typescript
-export const VERIFIED_BENCHMARKS = {
-  latency: {
-    ttfrP50: '181ms',
-    // ...
-  },
-};
+```powershell
+python scripts/update_verified_benchmarks.py --jit bench/results/PERF_JIT.json --cache bench/results/PERF_CACHE.json --out-json landing/lib/verified-benchmarks.json --out-report IXOS_MODEL_LAB_REPORT.md
 ```
 
 ## Testing Payments

@@ -1,0 +1,333 @@
+[
+  {
+    "id": "progressive-streaming",
+    "name": "Progressive streaming search",
+    "description": "Stream lexical results first, then semantic results, with progressive events.",
+    "surfaces": { "cli": true, "desktop": true, "web_demo": false },
+    "status": "implemented",
+    "user_value": 4,
+    "differentiation": 4,
+    "risk": "med",
+    "evidence": {
+      "paths": [
+        "src/cli/commands.rs:117",
+        "src/main.rs:301",
+        "src/ixos_rank/progressive.rs:423",
+        "src-tauri/src/commands/search.rs:235"
+      ],
+      "commands": [
+        "ixos search --progressive"
+      ]
+    },
+    "tests": { "unit": [], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#progressive-search-and-streaming" ]
+  },
+  {
+    "id": "cache-modes",
+    "name": "JIT and cache modes",
+    "description": "Support memory-only JIT mode and persistent ADS/xattr cache mode.",
+    "surfaces": { "cli": true, "desktop": true, "web_demo": false },
+    "status": "implemented",
+    "user_value": 4,
+    "differentiation": 4,
+    "risk": "med",
+    "evidence": {
+      "paths": [
+        "src/cli/commands.rs:139",
+        "src/main.rs:185",
+        "src/storage/mod.rs:39",
+        "src-tauri/src/commands/search.rs:445"
+      ],
+      "commands": [
+        "ixos search --cache-mode jit",
+        "ixos search --cache-mode cache"
+      ]
+    },
+    "tests": { "unit": [], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#cache-modes-and-storage" ]
+  },
+  {
+    "id": "journalist-mode",
+    "name": "Journalist mode",
+    "description": "Maximum privacy mode that forces JIT cache and clears data after search.",
+    "surfaces": { "cli": true, "desktop": true, "web_demo": false },
+    "status": "implemented",
+    "user_value": 4,
+    "differentiation": 5,
+    "risk": "med",
+    "evidence": {
+      "paths": [
+        "src/cli/commands.rs:172",
+        "src/main.rs:185",
+        "src/main.rs:371",
+        "src-tauri/src/commands/search.rs:246"
+      ],
+      "commands": [
+        "ixos search --journalist-mode"
+      ]
+    },
+    "tests": { "unit": [], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#journalist-mode" ]
+  },
+  {
+    "id": "secure-timing",
+    "name": "Secure timing embeddings",
+    "description": "Optional 100ms minimum embedding time to mitigate timing analysis.",
+    "surfaces": { "cli": true, "desktop": true, "web_demo": false },
+    "status": "implemented",
+    "user_value": 3,
+    "differentiation": 4,
+    "risk": "med",
+    "evidence": {
+      "paths": [
+        "src/cli/commands.rs:159",
+        "src/main.rs:255",
+        "src/ixos_embed/secure_embedder.rs:29"
+      ],
+      "commands": [
+        "ixos search --secure-timing"
+      ]
+    },
+    "tests": { "unit": [], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#secure-timing" ]
+  },
+  {
+    "id": "compliance-consent",
+    "name": "Compliance and consent controls",
+    "description": "Consent management plus GDPR and CCPA operations.",
+    "surfaces": { "cli": true, "desktop": true, "web_demo": false },
+    "status": "implemented",
+    "user_value": 4,
+    "differentiation": 4,
+    "risk": "high",
+    "evidence": {
+      "paths": [
+        "src/cli/commands.rs:375",
+        "src/compliance/mod.rs:234",
+        "src/compliance/mod.rs:258",
+        "src-tauri/src/commands/config.rs:178"
+      ],
+      "commands": [
+        "ixos compliance consent --status",
+        "ixos compliance gdpr access",
+        "ixos compliance ccpa know"
+      ]
+    },
+    "tests": { "unit": [], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#compliance-and-consent" ]
+  },
+  {
+    "id": "config-management",
+    "name": "Configuration management",
+    "description": "Load/save config and expose config operations via CLI and desktop.",
+    "surfaces": { "cli": true, "desktop": true, "web_demo": false },
+    "status": "implemented",
+    "user_value": 3,
+    "differentiation": 2,
+    "risk": "low",
+    "evidence": {
+      "paths": [
+        "src/cli/commands.rs:198",
+        "src/cli/config.rs:301",
+        "src-tauri/src/commands/config.rs:158"
+      ],
+      "commands": [
+        "ixos config --list",
+        "ixos config --get search.default_limit",
+        "ixos config --set search.default_limit=50"
+      ]
+    },
+    "tests": { "unit": ["src/cli/config.rs:671"], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#configuration-management" ]
+  },
+  {
+    "id": "encrypted-local-storage",
+    "name": "Encrypted local persistence (desktop)",
+    "description": "Encrypt local UI data and persist via Tauri storage commands.",
+    "surfaces": { "cli": false, "desktop": true, "web_demo": false },
+    "status": "implemented",
+    "user_value": 4,
+    "differentiation": 3,
+    "risk": "med",
+    "evidence": {
+      "paths": [
+        "ui/src/lib/storage.ts:21",
+        "ui/src/lib/crypto.ts:17",
+        "src-tauri/src/commands/storage.rs:18"
+      ],
+      "commands": []
+    },
+    "tests": { "unit": [], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#desktop-ui-react" ]
+  },
+  {
+    "id": "search-history-suggestions",
+    "name": "Search history suggestions (desktop)",
+    "description": "Expose search history suggestions via Tauri and UI store.",
+    "surfaces": { "cli": false, "desktop": true, "web_demo": false },
+    "status": "implemented",
+    "user_value": 3,
+    "differentiation": 2,
+    "risk": "low",
+    "evidence": {
+      "paths": [
+        "src-tauri/src/commands/history.rs:26",
+        "ui/src/stores/historyStore.ts:31"
+      ],
+      "commands": []
+    },
+    "tests": { "unit": ["src-tauri/src/commands/history.rs:89"], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#desktop-ui-react" ]
+  },
+  {
+    "id": "global-hotkey",
+    "name": "Global hotkey",
+    "description": "Configurable global shortcut for showing the app.",
+    "surfaces": { "cli": false, "desktop": true, "web_demo": false },
+    "status": "implemented",
+    "user_value": 3,
+    "differentiation": 2,
+    "risk": "low",
+    "evidence": {
+      "paths": [
+        "src-tauri/src/commands/shortcut.rs:183",
+        "src-tauri/src/commands/shortcut.rs:243",
+        "src-tauri/src/lib.rs:38"
+      ],
+      "commands": []
+    },
+    "tests": { "unit": [], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#desktop-app-tauri-backend" ]
+  },
+  {
+    "id": "system-tray",
+    "name": "System tray",
+    "description": "System tray icon with menu actions.",
+    "surfaces": { "cli": false, "desktop": true, "web_demo": false },
+    "status": "implemented",
+    "user_value": 2,
+    "differentiation": 2,
+    "risk": "low",
+    "evidence": {
+      "paths": [
+        "src-tauri/src/tray.rs:15",
+        "src-tauri/src/lib.rs:35"
+      ],
+      "commands": []
+    },
+    "tests": { "unit": [], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#desktop-app-tauri-backend" ]
+  },
+  {
+    "id": "model-status-preload",
+    "name": "Model status and preload",
+    "description": "Query model availability and preload embedding models in desktop app.",
+    "surfaces": { "cli": false, "desktop": true, "web_demo": false },
+    "status": "implemented",
+    "user_value": 3,
+    "differentiation": 2,
+    "risk": "med",
+    "evidence": {
+      "paths": [
+        "src-tauri/src/commands/system.rs:155",
+        "src-tauri/src/commands/system.rs:220",
+        "ui/src/App.tsx:88"
+      ],
+      "commands": []
+    },
+    "tests": { "unit": [], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#desktop-app-tauri-backend" ]
+  },
+  {
+    "id": "academic-export-formats",
+    "name": "Academic export formats (CLI)",
+    "description": "Export results to Zotero, Mendeley, and BibTeX formats.",
+    "surfaces": { "cli": true, "desktop": false, "web_demo": false },
+    "status": "implemented",
+    "user_value": 2,
+    "differentiation": 3,
+    "risk": "low",
+    "evidence": {
+      "paths": [
+        "src/cli/output.rs:41",
+        "src/cli/output.rs:44",
+        "src/cli/output.rs:46",
+        "src/integrations/academic.rs:9"
+      ],
+      "commands": [
+        "ixos search \"query\" --format zotero",
+        "ixos search \"query\" --format mendeley",
+        "ixos search \"query\" --format bibtex"
+      ]
+    },
+    "tests": { "unit": [], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#academic-export-formats" ]
+  },
+  {
+    "id": "background-indexer",
+    "name": "Background indexing",
+    "description": "Idle-time background indexing for embeddings (placeholder logic).",
+    "surfaces": { "cli": false, "desktop": true, "web_demo": false },
+    "status": "partial",
+    "user_value": 3,
+    "differentiation": 3,
+    "risk": "med",
+    "evidence": {
+      "paths": [
+        "src-tauri/src/commands/indexer.rs:23",
+        "src/ixos_embed/background_indexer.rs:93"
+      ],
+      "commands": []
+    },
+    "tests": { "unit": ["src/ixos_embed/background_indexer.rs:227"], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#background-indexing-and-prefetch" ]
+  },
+  {
+    "id": "cache-cli-management",
+    "name": "Cache management CLI",
+    "description": "Cache stats, clear, audit, and rebuild commands (rebuild is stubbed).",
+    "surfaces": { "cli": true, "desktop": false, "web_demo": false },
+    "status": "partial",
+    "user_value": 2,
+    "differentiation": 2,
+    "risk": "low",
+    "evidence": {
+      "paths": [
+        "src/cli/commands.rs:304",
+        "src/cli/commands.rs:315",
+        "src/cli/commands.rs:330",
+        "src/cli/commands.rs:345",
+        "src/main.rs:809"
+      ],
+      "commands": [
+        "ixos cache stats",
+        "ixos cache clear",
+        "ixos cache audit",
+        "ixos cache rebuild"
+      ]
+    },
+    "tests": { "unit": [], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#cli-commands-current" ]
+  },
+  {
+    "id": "daemon-cli",
+    "name": "Daemon CLI",
+    "description": "CLI daemon command with foreground mode; background mode is not implemented.",
+    "surfaces": { "cli": true, "desktop": false, "web_demo": false },
+    "status": "partial",
+    "user_value": 2,
+    "differentiation": 2,
+    "risk": "med",
+    "evidence": {
+      "paths": [
+        "src/cli/commands.rs:221",
+        "src/main.rs:583"
+      ],
+      "commands": [
+        "ixos daemon --foreground"
+      ]
+    },
+    "tests": { "unit": [], "integration": [], "golden": [] },
+    "docs": [ "docs/PROJECT_GUIDE.md#cli-commands-current" ]
+  }
+]

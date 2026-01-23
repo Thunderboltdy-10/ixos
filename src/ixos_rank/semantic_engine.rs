@@ -15,6 +15,7 @@ use tokio::sync::Mutex;
 
 use crate::ixos_embed::augmented::{build_augmented_text, AugmentationConfig};
 use crate::ixos_embed::secure_embedder::SecureEmbedder;
+use crate::instrumentation::{content_extraction_span, embedding_batch_span, ranking_fusion_span};
 use crate::security::crypto::sha256;
 use crate::storage::{get_cache_for_path, EmbeddingCache};
 
@@ -457,6 +458,8 @@ impl SemanticEngine for StubSemanticEngine {
         // Phase 2: For uncached candidates, read file content and check persistent cache
         for (idx, path) in uncached_candidates {
             // Read file content
+            let _span = content_extraction_span(&path);
+            let _enter = _span.enter();
             let (content, bytes_read, file_hash) = match read_text_for_embedding(&path) {
                 Ok(result) => result,
                 Err(_) => continue, // Skip unreadable files
@@ -497,6 +500,8 @@ impl SemanticEngine for StubSemanticEngine {
                 .map(|(_, path, c, _)| build_augmented_text(path, c, &self.augmentation_config))
                 .collect();
 
+            let _span = embedding_batch_span(texts.len(), 0);
+            let _enter = _span.enter();
             let embeddings = self
                 .embedder
                 .embed_batch_secure(&texts)
@@ -553,6 +558,8 @@ impl SemanticEngine for StubSemanticEngine {
 
         // Phase 6: Calculate similarities for all candidates
         let mut results: Vec<SemanticMatch> = Vec::new();
+        let _rank_span = ranking_fusion_span(cached_results.len());
+        let _rank_enter = _rank_span.enter();
         let centroids = self.directory_centroids.lock().await;
         for (path, embedding) in cached_results {
             let mut similarity = Self::cosine_similarity(&query_embedding, &embedding);

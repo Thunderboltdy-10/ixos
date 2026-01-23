@@ -2,9 +2,42 @@
 
 import { motion } from "framer-motion";
 import { VERIFIED_BENCHMARKS } from "@/lib/verified-benchmarks";
-import { ExternalLink } from "lucide-react";
 
 export function BenchmarksSection() {
+    const parseMs = (value: string) => {
+        const cleaned = value.replace("ms", "");
+        const parsed = parseFloat(cleaned);
+        return Number.isFinite(parsed) ? parsed : 0;
+    };
+
+    const totalMs = parseMs(VERIFIED_BENCHMARKS.jitMode.p95Total);
+    const stages = [
+        {
+            label: "Directory Walk",
+            value: VERIFIED_BENCHMARKS.stageBreakdown.directoryWalkP95,
+        },
+        {
+            label: "Path Scoring",
+            value: VERIFIED_BENCHMARKS.stageBreakdown.pathScoringP95,
+        },
+        {
+            label: "Ripgrep Scan",
+            value: VERIFIED_BENCHMARKS.stageBreakdown.ripgrepScanP95,
+        },
+        {
+            label: "Candidate Selection",
+            value: VERIFIED_BENCHMARKS.stageBreakdown.candidateSelectionP95,
+        },
+        {
+            label: "Embedding",
+            value: VERIFIED_BENCHMARKS.stageBreakdown.embeddingP95,
+        },
+        {
+            label: "Ranking",
+            value: VERIFIED_BENCHMARKS.stageBreakdown.rankingP95,
+        },
+    ];
+
     return (
         <section className="py-24 relative" id="benchmarks">
             <div className="container mx-auto px-4">
@@ -44,10 +77,10 @@ export function BenchmarksSection() {
                         className="bg-surface-1 rounded-2xl border border-white/5 p-6 text-center"
                     >
                         <p className="text-4xl font-bold text-white mb-1">
-                            {VERIFIED_BENCHMARKS.accuracy.flashMRR10}
+                            {VERIFIED_BENCHMARKS.cacheMode.p95Total}
                         </p>
-                        <p className="text-sm text-content-muted">Flash MRR@10</p>
-                        <p className="text-xs text-brand-teal mt-2">Mean Reciprocal Rank</p>
+                        <p className="text-sm text-content-muted">P95 Total (Cache)</p>
+                        <p className="text-xs text-brand-teal mt-2">Warm Embedding Cache</p>
                     </motion.div>
 
                     <motion.div
@@ -58,10 +91,10 @@ export function BenchmarksSection() {
                         className="bg-surface-1 rounded-2xl border border-white/5 p-6 text-center"
                     >
                         <p className="text-4xl font-bold text-white mb-1">
-                            {VERIFIED_BENCHMARKS.accuracy.autoMRR10}
+                            {VERIFIED_BENCHMARKS.jitMode.p95Total}
                         </p>
-                        <p className="text-sm text-content-muted">Auto MRR@10</p>
-                        <p className="text-xs text-brand-teal mt-2">With Fusion Weights</p>
+                        <p className="text-sm text-content-muted">P95 Total (JIT)</p>
+                        <p className="text-xs text-brand-teal mt-2">No Persistent Index</p>
                     </motion.div>
 
                     <motion.div
@@ -72,10 +105,10 @@ export function BenchmarksSection() {
                         className="bg-surface-1 rounded-2xl border border-white/5 p-6 text-center"
                     >
                         <p className="text-4xl font-bold text-white mb-1">
-                            {VERIFIED_BENCHMARKS.comparisons.vsTransformer}
+                            {VERIFIED_BENCHMARKS.cacheMode.hitRate}
                         </p>
-                        <p className="text-sm text-content-muted">vs Transformers</p>
-                        <p className="text-xs text-brand-teal mt-2">Speed Advantage</p>
+                        <p className="text-sm text-content-muted">Cache Hit Rate</p>
+                        <p className="text-xs text-brand-teal mt-2">Warm Cache Runs</p>
                     </motion.div>
                 </div>
 
@@ -87,14 +120,27 @@ export function BenchmarksSection() {
                     className="max-w-3xl mx-auto bg-surface-1 rounded-2xl border border-white/5 p-8"
                 >
                     <h3 className="text-xl font-semibold text-white mb-6">
-                        Search Pipeline Breakdown (P95)
+                        Search Pipeline Breakdown (P95, JIT)
                     </h3>
                     <div className="space-y-4">
-                        <StageBar label="Directory Walk" value="80ms" percentage={8} />
-                        <StageBar label="Ripgrep Scan" value="190ms" percentage={19} />
-                        <StageBar label="Candidate Selection" value="14ms" percentage={1} />
-                        <StageBar label="Flash Ranking" value="417ms" percentage={42} />
-                        <StageBar label="Total (Cache)" value="420ms" percentage={100} highlight />
+                        {stages.map((stage) => (
+                            <StageBar
+                                key={stage.label}
+                                label={stage.label}
+                                value={stage.value}
+                                percentage={
+                                    totalMs > 0
+                                        ? Math.min((parseMs(stage.value) / totalMs) * 100, 100)
+                                        : 0
+                                }
+                            />
+                        ))}
+                        <StageBar
+                            label="Total (JIT)"
+                            value={VERIFIED_BENCHMARKS.jitMode.p95Total}
+                            percentage={100}
+                            highlight
+                        />
                     </div>
 
                     <p className="text-xs text-content-muted mt-6 text-center">

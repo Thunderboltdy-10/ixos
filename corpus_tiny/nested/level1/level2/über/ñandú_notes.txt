@@ -1,0 +1,2 @@
+Nested unicode notes
+This file name includes unicode and deep nesting.

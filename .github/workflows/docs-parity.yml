@@ -1,0 +1,35 @@
+name: docs-parity
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  docs-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Validate feature registry
+        run: python scripts/validate_registry.py
+
+      - name: Generate capability matrix
+        run: python scripts/generate_capability_matrix.py
+
+      - name: Verify capability matrix is up to date
+        run: git diff --exit-code docs/capability-matrix.md
+
+      - name: Golden tests
+        run: python scripts/run_golden.py
+
+      - name: Contract tests
+        run: python scripts/run_contract.py

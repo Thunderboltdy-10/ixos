@@ -47,6 +47,8 @@ use std::time::Duration;
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
 
+use crate::instrumentation::search_total_span;
+
 use super::candidate_generator::QueryPreprocessor;
 use super::evidence::{Evidence, EvidenceChain, PassageExtractor};
 use super::lexical_engine::LexicalEngine;
@@ -426,6 +428,8 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
     ) -> Result<(), SearchError> {
         const MAX_STREAM_EVENTS: usize = 120;
         const MAX_SCAN_EVENTS_PER_BATCH: usize = 6;
+        let _total_span = search_total_span(&query);
+        let _total_enter = _total_span.enter();
 
         // Calculate how many candidates to request from lexical phase
         let lexical_limit = self.config.max_results * self.config.candidate_multiplier;

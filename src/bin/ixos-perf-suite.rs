@@ -4,12 +4,15 @@
 
 use clap::Parser;
 use rand::{rngs::StdRng, Rng, SeedableRng};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
-use ixos_protocol::instrumentation::{CorpusStats, MetricsCollector, PerformanceBaseline};
+use ixos_protocol::instrumentation::{
+    CorpusStats, MetricsCollector, PerformanceBaseline, ResourceSampler,
+};
+use ixos_protocol::ixos_embed::{MmapModel2VecEmbedder, ModelType};
 use ixos_protocol::ixos_rank::{
     CacheMode, CandidateGenerator, CandidateGeneratorConfig, SemanticEngine, StubSemanticEngine,
 };
@@ -22,6 +25,9 @@ struct PerfSuiteArgs {
     /// Output JSON report path
     #[arg(long, default_value = "PERF_REGRESSION.json")]
     out: PathBuf,
+    /// Optional config file (TOML)
+    #[arg(long)]
+    config: Option<PathBuf>,
     /// Sizes to generate (comma-separated)
     #[arg(long, default_value = "30000,100000")]
     sizes: String,
@@ -34,6 +40,9 @@ struct PerfSuiteArgs {
     /// Cache mode: jit or cache
     #[arg(long, default_value = "jit")]
     cache_mode: String,
+    /// Model to use
+    #[arg(long, default_value = "ixos-flash-v2")]
+    model: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -49,21 +58,92 @@ struct PerfRegressionRun {
     baseline: PerformanceBaseline,
 }
 
+#[derive(Debug, Deserialize)]
+struct PerfSuiteConfig {
+    run: PerfRunConfig,
+    corpora: HashMap<String, PerfCorpusConfig>,
+}
+
+#[derive(Debug, Deserialize)]
+struct PerfRunConfig {
+    runs: usize,
+    seed: u64,
+    cache_mode: String,
+    model: String,
+    queries: Option<Vec<String>>,
+    out_dir: Option<PathBuf>,
+}
+
+#[derive(Debug, Deserialize)]
+struct PerfCorpusConfig {
+    size: Option<usize>,
+    dir: Option<PathBuf>,
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = PerfSuiteArgs::parse();
-    let sizes = parse_sizes(&args.sizes)?;
-    let cache_mode = parse_cache_mode(&args.cache_mode);
+    let config = match args.config.as_ref() {
+        Some(path) => Some(load_config(path)?),
+        None => None,
+    };
+
+    let (run_count, seed, cache_mode, model_type, queries, out_path) = if let Some(ref cfg) = config
+    {
+        let cache_mode = parse_cache_mode(&cfg.run.cache_mode);
+        let model_type = parse_model_type(&cfg.run.model)?;
+        let out_dir = cfg
+            .run
+            .out_dir
+            .clone()
+            .unwrap_or_else(|| PathBuf::from("bench/results"));
+        let out_path = out_dir.join("PERF_REGRESSION.json");
+        (
+            cfg.run.runs,
+            cfg.run.seed,
+            cache_mode,
+            model_type,
+            cfg.run.queries.clone().unwrap_or_else(default_queries),
+            out_path,
+        )
+    } else {
+        let cache_mode = parse_cache_mode(&args.cache_mode);
+        let model_type = parse_model_type(&args.model)?;
+        (
+            args.runs,
+            args.seed,
+            cache_mode,
+            model_type,
+            default_queries(),
+            args.out.clone(),
+        )
+    };
 
     let mut runs = Vec::new();
-    for size in sizes {
-        let corpus_dir = build_corpus(size, args.seed)?;
-        let baseline = run_baseline(&corpus_dir, size, args.runs, cache_mode).await?;
-        runs.push(PerfRegressionRun {
-            size,
-            cache_mode: format!("{:?}", cache_mode),
-            baseline,
-        });
+    if let Some(cfg) = config {
+        for (name, corpus_cfg) in cfg.corpora {
+            let corpus_dir = prepare_corpus(&name, &corpus_cfg, seed)?;
+            let baseline =
+                run_baseline(&corpus_dir, run_count, cache_mode, model_type, &queries).await?;
+            let size = baseline.corpus.total_files;
+            runs.push(PerfRegressionRun {
+                size,
+                cache_mode: format!("{:?}", cache_mode),
+                baseline,
+            });
+        }
+    } else {
+        let sizes = parse_sizes(&args.sizes)?;
+        for size in sizes {
+            let corpus_dir = build_corpus(&format!("{}k", size / 1000), size, seed)?;
+            let baseline =
+                run_baseline(&corpus_dir, run_count, cache_mode, model_type, &queries).await?;
+            runs.push(PerfRegressionRun {
+                size,
+                cache_mode: format!("{:?}", cache_mode),
+                baseline,
+            });
+        }
     }
 
     let report = PerfRegressionReport {
@@ -71,8 +151,11 @@ async fn main() -> anyhow::Result<()> {
         runs,
     };
     let content = serde_json::to_string_pretty(&report)?;
-    std::fs::write(&args.out, content)?;
-    println!("Wrote {}", args.out.display());
+    if let Some(parent) = out_path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    std::fs::write(&out_path, content)?;
+    println!("Wrote {}", out_path.display());
     Ok(())
 }
 
@@ -98,9 +181,33 @@ fn parse_cache_mode(raw: &str) -> CacheMode {
     }
 }
 
-fn build_corpus(size: usize, seed: u64) -> anyhow::Result<PathBuf> {
+fn parse_model_type(raw: &str) -> anyhow::Result<ModelType> {
+    raw.parse::<ModelType>()
+        .map_err(|e| anyhow::anyhow!(e))
+}
+
+fn load_config(path: &Path) -> anyhow::Result<PerfSuiteConfig> {
+    let content = std::fs::read_to_string(path)?;
+    let config: PerfSuiteConfig = toml::from_str(&content)?;
+    Ok(config)
+}
+
+fn prepare_corpus(name: &str, config: &PerfCorpusConfig, seed: u64) -> anyhow::Result<PathBuf> {
+    if let Some(dir) = config.dir.as_ref() {
+        if !dir.exists() {
+            anyhow::bail!("Corpus dir not found: {}", dir.display());
+        }
+        return Ok(dir.clone());
+    }
+    let size = config
+        .size
+        .ok_or_else(|| anyhow::anyhow!("Corpus {} missing size or dir", name))?;
+    build_corpus(name, size, seed)
+}
+
+fn build_corpus(name: &str, size: usize, seed: u64) -> anyhow::Result<PathBuf> {
     let root = std::env::current_dir()?.join("target").join("perf_corpus");
-    let corpus_dir = root.join(format!("{}k", size / 1000));
+    let corpus_dir = root.join(name);
     if corpus_dir.exists() {
         return Ok(corpus_dir);
     }
@@ -129,25 +236,27 @@ fn build_corpus(size: usize, seed: u64) -> anyhow::Result<PathBuf> {
 
 async fn run_baseline(
     corpus_dir: &Path,
-    size: usize,
     runs: usize,
     cache_mode: CacheMode,
+    model_type: ModelType,
+    queries: &[String],
 ) -> anyhow::Result<PerformanceBaseline> {
     let corpus = collect_corpus_stats(corpus_dir);
     let mut generator = CandidateGenerator::new(corpus_dir.to_path_buf(), CandidateGeneratorConfig::default());
     generator.build_index();
 
-    let model = ixos_protocol::ixos_embed::model::StubModel::new();
+    let model = MmapModel2VecEmbedder::new_with_type(model_type)
+        .map_err(|e| anyhow::anyhow!("Model load failed: {}", e))?;
     let embedder = SecureEmbedder::new_fast(std::sync::Arc::new(model));
     let mut semantic = StubSemanticEngine::with_cache_mode(embedder, cache_mode);
     semantic.index_directory(corpus_dir).await?;
 
-    let queries = default_queries();
     let mut metrics_runs = Vec::new();
 
     for run_idx in 0..runs {
         let query = &queries[run_idx % queries.len()];
         let mut collector = MetricsCollector::new();
+        let sampler = ResourceSampler::default();
 
         let candidate_start = Instant::now();
         let candidate_set = generator.generate(query);
@@ -195,6 +304,9 @@ async fn run_baseline(
         resources.files_scanned = candidate_stats.paths_scanned;
         resources.candidates_generated = candidate_stats.merged_candidates;
         resources.candidates_embedded = semantic_metrics.candidates_embedded;
+        let sample = sampler.stop();
+        resources.peak_ram_mb = sample.peak_ram_mb;
+        resources.cpu_percent = sample.avg_cpu_percent;
         collector.update_resources(resources);
 
         metrics_runs.push(collector.finalize());
@@ -204,8 +316,14 @@ async fn run_baseline(
         }
     }
 
+    let total_files = corpus.total_files;
     let baseline = PerformanceBaseline::from_runs(metrics_runs, corpus);
-    tracing::info!("Perf suite size {} completed", size);
+    tracing::info!(
+        "Perf suite completed (files: {}, cache: {:?}, model: {:?})",
+        total_files,
+        cache_mode,
+        model_type
+    );
     Ok(baseline)
 }
 

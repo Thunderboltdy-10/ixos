@@ -1,0 +1,2 @@
+Research Summary
+Semantic search relies on candidate generation and reranking.

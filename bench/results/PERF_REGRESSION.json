@@ -1,0 +1,638 @@
+{
+  "generated_at": "2026-01-23T14:02:30.986680200+00:00",
+  "runs": [
+    {
+      "size": 10000,
+      "cache_mode": "Jit",
+      "baseline": {
+        "generated_at": "2026-01-23T14:02:05.143210700+00:00",
+        "corpus": {
+          "total_files": 10000,
+          "total_size_mb": 0.8706121444702148,
+          "file_types": [
+            [
+              "txt",
+              10000
+            ]
+          ],
+          "avg_file_size_bytes": 91
+        },
+        "summary": {
+          "ttfr": {
+            "p50_ms": 896,
+            "p95_ms": 1040,
+            "p99_ms": 1040
+          },
+          "ttsi": {
+            "p50_ms": 897,
+            "p95_ms": 1041,
+            "p99_ms": 1041
+          },
+          "total": {
+            "p50_ms": 1276,
+            "p95_ms": 6438,
+            "p99_ms": 6438
+          },
+          "avg_cache_hit_rate": 0.30977777,
+          "avg_candidates_embedded": 285,
+          "avg_cpu_percent": 132.25203,
+          "peak_ram_mb": 220
+        },
+        "stages": {
+          "directory_walk": {
+            "p50_ms": 792,
+            "p95_ms": 792,
+            "p99_ms": 792
+          },
+          "path_scoring": {
+            "p50_ms": 1,
+            "p95_ms": 1,
+            "p99_ms": 1
+          },
+          "ripgrep_scan": {
+            "p50_ms": 300,
+            "p95_ms": 300,
+            "p99_ms": 300
+          },
+          "candidate_selection": {
+            "p50_ms": 595,
+            "p95_ms": 739,
+            "p99_ms": 739
+          },
+          "embedding": {
+            "p50_ms": 149,
+            "p95_ms": 2538,
+            "p99_ms": 2538
+          },
+          "ranking": {
+            "p50_ms": 69,
+            "p95_ms": 2993,
+            "p99_ms": 2993
+          }
+        },
+        "runs": [
+          {
+            "ttfr_ms": 896,
+            "ttsi_ms": 897,
+            "total_ms": 6438,
+            "stages": {
+              "directory_walk_ms": 792,
+              "path_scoring_ms": 1,
+              "ripgrep_scan_ms": 300,
+              "candidate_selection_ms": 595,
+              "embedding_ms": 2538,
+              "ranking_ms": 2993,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 220,
+              "io_read_mb": 0.13065433502197266,
+              "cpu_percent": 148.25282,
+              "cache_hit_rate": 0.0,
+              "files_scanned": 10000,
+              "candidates_generated": 1814,
+              "candidates_embedded": 1500
+            }
+          },
+          {
+            "ttfr_ms": 971,
+            "ttsi_ms": 971,
+            "total_ms": 1288,
+            "stages": {
+              "directory_walk_ms": 792,
+              "path_scoring_ms": 1,
+              "ripgrep_scan_ms": 300,
+              "candidate_selection_ms": 669,
+              "embedding_ms": 204,
+              "ranking_ms": 69,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 183,
+              "io_read_mb": 0.010619163513183594,
+              "cpu_percent": 141.00024,
+              "cache_hit_rate": 0.91866666,
+              "files_scanned": 10000,
+              "candidates_generated": 1919,
+              "candidates_embedded": 122
+            }
+          },
+          {
+            "ttfr_ms": 301,
+            "ttsi_ms": 301,
+            "total_ms": 322,
+            "stages": {
+              "directory_walk_ms": 792,
+              "path_scoring_ms": 0,
+              "ripgrep_scan_ms": 300,
+              "candidate_selection_ms": 0,
+              "embedding_ms": 0,
+              "ranking_ms": 0,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 183,
+              "io_read_mb": 0.0,
+              "cpu_percent": 164.00113,
+              "cache_hit_rate": 0.0,
+              "files_scanned": 10000,
+              "candidates_generated": 0,
+              "candidates_embedded": 0
+            }
+          },
+          {
+            "ttfr_ms": 301,
+            "ttsi_ms": 301,
+            "total_ms": 323,
+            "stages": {
+              "directory_walk_ms": 792,
+              "path_scoring_ms": 0,
+              "ripgrep_scan_ms": 300,
+              "candidate_selection_ms": 0,
+              "embedding_ms": 0,
+              "ranking_ms": 0,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 183,
+              "io_read_mb": 0.0,
+              "cpu_percent": 90.00117,
+              "cache_hit_rate": 0.0,
+              "files_scanned": 10000,
+              "candidates_generated": 0,
+              "candidates_embedded": 0
+            }
+          },
+          {
+            "ttfr_ms": 301,
+            "ttsi_ms": 301,
+            "total_ms": 323,
+            "stages": {
+              "directory_walk_ms": 792,
+              "path_scoring_ms": 0,
+              "ripgrep_scan_ms": 300,
+              "candidate_selection_ms": 0,
+              "embedding_ms": 0,
+              "ranking_ms": 0,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 183,
+              "io_read_mb": 0.0,
+              "cpu_percent": 100.00122,
+              "cache_hit_rate": 0.0,
+              "files_scanned": 10000,
+              "candidates_generated": 0,
+              "candidates_embedded": 0
+            }
+          },
+          {
+            "ttfr_ms": 1040,
+            "ttsi_ms": 1041,
+            "total_ms": 1276,
+            "stages": {
+              "directory_walk_ms": 792,
+              "path_scoring_ms": 1,
+              "ripgrep_scan_ms": 300,
+              "candidate_selection_ms": 739,
+              "embedding_ms": 149,
+              "ranking_ms": 74,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 183,
+              "io_read_mb": 0.007843971252441406,
+              "cpu_percent": 150.25557,
+              "cache_hit_rate": 0.94,
+              "files_scanned": 10000,
+              "candidates_generated": 2009,
+              "candidates_embedded": 90
+            }
+          }
+        ]
+      }
+    },
+    {
+      "size": 1000,
+      "cache_mode": "Jit",
+      "baseline": {
+        "generated_at": "2026-01-23T14:02:11.710888100+00:00",
+        "corpus": {
+          "total_files": 1000,
+          "total_size_mb": 0.08609962463378906,
+          "file_types": [
+            [
+              "txt",
+              1000
+            ]
+          ],
+          "avg_file_size_bytes": 90
+        },
+        "summary": {
+          "ttfr": {
+            "p50_ms": 332,
+            "p95_ms": 342,
+            "p99_ms": 342
+          },
+          "ttsi": {
+            "p50_ms": 332,
+            "p95_ms": 342,
+            "p99_ms": 342
+          },
+          "total": {
+            "p50_ms": 388,
+            "p95_ms": 4968,
+            "p99_ms": 4968
+          },
+          "avg_cache_hit_rate": 0.33333334,
+          "avg_candidates_embedded": 166,
+          "avg_cpu_percent": 110.037056,
+          "peak_ram_mb": 199
+        },
+        "stages": {
+          "directory_walk": {
+            "p50_ms": 81,
+            "p95_ms": 81,
+            "p99_ms": 81
+          },
+          "path_scoring": {
+            "p50_ms": 0,
+            "p95_ms": 0,
+            "p99_ms": 0
+          },
+          "ripgrep_scan": {
+            "p50_ms": 155,
+            "p95_ms": 161,
+            "p99_ms": 161
+          },
+          "candidate_selection": {
+            "p50_ms": 176,
+            "p95_ms": 181,
+            "p99_ms": 181
+          },
+          "embedding": {
+            "p50_ms": 0,
+            "p95_ms": 1670,
+            "p99_ms": 1670
+          },
+          "ranking": {
+            "p50_ms": 26,
+            "p95_ms": 2938,
+            "p99_ms": 2938
+          }
+        },
+        "runs": [
+          {
+            "ttfr_ms": 342,
+            "ttsi_ms": 342,
+            "total_ms": 4968,
+            "stages": {
+              "directory_walk_ms": 81,
+              "path_scoring_ms": 0,
+              "ripgrep_scan_ms": 161,
+              "candidate_selection_ms": 180,
+              "embedding_ms": 1670,
+              "ranking_ms": 2938,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 199,
+              "io_read_mb": 0.08609962463378906,
+              "cpu_percent": 143.38329,
+              "cache_hit_rate": 0.0,
+              "files_scanned": 1000,
+              "candidates_generated": 1000,
+              "candidates_embedded": 1000
+            }
+          },
+          {
+            "ttfr_ms": 338,
+            "ttsi_ms": 338,
+            "total_ms": 388,
+            "stages": {
+              "directory_walk_ms": 81,
+              "path_scoring_ms": 0,
+              "ripgrep_scan_ms": 156,
+              "candidate_selection_ms": 181,
+              "embedding_ms": 0,
+              "ranking_ms": 26,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 157,
+              "io_read_mb": 0.0,
+              "cpu_percent": 138.237,
+              "cache_hit_rate": 1.0,
+              "files_scanned": 1000,
+              "candidates_generated": 1000,
+              "candidates_embedded": 0
+            }
+          },
+          {
+            "ttfr_ms": 147,
+            "ttsi_ms": 147,
+            "total_ms": 190,
+            "stages": {
+              "directory_walk_ms": 81,
+              "path_scoring_ms": 0,
+              "ripgrep_scan_ms": 146,
+              "candidate_selection_ms": 0,
+              "embedding_ms": 0,
+              "ranking_ms": 0,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 157,
+              "io_read_mb": 0.0,
+              "cpu_percent": 75.00348,
+              "cache_hit_rate": 0.0,
+              "files_scanned": 1000,
+              "candidates_generated": 0,
+              "candidates_embedded": 0
+            }
+          },
+          {
+            "ttfr_ms": 132,
+            "ttsi_ms": 132,
+            "total_ms": 196,
+            "stages": {
+              "directory_walk_ms": 81,
+              "path_scoring_ms": 0,
+              "ripgrep_scan_ms": 132,
+              "candidate_selection_ms": 0,
+              "embedding_ms": 0,
+              "ranking_ms": 0,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 157,
+              "io_read_mb": 0.0,
+              "cpu_percent": 100.00351,
+              "cache_hit_rate": 0.0,
+              "files_scanned": 1000,
+              "candidates_generated": 0,
+              "candidates_embedded": 0
+            }
+          },
+          {
+            "ttfr_ms": 132,
+            "ttsi_ms": 132,
+            "total_ms": 195,
+            "stages": {
+              "directory_walk_ms": 81,
+              "path_scoring_ms": 0,
+              "ripgrep_scan_ms": 132,
+              "candidate_selection_ms": 0,
+              "embedding_ms": 0,
+              "ranking_ms": 0,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 157,
+              "io_read_mb": 0.0,
+              "cpu_percent": 83.336876,
+              "cache_hit_rate": 0.0,
+              "files_scanned": 1000,
+              "candidates_generated": 0,
+              "candidates_embedded": 0
+            }
+          },
+          {
+            "ttfr_ms": 332,
+            "ttsi_ms": 332,
+            "total_ms": 388,
+            "stages": {
+              "directory_walk_ms": 81,
+              "path_scoring_ms": 0,
+              "ripgrep_scan_ms": 155,
+              "candidate_selection_ms": 176,
+              "embedding_ms": 0,
+              "ranking_ms": 30,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 157,
+              "io_read_mb": 0.0,
+              "cpu_percent": 120.2582,
+              "cache_hit_rate": 1.0,
+              "files_scanned": 1000,
+              "candidates_generated": 1000,
+              "candidates_embedded": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "size": 50000,
+      "cache_mode": "Jit",
+      "baseline": {
+        "generated_at": "2026-01-23T14:02:30.861927600+00:00",
+        "corpus": {
+          "total_files": 50000,
+          "total_size_mb": 4.39534854888916,
+          "file_types": [
+            [
+              "txt",
+              50000
+            ]
+          ],
+          "avg_file_size_bytes": 92
+        },
+        "summary": {
+          "ttfr": {
+            "p50_ms": 1006,
+            "p95_ms": 1031,
+            "p99_ms": 1031
+          },
+          "ttsi": {
+            "p50_ms": 1006,
+            "p95_ms": 1032,
+            "p99_ms": 1032
+          },
+          "total": {
+            "p50_ms": 1210,
+            "p95_ms": 6586,
+            "p99_ms": 6586
+          },
+          "avg_cache_hit_rate": 0.3263333,
+          "avg_candidates_embedded": 260,
+          "avg_cpu_percent": 130.0801,
+          "peak_ram_mb": 317
+        },
+        "stages": {
+          "directory_walk": {
+            "p50_ms": 3946,
+            "p95_ms": 3946,
+            "p99_ms": 3946
+          },
+          "path_scoring": {
+            "p50_ms": 4,
+            "p95_ms": 4,
+            "p99_ms": 4
+          },
+          "ripgrep_scan": {
+            "p50_ms": 300,
+            "p95_ms": 300,
+            "p99_ms": 300
+          },
+          "candidate_selection": {
+            "p50_ms": 700,
+            "p95_ms": 726,
+            "p99_ms": 726
+          },
+          "embedding": {
+            "p50_ms": 37,
+            "p95_ms": 2548,
+            "p99_ms": 2548
+          },
+          "ranking": {
+            "p50_ms": 72,
+            "p95_ms": 2988,
+            "p99_ms": 2988
+          }
+        },
+        "runs": [
+          {
+            "ttfr_ms": 1006,
+            "ttsi_ms": 1006,
+            "total_ms": 6586,
+            "stages": {
+              "directory_walk_ms": 3946,
+              "path_scoring_ms": 4,
+              "ripgrep_scan_ms": 300,
+              "candidate_selection_ms": 700,
+              "embedding_ms": 2548,
+              "ranking_ms": 2988,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 317,
+              "io_read_mb": 0.13141345977783203,
+              "cpu_percent": 147.99304,
+              "cache_hit_rate": 0.0,
+              "files_scanned": 50000,
+              "candidates_generated": 1959,
+              "candidates_embedded": 1500
+            }
+          },
+          {
+            "ttfr_ms": 1023,
+            "ttsi_ms": 1025,
+            "total_ms": 1210,
+            "stages": {
+              "directory_walk_ms": 3946,
+              "path_scoring_ms": 4,
+              "ripgrep_scan_ms": 300,
+              "candidate_selection_ms": 719,
+              "embedding_ms": 70,
+              "ranking_ms": 72,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 279,
+              "io_read_mb": 0.003437042236328125,
+              "cpu_percent": 136.31677,
+              "cache_hit_rate": 0.974,
+              "files_scanned": 50000,
+              "candidates_generated": 1994,
+              "candidates_embedded": 39
+            }
+          },
+          {
+            "ttfr_ms": 304,
+            "ttsi_ms": 304,
+            "total_ms": 324,
+            "stages": {
+              "directory_walk_ms": 3946,
+              "path_scoring_ms": 4,
+              "ripgrep_scan_ms": 300,
+              "candidate_selection_ms": 0,
+              "embedding_ms": 0,
+              "ranking_ms": 0,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 279,
+              "io_read_mb": 0.0,
+              "cpu_percent": 118.00391,
+              "cache_hit_rate": 0.0,
+              "files_scanned": 50000,
+              "candidates_generated": 0,
+              "candidates_embedded": 0
+            }
+          },
+          {
+            "ttfr_ms": 304,
+            "ttsi_ms": 304,
+            "total_ms": 324,
+            "stages": {
+              "directory_walk_ms": 3946,
+              "path_scoring_ms": 4,
+              "ripgrep_scan_ms": 300,
+              "candidate_selection_ms": 0,
+              "embedding_ms": 0,
+              "ranking_ms": 0,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 279,
+              "io_read_mb": 0.0,
+              "cpu_percent": 95.003944,
+              "cache_hit_rate": 0.0,
+              "files_scanned": 50000,
+              "candidates_generated": 0,
+              "candidates_embedded": 0
+            }
+          },
+          {
+            "ttfr_ms": 304,
+            "ttsi_ms": 304,
+            "total_ms": 324,
+            "stages": {
+              "directory_walk_ms": 3946,
+              "path_scoring_ms": 4,
+              "ripgrep_scan_ms": 300,
+              "candidate_selection_ms": 0,
+              "embedding_ms": 0,
+              "ranking_ms": 0,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 279,
+              "io_read_mb": 0.0,
+              "cpu_percent": 110.00398,
+              "cache_hit_rate": 0.0,
+              "files_scanned": 50000,
+              "candidates_generated": 0,
+              "candidates_embedded": 0
+            }
+          },
+          {
+            "ttfr_ms": 1031,
+            "ttsi_ms": 1032,
+            "total_ms": 1214,
+            "stages": {
+              "directory_walk_ms": 3946,
+              "path_scoring_ms": 4,
+              "ripgrep_scan_ms": 300,
+              "candidate_selection_ms": 726,
+              "embedding_ms": 37,
+              "ranking_ms": 96,
+              "ipc_overhead_ms": 0
+            },
+            "resources": {
+              "peak_ram_mb": 279,
+              "io_read_mb": 0.0020923614501953125,
+              "cpu_percent": 173.15895,
+              "cache_hit_rate": 0.984,
+              "files_scanned": 50000,
+              "candidates_generated": 1991,
+              "candidates_embedded": 24
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

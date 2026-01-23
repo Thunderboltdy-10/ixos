@@ -33,23 +33,6 @@ I. **Monetization** (licensing, tiers, paywall that respects trust)
 
 ---
 
-## Phase 0 — Unify strategy + backlog (lock the plan)
-**Goal:** make one “source of truth” plan so you don’t drift.
-
-**Outputs**
-- “Ixos North Star” one-pager: wedge, personas, promise, proof
-- Master backlog with tags: {stream, priority, dependency, surface}
-- Feature registry (YAML/JSON): every feature lists surfaces (Desktop/CLI/Web), flags, tests, docs
-
-**Acceptance**
-- You can answer: “what are we building next and why?” in 30 seconds.
-- Every new feature PR must update the feature registry.
-
-**Agent-ready tickets**
-- Generate `features/registry.yml` + CI check that blocks merges if a new feature lacks tests/docs entries.
-- Create a “capability matrix” table (Desktop vs CLI vs both).
-
----
 
 ## Phase 1 — Measurement & bottleneck surgery (internal P1)
 **Goal:** stop guessing. Make latency measurable and regressions visible.

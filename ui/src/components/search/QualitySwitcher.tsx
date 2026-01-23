@@ -65,11 +65,10 @@ export function QualitySwitcher({ value, onChange, className }: QualitySwitcherP
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'flex items-center gap-2 px-3 py-2 rounded-md',
-          'bg-graphite-2 hover:bg-graphite-3',
-          'border border-stroke-hairline hover:border-border-medium',
+          'flex items-center gap-2 px-2.5 py-1.5 rounded-md',
+          'bg-transparent hover:bg-graphite-3/50',
           'transition-all duration-200',
-          'text-xs uppercase tracking-[0.16em] min-w-[120px]'
+          'text-xs uppercase tracking-[0.14em]'
         )}
       >
         <SelectedIcon className={cn('w-3.5 h-3.5', selectedMode.color)} />

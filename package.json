@@ -11,7 +11,9 @@
     "build": "cd ui && npm run build"
   },
   "workspaces": [
-    "ui"
+    "ui",
+    "packages/ui",
+    "ixos-site"
   ],
   "devDependencies": {
     "@tauri-apps/cli": "^2"

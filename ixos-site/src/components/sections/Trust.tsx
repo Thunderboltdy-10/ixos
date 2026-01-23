@@ -2,7 +2,6 @@
 
 import { cn } from "@/lib/utils";
 import { SectionDivider } from "@/components/ui/SectionDivider";
-
 import { FadeInView } from "@/components/effects/FadeInView";
 
 export function Trust() {
@@ -18,24 +17,36 @@ export function Trust() {
                 >
                     <FadeInView direction="up" delay={0} className="h-full">
                         <TrustCard
-                            title="100% On-Device"
-                            code="MODE: LOCAL_ONLY"
-                            desc="No cloud uploads. No telemetry. The AI inference runs strictly on your own hardware."
+                            title="No Index Tax"
+                            code="STORAGE: ZERO"
+                            desc="Unlike traditional search tools, Ixos doesn't build a massive persistent index. Your disk space stays yours."
                         />
                     </FadeInView>
                     <FadeInView direction="up" delay={150} className="h-full">
                         <TrustCard
-                            title="Ephemeral Memory"
-                            code="CACHE: VOLATILE"
-                            desc="Embeddings are computed just-in-time and flushed from memory after results are served."
+                            title="See Why It Matched"
+                            code="EXPLAIN: ENABLED"
+                            desc="Every result shows exactly why it matched your query. Full transparency, not black box magic."
                         />
                     </FadeInView>
                     <FadeInView direction="up" delay={300} className="h-full">
                         <TrustCard
-                            title="Open Standards"
-                            code="COMPAT: NATIVE"
-                            desc="We use standard file watchers and respect .gitignore rules. No proprietary databases."
+                            title="Journalist Mode"
+                            code="PRIVACY: MAXIMUM"
+                            desc="Maximum privacy when you need it. No history, no traces, encrypted temporary storage that's wiped after every search."
                         />
+                    </FadeInView>
+                </div>
+
+                {/* Additional trust signals */}
+                <div className="mt-16 max-w-4xl mx-auto">
+                    <FadeInView direction="up" delay={450}>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                            <TrustSignal value="100%" label="Local compute" />
+                            <TrustSignal value="0 KB" label="Cloud transfer" />
+                            <TrustSignal value="Zero" label="Telemetry" />
+                            <TrustSignal value="Open" label="Source audit" />
+                        </div>
                     </FadeInView>
                 </div>
             </div>
@@ -66,6 +77,17 @@ function TrustCard({
 
             {/* Corner Accent */}
             <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-accent-amber opacity-0 group-hover:opacity-50 transition-all duration-300" />
+        </div>
+    );
+}
+
+function TrustSignal({ value, label }: { value: string; label: string }) {
+    return (
+        <div className="group">
+            <div className="text-2xl font-mono font-medium text-fg-porcelain group-hover:text-accent-amber transition-colors">
+                {value}
+            </div>
+            <div className="text-xs text-fg-muted mt-1">{label}</div>
         </div>
     );
 }

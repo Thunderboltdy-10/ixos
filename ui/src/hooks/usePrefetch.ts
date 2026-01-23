@@ -14,6 +14,9 @@ export function usePrefetch() {
 
     // Set new timeout for prefetch
     prefetchTimeoutRef.current = window.setTimeout(() => {
+      if (typeof window === 'undefined' || !('__TAURI__' in window)) {
+        return;
+      }
       invoke('prefetch_file', { path }).catch((error) => {
         console.error('Prefetch failed:', error);
       });

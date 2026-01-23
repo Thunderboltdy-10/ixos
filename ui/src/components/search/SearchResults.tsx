@@ -7,6 +7,7 @@ import { useStarredStore } from '@/stores/starredStore';
 import { useSearchStore } from '@/stores/searchStore';
 import { useClearLayoutOnChange } from '@/hooks/useLayoutSync';
 import { cn } from '@/lib/utils';
+import { sanitizeResults } from '@/lib/searchHistory';
 import type { RankedResult, LexicalResult, SearchPhase } from '@/lib/types';
 
 interface SearchResultsProps {
@@ -16,6 +17,7 @@ interface SearchResultsProps {
   onOpen: () => void;
   onReveal: () => void;
   phase: SearchPhase;
+  showStar?: boolean;
 }
 
 function useStabilizedResults<T>(results: T[], phase: SearchPhase): T[] {
@@ -62,6 +64,7 @@ export function SearchResults({
   onOpen,
   onReveal,
   phase,
+  showStar = true,
 }: SearchResultsProps) {
   const isSemanticPhase = phase === 'semantic' || phase === 'complete';
   const starred = useStarredStore();
@@ -70,25 +73,32 @@ export function SearchResults({
   useClearLayoutOnChange([displayResults.length]);
 
   // Check if current search is starred
-  const currentThread = starred.threads.find(
-    (t) => t.query === searchStore.query && t.directory === searchStore.directory
-  );
+  const currentThread = searchStore.activeThreadId
+    ? starred.getThreadById(searchStore.activeThreadId)
+    : undefined;
   const isStarred = currentThread?.starred ?? false;
+  const canStar = phase === 'complete' && results.length > 0;
 
   const handleStarClick = () => {
+    if (!canStar) return;
+
     if (currentThread) {
       // Toggle existing star
       starred.toggleStar(currentThread.id);
     } else {
       // Add new starred thread (addThread auto-stars now)
       const mode = searchStore.journalistMode ? 'journalist' : searchStore.cacheMode;
-      starred.addThread({
+      const threadId = searchStore.activeThreadId ?? crypto.randomUUID();
+      starred.recordThread({
+        id: threadId,
         query: searchStore.query,
         directory: searchStore.directory,
-        results: results as RankedResult[],
+        results: sanitizeResults(results as Array<RankedResult | LexicalResult>),
+        timestamp: Date.now(),
         mode: mode,
         resultCount: results.length,
-        durationMs: 0,
+        durationMs: searchStore.searchStartTime ? Date.now() - searchStore.searchStartTime : 0,
+        starred: true,
       });
     }
   };
@@ -103,21 +113,30 @@ export function SearchResults({
             {isSemanticPhase && <span className="text-accent-teal ml-2 text-xs uppercase tracking-[0.2em]">Semantic</span>}
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleStarClick}
-          className={cn(
-            'flex items-center gap-2 px-3 py-2 rounded-md text-xs uppercase tracking-[0.18em]',
-            'transition-all duration-150 border',
-            isStarred
-              ? 'text-warning bg-warning/10 border-warning/30'
-              : 'text-fg-dim hover:text-warning hover:bg-graphite-3 border-transparent'
-          )}
-          title={isStarred ? 'Remove from starred' : 'Star this search'}
-        >
-          <Star className={cn('w-4 h-4', isStarred && 'fill-current')} />
-          <span>{isStarred ? 'Starred' : 'Star'}</span>
-        </button>
+        {showStar && (
+          <button
+            type="button"
+            onClick={handleStarClick}
+            disabled={!canStar}
+            className={cn(
+              'flex items-center gap-2 px-3 py-2 rounded-md text-xs uppercase tracking-[0.18em]',
+              'transition-all duration-150 border',
+              isStarred
+                ? 'text-accent-amber bg-accent-amber/10 border-accent-amber/30'
+                : 'text-fg-dim hover:text-accent-amber hover:bg-graphite-3 border-transparent',
+              !canStar && 'opacity-50 cursor-not-allowed'
+            )}
+            title={canStar ? (isStarred ? 'Remove from starred' : 'Star this search') : 'Finish search to star'}
+          >
+            <motion.span
+              animate={{ scale: isStarred ? 1.08 : 1 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 16 }}
+            >
+              <Star className={cn('w-4 h-4', isStarred && 'fill-current')} />
+            </motion.span>
+            <span>{isStarred ? 'Starred' : 'Star'}</span>
+          </button>
+        )}
       </div>
 
       <div className="divide-y divide-stroke-hairline/70">

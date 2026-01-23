@@ -1,131 +1,13 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Target, Check, Loader2, FolderSearch, FileText, BarChart3 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Check, Loader2 } from 'lucide-react';
 import { useSearchStore } from '@/stores/searchStore';
 import { useLayoutStore } from '@/stores/layoutStore';
 import { cn } from '@/lib/utils';
 
-// Constants
-const SCRAMBLE_DURATION_MS = 280;
-const SCRAMBLE_STEPS = 6;
-const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_/.';
-const FILE_CYCLE_INTERVAL_MS = 400;
-const MAX_ACTIVITY_LINES = 3;
-
-// Utilities
-function formatPath(path: string): string {
-  const normalized = path.replace(/\\/g, '/');
-  const parts = normalized.split('/').filter(Boolean);
-  if (parts.length <= 2) return normalized;
-  return `${parts[parts.length - 2]}/${parts[parts.length - 1]}`;
-}
-
 function formatDuration(ms: number) {
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-}
-
-function scrambleFrame(text: string, revealCount: number) {
-  const chars = text.split('');
-  return chars.map((char, index) => {
-    if (char === ' ' || char === '.' || char === '/' || index < revealCount) return char;
-    return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
-  }).join('');
-}
-
-// Granular stage configuration - more detailed sub-stages
-type StageKey = 'priming' | 'enumerating' | 'reading' | 'embedding' | 'scoring' | 'converging' | 'done';
-
-interface StageConfig {
-  label: string;
-  Icon: typeof Loader2;
-  color: string;
-  glowColor: string;
-  bgColor: string;
-}
-
-const STAGE_CONFIG: Record<StageKey, StageConfig> = {
-  priming: {
-    label: 'Priming',
-    Icon: Loader2,
-    color: 'text-fg-dim',
-    glowColor: 'rgba(243, 245, 247, 0.3)',
-    bgColor: 'rgba(243, 245, 247, 0.1)'
-  },
-  enumerating: {
-    label: 'Enumerating',
-    Icon: FolderSearch,
-    color: 'text-accent-teal',
-    glowColor: 'rgba(20, 184, 166, 0.4)',
-    bgColor: 'rgba(20, 184, 166, 0.15)'
-  },
-  reading: {
-    label: 'Reading',
-    Icon: FileText,
-    color: 'text-accent-teal',
-    glowColor: 'rgba(20, 184, 166, 0.5)',
-    bgColor: 'rgba(20, 184, 166, 0.15)'
-  },
-  embedding: {
-    label: 'Embedding',
-    Icon: Brain,
-    color: 'text-accent-teal-glow',
-    glowColor: 'rgba(6, 214, 193, 0.5)',
-    bgColor: 'rgba(6, 214, 193, 0.15)'
-  },
-  scoring: {
-    label: 'Scoring',
-    Icon: BarChart3,
-    color: 'text-accent-teal-glow',
-    glowColor: 'rgba(6, 214, 193, 0.4)',
-    bgColor: 'rgba(6, 214, 193, 0.15)'
-  },
-  converging: {
-    label: 'Converging',
-    Icon: Target,
-    color: 'text-accent-teal-glow',
-    glowColor: 'rgba(6, 214, 193, 0.3)',
-    bgColor: 'rgba(6, 214, 193, 0.15)'
-  },
-  done: {
-    label: 'Complete',
-    Icon: Check,
-    color: 'text-success',
-    glowColor: 'rgba(16, 185, 129, 0.4)',
-    bgColor: 'rgba(16, 185, 129, 0.15)'
-  },
-};
-
-// Scrambled text component with smooth reveal
-function ScrambledText({ text, className }: { text: string; className?: string }) {
-  const [displayText, setDisplayText] = useState(text);
-
-  useEffect(() => {
-    if (!text) {
-      setDisplayText('');
-      return;
-    }
-
-    let step = 0;
-    const stepMs = Math.max(16, SCRAMBLE_DURATION_MS / SCRAMBLE_STEPS);
-
-    const timer = window.setInterval(() => {
-      step += 1;
-      const revealCount = Math.floor((step / SCRAMBLE_STEPS) * text.length);
-      setDisplayText(scrambleFrame(text, revealCount));
-
-      if (step >= SCRAMBLE_STEPS) {
-        window.clearInterval(timer);
-        setDisplayText(text);
-      }
-    }, stepMs);
-
-    return () => window.clearInterval(timer);
-  }, [text]);
-
-  return <span className={className}>{displayText}</span>;
+  const seconds = Math.max(0, ms / 1000);
+  return `${seconds.toFixed(1)}s`;
 }
 
 export function SearchDeck() {
@@ -134,52 +16,80 @@ export function SearchDeck() {
 
   // Store selectors
   const phase = useSearchStore((s) => s.phase);
-  const streamStage = useSearchStore((s) => s.streamStage);
   const streamStats = useSearchStore((s) => s.streamStats);
-  const scanTrail = useSearchStore((s) => s.scanTrail);
+  const streamStage = useSearchStore((s) => s.streamStage);
+  const statusFromStore = useSearchStore((s) => s.statusMessage);
   const searchStartTime = useSearchStore((s) => s.searchStartTime);
   const cacheMode = useSearchStore((s) => s.cacheMode);
   const journalistMode = useSearchStore((s) => s.journalistMode);
   const lexicalResults = useSearchStore((s) => s.lexicalResults);
   const semanticResults = useSearchStore((s) => s.semanticResults);
   const hasSearchIntent = useSearchStore((s) => s.hasSearchIntent);
-  const streamEvents = useSearchStore((s) => s.streamEvents);
+  const scanTrail = useSearchStore((s) => s.scanTrail);
 
   // Local state
-  const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [finalElapsedMs, setFinalElapsedMs] = useState<number | null>(null);
+  const [animatedProgress, setAnimatedProgress] = useState(0);
 
   // Derived state
   const isActive = phase === 'lexical' || phase === 'semantic' || phase === 'refining';
   const isComplete = phase === 'complete';
   const shouldShow = hasSearchIntent || isActive || isComplete;
-  const showResults = semanticResults.length > 0 || lexicalResults.length > 0;
-  const isExpanded = isActive || (hasSearchIntent && !showResults);
-  const isStreaming = isActive && showResults;
+  const resultCount = semanticResults.length > 0 ? semanticResults.length : lexicalResults.length;
+  const mode = journalistMode ? 'journalist' : cacheMode;
 
-  // Derive granular stage from milestones
-  const currentStage: StageKey = useMemo(() => {
-    if (isComplete) return 'done';
-    if (!isActive && hasSearchIntent) return 'priming';
+  const modePalette = {
+    jit: {
+      accent: 'var(--accent-amber)',
+      accentSoft: 'rgba(246, 185, 76, 0.2)',
+      accentStrong: 'rgba(246, 185, 76, 0.7)',
+    },
+    cache: {
+      accent: 'var(--accent-teal)',
+      accentSoft: 'rgba(20, 184, 166, 0.2)',
+      accentStrong: 'rgba(20, 184, 166, 0.7)',
+    },
+    journalist: {
+      accent: 'var(--accent-violet)',
+      accentSoft: 'rgba(124, 92, 255, 0.2)',
+      accentStrong: 'rgba(124, 92, 255, 0.7)',
+    },
+  } as const;
 
+  const activePalette = modePalette[mode];
+
+  // Progress calculation
+  const progress = useMemo(() => {
+    if (isComplete) return 1;
+    if (!isActive && hasSearchIntent) return 0.05;
     const stats = streamStats ?? { filesScanned: 0, candidates: 0, embedded: 0, cacheHits: 0 };
-
-    // Granular stage derivation based on milestones
-    if (streamStage === 'tail') return 'converging';
-    if (streamStage === 'semantic' || streamStage === 'refining') {
-      if (stats.embedded > 0) return 'scoring';
-      return 'embedding';
+    // Better progress estimation based on phase and stats
+    if (phase === 'semantic' || phase === 'refining') {
+      if (stats.embedded > 0) return 0.5 + Math.min(0.4, stats.embedded / 100 * 0.4);
+      return 0.5;
     }
-    // lexical phase
-    if (stats.filesScanned > 10) return 'reading';
-    if (stats.filesScanned > 0) return 'enumerating';
-    return 'priming';
-  }, [isActive, isComplete, hasSearchIntent, streamStage, streamStats]);
+    if (phase === 'lexical') {
+      if (stats.candidates > 0) return 0.2 + Math.min(0.3, stats.candidates / 200 * 0.3);
+      if (stats.filesScanned > 0) return 0.1 + Math.min(0.1, stats.filesScanned / 500 * 0.1);
+      return 0.1;
+    }
+    return 0.1;
+  }, [isComplete, isActive, hasSearchIntent, streamStats, phase]);
 
-  const stageConfig = STAGE_CONFIG[currentStage];
+  // Smoothly animate progress
+  useEffect(() => {
+    if (isComplete) {
+      setAnimatedProgress(1);
+    } else if (!shouldShow) {
+      setAnimatedProgress(0);
+    } else {
+      // Only animate forward, never backward (except reset)
+      setAnimatedProgress(prev => Math.max(prev, progress));
+    }
+  }, [progress, isComplete, shouldShow]);
 
-  // Measure underline position for spark origin
+  // Measure underline position
   useEffect(() => {
     if (!underlineRef.current) return;
 
@@ -204,17 +114,6 @@ export function SearchDeck() {
     return () => observer.disconnect();
   }, [setDeckUnderlineBox]);
 
-  // File cycling
-  useEffect(() => {
-    if (!isActive || scanTrail.length === 0) return;
-
-    const timer = window.setInterval(() => {
-      setCurrentFileIndex((prev) => (prev + 1) % Math.max(1, scanTrail.length));
-    }, FILE_CYCLE_INTERVAL_MS);
-
-    return () => window.clearInterval(timer);
-  }, [isActive, scanTrail.length]);
-
   // Freeze elapsed time on completion
   useEffect(() => {
     if (isComplete && finalElapsedMs === null && searchStartTime) {
@@ -233,297 +132,150 @@ export function SearchDeck() {
     setElapsedMs(Date.now() - searchStartTime);
     const timer = window.setInterval(() => {
       setElapsedMs(Date.now() - searchStartTime);
-    }, 200);
+    }, 100);
 
     return () => window.clearInterval(timer);
   }, [shouldShow, searchStartTime, isComplete]);
 
-  // Current focus file
-  const currentFile = useMemo(() => {
-    if (scanTrail.length === 0) {
-      if (currentStage === 'priming') return 'Initializing pipeline...';
-      if (currentStage === 'done') return 'Search complete';
-      return 'Scanning...';
-    }
-    const safeIndex = Math.min(currentFileIndex, scanTrail.length - 1);
-    return formatPath(scanTrail[safeIndex]);
-  }, [scanTrail, currentFileIndex, currentStage]);
-
-  // Use frozen time for complete state, live time otherwise
+  // Use frozen time for complete state
   const displayElapsedMs = finalElapsedMs ?? elapsedMs;
 
-  // Metrics line
-  const metricsLine = useMemo(() => {
-    const parts: string[] = [];
-    const stats = streamStats ?? { filesScanned: 0, candidates: 0, embedded: 0, cacheHits: 0 };
+  // Status message
+  const statusMessage = useMemo(() => {
+    if (statusFromStore) return statusFromStore;
+    if (isComplete) return 'Search complete';
+    if (!isActive && hasSearchIntent) return 'Starting search...';
 
-    if (stats.filesScanned > 0) {
-      parts.push(`${stats.filesScanned.toLocaleString()} scanned`);
-    }
+    const stats = streamStats ?? { filesScanned: 0, candidates: 0, embedded: 0 };
 
-    const seconds = Math.max(1, Math.floor(displayElapsedMs / 1000));
-    if (stats.filesScanned > 0) {
-      const rate = Math.round(stats.filesScanned / seconds);
-      parts.push(`${rate}/s`);
-    }
+    if (stats.embedded > 0) return `Processing ${stats.embedded} files...`;
+    if (stats.candidates > 0) return `Found ${stats.candidates} candidates...`;
+    if (stats.filesScanned > 0) return `Scanning ${stats.filesScanned} files...`;
 
-    const resultCount = semanticResults.length > 0 ? semanticResults.length : lexicalResults.length;
-    if (resultCount > 0) {
-      parts.push(`${resultCount} results`);
-    }
+    return 'Initializing...';
+  }, [isActive, isComplete, hasSearchIntent, streamStats, statusFromStore]);
 
-    if (displayElapsedMs > 0) {
-      parts.push(formatDuration(displayElapsedMs));
-    }
-
-    return parts.join(' • ');
-  }, [streamStats, displayElapsedMs, lexicalResults.length, semanticResults.length]);
-
-  // Activity ticker events
-  const activityEvents = useMemo(() => {
-    const events: { id: string; text: string }[] = [];
-
-    // Add stream events
-    if (streamEvents && streamEvents.length > 0) {
-      const recentEvents = streamEvents.slice(-3);
-      recentEvents.forEach((event, idx) => {
-        if (event.kind === 'scan' && event.path) {
-          events.push({ id: `scan-${idx}`, text: formatPath(event.path) });
-        }
-        if (event.kind === 'semantic' && event.path) {
-          events.push({ id: `semantic-${idx}`, text: formatPath(event.path) });
-        }
-      });
-    }
-
-    return events.slice(-MAX_ACTIVITY_LINES);
-  }, [streamEvents]);
-
-  // Compact summary for collapsed state
-  const compactSummary = useMemo(() => {
-    const resultCount = semanticResults.length > 0 ? semanticResults.length : lexicalResults.length;
-    const mode = journalistMode ? 'Journalist' : (semanticResults.length > 0 ? 'Semantic' : 'Lexical');
-    const timeStr = finalElapsedMs !== null ? `${(finalElapsedMs / 1000).toFixed(2)}s` : '';
-
-    const parts = [];
-    if (resultCount > 0) parts.push(`${resultCount} results`);
-    parts.push(mode);
-    if (timeStr) parts.push(timeStr);
-
-    return parts.join(' • ');
-  }, [semanticResults.length, lexicalResults.length, journalistMode, finalElapsedMs]);
-
-  // Mode badge
+  // Mode badge text
   const modeBadge = useMemo(() => {
-    if (journalistMode) return 'Journalist';
+    if (journalistMode) return 'Secure';
     return cacheMode === 'cache' ? 'Cache' : 'JIT';
   }, [journalistMode, cacheMode]);
 
+  const streamStatsSafe = streamStats ?? { filesScanned: 0, candidates: 0, embedded: 0, cacheHits: 0 };
+  const stageLabel = streamStage
+    ? streamStage.charAt(0).toUpperCase() + streamStage.slice(1)
+    : 'Boot';
+  const trailLabel = scanTrail.length > 0
+    ? scanTrail.slice(-3).map((item) => item.split(/[/\\\\]/).pop() || item).join(' - ')
+    : '';
+
   if (!shouldShow) return null;
 
-  const Icon = stageConfig.Icon;
-  const isSpinning = currentStage === 'priming' || currentStage === 'enumerating';
-
   return (
-      <motion.div
-        initial={{ opacity: 0, y: -8, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -8, scale: 0.98 }}
-        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-        className={cn(
-          "w-full mt-4 rounded-2xl overflow-hidden",
-          "bg-gradient-to-b from-white/[0.03] to-graphite-2/70",
-          "backdrop-blur-xl",
-          "ring-1 ring-white/[0.08]",
-          "shadow-lift"
+    <motion.div
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ duration: 0.2 }}
+      className="w-full mt-4 rounded-lg overflow-hidden bg-graphite-1 border border-stroke-hairline"
+    >
+      {/* Status bar */}
+      <div className="px-4 py-3 flex items-center gap-3">
+        {/* Status icon */}
+        {isSearching() ? (
+          <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" style={{ color: activePalette.accent }} />
+        ) : isComplete ? (
+          <Check className="w-4 h-4 text-success flex-shrink-0" />
+        ) : null}
+
+        {/* Status message */}
+        <span className="text-sm text-fg-muted flex-1 truncate">{statusMessage}</span>
+
+        {/* Metrics */}
+        <div className="flex items-center gap-3 text-xs text-fg-dim font-mono">
+          {resultCount > 0 && (
+            <span className="tabular-nums">{resultCount} results</span>
+          )}
+          {displayElapsedMs > 0 && (
+            <span className="tabular-nums">{formatDuration(displayElapsedMs)}</span>
+          )}
+          <span className={cn(
+            "px-1.5 py-0.5 rounded text-2xs uppercase tracking-wider",
+            mode === 'jit'
+              ? "text-accent-amber"
+              : mode === 'cache'
+                ? "text-accent-teal"
+                : "text-accent-violet"
+          )}>
+            {modeBadge}
+          </span>
+        </div>
+      </div>
+
+      <div className="px-4 pb-3 -mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-fg-dim font-mono">
+        <span className="uppercase tracking-[0.2em] text-fg-ghost">Live</span>
+        <span>{stageLabel}</span>
+        <span className="tabular-nums">{streamStatsSafe.filesScanned} scanned</span>
+        <span className="tabular-nums">{streamStatsSafe.candidates} candidates</span>
+        <span className="tabular-nums">{streamStatsSafe.embedded} embedded</span>
+        {streamStatsSafe.cacheHits > 0 && (
+          <span className="tabular-nums">{streamStatsSafe.cacheHits} cache hits</span>
         )}
-      >
-      {/* Animated height for expand/collapse */}
-      <motion.div
-        animate={{ height: isExpanded ? 'auto' : 44 }}
-        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-        className="overflow-hidden"
-      >
-        {/* Expanded content layout */}
-        {isExpanded ? (
-          <div className="px-5 py-4 space-y-3">
-            {/* Row 1: Stage Capsule + Mode Badge + Streaming Indicator */}
-            <div className="flex items-center gap-3">
-              {/* Stage Capsule - pill styling */}
-              <motion.div
-                className={cn(
-                  "inline-flex items-center gap-2 px-3 py-1.5 rounded-full",
-                  "transition-colors duration-300"
-                )}
-                style={{
-                  backgroundColor: stageConfig.bgColor,
-                  boxShadow: `0 0 18px ${stageConfig.glowColor}`
-                }}
-              >
-                <motion.div
-                  animate={isSpinning ? { rotate: 360 } : {}}
-                  transition={isSpinning ? { duration: 1, repeat: Infinity, ease: 'linear' } : {}}
-                >
-                  <Icon className={cn("w-3.5 h-3.5", stageConfig.color)} />
-                </motion.div>
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={stageConfig.label}
-                    initial={{ opacity: 0, x: 4 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -4 }}
-                    transition={{ duration: 0.15 }}
-                    className={cn(
-                      "text-[11px] font-semibold tracking-wide uppercase",
-                      stageConfig.color
-                    )}
-                  >
-                    {stageConfig.label}
-                  </motion.span>
-                </AnimatePresence>
-              </motion.div>
-
-              {/* Streaming indicator */}
-              {isStreaming && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-accent-teal/10"
-                >
-                  <motion.div
-                    className="w-1.5 h-1.5 rounded-full bg-accent-teal"
-                    animate={{ opacity: [1, 0.4, 1] }}
-                    transition={{ duration: 1.2, repeat: Infinity }}
-                  />
-                  <span className="text-[10px] font-medium text-accent-teal uppercase tracking-wider">
-                    streaming
-                  </span>
-                </motion.div>
-              )}
-
-              {/* Mode badge - right aligned */}
-              <span className="ml-auto text-[9px] font-mono text-fg-dim/50 uppercase tracking-wider">
-                {modeBadge}
-              </span>
-            </div>
-
-            {/* Row 2: Focus Line - Current file being processed */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentFile}
-                initial={{ opacity: 0, x: 8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -8 }}
-                transition={{ duration: 0.18 }}
-                className="font-mono text-xs text-fg-muted/70 truncate pl-1"
-              >
-                <ScrambledText text={currentFile} />
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Row 3: Metrics Line */}
-            {metricsLine && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.1 }}
-                className="font-mono text-[10px] text-fg-dim/50 pl-1"
-              >
-                {metricsLine}
-              </motion.div>
-            )}
-
-            {/* Row 4: Activity Ticker - recent files */}
-            {activityEvents.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.15 }}
-                className="space-y-0.5 pt-1 border-t border-white/[0.04]"
-              >
-                <AnimatePresence mode="popLayout">
-                  {activityEvents.map((event) => (
-                    <motion.div
-                      key={event.id}
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.15 }}
-                      className="font-mono text-[9px] text-fg-dim/35 truncate flex items-center gap-2"
-                    >
-                      <span className="w-1 h-1 rounded-full bg-accent-teal/40 flex-shrink-0" />
-                      {event.text}
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
-            )}
-          </div>
-        ) : (
-          /* Compact summary line for collapsed state */
-          <div className="px-5 h-[44px] flex items-center">
-            <div className="flex items-center gap-3 w-full">
-              <div
-                className="w-6 h-6 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: stageConfig.bgColor }}
-              >
-                <Check className="w-3.5 h-3.5 text-success" />
-              </div>
-              <span className="font-mono text-xs text-fg-muted/70 truncate">
-                {compactSummary}
-              </span>
-            </div>
-          </div>
+        {trailLabel && (
+          <span className="text-fg-ghost truncate max-w-[40%]">Last: {trailLabel}</span>
         )}
-      </motion.div>
+      </div>
 
-      {/* Electric Underline */}
+      {/* Progress underline */}
       <div
         ref={underlineRef}
-        className="relative h-[2px] w-full overflow-hidden"
+        className="relative h-[3px] w-full overflow-hidden bg-graphite-3"
       >
-        {/* Base glow */}
+        {/* Background track */}
+        <div className="absolute inset-0 bg-graphite-2" />
+
+        {/* Progress fill - solid amber bar */}
         <motion.div
-          className="absolute inset-0 transition-colors duration-300"
-          style={{ backgroundColor: stageConfig.glowColor }}
-          animate={{ opacity: isComplete ? 0.7 : 0.4 }}
+          className="absolute top-0 left-0 h-full"
+          style={{
+            backgroundColor: isComplete ? 'var(--accent-success)' : activePalette.accent,
+          }}
+          initial={{ width: 0 }}
+          animate={{ width: `${animatedProgress * 100}%` }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         />
 
-        {/* Pulse train animation - active during search */}
-        {(isActive || currentStage === 'priming') && (
-          <>
+        {/* Electric sweep animation - moves within remaining distance */}
+        {isActive && animatedProgress < 0.98 && (
+          <div
+            className="absolute inset-y-0 right-0 overflow-hidden pointer-events-none"
+            style={{ left: `${animatedProgress * 100}%` }}
+          >
             <motion.div
               className="absolute top-0 h-full"
               style={{
-                width: '20%',
-                background: `linear-gradient(90deg, transparent, ${currentStage === 'embedding' || currentStage === 'scoring' ? 'rgba(6, 214, 193, 0.9)' : 'rgba(20, 184, 166, 0.9)'}, transparent)`
+                width: '64px',
+                background: `linear-gradient(90deg, transparent, ${activePalette.accentSoft}, ${activePalette.accentStrong}, ${activePalette.accentSoft}, transparent)`,
+                filter: 'blur(1px)',
               }}
-              animate={{ left: ['-20%', '100%'] }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
-            />
-            <motion.div
-              className="absolute top-0 h-full"
-              style={{
-                width: '15%',
-                background: `linear-gradient(90deg, transparent, ${currentStage === 'embedding' || currentStage === 'scoring' ? 'rgba(6, 214, 193, 0.6)' : 'rgba(20, 184, 166, 0.6)'}, transparent)`
+              initial={{ left: 0 }}
+              animate={{
+                left: ['0%', 'calc(100% - 64px)'],
               }}
-              animate={{ left: ['-15%', '100%'] }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: 'linear', delay: 0.5 }}
+              transition={{
+                duration: 1.1,
+                repeat: Infinity,
+                repeatType: 'reverse',
+                ease: 'easeInOut'
+              }}
             />
-          </>
-        )}
-
-        {/* Calm full-width glow for complete state */}
-        {isComplete && (
-          <motion.div
-            className="absolute inset-0"
-            style={{ backgroundColor: 'rgba(16, 185, 129, 0.6)' }}
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
-          />
+          </div>
         )}
       </div>
     </motion.div>
   );
+
+  function isSearching() {
+    return isActive || (hasSearchIntent && !isComplete);
+  }
 }

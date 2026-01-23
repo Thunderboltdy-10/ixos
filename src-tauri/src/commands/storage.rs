@@ -76,7 +76,11 @@ pub async fn clear_all_encrypted_files(app: tauri::AppHandle) -> Result<(), Stri
     }
 
     // List of encrypted files to delete
-    let encrypted_files = ["search_history.encrypted", "statistics.encrypted"];
+    let encrypted_files = [
+        "search_history.encrypted",
+        "statistics.encrypted",
+        "starred_searches.encrypted",
+    ];
 
     for filename in &encrypted_files {
         let file_path = config_dir.join(filename);

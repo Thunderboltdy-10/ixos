@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { Search, X, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback, type CSSProperties } from 'react';
+import { X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { FolderPicker } from './FolderPicker';
@@ -8,11 +8,12 @@ import type { ModelType } from './ModelSwitcher';
 import { QualitySwitcher } from './QualitySwitcher';
 import { SearchSuggestions } from './SearchSuggestions';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { useHistoryStore, type HistorySuggestion } from '@/stores/historyStore';
+import { useStarredStore, type HistorySuggestion } from '@/stores/starredStore';
 import { useSearchStore } from '@/stores/searchStore';
 import { useLayoutStore } from '@/stores/layoutStore';
 import type { SearchMode as QualityMode } from '@/lib/types';
 import { invoke } from '@tauri-apps/api/core';
+import { SearchBar } from '@ixos/ui';
 
 interface SearchInputProps {
   value: string;
@@ -25,6 +26,8 @@ interface SearchInputProps {
   mode: SearchMode;
   onModeChange: (mode: SearchMode) => void;
   centered?: boolean;
+  showControls?: boolean;
+  autoFocus?: boolean;
 }
 
 export function SearchInput({
@@ -38,14 +41,17 @@ export function SearchInput({
   mode,
   onModeChange,
   centered = false,
+  showControls = true,
+  autoFocus = true,
 }: SearchInputProps) {
   const { config, updateConfig } = useSettingsStore();
-  const { fetchSuggestions, clearSuggestions, suggestions } = useHistoryStore();
+  const getSuggestions = useStarredStore((s) => s.getSuggestions);
   const hasSearchIntent = useSearchStore((s) => s.hasSearchIntent);
   const setSearchBarBox = useLayoutStore((s) => s.setSearchBarBox);
 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [suggestions, setSuggestions] = useState<HistorySuggestion[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchBarRef = useRef<HTMLDivElement>(null);
@@ -55,6 +61,34 @@ export function SearchInput({
   const proModelType = (config?.search?.proModelType || 'ixos-pro-v1') as ModelType;
   const qualityMode = (config?.search?.searchMode || 'auto') as QualityMode;
 
+  const modePalette = {
+    jit: {
+      accent: 'var(--accent-amber)',
+      accentSoft: 'rgba(246, 185, 76, 0.22)',
+      accentFade: 'rgba(246, 185, 76, 0.08)',
+      border: 'rgba(246, 185, 76, 0.4)',
+      glow: 'rgba(246, 185, 76, 0.18)',
+      glowStrong: 'rgba(246, 185, 76, 0.35)',
+    },
+    cache: {
+      accent: 'var(--accent-teal)',
+      accentSoft: 'rgba(20, 184, 166, 0.22)',
+      accentFade: 'rgba(13, 148, 136, 0.08)',
+      border: 'rgba(20, 184, 166, 0.4)',
+      glow: 'rgba(20, 184, 166, 0.18)',
+      glowStrong: 'rgba(20, 184, 166, 0.35)',
+    },
+    journalist: {
+      accent: 'var(--accent-violet)',
+      accentSoft: 'rgba(124, 92, 255, 0.22)',
+      accentFade: 'rgba(124, 92, 255, 0.08)',
+      border: 'rgba(124, 92, 255, 0.38)',
+      glow: 'rgba(124, 92, 255, 0.2)',
+      glowStrong: 'rgba(124, 92, 255, 0.4)',
+    },
+  } as const;
+
+  const activePalette = modePalette[mode];
   const safeInvoke = useCallback(async <T,>(cmd: string, args?: any): Promise<T | null> => {
     try {
       if (typeof window !== 'undefined' && '__TAURI__' in window) {
@@ -131,14 +165,14 @@ export function SearchInput({
   // Fetch suggestions when value changes
   useEffect(() => {
     if (value.length >= 1 && !isSearching) {
-      fetchSuggestions(value);
+      setSuggestions(getSuggestions(value));
       setShowSuggestions(true);
       setSelectedIndex(-1);
     } else {
-      clearSuggestions();
+      setSuggestions([]);
       setShowSuggestions(false);
     }
-  }, [value, isSearching, fetchSuggestions, clearSuggestions]);
+  }, [value, isSearching, getSuggestions]);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -156,9 +190,9 @@ export function SearchInput({
     onChange(suggestion.query);
     onDirectoryChange(suggestion.directory);
     setShowSuggestions(false);
-    clearSuggestions();
+    setSuggestions([]);
     inputRef.current?.focus();
-  }, [onChange, onDirectoryChange, clearSuggestions]);
+  }, [onChange, onDirectoryChange]);
 
   // Keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -183,27 +217,37 @@ export function SearchInput({
         case 'Escape':
           e.preventDefault();
           setShowSuggestions(false);
-          clearSuggestions();
+          setSuggestions([]);
           return;
       }
     }
 
     // Enter key triggers explicit search when no suggestion is selected
-    if (e.key === 'Enter' && value.trim() && !isSearching) {
-      e.preventDefault();
-      setShowSuggestions(false);
-      clearSuggestions();
-      onSearch?.();
-    }
-  }, [showSuggestions, suggestions, selectedIndex, handleSuggestionSelect, clearSuggestions, value, isSearching, onSearch]);
+      if (e.key === 'Enter' && value.trim() && !isSearching) {
+        e.preventDefault();
+        setShowSuggestions(false);
+        setSuggestions([]);
+        onSearch?.();
+      }
+  }, [showSuggestions, suggestions, selectedIndex, handleSuggestionSelect, value, isSearching, onSearch]);
 
   return (
     <div ref={containerRef} className={cn('w-full relative', centered && 'max-w-3xl mx-auto px-8')}>
       <div className="relative" ref={searchBarRef}>
         <motion.div
+          className="absolute -inset-10 rounded-[28px] pointer-events-none blur-3xl"
+          style={{
+            background: `radial-gradient(circle at 50% 45%, ${activePalette.glow} 0%, transparent 70%)`,
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: hasSearchIntent || isSearching ? 0.9 : 0 }}
+          transition={{ duration: 0.25 }}
+        />
+
+        <motion.div
           className="absolute -inset-[2px] rounded-2xl pointer-events-none"
           style={{
-            background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.22) 0%, rgba(6, 214, 193, 0.12) 100%)',
+            background: `linear-gradient(135deg, ${activePalette.accentSoft} 0%, ${activePalette.accentFade} 100%)`,
           }}
           initial={{ opacity: 0 }}
           animate={{
@@ -217,7 +261,8 @@ export function SearchInput({
           <motion.div
             className="absolute -inset-[4px] rounded-2xl pointer-events-none"
             style={{
-              border: '1px solid rgba(20, 184, 166, 0.35)',
+              border: `1px solid ${activePalette.border}`,
+              boxShadow: `0 0 28px ${activePalette.glowStrong}`,
             }}
             animate={{
               opacity: [0.5, 0.2, 0.5],
@@ -232,55 +277,41 @@ export function SearchInput({
         )}
 
         <div className={cn(
-          'relative gradient-border-focus rounded-2xl overflow-visible',
-          'bg-graphite-2 border border-stroke-hairline shadow-lift',
+          'relative gradient-border-focus rounded-xl overflow-visible',
+          'bg-graphite-2/80 border border-stroke-hairline',
           'transition-all duration-200',
           hasSearchIntent || isSearching
-            ? 'border-accent-teal/40 shadow-glow-teal'
+            ? ''
             : 'hover:border-border-medium'
-        )}>
-          <div className="flex items-center gap-4 px-5 py-5">
-            <div className="flex-shrink-0">
-              {isSearching ? (
-                <Loader2 className="w-5 h-5 text-accent-teal animate-spin" />
-              ) : (
-                <motion.div
-                  animate={{
-                    color: hasSearchIntent ? 'rgb(20, 184, 166)' : 'rgba(243, 245, 247, 0.48)',
-                  }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Search className="w-5 h-5" />
-                </motion.div>
-              )}
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-[0.3em] text-fg-dim mb-2">
-                Query
-              </div>
-              <input
-                ref={inputRef}
-                type="text"
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onFocus={() => value.length >= 1 && suggestions.length > 0 && setShowSuggestions(true)}
-                placeholder="Ask a question or search keywords..."
-                className={cn(
-                  'w-full bg-transparent text-xl text-porcelain font-display',
-                  'placeholder:text-fg-dim/60',
-                  'focus:outline-none'
-                )}
-                autoFocus
-                spellCheck={false}
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="off"
-              />
-            </div>
-
-            {(value || isSearching) && (
+        )}
+        style={(
+          hasSearchIntent || isSearching
+            ? {
+              borderColor: activePalette.border,
+              boxShadow: `0 0 0 1px ${activePalette.border}, 0 18px 40px rgba(0, 0, 0, 0.55), 0 0 28px ${activePalette.glow}`,
+              '--accent-focus': activePalette.accent,
+              '--accent-focus-soft': activePalette.accentSoft,
+            }
+            : {
+              '--accent-focus': activePalette.accent,
+              '--accent-focus-soft': activePalette.accentSoft,
+            }
+        ) as CSSProperties}>
+          {/* Search input row */}
+          <SearchBar
+            ref={inputRef}
+            value={value}
+            onChange={onChange}
+            onKeyDown={handleKeyDown}
+            onFocus={() => value.length >= 1 && suggestions.length > 0 && setShowSuggestions(true)}
+            placeholder="Type what you remember..."
+            isSearching={isSearching}
+            autoFocus={autoFocus}
+            tone={mode}
+            withFrame={false}
+            showClear={false}
+            className="w-full"
+            rightSlot={(value || isSearching) ? (
               <button
                 onClick={() => {
                   if (isSearching) {
@@ -290,40 +321,44 @@ export function SearchInput({
                   }
                 }}
                 className={cn(
-                  'flex-shrink-0 p-2 rounded-md',
-                  'text-fg-dim hover:text-porcelain hover:bg-graphite-3',
+                  'flex-shrink-0 p-1.5 rounded-md',
+                  'text-fg-dim hover:text-porcelain hover:bg-graphite-3/50',
                   'transition-colors duration-150'
                 )}
                 title={isSearching ? 'Cancel search' : 'Clear'}
+                type="button"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
-            )}
-          </div>
+            ) : null}
+          />
 
-          <div className="px-5 pb-4 pt-1 flex items-center gap-2 flex-wrap border-t border-stroke-hairline/70">
-            <div className="flex-1 min-w-[180px]">
-              <FolderPicker
-                value={directory}
-                onChange={onDirectoryChange}
-                placeholder="Select folder to search..."
-              />
-            </div>
+          {/* Controls row - no separator, seamless */}
+          {showControls && (
+            <div className="px-4 pb-3 flex items-center gap-3 flex-wrap">
+              <div className="flex-1 min-w-[160px]">
+                <FolderPicker
+                  value={directory}
+                  onChange={onDirectoryChange}
+                  placeholder="Select folder..."
+                />
+              </div>
 
-            <div className="flex-shrink-0">
-              <QualitySwitcher
-                value={qualityMode}
-                onChange={handleQualityChange}
-              />
-            </div>
+              <div className="flex-shrink-0">
+                <QualitySwitcher
+                  value={qualityMode}
+                  onChange={handleQualityChange}
+                />
+              </div>
 
-            <div className="flex-shrink-0">
-              <ModeSwitcher
-                value={mode}
-                onChange={onModeChange}
-              />
+              <div className="flex-shrink-0">
+                <ModeSwitcher
+                  value={mode}
+                  onChange={onModeChange}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -331,6 +366,7 @@ export function SearchInput({
         isOpen={showSuggestions && suggestions.length > 0}
         onSelect={handleSuggestionSelect}
         selectedIndex={selectedIndex}
+        suggestions={suggestions}
       />
     </div>
   );

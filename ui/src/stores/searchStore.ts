@@ -1,7 +1,10 @@
 import { create } from 'zustand';
 import type { SearchPhase, LexicalResult, RankedResult, SearchEvent, StreamStage, StreamStats, StreamEvent } from '@/lib/types';
+import type { SearchThread } from '@/stores/starredStore';
 import * as tauri from '@/lib/tauri';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { sanitizeResults } from '@/lib/searchHistory';
+import { useStarredStore } from '@/stores/starredStore';
 
 const MAX_LEXICAL_DISPLAY = 50;
 const MAX_SCAN_TRAIL = 6;
@@ -38,6 +41,7 @@ interface SearchState {
   statusMessage: string;
   errorMessage: string | null;
   activeQuery: string | null;
+  activeThreadId: string | null;
   selectedIndex: number;
   streamStage: StreamStage | null;
   streamStats: StreamStats | null;
@@ -71,6 +75,7 @@ interface SearchState {
   cancelSearch: () => Promise<void>;
   handleSearchEvent: (event: SearchEvent) => void;
   reset: () => void;
+  restoreFromHistory: (thread: SearchThread) => void;
 
   // Result actions
   getSelectedResult: () => RankedResult | LexicalResult | null;
@@ -101,6 +106,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   statusMessage: '',
   errorMessage: null,
   activeQuery: null,
+  activeThreadId: null,
   selectedIndex: 0,
   streamStage: null,
   streamStats: null,
@@ -138,6 +144,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       scanTrail: [],
       pendingSparkTargets: [],
       searchStartTime: null,
+      activeThreadId: null,
     }),
 
   moveSelection: (direction) => {
@@ -171,6 +178,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     }
 
     // Reset results and start search
+    const nextThreadId = crypto.randomUUID();
     set({
       lexicalResults: [],
       semanticResults: [],
@@ -178,6 +186,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       statusMessage: 'Searching...',
       errorMessage: null,
       activeQuery: normalizedQuery,
+      activeThreadId: nextThreadId,
       selectedIndex: 0,
       searchStartTime: Date.now(),
       streamStage: 'lexical',
@@ -220,7 +229,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   cancelSearch: async () => {
     try {
       await tauri.cancelSearch();
-      set({ phase: 'cancelled' });
+      set({ phase: 'cancelled', activeThreadId: null });
     } catch (error) {
       console.error('Failed to cancel search:', error);
     }
@@ -306,21 +315,42 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
       case 'complete': {
         const state = get();
+        const results = state.semanticResults.length > 0 ? state.semanticResults : state.lexicalResults;
+        const sanitized = sanitizeResults(results);
+        const threadId = state.activeThreadId ?? crypto.randomUUID();
+        const threadQuery = state.activeQuery ?? state.query;
+        const existing = useStarredStore.getState().getThreadById(threadId);
+
+        if (threadQuery && state.directory) {
+          useStarredStore.getState().recordThread({
+            id: threadId,
+            query: threadQuery,
+            directory: state.directory,
+            results: sanitized,
+            timestamp: Date.now(),
+            mode: state.journalistMode ? 'journalist' : state.cacheMode,
+            resultCount: results.length,
+            durationMs: state.searchStartTime ? Date.now() - state.searchStartTime : 0,
+            starred: existing?.starred ?? false,
+          });
+        }
+
         // Increment search count safely
         get().setFileCount(state.fileCount || 0);
 
-        set({ phase: 'complete' });
+        set({ phase: 'complete', activeThreadId: threadId });
         break;
       }
 
       case 'cancelled':
-        set({ phase: 'cancelled' });
+        set({ phase: 'cancelled', activeThreadId: null });
         break;
 
       case 'error':
         set({
           phase: 'error',
           errorMessage: event.message,
+          activeThreadId: null,
         });
         break;
     }
@@ -337,6 +367,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       statusMessage: '',
       errorMessage: null,
       activeQuery: null,
+      activeThreadId: null,
       selectedIndex: 0,
       fileCount: null,
       streamStage: null,
@@ -346,6 +377,36 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       scanTrail: [],
       pendingSparkTargets: [],
       hasSearchIntent: false,
+    }),
+
+  restoreFromHistory: (thread) =>
+    set(() => {
+      const hasSemantic = thread.results.length > 0 && 'scoreBreakdown' in thread.results[0];
+      const isJournalist = thread.mode === 'journalist';
+      return {
+        query: thread.query,
+        directory: thread.directory,
+        activeQuery: thread.query,
+        activeThreadId: thread.id,
+        journalistMode: isJournalist,
+        cacheMode: isJournalist ? 'jit' : thread.mode,
+        lexicalResults: hasSemantic ? [] : thread.results as LexicalResult[],
+        semanticResults: hasSemantic ? thread.results as RankedResult[] : [],
+        lateResults: [],
+        hasLateInsights: false,
+        phase: 'complete' as SearchPhase,
+        statusMessage: 'Loaded from history',
+        errorMessage: null,
+        selectedIndex: 0,
+        searchStartTime: thread.durationMs > 0 ? Date.now() - thread.durationMs : null,
+        streamStage: 'tail',
+        streamStats: null,
+        streamEvents: [],
+        streamSequence: 0,
+        scanTrail: [],
+        pendingSparkTargets: [],
+        hasSearchIntent: true,
+      };
     }),
 
   // Result actions

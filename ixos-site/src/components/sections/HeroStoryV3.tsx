@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Button } from "@/components/ui/Button";
 import { RipplePulse } from "@/components/effects/RipplePulse";
 import { VideoModal } from "@/components/ui/VideoModal";
+import { IxosDemoWindow } from "@/components/hero/IxosDemoWindow";
 
 // Register ScrollTrigger
 if (typeof window !== "undefined") {
@@ -19,8 +20,6 @@ export function HeroStoryV3() {
     const deckRef = useRef<HTMLDivElement>(null);
     const deckFrontRef = useRef<HTMLDivElement>(null);
     const deckBackRef = useRef<HTMLDivElement>(null);
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const [videoReady, setVideoReady] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -52,16 +51,10 @@ export function HeroStoryV3() {
                 scrollTrigger: {
                     trigger: containerRef.current,
                     start: "top top",
-                    end: "+=120%", // Reduced from 150% per spec
+                    end: "+=120%",
                     scrub: 1,
                     pin: true,
                     anticipatePin: 1,
-                    onUpdate: (self) => {
-                        // Play video when scroll starts
-                        if (self.progress > 0.05 && videoRef.current?.paused) {
-                            videoRef.current?.play();
-                        }
-                    },
                 },
             });
 
@@ -106,13 +99,7 @@ export function HeroStoryV3() {
         return () => ctx.revert();
     }, [prefersReducedMotion]);
 
-    // Video ready handler
-    const handleVideoCanPlay = () => {
-        setVideoReady(true);
-    };
-
     const handleDownload = () => {
-        // Open download page or trigger download
         window.open("/download", "_blank");
     };
 
@@ -135,28 +122,27 @@ export function HeroStoryV3() {
                     <div className="container mx-auto px-6 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-[80vh]">
                         {/* Left Content (5 columns) */}
                         <div className="lg:col-span-5 space-y-6">
-                            {/* Availability badge */}
+                            {/* "No Index Tax" badge */}
                             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-bg-graphite-2 border border-stroke-hairline">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-teal opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-teal"></span>
-                                </span>
-                                <span className="text-xs font-medium text-fg-muted tracking-wider uppercase">
-                                    v1.0 Now Available
+                                <span className="w-1.5 h-1.5 rounded-full bg-accent-amber animate-pulse" />
+                                <span className="text-xs text-fg-muted tracking-wider">
+                                    Zero index tax • Files stay private
                                 </span>
                             </div>
 
-                            {/* Headline - using display font */}
+                            {/* NEW Headline */}
                             <h1 className="text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.05]">
-                                <span className="heading-gradient">Find anything</span>
+                                <span className="heading-gradient">Type what you</span>
                                 <br />
-                                <span className="text-fg-porcelain">on your computer.</span>
+                                <span className="heading-gradient">remember.</span>
+                                <br />
+                                <span className="text-fg-porcelain">Find what you mean.</span>
                             </h1>
 
-                            {/* Subhead */}
+                            {/* NEW Subhead */}
                             <p className="text-lg text-fg-muted max-w-md leading-relaxed">
-                                Ixos uses local-first semantic search to find files the way you
-                                think about them. Private, secure, and lightning fast.
+                                Local semantic search with zero index tax. No persistent database
+                                eating your disk. No cloud sync watching your files. Just instant results.
                             </p>
 
                             {/* CTAs */}
@@ -180,25 +166,25 @@ export function HeroStoryV3() {
 
                             {/* System requirements */}
                             <div className="pt-4 text-xs text-text-subtle font-mono">
-                                Requires Windows 10+ or macOS 12+ •
-                                <span className="text-fg-muted ml-1">Local AI • No Cloud</span>
+                                Windows 10+ or macOS 12+ •
+                                <span className="text-fg-muted ml-1">Local AI • No Cloud • No Index</span>
                             </div>
                         </div>
 
-                        {/* Right Hero Deck (7 columns) - Flippable */}
+                        {/* Right Hero Deck (7 columns) - Flippable - LARGER */}
                         <div
                             ref={deckWrapperRef}
                             className="lg:col-span-7 relative perspective-[1200px] z-50"
                         >
                             <div
                                 ref={deckRef}
-                                className="deck relative w-full aspect-[16/10] transform-style-preserve-3d"
+                                className="deck relative w-full aspect-[16/11] transform-style-preserve-3d min-h-[480px] lg:min-h-[520px]"
                                 style={{ transformStyle: "preserve-3d" }}
                             >
-                                {/* Front face - Video */}
+                                {/* Front face - Interactive Demo */}
                                 <div
                                     ref={deckFrontRef}
-                                    className="absolute inset-0 backface-hidden shadow-lift rounded-xl overflow-hidden border border-stroke-hairline bg-bg-graphite-2"
+                                    className="absolute inset-0 backface-hidden shadow-lift rounded-xl overflow-hidden border border-stroke-hairline"
                                     style={{ backfaceVisibility: "hidden" }}
                                 >
                                     {/* Fake Window Bar */}
@@ -209,38 +195,10 @@ export function HeroStoryV3() {
                                         <span className="ml-3 text-xs text-fg-muted font-mono">Ixos</span>
                                     </div>
 
-                                    {/* Video Content */}
-                                    <div className="relative w-full h-[calc(100%-2rem)] bg-bg-graphite-2">
-                                        <video
-                                            ref={videoRef}
-                                            src="/assets/hero.mp4"
-                                            poster="/assets/hero-poster-fallback.jpg"
-                                            loop
-                                            muted
-                                            playsInline
-                                            preload="auto"
-                                            onCanPlayThrough={handleVideoCanPlay}
-                                            className={`w-full h-full object-cover transition-opacity duration-700 ${videoReady ? "opacity-100" : "opacity-0"
-                                                }`}
-                                        />
-
-                                        {/* Poster/Skeleton fallback visible immediately */}
-                                        {!videoReady && (
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                {/* Base dark fill */}
-                                                <div className="absolute inset-0 bg-bg-graphite-2" />
-
-                                                {/* Subtle gradient pulse */}
-                                                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent animate-pulse" />
-
-                                                {/* Loading spinner */}
-                                                <div className="relative z-10 w-8 h-8 rounded-full border-2 border-accent-teal border-t-transparent animate-spin opacity-50" />
-                                            </div>
-                                        )}
+                                    {/* Interactive Demo Content */}
+                                    <div className="relative w-full h-[calc(100%-2rem)] bg-bg-graphite-0">
+                                        <IxosDemoWindow />
                                     </div>
-
-                                    {/* Overlay gradient */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-bg-graphite-0/40 to-transparent pointer-events-none" />
                                 </div>
 
                                 {/* Back face - Pipeline diagram preview */}
@@ -278,18 +236,21 @@ function HeroDeckBackContent() {
 
             <div className="relative flex flex-col gap-4 w-full max-w-sm">
                 {[
-                    { step: "01", label: "Query Typed" },
-                    { step: "02", label: "JIT Embeddings" },
-                    { step: "03", label: "Local Search" },
-                    { step: "04", label: "Instant Delete" },
-                    { step: "05", label: "Results Stream" },
+                    { step: "01", label: "Type naturally", desc: "No special syntax needed" },
+                    { step: "02", label: "JIT Processing", desc: "On-demand AI - nothing stored" },
+                    { step: "03", label: "Local Search", desc: "100% on your machine" },
+                    { step: "04", label: "Auto Cleanup", desc: "Temporary data wiped" },
+                    { step: "05", label: "Stream Results", desc: "See matches as they're found" },
                 ].map((item, i) => (
                     <div
                         key={i}
                         className="flex items-center gap-4 p-3 rounded-lg bg-bg-graphite-2 border border-stroke-hairline"
                     >
                         <span className="text-accent-teal font-mono text-sm">{item.step}</span>
-                        <span className="text-fg-muted text-sm">{item.label}</span>
+                        <div className="flex-1">
+                            <span className="text-fg-porcelain text-sm">{item.label}</span>
+                            <span className="text-fg-muted text-xs ml-2">{item.desc}</span>
+                        </div>
                     </div>
                 ))}
 

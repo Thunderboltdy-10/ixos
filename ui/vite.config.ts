@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@ixos/ui': path.resolve(__dirname, '../packages/ui/src'),
     },
   },
   // Vite options tailored for Tauri development

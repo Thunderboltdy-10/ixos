@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 import { Sidebar } from './Sidebar';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
 import { useSearchStore } from '@/stores/searchStore';
-import ixosIcon from '@/assets/ixos-icon.png';
 import { listen } from '@tauri-apps/api/event';
 import { InfoPanel } from '@/components/onboarding/InfoPanel';
 
@@ -22,6 +21,34 @@ const getTauriWindow = async () => {
     };
   }
 };
+
+interface WindowControlProps {
+  icon: React.ReactNode;
+  onClick: () => void;
+  variant?: 'default' | 'danger';
+}
+
+function WindowControl({ icon, onClick, variant = 'default' }: WindowControlProps) {
+  return (
+    <button
+      type="button"
+      onMouseDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick();
+      }}
+      className={cn(
+        "w-7 h-7 flex items-center justify-center rounded-md",
+        "transition-colors duration-150 cursor-pointer select-none",
+        variant === 'default'
+          ? "text-fg-muted hover:text-porcelain hover:bg-graphite-2"
+          : "text-fg-muted hover:text-white hover:bg-error"
+      )}
+    >
+      {icon}
+    </button>
+  );
+}
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -63,172 +90,121 @@ export function AppShell({ children }: AppShellProps) {
     };
   }, [searchStore]);
 
+  const handleMinimize = async () => {
+    try {
+      const window = await getTauriWindow();
+      await window.minimize();
+    } catch (err) {
+      console.error('Failed to minimize:', err);
+    }
+  };
+
+  const handleMaximize = async () => {
+    try {
+      const window = await getTauriWindow();
+      await window.toggleMaximize();
+    } catch (err) {
+      console.error('Failed to maximize:', err);
+    }
+  };
+
+  const handleClose = async () => {
+    try {
+      const window = await getTauriWindow();
+      await window.hide();
+    } catch (err) {
+      console.error('Failed to close:', err);
+    }
+  };
+
   return (
-    <div className="h-screen flex flex-col bg-graphite-0 overflow-hidden">
-      {/* Titlebar */}
-      <div className="h-12 flex items-center justify-between bg-graphite-1 border-b border-stroke-hairline relative">
-        <div className="absolute inset-0 z-0" data-tauri-drag-region />
+    <div className="h-screen flex bg-graphite-0 overflow-hidden" data-theme="desktop">
+      {/* Invisible drag region - covers top of window */}
+      <div
+        data-tauri-drag-region
+        className="fixed top-0 left-0 right-0 h-10 z-40 pointer-events-auto"
+        style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+      />
 
-        {/* Left: Logo and Title */}
-        <div className="flex items-center gap-3 px-4 relative z-10">
-          <div className="w-6 h-6 rounded-md bg-gradient-teal p-[1px] shadow-glow-teal">
-            <div className="w-full h-full rounded-[6px] bg-graphite-2 flex items-center justify-center">
-              <img src={ixosIcon} alt="Ixos" className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex flex-col leading-tight select-none">
-            <h1 className="text-xs font-semibold text-porcelain tracking-[0.08em] uppercase">Ixos Protocol</h1>
-            <span className="text-[10px] text-fg-dim">Search Instrument</span>
-          </div>
-        </div>
-
-        {/* Right: Window Controls */}
-        <div className="flex items-center gap-0.5 px-3 relative z-10 pointer-events-auto">
-          <button
-            type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setShowSettings(!showSettings);
-            }}
-            className={cn(
-              "w-8 h-8 flex items-center justify-center rounded-md",
-              "text-fg-muted hover:text-porcelain hover:bg-graphite-2",
-              "transition-colors duration-150 cursor-pointer select-none"
-            )}
-          >
-            <Settings className="w-3.5 h-3.5" />
-          </button>
-
-          <div className="w-px h-4 bg-stroke-hairline mx-1" />
-
-          <button
-            type="button"
-            onMouseDown={async (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              try {
-                const window = await getTauriWindow();
-                await window.minimize();
-              } catch (err) {
-                console.error('Failed to minimize:', err);
-              }
-            }}
-            className={cn(
-              "w-8 h-8 flex items-center justify-center rounded-md",
-              "text-fg-muted hover:text-porcelain hover:bg-graphite-2",
-              "transition-colors duration-150 cursor-pointer select-none"
-            )}
-          >
-            <Minus className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onMouseDown={async (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              try {
-                const window = await getTauriWindow();
-                await window.toggleMaximize();
-              } catch (err) {
-                console.error('Failed to maximize:', err);
-              }
-            }}
-            className={cn(
-              "w-8 h-8 flex items-center justify-center rounded-md",
-              "text-fg-muted hover:text-porcelain hover:bg-graphite-2",
-              "transition-colors duration-150 cursor-pointer select-none"
-            )}
-          >
-            <Square className="w-3 h-3" />
-          </button>
-          <button
-            type="button"
-            onMouseDown={async (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              try {
-                const window = await getTauriWindow();
-                await window.hide();
-              } catch (err) {
-                console.error('Failed to close:', err);
-              }
-            }}
-            className={cn(
-              "w-8 h-8 flex items-center justify-center rounded-md",
-              "text-fg-muted hover:text-white hover:bg-danger",
-              "transition-colors duration-150 cursor-pointer select-none"
-            )}
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
-        <Sidebar
-          onNewSearch={handleNewSearch}
-          onOpenGuide={() => {
-            setShowInfo(true);
-            setShowSettings(false);
-          }}
+      {/* Window controls - absolute top-right */}
+      <div className="fixed top-2 right-3 flex items-center gap-0.5 z-50">
+        <WindowControl
+          icon={<Settings className="w-3.5 h-3.5" />}
+          onClick={() => setShowSettings(!showSettings)}
         />
-
-        <div className="flex-1 flex flex-col overflow-hidden relative bg-graphite-0">
-          <div className="pointer-events-none absolute inset-0 opacity-80 bg-gradient-noise-teal" />
-          <div className="pointer-events-none absolute inset-0 opacity-60 bg-gradient-noise-amber" />
-          <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
-            {children}
-          </div>
-
-          {showSettings && (
-            <div className="absolute inset-0 z-50 bg-graphite-0/85 backdrop-blur-xl">
-              <div className="h-full overflow-auto p-8">
-                <div className="max-w-3xl mx-auto glass-card p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h2 className="text-lg font-semibold text-porcelain">Settings</h2>
-                      <p className="text-sm text-fg-muted">Tune search, privacy, and compliance controls.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowSettings(false)}
-                      className="p-2 rounded-md hover:bg-graphite-2 text-fg-muted hover:text-porcelain cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <SettingsPanel />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {showInfo && (
-            <div className="absolute inset-0 z-50 bg-graphite-0/85 backdrop-blur-xl">
-              <div className="h-full overflow-auto p-8">
-                <div className="max-w-4xl mx-auto glass-card p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h2 className="text-lg font-semibold text-porcelain">Ixos Guide</h2>
-                      <p className="text-sm text-fg-muted">Learn the protocol and shortcuts.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowInfo(false)}
-                      className="p-2 rounded-md hover:bg-graphite-2 text-fg-muted hover:text-porcelain cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <InfoPanel />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        <div className="w-px h-4 bg-stroke-hairline mx-1" />
+        <WindowControl icon={<Minus className="w-3.5 h-3.5" />} onClick={handleMinimize} />
+        <WindowControl icon={<Square className="w-3 h-3" />} onClick={handleMaximize} />
+        <WindowControl icon={<X className="w-3.5 h-3.5" />} onClick={handleClose} variant="danger" />
       </div>
+
+      {/* Sidebar */}
+      <Sidebar
+        onNewSearch={handleNewSearch}
+        onOpenGuide={() => {
+          setShowInfo(true);
+          setShowSettings(false);
+        }}
+        className="flex-shrink-0"
+      />
+
+      {/* Main content */}
+      <main className="flex-1 flex flex-col pt-10 overflow-hidden relative bg-graphite-0">
+        {/* Subtle gradient backgrounds */}
+        <div className="pointer-events-none absolute inset-0 opacity-60 bg-gradient-to-br from-accent-amber/[0.02] to-transparent" />
+
+        <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
+          {children}
+        </div>
+
+        {/* Settings Panel Overlay */}
+        {showSettings && (
+          <div className="absolute inset-0 z-50 bg-graphite-0/90 backdrop-blur-xl">
+            <div className="h-full overflow-auto p-8">
+              <div className="max-w-3xl mx-auto bg-graphite-1 border border-stroke-hairline rounded-xl p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-lg font-semibold text-porcelain">Settings</h2>
+                    <p className="text-sm text-fg-muted">Tune search, privacy, and compliance controls.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowSettings(false)}
+                    className="p-2 rounded-md hover:bg-graphite-2 text-fg-muted hover:text-porcelain cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <SettingsPanel />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Info Panel Overlay */}
+        {showInfo && (
+          <div className="absolute inset-0 z-50 bg-graphite-0/90 backdrop-blur-xl">
+            <div className="h-full overflow-auto p-8">
+              <div className="max-w-4xl mx-auto bg-graphite-1 border border-stroke-hairline rounded-xl p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-lg font-semibold text-porcelain">Ixos Guide</h2>
+                    <p className="text-sm text-fg-muted">Learn the protocol and shortcuts.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowInfo(false)}
+                    className="p-2 rounded-md hover:bg-graphite-2 text-fg-muted hover:text-porcelain cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <InfoPanel />
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

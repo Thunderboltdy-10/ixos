@@ -407,7 +407,7 @@ pub async fn search_progressive(
                 SearchEventPayload::LateResult { .. } => (0, 1),
                 _ => (0, 0),
             };
-            let _span = ipc_send_span(batch_num as u32, result_count);
+            let _span = ipc_send_span(batch_num, result_count);
             let _enter = _span.enter();
             // Emit to frontend
             if let Err(e) = window_clone.emit("search-event", &payload) {

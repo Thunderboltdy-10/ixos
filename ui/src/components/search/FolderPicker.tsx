@@ -29,19 +29,19 @@ export function FolderPicker({
   };
 
   return (
-    <div className={cn('flex items-center gap-2', className)}>
+    <div className={cn('flex items-center gap-1.5', className)}>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={cn(
-          'flex-1 h-9 px-3 py-1 rounded-md',
-          'bg-graphite-3 border border-stroke-hairline',
+          'flex-1 h-8 px-2.5 py-1 rounded-md',
+          'bg-transparent',
           'text-fg-muted text-xs font-mono',
-          'placeholder:text-fg-dim',
-          'focus:outline-none focus:border-accent-teal/50',
-          'hover:border-border-medium',
+          'placeholder:text-fg-dim/60',
+          'focus:outline-none focus:bg-graphite-3/30',
+          'hover:bg-graphite-3/20',
           'transition-all duration-200'
         )}
         spellCheck={false}
@@ -51,13 +51,13 @@ export function FolderPicker({
         onClick={handleBrowse}
         title="Browse for folder"
         className={cn(
-          'flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-md',
-          'bg-graphite-3 border border-stroke-hairline',
-          'text-fg-dim hover:text-porcelain hover:bg-graphite-2 hover:border-border-medium',
+          'flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md',
+          'bg-transparent',
+          'text-fg-dim hover:text-porcelain hover:bg-graphite-3/50',
           'transition-all duration-150 cursor-pointer'
         )}
       >
-        <FolderOpen className="w-4 h-4" />
+        <FolderOpen className="w-3.5 h-3.5" />
       </button>
     </div>
   );

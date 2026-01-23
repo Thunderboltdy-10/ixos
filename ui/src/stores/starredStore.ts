@@ -4,10 +4,11 @@
  */
 
 import { create } from 'zustand';
-import type { RankedResult, LexicalResult } from '@/lib/types';
+import type { StoredResult } from '@/lib/searchHistory';
 import { saveEncrypted, loadEncrypted } from '@/lib/storage';
 
-const STARRED_FILE = 'starred_searches.encrypted';
+const HISTORY_FILE = 'search_history.encrypted';
+const LEGACY_STARRED_FILE = 'starred_searches.encrypted';
 const MAX_THREADS = 100;
 
 /**
@@ -17,11 +18,21 @@ export interface SearchThread {
   id: string;
   query: string;
   directory: string;
-  results: RankedResult[] | LexicalResult[];
+  results: StoredResult[];
   timestamp: number;
   mode: 'cache' | 'jit' | 'journalist';
   resultCount: number;
   durationMs: number;
+  starred: boolean;
+}
+
+export interface HistorySuggestion {
+  id: string;
+  query: string;
+  directory: string;
+  resultCount: number;
+  timestamp: number;
+  mode: 'cache' | 'jit' | 'journalist';
   starred: boolean;
 }
 
@@ -32,7 +43,8 @@ interface StarredState {
   isLoading: boolean;
 
   // Actions
-  addThread: (thread: Omit<SearchThread, 'id' | 'timestamp' | 'starred'>) => void;
+  addThread: (thread: Omit<SearchThread, 'id' | 'timestamp'> & { starred?: boolean; id?: string; timestamp?: number }) => string;
+  recordThread: (thread: SearchThread) => void;
   selectThread: (id: string) => void;
   deleteThread: (id: string) => void;
   toggleStar: (id: string) => void;
@@ -40,6 +52,9 @@ interface StarredState {
 
   // Getters
   getStarredThreads: () => SearchThread[];
+  getRecentThreads: () => SearchThread[];
+  getSuggestions: (prefix: string, limit?: number) => HistorySuggestion[];
+  getThreadById: (id: string) => SearchThread | undefined;
 
   // Persistence
   loadStarred: () => Promise<void>;
@@ -53,19 +68,30 @@ export const useStarredStore = create<StarredState>((set, get) => ({
   isLoading: false,
 
   addThread: (threadData) => {
-    const newThread: SearchThread = {
+    const nextId = threadData.id ?? crypto.randomUUID();
+    const nextTimestamp = threadData.timestamp ?? Date.now();
+    const nextThread: SearchThread = {
       ...threadData,
-      id: crypto.randomUUID(),
-      timestamp: Date.now(),
-      starred: true, // Already starred when added via star button
+      id: nextId,
+      timestamp: nextTimestamp,
+      starred: threadData.starred ?? false,
     };
 
     set(state => ({
-      threads: [newThread, ...state.threads].slice(0, MAX_THREADS),
-      activeThreadId: newThread.id,
+      threads: [nextThread, ...state.threads.filter(t => t.id !== nextId)].slice(0, MAX_THREADS),
+      activeThreadId: nextId,
     }));
 
-    // Save async (don't block UI)
+    get().saveStarred();
+    return nextId;
+  },
+
+  recordThread: (thread) => {
+    set(state => ({
+      threads: [thread, ...state.threads.filter(t => t.id !== thread.id)].slice(0, MAX_THREADS),
+      activeThreadId: thread.id,
+    }));
+
     get().saveStarred();
   },
 
@@ -98,6 +124,39 @@ export const useStarredStore = create<StarredState>((set, get) => ({
     return get().threads.filter(t => t.starred);
   },
 
+  getRecentThreads: () => {
+    return get().threads.filter(t => !t.starred);
+  },
+
+  getSuggestions: (prefix, limit = 5) => {
+    const trimmed = prefix.trim().toLowerCase();
+    if (!trimmed) return [];
+
+    const suggestions: HistorySuggestion[] = [];
+    const seen = new Set<string>();
+
+    for (const thread of get().threads) {
+      if (!thread.query.toLowerCase().startsWith(trimmed)) continue;
+      const key = `${thread.query}::${thread.directory}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      suggestions.push({
+        id: thread.id,
+        query: thread.query,
+        directory: thread.directory,
+        resultCount: thread.resultCount,
+        timestamp: thread.timestamp,
+        mode: thread.mode,
+        starred: thread.starred,
+      });
+      if (suggestions.length >= limit) break;
+    }
+
+    return suggestions;
+  },
+
+  getThreadById: (id) => get().threads.find(t => t.id === id),
+
   clearAll: async () => {
     set({ threads: [], activeThreadId: null });
     await get().saveStarred();
@@ -107,7 +166,7 @@ export const useStarredStore = create<StarredState>((set, get) => ({
     set({ isLoading: true });
 
     try {
-      const loaded = await loadEncrypted<{ threads: SearchThread[] }>(STARRED_FILE);
+      const loaded = await loadEncrypted<{ threads: SearchThread[] }>(HISTORY_FILE);
 
       if (loaded?.threads) {
         set({
@@ -115,7 +174,16 @@ export const useStarredStore = create<StarredState>((set, get) => ({
           isLoaded: true,
         });
       } else {
-        set({ isLoaded: true });
+        const legacy = await loadEncrypted<{ threads: SearchThread[] }>(LEGACY_STARRED_FILE);
+        if (legacy?.threads) {
+          set({
+            threads: legacy.threads.slice(0, MAX_THREADS),
+            isLoaded: true,
+          });
+          await saveEncrypted(HISTORY_FILE, { threads: legacy.threads.slice(0, MAX_THREADS) });
+        } else {
+          set({ isLoaded: true });
+        }
       }
     } catch (error) {
       console.error('Failed to load starred searches:', error);
@@ -129,7 +197,7 @@ export const useStarredStore = create<StarredState>((set, get) => ({
     const { threads } = get();
 
     try {
-      await saveEncrypted(STARRED_FILE, { threads });
+      await saveEncrypted(HISTORY_FILE, { threads });
     } catch (error) {
       console.error('Failed to save starred searches:', error);
     }

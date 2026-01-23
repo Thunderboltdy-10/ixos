@@ -31,8 +31,8 @@ interface ModeOption {
       shortLabel: 'JIT',
       description: 'Just-In-Time (Default)',
       details: 'Computes embeddings on-the-fly. No data written to disk. Maximum privacy.',
-      color: 'text-accent-teal',
-      bgColor: 'bg-accent-teal/10',
+      color: 'text-accent-amber',
+      bgColor: 'bg-accent-amber/10',
     },
     {
       id: 'cache',
@@ -41,8 +41,8 @@ interface ModeOption {
       shortLabel: 'Cache',
       description: 'Persistent Cache',
       details: 'Stores embeddings in ADS (Windows) or xattr (Mac/Linux). Faster repeat searches.',
-      color: 'text-accent-amber',
-      bgColor: 'bg-accent-amber/10',
+      color: 'text-accent-teal',
+      bgColor: 'bg-accent-teal/10',
     },
     {
       id: 'journalist',
@@ -51,8 +51,8 @@ interface ModeOption {
       shortLabel: 'Secure',
       description: 'Maximum Security',
       details: 'JIT + encrypted history + emergency clear (Ctrl+Shift+X). For sensitive investigations.',
-      color: 'text-accent-magenta',
-      bgColor: 'bg-accent-magenta/10',
+      color: 'text-accent-violet',
+      bgColor: 'bg-accent-violet/10',
     }
   ];
 
@@ -123,11 +123,10 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'flex items-center gap-2 px-3 py-2 rounded-md',
-          'bg-graphite-2 hover:bg-graphite-3',
-          'border border-stroke-hairline hover:border-border-medium',
+          'flex items-center gap-2 px-2.5 py-1.5 rounded-md',
+          'bg-transparent hover:bg-graphite-3/50',
           'transition-all duration-200',
-          'text-xs uppercase tracking-[0.16em] min-w-[110px] max-w-[140px]'
+          'text-xs uppercase tracking-[0.14em]'
         )}
       >
         <selectedMode.icon className={cn('w-3.5 h-3.5', selectedMode.color)} />
@@ -182,7 +181,7 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
                         {mode.label}
                       </span>
                       {mode.id === 'jit' && (
-                        <span className="text-2xs px-1.5 py-0.5 rounded bg-accent-teal/20 text-accent-teal">
+                        <span className="text-2xs px-1.5 py-0.5 rounded bg-accent-amber/20 text-accent-amber">
                           Default
                         </span>
                       )}

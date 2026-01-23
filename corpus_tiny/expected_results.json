@@ -145,8 +145,8 @@
     {
       "query_id": "unicode_notes",
       "top_k": 1,
-      "top_paths": ["corpus_tiny/nested/level1/level2/über/ñandú_notes.txt"],
-      "must_include": ["corpus_tiny/nested/level1/level2/über/ñandú_notes.txt"],
+      "top_paths": ["corpus_tiny/nested/level1/level2/Ã¼ber/Ã±andÃº_notes.txt"],
+      "must_include": ["corpus_tiny/nested/level1/level2/Ã¼ber/Ã±andÃº_notes.txt"],
       "must_exclude": []
     },
     {

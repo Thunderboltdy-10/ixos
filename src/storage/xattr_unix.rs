@@ -145,6 +145,10 @@ impl EmbeddingCache for XattrCache {
         }
     }
 
+    fn contains(&self, path: &Path) -> bool {
+        xattr::get(path, XATTR_NAME).unwrap_or(None).is_some()
+    }
+
     fn is_supported(&self, path: &Path) -> bool {
         Self::is_supported_static(path)
     }

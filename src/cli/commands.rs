@@ -122,6 +122,13 @@ pub enum Commands {
         #[arg(long)]
         show_scores: bool,
 
+        /// Include full evidence payload in JSON output
+        ///
+        /// When used with --json or --format json, includes detailed evidence
+        /// explaining why each result matched (tags, explanation, semantic passage).
+        #[arg(long)]
+        evidence: bool,
+
         /// Restrict search to specific directory (sandbox mode)
         #[arg(long)]
         sandbox: Option<PathBuf>,

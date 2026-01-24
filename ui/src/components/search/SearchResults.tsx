@@ -20,6 +20,8 @@ interface SearchResultsProps {
   showStar?: boolean;
 }
 
+type SearchMode = 'jit' | 'cache' | 'journalist';
+
 function useStabilizedResults<T>(results: T[], phase: SearchPhase): T[] {
   const [displayResults, setDisplayResults] = useState(results);
   const latestRef = useRef(results);
@@ -78,6 +80,11 @@ export function SearchResults({
     : undefined;
   const isStarred = currentThread?.starred ?? false;
   const canStar = phase === 'complete' && results.length > 0;
+
+  // Determine active mode for coloring
+  const mode: SearchMode = searchStore.journalistMode
+    ? 'journalist'
+    : (searchStore.cacheMode === 'jit' ? 'jit' : 'cache');
 
   const handleStarClick = () => {
     if (!canStar) return;
@@ -168,6 +175,7 @@ export function SearchResults({
                   index={index}
                   isSelected={index === selectedIndex}
                   isSemanticResult={isSemanticPhase && 'scoreBreakdown' in result}
+                  mode={mode}
                   onSelect={() => onSelect(index)}
                   onOpen={onOpen}
                   onReveal={onReveal}

@@ -15,8 +15,8 @@ use tokio_util::sync::CancellationToken;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use ixos_protocol::cli::{
-    create_formatter, CacheCommands, CcpaCommands, Cli, Commands, ComplianceCommands, GdprCommands,
-    IxosConfig, OutputFormat,
+    create_formatter_with_options, CacheCommands, CcpaCommands, Cli, Commands, ComplianceCommands,
+    GdprCommands, IxosConfig, OutputFormat,
 };
 use ixos_protocol::compliance::{ComplianceManager, DeletionScope};
 use ixos_protocol::ixos_rank::{
@@ -79,6 +79,7 @@ async fn main() -> anyhow::Result<()> {
             secure_timing,
             context,
             journalist_mode,
+            evidence,
         } => {
             handle_search(
                 &query,
@@ -97,6 +98,7 @@ async fn main() -> anyhow::Result<()> {
                 secure_timing || config.search.secure_timing,
                 context,
                 journalist_mode,
+                evidence,
                 &config,
             )
             .await?;
@@ -167,6 +169,7 @@ async fn handle_search(
     secure_timing: bool,
     context_lines: usize,
     journalist_mode: bool,
+    include_evidence: bool,
     config: &IxosConfig,
 ) -> anyhow::Result<()> {
     // Initialize journalist mode if enabled
@@ -208,13 +211,14 @@ async fn handle_search(
     // Determine output format
     let output_format = if json { OutputFormat::Json } else { format };
     let use_color = config.output.color && output_format == OutputFormat::Human;
-    let formatter = create_formatter(output_format, use_color);
+    let formatter = create_formatter_with_options(output_format, use_color, include_evidence);
     let mut stdout = stdout();
 
     // Determine search directory
-    let search_dir = dir
+    let raw_search_dir = dir
         .or_else(|| config.search.default_directory.clone())
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+    let search_dir = std::fs::canonicalize(&raw_search_dir).unwrap_or(raw_search_dir);
 
     // Enforce sandbox if provided
     if let Some(sandbox_dir) = sandbox {
@@ -427,7 +431,8 @@ async fn handle_index(
     }
 
     println!("Indexing {} directories...", dirs.len());
-    for dir in &dirs {
+    for raw_dir in dirs {
+        let dir = std::fs::canonicalize(&raw_dir).unwrap_or(raw_dir);
         if progress {
             print!("  {} ... ", dir.display());
             std::io::stdout().flush()?;
@@ -444,8 +449,14 @@ async fn handle_index(
         }
 
         // Index the directory
-        let mut semantic = StubSemanticEngine::with_stub_model();
-        match semantic.index_directory(dir).await {
+        let cache_mode = if use_xattr {
+            ixos_protocol::ixos_rank::semantic_engine::CacheMode::Cache
+        } else {
+            ixos_protocol::ixos_rank::semantic_engine::CacheMode::Jit
+        };
+
+        let mut semantic = StubSemanticEngine::with_stub_model_and_mode(cache_mode);
+        match semantic.index_directory(&dir).await {
             Ok(count) => {
                 if progress {
                     println!("{} files", count);
@@ -622,7 +633,8 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
 
     match action {
         CacheCommands::Stats { dir, json } => {
-            let target_dir = dir.unwrap_or_else(|| PathBuf::from("."));
+            let raw_dir = dir.unwrap_or_else(|| PathBuf::from("."));
+            let target_dir = std::fs::canonicalize(&raw_dir).unwrap_or(raw_dir);
 
             println!("Cache Statistics for: {}", target_dir.display());
             println!("{}", "-".repeat(50));
@@ -642,8 +654,8 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
                     total_files += 1;
                     let cache = get_cache_for_path(entry.path());
 
-                    // Check if file has cached embedding
-                    if let Ok(Some(_)) = cache.get(entry.path(), &[0u8; 32]) {
+                    // Check if file has cached embedding (using optimized contains check)
+                    if cache.contains(entry.path()) {
                         cached_files += 1;
                         // Estimate cache size (225 bytes per entry for 64-dim)
                         cache_size_bytes += 225;
@@ -731,7 +743,8 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
             println!("Cache Audit");
             println!("{}", "-".repeat(50));
 
-            let cwd = std::env::current_dir()?;
+            let raw_cwd = std::env::current_dir()?;
+            let cwd = std::fs::canonicalize(&raw_cwd).unwrap_or(raw_cwd);
             let mut total = 0;
             let mut valid = 0;
             let mut invalid = 0;
@@ -744,7 +757,18 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
             {
                 let cache = get_cache_for_path(entry.path());
 
-                if let Ok(Some(embedding)) = cache.get(entry.path(), &[0u8; 32]) {
+                // P2 Badge: Use real file hash when detecting cached entries for audit
+                let file_hash = match ixos_protocol::security::crypto::sha256_file(entry.path()) {
+                    Ok(h) => h,
+                    Err(e) => {
+                        if detailed {
+                            println!("SKIP: {} (hash error: {})", entry.path().display(), e);
+                        }
+                        continue;
+                    }
+                };
+
+                if let Ok(Some(embedding)) = cache.get(entry.path(), &file_hash) {
                     total += 1;
 
                     if verify {

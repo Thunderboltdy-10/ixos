@@ -122,6 +122,63 @@ impl From<&ScoreBreakdown> for ScoreBreakdownOutput {
     }
 }
 
+/// Evidence output for JSON serialization
+#[derive(Debug, Serialize)]
+pub struct EvidenceOutput {
+    /// Evidence tags for UI display
+    pub tags: Vec<String>,
+    /// Human-readable explanation of why this matched
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub explanation: Option<String>,
+    /// Number of lexical (keyword) matches
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lexical_hit_count: Option<usize>,
+    /// Query terms that matched
+    pub matched_terms: Vec<String>,
+    /// Best semantic passage match
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub semantic_passage: Option<String>,
+    /// Path-based evidence tags
+    pub path_tags: Vec<String>,
+    /// Detected file type
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub file_type: Option<String>,
+}
+
+impl From<&crate::ixos_rank::types::EvidenceSummary> for EvidenceOutput {
+    fn from(e: &crate::ixos_rank::types::EvidenceSummary) -> Self {
+        Self {
+            tags: e.tags.iter().map(|t| t.to_string()).collect(),
+            explanation: e.explanation.clone(),
+            lexical_hit_count: e.lexical_hit_count,
+            matched_terms: e.matched_terms.clone(),
+            semantic_passage: e.semantic_passage.clone(),
+            path_tags: e.path_tags.clone(),
+            file_type: e.file_type.clone(),
+        }
+    }
+}
+
+/// Extended search result output with evidence
+#[derive(Debug, Serialize)]
+pub struct SearchResultOutputWithEvidence {
+    /// File path
+    pub path: String,
+    /// Relevance score
+    pub score: f32,
+    /// Whether integrity was verified
+    pub integrity_verified: bool,
+    /// Content snippet (if available)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub snippet: Option<String>,
+    /// Score breakdown (if requested)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub score_breakdown: Option<ScoreBreakdownOutput>,
+    /// Evidence payload explaining why this result matched
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub evidence: Option<EvidenceOutput>,
+}
+
 // =============================================================================
 // Output Formatter Trait
 // =============================================================================
@@ -300,7 +357,31 @@ impl OutputFormatter for HumanFormatter {
 // =============================================================================
 
 /// JSON output formatter
-pub struct JsonFormatter;
+pub struct JsonFormatter {
+    include_evidence: bool,
+}
+
+impl JsonFormatter {
+    /// Create a new JSON formatter
+    pub fn new() -> Self {
+        Self {
+            include_evidence: false,
+        }
+    }
+
+    /// Create a JSON formatter that includes evidence
+    pub fn with_evidence() -> Self {
+        Self {
+            include_evidence: true,
+        }
+    }
+}
+
+impl Default for JsonFormatter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl OutputFormatter for JsonFormatter {
     fn format_lexical_results(
@@ -338,32 +419,64 @@ impl OutputFormatter for JsonFormatter {
         show_scores: bool,
         writer: &mut dyn Write,
     ) -> io::Result<()> {
-        let outputs: Vec<SearchResultOutput> = results
-            .iter()
-            .map(|r| SearchResultOutput {
-                path: r.path.to_string_lossy().to_string(),
-                score: r.score,
-                integrity_verified: r.integrity_verified,
-                snippet: r.context_snippet.as_ref().map(|s| s.raw_matched.clone()),
-                score_breakdown: if show_scores {
-                    Some(ScoreBreakdownOutput::from(&r.score_breakdown))
-                } else {
-                    None
-                },
-            })
-            .collect();
+        if self.include_evidence {
+            // Extended output with evidence
+            let outputs: Vec<SearchResultOutputWithEvidence> = results
+                .iter()
+                .map(|r| SearchResultOutputWithEvidence {
+                    path: r.path.to_string_lossy().to_string(),
+                    score: r.score,
+                    integrity_verified: r.integrity_verified,
+                    snippet: r.context_snippet.as_ref().map(|s| s.raw_matched.clone()),
+                    score_breakdown: if show_scores {
+                        Some(ScoreBreakdownOutput::from(&r.score_breakdown))
+                    } else {
+                        None
+                    },
+                    evidence: r.evidence.as_ref().map(EvidenceOutput::from),
+                })
+                .collect();
 
-        let json = serde_json::json!({
-            "type": "semantic",
-            "count": outputs.len(),
-            "results": outputs
-        });
+            let json = serde_json::json!({
+                "type": "semantic",
+                "count": outputs.len(),
+                "results": outputs
+            });
 
-        writeln!(
-            writer,
-            "{}",
-            serde_json::to_string(&json).unwrap_or_default()
-        )
+            writeln!(
+                writer,
+                "{}",
+                serde_json::to_string(&json).unwrap_or_default()
+            )
+        } else {
+            // Standard output without evidence
+            let outputs: Vec<SearchResultOutput> = results
+                .iter()
+                .map(|r| SearchResultOutput {
+                    path: r.path.to_string_lossy().to_string(),
+                    score: r.score,
+                    integrity_verified: r.integrity_verified,
+                    snippet: r.context_snippet.as_ref().map(|s| s.raw_matched.clone()),
+                    score_breakdown: if show_scores {
+                        Some(ScoreBreakdownOutput::from(&r.score_breakdown))
+                    } else {
+                        None
+                    },
+                })
+                .collect();
+
+            let json = serde_json::json!({
+                "type": "semantic",
+                "count": outputs.len(),
+                "results": outputs
+            });
+
+            writeln!(
+                writer,
+                "{}",
+                serde_json::to_string(&json).unwrap_or_default()
+            )
+        }
     }
 
     fn format_status(&self, message: &str, writer: &mut dyn Write) -> io::Result<()> {
@@ -633,9 +746,24 @@ impl OutputFormatter for AcademicFormatter {
 
 /// Create a formatter for the given output format
 pub fn create_formatter(format: OutputFormat, use_color: bool) -> Box<dyn OutputFormatter> {
+    create_formatter_with_options(format, use_color, false)
+}
+
+/// Create a formatter with evidence option
+pub fn create_formatter_with_options(
+    format: OutputFormat,
+    use_color: bool,
+    include_evidence: bool,
+) -> Box<dyn OutputFormatter> {
     match format {
         OutputFormat::Human => Box::new(HumanFormatter::new(use_color)),
-        OutputFormat::Json => Box::new(JsonFormatter),
+        OutputFormat::Json => {
+            if include_evidence {
+                Box::new(JsonFormatter::with_evidence())
+            } else {
+                Box::new(JsonFormatter::new())
+            }
+        }
         OutputFormat::Csv => Box::new(CsvFormatter::new()),
         OutputFormat::Ripgrep => Box::new(RipgrepFormatter),
         OutputFormat::Zotero => Box::new(AcademicFormatter::new(

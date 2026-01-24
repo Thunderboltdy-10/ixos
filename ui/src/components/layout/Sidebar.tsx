@@ -66,19 +66,19 @@ export function Sidebar({ onNewSearch, onOpenGuide, className }: SidebarProps) {
   return (
     <aside className={cn('w-60 h-full flex flex-col bg-graphite-0 border-r border-stroke-hairline', className)}>
       {/* Brand header with New Search button */}
-      <div className="p-4 flex items-center gap-3 pt-12">
+      <div className="p-4 flex items-center gap-3 pt-12 mb-2">
         <div className="w-6 h-6 rounded-md bg-gradient-to-br from-accent-amber to-accent-amber-dim p-[1px] shadow-glow-amber">
           <div className="w-full h-full rounded-[5px] bg-graphite-1 flex items-center justify-center">
             <img src={ixosIcon} alt="Ixos" className="w-3.5 h-3.5" />
           </div>
         </div>
-        <span className="font-display text-sm font-medium text-porcelain tracking-tight">Ixos</span>
+        <span className="font-display text-sm font-semibold text-porcelain tracking-tight">Ixos</span>
         <button
           type="button"
           onClick={onNewSearch}
           className={cn(
-            'ml-auto p-2 rounded-md',
-            'text-fg-muted hover:text-accent-amber hover:bg-graphite-2',
+            'ml-auto p-1.5 rounded-md',
+            'text-fg-muted hover:text-accent-amber hover:bg-white/[0.05]',
             'transition-colors duration-150 cursor-pointer'
           )}
           title="New Search"
@@ -88,16 +88,16 @@ export function Sidebar({ onNewSearch, onOpenGuide, className }: SidebarProps) {
       </div>
 
       {/* Tab toggle */}
-      <div className="px-3 pt-2">
-        <div className="flex items-center gap-1 p-0.5 bg-graphite-2/50 rounded-md">
+      <div className="px-3 pb-3">
+        <div className="flex items-center p-1 bg-graphite-2/40 border border-white/[0.04] rounded-lg">
           <button
             type="button"
             onClick={() => setActiveTab('recent')}
             className={cn(
-              'flex-1 py-1.5 px-2 text-xs rounded-md transition-all duration-150',
+              'flex-1 py-1.5 px-2 text-xs font-medium rounded-md transition-all duration-200',
               activeTab === 'recent'
-                ? 'bg-graphite-3 text-porcelain'
-                : 'text-fg-dim hover:text-fg-muted'
+                ? 'bg-graphite-3 text-porcelain shadow-sm ring-1 ring-white/[0.04]'
+                : 'text-fg-dim hover:text-fg-muted hover:bg-white/[0.02]'
             )}
           >
             Recent
@@ -106,13 +106,13 @@ export function Sidebar({ onNewSearch, onOpenGuide, className }: SidebarProps) {
             type="button"
             onClick={() => setActiveTab('starred')}
             className={cn(
-              'flex-1 py-1.5 px-2 text-xs rounded-md transition-all duration-150 flex items-center justify-center gap-1',
+              'flex-1 py-1.5 px-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5',
               activeTab === 'starred'
-                ? 'bg-graphite-3 text-accent-amber'
-                : 'text-fg-dim hover:text-fg-muted'
+                ? 'bg-graphite-3 text-accent-amber shadow-sm ring-1 ring-white/[0.04]'
+                : 'text-fg-dim hover:text-fg-muted hover:bg-white/[0.02]'
             )}
           >
-            <Star className="w-3 h-3" />
+            <Star className={cn("w-3 h-3", activeTab === 'starred' ? "fill-accent-amber" : "")} />
             Starred
           </button>
         </div>

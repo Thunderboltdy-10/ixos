@@ -118,6 +118,28 @@ pub fn explain_evidence(evidence: &[Evidence], score: f32) -> String {
                     parts.push("Frequently accessed file".to_string());
                 }
             }
+            Evidence::Project {
+                project_type,
+                project_name,
+                ..
+            } => {
+                let type_str = match project_type {
+                    super::types::ProjectType::Git => "Git",
+                    super::types::ProjectType::Rust => "Rust",
+                    super::types::ProjectType::Node => "Node.js",
+                    super::types::ProjectType::Python => "Python",
+                    super::types::ProjectType::Go => "Go",
+                    super::types::ProjectType::Maven => "Maven",
+                    super::types::ProjectType::Gradle => "Gradle",
+                    super::types::ProjectType::DotNet => ".NET",
+                    super::types::ProjectType::Other(s) => s.as_str(),
+                };
+                if let Some(name) = project_name {
+                    parts.push(format!("In {} project: {}", type_str, name));
+                } else {
+                    parts.push(format!("In {} project", type_str));
+                }
+            }
         }
     }
 
@@ -192,6 +214,16 @@ pub fn generate_tags_from_evidence(evidence: &[Evidence]) -> Vec<EvidenceTag> {
                         strength: 0.3,
                         color: Some("#94a3b8".into()),
                     });
+                }
+            }
+            Evidence::Project {
+                project_type,
+                project_name,
+                locality_boost,
+                ..
+            } => {
+                if *locality_boost > 0.2 {
+                    tags.push(EvidenceTag::project(project_type, project_name.as_deref()));
                 }
             }
         }
@@ -345,6 +377,29 @@ pub fn format_for_cli(evidence: &[Evidence], score: f32) -> String {
                 if !parts.is_empty() {
                     lines.push(format!("  [Behavior] {}", parts.join(", ")));
                 }
+            }
+            Evidence::Project {
+                project_type,
+                project_name,
+                depth_from_root,
+                locality_boost,
+            } => {
+                let type_str = match project_type {
+                    super::types::ProjectType::Git => "Git",
+                    super::types::ProjectType::Rust => "Rust",
+                    super::types::ProjectType::Node => "Node.js",
+                    super::types::ProjectType::Python => "Python",
+                    super::types::ProjectType::Go => "Go",
+                    super::types::ProjectType::Maven => "Maven",
+                    super::types::ProjectType::Gradle => "Gradle",
+                    super::types::ProjectType::DotNet => ".NET",
+                    super::types::ProjectType::Other(s) => s.as_str(),
+                };
+                let name = project_name.as_deref().unwrap_or("unknown");
+                lines.push(format!(
+                    "  [Project] {}: {} (depth: {}, boost: {:.2})",
+                    type_str, name, depth_from_root, locality_boost
+                ));
             }
         }
     }

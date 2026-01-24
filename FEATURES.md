@@ -1,6 +1,6 @@
 # Ixos Protocol - Features Documentation
 
-> **Version**: 0.2.0
+> **Version**: 0.3.0
 > **Last Updated**: January 2026
 
 ---
@@ -92,6 +92,7 @@ Unlock achievements as you use Ixos:
 | `--sandbox` | | | Restrict search to directory |
 | `--no-secure-ranking` | | | Disable integrity/behavioral scoring |
 | `--journalist-mode` | | | Enable maximum privacy (memory-only, auto-clear) |
+| `--evidence` | | | Include full evidence in JSON output |
 
 **Examples:**
 
@@ -266,6 +267,106 @@ security.verify_integrity  - Verify file integrity
 
 ---
 
+## Enhanced Result Cards (Phase 3)
+
+The desktop app displays rich result cards with:
+
+### File Metadata
+- **File Type Icons**: Dynamic icons based on extension (.rs, .js, .py, etc.)
+- **File Size**: Human-readable size (e.g., "2.4 KB", "1.2 MB")
+- **Modification Time**: Relative time display ("2h ago", "3d ago")
+
+### Quick Actions
+- **Open**: Opens the file in default application
+- **Reveal**: Opens containing folder in file explorer
+- **Copy Path**: Copies full path to clipboard
+
+### "Why Matched" Toggle
+Expandable evidence breakdown explaining why each result matched:
+- **Semantic Score**: Embedding similarity percentage
+- **Lexical Score**: Keyword match quality
+- **Path Score**: Filename/directory match
+- **Recency Score**: File age factor
+- **Pattern Score**: Access pattern analysis
+
+Click the "?" icon on any result to see the full evidence breakdown.
+
+### Semantic Passage Priority
+For semantic queries (high semantic score > 0.5), the UI now prioritizes showing the **semantic passage** that matched rather than the lexical snippet. This ensures the displayed content is relevant to your conceptual query, not just keyword matches.
+
+---
+
+## Cache Management (Phase 4)
+
+### Settings Panel
+Access cache controls via Settings > Search Settings:
+
+- **Cache Mode Selector**: Choose between:
+  - **Off (JIT only)**: Embeddings computed on-demand, not persisted
+  - **Persistent (ADS/xattr)**: Embeddings stored in file metadata
+
+- **Cache Stats Panel**: Shows:
+  - Backend type (ADS or xattr)
+  - Number of cached files
+  - Estimated cache size
+  - Clear cache button
+
+### Cache Commands
+```cmd
+# View cache statistics
+.\target\release\ixos.exe cache stats --dir .\documents
+
+# Clear cache for a directory
+.\target\release\ixos.exe cache clear --dir .\documents
+```
+
+---
+
+## Evidence Engine (Phase 5)
+
+### CLI Evidence Output
+Use `--evidence` flag with JSON output to include full evidence payload:
+
+```cmd
+.\target\release\ixos.exe search "query" --json --evidence
+```
+
+Returns:
+```json
+{
+  "results": [{
+    "path": "...",
+    "score": 0.87,
+    "evidence": {
+      "tags": ["Semantic: 85%", "Keywords: test, query"],
+      "explanation": "High semantic similarity with matching keywords",
+      "matchedTerms": ["test", "query"],
+      "semanticPassage": "relevant content passage...",
+      "pathTags": ["docs", "api"],
+      "fileType": "md"
+    }
+  }]
+}
+```
+
+### Project Detection
+Automatic detection of project roots for locality boosting:
+
+| Marker | Project Type |
+|--------|--------------|
+| `.git` | Git repository |
+| `Cargo.toml` | Rust project |
+| `package.json` | Node.js project |
+| `pyproject.toml` | Python project |
+| `go.mod` | Go project |
+| `pom.xml` | Maven project |
+| `build.gradle` | Gradle project |
+| `*.csproj` / `*.sln` | .NET project |
+
+Files within the same project as your search context receive a locality boost.
+
+---
+
 ## Output Formats
 
 ### Human Format (Default)
@@ -303,6 +404,37 @@ Results (5 files):
         "integrity": 1.0,
         "temporal": 0.5,
         "behavior": 1.0
+      }
+    }
+  ]
+}
+```
+
+### JSON Format with Evidence (`--evidence`)
+
+```json
+{
+  "type": "semantic",
+  "count": 1,
+  "results": [
+    {
+      "path": ".\\dataset\\medical\\medical_42.txt",
+      "score": 0.87,
+      "integrity_verified": true,
+      "score_breakdown": {
+        "semantic": 0.85,
+        "integrity": 1.0,
+        "temporal": 0.5,
+        "behavior": 1.0
+      },
+      "evidence": {
+        "tags": ["Semantic: 85%", "Keywords: quarterly, report"],
+        "explanation": "High semantic similarity with keyword matches in content",
+        "lexical_hit_count": 3,
+        "matched_terms": ["quarterly", "report"],
+        "semantic_passage": "Q4 quarterly report shows revenue growth...",
+        "path_tags": ["reports", "2024"],
+        "file_type": "txt"
       }
     }
   ]

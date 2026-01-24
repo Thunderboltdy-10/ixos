@@ -111,3 +111,106 @@ export function getFileIcon(filename: string): string {
 
   return icons[ext || ''] || 'file';
 }
+
+/**
+ * Format file size in human-readable format
+ */
+export function formatFileSize(bytes: number | undefined): string {
+  if (bytes === undefined || bytes === null) return '';
+
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let size = bytes;
+  let unitIndex = 0;
+
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex++;
+  }
+
+  // Use 0 decimals for bytes, 1 decimal for others
+  const decimals = unitIndex === 0 ? 0 : 1;
+  return `${size.toFixed(decimals)} ${units[unitIndex]}`;
+}
+
+/**
+ * Format Unix timestamp as relative time (e.g., "2h ago", "3d ago")
+ */
+export function formatRelativeTime(timestamp: number | undefined): string {
+  if (timestamp === undefined || timestamp === null) return '';
+
+  const now = Math.floor(Date.now() / 1000);
+  const diff = now - timestamp;
+
+  if (diff < 0) return 'just now';
+
+  const minute = 60;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+  const week = 7 * day;
+  const month = 30 * day;
+  const year = 365 * day;
+
+  if (diff < minute) return 'just now';
+  if (diff < hour) {
+    const mins = Math.floor(diff / minute);
+    return `${mins}m ago`;
+  }
+  if (diff < day) {
+    const hours = Math.floor(diff / hour);
+    return `${hours}h ago`;
+  }
+  if (diff < week) {
+    const days = Math.floor(diff / day);
+    return `${days}d ago`;
+  }
+  if (diff < month) {
+    const weeks = Math.floor(diff / week);
+    return `${weeks}w ago`;
+  }
+  if (diff < year) {
+    const months = Math.floor(diff / month);
+    return `${months}mo ago`;
+  }
+
+  const years = Math.floor(diff / year);
+  return `${years}y ago`;
+}
+
+/**
+ * Get file type icon name based on extension
+ */
+export function getFileTypeIcon(extension: string | undefined): string {
+  if (!extension) return 'file-text';
+
+  const ext = extension.toLowerCase();
+
+  // Code files
+  if (['rs', 'go', 'java', 'c', 'cpp', 'h', 'hpp'].includes(ext)) return 'file-code-2';
+  if (['js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs'].includes(ext)) return 'file-code';
+  if (['py', 'pyw', 'pyx'].includes(ext)) return 'file-code';
+  if (['rb', 'erb'].includes(ext)) return 'file-code';
+  if (['php', 'phtml'].includes(ext)) return 'file-code';
+  if (['cs', 'vb', 'fs'].includes(ext)) return 'file-code';
+  if (['swift', 'kt', 'kts'].includes(ext)) return 'file-code';
+  if (['sh', 'bash', 'zsh', 'fish', 'ps1', 'bat', 'cmd'].includes(ext)) return 'terminal';
+
+  // Config/data files
+  if (['json', 'jsonc', 'json5'].includes(ext)) return 'file-json';
+  if (['yaml', 'yml'].includes(ext)) return 'file-cog';
+  if (['toml', 'ini', 'cfg', 'conf'].includes(ext)) return 'file-cog';
+  if (['xml', 'xsl', 'xslt'].includes(ext)) return 'file-code';
+  if (['csv', 'tsv'].includes(ext)) return 'file-spreadsheet';
+
+  // Documents
+  if (['md', 'markdown', 'mdx'].includes(ext)) return 'file-text';
+  if (['txt', 'text', 'log'].includes(ext)) return 'file-text';
+  if (['pdf'].includes(ext)) return 'file-text';
+  if (['doc', 'docx', 'odt', 'rtf'].includes(ext)) return 'file-text';
+
+  // Web
+  if (['html', 'htm', 'xhtml'].includes(ext)) return 'file-code';
+  if (['css', 'scss', 'sass', 'less'].includes(ext)) return 'file-code';
+  if (['vue', 'svelte'].includes(ext)) return 'file-code';
+
+  return 'file-text';
+}

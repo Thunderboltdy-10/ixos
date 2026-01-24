@@ -1,13 +1,16 @@
 import json
 import os
+import shutil
+import tempfile
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "corpus_tiny"
-QUERY_SET = CORPUS / "query_set.json"
-EXPECTED = CORPUS / "expected_results.json"
+GOLDEN_DATA = ROOT / "golden_data"
+QUERY_SET = GOLDEN_DATA / "query_set.json"
+EXPECTED = GOLDEN_DATA / "expected_results.json"
 
 
 def normalize_path(path_str: str) -> str:
@@ -59,31 +62,32 @@ def restore_permissions() -> None:
             pass
 
 
-def run_query(bin_path: Path, query: str, limit: int) -> dict:
+def run_query(bin_path: Path, query: str, limit: int, env: dict = None) -> dict:
     cmd = [
         str(bin_path),
         "search",
         query,
         "--dir",
-        str(CORPUS),
+        "corpus_tiny",
         "--format",
         "json",
         "--limit",
         str(limit),
-        "--stub-model",
     ]
     result = subprocess.run(
         cmd,
         cwd=ROOT,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        env=env,
     )
     if result.returncode != 0:
         raise RuntimeError(f"search failed: {result.stderr.strip()}")
     try:
         return json.loads(result.stdout)
     except json.JSONDecodeError as exc:
-        raise RuntimeError(f"invalid JSON output: {exc}\n{result.stdout}")
+        raise RuntimeError(f"invalid JSON output: {exc}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}")
 
 
 def diff_list(label: str, expected: list, actual: list) -> list:
@@ -108,42 +112,89 @@ def main() -> int:
         return 1
 
     bin_path = get_ixos_bin()
+    
+    # P1: Create isolated environment for testing
+    # This prevents the test from failing if the user hasn't granted consent
+    # or if their personal config interferes.
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        
+        # Create isolated environment
+        env = os.environ.copy()
+        
+        # Isolate config and data (where compliance/consent lives)
+        env["HOME"] = str(temp_path)
+        env["XDG_CONFIG_HOME"] = str(temp_path / ".config")
+        env["XDG_DATA_HOME"] = str(temp_path / ".local" / "share")
+        
+        # Preserve cache (where models live)
+        # We inherit XDG_CACHE_HOME from os.environ by default
+        
+        # Windows-specific isolation
+        if os.name == "nt":
+            # Isolate Roaming (Config + Compliance)
+            env["APPDATA"] = str(temp_path / "AppData" / "Roaming")
+            
+            # Preserve Local (Models usually live here in cache_dir)
+            # We inherit LOCALAPPDATA from os.environ
+            
+        print(f"Running in isolated environment: {temp_path}")
+        
+        # Grant consent in the isolated environment
+        print("Granting AI consent for test environment...")
+        subprocess.check_call(
+            [str(bin_path), "compliance", "consent", "--grant"],
+            env=env,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
 
-    maybe_set_permission_denied()
-    failures = []
-    try:
-        for qid, query in queries.items():
-            exp = expected[qid]
-            top_k = int(exp.get("top_k", 0))
-            limit = max(10, top_k)
-            result = run_query(bin_path, query, limit)
+        # Index the corpus first to ensure consistent results (avoid cold start timeouts)
+        print("Indexing corpus in test environment...")
+        subprocess.check_call(
+            [str(bin_path), "index", "corpus_tiny", "--clear"],
+            env=env,
+            cwd=ROOT,  # Ensure it finds corpus_tiny relative to ROOT
+            # stdout=subprocess.DEVNULL,
+            # stderr=subprocess.DEVNULL
+        )
 
-            results = result.get("results", [])
-            paths = [normalize_path(r["path"]) for r in results]
 
-            if top_k == 0 and not exp.get("must_include") and not exp.get("must_exclude"):
-                if len(paths) != 0:
-                    failures.append(f"{qid}: expected no results, got {len(paths)}")
-                continue
+        maybe_set_permission_denied()
+        failures = []
+        try:
+            for qid, query in queries.items():
+                exp = expected[qid]
+                top_k = int(exp.get("top_k", 0))
+                limit = max(10, top_k)
+                result = run_query(bin_path, query, limit, env=env)
 
-            if top_k > 0:
-                expected_top = [normalize_path(p) for p in exp.get("top_paths", [])]
-                actual_top = paths[:top_k]
-                failures.extend(
-                    [f"{qid}: {line}" for line in diff_list("top_k", expected_top, actual_top)]
-                )
+                results = result.get("results", [])
+                paths = [normalize_path(r["path"]) for r in results]
 
-            must_include = [normalize_path(p) for p in exp.get("must_include", [])]
-            for inc in must_include:
-                if inc not in paths:
-                    failures.append(f"{qid}: missing required result {inc}")
+                if top_k == 0 and not exp.get("must_include") and not exp.get("must_exclude"):
+                    if len(paths) != 0:
+                        failures.append(f"{qid}: expected no results, got {len(paths)}: {paths}")
+                    continue
 
-            must_exclude = [normalize_path(p) for p in exp.get("must_exclude", [])]
-            for exc in must_exclude:
-                if exc in paths:
-                    failures.append(f"{qid}: unexpected result {exc}")
-    finally:
-        restore_permissions()
+                if top_k > 0:
+                    expected_top = [normalize_path(p) for p in exp.get("top_paths", [])]
+                    actual_top = paths[:top_k]
+                    failures.extend(
+                        [f"{qid}: {line}" for line in diff_list("top_k", expected_top, actual_top)]
+                    )
+
+                must_include = [normalize_path(p) for p in exp.get("must_include", [])]
+                for inc in must_include:
+                    if inc not in paths:
+                        failures.append(f"{qid}: missing required result {inc}")
+
+                must_exclude = [normalize_path(p) for p in exp.get("must_exclude", [])]
+                for exc in must_exclude:
+                    if exc in paths:
+                        failures.append(f"{qid}: unexpected result {exc}")
+        finally:
+            restore_permissions()
 
     if failures:
         print("Golden test failures:")

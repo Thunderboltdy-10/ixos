@@ -73,6 +73,9 @@ pub fn run() {
             commands::storage::read_encrypted_file,
             commands::storage::delete_encrypted_file,
             commands::storage::clear_all_encrypted_files,
+            // Cache Management
+            commands::storage::get_cache_stats,
+            commands::storage::clear_embedding_cache,
             // P2.1: Search History (Ramp 1)
             commands::history::get_search_suggestions,
             commands::history::add_to_history,

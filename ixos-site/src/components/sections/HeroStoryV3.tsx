@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Button } from "@/components/ui/Button";
@@ -107,6 +107,8 @@ export function HeroStoryV3() {
         setShowModal(true);
     };
 
+
+
     return (
         <>
             <section
@@ -184,11 +186,13 @@ export function HeroStoryV3() {
                                 {/* Front face - Interactive Demo */}
                                 <div
                                     ref={deckFrontRef}
-                                    className="absolute inset-0 backface-hidden shadow-lift rounded-xl overflow-hidden border border-stroke-hairline"
+                                    className="absolute inset-0 backface-hidden shadow-lift rounded-xl border border-stroke-hairline"
                                     style={{ backfaceVisibility: "hidden" }}
                                 >
+
+
                                     {/* Fake Window Bar */}
-                                    <div className="h-8 w-full bg-bg-graphite-1 border-b border-stroke-hairline flex items-center px-4 gap-2">
+                                    <div className="h-8 w-full bg-bg-graphite-1 border-b border-stroke-hairline flex items-center px-4 gap-2 rounded-t-xl overflow-hidden">
                                         <div className="w-3 h-3 rounded-full bg-red-500/30" />
                                         <div className="w-3 h-3 rounded-full bg-yellow-500/30" />
                                         <div className="w-3 h-3 rounded-full bg-green-500/30" />
@@ -196,7 +200,7 @@ export function HeroStoryV3() {
                                     </div>
 
                                     {/* Interactive Demo Content */}
-                                    <div className="relative w-full h-[calc(100%-2rem)] bg-bg-graphite-0">
+                                    <div className="relative w-full h-[calc(100%-2rem)] bg-bg-graphite-0 rounded-b-xl overflow-hidden">
                                         <IxosDemoWindow />
                                     </div>
                                 </div>

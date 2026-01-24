@@ -114,7 +114,7 @@ export function HeroJourney() {
 
             // 3. Deck Expansion (30-35%)
             // Expand strictly to 70vh (60vh on small screens) to fit laptop screens without overflow
-            masterTL.to(deck, { height: window.innerWidth < 768 ? "55vh" : "70vh", duration: 0.1, ease: "power2.out" }, 0.30);
+            masterTL.to(deck, { height: window.innerWidth < 768 ? "45vh" : "50vh", duration: 0.1, ease: "power2.out" }, 0.30);
 
             // 4. Reveal Steps (30-35%)
             masterTL.fromTo(stepsContainer,
@@ -220,16 +220,20 @@ export function HeroJourney() {
                         </div>
 
                         {/* RIGHT: Deck / Pipeline */}
-                        <div className="lg:col-span-7 relative h-[60vh] lg:h-screen flex items-center justify-center perspective-[1200px] sticky top-0">
+                        <div className="lg:col-span-7 relative h-[60vh] lg:h-screen flex items-center justify-center perspective-[2000px] sticky top-0">
                             <div
                                 ref={deckRef}
                                 data-trace-anchor="hero-deck"
                                 data-trace-color="teal"
-                                className="relative w-full max-w-2xl bg-bg-graphite-1 rounded-sm border border-white/10 shadow-2xl transition-all duration-500 ease-out"
-                                style={{ transformStyle: "preserve-3d", aspectRatio: "16/9" }}
+                                className="relative w-full max-w-3xl bg-bg-graphite-1 rounded-sm border border-white/10 shadow-2xl transition-all duration-500 ease-out"
+                                style={{ transformStyle: "preserve-3d", aspectRatio: "16/10" }}
                             >
                                 {/* FRONT: INTERACTIVE MOCKUP */}
-                                <div ref={deckFrontRef} className="absolute inset-0 bg-bg-graphite-0 rounded-sm overflow-hidden" style={{ backfaceVisibility: "hidden" }}>
+                                <div
+                                    ref={deckFrontRef}
+                                    className="absolute inset-0 bg-bg-graphite-0 rounded-sm overflow-hidden z-20"
+                                    style={{ backfaceVisibility: "hidden", transform: "rotateX(0deg)" }}
+                                >
                                     <div className="h-6 border-b border-white/10 flex items-center px-4 gap-2 bg-white/5">
                                         <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
                                         <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
@@ -241,7 +245,11 @@ export function HeroJourney() {
                                 </div>
 
                                 {/* BACK: TECHNICAL PIPELINE */}
-                                <div ref={deckBackRef} className="absolute inset-0 bg-bg-graphite-1/90 backdrop-blur-md rounded-sm border border-white/5 overflow-hidden flex flex-col" style={{ transform: "rotateX(180deg)", backfaceVisibility: "hidden" }}>
+                                <div
+                                    ref={deckBackRef}
+                                    className="absolute inset-0 bg-bg-graphite-1/90 backdrop-blur-md rounded-sm border border-white/5 overflow-hidden flex flex-col z-10"
+                                    style={{ transform: "rotateX(180deg)", backfaceVisibility: "hidden" }}
+                                >
                                     <TechnicalPipelinePanel activeStep={activeStep} />
                                 </div>
                             </div>
@@ -275,10 +283,10 @@ function TechnicalPipelinePanel({ activeStep }: { activeStep: number }) {
 
                 <div className="relative z-10 space-y-6 max-w-sm mx-auto w-full">
                     {PIPELINE_STEPS.map((step, i) => (
-                        <div key={i} className="group flex items-center gap-4">
+                        <div key={i} className="group flex items-center gap-5">
                             {/* Mono Code Box */}
                             <div className={cn(
-                                "w-8 h-8 flex items-center justify-center border text-xs font-mono transition-all duration-300",
+                                "w-14 h-14 flex-shrink-0 flex items-center justify-center border text-base font-mono transition-all duration-300",
                                 activeStep === i
                                     ? "border-accent-teal bg-accent-teal/10 text-accent-teal shadow-[0_0_15px_rgba(20,184,166,0.2)]"
                                     : activeStep > i
@@ -291,27 +299,27 @@ function TechnicalPipelinePanel({ activeStep }: { activeStep: number }) {
                             {/* Connection Line segment (except last) */}
                             {i < PIPELINE_STEPS.length - 1 && (
                                 <div className={cn(
-                                    "absolute left-4 w-px h-6 bg-white/10 -bottom-6 transition-colors duration-500 delay-100",
+                                    "absolute left-7 w-px h-10 bg-white/10 -bottom-10 transition-colors duration-500 delay-100",
                                     activeStep > i ? "bg-accent-teal/50" : ""
                                 )} />
                             )}
 
                             {/* Label & Progress */}
-                            <div className="flex-1">
-                                <div className="flex justify-between items-center text-xs font-mono mb-1">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-center text-base font-mono mb-2">
                                     <span className={cn(
-                                        "transition-colors duration-300",
+                                        "transition-colors duration-300 truncate mr-2",
                                         activeStep === i ? "text-fg-porcelain" : "text-fg-muted/60"
                                     )}>{step.label}</span>
                                     <span className={cn(
-                                        "text-[10px]",
+                                        "text-xs flex-shrink-0",
                                         activeStep === i ? "text-accent-teal animate-pulse" : "text-white/10"
                                     )}>
                                         {activeStep === i ? "[PROCESSING]" : activeStep > i ? "[COMPLETE]" : "[WAITING]"}
                                     </span>
                                 </div>
                                 {/* Bar */}
-                                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
                                     <div className={cn(
                                         "h-full bg-accent-teal transition-all duration-500 ease-out",
                                         activeStep > i ? "w-full" : activeStep === i ? "w-2/3" : "w-0"

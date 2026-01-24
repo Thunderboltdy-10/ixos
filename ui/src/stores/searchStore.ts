@@ -321,7 +321,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
         const threadQuery = state.activeQuery ?? state.query;
         const existing = useStarredStore.getState().getThreadById(threadId);
 
-        if (threadQuery && state.directory) {
+        if (threadQuery && state.directory && !state.journalistMode) {
           useStarredStore.getState().recordThread({
             id: threadId,
             query: threadQuery,

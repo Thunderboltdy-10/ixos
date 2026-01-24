@@ -66,6 +66,12 @@ export interface RankedResult {
   scoreBreakdown: ScoreBreakdown;
   context: ContextSnippet | null;
   evidence?: Evidence | null;
+  /** File size in bytes */
+  fileSize?: number;
+  /** File modification time as Unix timestamp (seconds since epoch) */
+  modifiedAt?: number;
+  /** File extension (without the dot) */
+  fileExtension?: string;
 }
 
 /**

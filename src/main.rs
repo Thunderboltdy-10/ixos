@@ -15,8 +15,8 @@ use tokio_util::sync::CancellationToken;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use ixos_protocol::cli::{
-    create_formatter, CacheCommands, CcpaCommands, Cli, Commands, ComplianceCommands, GdprCommands,
-    IxosConfig, OutputFormat,
+    create_formatter_with_options, CacheCommands, CcpaCommands, Cli, Commands, ComplianceCommands,
+    GdprCommands, IxosConfig, OutputFormat,
 };
 use ixos_protocol::compliance::{ComplianceManager, DeletionScope};
 use ixos_protocol::ixos_rank::{
@@ -79,6 +79,7 @@ async fn main() -> anyhow::Result<()> {
             secure_timing,
             context,
             journalist_mode,
+            evidence,
         } => {
             handle_search(
                 &query,
@@ -97,6 +98,7 @@ async fn main() -> anyhow::Result<()> {
                 secure_timing || config.search.secure_timing,
                 context,
                 journalist_mode,
+                evidence,
                 &config,
             )
             .await?;
@@ -167,6 +169,7 @@ async fn handle_search(
     secure_timing: bool,
     context_lines: usize,
     journalist_mode: bool,
+    include_evidence: bool,
     config: &IxosConfig,
 ) -> anyhow::Result<()> {
     // Initialize journalist mode if enabled
@@ -208,7 +211,7 @@ async fn handle_search(
     // Determine output format
     let output_format = if json { OutputFormat::Json } else { format };
     let use_color = config.output.color && output_format == OutputFormat::Human;
-    let formatter = create_formatter(output_format, use_color);
+    let formatter = create_formatter_with_options(output_format, use_color, include_evidence);
     let mut stdout = stdout();
 
     // Determine search directory

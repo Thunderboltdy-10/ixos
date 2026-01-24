@@ -4,9 +4,10 @@ import type { ContextSnippet as ContextSnippetType } from '@/lib/types';
 interface ContextSnippetProps {
   context: ContextSnippetType;
   className?: string;
+  mode?: 'jit' | 'cache' | 'journalist';
 }
 
-export function ContextSnippet({ context, className }: ContextSnippetProps) {
+export function ContextSnippet({ context, className, mode = 'cache' }: ContextSnippetProps) {
   // Safety checks for malformed data
   if (!context || typeof context !== 'object') {
     return null;
@@ -18,6 +19,14 @@ export function ContextSnippet({ context, className }: ContextSnippetProps) {
   const beforeLines = Array.isArray(context.before) ? context.before : [];
   const matchedLines = Array.isArray(context.matched) ? context.matched : [];
   const afterLines = Array.isArray(context.after) ? context.after : [];
+
+  // Colors based on mode
+  const colors = {
+    jit: { bg: 'bg-accent-amber/5', border: 'border-l-accent-amber', text: 'text-accent-amber' },
+    cache: { bg: 'bg-accent-teal/5', border: 'border-l-accent-teal', text: 'text-accent-teal' },
+    journalist: { bg: 'bg-accent-violet/5', border: 'border-l-accent-violet', text: 'text-accent-violet' },
+  };
+  const activeColor = colors[mode] || colors.cache;
 
   // If no matched lines, don't render
   if (matchedLines.length === 0) {
@@ -47,9 +56,16 @@ export function ContextSnippet({ context, className }: ContextSnippetProps) {
         {matchedLines.map((line, i) => (
           <div
             key={`match-${i}`}
-            className="flex bg-accent-teal/10 -mx-3 px-3 border-l-2 border-l-accent-teal"
+            className={cn(
+              "flex -mx-3 px-3 border-l-2",
+              activeColor.bg,
+              activeColor.border
+            )}
           >
-            <span className="w-8 flex-shrink-0 text-accent-teal text-right pr-3 select-none font-semibold">
+            <span className={cn(
+              "w-8 flex-shrink-0 text-right pr-3 select-none font-semibold",
+              activeColor.text
+            )}>
               {lineNumber + i}
             </span>
             <span className="text-porcelain whitespace-pre">

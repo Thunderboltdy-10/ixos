@@ -1,14 +1,34 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, CheckCircle, AlertCircle, ChevronDown, ExternalLink, FolderOpen } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import {
+  FileText, FileCode, FileCode2, FileJson, FileCog, FileSpreadsheet, Terminal,
+  CheckCircle, AlertCircle, ChevronDown, ExternalLink, FolderOpen, Copy, Check, Clock, HardDrive
+} from 'lucide-react';
+import { cn, formatFileSize, formatRelativeTime, getFileTypeIcon } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { ScoreBreakdown } from './ScoreBreakdown';
 import { ContextSnippet } from './ContextSnippet';
+import { WhyMatched } from './WhyMatched';
 import { usePrefetch } from '@/hooks/usePrefetch';
 import { useResultCardLayout } from '@/hooks/useLayoutSync';
 // useAnimatedCardOpacity import removed - animation system disabled
 import type { RankedResult, LexicalResult, ContextSnippet as ContextSnippetType } from '@/lib/types';
+
+/**
+ * Map icon name to Lucide component
+ */
+function getFileIconComponent(iconName: string) {
+  const iconMap: Record<string, typeof FileText> = {
+    'file-text': FileText,
+    'file-code': FileCode,
+    'file-code-2': FileCode2,
+    'file-json': FileJson,
+    'file-cog': FileCog,
+    'file-spreadsheet': FileSpreadsheet,
+    'terminal': Terminal,
+  };
+  return iconMap[iconName] || FileText;
+}
 
 /**
  * Type guard to validate ContextSnippet structure
@@ -40,6 +60,7 @@ interface ResultCardProps {
   isSelected: boolean;
   isSemanticResult: boolean;
   matchType?: 'text' | 'semantic';
+  mode?: 'jit' | 'cache' | 'journalist';
   onSelect: () => void;
   onOpen: () => void;
   onReveal: () => void;
@@ -51,12 +72,29 @@ export function ResultCard({
   isSelected,
   isSemanticResult,
   matchType,
+  mode = 'cache',
   onSelect,
   onOpen,
   onReveal,
 }: ResultCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [copied, setCopied] = useState(false);
   const { handleMouseEnter, handleMouseLeave } = usePrefetch();
+
+  // Color mapping based on mode
+  const accentColor = {
+    jit: 'text-accent-amber border-l-accent-amber shadow-[inset_0_1px_0_rgba(246,185,76,0.1)]',
+    cache: 'text-accent-teal border-l-accent-teal shadow-[inset_0_1px_0_rgba(20,184,166,0.1)]',
+    journalist: 'text-accent-violet border-l-accent-violet shadow-[inset_0_1px_0_rgba(167,139,250,0.1)]'
+  };
+
+  const selectedClass = isSelected
+    ? `bg-graphite-3 border-l-2 ${accentColor[mode]}`
+    : 'hover:bg-graphite-3/50';
+
+  const iconColor = isSelected
+    ? (mode === 'jit' ? 'text-accent-amber' : mode === 'journalist' ? 'text-accent-violet' : 'text-accent-teal')
+    : 'text-fg-dim';
 
   // Layout sync for Seamless Morph animation
   const cardRef = useResultCardLayout(index);
@@ -69,6 +107,15 @@ export function ResultCard({
   const integrityVerified = isRankedResult ? result.integrityVerified : true;
   const evidence = isRankedResult ? result.evidence : null;
   const context = isRankedResult ? result.context : null;
+
+  // File metadata (only available for ranked results)
+  const fileSize = isRankedResult ? result.fileSize : undefined;
+  const modifiedAt = isRankedResult ? result.modifiedAt : undefined;
+  const fileExtension = isRankedResult ? result.fileExtension : undefined;
+
+  // Get the appropriate file icon
+  const iconName = getFileTypeIcon(fileExtension);
+  const FileIcon = getFileIconComponent(iconName);
 
   const handleClick = () => {
     onSelect();
@@ -85,32 +132,58 @@ export function ResultCard({
     onReveal();
   };
 
+  const handleCopyPath = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(result.path);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy path:', err);
+    }
+  };
+
   return (
     <div
       ref={cardRef}
       className={cn(
-        'px-5 py-4 cursor-pointer transition-all duration-200',
-        'hover-gradient-accent',
-        isSelected ? 'bg-graphite-3 border-l-2 border-l-accent-teal shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]' : 'hover:bg-graphite-3/50',
+        'px-5 py-4 cursor-pointer transition-all duration-200 relative overflow-hidden group',
+        mode === 'jit' && 'hover:bg-accent-amber/5 hover:border-accent-amber hover:shadow-[0_0_25px_rgba(246,185,76,0.15)]',
+        mode === 'cache' && 'hover:bg-accent-teal/5 hover:border-accent-teal hover:shadow-[0_0_25px_rgba(20,184,166,0.15)]',
+        mode === 'journalist' && 'hover:bg-accent-violet/5 hover:border-accent-violet hover:shadow-[0_0_25px_rgba(167,139,250,0.15)]',
+        selectedClass,
         'no-drag'
       )}
       style={{
         opacity: animatedOpacity,
         visibility: animatedOpacity > 0 ? 'visible' : 'hidden',
+        // @ts-ignore - Custom CSS variable for highlight color
+        '--highlight-color': mode === 'jit' ? '#F6B94C' : mode === 'journalist' ? '#A78BFA' : '#14B8A6',
       }}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       onMouseEnter={() => handleMouseEnter(result.path)}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="flex items-center gap-4">
+      {/* Swoosh Animation */}
+      <div
+        className={cn(
+          "absolute inset-0 w-full h-full -translate-x-[200%] group-hover:translate-x-[200%] transition-transform duration-500 ease-out z-0 pointer-events-none",
+          "bg-gradient-to-r from-transparent to-transparent opacity-50",
+          mode === 'jit' && "via-accent-amber/30",
+          mode === 'cache' && "via-accent-teal/30",
+          mode === 'journalist' && "via-accent-violet/30"
+        )}
+      />
+
+      <div className="flex items-center gap-4 relative z-10">
         <span className="text-fg-dim text-xs w-6 flex-shrink-0 font-mono">
           {index + 1}
         </span>
 
-        <FileText className={cn(
+        <FileIcon className={cn(
           'w-4 h-4 flex-shrink-0 transition-colors',
-          isSelected ? 'text-accent-teal' : 'text-fg-dim'
+          iconColor
         )} />
 
         <div className="flex-1 min-w-0">
@@ -132,7 +205,25 @@ export function ResultCard({
               </span>
             )}
           </div>
-          <p className="text-xs text-fg-dim truncate font-mono">{result.directory}</p>
+          <div className="flex items-center gap-3 text-xs text-fg-dim">
+            <span className="truncate font-mono">{result.directory}</span>
+            {(fileSize !== undefined || modifiedAt !== undefined) && (
+              <span className="flex items-center gap-2 shrink-0">
+                {fileSize !== undefined && (
+                  <span className="flex items-center gap-1" title="File size">
+                    <HardDrive className="w-3 h-3" />
+                    {formatFileSize(fileSize)}
+                  </span>
+                )}
+                {modifiedAt !== undefined && (
+                  <span className="flex items-center gap-1" title="Last modified">
+                    <Clock className="w-3 h-3" />
+                    {formatRelativeTime(modifiedAt)}
+                  </span>
+                )}
+              </span>
+            )}
+          </div>
         </div>
 
         {isSemanticResult && (
@@ -155,10 +246,9 @@ export function ResultCard({
             variant={integrityVerified ? 'secure' : 'warning'}
             className={cn(
               'font-mono font-semibold transition-colors duration-300 border',
-              result.score >= 0.9 ? 'bg-accent-amber/15 text-accent-amber border-accent-amber/30' :
-                result.score >= 0.7 ? 'bg-accent-teal/15 text-accent-teal border-accent-teal/30' :
-                  result.score >= 0.5 ? 'bg-accent-teal-glow/15 text-accent-teal-glow border-accent-teal-glow/30' :
-                    'bg-fg-dim/15 text-fg-muted border-fg-dim/30'
+              result.score >= 0.9 ? `bg-${mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/15 text-${mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'} border-${mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/30` :
+                result.score >= 0.7 ? `bg-${mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/10 text-${mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'} border-${mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/20` :
+                  'bg-fg-dim/15 text-fg-muted border-fg-dim/30'
             )}
           >
             {Math.min(100, Math.round(result.score * 100))}%
@@ -217,15 +307,47 @@ export function ResultCard({
               )}
 
               <div className="mb-4">
-                {isValidContext(context) ? (
-                  <ContextSnippet context={context} />
-                ) : (
-                  evidence && evidence.semanticPassage && (
-                    <div className="text-sm text-fg-muted bg-graphite-2/30 border border-stroke-hairline/50 rounded-md px-3 py-2 font-mono whitespace-pre-wrap leading-relaxed">
-                      {evidence.semanticPassage}
-                    </div>
-                  )
-                )}
+                {/* Prefer semantic passage when semantic score is high (>0.5), as lexical snippets often don't match the conceptual query */}
+                {(() => {
+                  const preferSemanticPassage = isRankedResult &&
+                    result.scoreBreakdown.semantic > 0.5 &&
+                    evidence?.semanticPassage;
+
+                  if (preferSemanticPassage) {
+                    return (
+                      <div className="space-y-2">
+                        <div className="text-sm text-fg-muted bg-graphite-2/30 border border-stroke-hairline/50 rounded-md px-3 py-2 font-mono whitespace-pre-wrap leading-relaxed">
+                          <div className="text-2xs text-accent-teal uppercase tracking-widest mb-1.5 font-semibold">Semantic Match</div>
+                          {evidence!.semanticPassage}
+                        </div>
+                        {isValidContext(context) && (
+                          <details className="text-xs">
+                            <summary className="text-fg-dim cursor-pointer hover:text-fg-muted transition-colors">
+                              Show lexical context (line {context.lineNumber})
+                            </summary>
+                            <div className="mt-2">
+                              <ContextSnippet context={context} mode={mode} />
+                            </div>
+                          </details>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  if (isValidContext(context)) {
+                    return <ContextSnippet context={context} />;
+                  }
+
+                  if (evidence?.semanticPassage) {
+                    return (
+                      <div className="text-sm text-fg-muted bg-graphite-2/30 border border-stroke-hairline/50 rounded-md px-3 py-2 font-mono whitespace-pre-wrap leading-relaxed">
+                        {evidence.semanticPassage}
+                      </div>
+                    );
+                  }
+
+                  return null;
+                })()}
               </div>
 
               {!isRankedResult && 'snippet' in result && result.snippet && (
@@ -236,7 +358,10 @@ export function ResultCard({
 
               {isRankedResult && (
                 <div className="mb-4">
-                  <ScoreBreakdown breakdown={result.scoreBreakdown} />
+                  <ScoreBreakdown breakdown={result.scoreBreakdown} mode={mode} />
+                  {evidence && (
+                    <WhyMatched evidence={evidence} scoreBreakdown={result.scoreBreakdown} />
+                  )}
                 </div>
               )}
 
@@ -245,8 +370,10 @@ export function ResultCard({
                   onClick={(e) => { e.stopPropagation(); onOpen(); }}
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] rounded-md',
-                    'bg-accent-teal/10 text-accent-teal border border-accent-teal/30',
-                    'hover:bg-accent-teal/20 hover:border-accent-teal/50',
+                    // Mode-aware colors
+                    mode === 'jit' && 'bg-accent-amber/10 text-accent-amber border border-accent-amber/30 hover:bg-accent-amber/20 hover:border-accent-amber/50',
+                    mode === 'cache' && 'bg-accent-teal/10 text-accent-teal border border-accent-teal/30 hover:bg-accent-teal/20 hover:border-accent-teal/50',
+                    mode === 'journalist' && 'bg-accent-violet/10 text-accent-violet border border-accent-violet/30 hover:bg-accent-violet/20 hover:border-accent-violet/50',
                     'transition-all duration-150'
                   )}
                 >
@@ -263,7 +390,29 @@ export function ResultCard({
                   )}
                 >
                   <FolderOpen className="w-3.5 h-3.5" />
-                  Reveal in Explorer
+                  Reveal
+                </button>
+                <button
+                  onClick={handleCopyPath}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] rounded-md',
+                    'bg-graphite-3 text-fg-muted border border-stroke-hairline',
+                    'hover:bg-graphite-2 hover:text-porcelain hover:border-border-medium',
+                    'transition-all duration-150',
+                    copied && 'bg-success/10 text-success border-success/30'
+                  )}
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      Copy Path
+                    </>
+                  )}
                 </button>
               </div>
             </div>

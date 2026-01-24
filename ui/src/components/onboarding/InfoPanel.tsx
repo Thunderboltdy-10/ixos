@@ -1,4 +1,7 @@
-import { BookOpen, Zap, Shield, Cpu, Database, FileSearch, Layers, Gauge, Keyboard } from 'lucide-react';
+import { useState } from 'react';
+import { BookOpen, Zap, Shield, Cpu, Database, FileSearch, Layers, Gauge, Keyboard, ChevronRight, ChevronLeft, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const sections = [
   {
@@ -91,66 +94,119 @@ const sections = [
 ];
 
 export function InfoPanel() {
-  return (
-    <div className="space-y-8">
-      <header className="space-y-2">
-        <h3 className="text-xl font-semibold text-porcelain">Everything Ixos Can Do</h3>
-        <p className="text-fg-muted">
-          This guide is your full map of features, modes, and advanced capabilities.
-        </p>
-      </header>
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {sections.map((section) => {
-          const Icon = section.icon;
-          return (
-            <div key={section.title} className="bg-graphite-1 border border-stroke-hairline rounded-xl p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-lg bg-graphite-2 flex items-center justify-center">
-                  <Icon className="w-4 h-4 text-accent-teal" />
-                </div>
-                <h4 className="text-base font-semibold text-porcelain">{section.title}</h4>
+  const nextStep = () => {
+    if (currentIndex < sections.length - 1) {
+      setDirection(1);
+      setCurrentIndex(prev => prev + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentIndex > 0) {
+      setDirection(-1);
+      setCurrentIndex(prev => prev - 1);
+    }
+  };
+
+  const currentSection = sections[currentIndex];
+  const Icon = currentSection.icon;
+
+  return (
+    <div className="flex flex-col h-full bg-graphite-1/95 backdrop-blur-xl border border-stroke-hairline rounded-2xl overflow-hidden shadow-2xl relative">
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-stroke-hairline/50">
+        <div>
+          <h3 className="text-lg font-display text-porcelain mb-1">Guide</h3>
+          <p className="text-xs text-fg-muted font-mono">
+            {currentIndex + 1} <span className="text-fg-dim">/</span> {sections.length}
+          </p>
+        </div>
+      </div>
+
+      {/* Content Carousel */}
+      <div className="flex-1 relative overflow-hidden flex items-center justify-center p-8 min-h-[300px]">
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={currentIndex}
+            custom={direction}
+            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="w-full max-w-lg"
+          >
+            <div className="flex flex-col items-center text-center space-y-6">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-graphite-2 to-graphite-1 border border-stroke-hairline flex items-center justify-center shadow-lift">
+                <Icon className="w-8 h-8 text-accent-teal" />
               </div>
-              <ul className="space-y-2 text-sm text-fg-muted">
-                {section.items.map((item) => (
-                  <li key={item} className="leading-relaxed">
-                    • {item}
-                  </li>
+
+              <h2 className="text-2xl font-semibold text-porcelain">{currentSection.title}</h2>
+
+              <ul className="space-y-4 text-left w-full bg-graphite-2/30 rounded-xl p-6 border border-white/[0.03]">
+                {currentSection.items.map((item, idx) => (
+                  <motion.li
+                    key={idx}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="flex items-start gap-3 group"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent-teal/40 mt-2 flex-shrink-0 group-hover:bg-accent-teal transition-colors duration-300" />
+                    <span className="text-sm text-fg-muted leading-relaxed group-hover:text-porcelain group-hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all duration-300">
+                      {item}
+                    </span>
+                  </motion.li>
                 ))}
               </ul>
             </div>
-          );
-        })}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      <div className="bg-graphite-2 border border-stroke-hairline rounded-xl p-6">
-        <h4 className="text-base font-semibold text-porcelain mb-3">Testing & Benchmarking</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-fg-muted">
-          <div>
-            <p className="font-semibold text-porcelain mb-1">Run Tests</p>
-            <code className="block bg-graphite-1 border border-stroke-hairline rounded-md px-3 py-2 text-xs text-porcelain">
-              cargo test --lib
-            </code>
-          </div>
-          <div>
-            <p className="font-semibold text-porcelain mb-1">Run Benchmarks</p>
-            <code className="block bg-graphite-1 border border-stroke-hairline rounded-md px-3 py-2 text-xs text-porcelain">
-              cargo bench
-            </code>
-          </div>
-          <div>
-            <p className="font-semibold text-porcelain mb-1">Model Evaluation</p>
-            <code className="block bg-graphite-1 border border-stroke-hairline rounded-md px-3 py-2 text-xs text-porcelain">
-              python scripts/ixos_eval.py --suite both
-            </code>
-          </div>
-          <div>
-            <p className="font-semibold text-porcelain mb-1">Perf Baseline</p>
-            <code className="block bg-graphite-1 border border-stroke-hairline rounded-md px-3 py-2 text-xs text-porcelain">
-              cargo bench --bench search_e2e
-            </code>
-          </div>
+      {/* Footer / Controls */}
+      <div className="p-6 border-t border-stroke-hairline/50 flex items-center justify-between bg-graphite-1/30">
+        <button
+          onClick={prevStep}
+          disabled={currentIndex === 0}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+            currentIndex === 0
+              ? "text-fg-dim cursor-not-allowed opacity-50"
+              : "text-fg-muted hover:text-porcelain hover:bg-graphite-2"
+          )}
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Previous
+        </button>
+
+        <div className="flex gap-1.5">
+          {sections.map((_, idx) => (
+            <div
+              key={idx}
+              className={cn(
+                "w-1.5 h-1.5 rounded-full transition-all duration-300",
+                idx === currentIndex ? "bg-accent-teal w-4" : "bg-fg-dim/30"
+              )}
+            />
+          ))}
         </div>
+
+        <button
+          onClick={nextStep}
+          disabled={currentIndex === sections.length - 1}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+            currentIndex === sections.length - 1
+              ? "text-fg-dim cursor-not-allowed opacity-50"
+              : "text-porcelain bg-accent-teal/10 hover:bg-accent-teal/20 hover:text-accent-teal text-shadow-glow"
+          )}
+        >
+          Next
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );

@@ -27,87 +27,88 @@ export function SettingsPanel() {
   }, [loadConfig, loadConsent]);
 
   return (
-    <div className="min-h-screen bg-graphite-0">
-      <div className="bg-graphite-1/80 backdrop-blur-sm border-b border-stroke-hairline px-6 py-5">
-        <h1 className="text-xl font-semibold text-porcelain">Settings</h1>
-        <p className="text-sm text-fg-muted mt-1">
-          Configure Ixos search behavior and privacy settings
-        </p>
-      </div>
+    <div className="flex h-full bg-graphite-1/95 backdrop-blur-xl border border-stroke-hairline rounded-2xl overflow-hidden shadow-2xl">
+      {/* Sidebar Navigation */}
+      <nav className="w-60 bg-graphite-2/30 border-r border-stroke-hairline p-4 flex flex-col gap-1">
+        <div className="mb-6 px-3 pt-2">
+          <h2 className="text-lg font-display font-semibold text-porcelain tracking-tight">Settings</h2>
+          <p className="text-xs text-fg-muted">Preferences & Controls</p>
+        </div>
 
-      <div className="flex">
-        <nav className="w-52 border-r border-stroke-hairline p-4 space-y-1">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  'w-full flex items-center gap-3 px-3 py-2 rounded-md text-xs uppercase tracking-[0.16em] transition-colors',
-                  activeTab === tab.id
-                    ? 'bg-accent-teal/10 text-accent-teal'
-                    : 'text-fg-dim hover:bg-graphite-2 hover:text-porcelain'
-                )}
-              >
-                <Icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            );
-          })}
-        </nav>
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                isActive
+                  ? 'bg-accent-teal/10 text-accent-teal shadow-glow-teal-sm'
+                  : 'text-fg-muted hover:bg-graphite-2 hover:text-porcelain'
+              )}
+            >
+              <Icon className={cn("w-4 h-4", isActive ? "text-accent-teal" : "text-fg-dim")} />
+              {tab.label}
+            </button>
+          );
+        })}
+      </nav>
 
-        <main className="flex-1 p-6 max-w-2xl">
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto bg-transparent relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+        <div className="p-8 max-w-3xl">
           {activeTab === 'search' && <SearchSettings />}
           {activeTab === 'keyboard' && <ShortcutSettings />}
           {activeTab === 'privacy' && <PrivacySettings />}
           {activeTab === 'compliance' && <ComplianceSettings />}
           {activeTab === 'about' && <AboutSection />}
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
 
 function AboutSection() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
       <div>
-        <h2 className="text-lg font-semibold text-porcelain mb-2">About Ixos</h2>
-        <p className="text-fg-muted">
-          Privacy-first semantic file search. Your data stays on your device.
+        <h2 className="text-xl font-semibold text-porcelain mb-2">About Ixos</h2>
+        <p className="text-fg-muted leading-relaxed">
+          Ixos is a privacy-first semantic file search engine designed for speed and security.
+          Your data never leaves your device, and all embeddings are calculated locally.
         </p>
       </div>
 
-      <div className="bg-graphite-2 rounded-lg p-4 border border-stroke-hairline">
-        <dl className="space-y-3 text-sm">
-          <div className="flex justify-between">
-            <dt className="text-fg-dim">Version</dt>
-            <dd className="text-porcelain font-mono">0.1.0</dd>
+      <div className="bg-graphite-2/40 rounded-xl p-6 border border-stroke-hairline space-y-4">
+        <div className="grid grid-cols-2 gap-y-4 text-sm">
+          <div className="text-fg-dim">Version</div>
+          <div className="text-porcelain font-mono">0.1.0</div>
+
+          <div className="text-fg-dim">License</div>
+          <div className="text-porcelain">MIT / Apache 2.0</div>
+
+          <div className="text-fg-dim">Website</div>
+          <div>
+            <a
+              href="https://github.com/ixos/ixos-protocol"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent-teal hover:text-accent-teal-glow transition-colors"
+            >
+              github.com/ixos
+            </a>
           </div>
-          <div className="flex justify-between">
-            <dt className="text-fg-dim">License</dt>
-            <dd className="text-porcelain">MIT / Apache 2.0</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt className="text-fg-dim">Website</dt>
-            <dd>
-              <a
-                href="https://github.com/ixos/ixos-protocol"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent-teal hover:underline"
-              >
-                github.com/ixos
-              </a>
-            </dd>
-          </div>
-        </dl>
+          <div className="text-fg-dim">Build Target</div>
+          <div className="text-porcelain font-mono">release-x86_64</div>
+        </div>
       </div>
 
-      <div className="text-2xs text-fg-dim">
+      <div className="text-xs text-fg-dim text-center pt-8 border-t border-stroke-hairline/50">
         <p>Ixos Protocol - Privacy You Can See</p>
-        <p className="mt-1">Copyright 2026 Ixos Team</p>
+        <p className="mt-1 opacity-60">Copyright 2026 Ixos Team</p>
       </div>
     </div>
   );

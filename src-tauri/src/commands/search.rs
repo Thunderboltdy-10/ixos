@@ -86,6 +86,12 @@ pub struct RankedResultPayload {
     pub score_breakdown: ScoreBreakdownPayload,
     pub context: Option<ContextPayload>,
     pub evidence: Option<EvidencePayload>,
+    /// File size in bytes
+    pub file_size: Option<u64>,
+    /// File modification time as Unix timestamp (seconds since epoch)
+    pub modified_at: Option<i64>,
+    /// File extension (without the dot)
+    pub file_extension: Option<String>,
 }
 
 /// Score breakdown payload
@@ -194,6 +200,26 @@ fn path_to_parts(path: &Path) -> (String, String, String) {
 fn ranked_result_to_payload(result: &RankedResult) -> RankedResultPayload {
     let (path, filename, directory) = path_to_parts(&result.path);
 
+    // Get file metadata for size and modification time
+    let (file_size, modified_at) = match std::fs::metadata(&result.path) {
+        Ok(metadata) => {
+            let size = Some(metadata.len());
+            let mtime = metadata
+                .modified()
+                .ok()
+                .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                .map(|d| d.as_secs() as i64);
+            (size, mtime)
+        }
+        Err(_) => (None, None),
+    };
+
+    // Get file extension
+    let file_extension = result
+        .path
+        .extension()
+        .map(|e| e.to_string_lossy().to_lowercase());
+
     RankedResultPayload {
         path,
         filename,
@@ -221,6 +247,9 @@ fn ranked_result_to_payload(result: &RankedResult) -> RankedResultPayload {
             path_tags: e.path_tags.clone(),
             file_type: e.file_type.clone(),
         }),
+        file_size,
+        modified_at,
+        file_extension,
     }
 }
 

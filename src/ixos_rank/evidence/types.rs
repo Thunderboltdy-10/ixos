@@ -20,6 +20,46 @@ pub enum EvidenceType {
     Temporal,
     /// User behavior pattern
     Behavioral,
+    /// Project context (detected project root)
+    ProjectContext,
+}
+
+/// Detected project type based on marker files
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub enum ProjectType {
+    /// Git repository (.git directory)
+    Git,
+    /// Rust project (Cargo.toml)
+    Rust,
+    /// Node.js project (package.json)
+    Node,
+    /// Python project (pyproject.toml or setup.py)
+    Python,
+    /// Go project (go.mod)
+    Go,
+    /// Java/Maven project (pom.xml)
+    Maven,
+    /// Java/Gradle project (build.gradle)
+    Gradle,
+    /// .NET project (*.csproj or *.sln)
+    DotNet,
+    /// Unknown project type
+    Other(String),
+}
+
+/// Detected project context for a file
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectContext {
+    /// Project root directory
+    pub root: std::path::PathBuf,
+    /// Detected project type
+    pub project_type: ProjectType,
+    /// Depth from project root (0 = at root)
+    pub depth_from_root: usize,
+    /// Project name (from manifest if available)
+    pub project_name: Option<String>,
 }
 
 /// Evidence piece explaining why a result matched
@@ -91,6 +131,18 @@ pub enum Evidence {
         /// Co-occurrence with other results
         co_occurrence_score: f32,
     },
+
+    /// Project context evidence
+    Project {
+        /// Detected project type
+        project_type: ProjectType,
+        /// Depth from project root
+        depth_from_root: usize,
+        /// Project name (if detected)
+        project_name: Option<String>,
+        /// Locality boost (files in same project get boosted)
+        locality_boost: f32,
+    },
 }
 
 /// Part of a file path that matched
@@ -125,6 +177,12 @@ pub struct EvidenceTag {
     pub color: Option<String>,
 }
 
+impl std::fmt::Display for EvidenceTag {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.label)
+    }
+}
+
 impl Evidence {
     /// Get the primary type of this evidence
     pub fn evidence_type(&self) -> EvidenceType {
@@ -135,6 +193,7 @@ impl Evidence {
             Evidence::DirectoryContext { .. } => EvidenceType::DirectoryContext,
             Evidence::Temporal { .. } => EvidenceType::Temporal,
             Evidence::Behavioral { .. } => EvidenceType::Behavioral,
+            Evidence::Project { .. } => EvidenceType::ProjectContext,
         }
     }
 
@@ -154,6 +213,7 @@ impl Evidence {
             }
             Evidence::Temporal { recency_boost, .. } => *recency_boost,
             Evidence::Behavioral { access_score, .. } => *access_score,
+            Evidence::Project { locality_boost, .. } => *locality_boost,
         }
     }
 
@@ -200,6 +260,28 @@ impl Evidence {
                     "Previously viewed".into()
                 } else {
                     "Frequently accessed".into()
+                }
+            }
+            Evidence::Project {
+                project_type,
+                project_name,
+                ..
+            } => {
+                let type_str = match project_type {
+                    ProjectType::Git => "Git",
+                    ProjectType::Rust => "Rust",
+                    ProjectType::Node => "Node.js",
+                    ProjectType::Python => "Python",
+                    ProjectType::Go => "Go",
+                    ProjectType::Maven => "Maven",
+                    ProjectType::Gradle => "Gradle",
+                    ProjectType::DotNet => ".NET",
+                    ProjectType::Other(s) => s.as_str(),
+                };
+                if let Some(name) = project_name {
+                    format!("{} project: {}", type_str, name)
+                } else {
+                    format!("{} project", type_str)
                 }
             }
         }
@@ -283,6 +365,185 @@ impl EvidenceTag {
             color: Some("#4ade80".into()), // green
         }
     }
+
+    /// Create a project context tag
+    pub fn project(project_type: &ProjectType, project_name: Option<&str>) -> Self {
+        let type_str = match project_type {
+            ProjectType::Git => "Git",
+            ProjectType::Rust => "Rust",
+            ProjectType::Node => "Node.js",
+            ProjectType::Python => "Python",
+            ProjectType::Go => "Go",
+            ProjectType::Maven => "Maven",
+            ProjectType::Gradle => "Gradle",
+            ProjectType::DotNet => ".NET",
+            ProjectType::Other(s) => s.as_str(),
+        };
+        let label = if let Some(name) = project_name {
+            format!("{}: {}", type_str, name)
+        } else {
+            format!("{} project", type_str)
+        };
+        Self {
+            tag_type: EvidenceType::ProjectContext,
+            label,
+            tooltip: format!("File is part of a {} project", type_str),
+            strength: 0.4,
+            color: Some("#f472b6".into()), // pink
+        }
+    }
+}
+
+/// Detect the project root for a given file path
+///
+/// Walks up the directory tree looking for project markers like:
+/// - .git (Git repository)
+/// - Cargo.toml (Rust project)
+/// - package.json (Node.js project)
+/// - pyproject.toml or setup.py (Python project)
+/// - go.mod (Go project)
+/// - pom.xml (Maven project)
+/// - build.gradle (Gradle project)
+/// - *.csproj or *.sln (.NET project)
+pub fn detect_project_root(path: &std::path::Path) -> Option<ProjectContext> {
+    use std::path::Path;
+
+    // Markers and their corresponding project types
+    let markers: &[(&str, ProjectType, bool)] = &[
+        (".git", ProjectType::Git, true),           // is_dir = true
+        ("Cargo.toml", ProjectType::Rust, false),   // is_dir = false
+        ("package.json", ProjectType::Node, false),
+        ("pyproject.toml", ProjectType::Python, false),
+        ("setup.py", ProjectType::Python, false),
+        ("go.mod", ProjectType::Go, false),
+        ("pom.xml", ProjectType::Maven, false),
+        ("build.gradle", ProjectType::Gradle, false),
+        ("build.gradle.kts", ProjectType::Gradle, false),
+    ];
+
+    let mut current = path.parent()?;
+    let mut depth = 0usize;
+
+    // Walk up to 20 directories max
+    for _ in 0..20 {
+        for (marker, project_type, is_dir) in markers {
+            let marker_path = current.join(marker);
+            let exists = if *is_dir {
+                marker_path.is_dir()
+            } else {
+                marker_path.is_file()
+            };
+
+            if exists {
+                // Try to extract project name
+                let project_name = extract_project_name(current, project_type);
+
+                return Some(ProjectContext {
+                    root: current.to_path_buf(),
+                    project_type: project_type.clone(),
+                    depth_from_root: depth,
+                    project_name,
+                });
+            }
+        }
+
+        // Check for .NET projects (*.csproj or *.sln)
+        if let Ok(entries) = std::fs::read_dir(current) {
+            for entry in entries.flatten() {
+                let name = entry.file_name();
+                let name_str = name.to_string_lossy();
+                if name_str.ends_with(".csproj") || name_str.ends_with(".sln") {
+                    let project_name = Path::new(&*name_str)
+                        .file_stem()
+                        .map(|s| s.to_string_lossy().to_string());
+
+                    return Some(ProjectContext {
+                        root: current.to_path_buf(),
+                        project_type: ProjectType::DotNet,
+                        depth_from_root: depth,
+                        project_name,
+                    });
+                }
+            }
+        }
+
+        current = current.parent()?;
+        depth += 1;
+    }
+
+    None
+}
+
+/// Extract project name from manifest files
+fn extract_project_name(root: &std::path::Path, project_type: &ProjectType) -> Option<String> {
+    match project_type {
+        ProjectType::Rust => {
+            // Read name from Cargo.toml
+            let cargo_path = root.join("Cargo.toml");
+            if let Ok(content) = std::fs::read_to_string(&cargo_path) {
+                // Simple parsing - look for name = "..."
+                for line in content.lines() {
+                    let trimmed = line.trim();
+                    if trimmed.starts_with("name") && trimmed.contains('=') {
+                        if let Some(name) = trimmed.split('=').nth(1) {
+                            let name = name.trim().trim_matches('"').trim_matches('\'');
+                            if !name.is_empty() {
+                                return Some(name.to_string());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ProjectType::Node => {
+            // Read name from package.json
+            let pkg_path = root.join("package.json");
+            if let Ok(content) = std::fs::read_to_string(&pkg_path) {
+                // Simple parsing - look for "name": "..."
+                if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
+                    if let Some(name) = json.get("name").and_then(|n| n.as_str()) {
+                        return Some(name.to_string());
+                    }
+                }
+            }
+        }
+        ProjectType::Python => {
+            // Read name from pyproject.toml
+            let pyproj_path = root.join("pyproject.toml");
+            if let Ok(content) = std::fs::read_to_string(&pyproj_path) {
+                for line in content.lines() {
+                    let trimmed = line.trim();
+                    if trimmed.starts_with("name") && trimmed.contains('=') {
+                        if let Some(name) = trimmed.split('=').nth(1) {
+                            let name = name.trim().trim_matches('"').trim_matches('\'');
+                            if !name.is_empty() {
+                                return Some(name.to_string());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ProjectType::Go => {
+            // Read module name from go.mod
+            let gomod_path = root.join("go.mod");
+            if let Ok(content) = std::fs::read_to_string(&gomod_path) {
+                for line in content.lines() {
+                    if line.starts_with("module ") {
+                        let module = line.trim_start_matches("module ").trim();
+                        // Extract last path component
+                        if let Some(name) = module.rsplit('/').next() {
+                            return Some(name.to_string());
+                        }
+                    }
+                }
+            }
+        }
+        _ => {}
+    }
+
+    // Fallback: use directory name
+    root.file_name().map(|n| n.to_string_lossy().to_string())
 }
 
 /// Convert seconds to human-readable duration

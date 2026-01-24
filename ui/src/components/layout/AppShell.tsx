@@ -6,6 +6,7 @@ import { SettingsPanel } from '@/components/settings/SettingsPanel';
 import { useSearchStore } from '@/stores/searchStore';
 import { listen } from '@tauri-apps/api/event';
 import { InfoPanel } from '@/components/onboarding/InfoPanel';
+import { ArcNoiseBackground } from '@/components/effects/ArcNoiseBackground';
 
 // Safe Tauri window import - falls back to no-op in browser
 const getTauriWindow = async () => {
@@ -118,7 +119,10 @@ export function AppShell({ children }: AppShellProps) {
   };
 
   return (
-    <div className="h-screen flex bg-graphite-0 overflow-hidden" data-theme="desktop">
+    <div className="h-screen flex bg-graphite-0 overflow-hidden relative" data-theme="desktop">
+      {/* Background Effect */}
+      <ArcNoiseBackground />
+
       {/* Invisible drag region - covers top of window */}
       <div
         data-tauri-drag-region
@@ -145,13 +149,11 @@ export function AppShell({ children }: AppShellProps) {
           setShowInfo(true);
           setShowSettings(false);
         }}
-        className="flex-shrink-0"
+        className="flex-shrink-0 relative z-20 backdrop-blur-sm bg-graphite-0/80"
       />
 
       {/* Main content */}
-      <main className="flex-1 flex flex-col pt-10 overflow-hidden relative bg-graphite-0">
-        {/* Subtle gradient backgrounds */}
-        <div className="pointer-events-none absolute inset-0 opacity-60 bg-gradient-to-br from-accent-amber/[0.02] to-transparent" />
+      <main className="flex-1 flex flex-col pt-10 overflow-hidden relative z-10">
 
         <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
           {children}
@@ -159,22 +161,16 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Settings Panel Overlay */}
         {showSettings && (
-          <div className="absolute inset-0 z-50 bg-graphite-0/90 backdrop-blur-xl">
-            <div className="h-full overflow-auto p-8">
-              <div className="max-w-3xl mx-auto bg-graphite-1 border border-stroke-hairline rounded-xl p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-lg font-semibold text-porcelain">Settings</h2>
-                    <p className="text-sm text-fg-muted">Tune search, privacy, and compliance controls.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowSettings(false)}
-                    className="p-2 rounded-md hover:bg-graphite-2 text-fg-muted hover:text-porcelain cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-black/40 backdrop-blur-[2px]">
+            <div className="w-full max-w-5xl h-[85vh] animate-in fade-in zoom-in-95 duration-200">
+              <div className="relative w-full h-full">
+                <button
+                  type="button"
+                  onClick={() => setShowSettings(false)}
+                  className="absolute -top-3 -right-3 z-50 p-2 rounded-full bg-graphite-2 border border-stroke-hairline text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors shadow-lg"
+                >
+                  <X className="w-4 h-4" />
+                </button>
                 <SettingsPanel />
               </div>
             </div>
@@ -183,22 +179,16 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Info Panel Overlay */}
         {showInfo && (
-          <div className="absolute inset-0 z-50 bg-graphite-0/90 backdrop-blur-xl">
-            <div className="h-full overflow-auto p-8">
-              <div className="max-w-4xl mx-auto bg-graphite-1 border border-stroke-hairline rounded-xl p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-lg font-semibold text-porcelain">Ixos Guide</h2>
-                    <p className="text-sm text-fg-muted">Learn the protocol and shortcuts.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowInfo(false)}
-                    className="p-2 rounded-md hover:bg-graphite-2 text-fg-muted hover:text-porcelain cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-black/40 backdrop-blur-[2px]">
+            <div className="w-full max-w-4xl h-[700px] max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+              <div className="relative w-full h-full">
+                <button
+                  type="button"
+                  onClick={() => setShowInfo(false)}
+                  className="absolute -top-3 -right-3 z-50 p-2 rounded-full bg-graphite-2 border border-stroke-hairline text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors shadow-lg"
+                >
+                  <X className="w-4 h-4" />
+                </button>
                 <InfoPanel />
               </div>
             </div>

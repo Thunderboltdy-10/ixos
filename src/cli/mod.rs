@@ -45,4 +45,4 @@ pub use commands::{
 pub use config::{
     ConfigError, IndexConfig, IxosConfig, OutputConfig, SearchConfig, SecurityConfig,
 };
-pub use output::{create_formatter, OutputFormat, OutputFormatter};
+pub use output::{create_formatter, create_formatter_with_options, OutputFormat, OutputFormatter};

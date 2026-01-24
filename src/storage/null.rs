@@ -64,6 +64,10 @@ impl EmbeddingCache for NullCache {
         Ok(())
     }
 
+    fn contains(&self, _path: &Path) -> bool {
+        false
+    }
+
     /// Always returns true (NullCache is the universal fallback)
     fn is_supported(&self, _path: &Path) -> bool {
         true

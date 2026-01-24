@@ -191,6 +191,11 @@ impl EmbeddingCache for AdsCache {
         }
     }
 
+    fn contains(&self, path: &Path) -> bool {
+        let ads_path = Self::ads_path(path);
+        ads_path.exists()
+    }
+
     fn is_supported(&self, path: &Path) -> bool {
         Self::is_supported_static(path)
     }

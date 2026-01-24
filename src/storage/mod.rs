@@ -29,6 +29,9 @@ pub trait EmbeddingCache: Send + Sync {
     /// Remove cached embedding
     fn delete(&self, path: &Path) -> Result<(), CacheError>;
 
+    /// Check if embedding exists for path (without verifying hash)
+    fn contains(&self, path: &Path) -> bool;
+
     /// Check if this cache backend works for the given path
     fn is_supported(&self, path: &Path) -> bool;
 }

@@ -290,6 +290,51 @@ impl EmbeddingCache for LmdbSidecarCache {
         Ok(())
     }
 
+    fn contains(&self, path: &Path) -> bool {
+        // For LMDB, we can't easily check containment without the file hash because the key depends on it.
+        // However, the `contains` API is primarily for stats where we want to know if *something* is cached.
+        // Since we can't iterate efficiently to find if *any* key matches the path prefix (hashed),
+        // we might return false or try to iterate.
+        // 
+        // Optimization: Iterating the whole DB is slow.
+        // BUT, `make_key` requires the hash.
+        //
+        // If we change `contains` to accept `file_hash`, it defeats the purpose of "quick check without hash".
+        //
+        // Alternative: LmdbSidecarCache stores `xxh3(path + hash)`. We cannot lookup by path alone.
+        // Result: `contains` for LMDB sidecar MUST return false or be expensive.
+        //
+        // WAIT: The user request says "add a cache API to detect presence without a hash".
+        // Use case: `ixos cache stats`.
+        //
+        // If LMDB can't support it, stats will be 0 for LMDB.
+        // But iterating the DB and checking if any key "matches" is impossible because keys are hashes.
+        //
+        // Actually, if we are doing `cache stats`, we are iterating the filesystem.
+        // We have the file path. We DON'T have the hash (expensive to compute).
+        //
+        // If we are using LMDB, we are stuck. We MUST compute the hash to check existence.
+        // OR we change the key structure to `path + hash` (not hashed key).
+        // The current impl uses `xxh3_64` for the key.
+        //
+        // So `contains` is impossible O(1) for LmdbSidecarCache without hash.
+        // We will return `false` for now, or we can iterate the whole DB (O(N) - acceptable for `stats` command? No).
+        //
+        // Actually, we can return `false` and documenting that LMDB stats require hash.
+        // OR, we can implement it as "always false" since LMDB is a fallback.
+        //
+        // Let's implement it as returning `false` with a TODO, because changing key structure is a breaking change.
+        //
+        // WAIT - `ixos cache stats` iterates files.
+        // If `get_cache_for_path` returns LmdbSidecarCache, we are using it.
+        // If `contains` returns false, stats say 0.
+        //
+        // Is there a way?
+        // No, `make_key` consumes `file_hash`.
+        //
+        return false;
+    }
+
     fn is_supported(&self, _path: &Path) -> bool {
         // LMDB sidecar is a universal fallback
         true

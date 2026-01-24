@@ -625,7 +625,8 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
 
     match action {
         CacheCommands::Stats { dir, json } => {
-            let target_dir = dir.unwrap_or_else(|| PathBuf::from("."));
+            let raw_dir = dir.unwrap_or_else(|| PathBuf::from("."));
+            let target_dir = std::fs::canonicalize(&raw_dir).unwrap_or(raw_dir);
 
             println!("Cache Statistics for: {}", target_dir.display());
             println!("{}", "-".repeat(50));
@@ -645,8 +646,8 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
                     total_files += 1;
                     let cache = get_cache_for_path(entry.path());
 
-                    // Check if file has cached embedding
-                    if let Ok(Some(_)) = cache.get(entry.path(), &[0u8; 32]) {
+                    // Check if file has cached embedding (using optimized contains check)
+                    if cache.contains(entry.path()) {
                         cached_files += 1;
                         // Estimate cache size (225 bytes per entry for 64-dim)
                         cache_size_bytes += 225;
@@ -734,7 +735,8 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
             println!("Cache Audit");
             println!("{}", "-".repeat(50));
 
-            let cwd = std::env::current_dir()?;
+            let raw_cwd = std::env::current_dir()?;
+            let cwd = std::fs::canonicalize(&raw_cwd).unwrap_or(raw_cwd);
             let mut total = 0;
             let mut valid = 0;
             let mut invalid = 0;
@@ -747,7 +749,18 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
             {
                 let cache = get_cache_for_path(entry.path());
 
-                if let Ok(Some(embedding)) = cache.get(entry.path(), &[0u8; 32]) {
+                // P2 Badge: Use real file hash when detecting cached entries for audit
+                let file_hash = match ixos_protocol::security::crypto::sha256_file(entry.path()) {
+                    Ok(h) => h,
+                    Err(e) => {
+                        if detailed {
+                            println!("SKIP: {} (hash error: {})", entry.path().display(), e);
+                        }
+                        continue;
+                    }
+                };
+
+                if let Ok(Some(embedding)) = cache.get(entry.path(), &file_hash) {
                     total += 1;
 
                     if verify {

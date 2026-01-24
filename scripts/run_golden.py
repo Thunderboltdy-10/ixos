@@ -8,8 +8,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "corpus_tiny"
-QUERY_SET = CORPUS / "query_set.json"
-EXPECTED = CORPUS / "expected_results.json"
+GOLDEN_DATA = ROOT / "golden_data"
+QUERY_SET = GOLDEN_DATA / "query_set.json"
+EXPECTED = GOLDEN_DATA / "expected_results.json"
 
 
 def normalize_path(path_str: str) -> str:
@@ -67,18 +68,18 @@ def run_query(bin_path: Path, query: str, limit: int, env: dict = None) -> dict:
         "search",
         query,
         "--dir",
-        str(CORPUS),
+        "corpus_tiny",
         "--format",
         "json",
         "--limit",
         str(limit),
-        "--stub-model",
     ]
     result = subprocess.run(
         cmd,
         cwd=ROOT,
         capture_output=True,
         text=True,
+        encoding="utf-8",
         env=env,
     )
     if result.returncode != 0:
@@ -120,15 +121,22 @@ def main() -> int:
         
         # Create isolated environment
         env = os.environ.copy()
+        
+        # Isolate config and data (where compliance/consent lives)
         env["HOME"] = str(temp_path)
         env["XDG_CONFIG_HOME"] = str(temp_path / ".config")
         env["XDG_DATA_HOME"] = str(temp_path / ".local" / "share")
-        env["XDG_CACHE_HOME"] = str(temp_path / ".cache")
+        
+        # Preserve cache (where models live)
+        # We inherit XDG_CACHE_HOME from os.environ by default
         
         # Windows-specific isolation
         if os.name == "nt":
+            # Isolate Roaming (Config + Compliance)
             env["APPDATA"] = str(temp_path / "AppData" / "Roaming")
-            env["LOCALAPPDATA"] = str(temp_path / "AppData" / "Local")
+            
+            # Preserve Local (Models usually live here in cache_dir)
+            # We inherit LOCALAPPDATA from os.environ
             
         print(f"Running in isolated environment: {temp_path}")
         
@@ -140,6 +148,17 @@ def main() -> int:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL
         )
+
+        # Index the corpus first to ensure consistent results (avoid cold start timeouts)
+        print("Indexing corpus in test environment...")
+        subprocess.check_call(
+            [str(bin_path), "index", "corpus_tiny", "--clear"],
+            env=env,
+            cwd=ROOT,  # Ensure it finds corpus_tiny relative to ROOT
+            # stdout=subprocess.DEVNULL,
+            # stderr=subprocess.DEVNULL
+        )
+
 
         maybe_set_permission_denied()
         failures = []
@@ -155,7 +174,7 @@ def main() -> int:
 
                 if top_k == 0 and not exp.get("must_include") and not exp.get("must_exclude"):
                     if len(paths) != 0:
-                        failures.append(f"{qid}: expected no results, got {len(paths)}")
+                        failures.append(f"{qid}: expected no results, got {len(paths)}: {paths}")
                     continue
 
                 if top_k > 0:

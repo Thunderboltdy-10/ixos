@@ -215,9 +215,10 @@ async fn handle_search(
     let mut stdout = stdout();
 
     // Determine search directory
-    let search_dir = dir
+    let raw_search_dir = dir
         .or_else(|| config.search.default_directory.clone())
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+    let search_dir = std::fs::canonicalize(&raw_search_dir).unwrap_or(raw_search_dir);
 
     // Enforce sandbox if provided
     if let Some(sandbox_dir) = sandbox {
@@ -430,7 +431,8 @@ async fn handle_index(
     }
 
     println!("Indexing {} directories...", dirs.len());
-    for dir in &dirs {
+    for raw_dir in dirs {
+        let dir = std::fs::canonicalize(&raw_dir).unwrap_or(raw_dir);
         if progress {
             print!("  {} ... ", dir.display());
             std::io::stdout().flush()?;
@@ -447,8 +449,14 @@ async fn handle_index(
         }
 
         // Index the directory
-        let mut semantic = StubSemanticEngine::with_stub_model();
-        match semantic.index_directory(dir).await {
+        let cache_mode = if use_xattr {
+            ixos_protocol::ixos_rank::semantic_engine::CacheMode::Cache
+        } else {
+            ixos_protocol::ixos_rank::semantic_engine::CacheMode::Jit
+        };
+
+        let mut semantic = StubSemanticEngine::with_stub_model_and_mode(cache_mode);
+        match semantic.index_directory(&dir).await {
             Ok(count) => {
                 if progress {
                     println!("{} files", count);

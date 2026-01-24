@@ -170,11 +170,15 @@ export function SearchSettings() {
       >
         <select
           value={config.search.cacheMode}
-          onChange={(e) =>
+          onChange={(e) => {
+            const newValue = e.target.value;
             updateConfig({
-              search: { ...config.search, cacheMode: e.target.value },
-            })
-          }
+              search: { ...config.search, cacheMode: newValue },
+            });
+            // P3 Badge: Sync with search store immediately so it applies to the current session
+            // without requiring a mode switch
+            useSearchStore.getState().setCacheMode(newValue as 'cache' | 'jit');
+          }}
           className="w-36 bg-graphite-2 border border-stroke-hairline rounded-md px-2 py-1 text-xs text-porcelain"
         >
           <option value="jit">Off (JIT only)</option>

@@ -290,7 +290,7 @@ impl EmbeddingCache for LmdbSidecarCache {
         Ok(())
     }
 
-    fn contains(&self, path: &Path) -> bool {
+    fn contains(&self, _path: &Path) -> bool {
         // For LMDB, we can't easily check containment without the file hash because the key depends on it.
         // However, the `contains` API is primarily for stats where we want to know if *something* is cached.
         // Since we can't iterate efficiently to find if *any* key matches the path prefix (hashed),

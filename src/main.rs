@@ -43,7 +43,7 @@ async fn main() -> anyhow::Result<()> {
     };
 
     tracing_subscriber::registry()
-        .with(tracing_subscriber::fmt::layer())
+        .with(tracing_subscriber::fmt::layer().with_writer(std::io::stderr))
         .with(tracing_subscriber::EnvFilter::new(filter))
         .init();
 
@@ -618,7 +618,7 @@ fn handle_daemon(foreground: bool, stop: bool, status: bool) -> anyhow::Result<(
 
 fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
     use ixos_protocol::storage::get_cache_for_path;
-    use std::path::Path;
+
 
     match action {
         CacheCommands::Stats { dir, json } => {

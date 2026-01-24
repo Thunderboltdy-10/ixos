@@ -48,7 +48,7 @@ impl Default for FstdConfig {
 
 #[derive(Debug, Clone)]
 pub struct DirectoryTopology {
-    root: PathBuf,
+    _root: PathBuf,
     anchors: Vec<DirNode>,
     coords: HashMap<PathBuf, Vec<f32>>,
     quality_score: f32,
@@ -92,7 +92,7 @@ impl DirectoryTopology {
         let quality_score = structure_quality_score(&nodes, root);
 
         Some(Self {
-            root: root.to_path_buf(),
+            _root: root.to_path_buf(),
             anchors,
             coords,
             quality_score,

@@ -4,9 +4,8 @@ export { useSettingsStore } from './settingsStore';
 export { useStarredStore } from './starredStore';
 export { useStatsStore } from './statsStore';
 
-// P2 Perceived Performance Stores
-export { useHistoryStore } from './historyStore';
-export type { HistorySuggestion } from './historyStore';
+// Search history suggestions
+export type { HistorySuggestion } from './starredStore';
 
 // Seamless Morph Animation Store
 export { useLayoutStore } from './layoutStore';

@@ -14,6 +14,7 @@ const nextConfig = {
     },
     experimental: {
         optimizePackageImports: ['lucide-react', 'framer-motion', '@react-three/drei'],
+        externalDir: true,
     },
 };
 

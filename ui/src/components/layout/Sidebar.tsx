@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Search, Star, FileText, Zap, Trash2, Info } from 'lucide-react';
+import { Plus, FileText, Clock, Trash2, Star, BookOpen, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStatsStore } from '@/stores/statsStore';
 import { useStarredStore, type SearchThread } from '@/stores/starredStore';
 import { useSearchStore } from '@/stores/searchStore';
+import ixosIcon from '@/assets/ixos-icon.png';
 
 interface SidebarProps {
   onNewSearch?: () => void;
@@ -13,15 +14,18 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onNewSearch, onOpenGuide, className }: SidebarProps) {
-  const [statsCollapsed, setStatsCollapsed] = useState(false);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'recent' | 'starred'>('recent');
 
   // Use real store data
   const stats = useStatsStore();
   const starred = useStarredStore();
   const searchStore = useSearchStore();
+  const journalistMode = searchStore.journalistMode;
 
   // Get starred threads
   const starredThreads = starred.getStarredThreads();
+  const recentSearches = starred.getRecentThreads();
 
   const formatTime = (timestamp: number) => {
     const diff = Date.now() - timestamp;
@@ -29,26 +33,27 @@ export function Sidebar({ onNewSearch, onOpenGuide, className }: SidebarProps) {
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
 
-    if (days > 0) return `${days}d ago`;
-    if (hours > 0) return `${hours}h ago`;
-    if (minutes > 0) return `${minutes}m ago`;
-    return 'Just now';
+    if (days > 0) return `${days}d`;
+    if (hours > 0) return `${hours}h`;
+    if (minutes > 0) return `${minutes}m`;
+    return 'now';
   };
 
   const handleHistoryClick = (thread: SearchThread) => {
-    // Restore search from history
-    searchStore.setQuery(thread.query);
-    searchStore.setDirectory(thread.directory);
-    // Set mode based on history
-    if (thread.mode === 'journalist') {
-      searchStore.setJournalistMode(true);
-      searchStore.setCacheMode('jit');
-    } else {
-      searchStore.setJournalistMode(false);
-      searchStore.setCacheMode(thread.mode);
-    }
-    // Trigger search
-    searchStore.startSearch();
+    searchStore.restoreFromHistory(thread);
+  };
+
+  const handleRecentClick = (item: SearchThread) => {
+    searchStore.restoreFromHistory(item);
+  };
+
+  const handleDeleteRecent = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    starred.deleteThread(id);
+  };
+
+  const handleStarRecent = (item: SearchThread) => {
+    starred.toggleStar(item.id);
   };
 
   const handleDeleteThread = (e: React.MouseEvent, id: string) => {
@@ -56,197 +61,313 @@ export function Sidebar({ onNewSearch, onOpenGuide, className }: SidebarProps) {
     starred.deleteThread(id);
   };
 
-  const handleUnstar = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    starred.toggleStar(id);
-  };
-
   const cacheHitRate = stats.getCacheHitRate() * 100;
 
   return (
-    <div className={cn('w-[300px] h-full flex flex-col bg-graphite-1 border-r border-stroke-hairline', className)}>
-      {/* New Search Button */}
-      <div className="p-5 border-b border-stroke-hairline">
+    <aside className={cn('w-60 h-full flex flex-col bg-graphite-0 border-r border-stroke-hairline', className)}>
+      {/* Brand header with New Search button */}
+      <div className="p-4 flex items-center gap-3 pt-12">
+        <div className="w-6 h-6 rounded-md bg-gradient-to-br from-accent-amber to-accent-amber-dim p-[1px] shadow-glow-amber">
+          <div className="w-full h-full rounded-[5px] bg-graphite-1 flex items-center justify-center">
+            <img src={ixosIcon} alt="Ixos" className="w-3.5 h-3.5" />
+          </div>
+        </div>
+        <span className="font-display text-sm font-medium text-porcelain tracking-tight">Ixos</span>
         <button
           type="button"
           onClick={onNewSearch}
           className={cn(
-            'w-full py-3 px-4 rounded-md',
-            'bg-gradient-teal text-graphite-0 font-semibold text-xs uppercase tracking-[0.2em]',
-            'flex items-center justify-center gap-2',
-            'hover:opacity-90 transition-opacity duration-150',
-            'shadow-glow-teal cursor-pointer'
+            'ml-auto p-2 rounded-md',
+            'text-fg-muted hover:text-accent-amber hover:bg-graphite-2',
+            'transition-colors duration-150 cursor-pointer'
           )}
+          title="New Search"
         >
-          <Search className="w-4 h-4" />
-          New Search
+          <Plus className="w-4 h-4" />
         </button>
+      </div>
 
+      {/* Tab toggle */}
+      <div className="px-3 pt-2">
+        <div className="flex items-center gap-1 p-0.5 bg-graphite-2/50 rounded-md">
+          <button
+            type="button"
+            onClick={() => setActiveTab('recent')}
+            className={cn(
+              'flex-1 py-1.5 px-2 text-xs rounded-md transition-all duration-150',
+              activeTab === 'recent'
+                ? 'bg-graphite-3 text-porcelain'
+                : 'text-fg-dim hover:text-fg-muted'
+            )}
+          >
+            Recent
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('starred')}
+            className={cn(
+              'flex-1 py-1.5 px-2 text-xs rounded-md transition-all duration-150 flex items-center justify-center gap-1',
+              activeTab === 'starred'
+                ? 'bg-graphite-3 text-accent-amber'
+                : 'text-fg-dim hover:text-fg-muted'
+            )}
+          >
+            <Star className="w-3 h-3" />
+            Starred
+          </button>
+        </div>
+      </div>
+
+      {/* Journalist mode notice - Only show when in Recent tab */}
+      {journalistMode && activeTab === 'recent' && (
+        <div className="mx-3 mt-3 px-3 py-2 bg-accent-violet/5 border border-accent-violet/10 rounded-md">
+          <div className="flex items-start gap-2">
+            <EyeOff className="w-3.5 h-3.5 text-accent-violet flex-shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <p className="text-xs font-medium text-accent-violet">Journalist Mode Active</p>
+              <p className="text-2xs text-fg-muted leading-tight">Searches are encrypted locally and can be cleared instantly.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
+
+
+      {/* Search history list */}
+      <nav className="flex-1 overflow-y-auto px-2 pt-2 scrollbar-hide">
+        {activeTab === 'recent' ? (
+          // Recent searches from history store
+          recentSearches.length === 0 ? (
+            <div className="px-2 py-8 text-center">
+              <Clock className="w-6 h-6 mx-auto mb-2 text-fg-ghost" />
+              <p className="text-xs text-fg-dim">No recent searches</p>
+            </div>
+          ) : (
+            <div className="space-y-0.5">
+              {recentSearches.map((item) => (
+                <RecentSearchItem
+                  key={item.id}
+                  item={item}
+                  isHovered={hoveredId === `recent-${item.id}`}
+                  onHover={() => setHoveredId(`recent-${item.id}`)}
+                  onLeave={() => setHoveredId(null)}
+                  onStar={() => handleStarRecent(item)}
+                  onSearch={() => handleRecentClick(item)}
+                  formatTime={formatTime}
+                  onDelete={(e) => handleDeleteRecent(e, item.id)}
+                />
+              ))}
+            </div>
+          )
+        ) : (
+          // Starred searches
+          starredThreads.length === 0 ? (
+            <div className="px-2 py-8 text-center">
+              <Star className="w-6 h-6 mx-auto mb-2 text-fg-ghost" />
+              <p className="text-xs text-fg-dim">No starred searches</p>
+              <p className="text-2xs text-fg-ghost mt-1">Star a search to save it here</p>
+            </div>
+          ) : (
+            <div className="space-y-0.5">
+              {starredThreads.map((item) => (
+                <button
+                  type="button"
+                  key={item.id}
+                  onClick={() => handleHistoryClick(item)}
+                  onMouseEnter={() => setHoveredId(item.id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                  className={cn(
+                    'w-full px-2 py-2 rounded-md text-left',
+                    'hover:bg-graphite-1 transition-colors duration-150',
+                    'group cursor-pointer relative'
+                  )}
+                >
+                  <div className="flex items-start gap-2">
+                    <Star className="w-3.5 h-3.5 text-accent-amber mt-0.5 flex-shrink-0 fill-accent-amber" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-fg-muted truncate group-hover:text-porcelain transition-colors">
+                        {item.query}
+                      </p>
+                      <div className="flex items-center gap-1.5 text-2xs text-fg-ghost mt-0.5">
+                        <span>{item.resultCount} results</span>
+                        <span>-</span>
+                        <span>{formatTime(item.timestamp)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Delete button on hover */}
+                  <AnimatePresence>
+                    {hoveredId === item.id && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.1 }}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1"
+                      >
+                        <motion.button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            starred.toggleStar(item.id);
+                          }}
+                          className={cn(
+                            'p-1 rounded',
+                            'hover:bg-graphite-2 text-accent-amber',
+                            'transition-colors duration-150'
+                          )}
+                          title="Unstar"
+                        >
+                          <Star className="w-3 h-3 fill-current" />
+                        </motion.button>
+                        <motion.button
+                          type="button"
+                          onClick={(e) => handleDeleteThread(e, item.id)}
+                          className={cn(
+                            'p-1 rounded',
+                            'hover:bg-graphite-2 text-fg-ghost hover:text-error',
+                            'transition-colors duration-150'
+                          )}
+                          title="Remove"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </motion.button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </button>
+              ))}
+            </div>
+          )
+        )}
+      </nav>
+
+      {/* Guide button */}
+      <div className="px-3 py-2 border-t border-stroke-hairline">
         <button
           type="button"
           onClick={() => onOpenGuide?.()}
           className={cn(
-            'w-full mt-3 py-2.5 px-4 rounded-md',
-            'bg-graphite-2 text-porcelain font-medium text-xs uppercase tracking-[0.14em]',
-            'flex items-center justify-center gap-2',
-            'hover:bg-graphite-3 transition-colors duration-150',
-            'border border-stroke-hairline'
+            'w-full py-2 px-3 rounded-md text-left',
+            'flex items-center gap-2',
+            'text-fg-dim hover:text-porcelain hover:bg-graphite-1',
+            'transition-colors duration-150 cursor-pointer'
           )}
         >
-          <Info className="w-4 h-4 text-accent-teal" />
-          Guide & Features
+          <BookOpen className="w-3.5 h-3.5 text-accent-amber" />
+          <span className="text-xs">Guide</span>
         </button>
       </div>
 
-      {/* Stats Panel */}
-      <div className="border-b border-stroke-hairline">
-        <button
-          type="button"
-          onClick={() => setStatsCollapsed(!statsCollapsed)}
-          className={cn(
-            'w-full flex items-center justify-between px-5 py-3',
-            'hover:bg-graphite-2 transition-colors duration-150 cursor-pointer'
-          )}
-        >
-          <span className="text-xs font-semibold text-porcelain uppercase tracking-[0.16em]">Statistics</span>
-          <ChevronDown
-            className={cn(
-              'w-4 h-4 text-fg-dim transition-transform duration-200',
-              statsCollapsed && 'rotate-180'
-            )}
-          />
-        </button>
-
-        <AnimatePresence initial={false}>
-          {!statsCollapsed && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="px-5 pb-3 space-y-2 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-fg-muted">Total Searches</span>
-                  <span className="font-mono text-porcelain">{stats.totalSearches}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-fg-muted">Files Indexed</span>
-                  <span className="font-mono text-porcelain">{stats.filesIndexed}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-fg-muted">Cache Hit Rate</span>
-                  <span className="font-mono text-accent-teal">
-                    {stats.totalSearches > 0 ? `${cacheHitRate.toFixed(1)}%` : '—'}
-                  </span>
-                </div>
-                {stats.currentStreak > 1 && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-fg-muted">Current Streak</span>
-                    <span className="font-mono text-accent-amber">{stats.currentStreak} days</span>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Starred Searches */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="px-5 py-3 border-b border-stroke-hairline">
-          <h3 className="text-xs font-semibold text-porcelain uppercase tracking-[0.16em] flex items-center gap-2">
-            <Star className="w-4 h-4 text-accent-amber fill-accent-amber" />
-            Starred Searches
-            {starredThreads.length > 0 && (
-              <span className="text-2xs text-fg-dim">({starredThreads.length})</span>
-            )}
-          </h3>
-        </div>
-
-        <div className="space-y-1 p-2">
-          {starredThreads.length === 0 ? (
-            <div className="px-4 py-6 text-center text-fg-dim text-sm">
-              <Star className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              <p>No starred searches</p>
-              <p className="text-xs mt-1">Star a search result to save it here</p>
-            </div>
+      {/* Stats footer - single compact line */}
+      <div className="px-4 py-3 border-t border-stroke-hairline">
+        <p className="text-2xs text-fg-ghost font-mono">
+          {stats.totalSearches > 0 ? (
+            <>
+              {stats.totalSearches} searches
+              {cacheHitRate > 0 && (
+                <> - <span className="text-accent-amber">{cacheHitRate.toFixed(0)}%</span> cache</>
+              )}
+            </>
           ) : (
-            starredThreads.map((item) => (
-              <button
-                type="button"
-                key={item.id}
-                onClick={() => handleHistoryClick(item)}
-                className={cn(
-                  'w-full px-3 py-3 rounded-md text-left',
-                  'hover:bg-graphite-2 transition-colors duration-150',
-                  'group cursor-pointer relative'
-                )}
-              >
-                <div className="flex items-start gap-2 mb-1">
-                  <FileText className="w-3.5 h-3.5 text-fg-dim mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-porcelain truncate group-hover:text-accent-teal transition-colors">
-                      {item.query}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 ml-5 text-2xs text-fg-dim">
-                  <span className="flex items-center gap-1">
-                    <Zap className="w-3 h-3" />
-                    {item.resultCount} results
-                  </span>
-                  <span>•</span>
-                  <span>{formatTime(item.timestamp)}</span>
-                  {item.mode === 'journalist' && (
-                    <>
-                      <span>•</span>
-                      <span className="text-accent-magenta">SECURE</span>
-                    </>
-                  )}
-                </div>
-
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-150">
-                  <button
-                    type="button"
-                    onClick={(e) => handleUnstar(e, item.id)}
-                    className={cn(
-                      'p-1.5 rounded',
-                      'hover:bg-graphite-3 text-accent-amber',
-                      'transition-all duration-150'
-                    )}
-                    title="Remove from starred"
-                  >
-                    <Star className="w-3.5 h-3.5 fill-current" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => handleDeleteThread(e, item.id)}
-                    className={cn(
-                      'p-1.5 rounded',
-                      'hover:bg-graphite-3 text-fg-dim hover:text-error',
-                      'transition-all duration-150'
-                    )}
-                    title="Delete"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </button>
-            ))
+            'Ready to search'
           )}
+        </p>
+      </div>
+    </aside>
+  );
+}
+
+// Component for recent search items
+function RecentSearchItem({
+  item,
+  isHovered,
+  onHover,
+  onLeave,
+  onStar,
+  onSearch,
+  formatTime,
+  onDelete,
+}: {
+  item: SearchThread;
+  isHovered: boolean;
+  onHover: () => void;
+  onLeave: () => void;
+  onStar: () => void;
+  onSearch: () => void;
+  formatTime: (ts: number) => string;
+  onDelete: (e: React.MouseEvent) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSearch}
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+      className={cn(
+        'w-full px-2 py-2 rounded-md text-left',
+        'hover:bg-graphite-1 transition-colors duration-150',
+        'group cursor-pointer relative'
+      )}
+    >
+      <div className="flex items-start gap-2">
+        <FileText className="w-3.5 h-3.5 text-fg-ghost mt-0.5 flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-fg-muted truncate group-hover:text-porcelain transition-colors">
+            {item.query}
+          </p>
+          <div className="flex items-center gap-1.5 text-2xs text-fg-ghost mt-0.5">
+            <span>{item.resultCount} results</span>
+            <span>-</span>
+            <span>{formatTime(item.timestamp)}</span>
+          </div>
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-stroke-hairline">
-        <div className="flex items-center justify-center gap-2 text-2xs text-fg-dim">
-          <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-          <span>Ixos Protocol v1.0</span>
-        </div>
-      </div>
-    </div>
+      {/* Star button on hover */}
+      <AnimatePresence>
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.1 }}
+            className="flex items-center gap-1 absolute right-1 top-1/2 -translate-y-1/2"
+          >
+            <motion.button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onStar();
+              }}
+              className={cn(
+                'p-1 rounded',
+                'hover:bg-graphite-2 text-fg-ghost hover:text-accent-amber',
+                'transition-colors duration-150'
+              )}
+              title="Star this search"
+            >
+              <Star className="w-3 h-3" />
+            </motion.button>
+
+            <motion.button
+              type="button"
+              onClick={onDelete}
+              className={cn(
+                'p-1 rounded',
+                'hover:bg-graphite-2 text-fg-ghost hover:text-error',
+                'transition-colors duration-150'
+              )}
+              title="Remove from history"
+            >
+              <Trash2 className="w-3 h-3" />
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </button>
   );
 }

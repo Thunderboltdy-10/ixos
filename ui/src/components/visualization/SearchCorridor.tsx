@@ -5,27 +5,29 @@ import { useLayoutStore } from '@/stores/layoutStore';
 // Animation constants
 const COLORS = {
   teal: { r: 13, g: 148, b: 136 },      // #0d9488
+  amber: { r: 246, g: 185, b: 76 },     // #f6b94c
+  violet: { r: 124, g: 92, b: 255 },    // #7c5cff
   cyan: { r: 6, g: 182, b: 212 },        // #06b6d4
   white: { r: 255, g: 255, b: 255 },
 };
 
 // Arc configuration
 const ARC_CONFIG = {
-  maxArcs: 4,
+  maxArcs: 5,
   minArcs: 1,
-  travelTime: 500,        // ms to travel full height
-  spawnInterval: 300,     // ms between arc spawns
-  width: 1.5,
-  glowRadius: 6,
-  curveAmplitude: 30,     // max horizontal deviation
+  travelTime: 520,        // ms to travel full height
+  spawnInterval: 240,     // ms between arc spawns
+  width: 1.6,
+  glowRadius: 9,
+  curveAmplitude: 36,     // max horizontal deviation
 };
 
 // Dust configuration
 const DUST_CONFIG = {
-  count: 40,
-  speed: 2,               // pixels per frame
+  count: 48,
+  speed: 1.8,               // pixels per frame
   size: 1,
-  alpha: 0.3,
+  alpha: 0.22,
 };
 
 // Spark configuration
@@ -101,10 +103,11 @@ export function SearchCorridor() {
 
   // Store selectors
   const phase = useSearchStore((s) => s.phase);
-  const streamStage = useSearchStore((s) => s.streamStage);
   const pendingSparkTargets = useSearchStore((s) => s.pendingSparkTargets);
   const consumeSparkTarget = useSearchStore((s) => s.consumeSparkTarget);
   const hasSearchIntent = useSearchStore((s) => s.hasSearchIntent);
+  const cacheMode = useSearchStore((s) => s.cacheMode);
+  const journalistMode = useSearchStore((s) => s.journalistMode);
 
   const searchBarBox = useLayoutStore((s) => s.searchBarBox);
   const deckUnderlineBox = useLayoutStore((s) => s.deckUnderlineBox);
@@ -113,7 +116,6 @@ export function SearchCorridor() {
 
   const isActive = phase === 'lexical' || phase === 'semantic' || phase === 'refining' || hasSearchIntent;
   const isComplete = phase === 'complete';
-  const isSemantic = streamStage === 'semantic' || streamStage === 'refining' || streamStage === 'tail';
 
   // Reset fade-out when starting new search
   useEffect(() => {
@@ -322,7 +324,7 @@ export function SearchCorridor() {
       // Clear canvas
       ctx.clearRect(0, 0, rect.width, height);
 
-      const color = isSemantic ? COLORS.cyan : COLORS.teal;
+      const color = journalistMode ? COLORS.violet : cacheMode === 'cache' ? COLORS.teal : COLORS.amber;
 
       // Draw faint corridor rails (only during active search, fade with complete)
       if ((isActive || isComplete) && fadeOutProgressRef.current < 1) {
@@ -456,7 +458,7 @@ export function SearchCorridor() {
         // Apply fade multiplier to spark alpha via context globalAlpha
         ctx.save();
         ctx.globalAlpha = fadeMultiplier;
-        drawSpark(ctx, spark, centerX, COLORS.cyan);
+        drawSpark(ctx, spark, centerX, color);
         ctx.restore();
         return true;
       });
@@ -470,7 +472,7 @@ export function SearchCorridor() {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(frameRef.current);
     };
-  }, [isActive, isComplete, isSemantic, hasSearchIntent, searchBarBox, deckUnderlineBox, drawArc, drawDust, drawSpark, drawSignalPulse]);
+  }, [isActive, isComplete, hasSearchIntent, searchBarBox, deckUnderlineBox, drawArc, drawDust, drawSpark, drawSignalPulse, cacheMode, journalistMode]);
 
   // Don't render if no search intent
   if (!hasSearchIntent && phase === 'idle') return null;

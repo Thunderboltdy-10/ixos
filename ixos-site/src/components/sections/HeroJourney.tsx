@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { ScribbleStrike } from "@/components/effects/ScribbleStrike";
 import { cn } from "@/lib/utils";
 import { SectionDivider } from "@/components/ui/SectionDivider";
+import { IxosDemoWindow } from "@/components/hero/IxosDemoWindow";
 
 // Register ScrollTrigger
 if (typeof window !== "undefined") {
@@ -59,8 +60,6 @@ export function HeroJourney() {
     const deckFrontRef = useRef<HTMLDivElement>(null);
     const deckBackRef = useRef<HTMLDivElement>(null);
     const stepsContainerRef = useRef<HTMLDivElement>(null);
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const [videoReady, setVideoReady] = useState(false);
     const [activeStep, setActiveStep] = useState(0);
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -93,11 +92,6 @@ export function HeroJourney() {
                     pinSpacing: true,
                     anticipatePin: 1,
                     onUpdate: (self) => {
-                        // Video Playback
-                        if (self.progress > 0.02 && videoRef.current?.paused) {
-                            videoRef.current?.play();
-                        }
-
                         // Step Calculation
                         // Map progress 0.35 -> 0.95 to steps 0 -> 4
                         // Extended range ensures 01 is visible early and 05 stays visible
@@ -137,7 +131,6 @@ export function HeroJourney() {
         return () => ctx.revert();
     }, [prefersReducedMotion]);
 
-    const handleVideoCanPlay = () => setVideoReady(true);
     const handleDownload = () => window.open("/download", "_blank");
 
     return (
@@ -235,23 +228,16 @@ export function HeroJourney() {
                                 className="relative w-full max-w-2xl bg-bg-graphite-1 rounded-sm border border-white/10 shadow-2xl transition-all duration-500 ease-out"
                                 style={{ transformStyle: "preserve-3d", aspectRatio: "16/9" }}
                             >
-                                {/* FRONT: VIDEO */}
+                                {/* FRONT: INTERACTIVE MOCKUP */}
                                 <div ref={deckFrontRef} className="absolute inset-0 bg-bg-graphite-0 rounded-sm overflow-hidden" style={{ backfaceVisibility: "hidden" }}>
                                     <div className="h-6 border-b border-white/10 flex items-center px-4 gap-2 bg-white/5">
                                         <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
                                         <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
-                                        <span className="ml-auto text-[10px] font-mono text-white/30">DEMO_PLAYBACK_V1</span>
+                                        <span className="ml-auto text-[10px] font-mono text-white/30">IXOS_DEMO_LIVE</span>
                                     </div>
-                                    <video
-                                        ref={videoRef}
-                                        src="/assets/hero.mp4"
-                                        poster="/assets/hero-poster-fallback.jpg"
-                                        muted
-                                        playsInline
-                                        className={cn("w-full h-[calc(100%-1.5rem)] object-cover transition-opacity duration-500", videoReady ? "opacity-100" : "opacity-0")}
-                                        onCanPlayThrough={handleVideoCanPlay}
-                                    />
-                                    {!videoReady && <div className="absolute inset-0 bg-bg-graphite-1 animate-pulse" />}
+                                    <div className="w-full h-[calc(100%-1.5rem)]">
+                                        <IxosDemoWindow />
+                                    </div>
                                 </div>
 
                                 {/* BACK: TECHNICAL PIPELINE */}

@@ -51,12 +51,13 @@ export function Pricing() {
                             title="COMMUNITY"
                             price="$0"
                             period="/ forever"
-                            desc="For personal use on a single device."
+                            desc="Full semantic search. No index tax. No cloud."
                             features={[
-                                "Local semantic search",
-                                "Standard extensions (PDF, TXT, MD)",
-                                "Basic update support",
-                                "Community access"
+                                "Complete semantic search",
+                                "Zero index tax (JIT mode)",
+                                "100% local processing",
+                                "Standard file types (PDF, TXT, MD)",
+                                "Community support"
                             ]}
                         />
                     </FadeInView>
@@ -73,14 +74,14 @@ export function Pricing() {
                                 title="PROFESSIONAL"
                                 price={billing === "monthly" ? "$7.99" : "$6.35"}
                                 period="/ month"
-                                desc="For power users and developers."
+                                desc="Watch & Notify. Saved searches. Priority support."
                                 highlighted
                                 features={[
-                                    "Priority semantic indexing",
-                                    "Developer file types (TS, PY, RS)",
-                                    "OCR for images/screenshots",
-                                    "Multiple machine sync (P2P)",
-                                    "Early access to beta models"
+                                    "File watch & notifications",
+                                    "Developer file types (TS, PY, RS, GO)",
+                                    "Journalist Mode (max privacy)",
+                                    "Priority model updates",
+                                    "Direct support access"
                                 ]}
                             />
                         </div>
@@ -153,7 +154,7 @@ function PricingCard({
                     "w-full font-mono text-xs uppercase tracking-widest h-12",
                     highlighted
                         ? "bg-accent-magenta hover:bg-accent-magenta-glow text-bg-graphite-0 font-bold shadow-glow-magenta hover:scale-[1.02] transition-all"
-                        : "bg-white/5 hover:bg-white/10 border border-white/10"
+                        : "bg-accent-teal/10 hover:bg-accent-teal/20 border border-accent-teal/20 text-accent-teal font-medium hover:border-accent-teal/40"
                 )}
             >
                 {highlighted ? "INITIALIZE_LICENSE" : "DOWNLOAD_FREE"}

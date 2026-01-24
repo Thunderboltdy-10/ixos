@@ -51,6 +51,11 @@ export function MainSearchView() {
 
   // Mode handling
   const mode: SearchMode = journalistMode ? 'journalist' : cacheMode;
+  const modeGlow = mode === 'journalist'
+    ? 'rgba(124, 92, 255, 0.12)'
+    : mode === 'cache'
+      ? 'rgba(13, 148, 136, 0.12)'
+      : 'rgba(246, 185, 76, 0.12)';
   const handleModeChange = useCallback((newMode: SearchMode) => {
     if (newMode === 'journalist') {
       setJournalistMode(true);
@@ -64,6 +69,18 @@ export function MainSearchView() {
     <div className="relative w-full h-full bg-graphite-0 text-porcelain overflow-hidden flex flex-col">
       <div className="pointer-events-none absolute inset-0 opacity-70 bg-gradient-noise-teal" />
       <div className="pointer-events-none absolute inset-0 opacity-60 bg-gradient-noise-violet" />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: 'radial-gradient(ellipse 80% 55% at 50% -10%, rgba(255, 255, 255, 0.08) 0%, transparent 70%)',
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: `radial-gradient(ellipse 70% 50% at 50% 8%, ${modeGlow} 0%, transparent 65%)`,
+        }}
+      />
 
       <SearchCorridor />
 

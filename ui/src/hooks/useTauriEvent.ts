@@ -13,6 +13,9 @@ export function useSearchEvents() {
     let unlisten: (() => void) | undefined;
 
     async function setupListener() {
+      if (typeof window === 'undefined' || !('__TAURI__' in window)) {
+        return;
+      }
       unlisten = await listen<SearchEvent>('search-event', (event) => {
         handleSearchEvent(event.payload);
       });
@@ -36,6 +39,9 @@ export function useTauriEvent<T>(eventName: string, handler: (payload: T) => voi
     let unlisten: (() => void) | undefined;
 
     async function setupListener() {
+      if (typeof window === 'undefined' || !('__TAURI__' in window)) {
+        return;
+      }
       unlisten = await listen<T>(eventName, (event) => {
         handler(event.payload);
       });

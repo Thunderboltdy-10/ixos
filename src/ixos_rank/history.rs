@@ -73,6 +73,12 @@ impl SearchHistory {
         self.entries.clear();
     }
 
+    /// Remove a specific query from history
+    pub fn remove(&mut self, query: &str) {
+        let query_lower = query.to_lowercase();
+        self.entries.retain(|e| e.query.to_lowercase() != query_lower);
+    }
+
     /// Get all entries (for export)
     pub fn entries(&self) -> impl Iterator<Item = &HistoryEntry> {
         self.entries.iter()

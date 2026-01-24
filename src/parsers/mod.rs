@@ -111,7 +111,7 @@ fn extract_xlsx(path: &Path) -> Option<String> {
     let mut workbook = open_workbook_auto(path).ok()?;
     let sheet_names = workbook.sheet_names().to_owned();
     let mut out = String::new();
-    let mut last_space = false;
+    let mut last_space;
 
     for name in sheet_names {
         if let Ok(range) = workbook.worksheet_range(&name) {

@@ -27,6 +27,9 @@
             ],
             "@/shared/*": [
                 "../shared/*"
+            ],
+            "@shared-ui/*": [
+                "../packages/ui/src/*"
             ]
         }
     },
@@ -35,7 +38,9 @@
         "**/*.ts",
         "**/*.tsx",
         ".next/types/**/*.ts",
-        "../shared/**/*.ts"
+        "../shared/**/*.ts",
+        "../packages/ui/src/**/*.ts",
+        "../packages/ui/src/**/*.tsx"
     ],
     "exclude": [
         "node_modules"

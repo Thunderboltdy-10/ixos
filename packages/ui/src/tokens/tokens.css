@@ -1,0 +1,107 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   IXOS DESIGN SYSTEM TOKENS
+   Source of truth for all design values
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ─────────────────────────────────────────────────────────────────────────
+     BACKGROUNDS - Graphite palette (lightened for desktop)
+     ───────────────────────────────────────────────────────────────────────── */
+  --bg-graphite-0: #0A0C10;
+  --bg-graphite-1: #10131A;
+  --bg-graphite-2: #181C24;
+  --bg-graphite-3: #232830;
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     FOREGROUND - Porcelain text hierarchy
+     ───────────────────────────────────────────────────────────────────────── */
+  --fg-porcelain: #F3F5F7;
+  --fg-muted: rgba(243, 245, 247, 0.72);
+  --fg-dim: rgba(243, 245, 247, 0.5);
+  --fg-ghost: rgba(243, 245, 247, 0.2);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     ACCENTS - Section-specific vibrant colors
+     ───────────────────────────────────────────────────────────────────────── */
+  /* Teal - Primary action color (landing page) */
+  --accent-teal: #14B8A6;
+  --accent-teal-dim: #0D9488;
+  --accent-teal-glow: #2DD4BF;
+
+  /* Amber - Primary accent (desktop app) - warm, trustworthy */
+  --accent-amber: #F6B94C;
+  --accent-amber-dim: #D97706;
+  --accent-amber-glow: #FCD34D;
+
+  /* Violet - Secondary info, benchmarks */
+  --accent-violet: #7C5CFF;
+  --accent-violet-glow: #9F8CFF;
+
+  /* Magenta - Pricing, special modes */
+  --accent-magenta: #F472B6;
+  --accent-magenta-glow: #FBCFE8;
+
+  /* Success/Warning/Error states */
+  --accent-success: #10B981;
+  --accent-warning: #F59E0B;
+  --accent-error: #EF4444;
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     BORDERS
+     ───────────────────────────────────────────────────────────────────────── */
+  --border-hairline: rgba(243, 245, 247, 0.08);
+  --border-subtle: rgba(243, 245, 247, 0.12);
+  --border-medium: rgba(243, 245, 247, 0.20);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     TYPOGRAPHY
+     ───────────────────────────────────────────────────────────────────────── */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     SHADOWS
+     ───────────────────────────────────────────────────────────────────────── */
+  --shadow-lift: 0 0 0 1px var(--border-hairline),
+                 0 20px 60px rgba(0, 0, 0, 0.6),
+                 0 4px 16px rgba(0, 0, 0, 0.5);
+
+  --shadow-glow-teal: 0 0 20px rgba(20, 184, 166, 0.15);
+  --shadow-glow-amber: 0 0 20px rgba(246, 185, 76, 0.15);
+  --shadow-glow-violet: 0 0 20px rgba(124, 92, 255, 0.18);
+  --shadow-glow-magenta: 0 0 20px rgba(244, 114, 182, 0.15);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     RADII - Controlled rounding
+     ───────────────────────────────────────────────────────────────────────── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     TRANSITIONS
+     ───────────────────────────────────────────────────────────────────────── */
+  --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 350ms;
+}
+
+/* Desktop-specific overrides (when using amber as primary) */
+[data-theme="desktop"] {
+  --accent-primary: var(--accent-amber);
+  --accent-primary-dim: var(--accent-amber-dim);
+  --accent-primary-glow: var(--accent-amber-glow);
+  --shadow-glow-primary: var(--shadow-glow-amber);
+}
+
+/* Landing page uses teal as primary */
+[data-theme="landing"] {
+  --accent-primary: var(--accent-teal);
+  --accent-primary-dim: var(--accent-teal-dim);
+  --accent-primary-glow: var(--accent-teal-glow);
+  --shadow-glow-primary: var(--shadow-glow-teal);
+}

@@ -5,6 +5,7 @@ module.exports = {
     content: [
         "./index.html",
         "./src/**/*.{ts,tsx,js,jsx}",
+        "../packages/ui/src/**/*.{ts,tsx,js,jsx}",
     ],
     safelist: [
         'border-stroke-hairline',
@@ -41,12 +42,12 @@ module.exports = {
                 background: "#050507",
                 foreground: "hsl(var(--foreground))",
 
-                // Graphite Palette
+                // Graphite Palette - Lighter for reduced eye strain
                 graphite: {
-                    0: '#050507',
-                    1: '#0A0C10',
-                    2: '#12151A',
-                    3: '#1E2024',
+                    0: 'var(--bg-graphite-0)',
+                    1: 'var(--bg-graphite-1)',
+                    2: 'var(--bg-graphite-2)',
+                    3: 'var(--bg-graphite-3)',
                 },
 
                 // Porcelain
@@ -74,14 +75,22 @@ module.exports = {
                     },
                     amber: {
                         DEFAULT: '#F6B94C',
+                        dim: '#D97706',
+                        glow: '#FCD34D',
                     },
                     violet: {
-                        DEFAULT: '#A78BFA',
+                        DEFAULT: '#7C5CFF',
+                        glow: '#9F8CFF',
                     },
                     magenta: {
                         DEFAULT: '#F472B6',
                     }
                 },
+
+                // Semantic colors
+                success: '#10B981',
+                warning: '#F59E0B',
+                error: '#EF4444',
 
                 // Legacy alias
                 stroke: {
@@ -101,6 +110,8 @@ module.exports = {
             boxShadow: {
                 'lift': '0 0 0 1px rgba(243, 245, 247, 0.12), 0 20px 60px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.5)',
                 'glow-teal': '0 0 20px rgba(20, 184, 166, 0.15)',
+                'glow-amber': '0 0 20px rgba(246, 185, 76, 0.15)',
+                'glow-violet': '0 0 20px rgba(124, 92, 255, 0.18)',
             },
             backgroundImage: {
                 'gradient-teal': 'linear-gradient(135deg, #14B8A6 0%, #0D9488 100%)',

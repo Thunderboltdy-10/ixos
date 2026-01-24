@@ -68,7 +68,7 @@ export function HowItWorks() {
                         <h2 className="text-3xl font-semibold mb-8 text-fg-porcelain">How it works</h2>
 
                         <div className="relative space-y-12 pl-8 border-l-2 border-stroke-hairline">
-                            {['Query Typed', 'JIT Embeddings', 'Local Search', 'Instant Delete', 'Results Stream'].map((label, i) => (
+                            {['Type Naturally', 'On-Demand AI', 'Local Search', 'Auto Cleanup', 'Stream Results'].map((label, i) => (
                                 <div key={i} className="pipeline-node relative flex items-center gap-4 p-4 rounded-lg bg-bg-elevated border border-white/5 transition-all duration-300 opacity-50">
                                     <div className="absolute -left-[41px] w-5 h-5 rounded-full bg-bg-primary border-4 border-bg-elevated ring-2 ring-white/10 z-10" />
                                     <span className="font-mono text-sm text-accent-teal">0{i + 1}</span>
@@ -85,25 +85,25 @@ export function HowItWorks() {
 
                     <div className="how-step group">
                         <div className="text-accent-teal font-mono mb-4 text-xl">01</div>
-                        <h3 className="text-4xl font-semibold mb-4">Natural Language Search</h3>
+                        <h3 className="text-4xl font-semibold mb-4">Type Naturally</h3>
                         <p className="text-xl text-text-secondary leading-relaxed max-w-lg">
-                            Type exactly how you think. "Files from last week about the merger" or "PDFs with budget tables". No complex syntax required.
+                            Type exactly how you think. "That email about the Denver trip" or "quarterly revenue report". No special syntax needed.
                         </p>
                     </div>
 
                     <div className="how-step group">
                         <div className="text-accent-teal font-mono mb-4 text-xl">02</div>
-                        <h3 className="text-4xl font-semibold mb-4">Just-in-Time Intelligence</h3>
+                        <h3 className="text-4xl font-semibold mb-4">On-Demand AI</h3>
                         <p className="text-xl text-text-secondary leading-relaxed max-w-lg">
-                            Ixos computes lightweight embeddings on the fly using our optimized micro-models. It runs 100% on your CPU/NPU.
+                            Processing happens just-in-time when you search. Nothing stored unless you explicitly enable caching. Zero index tax on your disk.
                         </p>
                     </div>
 
                     <div className="how-step group">
                         <div className="text-accent-teal font-mono mb-4 text-xl">03</div>
-                        <h3 className="text-4xl font-semibold mb-4">Ranked Locally</h3>
+                        <h3 className="text-4xl font-semibold mb-4">100% Local</h3>
                         <p className="text-xl text-text-secondary leading-relaxed max-w-lg">
-                            Results are ranked by semantic relevance to your intent, not just keyword matching. The most relevant files bubble to the top instantly.
+                            Search happens entirely on your machine. The AI model runs on your CPU/NPU. No cloud, no servers, no data leaves your device.
                         </p>
                     </div>
 
@@ -111,24 +111,24 @@ export function HowItWorks() {
                         <div className="text-accent-teal font-mono mb-4 text-xl">04</div>
                         <h3 className="text-4xl font-semibold mb-4">
                             <span className="text-text-subtle mr-2">No</span>
-                            <ScribbleStrike>INDEXING</ScribbleStrike>
-                            <span className="text-text-subtle ml-2">Required</span>
+                            <ScribbleStrike>INDEX TAX</ScribbleStrike>
+                            <span className="text-text-subtle ml-2">Ever</span>
                         </h3>
                         <p className="text-xl text-text-secondary leading-relaxed max-w-lg">
-                            Once the search is done, the embeddings are discarded. We never build a persistent index of your drive. Your storage stays yours.
+                            Temporary data is automatically cleaned up. Unlike traditional search, we never build a persistent index eating your disk space.
                         </p>
                         <div className="mt-6 p-4 bg-bg-elevated/50 rounded-lg border border-white/5 text-sm font-mono text-text-muted">
                             $ &gt; search_complete<br />
                             $ &gt; memory_cleared<br />
-                            $ &gt; 0_bytes_stored
+                            $ &gt; persistent_index: 0_bytes
                         </div>
                     </div>
 
                     <div className="how-step group">
                         <div className="text-accent-teal font-mono mb-4 text-xl">05</div>
-                        <h3 className="text-4xl font-semibold mb-4">Instant Access</h3>
+                        <h3 className="text-4xl font-semibold mb-4">Stream Results</h3>
                         <p className="text-xl text-text-secondary leading-relaxed max-w-lg">
-                            Click to open, drag to drop, or hit Enter. It integrates seamlessly with Explorer and Finder.
+                            See results as they're found - no waiting for a full scan. First result in under 200ms. Click to open, Enter to reveal.
                         </p>
                         <div className="mt-8">
                             <div className="h-48 w-full bg-bg-secondary rounded-lg border border-white/5 relative overflow-hidden group-hover:border-accent-teal/20 transition-colors">

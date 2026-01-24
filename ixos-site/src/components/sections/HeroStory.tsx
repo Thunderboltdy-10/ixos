@@ -155,14 +155,11 @@ export function HeroStory() {
                         </div>
 
                         {/* Video Content */}
-                        <video
-                            ref={videoRef}
-                            src="/assets/hero.mp4"
-                            loop
-                            muted
-                            playsInline
-                            preload="auto"
-                            className={`w-full h-full object-cover transition-opacity duration-700 pointer-events-none ${isVideoLoaded ? 'opacity-90 group-hover:opacity-100' : 'opacity-0'}`}
+                        {/* App Mockup Image */}
+                        <img
+                            src="/assets/app-mockup.png"
+                            alt="Ixos Desktop App Interface"
+                            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500"
                         />
 
                         {/* Overlay Gradient */}

@@ -1,12 +1,14 @@
 import type { Config } from "tailwindcss";
 import electricGlassPreset from "../shared/design-tokens/tailwind-preset";
+import ixosPreset from "../packages/ui/src/tailwind/preset";
 
 const config: Config = {
-    presets: [electricGlassPreset],
+    presets: [electricGlassPreset, ixosPreset],
     content: [
         "./app/**/*.{js,ts,jsx,tsx,mdx}",
         "./components/**/*.{js,ts,jsx,tsx,mdx}",
         "./lib/**/*.{js,ts,jsx,tsx,mdx}",
+        "../packages/ui/src/**/*.{js,ts,jsx,tsx}",
     ],
     theme: {
         extend: {

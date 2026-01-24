@@ -76,6 +76,7 @@ pub fn run() {
             // P2.1: Search History (Ramp 1)
             commands::history::get_search_suggestions,
             commands::history::add_to_history,
+            commands::history::delete_history_item,
             commands::history::clear_history,
             commands::history::get_all_history,
             // P2.3: File Prefetching

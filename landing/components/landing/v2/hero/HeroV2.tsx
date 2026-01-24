@@ -6,7 +6,7 @@ import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useGSAP } from "@gsap/react";
 import { HeroBadge } from "./HeroBadge";
 import { HeroButtons } from "./HeroButtons";
-import { HeroVideo } from "./HeroVideo";
+import { HeroSearchMockup } from "./HeroSearchMockup";
 import { LightingWash } from "../shared/LightingWash";
 
 // Register GSAP plugin
@@ -56,12 +56,14 @@ export function HeroV2() {
   }, { scope: containerRef });
 
   const handleWatchDemo = useCallback(() => {
-    const video = videoRef.current?.querySelector("video");
-    if (video) {
-      video.scrollIntoView({ behavior: "smooth", block: "center" });
+    const deck = videoRef.current;
+    if (!deck) return;
+    deck.scrollIntoView({ behavior: "smooth", block: "center" });
+    const input = deck.querySelector("input");
+    if (input) {
       setTimeout(() => {
-        video.play();
-      }, 500);
+        (input as HTMLInputElement).focus();
+      }, 400);
     }
   }, []);
 
@@ -158,7 +160,7 @@ export function HeroV2() {
             }}
           />
 
-          <HeroVideo autoPlayOnScroll />
+          <HeroSearchMockup />
 
           {/* Floating Label - Left */}
           <motion.div

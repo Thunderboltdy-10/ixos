@@ -58,20 +58,8 @@ pub async fn clear_entitlement_token(state: State<'_, AppState>) -> Result<(), S
     Ok(())
 }
 
-#[tauri::command]
-pub async fn check_search_allowed(state: State<'_, AppState>) -> Result<bool, String> {
-    if let Some(token) = state.get_entitlement_token() {
-        return Ok(verify_entitlement_token_internal(&token).is_ok());
-    }
-    Ok(false)
-}
 
-#[tauri::command]
-pub async fn get_device_id(app: AppHandle) -> Result<String, String> {
-    let config_dir = app
-        .path()
-        .app_config_dir()
-        .map_err(|e| format!("Failed to get config directory: {}", e))?;
+fn get_device_id_from_path(config_dir: &std::path::Path) -> Result<String, String> {
     let file_path = config_dir.join("device_id.txt");
 
     if file_path.exists() {
@@ -87,6 +75,36 @@ pub async fn get_device_id(app: AppHandle) -> Result<String, String> {
         .map_err(|e| format!("Failed to write device id: {}", e))?;
 
     Ok(device_id)
+}
+
+#[tauri::command]
+pub async fn check_search_allowed(app: AppHandle, state: State<'_, AppState>) -> Result<bool, String> {
+    if let Some(token) = state.get_entitlement_token() {
+        if let Ok(claims) = verify_entitlement_token_internal(&token) {
+            // Verify DID matches local device
+            let config_dir = app
+                .path()
+                .app_config_dir()
+                .map_err(|e| format!("Failed to get config directory: {}", e))?;
+            
+            if let Ok(device_id) = get_device_id_from_path(&config_dir) {
+                if claims.did == device_id {
+                    return Ok(true);
+                }
+            }
+        }
+    }
+    Ok(false)
+}
+
+#[tauri::command]
+pub async fn get_device_id(app: AppHandle) -> Result<String, String> {
+    let config_dir = app
+        .path()
+        .app_config_dir()
+        .map_err(|e| format!("Failed to get config directory: {}", e))?;
+    
+    get_device_id_from_path(&config_dir)
 }
 
 /// Open checkout URL in the system's default browser

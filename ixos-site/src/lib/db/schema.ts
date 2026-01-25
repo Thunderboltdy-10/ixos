@@ -6,6 +6,7 @@ import {
   boolean,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 // Users (synced from Clerk via webhook)
 export const users = pgTable("users", {
@@ -52,7 +53,11 @@ export const leases = pgTable("leases", {
   issuedAt: timestamp("issued_at").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   revokedAt: timestamp("revoked_at"),
-});
+}, (table) => [
+  uniqueIndex("one_active_lease_per_user_idx")
+    .on(table.userId)
+    .where(sql`status = 'active'`)
+]);
 
 // Device transfer requests for lease switching
 export const leaseTransfers = pgTable("lease_transfers", {

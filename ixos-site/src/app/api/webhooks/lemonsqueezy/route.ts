@@ -91,7 +91,7 @@ export async function POST(req: Request) {
   const eventId =
     headerPayload.get("x-event-id") ||
     (typeof payload.meta?.webhook_id === "string" &&
-    (payload.data?.id || eventTimestamp)
+      (payload.data?.id || eventTimestamp)
       ? `${payload.meta.webhook_id}:${payload.meta.event_name ?? "event"}:${payload.data?.id ?? "unknown"}:${eventTimestamp ?? "unknown"}`
       : null) ||
     crypto.randomUUID();
@@ -133,7 +133,7 @@ export async function POST(req: Request) {
         .update(webhookEvents)
         .set({ processingError: "Invalid signature" })
         .where(eq(webhookEvents.id, webhookEventId))
-        .catch(() => {});
+        .catch(() => { });
     }
     return new Response("Invalid signature", { status: 400 });
   }
@@ -319,7 +319,7 @@ export async function POST(req: Request) {
         try {
           await resend.emails.send({
             from: getResendFromAddress(),
-            to: userRecord.email,
+            to: userEmail || userRecord.email,
             subject: "Welcome to Ixos Pro!",
             react: PurchaseConfirmationEmail({
               planName: getAttrString("product_name") ?? "Ixos Pro",
@@ -357,7 +357,7 @@ export async function POST(req: Request) {
         .update(webhookEvents)
         .set({ processingError: message })
         .where(eq(webhookEvents.id, webhookEventId))
-        .catch(() => {});
+        .catch(() => { });
     }
 
     // Return 200 anyway to prevent endless retries

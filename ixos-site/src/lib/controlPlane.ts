@@ -116,12 +116,12 @@ export async function getOrCreateUserByClerkId(clerkUserId: string) {
 }
 
 export function normalizePlanFromProductName(name?: string | null): Plan {
-  if (!name) return "pro";
+  if (!name) return "free";
   const lower = name.toLowerCase();
-  if (lower.includes("team")) {
+  if (lower.includes("team") || lower.includes("pro")) {
     return "pro";
   }
-  return "pro";
+  return "free";
 }
 
 export function normalizeSubscriptionStatus(raw?: string | null): string {

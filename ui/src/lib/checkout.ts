@@ -12,9 +12,10 @@ export function buildCheckoutUrl(variantId: string, userId?: string, email?: str
   }
 
   // Pre-fill email for convenience
-  if (email) {
-    params.set('checkout[email]', email);
-  }
+  // Pre-fill email disabled to prevent routing issues
+  // if (email) {
+  //   params.set('checkout[email]', email);
+  // }
 
   const queryString = params.toString();
   return queryString ? `${base}?${queryString}` : base;

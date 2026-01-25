@@ -57,6 +57,10 @@ interface AuthState {
   requestTransfer: (authToken: string, deviceId: string, transferToken?: string) => Promise<void>;
   fetchDevices: (authToken: string) => Promise<DeviceInfo[]>;
   fetchBillingPortal: (authToken: string) => Promise<{ portalUrl: string | null }>;
+
+  // Intent-based sync
+  upgradeIntent: boolean;
+  setUpgradeIntent: (intent: boolean) => void;
 }
 
 const API_BASE = getApiBase();
@@ -92,6 +96,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   activeDeviceId: null,
   isLoading: false,
   error: null,
+
+  upgradeIntent: false,
+  setUpgradeIntent: (intent) => set({ upgradeIntent: intent }),
 
   setUser: (user) => set({ user }),
   setDevice: (deviceId, deviceLabel) => set({ deviceId, deviceLabel }),

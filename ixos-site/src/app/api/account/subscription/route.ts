@@ -7,6 +7,8 @@ import {
 } from "@/lib/controlPlane";
 import { getLemonCustomerPortalUrl } from "@/lib/lemonsqueezy";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   try {
     const clerkUserId = await getClerkUserIdFromRequest(req);

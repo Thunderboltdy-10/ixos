@@ -7,7 +7,7 @@ import { buildCheckoutUrl, getVariantId } from '@/lib/checkout';
 
 const variantId = getVariantId();
 
-export function AccountSettings() {
+export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
   const { user, entitlement, deviceLabel, devices, fetchDevices, fetchBillingPortal } = useAuthStore();
   const { getToken } = useAuth();
 
@@ -31,19 +31,9 @@ export function AccountSettings() {
   const handleManage = async () => {
     if (!user?.id) return;
 
-    // Free users: open Lemon Squeezy checkout in browser
+    // Free users: open internal pricing panel
     if (entitlement?.plan !== 'pro') {
-      if (!variantId) {
-        console.warn('Missing VITE_LEMONSQUEEZY_PRO_VARIANT_ID');
-        return;
-      }
-      const checkoutUrl = buildCheckoutUrl(variantId, user.id, user.email);
-      try {
-        await openExternalUrl(checkoutUrl);
-      } catch (error) {
-        console.warn('Failed to open checkout:', error);
-        window.open(checkoutUrl, '_blank');
-      }
+      onUpgrade?.();
       return;
     }
 

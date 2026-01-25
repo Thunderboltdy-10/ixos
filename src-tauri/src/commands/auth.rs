@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::sync::OnceLock;
 use tauri::{AppHandle, Manager, State};
-use tauri_plugin_shell::ShellExt;
+use tauri_plugin_opener::OpenerExt;
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -184,8 +184,8 @@ pub async fn open_checkout(
     }
 
     // Open in system browser instead of creating a new window
-    app.shell()
-        .open(url.as_str(), None)
+    app.opener()
+        .open_url(url.as_str(), None::<&str>)
         .map_err(|e| format!("Failed to open browser: {}", e))?;
 
     Ok(())
@@ -203,8 +203,8 @@ pub async fn open_external_url(
     let parsed = tauri::Url::parse(&url).map_err(|e| format!("Invalid URL: {}", e))?;
 
     // Open in system browser
-    app.shell()
-        .open(parsed.as_str(), None)
+    app.opener()
+        .open_url(parsed.as_str(), None::<&str>)
         .map_err(|e| format!("Failed to open browser: {}", e))?;
 
     Ok(())

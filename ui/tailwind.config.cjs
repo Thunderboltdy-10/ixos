@@ -116,6 +116,15 @@ module.exports = {
             backgroundImage: {
                 'gradient-teal': 'linear-gradient(135deg, #14B8A6 0%, #0D9488 100%)',
             },
+            keyframes: {
+                shimmer: {
+                    '0%': { backgroundPosition: '200% center' },
+                    '100%': { backgroundPosition: '-200% center' },
+                },
+            },
+            animation: {
+                shimmer: 'shimmer 2s linear infinite',
+            },
         },
     },
     plugins: [],

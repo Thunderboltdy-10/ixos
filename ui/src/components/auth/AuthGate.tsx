@@ -82,20 +82,21 @@ const signInAppearance: Appearance = {
     card: 'bg-transparent shadow-none border-none p-0',
     headerTitle: 'hidden',
     headerSubtitle: 'hidden',
-    socialButtonsBlockButton: 'bg-[#1A1A1E] border border-[#2A2A2E] hover:bg-[#222225] text-[#E5E5E7] transition-colors',
-    socialButtonsBlockButtonText: 'text-[#E5E5E7] font-medium',
+    socialButtonsBlockButton: 'bg-[#1A1A1E] border border-[#2A2A2E] hover:bg-[#222225] text-[#E5E5E7] transition-colors h-10 flex items-center justify-center',
+    socialButtonsBlockButtonText: 'text-[#E5E5E7] font-medium ml-2',
+    socialButtonsBlockButtonArrow: 'hidden',
     dividerLine: 'bg-[#2A2A2E]',
-    dividerText: 'text-[#6B6B70] text-xs',
-    formFieldLabel: 'text-[#A1A1A6] text-xs font-medium mb-1.5',
-    formFieldInput: 'bg-[#1A1A1E] border border-[#2A2A2E] text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-[#14B8A6] focus:ring-1 focus:ring-[#14B8A6]/30 rounded-lg h-11 px-4',
-    formButtonPrimary: 'bg-[#14B8A6] hover:bg-[#0D9488] text-[#0A0A0B] font-semibold h-11 rounded-lg transition-colors',
-    footerActionLink: 'text-[#14B8A6] hover:text-[#0D9488] font-medium',
+    dividerText: 'text-[#6B6B70] text-xs uppercase tracking-wider',
+    formFieldLabel: 'text-[#A1A1A6] text-xs font-medium mb-1.5 uppercase tracking-wide',
+    formFieldInput: 'bg-[#1A1A1E] border border-[#2A2A2E] text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-[#14B8A6] focus:ring-1 focus:ring-[#14B8A6]/30 rounded-lg h-10 px-4 transition-all',
+    formButtonPrimary: 'bg-accent-teal hover:bg-accent-teal/90 text-[#0A0A0B] font-semibold h-10 rounded-lg transition-all uppercase tracking-widest text-xs shadow-glow-teal-sm',
+    footerActionLink: 'text-[#14B8A6] hover:text-[#0D9488] font-medium transition-colors',
     identityPreviewText: 'text-[#E5E5E7]',
-    identityPreviewEditButton: 'text-[#14B8A6]',
-    formFieldAction: 'text-[#14B8A6] text-xs',
+    identityPreviewEditButton: 'text-[#14B8A6] hover:text-[#0D9488] transition-colors',
+    formFieldAction: 'text-[#14B8A6] hover:text-[#0D9488] text-xs transition-colors',
     alertText: 'text-[#A1A1A6]',
     footer: 'hidden',
-    formFieldInputShowPasswordButton: 'text-[#6B6B70] hover:text-[#A1A1A6]',
+    formFieldInputShowPasswordButton: 'text-[#6B6B70] hover:text-[#A1A1A6] transition-colors',
   },
 };
 
@@ -107,11 +108,11 @@ const signUpAppearance: Appearance = {
   },
   elements: {
     ...signInAppearance.elements,
-    formFieldInput: 'bg-[#1A1A1E] border border-[#2A2A2E] text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-[#F472B6] focus:ring-1 focus:ring-[#F472B6]/30 rounded-lg h-11 px-4',
-    formButtonPrimary: 'bg-[#F472B6] hover:bg-[#EC4899] text-[#0A0A0B] font-semibold h-11 rounded-lg transition-colors',
-    footerActionLink: 'text-[#F472B6] hover:text-[#EC4899] font-medium',
-    identityPreviewEditButton: 'text-[#F472B6]',
-    formFieldAction: 'text-[#F472B6] text-xs',
+    formFieldInput: 'bg-[#1A1A1E] border border-[#2A2A2E] text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-accent-magenta focus:ring-1 focus:ring-accent-magenta/30 rounded-lg h-10 px-4 transition-all',
+    formButtonPrimary: 'bg-accent-magenta hover:bg-accent-magenta/90 text-[#0A0A0B] font-semibold h-10 rounded-lg transition-all uppercase tracking-widest text-xs shadow-glow-magenta-sm',
+    footerActionLink: 'text-accent-magenta hover:text-accent-magenta/80 font-medium transition-colors',
+    identityPreviewEditButton: 'text-accent-magenta hover:text-accent-magenta/80 transition-colors',
+    formFieldAction: 'text-accent-magenta hover:text-accent-magenta/80 text-xs transition-colors',
   },
 };
 
@@ -189,21 +190,22 @@ function AuthScreen() {
 function LoadingScreen({ message }: { message: string }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-graphite-0">
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-6">
         {/* Logo with pulse */}
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-amber to-accent-amber/60 p-[2px] shadow-glow-amber animate-pulse">
           <div className="w-full h-full rounded-[14px] bg-graphite-1 flex items-center justify-center">
             <img src={ixosIcon} alt="Ixos" className="w-9 h-9" />
           </div>
         </div>
-        {/* Animated spinner */}
-        <div className="relative w-8 h-8">
-          <div className="absolute inset-0 rounded-full border-2 border-stroke-hairline" />
-          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-accent-amber animate-spin" />
-        </div>
-        {/* Pulsing amber text */}
-        <div className="text-xs uppercase tracking-[0.2em] text-accent-amber animate-pulse">
-          {message}
+
+        {/* Shimmer Text Animation */}
+        <div className="relative overflow-hidden">
+          <div
+            className="text-xs uppercase tracking-[0.2em] font-bold bg-clip-text text-transparent animate-shimmer bg-gradient-to-r from-porcelain via-accent-amber to-porcelain bg-[length:200%_100%]"
+            style={{ WebkitBackgroundClip: 'text' }}
+          >
+            {message}
+          </div>
         </div>
       </div>
     </div>
@@ -281,6 +283,25 @@ function AuthGateInner({ children }: AuthGateProps) {
 
   const [bootstrapped, setBootstrapped] = useState(false);
   const [bootError, setBootError] = useState<string | null>(null);
+  const [showModelWarning, setShowModelWarning] = useState(false);
+
+  useEffect(() => {
+    async function check() {
+      if (!bootstrapped) return;
+      try {
+        const title = await invoke<string | undefined>('get_current_window_label').catch(() => 'main');
+        if (title !== 'overlay') { // Only check in main window, rough check
+          const status = await invoke<ModelStatus>('get_model_status');
+          if (!status.anyAvailable) {
+            setShowModelWarning(true);
+          }
+        }
+      } catch (err) {
+        // command might not exist or fail
+      }
+    }
+    check();
+  }, [bootstrapped]);
 
   const userEmail = useMemo(() => {
     if (!user) return null;
@@ -454,24 +475,7 @@ function AuthGateInner({ children }: AuthGateProps) {
   }
 
   // Check for models after successful bootstrap
-  const [showModelWarning, setShowModelWarning] = useState(false);
-  useEffect(() => {
-    async function check() {
-      if (!bootstrapped) return;
-      try {
-        const title = await invoke<string | undefined>('get_current_window_label').catch(() => 'main');
-        if (title !== 'overlay') { // Only check in main window, rough check
-          const status = await invoke<ModelStatus>('get_model_status');
-          if (!status.anyAvailable) {
-            setShowModelWarning(true);
-          }
-        }
-      } catch (err) {
-        // command might not exist or fail
-      }
-    }
-    check();
-  }, [bootstrapped]);
+
 
   return (
     <>

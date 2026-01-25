@@ -178,36 +178,55 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Settings Panel Overlay */}
         {showSettings && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-black/40 backdrop-blur-[2px]">
-            <div className="w-full max-w-5xl h-[85vh] animate-in fade-in zoom-in-95 duration-200">
-              <div className="relative w-full h-full">
-                <button
-                  type="button"
-                  onClick={() => setShowSettings(false)}
-                  className="absolute -top-3 -right-3 z-50 p-2 rounded-full bg-graphite-2 border border-stroke-hairline text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors shadow-lg"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-                <SettingsPanel initialTab={settingsTab} />
-              </div>
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-sm">
+            <div className="w-full max-w-5xl h-[85vh] animate-in fade-in zoom-in-95 duration-200 relative group">
+              <button
+                type="button"
+                onClick={() => setShowSettings(false)}
+                className="absolute top-4 right-4 z-50 p-2 rounded-full bg-graphite-2 border border-stroke-hairline text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors shadow-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <SettingsPanel
+                initialTab={settingsTab}
+                onUpgrade={() => {
+                  setShowPricing(true);
+                  setShowSettings(false);
+                  setShowInfo(false);
+                }}
+              />
             </div>
           </div>
         )}
 
         {/* Info Panel Overlay */}
         {showInfo && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-black/40 backdrop-blur-[2px]">
-            <div className="w-full max-w-4xl h-[700px] max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
-              <div className="relative w-full h-full">
-                <button
-                  type="button"
-                  onClick={() => setShowInfo(false)}
-                  className="absolute -top-3 -right-3 z-50 p-2 rounded-full bg-graphite-2 border border-stroke-hairline text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors shadow-lg"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-                <InfoPanel />
-              </div>
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-sm">
+            <div className="w-full max-w-4xl h-[700px] max-h-[90vh] animate-in fade-in zoom-in-95 duration-200 relative group">
+              <button
+                type="button"
+                onClick={() => setShowInfo(false)}
+                className="absolute top-4 right-4 z-50 p-2 rounded-full bg-graphite-2 border border-stroke-hairline text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors shadow-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <InfoPanel />
+            </div>
+          </div>
+        )}
+
+        {/* Pricing Panel Overlay */}
+        {showPricing && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-sm">
+            <div className="w-full max-w-5xl h-[85vh] animate-in fade-in zoom-in-95 duration-200 relative group">
+              <button
+                type="button"
+                onClick={() => setShowPricing(false)}
+                className="absolute top-4 right-4 z-50 p-2 rounded-full bg-graphite-2 border border-stroke-hairline text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors shadow-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <PricingPanel />
             </div>
           </div>
         )}

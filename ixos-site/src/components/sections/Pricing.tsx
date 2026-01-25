@@ -177,7 +177,7 @@ export function Pricing() {
                             <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />
                             <SignedIn>
                                 <PricingCard
-                                    title="PROFESSIONAL"
+                                    title="PRO"
                                     price={billing === "monthly" ? "$7.99" : "$6.35"}
                                     period="/ month"
                                     desc="Watch & Notify. Saved searches. Priority support."
@@ -211,7 +211,7 @@ export function Pricing() {
                             </SignedIn>
                             <SignedOut>
                                 <PricingCard
-                                    title="PROFESSIONAL"
+                                    title="PRO"
                                     price={billing === "monthly" ? "$7.99" : "$6.35"}
                                     period="/ month"
                                     desc="Watch & Notify. Saved searches. Priority support."

@@ -23,7 +23,7 @@ export function Pricing() {
     const [subscription, setSubscription] = useState<SubscriptionState | null>(null);
     const [isLoadingSubscription, setIsLoadingSubscription] = useState(false);
     const searchParams = useSearchParams();
-    const { isSignedIn, isLoaded, getToken, userId } = useAuth();
+    const { isSignedIn, isLoaded, userId } = useAuth();
     const { user } = useUser();
     const clerkUserId = searchParams.get("clerk_user_id") || undefined;
     const email = searchParams.get("email") || undefined;
@@ -58,10 +58,9 @@ export function Pricing() {
             }
             setIsLoadingSubscription(true);
             try {
-                const token = await getToken();
+
                 const res = await fetch("/api/account/subscription", {
                     method: "GET",
-                    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
                 });
                 if (!res.ok) {
                     setSubscription(null);
@@ -81,7 +80,7 @@ export function Pricing() {
         return () => {
             cancelled = true;
         };
-    }, [isLoaded, isSignedIn, getToken, hasDesktopContext]);
+    }, [isLoaded, isSignedIn, hasDesktopContext]);
 
     const checkoutUrl = useMemo(() => {
         const template = process.env.NEXT_PUBLIC_LEMON_CHECKOUT_URL_TEMPLATE;
@@ -97,9 +96,7 @@ export function Pricing() {
         if (effectiveClerkUserId) {
             params.append("checkout[custom][clerk_user_id]", effectiveClerkUserId);
         }
-        if (effectiveEmail) {
-            params.append("checkout[buyer][email]", effectiveEmail);
-        }
+
         if (successUrl) {
             params.append("checkout[success_url]", successUrl);
         }

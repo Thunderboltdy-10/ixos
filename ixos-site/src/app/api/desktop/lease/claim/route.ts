@@ -31,56 +31,70 @@ export async function POST(req: Request) {
   const userRecord = await getOrCreateUserByClerkId(clerkUserId);
   const plan = await getActivePlanForUser(userRecord.id);
 
-  const device = await db.query.devices.findFirst({
-    where: and(eq(devices.userId, userRecord.id), eq(devices.deviceId, deviceId)),
-  });
-
-  if (!device) {
-    return new Response("Device not registered", { status: 404 });
-  }
-
   const now = new Date();
-  const activeLease = await db.query.leases.findFirst({
-    where: and(
-      eq(leases.userId, userRecord.id),
-      eq(leases.status, "active"),
-      gt(leases.expiresAt, now)
-    ),
-  });
 
-  if (plan === "pro" && activeLease && activeLease.deviceId !== device.id) {
-    return Response.json(
-      {
+  // Use a transaction to ensure atomicity and prevent race conditions for lease claiming
+  const leaseResult = await db.transaction(async (tx) => {
+    const device = await tx.query.devices.findFirst({
+      where: and(eq(devices.userId, userRecord.id), eq(devices.deviceId, deviceId)),
+    });
+
+    if (!device) {
+      return { error: "Device not registered", status: 404 };
+    }
+
+    const activeLease = await tx.query.leases.findFirst({
+      where: and(
+        eq(leases.userId, userRecord.id),
+        eq(leases.status, "active"),
+        gt(leases.expiresAt, now)
+      ),
+    });
+
+    if (plan === "pro" && activeLease && activeLease.deviceId !== device.id) {
+      return {
         conflict: true,
         activeDeviceId: activeLease.deviceId,
         transferToken: crypto.randomUUID(),
-      },
-      { status: 409 }
-    );
+        status: 409
+      };
+    }
+
+    let leaseExpiresAt: Date | null = null;
+    if (plan === "pro") {
+      if (activeLease && activeLease.deviceId === device.id) {
+        // Refresh lease on the same device
+        leaseExpiresAt = new Date(Date.now() + LEASE_DURATION_MS);
+        await tx
+          .update(leases)
+          .set({
+            expiresAt: leaseExpiresAt,
+          })
+          .where(eq(leases.id, activeLease.id));
+      } else {
+        leaseExpiresAt = new Date(Date.now() + LEASE_DURATION_MS);
+        await tx.insert(leases).values({
+          userId: userRecord.id,
+          deviceId: device.id,
+          status: "active",
+          issuedAt: now,
+          expiresAt: leaseExpiresAt,
+        });
+      }
+    }
+
+    return { success: true, leaseExpiresAt };
+  });
+
+  if ('error' in leaseResult) {
+    return new Response(leaseResult.error as string, { status: leaseResult.status as number });
   }
 
-  let leaseExpiresAt: Date | null = null;
-  if (plan === "pro") {
-    if (activeLease && activeLease.deviceId === device.id) {
-      // Refresh lease on the same device
-      leaseExpiresAt = new Date(Date.now() + LEASE_DURATION_MS);
-      await db
-        .update(leases)
-        .set({
-          expiresAt: leaseExpiresAt,
-        })
-        .where(eq(leases.id, activeLease.id));
-    } else {
-      leaseExpiresAt = new Date(Date.now() + LEASE_DURATION_MS);
-      await db.insert(leases).values({
-        userId: userRecord.id,
-        deviceId: device.id,
-        status: "active",
-        issuedAt: now,
-        expiresAt: leaseExpiresAt,
-      });
-    }
+  if ('conflict' in leaseResult) {
+    return Response.json(leaseResult, { status: 409 });
   }
+
+  const leaseExpiresAt = leaseResult.leaseExpiresAt;
 
   const token = await issueEntitlementToken({
     clerkUserId,

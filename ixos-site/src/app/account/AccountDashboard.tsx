@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
@@ -50,6 +50,37 @@ export function AccountDashboard({
       console.error("Sign out failed:", error);
       setIsSigningOut(false);
     }
+  };
+
+  // Auto-refresh on return (Intent-based)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const pending = sessionStorage.getItem('ixos_upgrade_pending');
+        if (pending === 'true') {
+          console.log('User returned from upgrade flow - refreshing...');
+          router.refresh();
+          // Optional: clear it only if we detect success, or just leave it for a few minutes?
+          // For now, let's leave it. The user might switch back and forth.
+          // But to avoid spam, maybe we clear it after success? 
+          if (isPro) {
+            sessionStorage.removeItem('ixos_upgrade_pending');
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
+    };
+  }, [router, isPro]);
+
+  const handleUpgradeClick = () => {
+    sessionStorage.setItem('ixos_upgrade_pending', 'true');
+    router.push("/pricing");
   };
 
   const formatDate = (dateString: string | null) => {
@@ -211,7 +242,7 @@ export function AccountDashboard({
                     variant="primary"
                     size="sm"
                     className="w-full bg-accent-magenta hover:bg-accent-magenta/90"
-                    onClick={() => router.push("/pricing")}
+                    onClick={handleUpgradeClick}
                   >
                     Upgrade to Pro
                   </Button>

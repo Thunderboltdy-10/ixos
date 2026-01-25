@@ -7,6 +7,7 @@ import { useSearchStore } from '@/stores/searchStore';
 import { listen } from '@tauri-apps/api/event';
 import { InfoPanel } from '@/components/onboarding/InfoPanel';
 import { ArcNoiseBackground } from '@/components/effects/ArcNoiseBackground';
+import { PricingPanel } from '@/components/account/PricingPanel';
 
 // Safe Tauri window import - falls back to no-op in browser
 const getTauriWindow = async () => {
@@ -58,6 +59,7 @@ interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
   const [settingsTab, setSettingsTab] = useState<SettingsTabId>('search');
   const searchStore = useSearchStore();
 
@@ -156,6 +158,12 @@ export function AppShell({ children }: AppShellProps) {
         onOpenSettings={(tab) => {
           if (tab) setSettingsTab(tab);
           setShowSettings(true);
+          setShowInfo(false);
+          setShowPricing(false);
+        }}
+        onOpenPricing={() => {
+          setShowPricing(true);
+          setShowSettings(false);
           setShowInfo(false);
         }}
         className="flex-shrink-0 relative z-20 backdrop-blur-sm bg-graphite-0/80"

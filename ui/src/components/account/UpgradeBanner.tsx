@@ -5,24 +5,11 @@ import { buildCheckoutUrl, getVariantId } from '@/lib/checkout';
 
 const variantId = getVariantId();
 
-export function UpgradeBanner() {
+export function UpgradeBanner({ onUpgrade }: { onUpgrade?: () => void }) {
   const { user } = useAuthStore();
 
   const handleUpgrade = async () => {
-    if (!variantId) {
-      console.warn('Missing VITE_LEMONSQUEEZY_PRO_VARIANT_ID');
-      return;
-    }
-
-    const checkoutUrl = buildCheckoutUrl(variantId, user?.id, user?.email);
-
-    try {
-      await openExternalUrl(checkoutUrl);
-    } catch (error) {
-      console.error('Failed to open checkout:', error);
-      // Fallback to window.open
-      window.open(checkoutUrl, '_blank');
-    }
+    onUpgrade?.();
   };
 
   return (

@@ -17,10 +17,11 @@ interface SidebarProps {
   onNewSearch?: () => void;
   onOpenGuide?: () => void;
   onOpenSettings?: (tab?: 'search' | 'account' | 'keyboard' | 'privacy' | 'compliance' | 'about') => void;
+  onOpenPricing?: () => void;
   className?: string;
 }
 
-export function Sidebar({ onNewSearch, onOpenGuide, onOpenSettings, className }: SidebarProps) {
+export function Sidebar({ onNewSearch, onOpenGuide, onOpenSettings, onOpenPricing, className }: SidebarProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'recent' | 'starred'>('recent');
 
@@ -31,7 +32,6 @@ export function Sidebar({ onNewSearch, onOpenGuide, onOpenSettings, className }:
   const { user, entitlement, fetchBillingPortal } = useAuthStore();
   const { signOut, getToken } = useAuth();
   const journalistMode = searchStore.journalistMode;
-  const variantId = getVariantId();
 
   // Get starred threads
   const starredThreads = starred.getStarredThreads();
@@ -77,23 +77,13 @@ export function Sidebar({ onNewSearch, onOpenGuide, onOpenSettings, className }:
   const handleManageBilling = async () => {
     if (!user?.id) return;
 
-    // Free users: open Lemon Squeezy checkout in browser
+    // Free users: open internal pricing panel
     if (entitlement?.plan !== 'pro') {
-      if (!variantId) {
-        console.warn('Missing VITE_LEMONSQUEEZY_PRO_VARIANT_ID');
-        return;
-      }
-      const checkoutUrl = buildCheckoutUrl(variantId, user.id, user.email);
-      try {
-        await openExternalUrl(checkoutUrl);
-      } catch (error) {
-        console.warn('Failed to open checkout:', error);
-        window.open(checkoutUrl, '_blank');
-      }
+      onOpenPricing?.();
       return;
     }
 
-    // Pro users: open billing portal
+    // Pro users: open billing portal (LemonSqueezy)
     const token = await getToken();
     if (!token) return;
     try {
@@ -174,7 +164,7 @@ export function Sidebar({ onNewSearch, onOpenGuide, onOpenSettings, className }:
         </div>
       )}
 
-      {showUpgrade && <UpgradeBanner />}
+      {showUpgrade && <UpgradeBanner onUpgrade={onOpenPricing} />}
 
       {/* Search history list */}
       <nav className="flex-1 overflow-y-auto px-2 pt-2 scrollbar-hide">
@@ -335,8 +325,7 @@ export function Sidebar({ onNewSearch, onOpenGuide, onOpenSettings, className }:
               <button
                 type="button"
                 onClick={handleManageBilling}
-                disabled={!variantId}
-                className="py-1.5 px-2 rounded-md text-2xs uppercase tracking-[0.18em] bg-accent-magenta/20 text-accent-magenta hover:bg-accent-magenta/30 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                className="py-1.5 px-2 rounded-md text-2xs uppercase tracking-[0.18em] bg-accent-magenta/20 text-accent-magenta hover:bg-accent-magenta/30 transition-colors"
               >
                 Upgrade
               </button>

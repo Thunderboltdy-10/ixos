@@ -75,24 +75,41 @@ export async function POST(req: Request) {
       if (primaryEmail) {
         const name = [first_name, last_name].filter(Boolean).join(" ") || null;
 
-        // Use upsert pattern to handle race conditions
-        await db
-          .insert(users)
-          .values({
-            clerkUserId: id,
-            email: primaryEmail.email_address,
-            name,
-            imageUrl: image_url || null,
-          })
-          .onConflictDoUpdate({
-            target: users.clerkUserId,
-            set: {
+        // Check for existing user by email to handle placeholders (e.g. from LemonSqueezy)
+        const existingUserByEmail = await db.query.users.findFirst({
+          where: eq(users.email, primaryEmail.email_address)
+        });
+
+        if (existingUserByEmail && existingUserByEmail.clerkUserId !== id) {
+          console.log(`Merging placeholder user ${existingUserByEmail.id} with Clerk ID ${id}`);
+          await db.update(users)
+            .set({
+              clerkUserId: id,
+              name: name || existingUserByEmail.name,
+              imageUrl: image_url || existingUserByEmail.imageUrl,
+              updatedAt: new Date()
+            })
+            .where(eq(users.id, existingUserByEmail.id));
+        } else {
+          // Use upsert pattern to handle race conditions or standard updates
+          await db
+            .insert(users)
+            .values({
+              clerkUserId: id,
               email: primaryEmail.email_address,
               name,
               imageUrl: image_url || null,
-              updatedAt: new Date(),
-            },
-          });
+            })
+            .onConflictDoUpdate({
+              target: users.clerkUserId,
+              set: {
+                email: primaryEmail.email_address,
+                name,
+                imageUrl: image_url || null,
+                updatedAt: new Date(),
+              },
+            });
+        }
       }
     }
 

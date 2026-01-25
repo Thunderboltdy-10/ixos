@@ -98,6 +98,7 @@ pub async fn clear_all_encrypted_files(app: tauri::AppHandle) -> Result<(), Stri
         "search_history.encrypted",
         "statistics.encrypted",
         "starred_searches.encrypted",
+        "auth_token.encrypted",
     ];
 
     for filename in &encrypted_files {

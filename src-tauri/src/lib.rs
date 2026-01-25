@@ -22,6 +22,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_os::init())
         .setup(|app| {
             // Initialize application state
             app.manage(state::AppState::new());
@@ -43,8 +44,10 @@ pub fn run() {
         .on_window_event(|window, event| {
             // Minimize to tray instead of closing
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                window.hide().unwrap();
-                api.prevent_close();
+                if window.label() == "main" {
+                    window.hide().ok();
+                    api.prevent_close();
+                }
             }
         })
         .invoke_handler(tauri::generate_handler![
@@ -73,6 +76,14 @@ pub fn run() {
             commands::storage::read_encrypted_file,
             commands::storage::delete_encrypted_file,
             commands::storage::clear_all_encrypted_files,
+            // Auth / Entitlements
+            commands::auth::verify_entitlement_token,
+            commands::auth::set_entitlement_token,
+            commands::auth::clear_entitlement_token,
+            commands::auth::check_search_allowed,
+            commands::auth::get_device_id,
+            commands::auth::open_checkout,
+            commands::auth::open_external_url,
             // Cache Management
             commands::storage::get_cache_stats,
             commands::storage::clear_embedding_cache,

@@ -1,0 +1,51 @@
+# Next.js build artifacts (ixos-site)
+ixos-site
+../ixos-site
+**/ixos-site/**
+**/.next/**
+**/.next
+.next
+ixos-site/.next
+ixos-site/.next/**
+
+# Node modules everywhere
+**/node_modules/**
+node_modules
+
+# Old landing directory (should be deleted)
+landing
+**/landing/**
+
+# Build artifacts
+**/dist/**
+**/*.log
+*.log
+
+# Package manager files
+**/package-lock.json
+**/pnpm-lock.yaml
+**/yarn.lock
+
+# TypeScript build info
+**/*.tsbuildinfo
+**/tsconfig.tsbuildinfo
+
+# Turbo cache
+**/.turbo/**
+
+# Coverage and test outputs
+**/coverage/**
+**/.nyc_output/**
+
+# Environment files
+**/.env
+**/.env.*
+!**/.env.example
+
+# IDE files
+**/.idea/**
+**/.vscode/**
+
+# OS files
+**/.DS_Store
+**/Thumbs.db

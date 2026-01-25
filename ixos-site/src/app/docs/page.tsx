@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { Nav } from "@/components/ui/Nav";
 import { Footer } from "@/components/sections/Footer";
 import { Button } from "@/components/ui/Button";
+import { getDownloadUrl } from "@/lib/downloads";
 
 export default function DocsPage() {
     return (
@@ -38,13 +40,17 @@ export default function DocsPage() {
                         <div className="bg-bg-secondary border border-white/5 rounded-xl p-8 space-y-6">
                             <h3 className="text-xl font-bold text-white">Windows</h3>
                             <p className="text-text-secondary text-sm">Download the installer and run it. Ixos will automatically detect your best configuration.</p>
-                            <Button>Download .exe</Button>
+                            <Button asChild>
+                                <Link href={getDownloadUrl("windows") ?? "/download"}>Download .exe</Link>
+                            </Button>
                         </div>
 
                         <div className="bg-bg-secondary border border-white/5 rounded-xl p-8 space-y-6">
                             <h3 className="text-xl font-bold text-white">macOS</h3>
                             <p className="text-text-secondary text-sm">Drag Ixos.app to your Applications folder.</p>
-                            <Button variant="secondary">Download .dmg</Button>
+                            <Button variant="secondary" asChild>
+                                <Link href="/download">Download .dmg</Link>
+                            </Button>
                         </div>
                     </div>
 

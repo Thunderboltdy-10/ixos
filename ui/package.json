@@ -10,6 +10,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.12.0",
     "@gsap/react": "^2.1.2",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
@@ -17,6 +18,7 @@
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "^2.5.0",
     "@tauri-apps/plugin-global-shortcut": "^2",
+    "@tauri-apps/plugin-os": "^2",
     "@tauri-apps/plugin-shell": "^2",
     "@ixos/ui": "*",
     "class-variance-authority": "^0.7.1",
@@ -25,8 +27,8 @@
     "gsap": "^3.14.2",
     "lucide-react": "^0.469.0",
     "postprocessing": "^6.38.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "simplex-noise": "^4.0.3",
     "tailwind-merge": "^2.6.0",
     "three": "^0.160.1",
@@ -35,8 +37,8 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
-    "@types/react": "^18.3.14",
-    "@types/react-dom": "^18.3.3",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "@types/three": "^0.182.0",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",

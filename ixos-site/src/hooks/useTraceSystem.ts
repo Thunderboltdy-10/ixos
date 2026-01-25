@@ -10,7 +10,6 @@ import type {
   Junction,
   TraceSystemState,
   AccentColor,
-  Point,
 } from "@/components/effects/TraceLayer/types";
 import { SECTION_COLORS } from "@/components/effects/TraceLayer/types";
 
@@ -51,6 +50,20 @@ export function useTraceSystem(options: UseTraceSystemOptions = {}): TraceSystem
     }
   }, []);
 
+  // Infer color from parent section
+  const inferColorFromSection = useCallback((element: HTMLElement): AccentColor => {
+    const section = element.closest("section");
+    if (!section) return "teal";
+
+    for (const [className, color] of Object.entries(SECTION_COLORS)) {
+      if (section.classList.contains(className)) {
+        return color;
+      }
+    }
+
+    return "teal";
+  }, []);
+
   // Discover anchors from DOM
   const discoverAnchors = useCallback((): Anchor[] => {
     if (typeof window === "undefined") return [];
@@ -63,7 +76,8 @@ export function useTraceSystem(options: UseTraceSystemOptions = {}): TraceSystem
       const htmlEl = el as HTMLElement;
       const rect = htmlEl.getBoundingClientRect();
       const id = htmlEl.dataset.traceAnchor || `anchor-${index}`;
-      const color = (htmlEl.dataset.traceColor as AccentColor) || inferColorFromSection(htmlEl);
+      const color =
+        (htmlEl.dataset.traceColor as AccentColor) || inferColorFromSection(htmlEl);
 
       anchors.push({
         id,
@@ -79,21 +93,7 @@ export function useTraceSystem(options: UseTraceSystemOptions = {}): TraceSystem
 
     // Sort by vertical position
     return anchors.sort((a, b) => a.position.y - b.position.y);
-  }, []);
-
-  // Infer color from parent section
-  const inferColorFromSection = (element: HTMLElement): AccentColor => {
-    const section = element.closest("section");
-    if (!section) return "teal";
-
-    for (const [className, color] of Object.entries(SECTION_COLORS)) {
-      if (section.classList.contains(className)) {
-        return color;
-      }
-    }
-
-    return "teal";
-  };
+  }, [inferColorFromSection]);
 
   // Generate paths between anchors
   const generatePaths = useCallback(
@@ -184,15 +184,20 @@ export function useTraceSystem(options: UseTraceSystemOptions = {}): TraceSystem
   }, [enabled, discoverAnchors, generatePaths, generateJunctions]);
 
   // Debounced recalculation for resize
-  const debouncedCalculate = useCallback(
-    debounce(() => {
+  const debouncedCalculateRef = useRef<ReturnType<typeof debounce> | null>(null);
+
+  useEffect(() => {
+    debouncedCalculateRef.current = debounce(() => {
       // Reset RNG with a new seed on resize
       seedRef.current = getPageLoadSeed();
       rngRef.current = createSeededRandom(seedRef.current);
       calculateSystem();
-    }, 300),
-    [calculateSystem]
-  );
+    }, 300);
+
+    return () => {
+      debouncedCalculateRef.current?.cancel?.();
+    };
+  }, [calculateSystem]);
 
   // Initial calculation - wait for DOM to be fully ready
   useEffect(() => {
@@ -210,9 +215,10 @@ export function useTraceSystem(options: UseTraceSystemOptions = {}): TraceSystem
   useEffect(() => {
     if (!enabled) return;
 
-    window.addEventListener("resize", debouncedCalculate);
-    return () => window.removeEventListener("resize", debouncedCalculate);
-  }, [enabled, debouncedCalculate]);
+    const handler = () => debouncedCalculateRef.current?.();
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, [enabled]);
 
   return state;
 }

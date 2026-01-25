@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { TraceRendererProps, PathSegment, Point, AccentColor } from "./types";
+import type { TraceRendererProps, PathSegment } from "./types";
 import { pathToSvgData } from "@/lib/tracePathfinder";
 import { ACCENT_HEX } from "./types";
 

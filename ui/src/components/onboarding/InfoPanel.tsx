@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Zap, Shield, Cpu, Database, FileSearch, Layers, Gauge, Keyboard, ChevronRight, ChevronLeft, X } from 'lucide-react';
+import { BookOpen, Zap, Shield, Cpu, Database, FileSearch, Layers, Gauge, Keyboard, ChevronRight, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -120,8 +120,8 @@ export function InfoPanel() {
       <div className="flex items-center justify-between p-6 border-b border-stroke-hairline/50">
         <div>
           <h3 className="text-lg font-display text-porcelain mb-1">Guide</h3>
-          <p className="text-xs text-fg-muted font-mono">
-            {currentIndex + 1} <span className="text-fg-dim">/</span> {sections.length}
+          <p className="text-xs text-fg-secondary font-mono">
+            {currentIndex + 1} <span className="text-fg-muted">/</span> {sections.length}
           </p>
         </div>
       </div>
@@ -145,7 +145,7 @@ export function InfoPanel() {
 
               <h2 className="text-2xl font-semibold text-porcelain">{currentSection.title}</h2>
 
-              <ul className="space-y-4 text-left w-full bg-graphite-2/30 rounded-xl p-6 border border-white/[0.03]">
+              <ul className="space-y-4 text-left w-full bg-graphite-2/55 rounded-xl p-6 border border-white/[0.03]">
                 {currentSection.items.map((item, idx) => (
                   <motion.li
                     key={idx}
@@ -155,7 +155,7 @@ export function InfoPanel() {
                     className="flex items-start gap-3 group"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-accent-teal/40 mt-2 flex-shrink-0 group-hover:bg-accent-teal transition-colors duration-300" />
-                    <span className="text-sm text-fg-muted leading-relaxed group-hover:text-porcelain group-hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all duration-300">
+                    <span className="text-sm text-fg-secondary leading-relaxed group-hover:text-porcelain group-hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all duration-300">
                       {item}
                     </span>
                   </motion.li>
@@ -174,8 +174,8 @@ export function InfoPanel() {
           className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
             currentIndex === 0
-              ? "text-fg-dim cursor-not-allowed opacity-50"
-              : "text-fg-muted hover:text-porcelain hover:bg-graphite-2"
+              ? "text-fg-muted cursor-not-allowed opacity-50"
+              : "text-fg-secondary hover:text-porcelain hover:bg-graphite-2"
           )}
         >
           <ChevronLeft className="w-4 h-4" />

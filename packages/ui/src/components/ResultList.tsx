@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { cn } from '../utils/cn';
 import { ResultCard, type ResultData } from './ResultCard';
 

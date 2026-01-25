@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 
@@ -61,9 +63,25 @@ export function Nav() {
                         <Button variant="ghost" size="sm" asChild>
                             <Link href="#demo">Watch Demo</Link>
                         </Button>
-                        <Button variant="primary" size="sm" hasParticleMagnet>
-                            Download
+                        <Button variant="primary" size="sm" hasParticleMagnet asChild>
+                            <Link href="/download">Download</Link>
                         </Button>
+                        <SignedIn>
+                            <Link
+                                href="/account"
+                                className="p-2 rounded-md hover:bg-white/5 text-fg-muted hover:text-white transition-colors"
+                            >
+                                <User className="w-5 h-5" />
+                            </Link>
+                        </SignedIn>
+                        <SignedOut>
+                            <Button variant="ghost" size="sm" asChild>
+                                <Link href="/sign-in">Sign In</Link>
+                            </Button>
+                            <Button variant="secondary" size="sm" asChild>
+                                <Link href="/sign-up">Sign Up</Link>
+                            </Button>
+                        </SignedOut>
                     </div>
 
                     {/* Mobile Toggle */}
@@ -96,7 +114,19 @@ export function Nav() {
                         <Link href="/docs" onClick={() => setIsMobileMenuOpen(false)}>Docs</Link>
                         <hr className="border-white/10" />
                         <Link href="#demo" onClick={() => setIsMobileMenuOpen(false)}>Watch Demo</Link>
-                        <Button variant="primary" size="lg" className="w-full">Download for Windows</Button>
+                        <Button variant="primary" size="lg" className="w-full" asChild>
+                            <Link href="/download" onClick={() => setIsMobileMenuOpen(false)}>Download for Windows</Link>
+                        </Button>
+                        <SignedOut>
+                            <div className="pt-4 border-t border-white/10 space-y-3">
+                                <Button variant="ghost" size="lg" className="w-full" asChild>
+                                    <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
+                                </Button>
+                                <Button variant="secondary" size="lg" className="w-full" asChild>
+                                    <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>Sign Up</Link>
+                                </Button>
+                            </div>
+                        </SignedOut>
                     </nav>
                 </div>
             )}

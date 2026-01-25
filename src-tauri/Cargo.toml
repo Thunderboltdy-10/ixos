@@ -20,6 +20,7 @@ tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-shell = "2"
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-dialog = "2"
+tauri-plugin-os = "2"
 
 # The core Ixos protocol library
 ixos-protocol = { path = ".." }
@@ -27,6 +28,8 @@ ixos-protocol = { path = ".." }
 # Serialization
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+jsonwebtoken = "9"
+uuid = { version = "1", features = ["v4"] }
 
 # Async runtime (shared with ixos-protocol)
 tokio = { version = "1.43", features = ["full", "sync"] }

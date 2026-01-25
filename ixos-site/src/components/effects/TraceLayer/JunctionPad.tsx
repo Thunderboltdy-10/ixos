@@ -2,8 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import { cn } from "@/lib/utils";
-import type { JunctionPadProps, AccentColor } from "./types";
+import type { JunctionPadProps } from "./types";
 import { ACCENT_HEX } from "./types";
 
 export function JunctionPad({ junction, isActive }: JunctionPadProps) {

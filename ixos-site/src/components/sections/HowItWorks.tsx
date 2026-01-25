@@ -1,9 +1,8 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { cn } from "@/lib/utils";
 import { ScribbleStrike } from "@/components/effects/ScribbleStrike";
 
 // Register ScrollTrigger
@@ -14,12 +13,27 @@ if (typeof window !== "undefined") {
 export function HowItWorks() {
     const containerRef = useRef<HTMLDivElement>(null);
 
+    const activatePipelineNode = useCallback((index: number) => {
+        // Logic to light up pipeline nodes (could be state or direct DOM manipulation)
+        // For simplicity, we just use DOM classes here or could use another ref array
+        const nodes = document.querySelectorAll(".pipeline-node");
+        nodes.forEach((node, i) => {
+            if (i === index) {
+                node.classList.add("ring-2", "ring-accent-teal", "shadow-[0_0_20px_rgba(34,184,168,0.4)]");
+                node.classList.remove("opacity-50");
+            } else {
+                node.classList.remove("ring-2", "ring-accent-teal", "shadow-[0_0_20px_rgba(34,184,168,0.4)]");
+                node.classList.add("opacity-50");
+            }
+        });
+    }, []);
+
     useEffect(() => {
         const ctx = gsap.context(() => {
             // Step animations
-            const steps = gsap.utils.toArray(".how-step");
+            const steps = gsap.utils.toArray<HTMLElement>(".how-step");
 
-            steps.forEach((step: any, i) => {
+            steps.forEach((step, i) => {
                 gsap.fromTo(step,
                     { opacity: 0.2, y: 20 },
                     {
@@ -41,22 +55,7 @@ export function HowItWorks() {
         }, containerRef);
 
         return () => ctx.revert();
-    }, []);
-
-    const activatePipelineNode = (index: number) => {
-        // Logic to light up pipeline nodes (could be state or direct DOM manipulation)
-        // For simplicity, we just use DOM classes here or could use another ref array
-        const nodes = document.querySelectorAll(".pipeline-node");
-        nodes.forEach((node, i) => {
-            if (i === index) {
-                node.classList.add("ring-2", "ring-accent-teal", "shadow-[0_0_20px_rgba(34,184,168,0.4)]");
-                node.classList.remove("opacity-50");
-            } else {
-                node.classList.remove("ring-2", "ring-accent-teal", "shadow-[0_0_20px_rgba(34,184,168,0.4)]");
-                node.classList.add("opacity-50");
-            }
-        });
-    };
+    }, [activatePipelineNode]);
 
     return (
         <section ref={containerRef} id="how-it-works" className="relative py-32 w-full max-w-6xl mx-auto px-6 section-how">
@@ -87,7 +86,7 @@ export function HowItWorks() {
                         <div className="text-accent-teal font-mono mb-4 text-xl">01</div>
                         <h3 className="text-4xl font-semibold mb-4">Type Naturally</h3>
                         <p className="text-xl text-text-secondary leading-relaxed max-w-lg">
-                            Type exactly how you think. "That email about the Denver trip" or "quarterly revenue report". No special syntax needed.
+                            Type exactly how you think. &quot;That email about the Denver trip&quot; or &quot;quarterly revenue report&quot;. No special syntax needed.
                         </p>
                     </div>
 
@@ -128,7 +127,7 @@ export function HowItWorks() {
                         <div className="text-accent-teal font-mono mb-4 text-xl">05</div>
                         <h3 className="text-4xl font-semibold mb-4">Stream Results</h3>
                         <p className="text-xl text-text-secondary leading-relaxed max-w-lg">
-                            See results as they're found - no waiting for a full scan. First result in under 200ms. Click to open, Enter to reveal.
+                            See results as they&apos;re found - no waiting for a full scan. First result in under 200ms. Click to open, Enter to reveal.
                         </p>
                         <div className="mt-8">
                             <div className="h-48 w-full bg-bg-secondary rounded-lg border border-white/5 relative overflow-hidden group-hover:border-accent-teal/20 transition-colors">

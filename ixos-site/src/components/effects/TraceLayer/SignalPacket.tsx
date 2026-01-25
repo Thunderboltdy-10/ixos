@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { SignalPacketProps, AccentColor } from "./types";
+import type { SignalPacketProps } from "./types";
 import { ACCENT_HEX } from "./types";
 
 /**
@@ -142,7 +142,6 @@ function getPointAtPathDistance(
 
       if (remaining <= hDist) {
         // Still in horizontal portion
-        const t = hDist > 0 ? remaining / hDist : 0;
         return {
           x: prev.x + Math.sign(dx) * remaining,
           y: prev.y,

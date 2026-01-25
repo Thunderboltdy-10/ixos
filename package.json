@@ -5,10 +5,12 @@
   "description": "Privacy-first semantic file search",
   "scripts": {
     "tauri": "tauri",
-    "tauri:dev": "tauri dev",
+    "tauri:dev": "tauri dev --no-watch",
+    "tauri:dev:watch": "tauri dev",
     "tauri:build": "tauri build",
     "dev": "cd ui && npm run dev",
-    "build": "cd ui && npm run build"
+    "build": "cd ui && npm run build",
+    "site:dev": "cd ixos-site && npm run dev"
   },
   "workspaces": [
     "ui",
@@ -16,6 +18,13 @@
     "ixos-site"
   ],
   "devDependencies": {
-    "@tauri-apps/cli": "^2"
+    "@tauri-apps/cli": "^2",
+    "drizzle-orm": "^0.36.4",
+    "@neondatabase/serverless": "0.9.5",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "overrides": {
+    "@neondatabase/serverless": "0.9.5"
   }
 }

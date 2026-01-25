@@ -1,5 +1,6 @@
 [workspace]
 members = [".", "src-tauri"]
+exclude = ["ixos-site"]
 resolver = "2"
 
 [package]

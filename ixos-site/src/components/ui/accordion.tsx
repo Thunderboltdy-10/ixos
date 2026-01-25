@@ -6,9 +6,11 @@ import { cn } from "@/lib/utils"
 const Accordion = React.forwardRef<
     HTMLDivElement,
     React.HTMLAttributes<HTMLDivElement> & { type?: "single" | "multiple"; collapsible?: boolean }
->(({ className, type, collapsible, ...props }, ref) => (
-    <div ref={ref} className={cn("space-y-1", className)} {...props} />
-))
+>(({ className, type: _type, collapsible: _collapsible, ...props }, ref) => {
+    void _type;
+    void _collapsible;
+    return <div ref={ref} className={cn("space-y-1", className)} {...props} />;
+})
 Accordion.displayName = "Accordion"
 
 const AccordionItem = React.forwardRef<

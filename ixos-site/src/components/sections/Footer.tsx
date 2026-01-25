@@ -21,7 +21,7 @@ export function Footer() {
                     <div>
                         <h4 className="font-medium text-sm text-white mb-4">Product</h4>
                         <ul className="space-y-2 text-sm text-fg-muted">
-                            <li><Link href="#download" className="hover:text-accent-amber transition-colors">Download</Link></li>
+                            <li><Link href="/download" className="hover:text-accent-amber transition-colors">Download</Link></li>
                             <li><Link href="/pricing" className="hover:text-accent-amber transition-colors">Pricing</Link></li>
                             <li><Link href="#changelog" className="hover:text-accent-amber transition-colors">Changelog</Link></li>
                         </ul>
@@ -31,6 +31,7 @@ export function Footer() {
                         <h4 className="font-medium text-sm text-white mb-4">Resources</h4>
                         <ul className="space-y-2 text-sm text-fg-muted">
                             <li><Link href="/docs" className="hover:text-accent-amber transition-colors">Documentation</Link></li>
+                            <li><Link href="/support" className="hover:text-accent-amber transition-colors">Support</Link></li>
                             <li><Link href="#blog" className="hover:text-accent-amber transition-colors">Blog</Link></li>
                             <li><Link href="#github" className="hover:text-accent-amber transition-colors">GitHub</Link></li>
                         </ul>

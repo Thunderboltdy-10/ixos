@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { FileText, ChevronRight } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { Badge } from '../primitives/Badge';
@@ -30,7 +29,7 @@ export interface ResultCardProps {
  */
 export function ResultCard({
   result,
-  index,
+  index: _index,
   isSelected = false,
   isExpanded = false,
   onClick,

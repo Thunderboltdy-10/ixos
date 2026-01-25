@@ -8,7 +8,6 @@ const isDesktopApiRoute = createRouteMatcher(["/api/desktop(.*)"]);
 // Routes that require Clerk authentication
 const isProtectedRoute = createRouteMatcher([
   "/account(.*)",
-  "/api/webhooks(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Nav } from "@/components/ui/Nav";
 import { Pricing } from "@/components/sections/Pricing";
 import { Footer } from "@/components/sections/Footer";
@@ -11,7 +12,9 @@ export default function PricingPage() {
                     <h1 className="text-4xl md:text-5xl font-semibold mb-4 text-white">Plans & Pricing</h1>
                     <p className="text-text-secondary text-lg">Simple, transparent, and built for developers.</p>
                 </div>
-                <Pricing />
+                <Suspense fallback={null}>
+                    <Pricing />
+                </Suspense>
             </main>
             <Footer />
         </>

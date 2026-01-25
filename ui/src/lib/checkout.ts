@@ -2,7 +2,7 @@
  * Build a direct Lemon Squeezy checkout URL
  * Opens in the user's browser with pre-filled user info
  */
-export function buildCheckoutUrl(variantId: string, userId?: string, email?: string): string {
+export function buildCheckoutUrl(variantId: string, userId?: string, email?: string, name?: string): string {
   const base = `https://ixos.lemonsqueezy.com/checkout/buy/${variantId}`;
   const params = new URLSearchParams();
 
@@ -11,11 +11,15 @@ export function buildCheckoutUrl(variantId: string, userId?: string, email?: str
     params.set('checkout[custom][clerk_user_id]', userId);
   }
 
-  // Pre-fill email for convenience
-  // Pre-fill email disabled to prevent routing issues
-  // if (email) {
-  //   params.set('checkout[email]', email);
-  // }
+  // Pre-fill email
+  if (email) {
+    params.set('checkout[email]', email);
+  }
+
+  // Pre-fill name if provided
+  if (name) {
+    params.set('checkout[name]', name);
+  }
 
   const queryString = params.toString();
   return queryString ? `${base}?${queryString}` : base;

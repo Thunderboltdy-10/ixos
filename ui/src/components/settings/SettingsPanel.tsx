@@ -19,7 +19,7 @@ const tabs: { id: SettingsTabId; label: string; icon: React.ElementType }[] = [
   { id: 'about', label: 'About', icon: Info },
 ];
 
-export function SettingsPanel({ initialTab }: { initialTab?: SettingsTabId }) {
+export function SettingsPanel({ initialTab, onUpgrade }: { initialTab?: SettingsTabId; onUpgrade?: () => void }) {
   const [activeTab, setActiveTab] = useState<SettingsTabId>(initialTab ?? 'search');
   const { loadConfig, loadConsent } = useSettingsStore();
 
@@ -69,7 +69,7 @@ export function SettingsPanel({ initialTab }: { initialTab?: SettingsTabId }) {
         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
         <div className="p-8 max-w-3xl">
           {activeTab === 'search' && <SearchSettings />}
-          {activeTab === 'account' && <AccountSettings />}
+          {activeTab === 'account' && <AccountSettings onUpgrade={onUpgrade} />}
           {activeTab === 'keyboard' && <ShortcutSettings />}
           {activeTab === 'privacy' && <PrivacySettings />}
           {activeTab === 'compliance' && <ComplianceSettings />}

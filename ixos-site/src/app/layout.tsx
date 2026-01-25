@@ -5,6 +5,7 @@ import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvide
 import { ArcNoiseBackground } from "@/components/effects/ArcNoiseBackground";
 import { ParticlesFieldV3 } from "@/components/effects/ParticlesFieldV3";
 // import { TraceLayer } from "@/components/effects/TraceLayer";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-ixo-heading",
@@ -33,23 +34,25 @@ export default function RootLayout({
       <body
         className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} antialiased`}
       >
-        <SmoothScrollProvider>
-          {/* bg-root: fixed particle canvas only - no texture overlays */}
-          <div
-            id="bg-root"
-            className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
-            aria-hidden="true"
-          >
-            <ArcNoiseBackground />
-            <ParticlesFieldV3 />
-            {/* <TraceLayer /> */}
-          </div>
+        <ClerkProvider>
+          <SmoothScrollProvider>
+            {/* bg-root: fixed particle canvas only - no texture overlays */}
+            <div
+              id="bg-root"
+              className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
+              aria-hidden="true"
+            >
+              <ArcNoiseBackground />
+              <ParticlesFieldV3 />
+              {/* <TraceLayer /> */}
+            </div>
 
-          {/* app-root: relative, z-10 */}
-          <div id="app-root" className="relative z-10 min-h-screen flex flex-col">
-            {children}
-          </div>
-        </SmoothScrollProvider>
+            {/* app-root: relative, z-10 */}
+            <div id="app-root" className="relative z-10 min-h-screen flex flex-col">
+              {children}
+            </div>
+          </SmoothScrollProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

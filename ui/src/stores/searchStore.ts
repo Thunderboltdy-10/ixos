@@ -389,7 +389,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
         activeQuery: thread.query,
         activeThreadId: thread.id,
         journalistMode: isJournalist,
-        cacheMode: isJournalist ? 'jit' : thread.mode,
+        cacheMode: isJournalist ? 'jit' : (thread.mode as 'cache' | 'jit'),
         lexicalResults: hasSemantic ? [] : thread.results as LexicalResult[],
         semanticResults: hasSemantic ? thread.results as RankedResult[] : [],
         lateResults: [],

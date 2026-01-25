@@ -40,7 +40,8 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, asChild = false, hasParticleMagnet = false, ...props }, ref) => {
+    ({ className, variant, size, asChild: _asChild = false, hasParticleMagnet = false, ...props }, ref) => {
+        void _asChild;
         const localRef = React.useRef<HTMLButtonElement>(null);
         const combinedRef = (node: HTMLButtonElement) => {
             localRef.current = node;

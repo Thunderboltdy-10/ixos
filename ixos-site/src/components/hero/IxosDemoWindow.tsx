@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, FileText, Loader2, Sparkles, Zap, Shield, ChevronDown, X, MousePointerClick } from 'lucide-react';
+import { Search, FileText, Loader2, Sparkles, Zap, Shield, ChevronDown, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFakeSearch, DEMO_QUERIES, type DemoFile } from './fakeSearch';
 import { ArcNoiseBackground } from '@/components/effects/ArcNoiseBackground';
@@ -321,7 +321,6 @@ export function IxosDemoWindow({ onInteract }: { onInteract?: () => void }) {
                   result={result}
                   index={i}
                   activeMode={activeMode}
-                  color={getHexColor()}
                 />
               ))}
             </AnimatePresence>
@@ -333,7 +332,7 @@ export function IxosDemoWindow({ onInteract }: { onInteract?: () => void }) {
   );
 }
 
-function DemoResultCard({ result, index, activeMode, color }: { result: DemoFile; index: number; activeMode: DemoMode; color: string }) {
+function DemoResultCard({ result, index, activeMode }: { result: DemoFile; index: number; activeMode: DemoMode }) {
   const scorePercent = Math.round(result.score * 100);
   const isSelected = index === 0;
 

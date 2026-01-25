@@ -4,6 +4,7 @@
 //! to the Ixos protocol library.
 
 pub mod config;
+pub mod auth;
 pub mod history;
 pub mod indexer;
 pub mod prefetch;

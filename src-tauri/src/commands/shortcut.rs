@@ -224,14 +224,7 @@ fn register_shortcut_internal(app: &AppHandle, shortcut: Shortcut) -> Result<(),
                         // Emit event to frontend for handling
                         let _ = main.emit("shortcut-triggered", ());
 
-                        // Also toggle window visibility from backend for reliability
-                        if main.is_visible().unwrap_or(false) {
-                            let _ = main.hide();
-                        } else {
-                            let _ = main.show();
-                            let _ = main.set_focus();
-                            let _ = main.unminimize();
-                        }
+                        // Avoid toggling window visibility here to prevent flicker loops.
                     }
                 }
             });
@@ -258,14 +251,7 @@ pub fn setup_global_shortcut(app: &tauri::App) -> Result<(), Box<dyn std::error:
                             // Emit event to frontend for handling
                             let _ = main.emit("shortcut-triggered", ());
 
-                            // Toggle window visibility
-                            if main.is_visible().unwrap_or(false) {
-                                let _ = main.hide();
-                            } else {
-                                let _ = main.show();
-                                let _ = main.set_focus();
-                                let _ = main.unminimize();
-                            }
+                            // Avoid toggling window visibility here to prevent flicker loops.
                         }
                     }
                 });

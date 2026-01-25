@@ -125,3 +125,42 @@ export async function getShortcutConfig(): Promise<import('./types').ShortcutCon
 export async function setShortcutConfig(config: import('./types').ShortcutConfig): Promise<void> {
   await invoke('set_shortcut_config', { config });
 }
+
+/**
+ * Set the entitlement token in the Tauri backend
+ */
+export async function setEntitlementToken(token: string): Promise<void> {
+  await invoke('set_entitlement_token', { token });
+}
+
+/**
+ * Open the Lemon Squeezy checkout in an in-app window
+ */
+export async function openCheckout(
+  variantId: string,
+  userId: string,
+  userEmail?: string,
+  options?: {
+    pricingUrl?: string;
+    checkoutUrlTemplate?: string;
+    successUrl?: string;
+    cancelUrl?: string;
+  }
+): Promise<void> {
+  await invoke('open_checkout', {
+    variant_id: variantId,
+    user_id: userId,
+    user_email: userEmail,
+    pricing_url: options?.pricingUrl,
+    checkout_url_template: options?.checkoutUrlTemplate,
+    success_url: options?.successUrl,
+    cancel_url: options?.cancelUrl,
+  });
+}
+
+/**
+ * Open an external URL inside a dedicated in-app window
+ */
+export async function openExternalUrl(url: string, title?: string, label?: string): Promise<void> {
+  await invoke('open_external_url', { url, title, label });
+}

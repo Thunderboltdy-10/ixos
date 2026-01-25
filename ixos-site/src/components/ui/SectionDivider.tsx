@@ -38,13 +38,6 @@ export function SectionDivider({ className, label = "SECTION_BREAK", accent = "a
         magenta: "text-accent-magenta border-accent-magenta bg-accent-magenta",
     }[accent];
 
-    const accentHex = {
-        amber: "#F6B94C",
-        teal: "#14B8A6",
-        violet: "#A78BFA",
-        magenta: "#F472B6",
-    }[accent];
-
     return (
         <div
             ref={containerRef}

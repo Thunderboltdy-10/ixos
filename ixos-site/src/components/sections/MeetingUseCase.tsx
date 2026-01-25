@@ -20,7 +20,7 @@ export function MeetingUseCase() {
                                     <span className="text-xs font-mono text-accent-violet tracking-widest">USE_CASE_01</span>
                                 </div>
                                 <h2 className="text-3xl md:text-4xl font-semibold leading-tight text-fg-porcelain">
-                                    "Find the budget from <span className="heading-gradient">last Tuesday's</span> meeting."
+                                    &quot;Find the budget from <span className="heading-gradient">last Tuesday&apos;s</span> meeting.&quot;
                                 </h2>
                             </div>
                         </FadeInView>

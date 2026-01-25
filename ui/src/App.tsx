@@ -7,6 +7,8 @@ import { MainSearchView } from './components/search/MainSearchView';
 import { useAppInit } from './hooks/useAppInit';
 import { AchievementNotifications } from './components/stats';
 import ixosIcon from '@/assets/ixos-icon.png';
+import { IxosClerkProvider } from './providers/ClerkProvider';
+import { AuthGate } from './components/auth/AuthGate';
 
 type WindowType = 'overlay' | 'main' | 'unknown';
 
@@ -116,21 +118,24 @@ function App() {
     );
   }
 
-  if (windowType === 'overlay') {
-    return <SearchOverlay />;
-  }
-
-  // Main window with new AppShell layout
   return (
-    <>
-      <AppShell>
-        <MainSearchView />
-      </AppShell>
-      <AchievementNotifications />
-      {showModelWarning && (
-        <ModelWarningPopup onDismiss={() => setShowModelWarning(false)} />
-      )}
-    </>
+    <IxosClerkProvider>
+      <AuthGate>
+        {windowType === 'overlay' ? (
+          <SearchOverlay />
+        ) : (
+          <>
+            <AppShell>
+              <MainSearchView />
+            </AppShell>
+            <AchievementNotifications />
+            {showModelWarning && (
+              <ModelWarningPopup onDismiss={() => setShowModelWarning(false)} />
+            )}
+          </>
+        )}
+      </AuthGate>
+    </IxosClerkProvider>
   );
 }
 

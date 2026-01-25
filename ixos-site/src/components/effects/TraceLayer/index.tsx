@@ -19,7 +19,10 @@ export function TraceLayer({ className }: TraceLayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 1920, height: 4000 });
   const [scrollY, setScrollY] = useState(0);
-  const [isReducedMotion, setIsReducedMotion] = useState(false);
+  const [isReducedMotion, setIsReducedMotion] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  });
 
   // Get trace system state
   const { paths, junctions, totalLength, isReady } = useTraceSystem({
@@ -31,7 +34,6 @@ export function TraceLayer({ className }: TraceLayerProps) {
     if (typeof window === "undefined") return;
 
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setIsReducedMotion(mediaQuery.matches);
 
     const handler = (e: MediaQueryListEvent) => setIsReducedMotion(e.matches);
     mediaQuery.addEventListener("change", handler);

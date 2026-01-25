@@ -59,6 +59,8 @@ pub struct AppState {
     pub model_cache: Arc<Mutex<HashMap<String, Arc<MmapModel2VecEmbedder>>>>,
     /// Last loaded model type
     pub loaded_model: Arc<Mutex<Option<String>>>,
+    /// Cached entitlement token for auth gating
+    pub entitlement_token: Arc<Mutex<Option<String>>>,
 }
 
 impl AppState {
@@ -72,6 +74,7 @@ impl AppState {
             cached_directory: Arc::new(Mutex::new(None)),
             model_cache: Arc::new(Mutex::new(HashMap::new())),
             loaded_model: Arc::new(Mutex::new(None)),
+            entitlement_token: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -154,6 +157,14 @@ impl AppState {
 
     pub fn loaded_model(&self) -> Option<String> {
         self.loaded_model.lock().clone()
+    }
+
+    pub fn set_entitlement_token(&self, token: Option<String>) {
+        *self.entitlement_token.lock() = token;
+    }
+
+    pub fn get_entitlement_token(&self) -> Option<String> {
+        self.entitlement_token.lock().clone()
     }
 }
 

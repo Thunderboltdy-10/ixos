@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { SectionDivider } from "@/components/ui/SectionDivider";
 import { FadeInView } from "@/components/effects/FadeInView";
 

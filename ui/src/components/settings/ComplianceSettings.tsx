@@ -49,7 +49,7 @@ export function ComplianceSettings() {
             </Button>
           ) : (
             <Button
-              variant="default"
+              variant="primary"
               size="sm"
               onClick={grantConsent}
               disabled={isLoading}

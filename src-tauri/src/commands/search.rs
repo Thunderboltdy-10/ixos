@@ -3,6 +3,7 @@
 //! Provides progressive search with streaming results to the frontend.
 
 use crate::state::AppState;
+use crate::commands::auth::verify_entitlement_token_internal;
 use ixos_protocol::instrumentation::ipc_send_span;
 use ixos_protocol::ixos_rank::{
     progressive::{SearchEvent, SearchMode, StreamEventKind, StreamStage},
@@ -268,6 +269,13 @@ pub async fn search_progressive(
     directory: String,
     options: SearchOptions,
 ) -> Result<(), String> {
+    // Verify entitlement token before allowing search
+    if let Some(token) = state.get_entitlement_token() {
+        verify_entitlement_token_internal(&token)?;
+    } else {
+        return Err("Authentication required".into());
+    }
+
     // Cancel any existing search
     state.cancel_search();
 

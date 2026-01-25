@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Button } from "@/components/ui/Button";
+import Image from "next/image";
 // import { ElectricTraces } from "@/components/effects/ElectricTraces";
 // import { RipplePulse } from "@/components/effects/RipplePulse";
 
@@ -15,9 +16,6 @@ if (typeof window !== "undefined") {
 export function HeroStory() {
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
-
-    const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-    const [isVideoLoaded, setIsVideoLoaded] = useState(false);
 
     useEffect(() => {
         // Scroll Choreography
@@ -47,7 +45,7 @@ export function HeroStory() {
             video.currentTime = 0.001; // Tiny seek to force render
             video.pause();
             // Start fade in slightly after to allow render
-            requestAnimationFrame(() => setIsVideoLoaded(true));
+            requestAnimationFrame(() => {});
         };
 
         video.addEventListener('loadedmetadata', handleLoadedMetadata);
@@ -66,7 +64,6 @@ export function HeroStory() {
                 // Should be playing
                 if (video.paused) {
                     video.play().catch(() => { });
-                    setIsVideoPlaying(true);
                     window.dispatchEvent(new CustomEvent('ixos-video-play'));
                 }
             } else if (scrollY <= resetMargin) {
@@ -74,7 +71,6 @@ export function HeroStory() {
                 if (!video.paused || video.currentTime > 0.1) {
                     video.pause();
                     video.currentTime = 0;
-                    setIsVideoPlaying(false);
                     window.dispatchEvent(new CustomEvent('ixos-video-reset'));
                 }
             }
@@ -91,7 +87,6 @@ export function HeroStory() {
         if (videoRef.current) {
             videoRef.current.currentTime = 0;
             videoRef.current.play();
-            setIsVideoPlaying(true);
             window.dispatchEvent(new CustomEvent('ixos-video-play'));
         }
     };
@@ -140,7 +135,7 @@ export function HeroStory() {
                     </div>
 
                     <div className="pt-8 text-xs text-text-subtle font-mono">
-                        Requires Windows 10+ or macOS 12+ • <span className="text-text-muted">Local AI • No Cloud</span>
+                        Requires Windows 10+ or macOS 12+ - <span className="text-text-muted">Local AI - No Cloud</span>
                     </div>
                 </div>
 
@@ -156,10 +151,12 @@ export function HeroStory() {
 
                         {/* Video Content */}
                         {/* App Mockup Image */}
-                        <img
+                        <Image
                             src="/assets/app-mockup.png"
                             alt="Ixos Desktop App Interface"
-                            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+                            fill
+                            sizes="(min-width: 1024px) 58vw, 100vw"
+                            className="object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500"
                         />
 
                         {/* Overlay Gradient */}

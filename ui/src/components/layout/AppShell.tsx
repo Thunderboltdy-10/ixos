@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Settings, Minus, Square, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Sidebar } from './Sidebar';
-import { SettingsPanel } from '@/components/settings/SettingsPanel';
+import { SettingsPanel, type SettingsTabId } from '@/components/settings/SettingsPanel';
 import { useSearchStore } from '@/stores/searchStore';
 import { listen } from '@tauri-apps/api/event';
 import { InfoPanel } from '@/components/onboarding/InfoPanel';
@@ -58,6 +58,7 @@ interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<SettingsTabId>('search');
   const searchStore = useSearchStore();
 
   const handleNewSearch = () => {
@@ -134,7 +135,10 @@ export function AppShell({ children }: AppShellProps) {
       <div className="fixed top-2 right-3 flex items-center gap-0.5 z-50">
         <WindowControl
           icon={<Settings className="w-3.5 h-3.5" />}
-          onClick={() => setShowSettings(!showSettings)}
+          onClick={() => {
+            setSettingsTab('search');
+            setShowSettings(!showSettings);
+          }}
         />
         <div className="w-px h-4 bg-stroke-hairline mx-1" />
         <WindowControl icon={<Minus className="w-3.5 h-3.5" />} onClick={handleMinimize} />
@@ -148,6 +152,11 @@ export function AppShell({ children }: AppShellProps) {
         onOpenGuide={() => {
           setShowInfo(true);
           setShowSettings(false);
+        }}
+        onOpenSettings={(tab) => {
+          if (tab) setSettingsTab(tab);
+          setShowSettings(true);
+          setShowInfo(false);
         }}
         className="flex-shrink-0 relative z-20 backdrop-blur-sm bg-graphite-0/80"
       />
@@ -171,7 +180,7 @@ export function AppShell({ children }: AppShellProps) {
                 >
                   <X className="w-4 h-4" />
                 </button>
-                <SettingsPanel />
+                <SettingsPanel initialTab={settingsTab} />
               </div>
             </div>
           </div>

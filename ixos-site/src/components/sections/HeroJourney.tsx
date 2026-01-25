@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { ScribbleStrike } from "@/components/effects/ScribbleStrike";
 import { cn } from "@/lib/utils";
-import { SectionDivider } from "@/components/ui/SectionDivider";
 import { IxosDemoWindow } from "@/components/hero/IxosDemoWindow";
 
 // Register ScrollTrigger
@@ -61,11 +61,14 @@ export function HeroJourney() {
     const deckBackRef = useRef<HTMLDivElement>(null);
     const stepsContainerRef = useRef<HTMLDivElement>(null);
     const [activeStep, setActiveStep] = useState(0);
-    const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+    const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+        if (typeof window === "undefined") return false;
+        return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    });
 
     useEffect(() => {
+        if (typeof window === "undefined") return;
         const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-        setPrefersReducedMotion(mediaQuery.matches);
         const handleChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
         mediaQuery.addEventListener("change", handleChange);
         return () => mediaQuery.removeEventListener("change", handleChange);
@@ -131,8 +134,6 @@ export function HeroJourney() {
         return () => ctx.revert();
     }, [prefersReducedMotion]);
 
-    const handleDownload = () => window.open("/download", "_blank");
-
     return (
         <section ref={containerRef} id="hero-journey" className="section-hero relative min-h-screen w-full overflow-hidden bg-bg-graphite-0">
             <div className="relative min-h-screen w-full pt-24 lg:pt-32 px-6">
@@ -169,8 +170,9 @@ export function HeroJourney() {
                                         className="bg-accent-amber text-bg-graphite-0 hover:bg-accent-amber/90 font-medium min-w-[160px]"
                                         data-trace-anchor="hero-cta"
                                         data-trace-color="amber"
+                                        asChild
                                     >
-                                        Download
+                                        <Link href="/download">Download</Link>
                                     </Button>
                                     <Button variant="secondary" size="lg" className="border-white/10 hover:bg-white/5">
                                         Watch Demo

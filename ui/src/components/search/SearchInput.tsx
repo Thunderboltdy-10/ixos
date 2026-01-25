@@ -131,14 +131,6 @@ export function SearchInput({
     };
   }, [setSearchBarBox]);
 
-  const handleModelChange = async (model: ModelType) => {
-    if (config) {
-      await updateConfig({
-        search: { ...config.search, modelType: model },
-      });
-    }
-  };
-
   const handleQualityChange = async (mode: QualityMode) => {
     if (config) {
       await updateConfig({
@@ -231,6 +223,23 @@ export function SearchInput({
       }
   }, [showSuggestions, suggestions, selectedIndex, handleSuggestionSelect, value, isSearching, onSearch]);
 
+  type AccentStyle = CSSProperties & {
+    '--accent-focus'?: string;
+    '--accent-focus-soft'?: string;
+  };
+  const accentStyle: AccentStyle =
+    hasSearchIntent || isSearching
+      ? {
+          borderColor: activePalette.border,
+          boxShadow: `0 0 0 1px ${activePalette.border}, 0 18px 40px rgba(0, 0, 0, 0.55), 0 0 28px ${activePalette.glow}`,
+          '--accent-focus': activePalette.accent,
+          '--accent-focus-soft': activePalette.accentSoft,
+        }
+      : {
+          '--accent-focus': activePalette.accent,
+          '--accent-focus-soft': activePalette.accentSoft,
+        };
+
   return (
     <div ref={containerRef} className={cn('w-full relative', centered && 'max-w-3xl mx-auto px-8')}>
       <div className="relative" ref={searchBarRef}>
@@ -284,19 +293,7 @@ export function SearchInput({
             ? ''
             : 'hover:border-border-medium'
         )}
-        style={(
-          hasSearchIntent || isSearching
-            ? {
-              borderColor: activePalette.border,
-              boxShadow: `0 0 0 1px ${activePalette.border}, 0 18px 40px rgba(0, 0, 0, 0.55), 0 0 28px ${activePalette.glow}`,
-              '--accent-focus': activePalette.accent,
-              '--accent-focus-soft': activePalette.accentSoft,
-            }
-            : {
-              '--accent-focus': activePalette.accent,
-              '--accent-focus-soft': activePalette.accentSoft,
-            }
-        ) as CSSProperties}>
+        style={accentStyle}>
           {/* Search input row */}
           <SearchBar
             ref={inputRef}

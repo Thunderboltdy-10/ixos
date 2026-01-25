@@ -66,7 +66,6 @@ export function WhyMatched({ evidence, scoreBreakdown }: WhyMatchedProps) {
 
   // Calculate normalized scores for display
   // The scoreBreakdown already has weighted values, but we want to show them as percentages
-  const totalWeight = 0.4 + 0.3 + 0.1 + 0.2; // semantic + integrity + temporal + behavior
   const normalizedSemantic = scoreBreakdown.semantic;
   const normalizedIntegrity = scoreBreakdown.integrity;
   const normalizedTemporal = scoreBreakdown.temporal;

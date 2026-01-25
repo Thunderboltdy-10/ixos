@@ -1,0 +1,469 @@
+import { useEffect, useMemo, useState, Component, type ReactNode, type ErrorInfo } from 'react';
+import { SignIn, SignUp, useAuth, useUser } from '@clerk/clerk-react';
+import type { Appearance } from '@clerk/types';
+import { useAuthStore } from '@/stores/authStore';
+import { getMachineId } from '@/lib/crypto';
+import { getDeviceLabel } from '@/lib/device';
+import { loadEntitlementToken, storeEntitlementToken } from '@/lib/authToken';
+import { invoke } from '@tauri-apps/api/core';
+import ixosIcon from '@/assets/ixos-icon.png';
+
+interface AuthGateProps {
+  children: React.ReactNode;
+}
+
+// Error boundary to catch and handle errors gracefully
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class AuthErrorBoundary extends Component<{ children: ReactNode; onReset: () => void }, ErrorBoundaryState> {
+  constructor(props: { children: ReactNode; onReset: () => void }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Auth error boundary caught error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-graphite-0 px-6">
+          <div className="max-w-md w-full bg-graphite-1 border border-stroke-hairline rounded-2xl p-6 shadow-lift text-center">
+            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-error/20 flex items-center justify-center">
+              <svg className="w-6 h-6 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-semibold text-porcelain mb-2">Something went wrong</h2>
+            <p className="text-sm text-fg-muted mb-4">
+              {this.state.error?.message || 'An unexpected error occurred'}
+            </p>
+            <button
+              onClick={() => {
+                this.setState({ hasError: false, error: null });
+                this.props.onReset();
+              }}
+              className="px-4 py-2 rounded-md bg-accent-teal text-graphite-0 text-xs uppercase tracking-[0.2em] font-semibold"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// Ixos dark theme for Clerk components - customized sign-in (teal) and sign-up (magenta)
+const signInAppearance: Appearance = {
+  variables: {
+    colorPrimary: '#14B8A6',
+    colorBackground: '#131315',
+    colorInputBackground: '#1A1A1E',
+    colorInputText: '#E5E5E7',
+    colorText: '#E5E5E7',
+    colorTextSecondary: '#A1A1A6',
+    colorDanger: '#EF4444',
+    borderRadius: '0.5rem',
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+  },
+  elements: {
+    rootBox: 'w-full',
+    card: 'bg-transparent shadow-none border-none p-0',
+    headerTitle: 'hidden',
+    headerSubtitle: 'hidden',
+    socialButtonsBlockButton: 'bg-[#1A1A1E] border border-[#2A2A2E] hover:bg-[#222225] text-[#E5E5E7] transition-colors',
+    socialButtonsBlockButtonText: 'text-[#E5E5E7] font-medium',
+    dividerLine: 'bg-[#2A2A2E]',
+    dividerText: 'text-[#6B6B70] text-xs',
+    formFieldLabel: 'text-[#A1A1A6] text-xs font-medium mb-1.5',
+    formFieldInput: 'bg-[#1A1A1E] border border-[#2A2A2E] text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-[#14B8A6] focus:ring-1 focus:ring-[#14B8A6]/30 rounded-lg h-11 px-4',
+    formButtonPrimary: 'bg-[#14B8A6] hover:bg-[#0D9488] text-[#0A0A0B] font-semibold h-11 rounded-lg transition-colors',
+    footerActionLink: 'text-[#14B8A6] hover:text-[#0D9488] font-medium',
+    identityPreviewText: 'text-[#E5E5E7]',
+    identityPreviewEditButton: 'text-[#14B8A6]',
+    formFieldAction: 'text-[#14B8A6] text-xs',
+    alertText: 'text-[#A1A1A6]',
+    footer: 'hidden',
+    formFieldInputShowPasswordButton: 'text-[#6B6B70] hover:text-[#A1A1A6]',
+  },
+};
+
+const signUpAppearance: Appearance = {
+  ...signInAppearance,
+  variables: {
+    ...signInAppearance.variables,
+    colorPrimary: '#F472B6',
+  },
+  elements: {
+    ...signInAppearance.elements,
+    formFieldInput: 'bg-[#1A1A1E] border border-[#2A2A2E] text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-[#F472B6] focus:ring-1 focus:ring-[#F472B6]/30 rounded-lg h-11 px-4',
+    formButtonPrimary: 'bg-[#F472B6] hover:bg-[#EC4899] text-[#0A0A0B] font-semibold h-11 rounded-lg transition-colors',
+    footerActionLink: 'text-[#F472B6] hover:text-[#EC4899] font-medium',
+    identityPreviewEditButton: 'text-[#F472B6]',
+    formFieldAction: 'text-[#F472B6] text-xs',
+  },
+};
+
+function AuthScreen() {
+  const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in');
+
+  return (
+    <div className="min-h-screen bg-graphite-0 flex items-center justify-center px-6">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="flex justify-center mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-amber to-accent-amber/60 p-[2px] shadow-glow-amber">
+            <div className="w-full h-full rounded-[14px] bg-graphite-1 flex items-center justify-center">
+              <img src={ixosIcon} alt="Ixos" className="w-9 h-9" />
+            </div>
+          </div>
+        </div>
+
+        {/* Title */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-semibold text-porcelain mb-2">
+            {mode === 'sign-in' ? 'Welcome back' : 'Create your account'}
+          </h1>
+          <p className="text-sm text-fg-muted">
+            {mode === 'sign-in'
+              ? 'Sign in to access Ixos'
+              : 'Get started with local-first semantic search'}
+          </p>
+        </div>
+
+        {/* Tab Toggle */}
+        <div className="bg-graphite-2/50 rounded-lg p-1 flex mb-6">
+          <button
+            type="button"
+            onClick={() => setMode('sign-in')}
+            className={`flex-1 py-2.5 rounded-md text-xs uppercase tracking-[0.15em] font-semibold transition-all ${
+              mode === 'sign-in'
+                ? 'bg-graphite-1 text-accent-teal shadow-sm'
+                : 'text-fg-muted hover:text-porcelain'
+            }`}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('sign-up')}
+            className={`flex-1 py-2.5 rounded-md text-xs uppercase tracking-[0.15em] font-semibold transition-all ${
+              mode === 'sign-up'
+                ? 'bg-graphite-1 text-accent-magenta shadow-sm'
+                : 'text-fg-muted hover:text-porcelain'
+            }`}
+          >
+            Sign Up
+          </button>
+        </div>
+
+        {/* Auth Form Container */}
+        <div className="bg-graphite-1 border border-stroke-hairline rounded-2xl p-6 shadow-lift">
+          {mode === 'sign-in' ? (
+            <SignIn routing="virtual" appearance={signInAppearance} />
+          ) : (
+            <SignUp routing="virtual" appearance={signUpAppearance} />
+          )}
+        </div>
+
+        {/* Privacy Notice */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-fg-dim">
+            Your files stay on your device. We never see your data.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LoadingScreen({ message }: { message: string }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-graphite-0">
+      <div className="flex flex-col items-center gap-4">
+        {/* Logo with pulse */}
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-amber to-accent-amber/60 p-[2px] shadow-glow-amber animate-pulse">
+          <div className="w-full h-full rounded-[14px] bg-graphite-1 flex items-center justify-center">
+            <img src={ixosIcon} alt="Ixos" className="w-9 h-9" />
+          </div>
+        </div>
+        {/* Animated spinner */}
+        <div className="relative w-8 h-8">
+          <div className="absolute inset-0 rounded-full border-2 border-stroke-hairline" />
+          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-accent-amber animate-spin" />
+        </div>
+        {/* Pulsing amber text */}
+        <div className="text-xs uppercase tracking-[0.2em] text-accent-amber animate-pulse">
+          {message}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TransferScreen({ onRequest }: { onRequest: () => Promise<void> }) {
+  const { deviceLabel } = useAuthStore();
+  const [isRequesting, setIsRequesting] = useState(false);
+  const [requested, setRequested] = useState(false);
+
+  const handleRequest = async () => {
+    setIsRequesting(true);
+    try {
+      await onRequest();
+      setRequested(true);
+    } catch (error) {
+      console.error('Transfer request failed:', error);
+    } finally {
+      setIsRequesting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-graphite-0 px-6">
+      <div className="max-w-md w-full bg-graphite-1 border border-stroke-hairline rounded-2xl p-6 shadow-lift">
+        <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-accent-magenta/20 flex items-center justify-center">
+          <svg className="w-6 h-6 text-accent-magenta" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold text-porcelain mb-3 text-center">Device transfer required</h2>
+        <p className="text-sm text-fg-muted mb-6 text-center">
+          Your Pro license is active on another device. Request a transfer to use Pro on
+          this device ({deviceLabel ?? 'current device'}).
+        </p>
+
+        {requested ? (
+          <div className="p-4 bg-accent-teal/10 border border-accent-teal/20 rounded-lg text-center">
+            <p className="text-sm text-accent-teal font-medium">Check your email!</p>
+            <p className="text-xs text-fg-muted mt-1">
+              We've sent a transfer approval link to your email.
+            </p>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleRequest}
+            disabled={isRequesting}
+            className="w-full py-3 rounded-lg bg-accent-magenta text-graphite-0 text-xs uppercase tracking-[0.2em] font-semibold disabled:opacity-60 disabled:cursor-not-allowed transition-opacity"
+          >
+            {isRequesting ? 'Sending...' : 'Send approval email'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AuthGateInner({ children }: AuthGateProps) {
+  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { user } = useUser();
+  const {
+    setUser,
+    setDevice,
+    registerDevice,
+    claimLease,
+    refreshLease,
+    fetchEntitlement,
+    requestTransfer,
+    setEntitlementToken,
+    transferRequired,
+    transferToken,
+  } = useAuthStore();
+
+  const [bootstrapped, setBootstrapped] = useState(false);
+  const [bootError, setBootError] = useState<string | null>(null);
+
+  const userEmail = useMemo(() => {
+    if (!user) return null;
+    return (
+      user.primaryEmailAddress?.emailAddress ||
+      user.emailAddresses?.[0]?.emailAddress ||
+      user.username ||
+      user.id ||
+      null
+    );
+  }, [user]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function bootstrap() {
+      if (!isLoaded || !isSignedIn || !user?.id) return;
+
+      try {
+        const deviceId = await getMachineId();
+        const deviceLabel = await getDeviceLabel();
+        setDevice(deviceId, deviceLabel);
+        setUser({ id: user.id, email: userEmail ?? user.id });
+
+        // Load cached token first
+        try {
+          const cachedToken = await loadEntitlementToken();
+          if (cachedToken) {
+            setEntitlementToken(cachedToken);
+            try {
+              await invoke('set_entitlement_token', { token: cachedToken });
+            } catch {
+              // Ignore - command might not be available
+            }
+          }
+        } catch {
+          // Ignore token loading errors
+        }
+
+        const clerkToken = await getToken();
+        if (!clerkToken) {
+          if (!cancelled) setBootstrapped(true);
+          return;
+        }
+
+        // Register device - don't fail if this fails
+        try {
+          await registerDevice(clerkToken, deviceId, deviceLabel);
+        } catch (err) {
+          console.warn('Device registration failed (non-fatal):', err);
+        }
+
+        // Try to claim lease
+        try {
+          const claimResult = await claimLease(clerkToken, deviceId);
+          if (claimResult?.token) {
+            setEntitlementToken(claimResult.token);
+            await storeEntitlementToken(claimResult.token).catch(() => {});
+            try {
+              await invoke('set_entitlement_token', { token: claimResult.token });
+            } catch {
+              // Ignore
+            }
+          } else {
+            // Fetch entitlement as fallback
+            await fetchEntitlement(clerkToken, deviceId).catch(() => {});
+          }
+        } catch (err) {
+          console.warn('Lease claim failed (non-fatal):', err);
+          // Try to fetch entitlement anyway
+          await fetchEntitlement(clerkToken, deviceId).catch(() => {});
+        }
+      } catch (error) {
+        console.error('Auth bootstrap error:', error);
+        setBootError(error instanceof Error ? error.message : 'Bootstrap failed');
+      } finally {
+        if (!cancelled) setBootstrapped(true);
+      }
+    }
+
+    if (isSignedIn) {
+      setBootError(null);
+      bootstrap();
+    } else {
+      setBootstrapped(false);
+      setBootError(null);
+      setEntitlementToken(null);
+      invoke('clear_entitlement_token').catch(() => {});
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isLoaded,
+    isSignedIn,
+    user?.id,
+    userEmail,
+    getToken,
+    setDevice,
+    setUser,
+    registerDevice,
+    claimLease,
+    refreshLease,
+    fetchEntitlement,
+    setEntitlementToken,
+  ]);
+
+  useEffect(() => {
+    if (!isSignedIn || !bootstrapped) return;
+    let cancelled = false;
+    const interval = setInterval(async () => {
+      if (cancelled) return;
+      const deviceId = useAuthStore.getState().deviceId;
+      const transferNeeded = useAuthStore.getState().transferRequired;
+      if (transferNeeded) return;
+      if (!deviceId) return;
+      const token = await getToken();
+      if (!token) return;
+      try {
+        const refreshResult = await refreshLease(token, deviceId);
+        if (refreshResult?.token) {
+          setEntitlementToken(refreshResult.token);
+          await storeEntitlementToken(refreshResult.token).catch(() => {});
+          try {
+            await invoke('set_entitlement_token', { token: refreshResult.token });
+          } catch {
+            // Ignore
+          }
+        }
+      } catch (error) {
+        console.warn('Entitlement refresh failed (non-fatal):', error);
+      }
+    }, 30000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [isSignedIn, bootstrapped, getToken, refreshLease, setEntitlementToken]);
+
+  if (!isLoaded) {
+    return <LoadingScreen message="Loading..." />;
+  }
+
+  if (!isSignedIn) {
+    return <AuthScreen />;
+  }
+
+  if (!bootstrapped) {
+    return <LoadingScreen message="Initializing..." />;
+  }
+
+  // Show error state but still allow app to load
+  if (bootError) {
+    console.warn('Auth bootstrap had errors but continuing:', bootError);
+  }
+
+  if (transferRequired) {
+    return (
+      <TransferScreen
+        onRequest={async () => {
+          const token = await getToken();
+          if (!token) return;
+          const { deviceId } = useAuthStore.getState();
+          if (!deviceId) return;
+          await requestTransfer(token, deviceId, transferToken ?? undefined);
+        }}
+      />
+    );
+  }
+
+  return <>{children}</>;
+}
+
+export function AuthGate({ children }: AuthGateProps) {
+  const [resetKey, setResetKey] = useState(0);
+
+  return (
+    <AuthErrorBoundary onReset={() => setResetKey(k => k + 1)} key={resetKey}>
+      <AuthGateInner>{children}</AuthGateInner>
+    </AuthErrorBoundary>
+  );
+}

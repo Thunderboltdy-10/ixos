@@ -123,8 +123,6 @@ export function ParticlesFieldV3() {
 
                 // 3. Trace Snapping (Top layer only)
                 // If particle is close to a trace point and sufficiently opaque
-                let snapX = 0;
-                let snapY = 0;
 
                 if (tracePoints && tracePoints.length > 0 && sf > 0.5) {
                     // Only check a subset or random points to save performace? 

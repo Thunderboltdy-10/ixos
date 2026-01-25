@@ -6,14 +6,21 @@ import { useStatsStore } from '@/stores/statsStore';
 import { useStarredStore, type SearchThread } from '@/stores/starredStore';
 import { useSearchStore } from '@/stores/searchStore';
 import ixosIcon from '@/assets/ixos-icon.png';
+import { useAuthStore } from '@/stores/authStore';
+import { PlanBadge } from '@/components/account/PlanBadge';
+import { UpgradeBanner } from '@/components/account/UpgradeBanner';
+import { openExternalUrl } from '@/lib/tauri';
+import { useAuth } from '@clerk/clerk-react';
+import { buildCheckoutUrl, getVariantId } from '@/lib/checkout';
 
 interface SidebarProps {
   onNewSearch?: () => void;
   onOpenGuide?: () => void;
+  onOpenSettings?: (tab?: 'search' | 'account' | 'keyboard' | 'privacy' | 'compliance' | 'about') => void;
   className?: string;
 }
 
-export function Sidebar({ onNewSearch, onOpenGuide, className }: SidebarProps) {
+export function Sidebar({ onNewSearch, onOpenGuide, onOpenSettings, className }: SidebarProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'recent' | 'starred'>('recent');
 
@@ -21,7 +28,10 @@ export function Sidebar({ onNewSearch, onOpenGuide, className }: SidebarProps) {
   const stats = useStatsStore();
   const starred = useStarredStore();
   const searchStore = useSearchStore();
+  const { user, entitlement, fetchBillingPortal } = useAuthStore();
+  const { signOut, getToken } = useAuth();
   const journalistMode = searchStore.journalistMode;
+  const variantId = getVariantId();
 
   // Get starred threads
   const starredThreads = starred.getStarredThreads();
@@ -62,6 +72,39 @@ export function Sidebar({ onNewSearch, onOpenGuide, className }: SidebarProps) {
   };
 
   const cacheHitRate = stats.getCacheHitRate() * 100;
+  const showUpgrade = !!user && entitlement?.plan !== 'pro';
+
+  const handleManageBilling = async () => {
+    if (!user?.id) return;
+
+    // Free users: open Lemon Squeezy checkout in browser
+    if (entitlement?.plan !== 'pro') {
+      if (!variantId) {
+        console.warn('Missing VITE_LEMONSQUEEZY_PRO_VARIANT_ID');
+        return;
+      }
+      const checkoutUrl = buildCheckoutUrl(variantId, user.id, user.email);
+      try {
+        await openExternalUrl(checkoutUrl);
+      } catch (error) {
+        console.warn('Failed to open checkout:', error);
+        window.open(checkoutUrl, '_blank');
+      }
+      return;
+    }
+
+    // Pro users: open billing portal
+    const token = await getToken();
+    if (!token) return;
+    try {
+      const { portalUrl } = await fetchBillingPortal(token);
+      if (portalUrl) {
+        await openExternalUrl(portalUrl);
+      }
+    } catch (error) {
+      console.warn('Failed to open billing portal:', error);
+    }
+  };
 
   return (
     <aside className={cn('w-60 h-full flex flex-col bg-graphite-0 border-r border-stroke-hairline', className)}>
@@ -131,9 +174,7 @@ export function Sidebar({ onNewSearch, onOpenGuide, className }: SidebarProps) {
         </div>
       )}
 
-
-
-
+      {showUpgrade && <UpgradeBanner />}
 
       {/* Search history list */}
       <nav className="flex-1 overflow-y-auto px-2 pt-2 scrollbar-hide">
@@ -261,6 +302,55 @@ export function Sidebar({ onNewSearch, onOpenGuide, className }: SidebarProps) {
           <span className="text-xs">Guide</span>
         </button>
       </div>
+
+      {/* Account footer */}
+      {user && (
+        <div className="px-3 py-3 border-t border-stroke-hairline">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 rounded-full bg-graphite-2 border border-stroke-hairline flex items-center justify-center text-2xs text-fg-muted">
+              {user.email.slice(0, 1).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-fg-muted truncate">{user.email}</p>
+            </div>
+            {entitlement && <PlanBadge plan={entitlement.plan} />}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => onOpenSettings?.('account')}
+              className="py-1.5 px-2 rounded-md text-2xs uppercase tracking-[0.18em] bg-graphite-2 text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors"
+            >
+              Account
+            </button>
+            {entitlement?.plan === 'pro' ? (
+              <button
+                type="button"
+                onClick={handleManageBilling}
+                className="py-1.5 px-2 rounded-md text-2xs uppercase tracking-[0.18em] bg-accent-teal/15 text-accent-teal hover:bg-accent-teal/25 transition-colors"
+              >
+                Billing
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleManageBilling}
+                disabled={!variantId}
+                className="py-1.5 px-2 rounded-md text-2xs uppercase tracking-[0.18em] bg-accent-magenta/20 text-accent-magenta hover:bg-accent-magenta/30 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                Upgrade
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => signOut()}
+              className="col-span-2 py-1.5 px-2 rounded-md text-2xs uppercase tracking-[0.18em] bg-graphite-2 text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Stats footer - single compact line */}
       <div className="px-4 py-3 border-t border-stroke-hairline">

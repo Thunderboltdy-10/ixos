@@ -15,7 +15,7 @@ export function ScoreBreakdown({ breakdown, mode = 'cache', className }: ScoreBr
 
   // Safe accessor with fallback
   const getScore = (key: string): number => {
-    const value = (breakdown as Record<string, unknown>)[key];
+    const value = (breakdown as unknown as Record<string, unknown>)[key];
     // Clamp individual scores between 0 and 1
     return typeof value === 'number' ? Math.min(Math.max(value, 0), 1) : 0;
   };

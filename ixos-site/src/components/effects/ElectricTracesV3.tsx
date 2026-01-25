@@ -16,6 +16,26 @@ interface ElectricTracesV3Props {
     className?: string;
 }
 
+const TRACE_SEGMENTS = [
+    // 1. Hero Left -> Hero Right (Deck connection)
+    { id: "hero-deck", points: "M-50,200 L300,200 L300,100 L1600,100 L1600,300", color: "amber", delay: 0 },
+
+    // 2. Deck -> Pipeline (Vertical drop)
+    { id: "deck-pipeline", points: "M1600,400 L1600,800 L1400,800 L1400,1200", color: "teal", delay: 0.5 },
+
+    // 3. Pipeline -> Meeting (Cross to Left)
+    { id: "pipe-meeting", points: "M1400,1300 L1400,1500 L200,1500 L200,1800", color: "violet", delay: 1.0 },
+
+    // 4. Meeting -> Benchmarks (Vertical Left)
+    { id: "meet-bench", points: "M200,1900 L200,2400 L600,2400", color: "violet", delay: 1.5 },
+
+    // 5. Benchmarks -> Pricing (Center Feed)
+    { id: "bench-price", points: "M800,2400 L1200,2400 L1200,2800 L800,2800 L800,3200", color: "magenta", delay: 2.0 },
+
+    // 6. Pricing -> Trust (Bottom Spread)
+    { id: "price-trust", points: "M800,3300 L800,3600 L200,3600", color: "amber", delay: 2.5 },
+] as const;
+
 export function ElectricTracesV3({ className }: ElectricTracesV3Props) {
     const containerRef = useRef<HTMLDivElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
@@ -23,28 +43,6 @@ export function ElectricTracesV3({ className }: ElectricTracesV3Props) {
     const glowPathRefs = useRef<Map<string, SVGPathElement>>(new Map());
     const [dimensions, setDimensions] = useState({ width: 1920, height: 4000 });
     const [isGlowing, setIsGlowing] = useState(false);
-
-    // Semantic Semantic Paths (Manhattan Routing)
-    // Grid-based logic assuming standard 1920px width reference, scaled later
-    const traceSegments = [
-        // 1. Hero Left -> Hero Right (Deck connection)
-        { id: "hero-deck", points: "M-50,200 L300,200 L300,100 L1600,100 L1600,300", color: "amber", delay: 0 },
-
-        // 2. Deck -> Pipeline (Vertical drop)
-        { id: "deck-pipeline", points: "M1600,400 L1600,800 L1400,800 L1400,1200", color: "teal", delay: 0.5 },
-
-        // 3. Pipeline -> Meeting (Cross to Left)
-        { id: "pipe-meeting", points: "M1400,1300 L1400,1500 L200,1500 L200,1800", color: "violet", delay: 1.0 },
-
-        // 4. Meeting -> Benchmarks (Vertical Left)
-        { id: "meet-bench", points: "M200,1900 L200,2400 L600,2400", color: "violet", delay: 1.5 },
-
-        // 5. Benchmarks -> Pricing (Center Feed)
-        { id: "bench-price", points: "M800,2400 L1200,2400 L1200,2800 L800,2800 L800,3200", color: "magenta", delay: 2.0 },
-
-        // 6. Pricing -> Trust (Bottom Spread)
-        { id: "price-trust", points: "M800,3300 L800,3600 L200,3600", color: "amber", delay: 2.5 }
-    ];
 
     // Resize Handler
     useEffect(() => {
@@ -97,7 +95,7 @@ export function ElectricTracesV3({ className }: ElectricTracesV3Props) {
         gsap.registerPlugin(ScrollTrigger);
 
         const ctx = gsap.context(() => {
-            traceSegments.forEach((segment) => {
+            TRACE_SEGMENTS.forEach((segment) => {
                 const path = pathRefs.current.get(segment.id);
                 if (!path) return;
 
@@ -193,7 +191,7 @@ export function ElectricTracesV3({ className }: ElectricTracesV3Props) {
                     </filter>
                 </defs>
 
-                {traceSegments.map((segment) => (
+                {TRACE_SEGMENTS.map((segment) => (
                     <g key={segment.id}>
                         {/* Wider Glow Path */}
                         <path

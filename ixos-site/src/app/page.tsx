@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Nav } from "@/components/ui/Nav";
 import { HeroJourney } from "@/components/sections/HeroJourney";
 import { MeetingUseCase } from "@/components/sections/MeetingUseCase";
@@ -29,7 +30,9 @@ export default function Home() {
 
       {/* Pricing - Magenta accent */}
       <section className="section-pricing accent-magenta">
-        <Pricing />
+        <Suspense fallback={null}>
+          <Pricing />
+        </Suspense>
       </section>
 
       {/* Trust / Privacy - Amber accent */}

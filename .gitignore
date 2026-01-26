@@ -19,8 +19,12 @@ Thumbs.db
 
 # Model files (large binaries)
 *.onnx
-models/
+models/**
 dataset/
+
+# Allow lightweight lab docs in the models tree
+!models/lab/
+!models/lab/*.md
 
 # Local config
 .env

@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import crypto from "crypto";
 import { db, subscriptions, users, webhookEvents } from "@/lib/db";
-import { eq } from "drizzle-orm";
+import { eq, and, ne } from "drizzle-orm";
 import {
   normalizePlanFromProductName,
   normalizeSubscriptionStatus,
@@ -283,17 +283,43 @@ export async function POST(req: Request) {
     console.log("Plan:", plan);
 
     // Upsert subscription
+    // CRITICAL: Ensure 1:1 mapping. If a subscription is being created or updated,
+    // we must ensure no OLD duplicates exist for this user.
+    if (userRecord) {
+      // If this is a new subscription or an update, let's clean up any OTHER subscriptions 
+      // that might exist for this user to prevent the "double row" issue.
+      // We exclude the current lemonSubscriptionId from deletion if it exists.
+      await db.delete(subscriptions)
+        .where(
+          and(
+            eq(subscriptions.userId, userRecord.id),
+            ne(subscriptions.lemonSubscriptionId, lemonSubscriptionId)
+          )
+        );
+    }
+
     const existing = await db.query.subscriptions.findFirst({
       where: eq(subscriptions.lemonSubscriptionId, lemonSubscriptionId),
     });
 
     const isNewSubscription = !existing;
 
+    // Handle expiration: User requested deletion on expire.
+    // We also treat "cancelled" as just a status update, but "expired" means DELETE.
+    if (status === "expired") {
+      console.log(`[Webhook] Subscription ${lemonSubscriptionId} expired. Deleting path.`);
+      await db.delete(subscriptions)
+        .where(eq(subscriptions.lemonSubscriptionId, lemonSubscriptionId));
+
+      // Early return after deletion
+      return new Response("Subscription expired and deleted", { status: 200 });
+    }
+
     if (existing) {
       await db
         .update(subscriptions)
         .set({
-          userId: userRecord.id,
+          userId: userRecord.id, // Ensure it's linked to the correct user (transfers if needed)
           lemonCustomerId,
           status,
           plan,

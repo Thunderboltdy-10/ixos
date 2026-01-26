@@ -34,7 +34,8 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: '20'
+          cache: 'npm'
 
       - name: install rust
         uses: dtolnay/rust-toolchain@stable
@@ -42,8 +43,25 @@ jobs:
           # Those targets are meant for build on CI correctly
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: install dependencies
-        run: npm ci
+      - name: install root dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: install UI dependencies with platform-specific native modules
+        working-directory: ui
+        run: |
+          npm ci --prefer-offline --no-audit --include=optional
+
+      - name: build UI
+        working-directory: ui
+        run: npm run build
+
+      - name: verify built assets
+        run: |
+          if [ ! -d "ui/dist" ]; then
+            echo "ERROR: UI build failed - dist directory not found"
+            exit 1
+          fi
+          echo "✓ UI build successful: ui/dist exists"
 
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -57,7 +75,7 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
-  
+
   upload-to-blob:
     needs: publish-tauri
     runs-on: ubuntu-latest
@@ -65,9 +83,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: '20'
+          cache: 'npm'
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit
         
       - name: Download all release artifacts
         # We need a way to get the artifacts. Since tauri-action uploads to GitHub Release,

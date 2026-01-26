@@ -13,6 +13,9 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
 
   useEffect(() => {
     let cancelled = false;
+    let intervalId: NodeJS.Timeout;
+
+    // Initial load
     async function loadDevices() {
       const token = await getToken();
       if (!token || cancelled) return;
@@ -22,11 +25,31 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
         // no-op
       }
     }
+
+    // Polling for status updates (e.g. after purchase)
+    async function pollStatus() {
+      const token = await getToken();
+      // Use the current device ID from store if available
+      const currentDeviceId = useAuthStore.getState().deviceId;
+      if (!token || !currentDeviceId || cancelled) return;
+
+      try {
+        await refreshLease(token, currentDeviceId);
+      } catch {
+        // suppress polling errors
+      }
+    }
+
     loadDevices();
+
+    // Poll every 5 seconds to catch subscription changes immediately
+    intervalId = setInterval(pollStatus, 5000);
+
     return () => {
       cancelled = true;
+      clearInterval(intervalId);
     };
-  }, [getToken, fetchDevices]);
+  }, [getToken, fetchDevices, refreshLease]);
 
   const handleManage = async () => {
     if (!user?.id) return;

@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "description": "Privacy-first semantic file search",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "tauri": "tauri",
     "tauri:dev": "tauri dev --no-watch",

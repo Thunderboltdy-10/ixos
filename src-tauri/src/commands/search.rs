@@ -273,7 +273,14 @@ pub async fn search_progressive(
     if let Some(token) = state.get_entitlement_token() {
         verify_entitlement_token_internal(&token)?;
     } else {
-        return Err("Authentication required".into());
+        #[cfg(debug_assertions)]
+        {
+            tracing::warn!("Search allowed without entitlement token (DEBUG MODE)");
+        }
+        #[cfg(not(debug_assertions))]
+        {
+            return Err("Authentication required".into());
+        }
     }
 
     // Cancel any existing search

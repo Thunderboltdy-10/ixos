@@ -51,12 +51,14 @@ export function Pricing() {
 
     useEffect(() => {
         let cancelled = false;
+        let intervalId: NodeJS.Timeout;
+
         async function loadSubscription() {
             if (!isLoaded || !isSignedIn || hasDesktopContext) {
                 setSubscription(null);
                 return;
             }
-            setIsLoadingSubscription(true);
+            if (!cancelled) setIsLoadingSubscription(true);
             try {
 
                 const res = await fetch("/api/account/subscription", {
@@ -76,9 +78,17 @@ export function Pricing() {
                 if (!cancelled) setIsLoadingSubscription(false);
             }
         }
+
         loadSubscription();
+
+        // POLL: Check every 5s if we are waiting for a purchase to clear
+        if (isSignedIn && !hasDesktopContext) {
+            intervalId = setInterval(loadSubscription, 5000);
+        }
+
         return () => {
             cancelled = true;
+            if (intervalId) clearInterval(intervalId);
         };
     }, [isLoaded, isSignedIn, hasDesktopContext]);
 

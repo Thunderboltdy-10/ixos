@@ -1,5 +1,5 @@
 // TODO: Replace with your actual Vercel Blob Store URL ID
-const BLOB_STORE_ID = "YOUR_BLOB_STORE_ID";
+const BLOB_STORE_ID = "efuuegbvyq6yzst0";
 const BASE_URL = `https://${BLOB_STORE_ID}.public.blob.vercel-storage.com`;
 
 export const DOWNLOADS = {

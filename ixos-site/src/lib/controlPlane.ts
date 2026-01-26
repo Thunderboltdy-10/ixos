@@ -27,31 +27,40 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
       : null;
 
   if (bearerToken) {
+    // Prefer jwtKey for networkless verification (faster, no network dependency)
+    // Fall back to secretKey if jwtKey not configured (requires network call to Clerk)
+    let jwtKey = process.env.CLERK_JWT_KEY;
     const secretKey = process.env.CLERK_SECRET_KEY;
-    const jwtKey = process.env.CLERK_JWT_KEY;
-    if (!secretKey && !jwtKey) {
+
+    // Fix PEM newlines - Vercel stores \n as literal strings, not actual newlines
+    if (jwtKey) {
+      jwtKey = jwtKey.replace(/\\n/g, "\n");
+    }
+
+    if (!jwtKey && !secretKey) {
       if (process.env.NODE_ENV !== "production") {
-        console.warn("Missing CLERK_SECRET_KEY or CLERK_JWT_KEY for token verification.");
+        console.warn("Missing CLERK_JWT_KEY or CLERK_SECRET_KEY for token verification.");
       }
       return null;
     }
+
     try {
-      const { data, errors } = await verifyToken(bearerToken, {
-        secretKey,
-        jwtKey,
-        // Optionally restrict to expected audiences
-        authorizedParties: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-          ? undefined // Clerk handles this automatically with the secret key
-          : undefined,
-      });
+      // CRITICAL: Use EITHER jwtKey OR secretKey, not both
+      // Using both causes "JWT signature is invalid" errors
+      // jwtKey = networkless verification using PEM public key (preferred)
+      // secretKey = network call to fetch JWKS from Clerk API
+      const verifyOptions: Parameters<typeof verifyToken>[1] = jwtKey
+        ? { jwtKey }
+        : { secretKey };
+
+      const { data, errors } = await verifyToken(bearerToken, verifyOptions);
+
       if (!errors && data?.sub) {
         return typeof data.sub === "string" ? data.sub : null;
       }
-      // Enhanced error logging for debugging
+
       if (errors?.length) {
         console.error("Clerk token verification failed:", JSON.stringify(errors, null, 2));
-        console.error("Token prefix:", bearerToken.slice(0, 20) + "...");
-        console.error("Has secretKey:", !!secretKey, "Has jwtKey:", !!jwtKey);
       }
     } catch (error) {
       console.error("Failed to verify Clerk token:", error);

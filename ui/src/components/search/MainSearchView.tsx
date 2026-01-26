@@ -13,6 +13,7 @@ import { type SearchMode } from './ModeSwitcher';
 
 export function MainSearchView() {
   // Use useSearch hook for core data
+
   const {
     query,
     setQuery,
@@ -26,6 +27,7 @@ export function MainSearchView() {
     revealSelected,
     startSearch,
     cancelSearch,
+    errorMessage,
   } = useSearch();
 
   // Store access for specific modes and late insights
@@ -106,6 +108,12 @@ export function MainSearchView() {
               centered={!hasActiveSearch}
             />
           </div>
+
+          {errorMessage && (
+            <div className="mt-4 p-3 bg-error/10 border border-error/20 rounded-lg text-error text-sm text-center">
+              {errorMessage}
+            </div>
+          )}
 
           {showDeck && <SearchDeck />}
         </div>

@@ -44,31 +44,46 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
       return null;
     }
 
-    try {
-      // CRITICAL: Use EITHER jwtKey OR secretKey, not both
-      // Using both causes "JWT signature is invalid" errors
-      // jwtKey = networkless verification using PEM public key (preferred)
-      // secretKey = network call to fetch JWKS from Clerk API
-      const verifyOptions: Parameters<typeof verifyToken>[1] = jwtKey
-        ? { jwtKey }
-        : { secretKey };
+    // CRITICAL: use networkless (jwtKey) if available, but FALLBACK to network (secretKey)
+    // if it fails. This is crucial for avoiding 401s if keys are rotated or slightly mismatched.
 
-      const { data, errors } = await verifyToken(bearerToken, verifyOptions);
+    let verifiedData = null;
 
-      if (!errors && data?.sub) {
-        return typeof data.sub === "string" ? data.sub : null;
-      }
-
-      if (errors?.length) {
-        console.error("Clerk token verification failed:", JSON.stringify(errors, null, 2));
-      }
-    } catch (error) {
-      console.error("Failed to verify Clerk token:", error);
-      if (error instanceof Error) {
-        console.error("Error details:", error.message);
-        console.error("Stack:", error.stack);
+    // 1. Try JWT Key (Fast, Local)
+    if (jwtKey) {
+      try {
+        const { data, errors } = await verifyToken(bearerToken, { jwtKey });
+        if (!errors && data?.sub) {
+          verifiedData = data;
+        } else {
+          console.warn("Clerk JWT Key verification failed, attempting Secret Key fallback...", errors);
+        }
+      } catch (e) {
+        console.warn("Clerk JWT Key verification threw error, attempting fallback...", e);
       }
     }
+
+    // 2. Fallback to Secret Key (Network, Robust)
+    if (!verifiedData && secretKey) {
+      try {
+        // Explicitly use secretKey verified against Clerk API
+        const { data, errors } = await verifyToken(bearerToken, { secretKey });
+        if (!errors && data?.sub) {
+          verifiedData = data;
+          console.log("Clerk Secret Key fallback SUCCESS.");
+        } else if (errors) {
+          console.error("Clerk Secret Key fallback failed:", JSON.stringify(errors, null, 2));
+        }
+      } catch (e) {
+        console.error("Clerk Secret Key verification threw:", e);
+      }
+    }
+
+    if (verifiedData?.sub) {
+      return typeof verifiedData.sub === "string" ? verifiedData.sub : null;
+    }
+  } catch (error) {
+    console.error("Failed to verify Clerk token (Fatal):", error);
   } else {
     // Debug logging for missing header
     console.warn("getClerkUserIdFromRequest: No Bearer token found in Authorization header.");

@@ -18,13 +18,16 @@
     "ixos-site"
   ],
   "devDependencies": {
+    "@neondatabase/serverless": "0.9.5",
     "@tauri-apps/cli": "^2",
     "drizzle-orm": "^0.36.4",
-    "@neondatabase/serverless": "0.9.5",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
   "overrides": {
     "@neondatabase/serverless": "0.9.5"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.0.1"
   }
 }

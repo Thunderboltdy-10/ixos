@@ -57,10 +57,10 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
           if (!errors && data?.sub) {
             verifiedData = data;
           } else {
-            console.warn("Clerk JWT Key verification failed, attempting Secret Key fallback...", errors);
+            console.warn("Clerk JWT Key verification failed:", errors);
           }
         } catch (e) {
-          console.warn("Clerk JWT Key verification threw error, attempting fallback...", e);
+          console.warn("Clerk JWT Key verification threw error:", e);
         }
       }
 
@@ -68,10 +68,11 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
       if (!verifiedData && secretKey) {
         try {
           // Explicitly use secretKey verified against Clerk API
+          console.log("[Auth] Attempting fallback to Secret Key verification...");
           const { data, errors } = await verifyToken(bearerToken, { secretKey });
           if (!errors && data?.sub) {
             verifiedData = data;
-            console.log("Clerk Secret Key fallback SUCCESS.");
+            console.log("[Auth] Clerk Secret Key fallback SUCCESS.");
           } else if (errors) {
             console.error("Clerk Secret Key fallback failed:", JSON.stringify(errors, null, 2));
           }
@@ -82,6 +83,8 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
 
       if (verifiedData?.sub) {
         return typeof verifiedData.sub === "string" ? verifiedData.sub : null;
+      } else {
+        console.error("[Auth] Token verification failed. No 'sub' in data.");
       }
     } catch (error) {
       console.error("Failed to verify Clerk token (Fatal):", error);
@@ -102,9 +105,14 @@ export async function getOrCreateUserByClerkId(clerkUserId: string) {
     return existing;
   }
 
+  console.log(`[Auth] User not found in DB for ClerkID: ${clerkUserId}. Fetching from Clerk...`);
   let clerkUser = await currentUser();
   if (!clerkUser) {
-    clerkUser = await clerkClient.users.getUser(clerkUserId);
+    try {
+      clerkUser = await clerkClient.users.getUser(clerkUserId);
+    } catch (e) {
+      console.error(`[Auth] Failed to fetch user from Clerk Client:`, e);
+    }
   }
   if (!clerkUser) {
     throw new Error("Missing Clerk user");
@@ -116,6 +124,20 @@ export async function getOrCreateUserByClerkId(clerkUserId: string) {
 
   if (!primaryEmail?.emailAddress) {
     throw new Error("Missing Clerk email");
+  }
+
+  // SELF-HEALING: Check if email exists with a DIFFERENT Clerk ID
+  const existingByEmail = await db.query.users.findFirst({
+    where: eq(users.email, primaryEmail.emailAddress)
+  });
+
+  if (existingByEmail) {
+    console.warn(`[Auth] HEALING: Found user by email '${primaryEmail.emailAddress}' with old ID '${existingByEmail.clerkUserId}'. Updating to '${clerkUserId}'.`);
+    const [updated] = await db.update(users)
+      .set({ clerkUserId: clerkUserId, updatedAt: new Date() })
+      .where(eq(users.id, existingByEmail.id))
+      .returning();
+    return updated;
   }
 
   const name = [clerkUser.firstName, clerkUser.lastName]
@@ -133,6 +155,7 @@ export async function getOrCreateUserByClerkId(clerkUserId: string) {
     .returning();
 
   if (created) {
+    console.log(`[Auth] Created new user in DB: ${created.id}`);
     return created;
   }
 

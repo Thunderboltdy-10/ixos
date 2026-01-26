@@ -899,7 +899,7 @@ mod tests {
 
     #[test]
     fn test_json_formatter_lexical() {
-        let formatter = JsonFormatter;
+        let formatter = JsonFormatter::new();
         let results = create_test_lexical_results();
         let mut output = Vec::new();
 
@@ -917,7 +917,7 @@ mod tests {
 
     #[test]
     fn test_json_formatter_semantic() {
-        let formatter = JsonFormatter;
+        let formatter = JsonFormatter::new();
         let results = create_test_ranked_results();
         let mut output = Vec::new();
 

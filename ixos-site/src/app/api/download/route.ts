@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
     const platform = searchParams.get("platform") || "windows";
 
     // Repo configuration - update if repo name changes
-    const REPO_OWNER = "ixos";
-    const REPO_NAME = "ixos-protocol";
+    const REPO_OWNER = "Thunderboltdy-10";
+    const REPO_NAME = "Ixos";
 
     try {
         const res = await fetch(

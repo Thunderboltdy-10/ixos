@@ -74,7 +74,7 @@ const signInAppearance: Appearance = {
     colorText: '#E5E5E7',
     colorTextSecondary: '#A1A1A6',
     colorDanger: '#EF4444',
-    borderRadius: '0.5rem',
+    borderRadius: '0.25rem', // More square
     fontFamily: 'system-ui, -apple-system, sans-serif',
   },
   elements: {
@@ -82,14 +82,15 @@ const signInAppearance: Appearance = {
     card: 'bg-transparent shadow-none border-none p-0',
     headerTitle: 'hidden',
     headerSubtitle: 'hidden',
-    socialButtonsBlockButton: 'bg-[#1A1A1E] border border-[#2A2A2E] hover:bg-[#222225] text-[#E5E5E7] transition-colors h-10 flex items-center justify-center',
+    // Lighter social buttons for better icon visibility
+    socialButtonsBlockButton: 'bg-white/5 border border-white/10 hover:bg-white/10 text-[#E5E5E7] transition-colors h-10 flex items-center justify-center',
     socialButtonsBlockButtonText: 'text-[#E5E5E7] font-medium ml-2',
     socialButtonsBlockButtonArrow: 'hidden',
     dividerLine: 'bg-[#2A2A2E]',
     dividerText: 'text-[#6B6B70] text-xs uppercase tracking-wider',
     formFieldLabel: 'text-[#A1A1A6] text-xs font-medium mb-1.5 uppercase tracking-wide',
-    formFieldInput: 'bg-[#1A1A1E] border border-[#2A2A2E] text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-[#14B8A6] focus:ring-1 focus:ring-[#14B8A6]/30 rounded-lg h-10 px-4 transition-all',
-    formButtonPrimary: 'bg-accent-teal hover:bg-accent-teal/90 text-[#0A0A0B] font-semibold h-10 rounded-lg transition-all uppercase tracking-widest text-xs shadow-glow-teal-sm',
+    formFieldInput: 'bg-[#1A1A1E] border border-white/10 text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-[#14B8A6] focus:ring-1 focus:ring-[#14B8A6]/30 rounded-md h-10 px-4 transition-all',
+    formButtonPrimary: 'bg-accent-teal hover:bg-accent-teal/90 text-[#0A0A0B] font-semibold h-10 rounded-md transition-all uppercase tracking-widest text-xs shadow-glow-teal-sm',
     footerActionLink: 'text-[#14B8A6] hover:text-[#0D9488] font-medium transition-colors',
     identityPreviewText: 'text-[#E5E5E7]',
     identityPreviewEditButton: 'text-[#14B8A6] hover:text-[#0D9488] transition-colors',
@@ -108,8 +109,8 @@ const signUpAppearance: Appearance = {
   },
   elements: {
     ...signInAppearance.elements,
-    formFieldInput: 'bg-[#1A1A1E] border border-[#2A2A2E] text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-accent-magenta focus:ring-1 focus:ring-accent-magenta/30 rounded-lg h-10 px-4 transition-all',
-    formButtonPrimary: 'bg-accent-magenta hover:bg-accent-magenta/90 text-[#0A0A0B] font-semibold h-10 rounded-lg transition-all uppercase tracking-widest text-xs shadow-glow-magenta-sm',
+    formFieldInput: 'bg-[#1A1A1E] border border-white/10 text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-accent-magenta focus:ring-1 focus:ring-accent-magenta/30 rounded-md h-10 px-4 transition-all',
+    formButtonPrimary: 'bg-accent-magenta hover:bg-accent-magenta/90 text-[#0A0A0B] font-semibold h-10 rounded-md transition-all uppercase tracking-widest text-xs shadow-glow-magenta-sm',
     footerActionLink: 'text-accent-magenta hover:text-accent-magenta/80 font-medium transition-colors',
     identityPreviewEditButton: 'text-accent-magenta hover:text-accent-magenta/80 transition-colors',
     formFieldAction: 'text-accent-magenta hover:text-accent-magenta/80 text-xs transition-colors',
@@ -124,8 +125,8 @@ function AuthScreen() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-amber to-accent-amber/60 p-[2px] shadow-glow-amber">
-            <div className="w-full h-full rounded-[14px] bg-graphite-1 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-accent-amber to-accent-amber/60 p-[1px] shadow-glow-amber">
+            <div className="w-full h-full rounded-[11px] bg-graphite-1 flex items-center justify-center">
               <img src={ixosIcon} alt="Ixos" className="w-9 h-9" />
             </div>
           </div>
@@ -144,11 +145,11 @@ function AuthScreen() {
         </div>
 
         {/* Tab Toggle */}
-        <div className="bg-graphite-2/50 rounded-lg p-1 flex mb-6">
+        <div className="bg-graphite-2/50 rounded-md p-1 flex mb-6 border border-white/5">
           <button
             type="button"
             onClick={() => setMode('sign-in')}
-            className={`flex-1 py-2.5 rounded-md text-xs uppercase tracking-[0.15em] font-semibold transition-all ${mode === 'sign-in'
+            className={`flex-1 py-2 rounded-md text-xs uppercase tracking-[0.15em] font-semibold transition-all ${mode === 'sign-in'
               ? 'bg-graphite-1 text-accent-teal shadow-sm'
               : 'text-fg-muted hover:text-porcelain'
               }`}
@@ -158,7 +159,7 @@ function AuthScreen() {
           <button
             type="button"
             onClick={() => setMode('sign-up')}
-            className={`flex-1 py-2.5 rounded-md text-xs uppercase tracking-[0.15em] font-semibold transition-all ${mode === 'sign-up'
+            className={`flex-1 py-2 rounded-md text-xs uppercase tracking-[0.15em] font-semibold transition-all ${mode === 'sign-up'
               ? 'bg-graphite-1 text-accent-magenta shadow-sm'
               : 'text-fg-muted hover:text-porcelain'
               }`}
@@ -168,7 +169,7 @@ function AuthScreen() {
         </div>
 
         {/* Auth Form Container */}
-        <div className="bg-graphite-1 border border-stroke-hairline rounded-2xl p-6 shadow-lift">
+        <div className="bg-graphite-1/50 border border-white/10 rounded-sm p-6 backdrop-blur-md">
           {mode === 'sign-in' ? (
             <SignIn routing="virtual" appearance={signInAppearance} />
           ) : (

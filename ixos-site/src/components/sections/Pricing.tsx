@@ -103,9 +103,18 @@ export function Pricing() {
         if (cancelUrl) {
             params.append("checkout[cancel_url]", cancelUrl);
         }
+
+        // Autofill user details
+        if (effectiveEmail) {
+            params.append("checkout[email]", effectiveEmail);
+        }
+        if (user?.fullName) {
+            params.append("checkout[name]", user.fullName);
+        }
+
         const paramString = params.toString();
         return paramString ? `${base}${base.includes("?") ? "&" : "?"}${paramString}` : base;
-    }, [clerkUserId, email, variantId, successUrl, cancelUrl, userId, user]);
+    }, [clerkUserId, email, variantId, successUrl, cancelUrl, userId, user, user?.fullName]);
 
     return (
         <div className="relative">
@@ -192,7 +201,7 @@ export function Pricing() {
                                             return;
                                         }
                                         if (checkoutUrl) {
-                                            window.location.href = checkoutUrl;
+                                            window.open(checkoutUrl, "_blank");
                                         }
                                     }}
                                     features={[
@@ -228,7 +237,7 @@ export function Pricing() {
                                             <button
                                                 type="button"
                                                 onClick={() => {
-                                                    window.location.href = checkoutUrl;
+                                                    window.open(checkoutUrl, "_blank");
                                                 }}
                                                 className={cn(
                                                     "w-full font-mono text-xs uppercase tracking-widest h-12 rounded-md",

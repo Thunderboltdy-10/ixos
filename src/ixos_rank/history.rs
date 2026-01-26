@@ -44,6 +44,13 @@ impl SearchHistory {
             .map(|d| d.as_millis() as u64)
             .unwrap_or(0);
 
+        // Remove existing entry if it exists (deduplication)
+        // Check for same query and directory (case-insensitive for query)
+        let query_lower = query.to_lowercase();
+        self.entries.retain(|e| {
+             e.query.to_lowercase() != query_lower || e.directory != directory
+        });
+
         // Remove oldest if at capacity
         if self.entries.len() >= MAX_HISTORY_ENTRIES {
             self.entries.pop_back();
@@ -151,6 +158,36 @@ mod tests {
         }
 
         assert_eq!(history.len(), MAX_HISTORY_ENTRIES);
+    }
+
+    #[test]
+    fn test_history_deduplication() {
+        let mut history = SearchHistory::new();
+        // Add initial entry
+        history.add("apple".to_string(), PathBuf::from("/tmp"), 5);
+        
+        // Add another entry
+        history.add("banana".to_string(), PathBuf::from("/tmp"), 2);
+        
+        // Add apple again (should replace previous)
+        history.add("Apple".to_string(), PathBuf::from("/tmp"), 10); // Case insensitive check
+        
+        assert_eq!(history.len(), 2);
+        
+        // Check order - Apple should be first (most recent)
+        let entries: Vec<_> = history.entries().collect();
+        assert_eq!(entries[0].query, "Apple");
+        assert_eq!(entries[0].result_count, 10);
+        assert_eq!(entries[1].query, "banana");
+    }
+
+    #[test]
+    fn test_history_deduplication_different_dirs() {
+        let mut history = SearchHistory::new();
+        history.add("apple".to_string(), PathBuf::from("/tmp1"), 5);
+        history.add("apple".to_string(), PathBuf::from("/tmp2"), 2);
+        
+        assert_eq!(history.len(), 2);
     }
 
     #[test]

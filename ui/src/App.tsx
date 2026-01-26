@@ -9,11 +9,39 @@ import { AchievementNotifications } from './components/stats';
 import ixosIcon from '@/assets/ixos-icon.png';
 import { IxosClerkProvider } from './providers/ClerkProvider';
 import { AuthGate } from './components/auth/AuthGate';
-import { useAuthStore } from './stores/authStore';
+// import { useAuthStore } from './stores/authStore';
 
 type WindowType = 'overlay' | 'main' | 'unknown';
 
 
+
+interface ModelStatus {
+  potionAvailable: boolean;
+  potionPath: string | null;
+  qwenAvailable: boolean;
+  qwenPath: string | null;
+  anyAvailable: boolean;
+  recommended: string | null;
+  loadedModel: string | null;
+}
+
+function ModelWarningPopup({ onDismiss }: { onDismiss: () => void }) {
+  // Simple inline fallback if the component was missing
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="bg-graphite-1 border border-stroke-hairline rounded-lg p-6 max-w-md mx-4 shadow-lift text-center">
+        <h2 className="text-lg font-semibold text-porcelain mb-2">Models Required</h2>
+        <p className="text-fg-muted mb-4 text-sm">Semantic search needs embedding models.</p>
+        <button
+          onClick={onDismiss}
+          className="px-4 py-2 bg-accent-teal text-graphite-0 rounded-md text-xs font-bold uppercase tracking-wider"
+        >
+          Dismiss
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function App() {
   const [windowType, setWindowType] = useState<WindowType>('unknown');

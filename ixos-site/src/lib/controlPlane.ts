@@ -22,13 +22,6 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
   const authHeader =
     req.headers.get("authorization") || req.headers.get("Authorization");
 
-  // LOGGING: Check header existence
-  if (!authHeader) {
-    console.warn("[Auth] No Authorization header found.");
-  } else if (!authHeader.toLowerCase().startsWith("bearer ")) {
-    console.warn(`[Auth] Authorization header found but invalid format: ${authHeader.substring(0, 10)}...`);
-  }
-
   const bearerToken =
     authHeader && authHeader.toLowerCase().startsWith("bearer ")
       ? authHeader.slice(7).trim()
@@ -43,100 +36,59 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
           sub: decoded.sub,
           iss: decoded.iss,
           exp: decoded.exp,
-          iat: decoded.iat,
           sid: decoded.sid // session id
         });
-        if (!decoded.sub) {
-          console.error("[Auth] Token PEEK FAILED: Token has no 'sub' claim. Wrong token type?");
-        }
       } catch (e) {
-        console.error("[Auth] Token PEEK FAILED: Could not decode JWT. Is it a JWT?", e);
+        console.error("[Auth] Token PEEK FAILED: Could not decode JWT.", e);
       }
 
-      // Prefer jwtKey for networkless verification (faster, no network dependency)
-      // Fall back to secretKey if jwtKey not configured (requires network call to Clerk)
       let jwtKey = process.env.CLERK_JWT_KEY;
       const secretKey = process.env.CLERK_SECRET_KEY;
 
-      // LOGGING: Check Env Vars
-      console.log("[Auth] Env Keys Check:", {
-        hasJwtKey: !!jwtKey,
-        hasSecretKey: !!secretKey,
-        secretKeyPrefix: secretKey ? secretKey.substring(0, 7) + "..." : "N/A"
-      });
-
-      // Fix PEM newlines - Vercel stores \n as literal strings, not actual newlines
+      // Fix PEM newlines if present
       if (jwtKey) {
         jwtKey = jwtKey.replace(/\\n/g, "\n");
       }
 
-      if (!jwtKey && !secretKey) {
-        if (process.env.NODE_ENV !== "production") {
-          console.warn("Missing CLERK_JWT_KEY or CLERK_SECRET_KEY for token verification.");
-        }
-        return null;
-      }
-
-      // CRITICAL: use networkless (jwtKey) if available, but FALLBACK to network (secretKey)
-      // if it fails. This is crucial for avoiding 401s if keys are rotated or slightly mismatched.
-
-      let verifiedData = null;
-      let verificationErrors = [];
-
-      // 1. Try JWT Key (Fast, Local)
+      // 1. Try JWT Key (Fast, Local) if available
       if (jwtKey) {
         try {
-          const { data, errors } = await verifyToken(bearerToken, { jwtKey });
-          if (!errors && data?.sub) {
-            verifiedData = data;
-          } else {
-            verificationErrors.push({ method: "jwtKey", errors });
-            console.warn("Clerk JWT Key verification failed:", errors);
+          const verified = await verifyToken(bearerToken, { jwtKey });
+          // verifyToken returns the payload directly or throws
+          if (verified?.sub) {
+            return verified.sub as string;
           }
         } catch (e) {
-          verificationErrors.push({ method: "jwtKey", error: String(e) });
-          console.warn("Clerk JWT Key verification threw error:", e);
+          console.warn(`[Auth] jwtKey verification failed: ${e}`);
+          // Continue to secretKey fallback
         }
       }
 
       // 2. Fallback to Secret Key (Network, Robust)
-      if (!verifiedData && secretKey) {
+      if (secretKey) {
         try {
-          // Explicitly use secretKey verified against Clerk API
           console.log("[Auth] Attempting fallback to Secret Key verification...");
-          const { data, errors } = await verifyToken(bearerToken, { secretKey });
+          const verified = await verifyToken(bearerToken, { secretKey });
 
-          if (errors) {
-            verificationErrors.push({ method: "secretKey", errors });
-            console.error("Clerk Secret Key fallback failed with errors:", JSON.stringify(errors, null, 2));
+          if (verified?.sub) {
+            console.log("[Auth] Secret Key verification SUCCESS.");
+            return verified.sub as string;
           } else {
-            console.log("[Auth] Secret Key verification returned no errors. Data keys:", Object.keys(data || {}));
-            if (data?.sub) {
-              verifiedData = data;
-              console.log("[Auth] Clerk Secret Key fallback SUCCESS.");
-            } else {
-              console.error("[Auth] Secret Key verification passed but 'sub' is missing. Full Data:", JSON.stringify(data, null, 2));
-            }
+            console.error("[Auth] Secret Key verification passed but 'sub' is missing.", verified);
           }
         } catch (e) {
-          verificationErrors.push({ method: "secretKey", error: String(e) });
-          console.error("Clerk Secret Key verification threw:", e);
+          console.error(`[Auth] Secret Key verification failed: ${e}`);
         }
       }
 
-      if (verifiedData?.sub) {
-        return typeof verifiedData.sub === "string" ? verifiedData.sub : null;
-      } else {
-        console.error("[Auth] FINAL DECISION: Token verification failed.", JSON.stringify(verificationErrors, null, 2));
-      }
+      console.error("[Auth] All token verification attempts failed.");
+
     } catch (error) {
-      console.error("Failed to verify Clerk token (Fatal):", error);
+      console.error("Fatal error in getClerkUserIdFromRequest:", error);
     }
-  } else {
-    // Debug logging for missing header
-    console.warn("getClerkUserIdFromRequest: No Bearer token found in Authorization header.");
   }
 
+  // No warning here to avoid spamming Landing Page logs
   return getClerkUserId();
 }
 

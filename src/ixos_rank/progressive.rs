@@ -94,10 +94,11 @@ pub struct AutoModeConfig {
     pub pro_top_k: usize,
 }
 
-/// Fusion weighting for semantic + lexical blending (Pro/Auto refinement)
+/// Fusion weighting for dual-embedder + lexical blending (Pro/Auto refinement)
 #[derive(Debug, Clone, Copy)]
 pub struct FusionConfig {
-    pub semantic: f32,
+    pub flash: f32,
+    pub pro: f32,
     pub lexical: f32,
     pub dir_prior: f32,
 }
@@ -175,8 +176,9 @@ impl Default for ProgressiveSearchConfig {
             },
             enable_fusion: true,
             fusion: FusionConfig {
-                semantic: 0.33,
-                lexical: 0.67,
+                flash: 0.2697,
+                pro: 0.2672,
+                lexical: 0.4631,
                 dir_prior: 0.0,
             },
         }
@@ -208,8 +210,9 @@ impl ProgressiveSearchConfig {
             },
             enable_fusion: true,
             fusion: FusionConfig {
-                semantic: 0.4,
-                lexical: 0.6,
+                flash: 0.2697,
+                pro: 0.2672,
+                lexical: 0.4631,
                 dir_prior: 0.0,
             },
         }
@@ -239,8 +242,9 @@ impl ProgressiveSearchConfig {
             },
             enable_fusion: true,
             fusion: FusionConfig {
-                semantic: 0.3,
-                lexical: 0.7,
+                flash: 0.2697,
+                pro: 0.2672,
+                lexical: 0.4631,
                 dir_prior: 0.0,
             },
         }
@@ -598,6 +602,7 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             SearchMode::Pro => pro_engine.unwrap_or(flash_engine),
             _ => flash_engine,
         };
+        let mut flash_scores: Option<std::collections::HashMap<std::path::PathBuf, f32>> = None;
 
         let mut semantic_results = if lexical_results.is_empty() {
             // No lexical results, try pure semantic search
@@ -667,6 +672,17 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                     self.config.auto_mode,
                 );
                 if should_refine {
+                    if self.config.enable_fusion
+                        && self.config.fusion.flash > 0.0
+                        && flash_scores.is_none()
+                    {
+                        flash_scores = Some(
+                            semantic_results
+                                .iter()
+                                .map(|m| (m.path.clone(), m.similarity))
+                                .collect(),
+                        );
+                    }
                     let _ = tx
                         .send(SearchEvent::Status("Refining with Pro model...".into()))
                         .await;
@@ -719,11 +735,58 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         if self.config.enable_fusion
             && (matches!(self.config.search_mode, SearchMode::Pro) || used_pro)
         {
+            if self.config.fusion.flash > 0.0
+                && flash_scores.is_none()
+                && !semantic_results.is_empty()
+            {
+                if matches!(self.config.search_mode, SearchMode::Pro) && pro_engine.is_none() {
+                    flash_scores = Some(
+                        semantic_results
+                            .iter()
+                            .map(|m| (m.path.clone(), m.similarity))
+                            .collect(),
+                    );
+                } else {
+                    let flash_candidates: Vec<LexicalMatch> = semantic_results
+                        .iter()
+                        .take(self.config.max_results)
+                        .map(|m| LexicalMatch::new(m.path.clone(), 0.0, String::new(), 0, 0))
+                        .collect();
+                    if !flash_candidates.is_empty() {
+                        let flash_candidate_count = flash_candidates.len();
+                        match tokio::time::timeout(
+                            self.config.semantic_timeout,
+                            flash_engine.rerank(&semantic_query, flash_candidates),
+                        )
+                        .await
+                        {
+                            Ok(Ok(results)) => {
+                                flash_scores = Some(
+                                    results
+                                        .into_iter()
+                                        .map(|m| (m.path, m.similarity))
+                                        .collect(),
+                                );
+                                let mut stats = stream_stats.lock().unwrap();
+                                stats.embedded =
+                                    stats.embedded.saturating_add(flash_candidate_count);
+                            }
+                            Ok(Err(e)) => {
+                                tracing::warn!("Flash fusion rerank failed: {}", e);
+                            }
+                            Err(_) => {
+                                tracing::warn!("Flash fusion rerank timed out");
+                            }
+                        }
+                    }
+                }
+            }
             apply_fusion(
                 &mut semantic_results,
                 &lexical_lookup,
                 &query_terms,
                 self.config.fusion,
+                flash_scores.as_ref(),
             );
         }
 
@@ -1079,11 +1142,13 @@ fn apply_fusion(
     lexical_lookup: &std::collections::HashMap<std::path::PathBuf, LexicalMatch>,
     query_terms: &[String],
     config: FusionConfig,
+    flash_scores: Option<&std::collections::HashMap<std::path::PathBuf, f32>>,
 ) {
-    if (config.semantic + config.lexical + config.dir_prior) <= 0.0 {
+    if (config.flash + config.pro + config.lexical + config.dir_prior) <= 0.0 {
         return;
     }
-    let semantic_weight = config.semantic;
+    let flash_weight = config.flash;
+    let pro_weight = config.pro;
     let lexical_weight = config.lexical;
     let dir_weight = config.dir_prior;
     for item in semantic_results.iter_mut() {
@@ -1092,7 +1157,12 @@ fn apply_fusion(
             .map(|m| m.match_ratio())
             .unwrap_or(0.0);
         let dir_score = dir_prior_score(query_terms, &item.path);
-        item.similarity = semantic_weight * item.similarity
+        let flash_score = flash_scores
+            .and_then(|scores| scores.get(&item.path).copied())
+            .unwrap_or(item.similarity);
+        let pro_score = item.similarity;
+        item.similarity = flash_weight * flash_score
+            + pro_weight * pro_score
             + lexical_weight * lexical_score
             + dir_weight * dir_score;
     }

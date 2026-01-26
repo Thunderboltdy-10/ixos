@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Beaker, Wand2, ChevronDown, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
@@ -38,9 +38,12 @@ interface ModelOption {
 
 export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
     const [status, setStatus] = useState<ModelStatus | null>(null);
     const [preloadingModel, setPreloadingModel] = useState<ModelType | null>(null);
     const [currentLoadedModel, setCurrentLoadedModel] = useState<ModelType | null>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
 
     // Safe Tauri invoke helper
     const safeInvoke = async <T,>(cmd: string, args?: any): Promise<T | null> => {
@@ -57,6 +60,34 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
             return null;
         }
     };
+
+    // Calculate dropdown position to avoid overflow
+    useEffect(() => {
+        if (!isOpen || !dropdownRef.current || !buttonRef.current) return;
+
+        const updatePosition = () => {
+            const buttonRect = buttonRef.current?.getBoundingClientRect();
+            const dropdownRect = dropdownRef.current?.getBoundingClientRect();
+            
+            if (!buttonRect || !dropdownRect) return;
+
+            // Calculate space below and above the button
+            const spaceBelow = window.innerHeight - buttonRect.bottom;
+            const spaceAbove = buttonRect.top;
+            const dropdownHeight = dropdownRect.height;
+
+            // If not enough space below and more space above, position dropdown above
+            if (spaceBelow < dropdownHeight + 10 && spaceAbove > dropdownHeight + 10) {
+                setDropdownPosition('top');
+            } else {
+                setDropdownPosition('bottom');
+            }
+        };
+
+        // Use setTimeout to ensure DOM is ready
+        const timer = setTimeout(updatePosition, 0);
+        return () => clearTimeout(timer);
+    }, [isOpen]);
 
     const handleSelect = async (model: ModelType) => {
         const modelOption = models.find(m => m.id === model);
@@ -183,6 +214,7 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
         <div className={cn('relative', className)}>
             {/* Trigger button */}
             <button
+                ref={buttonRef}
                 onClick={() => setIsOpen(!isOpen)}
                 disabled={!!preloadingModel}
                 className={cn(
@@ -223,12 +255,14 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
                         />
 
                         <motion.div
-                            initial={{ opacity: 0, y: -10 }}
+                            ref={dropdownRef}
+                            initial={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
+                            exit={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
                             transition={{ duration: 0.15 }}
                             className={cn(
-                                'absolute top-full right-0 mt-2 z-50',
+                                'absolute z-50 right-0',
+                                dropdownPosition === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
                                 'w-72',
                                 'bg-graphite-2 rounded-xl border border-stroke-hairline',
                                 'shadow-lift overflow-hidden'

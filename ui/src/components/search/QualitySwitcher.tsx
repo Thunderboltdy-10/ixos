@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Sparkles, Layers, ChevronDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -52,8 +52,39 @@ interface QualityOption {
 
 export function QualitySwitcher({ value, onChange, className }: QualitySwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const selectedMode = modes.find((m) => m.id === value) || modes[1];
   const SelectedIcon = selectedMode.icon;
+
+  // Calculate dropdown position to avoid overflow
+  useEffect(() => {
+    if (!isOpen || !dropdownRef.current || !buttonRef.current) return;
+
+    const updatePosition = () => {
+      const buttonRect = buttonRef.current?.getBoundingClientRect();
+      const dropdownRect = dropdownRef.current?.getBoundingClientRect();
+      
+      if (!buttonRect || !dropdownRect) return;
+
+      // Calculate space below and above the button
+      const spaceBelow = window.innerHeight - buttonRect.bottom;
+      const spaceAbove = buttonRect.top;
+      const dropdownHeight = dropdownRect.height;
+
+      // If not enough space below and more space above, position dropdown above
+      if (spaceBelow < dropdownHeight + 10 && spaceAbove > dropdownHeight + 10) {
+        setDropdownPosition('top');
+      } else {
+        setDropdownPosition('bottom');
+      }
+    };
+
+    // Use setTimeout to ensure DOM is ready
+    const timer = setTimeout(updatePosition, 0);
+    return () => clearTimeout(timer);
+  }, [isOpen]);
 
   const handleSelect = (mode: SearchMode) => {
     onChange(mode);
@@ -63,6 +94,7 @@ export function QualitySwitcher({ value, onChange, className }: QualitySwitcherP
   return (
     <div className={cn('relative', className)}>
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           'flex items-center gap-2 px-2.5 py-1.5 rounded-md',
@@ -88,12 +120,14 @@ export function QualitySwitcher({ value, onChange, className }: QualitySwitcherP
           <>
             <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
+              ref={dropdownRef}
+              initial={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+              exit={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
               transition={{ duration: 0.15 }}
               className={cn(
-                'absolute top-full right-0 mt-2 z-50',
+                'absolute z-50 right-0',
+                dropdownPosition === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
                 'w-64',
                 'bg-graphite-2 rounded-xl border border-stroke-hairline',
                 'shadow-lift overflow-hidden'

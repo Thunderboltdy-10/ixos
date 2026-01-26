@@ -1,0 +1,39 @@
+- 2026-01-18T00:41:23 | st-all-minilm-l6-v2 | sentence-transformers/all-MiniLM-L6-v2 | sentence-transformers | 87.57 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:41:28 | st-all-minilm-l12-v2 | sentence-transformers/all-MiniLM-L12-v2 | sentence-transformers | 128.19 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:41:32 | st-paraphrase-minilm-l6-v2 | sentence-transformers/paraphrase-MiniLM-L6-v2 | sentence-transformers | 87.56 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:41:36 | st-multi-qa-minilm-l6-cos-v1 | sentence-transformers/multi-qa-MiniLM-L6-cos-v1 | sentence-transformers | 87.57 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:41:42 | st-multi-qa-minilm-l6-dot-v1 | sentence-transformers/multi-qa-MiniLM-L6-dot-v1 | sentence-transformers | 87.57 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:41:56 | e5-small-v2 | intfloat/e5-small-v2 | transformers | 765.99 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:42:00 | st-paraphrase-multilingual-minilm-l12-v2 | sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 | sentence-transformers | 479.21 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:42:20 | e5-base-v2 | intfloat/e5-base-v2 | transformers | 2086.87 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:42:32 | bge-base-en-v1.5 | BAAI/bge-base-en-v1.5 | transformers | 1251.99 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:42:55 | gte-base-en-v1.5 | Alibaba-NLP/gte-base-en-v1.5 | transformers | 2061.91 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:42:59 | gte-small-supabase | Supabase/gte-small | transformers | 287.59 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:43:27 | nomic-embed-text-v1.5 | nomic-ai/nomic-embed-text-v1.5 | transformers | 2112.62 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:43:34 | jina-embeddings-v2-small-en | jinaai/jina-embeddings-v2-small-en | transformers | 498.80 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:44:05 | st-all-mpnet-base-v2 | sentence-transformers/all-mpnet-base-v2 | sentence-transformers | 418.59 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:44:14 | st-paraphrase-mpnet-base-v2 | sentence-transformers/paraphrase-mpnet-base-v2 | sentence-transformers | 418.59 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:44:21 | st-msmarco-distilbert-base-v4 | sentence-transformers/msmarco-distilbert-base-v4 | sentence-transformers | 254.07 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:44:26 | e5-small-v2-onnx | nixiesearch/e5-small-v2-onnx | onnx | 159.75 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:44:27 | potion-base-8m-int8 | minishlab/potion-base-8M | model2vec | 7.64 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:44:28 | potion-base-8m | minishlab/potion-base-8M | model2vec | 29.27 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:44:28 | ixos-embedder-v1 | None | model2vec | 14.19 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:44:34 | cross-encoder-msmarco-minilm-l-6-v2 | cross-encoder/ms-marco-MiniLM-L-6-v2 | sentence-transformers | 87.56 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:44:40 | cross-encoder-msmarco-minilm-l-12-v2 | cross-encoder/ms-marco-MiniLM-L-12-v2 | sentence-transformers | 128.19 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:44:44 | cross-encoder-msmarco-tinybert-l-2-v2 | cross-encoder/ms-marco-TinyBERT-L-2-v2 | sentence-transformers | 17.64 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:45:03 | bge-reranker-base | BAAI/bge-reranker-base | sentence-transformers | 1076.97 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:45:37 | bge-reranker-large | BAAI/bge-reranker-large | sentence-transformers | 2152.16 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:46:31 | cross-encoder-msmarco-minilm-l-6-v2 | cross-encoder/ms-marco-MiniLM-L-6-v2 | sentence-transformers | 848.92 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:46:48 | cross-encoder-msmarco-minilm-l-12-v2 | cross-encoder/ms-marco-MiniLM-L-12-v2 | sentence-transformers | 1247.78 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:46:52 | cross-encoder-msmarco-tinybert-l-2-v2 | cross-encoder/ms-marco-TinyBERT-L-2-v2 | sentence-transformers | 165.12 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:47:24 | bge-reranker-base | BAAI/bge-reranker-base | sentence-transformers | 3203.51 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:52:45 | st-all-distilroberta-v1 | sentence-transformers/all-distilroberta-v1 | sentence-transformers | 317.87 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:56:18 | st-bert-base-nli-mean-tokens | sentence-transformers/bert-base-nli-mean-tokens | sentence-transformers | 418.57 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:56:32 | st-stsb-roberta-base-v2 | sentence-transformers/stsb-roberta-base-v2 | sentence-transformers | 480.10 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T00:56:54 | st-all-roberta-large-v1 | sentence-transformers/all-roberta-large-v1 | sentence-transformers | 1360.24 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T10:27:20 | distill-teacher-student | None | sentence-transformers | 87.57 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T10:27:20 | distill-topology-student | None | sentence-transformers | 87.60 MB | python scripts/fetch_models.py --manifest models\lab\manifest.json
+- 2026-01-18T20:21:05 | ixos-flash-v2 | distill (st-multi-qa-minilm-l6-dot-v1 -> st-all-mpnet-base-v2) | model2vec | n/a | python scripts/distill_model2vec_lab.py --mode flash --flash-teacher models\\lab\\st-all-mpnet-base-v2 --flash-vocab 50000 --flash-dims 512 --flash-quantize float16
+- 2026-01-18T20:21:05 | ixos-pro-v1 | distill (st-stsb-roberta-base-v2 -> st-paraphrase-mpnet-base-v2) | model2vec | n/a | python scripts/distill_model2vec_lab.py --mode pro --pro-teacher models\\lab\\st-paraphrase-mpnet-base-v2 --pro-vocab 60000 --pro-dims 768 --pro-quantize float16
+- 2026-01-18T20:21:05 | distill-teacher-student | reranker distill | sentence-transformers | n/a | python scripts/distill_lab.py --mode teacher --max-pairs 800 --student sentence-transformers/all-MiniLM-L6-v2 --teacher cross-encoder/ms-marco-MiniLM-L-6-v2 --output models\\lab\\distill-teacher-student
+- 2026-01-18T20:21:05 | distill-topology-student | topology supervision | sentence-transformers | n/a | python scripts/distill_lab.py --mode topology --max-pairs 800 --student sentence-transformers/all-MiniLM-L6-v2 --output models\\lab\\distill-topology-student

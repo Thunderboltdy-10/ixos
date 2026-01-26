@@ -26,6 +26,20 @@ Notes:
 - On the real suite subset, ixos-flash-v2 outperforms potion on MRR but is ~2x slower.
 - ixos-pro-v1 underperforms both flash and potion while being much slower, reinforcing the need for a new Pro strategy.
 
+### Experiment Summary (real_corpus_v2 subset)
+| Model / Pipeline | Tier | Dims | Dtype | Disk MB | Recall@10 | MRR@10 | Latency ms/1k | License | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ixos-flash-v2 | flash | 512 | f16 | 44.46 | 0.9300 | 0.8399 | 376.96 | MIT (Ixos) | Current default flash |
+| ixos-flash-v4-int8-512 | flash | 512 | int8 | 17.65 | 0.9250 | 0.8340 | 366.85 | Apache-2.0 (teacher) | Size win, near-v2 quality |
+| ixos-flash-v4-int8-192 | flash | 192 | int8 | 7.45 | 0.9000 | 0.7950 | 340.03 | Apache-2.0 (teacher) | Speed-first flash variant |
+| potion-base-8m-int8 | flash | 256 | int8 | 7.64 | 0.9000 | 0.8073 | 179.55 | MIT | Legacy fast baseline |
+| ixos-pro-v1 | pro | 768 | f16 | 65.81 | 0.8550 | 0.7354 | 1606.55 | MIT (Ixos) | Legacy pro (quality regression) |
+| Fusion: flash-v2 + potion + lexical | pro | 512 + 256 | f16 + int8 | 52.10 | 0.9700 | 0.9233 | 521.34 | Composite (MIT + MIT) | Learned weights flash/potion/lexical |
+
+Notes:
+- Disk MB from local `models/` + `models/lab/` directories on 2026-01-26.
+- Dims/dtype sourced from each model's config.json; fusion uses both embeddings.
+
 ## 2026-01-26 Candidate generation (v1)
 Flash ideas (speed-first):
 - Distill mpnet teacher to 256d int8 (new Flash v3 fast)

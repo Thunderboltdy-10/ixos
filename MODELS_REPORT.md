@@ -3,6 +3,8 @@
 **Project:** Ixos - Privacy-First Semantic Search System  
 **Status:** Production-Ready
 
+**Update (2026-01-26):** Flash v4 int8 candidates (512d quality, 192d speed) have been evaluated; Pro quality now best via Flash + Potion + lexical fusion. Ixos Pro v1 and Qwen remain legacy/experimental.
+
 ---
 
 ## Executive Summary

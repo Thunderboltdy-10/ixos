@@ -64,7 +64,7 @@ class AuthErrorBoundary extends Component<{ children: ReactNode; onReset: () => 
   }
 }
 
-import { SectionDivider } from "@/components/ui/SectionDivider";
+// import { SectionDivider } from "@/components/ui/SectionDivider";
 
 // ... (imports remain the same)
 
@@ -128,8 +128,10 @@ function AuthScreen() {
     <div className="min-h-screen bg-graphite-0 flex flex-col items-center justify-center px-6">
 
       {/* Section Divider */}
-      <div className="w-full max-w-2xl mb-8">
-        <SectionDivider label="AUTHENTICATION" accent={mode === 'sign-in' ? 'teal' : 'magenta'} />
+      <div className="w-full max-w-2xl mb-8 flex items-center gap-4">
+        <div className="h-px bg-white/10 flex-1" />
+        <span className="text-xs uppercase tracking-widest text-fg-muted font-mono">AUTHENTICATION</span>
+        <div className="h-px bg-white/10 flex-1" />
       </div>
 
       <div className="w-full max-w-md">

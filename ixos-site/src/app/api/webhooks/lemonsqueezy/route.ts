@@ -252,11 +252,14 @@ export async function POST(req: Request) {
     }
 
     const lemonCustomerId = getAttrString("customer_id");
-    const plan = normalizePlanFromProductName(
-      getAttrString("variant_name") ??
-      getAttrString("product_name") ??
-      null
-    );
+    const normalizedName = (
+      (getAttrString("product_name") ?? "") + " " +
+      (getAttrString("variant_name") ?? "")
+    ).trim();
+
+    const plan = normalizePlanFromProductName(normalizedName);
+
+    console.log(`[Webhook] Normalized Plan: '${normalizedName}' -> '${plan}'`);
 
     let status = normalizeSubscriptionStatus(getAttrString("status"));
     if (eventName === "subscription_cancelled") {

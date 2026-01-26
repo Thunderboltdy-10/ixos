@@ -1,12 +1,11 @@
 import { Sparkles } from 'lucide-react';
-import { openExternalUrl } from '@/lib/tauri';
-import { useAuthStore } from '@/stores/authStore';
-import { buildCheckoutUrl, getVariantId } from '@/lib/checkout';
+// import { openExternalUrl } from '@/lib/tauri';
+import { getVariantId } from '@/lib/checkout';
 
 const variantId = getVariantId();
 
 export function UpgradeBanner({ onUpgrade }: { onUpgrade?: () => void }) {
-  const { user } = useAuthStore();
+  // const { user } = useAuthStore();
 
   const handleUpgrade = async () => {
     onUpgrade?.();

@@ -11,7 +11,7 @@ import { PlanBadge } from '@/components/account/PlanBadge';
 import { UpgradeBanner } from '@/components/account/UpgradeBanner';
 import { openExternalUrl } from '@/lib/tauri';
 import { useAuth } from '@clerk/clerk-react';
-import { buildCheckoutUrl, getVariantId } from '@/lib/checkout';
+// import { getVariantId } from '@/lib/checkout';
 
 interface SidebarProps {
   onNewSearch?: () => void;

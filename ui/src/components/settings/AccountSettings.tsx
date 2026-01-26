@@ -76,7 +76,7 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
     if (!token || !devices.length) return;
     try {
       // Refresh with current device ID
-      const currentDevice = devices.find(d => d.deviceLabel === deviceLabel); // Approximation
+      // const currentDevice = devices.find(d => d.deviceLabel === deviceLabel); // Approximation
       if (useAuthStore.getState().deviceId) {
         await refreshLease(token, useAuthStore.getState().deviceId!);
       }

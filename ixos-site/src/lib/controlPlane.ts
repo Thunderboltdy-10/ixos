@@ -11,13 +11,13 @@ export type Plan = "free" | "pro";
 
 const ACTIVE_SUB_STATUSES = new Set(["active", "trialing", "past_due"]);
 
-export function getClerkUserId(): string | null {
-  const { userId } = auth();
+export async function getClerkUserId(): Promise<string | null> {
+  const { userId } = await auth();
   return userId ?? null;
 }
 
 export async function getClerkUserIdFromRequest(req?: Request): Promise<string | null> {
-  if (!req) return getClerkUserId();
+  if (!req) return await getClerkUserId();
 
   const authHeader =
     req.headers.get("authorization") || req.headers.get("Authorization");
@@ -89,7 +89,7 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
   }
 
   // No warning here to avoid spamming Landing Page logs
-  return getClerkUserId();
+  return await getClerkUserId();
 }
 
 export async function getOrCreateUserByClerkId(clerkUserId: string) {
@@ -104,7 +104,8 @@ export async function getOrCreateUserByClerkId(clerkUserId: string) {
   let clerkUser = await currentUser();
   if (!clerkUser) {
     try {
-      clerkUser = await clerkClient.users.getUser(clerkUserId);
+      const client = await clerkClient();
+      clerkUser = await client.users.getUser(clerkUserId);
     } catch (e) {
       console.error(`[Auth] Failed to fetch user from Clerk Client:`, e);
     }

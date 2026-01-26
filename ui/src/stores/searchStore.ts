@@ -205,7 +205,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       // Get model type from settings store (using static import)
       const settings = useSettingsStore.getState().config?.search;
       const modelType = settings?.modelType || 'ixos-flash-v2';
-      const proModelType = settings?.proModelType || 'ixos-pro-v1';
+      const proModelType = settings?.proModelType || 'potion';
       const searchMode = settings?.searchMode || 'auto';
       const timeoutSeconds = settings?.timeoutSeconds || 30;
 

@@ -29,6 +29,8 @@ enum BenchModelType {
     Potion,
     Qwen,
     IxosFlashV2,
+    IxosFlashV4,
+    IxosFlashV4Fast,
     IxosProV1,
 }
 
@@ -141,6 +143,8 @@ async fn main() -> anyhow::Result<()> {
         BenchModelType::Potion => ixos_protocol::ixos_embed::ModelType::Potion,
         BenchModelType::Qwen => ixos_protocol::ixos_embed::ModelType::Qwen,
         BenchModelType::IxosFlashV2 => ixos_protocol::ixos_embed::ModelType::IxosFlashV2,
+        BenchModelType::IxosFlashV4 => ixos_protocol::ixos_embed::ModelType::IxosFlashV4,
+        BenchModelType::IxosFlashV4Fast => ixos_protocol::ixos_embed::ModelType::IxosFlashV4Fast,
         BenchModelType::IxosProV1 => ixos_protocol::ixos_embed::ModelType::IxosProV1,
     };
     let model = MmapModel2VecEmbedder::new_with_type(model_type)

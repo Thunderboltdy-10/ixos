@@ -142,7 +142,13 @@ export interface IxosConfig {
 /**
  * P1.3: Model type for embedding selection
  */
-export type ModelType = 'potion' | 'qwen' | 'ixos-flash-v2' | 'ixos-pro-v1';
+export type ModelType =
+  | 'potion'
+  | 'qwen'
+  | 'ixos-flash-v2'
+  | 'ixos-flash-v4-int8-512'
+  | 'ixos-flash-v4-int8-192'
+  | 'ixos-pro-v1';
 
 export type SearchMode = 'flash' | 'pro' | 'auto';
 

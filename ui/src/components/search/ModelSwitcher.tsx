@@ -19,6 +19,10 @@ interface ModelStatus {
     qwenPath: string | null;
     ixosFlashV2Available: boolean;
     ixosFlashV2Path: string | null;
+    ixosFlashV4Available: boolean;
+    ixosFlashV4Path: string | null;
+    ixosFlashV4FastAvailable: boolean;
+    ixosFlashV4FastPath: string | null;
     ixosProV1Available: boolean;
     ixosProV1Path: string | null;
     anyAvailable: boolean;
@@ -132,11 +136,15 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
                         qwenPath: 'mock/path',
                         ixosFlashV2Available: true,
                         ixosFlashV2Path: 'mock/path',
+                        ixosFlashV4Available: true,
+                        ixosFlashV4Path: 'mock/path',
+                        ixosFlashV4FastAvailable: true,
+                        ixosFlashV4FastPath: 'mock/path',
                         ixosProV1Available: true,
                         ixosProV1Path: 'mock/path',
                         anyAvailable: true,
-                        recommended: 'ixos-flash-v2',
-                        loadedModel: 'ixos-flash-v2',
+                        recommended: 'ixos-flash-v4-int8-512',
+                        loadedModel: 'ixos-flash-v4-int8-512',
                     });
                 }
             } catch (err) {
@@ -150,13 +158,23 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
         if (!status || !status.anyAvailable) return;
         if (value === currentLoadedModel || preloadingModel) return;
 
-        const isAvailable = value === 'potion'
-            ? status.potionAvailable
-            : value === 'qwen'
-                ? status.qwenAvailable
-                : value === 'ixos-pro-v1'
-                    ? status.ixosProV1Available
-                    : status.ixosFlashV2Available;
+        const isAvailable = (() => {
+            switch (value) {
+                case 'potion':
+                    return status.potionAvailable;
+                case 'qwen':
+                    return status.qwenAvailable;
+                case 'ixos-pro-v1':
+                    return status.ixosProV1Available;
+                case 'ixos-flash-v4-int8-512':
+                    return status.ixosFlashV4Available;
+                case 'ixos-flash-v4-int8-192':
+                    return status.ixosFlashV4FastAvailable;
+                case 'ixos-flash-v2':
+                default:
+                    return status.ixosFlashV2Available;
+            }
+        })();
         if (!isAvailable) return;
 
         setPreloadingModel(value);
@@ -170,9 +188,27 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
 
     const models: ModelOption[] = [
         {
+            id: 'ixos-flash-v4-int8-512',
+            label: 'Ixos Flash v4',
+            description: 'Near-v2 quality with smaller memory footprint',
+            available: status?.ixosFlashV4Available ?? false,
+            recommended: status?.recommended === 'ixos-flash-v4-int8-512',
+            icon: Beaker,
+            color: 'text-accent-teal'
+        },
+        {
+            id: 'ixos-flash-v4-int8-192',
+            label: 'Ixos Flash v4 Fast',
+            description: 'Speed-first flash tier (lower dims)',
+            available: status?.ixosFlashV4FastAvailable ?? false,
+            recommended: status?.recommended === 'ixos-flash-v4-int8-192',
+            icon: Beaker,
+            color: 'text-accent-amber'
+        },
+        {
             id: 'ixos-flash-v2',
-            label: 'Ixos Flash v2',
-            description: 'Fast, tuned for instant search',
+            label: 'Ixos Flash v2 (Legacy)',
+            description: 'Baseline flash model',
             available: status?.ixosFlashV2Available ?? false,
             recommended: status?.recommended === 'ixos-flash-v2',
             icon: Beaker,
@@ -198,8 +234,8 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
         },
         {
             id: 'ixos-pro-v1',
-            label: 'Ixos Pro v1',
-            description: 'Higher quality, slower',
+            label: 'Ixos Pro v1 (Legacy)',
+            description: 'Legacy pro embedder (slower)',
             available: status?.ixosProV1Available ?? false,
             recommended: status?.recommended === 'ixos-pro-v1',
             icon: Wand2,

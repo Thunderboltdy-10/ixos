@@ -156,9 +156,11 @@ export function SearchSettings() {
           }
           className="w-44 bg-graphite-2 border border-stroke-hairline rounded-md px-2 py-1 text-xs text-porcelain"
         >
-          <option value="ixos-pro-v1">Ixos Pro v1</option>
-          <option value="ixos-flash-v2">Ixos Flash v2</option>
-          <option value="potion">Potion 8M</option>
+          <option value="potion">Potion 8M (recommended)</option>
+          <option value="ixos-flash-v4-int8-512">Ixos Flash v4 (quality)</option>
+          <option value="ixos-flash-v4-int8-192">Ixos Flash v4 Fast</option>
+          <option value="ixos-flash-v2">Ixos Flash v2 (legacy)</option>
+          <option value="ixos-pro-v1">Ixos Pro v1 (legacy)</option>
           <option value="qwen">Ixos Embedder v1 (Qwen)</option>
         </select>
       </SettingRow>

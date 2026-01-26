@@ -188,6 +188,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       return {};
     }
     if (!res.ok) {
+      if (res.status === 401) {
+        console.warn('Lease refresh unauthorized (401) - Token might be expired or invalid');
+        set({ isLoading: false, error: 'Unauthorized: Please restart app or sign in again' });
+        throw new Error('UNAUTHORIZED');
+      }
       const text = await res.text();
       set({ isLoading: false, error: text || 'Lease refresh failed' });
       throw new Error(text || 'Lease refresh failed');

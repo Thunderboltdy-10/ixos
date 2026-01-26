@@ -1,6 +1,6 @@
 export const DOWNLOADS = {
-  windows: "/downloads/ixos-latest-windows-x64.exe",
-  macos: null as string | null,
+  windows: "/api/download?platform=windows",
+  macos: "/api/download?platform=macos",
 };
 
 export type DownloadPlatform = keyof typeof DOWNLOADS;

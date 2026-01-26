@@ -6,6 +6,7 @@ import { useClerk } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { FadeInView } from "@/components/effects/FadeInView";
+import { ParticlesFieldV3 } from "@/components/effects/ParticlesFieldV3";
 
 interface AccountDashboardProps {
   clerkUser: {
@@ -57,7 +58,10 @@ export function AccountDashboard({
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         const pending = sessionStorage.getItem('ixos_upgrade_pending');
-        if (pending === 'true') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const checkoutSuccess = urlParams.get('checkout') === 'success';
+
+        if (pending === 'true' || checkoutSuccess) {
           console.log('User returned from upgrade flow - refreshing...');
           router.refresh();
           // Optional: clear it only if we detect success, or just leave it for a few minutes?
@@ -123,7 +127,9 @@ export function AccountDashboard({
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto relative">
+      <ParticlesFieldV3 />
+
       {/* Profile Header */}
       <FadeInView direction="up">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-12">
@@ -141,7 +147,7 @@ export function AccountDashboard({
             )}
             {isPro && (
               <div className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-accent-magenta text-[10px] font-mono text-bg-graphite-0 font-bold">
-                PRO
+                PROFESSIONAL
               </div>
             )}
           </div>

@@ -66,8 +66,12 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
       console.error("Failed to verify Clerk token:", error);
       if (error instanceof Error) {
         console.error("Error details:", error.message);
+        console.error("Stack:", error.stack);
       }
     }
+  } else {
+    // Debug logging for missing header
+    console.warn("getClerkUserIdFromRequest: No Bearer token found in Authorization header.");
   }
 
   return getClerkUserId();
@@ -154,13 +158,34 @@ export function isSubscriptionActive({
   currentPeriodEnd?: Date | null;
 }) {
   const normalized = normalizeSubscriptionStatus(status ?? null);
-  if (!ACTIVE_SUB_STATUSES.has(normalized)) {
-    return false;
+
+  // Grace period of 24 hours to handle webhook delays
+  const GRACE_PERIOD_MS = 1000 * 60 * 60 * 24;
+  const now = Date.now();
+
+  // If active/trialing/past_due, logic is standard
+  if (ACTIVE_SUB_STATUSES.has(normalized)) {
+    // If we have an end date and it's long passed (outside grace), then inactive
+    // But usually 'active' status from Lemon should be enough unless we want to enforce local expiration
+    if (currentPeriodEnd && currentPeriodEnd.getTime() + GRACE_PERIOD_MS < now) {
+      // It says active but date is old + grace period passed -> likely webhook failure or expired
+      // But let's trust the status more if it says "active"? 
+      // Actually, if it says active but date is old, assume renewal webhook is just Late. 
+      // So as long as status is Active, we are good?
+      // No, let's keep the date check but with grace.
+      return false;
+    }
+    return true;
   }
-  if (currentPeriodEnd && currentPeriodEnd.getTime() < Date.now()) {
-    return false;
+
+  // If cancelled, they should still have access until the period ends
+  if (normalized === "cancelled") {
+    if (currentPeriodEnd && currentPeriodEnd.getTime() > now) {
+      return true;
+    }
   }
-  return true;
+
+  return false;
 }
 
 export async function getActivePlanForUser(userId: string): Promise<Plan> {

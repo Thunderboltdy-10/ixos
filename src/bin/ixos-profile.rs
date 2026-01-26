@@ -31,6 +31,8 @@ enum ProfileModelType {
     Potion,
     Qwen,
     IxosFlashV2,
+    IxosFlashV4,
+    IxosFlashV4Fast,
     IxosProV1,
 }
 
@@ -184,6 +186,12 @@ async fn main() -> anyhow::Result<()> {
         }
         ProfileModelType::IxosFlashV2 => {
             load_model_semantic(ixos_protocol::ixos_embed::ModelType::IxosFlashV2, cache_mode)?
+        }
+        ProfileModelType::IxosFlashV4 => {
+            load_model_semantic(ixos_protocol::ixos_embed::ModelType::IxosFlashV4, cache_mode)?
+        }
+        ProfileModelType::IxosFlashV4Fast => {
+            load_model_semantic(ixos_protocol::ixos_embed::ModelType::IxosFlashV4Fast, cache_mode)?
         }
         ProfileModelType::IxosProV1 => {
             load_model_semantic(ixos_protocol::ixos_embed::ModelType::IxosProV1, cache_mode)?

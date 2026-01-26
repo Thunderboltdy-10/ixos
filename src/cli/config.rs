@@ -214,7 +214,7 @@ fn default_model_type() -> String {
 }
 
 fn default_pro_model_type() -> String {
-    "ixos-pro-v1".to_string()
+    "potion".to_string()
 }
 
 fn default_search_mode() -> String {

@@ -470,10 +470,10 @@ pub async fn search_progressive(
         .parse::<ModelType>()
         .unwrap_or(ModelType::IxosFlashV2);
 
-    let pro_model_type_str = options.pro_model_type.as_deref().unwrap_or("ixos-pro-v1");
+    let pro_model_type_str = options.pro_model_type.as_deref().unwrap_or("potion");
     let pro_model_type = pro_model_type_str
         .parse::<ModelType>()
-        .unwrap_or(ModelType::IxosProV1);
+        .unwrap_or(ModelType::Potion);
 
     let model_result = state.get_or_load_model(model_type);
     let use_pro = matches!(config.search_mode, SearchMode::Auto | SearchMode::Pro);

@@ -143,6 +143,10 @@ pub struct ModelStatus {
     pub qwen_path: Option<String>,
     pub ixos_flash_v2_available: bool,
     pub ixos_flash_v2_path: Option<String>,
+    pub ixos_flash_v4_available: bool,
+    pub ixos_flash_v4_path: Option<String>,
+    pub ixos_flash_v4_fast_available: bool,
+    pub ixos_flash_v4_fast_path: Option<String>,
     pub ixos_pro_v1_available: bool,
     pub ixos_pro_v1_path: Option<String>,
     pub any_available: bool,
@@ -163,6 +167,10 @@ pub async fn get_model_status(state: State<'_, AppState>) -> Result<ModelStatus,
     let mut qwen_path: Option<String> = None;
     let mut ixos_flash_v2_available = false;
     let mut ixos_flash_v2_path: Option<String> = None;
+    let mut ixos_flash_v4_available = false;
+    let mut ixos_flash_v4_path: Option<String> = None;
+    let mut ixos_flash_v4_fast_available = false;
+    let mut ixos_flash_v4_fast_path: Option<String> = None;
     let mut ixos_pro_v1_available = false;
     let mut ixos_pro_v1_path: Option<String> = None;
 
@@ -180,6 +188,14 @@ pub async fn get_model_status(state: State<'_, AppState>) -> Result<ModelStatus,
                 ixos_flash_v2_available = available;
                 ixos_flash_v2_path = path.map(|p| p.display().to_string());
             }
+            "IxosFlashV4" => {
+                ixos_flash_v4_available = available;
+                ixos_flash_v4_path = path.map(|p| p.display().to_string());
+            }
+            "IxosFlashV4Fast" => {
+                ixos_flash_v4_fast_available = available;
+                ixos_flash_v4_fast_path = path.map(|p| p.display().to_string());
+            }
             "IxosProV1" => {
                 ixos_pro_v1_available = available;
                 ixos_pro_v1_path = path.map(|p| p.display().to_string());
@@ -188,9 +204,15 @@ pub async fn get_model_status(state: State<'_, AppState>) -> Result<ModelStatus,
         }
     }
 
-    let any_available =
-        potion_available || qwen_available || ixos_flash_v2_available || ixos_pro_v1_available;
-    let recommended = if ixos_flash_v2_available {
+    let any_available = potion_available
+        || qwen_available
+        || ixos_flash_v2_available
+        || ixos_flash_v4_available
+        || ixos_flash_v4_fast_available
+        || ixos_pro_v1_available;
+    let recommended = if ixos_flash_v4_available {
+        Some("ixos-flash-v4-int8-512".to_string())
+    } else if ixos_flash_v2_available {
         Some("ixos-flash-v2".to_string())
     } else if potion_available {
         Some("potion".to_string())
@@ -207,6 +229,10 @@ pub async fn get_model_status(state: State<'_, AppState>) -> Result<ModelStatus,
         qwen_path,
         ixos_flash_v2_available,
         ixos_flash_v2_path,
+        ixos_flash_v4_available,
+        ixos_flash_v4_path,
+        ixos_flash_v4_fast_available,
+        ixos_flash_v4_fast_path,
         ixos_pro_v1_available,
         ixos_pro_v1_path,
         any_available,

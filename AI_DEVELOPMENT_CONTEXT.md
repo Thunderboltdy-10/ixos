@@ -1,9 +1,14 @@
 # IXOS AI DEVELOPMENT CONTEXT
 
-> **Last Updated:** 2026-01-20
+> **Last Updated:** 2026-01-26
 > **Purpose:** Provide complete context to AI assistants for implementing missing features and improvements.
 
 ---
+
+**Update (2026-01-26):**
+- Flash v4 int8 candidates added (512d quality, 192d speed). Flash v2 remains default until v4 is packaged.
+- Pro quality now best via Flash + Potion + lexical fusion; ixos-pro-v1 is legacy.
+- UI/config defaults now use `potion` as the Pro model type in Auto/Pro mode.
 
 ## 1. Project Overview
 

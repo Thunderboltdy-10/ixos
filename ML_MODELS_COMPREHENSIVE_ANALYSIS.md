@@ -3,6 +3,8 @@
 **Generated**: January 2026  
 **Scope**: Complete ML model inventory, architectures, performance metrics, and optimization techniques
 
+**Update (2026-01-26):** Flash v4 int8 candidates (512d/192d) evaluated; Pro now best via Flash + Potion + lexical fusion. Ixos Pro v1 and Qwen remain legacy/experimental.
+
 ---
 
 ## Executive Summary

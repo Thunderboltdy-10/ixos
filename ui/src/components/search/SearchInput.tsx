@@ -58,7 +58,7 @@ export function SearchInput({
   const preloadedModels = useRef(new Set<ModelType>());
 
   const modelType = (config?.search?.modelType || 'ixos-flash-v2') as ModelType;
-  const proModelType = (config?.search?.proModelType || 'ixos-pro-v1') as ModelType;
+  const proModelType = (config?.search?.proModelType || 'potion') as ModelType;
   const qualityMode = (config?.search?.searchMode || 'auto') as QualityMode;
 
   const modePalette = {

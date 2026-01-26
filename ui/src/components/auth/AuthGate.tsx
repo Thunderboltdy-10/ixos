@@ -514,6 +514,14 @@ interface ModelStatus {
   potionPath: string | null;
   qwenAvailable: boolean;
   qwenPath: string | null;
+  ixosFlashV2Available: boolean;
+  ixosFlashV2Path: string | null;
+  ixosFlashV4Available: boolean;
+  ixosFlashV4Path: string | null;
+  ixosFlashV4FastAvailable: boolean;
+  ixosFlashV4FastPath: string | null;
+  ixosProV1Available: boolean;
+  ixosProV1Path: string | null;
   anyAvailable: boolean;
   recommended: string | null;
   loadedModel: string | null;

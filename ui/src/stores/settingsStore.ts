@@ -27,7 +27,7 @@ const defaultConfig: IxosConfig = {
     progressiveByDefault: true,
     cacheMode: 'jit',
     modelType: 'ixos-flash-v2',
-    proModelType: 'ixos-pro-v1',
+    proModelType: 'potion',
     searchMode: 'auto',
     useStubModel: true,
     secureTiming: false,
@@ -61,10 +61,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
       // Fix for proModelType being set to flash (user report: "logs show flash")
       // If the user has "ixos-flash-v2" as their Pro Model, it defeats the purpose.
-      // We automatically migrate them back to "ixos-pro-v1" to fix the "logic error" they perceive.
+      // We automatically migrate them back to "potion" to keep Pro refinement distinct.
       let needsUpdate = false;
       if (config.search.proModelType === 'ixos-flash-v2') {
-        config.search.proModelType = 'ixos-pro-v1';
+        config.search.proModelType = 'potion';
         needsUpdate = true;
       }
 

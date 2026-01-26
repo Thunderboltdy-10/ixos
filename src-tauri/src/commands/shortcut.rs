@@ -221,10 +221,12 @@ fn register_shortcut_internal(app: &AppHandle, shortcut: Shortcut) -> Result<(),
                 // Only trigger on key press, not release
                 if event.state == ShortcutState::Pressed {
                     if let Some(main) = app_handle.get_webview_window("main") {
+                        // Force window to show and focus
+                        let _ = main.show();
+                        let _ = main.set_focus();
+                        
                         // Emit event to frontend for handling
                         let _ = main.emit("shortcut-triggered", ());
-
-                        // Avoid toggling window visibility here to prevent flicker loops.
                     }
                 }
             });
@@ -248,10 +250,12 @@ pub fn setup_global_shortcut(app: &tauri::App) -> Result<(), Box<dyn std::error:
                     // Only trigger on key press, not release
                     if event.state == ShortcutState::Pressed {
                         if let Some(main) = app_handle.get_webview_window("main") {
+                            // Force window to show and focus
+                            let _ = main.show();
+                            let _ = main.set_focus();
+                            
                             // Emit event to frontend for handling
                             let _ = main.emit("shortcut-triggered", ());
-
-                            // Avoid toggling window visibility here to prevent flicker loops.
                         }
                     }
                 });

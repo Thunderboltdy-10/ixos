@@ -23,9 +23,10 @@ const signInAppearance = {
         card: "bg-transparent shadow-none border-none p-0",
         headerTitle: "hidden",
         headerSubtitle: "hidden",
+        // Increased visibility for social buttons: lighter background, subtle border
         socialButtonsBlockButton:
-            "bg-white/5 border border-white/10 hover:bg-white/10 text-[#E5E5E7] transition-colors h-10 flex items-center justify-center",
-        socialButtonsBlockButtonText: "text-[#E5E5E7] font-medium ml-2",
+            "bg-[#27272A] border border-white/10 hover:bg-[#3F3F46] text-white transition-all h-10 flex items-center justify-center shadow-lg shadow-black/20",
+        socialButtonsBlockButtonText: "text-white font-medium ml-2",
         socialButtonsBlockButtonArrow: "hidden",
         dividerLine: "bg-[#2A2A2E]",
         dividerText: "text-[#6B6B70] text-xs uppercase tracking-wider",
@@ -129,8 +130,8 @@ export function AuthScreen({ mode }: AuthScreenProps) {
                     </Link>
                 </div>
 
-                {/* Auth Form Container */}
-                <div className="bg-[--color-bg-graphite-1]/50 border border-white/10 rounded-sm p-6 backdrop-blur-md">
+                {/* Auth Form Container - Subtle/No Border */}
+                <div className="bg-[--color-bg-graphite-1]/30 rounded-sm p-6 backdrop-blur-md">
                     {mode === "sign-in" ? (
                         <SignIn
                             appearance={signInAppearance}

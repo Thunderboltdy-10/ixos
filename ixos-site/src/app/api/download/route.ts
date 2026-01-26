@@ -16,17 +16,25 @@ export async function GET(request: NextRequest) {
     const platform = searchParams.get("platform") || "windows";
 
     // Repo configuration - update if repo name changes
-    const REPO_OWNER = "ixos";
-    const REPO_NAME = "ixos-protocol";
+    const REPO_OWNER = "Thunderboltdy-10";
+    const REPO_NAME = "Ixos";
+
+    const githubToken = process.env.GITHUB_TOKEN;
 
     try {
+        const headers: HeadersInit = {
+            "User-Agent": "Ixos-Landing-Page",
+            Accept: "application/vnd.github.v3+json",
+        };
+
+        if (githubToken) {
+            headers["Authorization"] = `Bearer ${githubToken}`;
+        }
+
         const res = await fetch(
             `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`,
             {
-                headers: {
-                    "User-Agent": "Ixos-Landing-Page",
-                    Accept: "application/vnd.github.v3+json",
-                },
+                headers,
                 next: { revalidate: 60 }, // Cache for 60s to avoid rate limits
             }
         );

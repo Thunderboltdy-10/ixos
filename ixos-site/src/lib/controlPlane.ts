@@ -163,6 +163,8 @@ export function isSubscriptionActive({
   const GRACE_PERIOD_MS = 1000 * 60 * 60 * 24;
   const now = Date.now();
 
+  console.log(`[isSubscriptionActive] Checking: status=${status} (norm=${normalized}), ends=${currentPeriodEnd?.toISOString()}`);
+
   // If active/trialing/past_due, logic is standard
   if (ACTIVE_SUB_STATUSES.has(normalized)) {
     // If we have an end date and it's long passed (outside grace), then inactive
@@ -173,18 +175,23 @@ export function isSubscriptionActive({
       // Actually, if it says active but date is old, assume renewal webhook is just Late. 
       // So as long as status is Active, we are good?
       // No, let's keep the date check but with grace.
+      console.log(`[isSubscriptionActive] >> False: Active status but expired beyond grace period. Diff=${now - currentPeriodEnd.getTime()}ms`);
       return false;
     }
+    console.log(`[isSubscriptionActive] >> True: Status '${normalized}' is active/trialing/past_due.`);
     return true;
   }
 
   // If cancelled, they should still have access until the period ends
   if (normalized === "cancelled") {
     if (currentPeriodEnd && currentPeriodEnd.getTime() > now) {
+      console.log(`[isSubscriptionActive] >> True: Cancelled but still in period.`);
       return true;
     }
+    console.log(`[isSubscriptionActive] >> False: Cancelled and period ended.`);
   }
 
+  console.log(`[isSubscriptionActive] >> False: Status '${normalized}' not in active set.`);
   return false;
 }
 

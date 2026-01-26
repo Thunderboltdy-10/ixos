@@ -15,7 +15,7 @@ const signInAppearance = {
         colorText: "#E5E5E7",
         colorTextSecondary: "#A1A1A6",
         colorDanger: "#EF4444",
-        borderRadius: "0.5rem",
+        borderRadius: "0.25rem", // More square (rounded-sm equivalent)
         fontFamily: "system-ui, -apple-system, sans-serif",
     },
     elements: {
@@ -24,7 +24,7 @@ const signInAppearance = {
         headerTitle: "hidden",
         headerSubtitle: "hidden",
         socialButtonsBlockButton:
-            "bg-[#1A1A1E] border border-[#2A2A2E] hover:bg-[#222225] text-[#E5E5E7] transition-colors h-10 flex items-center justify-center",
+            "bg-white/5 border border-white/10 hover:bg-white/10 text-[#E5E5E7] transition-colors h-10 flex items-center justify-center",
         socialButtonsBlockButtonText: "text-[#E5E5E7] font-medium ml-2",
         socialButtonsBlockButtonArrow: "hidden",
         dividerLine: "bg-[#2A2A2E]",
@@ -32,9 +32,9 @@ const signInAppearance = {
         formFieldLabel:
             "text-[#A1A1A6] text-xs font-medium mb-1.5 uppercase tracking-wide",
         formFieldInput:
-            "bg-[#1A1A1E] border border-[#2A2A2E] text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-[#14B8A6] focus:ring-1 focus:ring-[#14B8A6]/30 rounded-lg h-10 px-4 transition-all",
+            "bg-[#1A1A1E] border border-white/10 text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-[#14B8A6] focus:ring-1 focus:ring-[#14B8A6]/30 rounded-md h-10 px-4 transition-all",
         formButtonPrimary:
-            "bg-[--color-accent-teal] hover:bg-[--color-accent-teal-dim] text-[#0A0A0B] font-semibold h-10 rounded-lg transition-all uppercase tracking-widest text-xs shadow-glow-teal",
+            "bg-[--color-accent-teal] hover:bg-[--color-accent-teal-dim] text-[#0A0A0B] font-semibold h-10 rounded-md transition-all uppercase tracking-widest text-xs shadow-glow-teal",
         footerActionLink:
             "text-[#14B8A6] hover:text-[#0D9488] font-medium transition-colors",
         identityPreviewText: "text-[#E5E5E7]",
@@ -58,9 +58,9 @@ const signUpAppearance = {
     elements: {
         ...signInAppearance.elements,
         formFieldInput:
-            "bg-[#1A1A1E] border border-[#2A2A2E] text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-[--color-accent-magenta] focus:ring-1 focus:ring-[--color-accent-magenta]/30 rounded-lg h-10 px-4 transition-all",
+            "bg-[#1A1A1E] border border-white/10 text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-[--color-accent-magenta] focus:ring-1 focus:ring-[--color-accent-magenta]/30 rounded-md h-10 px-4 transition-all",
         formButtonPrimary:
-            "bg-[--color-accent-magenta] hover:bg-[--color-accent-magenta-glow] text-[#0A0A0B] font-semibold h-10 rounded-lg transition-all uppercase tracking-widest text-xs shadow-glow-magenta",
+            "bg-[--color-accent-magenta] hover:bg-[--color-accent-magenta-glow] text-[#0A0A0B] font-semibold h-10 rounded-md transition-all uppercase tracking-widest text-xs shadow-glow-magenta",
         footerActionLink:
             "text-[--color-accent-magenta] hover:text-[--color-accent-magenta-glow] font-medium transition-colors",
         identityPreviewEditButton:
@@ -81,8 +81,8 @@ export function AuthScreen({ mode }: AuthScreenProps) {
                 {/* Logo */}
                 <div className="flex justify-center mb-8">
                     <Link href="/">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[--color-accent-amber] to-[--color-accent-amber]/60 p-[2px] shadow-glow-amber">
-                            <div className="w-full h-full rounded-[14px] bg-[--color-bg-graphite-1] flex items-center justify-center relative">
+                        <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[--color-accent-amber] to-[--color-accent-amber]/60 p-[1px] shadow-glow-amber">
+                            <div className="w-full h-full rounded-[11px] bg-[--color-bg-graphite-1] flex items-center justify-center relative">
                                 <Image
                                     src="/assets/icon.png"
                                     alt="Ixos"
@@ -108,21 +108,21 @@ export function AuthScreen({ mode }: AuthScreenProps) {
                 </div>
 
                 {/* Tab Toggle */}
-                <div className="bg-[--color-bg-graphite-2] rounded-lg p-1 flex mb-6 border border-[--color-stroke-hairline]">
+                <div className="bg-[--color-bg-graphite-2] rounded-md p-1 flex mb-6 border border-white/5">
                     <Link
                         href="/sign-in"
-                        className={`flex-1 py-2.5 rounded-md text-xs uppercase tracking-[0.15em] font-semibold transition-all text-center ${mode === "sign-in"
-                                ? "bg-[--color-bg-graphite-1] text-[--color-accent-teal] shadow-sm"
-                                : "text-[--color-fg-muted] hover:text-[--color-fg-porcelain]"
+                        className={`flex-1 py-2 rounded-sm text-xs uppercase tracking-[0.15em] font-semibold transition-all text-center ${mode === "sign-in"
+                            ? "bg-[--color-bg-graphite-1] text-[--color-accent-teal] shadow-sm"
+                            : "text-[--color-fg-muted] hover:text-[--color-fg-porcelain]"
                             }`}
                     >
                         Sign In
                     </Link>
                     <Link
                         href="/sign-up"
-                        className={`flex-1 py-2.5 rounded-md text-xs uppercase tracking-[0.15em] font-semibold transition-all text-center ${mode === "sign-up"
-                                ? "bg-[--color-bg-graphite-1] text-[--color-accent-magenta] shadow-sm"
-                                : "text-[--color-fg-muted] hover:text-[--color-fg-porcelain]"
+                        className={`flex-1 py-2 rounded-sm text-xs uppercase tracking-[0.15em] font-semibold transition-all text-center ${mode === "sign-up"
+                            ? "bg-[--color-bg-graphite-1] text-[--color-accent-magenta] shadow-sm"
+                            : "text-[--color-fg-muted] hover:text-[--color-fg-porcelain]"
                             }`}
                     >
                         Sign Up
@@ -130,7 +130,7 @@ export function AuthScreen({ mode }: AuthScreenProps) {
                 </div>
 
                 {/* Auth Form Container */}
-                <div className="bg-[--color-bg-graphite-1] border border-[--color-stroke-hairline] rounded-2xl p-6 shadow-lift backdrop-blur-sm">
+                <div className="bg-[--color-bg-graphite-1]/50 border border-white/10 rounded-sm p-6 backdrop-blur-md">
                     {mode === "sign-in" ? (
                         <SignIn
                             appearance={signInAppearance}

@@ -1,5 +1,5 @@
-import { desc, eq } from "drizzle-orm";
-import { db, subscriptions } from "@/lib/db";
+import { desc, eq, inArray } from "drizzle-orm";
+import { db, subscriptions, users } from "@/lib/db";
 import {
   getClerkUserIdFromRequest,
   getOrCreateUserByClerkId,
@@ -17,10 +17,34 @@ export async function GET(req: Request) {
     }
 
     const userRecord = await getOrCreateUserByClerkId(clerkUserId);
+    console.log(`[SubAPI] Checked User: ClerkID=${clerkUserId} -> DbID=${userRecord.id}, Email=${userRecord.email}`);
+
+    // Robustness: Find ALL users with this email (handles ghost users created by webhooks)
+    const linkedUsers = await db.query.users.findMany({
+      where: eq(users.email, userRecord.email),
+      columns: { id: true }
+    });
+
+    const userIds = linkedUsers.map(u => u.id);
+    if (!userIds.includes(userRecord.id)) {
+      userIds.push(userRecord.id);
+    }
+
+    console.log(`[SubAPI] Searching subs for UserIDs: ${userIds.join(', ')}`);
+
     const subscription = await db.query.subscriptions.findFirst({
-      where: eq(subscriptions.userId, userRecord.id),
+      where: inArray(subscriptions.userId, userIds),
       orderBy: desc(subscriptions.updatedAt),
     });
+
+    console.log(`[SubAPI] Found Subscription:`, subscription ? {
+      id: subscription.id,
+      lemonId: subscription.lemonSubscriptionId,
+      status: subscription.status,
+      plan: subscription.plan,
+      ends: subscription.currentPeriodEnd,
+      updated: subscription.updatedAt
+    } : "None");
 
     if (!subscription) {
       return Response.json({
@@ -36,6 +60,8 @@ export async function GET(req: Request) {
       status: subscription.status,
       currentPeriodEnd: subscription.currentPeriodEnd,
     });
+
+    console.log(`[SubAPI] Calculated Active: ${active}`);
 
     let portalUrl: string | null = null;
     if (active) {

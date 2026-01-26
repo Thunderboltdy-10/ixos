@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Turbopack project root configuration
+  // See: https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory
+  experimental: {
+  },
   typescript: {
     ignoreBuildErrors: true,
   },

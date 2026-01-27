@@ -1,6 +1,6 @@
 import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { verifyToken } from "@clerk/backend";
-import { SignJWT, importPKCS8, decodeJwt } from "jose";
+import { SignJWT, importPKCS8, importSPKI, decodeJwt } from "jose";
 import { desc, eq } from "drizzle-orm";
 import { db, users, subscriptions } from "@/lib/db";
 
@@ -245,43 +245,31 @@ export async function getActivePlanForUser(userId: string): Promise<Plan> {
 }
 
 /**
- * Parse and sanitize PKCS#8 private key from environment variable.
- * Handles multiple encoding issues (Vercel env vars, escaped newlines, etc.)
+ * Parse and sanitize private key from environment variable.
+ * Handles both PKCS#8 (BEGIN PRIVATE KEY) and EC (BEGIN EC PRIVATE KEY) format labels,
+ * but note that the underlying content must be in a format supported by the library.
  */
-function parsePKCS8PrivateKey(rawKey: string): string {
+function parsePrivateKey(rawKey: string): string {
   if (!rawKey) {
     throw new Error("IXOS_JWT_PRIVATE_KEY is not set");
   }
 
   let key = rawKey.trim();
 
-  // Strategy 1: Handle escaped newlines (\\n) - common in Vercel env vars
+  // Handle escaped newlines - common in Vercel/environment variables
   if (key.includes("\\n")) {
     key = key.replace(/\\n/g, "\n");
   }
-
-  // Strategy 2: Handle double-escaped newlines (\\\\n)
   if (key.includes("\\\\n")) {
     key = key.replace(/\\\\n/g, "\n");
   }
 
-  // Strategy 3: Handle mixed encoding issues
-  key = key.replace(/\\\/n/g, "\n"); // Handle \/ followed by n
-
-  // Validate PEM format
-  const isPemStart = key.startsWith("-----BEGIN PRIVATE KEY-----");
-  const isPemEnd = key.includes("-----END PRIVATE KEY-----");
-
-  if (!isPemStart || !isPemEnd) {
-    console.error("[JWT] Invalid PEM format detected");
-    console.error("[JWT] Key starts with:", key.substring(0, 100));
-    throw new Error(
-      `"pkcs8" must be PKCS#8 formatted string (BEGIN/END markers missing). ` +
-      `Key starts with: ${key.substring(0, 50)}... Has ${key.length} characters.`
-    );
+  // Ensure BEGIN/END markers are present
+  if (!key.includes("-----BEGIN") || !key.includes("-----END")) {
+    throw new Error("Invalid PEM format: Missing BEGIN/END markers");
   }
 
-  // Ensure proper line endings
+  // Ensure trailing newline for some parsers
   if (!key.endsWith("\n")) {
     key = key + "\n";
   }
@@ -300,23 +288,31 @@ export async function issueEntitlementToken({
   plan: Plan;
   features?: string[];
 }) {
-  let privateKeyPem: string;
-
-  try {
-    privateKeyPem = parsePKCS8PrivateKey(process.env.IXOS_JWT_PRIVATE_KEY || "");
-  } catch (parseError) {
-    console.error("[JWT] Key parsing failed:", parseError);
-    throw parseError;
-  }
+  const rawKey = process.env.IXOS_JWT_PRIVATE_KEY || "";
+  const privateKeyPem = parsePrivateKey(rawKey);
 
   let privateKey;
   try {
+    // jose's importPKCS8 is strict about the PKCS#8 format (BEGIN PRIVATE KEY)
+    // If the user has a SEC1/EC key (BEGIN EC PRIVATE KEY), this will likely fail
+    if (privateKeyPem.includes("BEGIN EC PRIVATE KEY")) {
+      console.warn("[JWT] EC (SEC1) format detected. Attempting import, but PKCS#8 is preferred.");
+    }
+
     privateKey = await importPKCS8(privateKeyPem, "ES256");
   } catch (importError) {
-    console.error("[JWT] importPKCS8 failed:", importError);
-    console.error("[JWT] Key preview:", privateKeyPem.substring(0, 100));
+    console.error("[JWT] Key import failed:", importError);
+
+    if (privateKeyPem.includes("BEGIN EC PRIVATE KEY")) {
+      throw new Error(
+        "Invalid Key Format: You are using an 'EC PRIVATE KEY' (SEC1) which is not supported by the JWT library. " +
+        "Please convert it to 'PKCS#8' format. " +
+        "Run: openssl pkcs8 -topk8 -nocrypt -in your-key.pem -out pkcs8-key.pem"
+      );
+    }
+
     throw new Error(
-      `Failed to import PKCS#8 key: ${importError instanceof Error ? importError.message : String(importError)}`
+      `Failed to import private key: ${importError instanceof Error ? importError.message : String(importError)}`
     );
   }
 

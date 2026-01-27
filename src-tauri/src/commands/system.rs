@@ -136,7 +136,6 @@ pub async fn select_directory(app: AppHandle) -> Result<Option<String>, String> 
 /// Model status information
 #[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
-#[serde(rename_all = "camelCase")]
 pub struct ModelStatus {
     pub ixos_flash_v2_available: bool,
     pub ixos_flash_v2_path: Option<String>,
@@ -225,7 +224,7 @@ pub async fn preload_model(
 pub async fn download_model(
     _app: AppHandle,
     model_type: String,
-    hf_token: Option<String>,
+    _hf_token: Option<String>,
 ) -> Result<String, String> {
     use ixos_protocol::ixos_embed::ModelType;
     use std::io::Write;
@@ -382,44 +381,4 @@ pub async fn download_model(
     
     tracing::info!("Model {} downloaded and validated successfully", model_type);
     Ok(format!("Successfully downloaded and validated {}", model_type))
-}
-            }
-        }
-
-        tracing::info!("Downloading file: {}", url);
-
-        // Add Authorization header if token provided
-        let mut request = client.get(&url);
-        if let Some(token) = &hf_token {
-            if !token.is_empty() {
-                request = request.header("Authorization", format!("Bearer {}", token));
-            }
-        }
-
-        let res = request
-            .send()
-            .await
-            .map_err(|e| format!("Failed to request {}: {}", filename, e))?;
-
-        if !res.status().is_success() {
-            return Err(format!(
-                "Failed to download {}: Status {}",
-                filename,
-                res.status()
-            ));
-        }
-
-        let mut file = std::fs::File::create(&target_path)
-            .map_err(|e| format!("Failed to create file {:?}: {}", target_path, e))?;
-
-        let mut stream = res.bytes_stream();
-
-        while let Some(chunk) = stream.next().await {
-            let chunk = chunk.map_err(|e| format!("Download error: {}", e))?;
-            file.write_all(&chunk)
-                .map_err(|e| format!("Write error: {}", e))?;
-        }
-    }
-
-    Ok(format!("Successfully downloaded {}", model_type))
 }

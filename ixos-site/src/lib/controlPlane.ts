@@ -244,6 +244,51 @@ export async function getActivePlanForUser(userId: string): Promise<Plan> {
   return sub.plan === "pro" ? "pro" : "free";
 }
 
+/**
+ * Parse and sanitize PKCS#8 private key from environment variable.
+ * Handles multiple encoding issues (Vercel env vars, escaped newlines, etc.)
+ */
+function parsePKCS8PrivateKey(rawKey: string): string {
+  if (!rawKey) {
+    throw new Error("IXOS_JWT_PRIVATE_KEY is not set");
+  }
+
+  let key = rawKey.trim();
+
+  // Strategy 1: Handle escaped newlines (\\n) - common in Vercel env vars
+  if (key.includes("\\n")) {
+    key = key.replace(/\\n/g, "\n");
+  }
+
+  // Strategy 2: Handle double-escaped newlines (\\\\n)
+  if (key.includes("\\\\n")) {
+    key = key.replace(/\\\\n/g, "\n");
+  }
+
+  // Strategy 3: Handle mixed encoding issues
+  key = key.replace(/\\\/n/g, "\n"); // Handle \/ followed by n
+
+  // Validate PEM format
+  const isPemStart = key.startsWith("-----BEGIN PRIVATE KEY-----");
+  const isPemEnd = key.includes("-----END PRIVATE KEY-----");
+
+  if (!isPemStart || !isPemEnd) {
+    console.error("[JWT] Invalid PEM format detected");
+    console.error("[JWT] Key starts with:", key.substring(0, 100));
+    throw new Error(
+      `"pkcs8" must be PKCS#8 formatted string (BEGIN/END markers missing). ` +
+      `Key starts with: ${key.substring(0, 50)}... Has ${key.length} characters.`
+    );
+  }
+
+  // Ensure proper line endings
+  if (!key.endsWith("\n")) {
+    key = key + "\n";
+  }
+
+  return key;
+}
+
 export async function issueEntitlementToken({
   clerkUserId,
   deviceId,
@@ -255,15 +300,26 @@ export async function issueEntitlementToken({
   plan: Plan;
   features?: string[];
 }) {
-  let privateKeyPem = process.env.IXOS_JWT_PRIVATE_KEY;
-  if (!privateKeyPem) {
-    throw new Error("IXOS_JWT_PRIVATE_KEY is not set");
+  let privateKeyPem: string;
+
+  try {
+    privateKeyPem = parsePKCS8PrivateKey(process.env.IXOS_JWT_PRIVATE_KEY || "");
+  } catch (parseError) {
+    console.error("[JWT] Key parsing failed:", parseError);
+    throw parseError;
   }
 
-  // Fix PEM newlines if present (especially in Vercel)
-  privateKeyPem = privateKeyPem.replace(/\\n/g, "\n");
+  let privateKey;
+  try {
+    privateKey = await importPKCS8(privateKeyPem, "ES256");
+  } catch (importError) {
+    console.error("[JWT] importPKCS8 failed:", importError);
+    console.error("[JWT] Key preview:", privateKeyPem.substring(0, 100));
+    throw new Error(
+      `Failed to import PKCS#8 key: ${importError instanceof Error ? importError.message : String(importError)}`
+    );
+  }
 
-  const privateKey = await importPKCS8(privateKeyPem, "ES256");
   const now = Math.floor(Date.now() / 1000);
   return await new SignJWT({
     plan,

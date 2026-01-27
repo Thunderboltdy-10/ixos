@@ -16,9 +16,9 @@ const bodySchema = z.object({
   transferToken: z.string().optional(),
 });
 
-const TRANSFER_TOKEN_TTL_MS = 1000 * 60 * 60 * 24;
-const TRANSFER_COOLDOWN_MS = 1000 * 60 * 60 * 12;
-const TRANSFER_MONTHLY_LIMIT = 5;
+const TRANSFER_TOKEN_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
+const TRANSFER_SPAM_PREVENTION_MS = 1000 * 60 * 2; // 2 minutes - prevents rapid-fire requests
+// Removed: 12-hour cooldown and 5/month limit per user request for better multi-device support
 
 export async function POST(req: Request) {
   const clerkUserId = await getClerkUserIdFromRequest(req);
@@ -62,35 +62,21 @@ export async function POST(req: Request) {
     });
   }
 
-  const lastApproved = await db.query.leaseTransfers.findFirst({
+  // Check for spam: prevent multiple transfer requests within 2 minutes
+  const lastPendingTransfer = await db.query.leaseTransfers.findFirst({
     where: and(
       eq(leaseTransfers.userId, userRecord.id),
-      eq(leaseTransfers.status, "approved")
+      eq(leaseTransfers.status, "pending")
     ),
-    orderBy: desc(leaseTransfers.approvedAt),
+    orderBy: desc(leaseTransfers.requestedAt),
   });
 
   if (
-    lastApproved?.approvedAt &&
-    now.getTime() - lastApproved.approvedAt.getTime() < TRANSFER_COOLDOWN_MS
+    lastPendingTransfer?.requestedAt &&
+    now.getTime() - lastPendingTransfer.requestedAt.getTime() < TRANSFER_SPAM_PREVENTION_MS
   ) {
     return Response.json(
-      { error: "Transfer cooldown active" },
-      { status: 429 }
-    );
-  }
-
-  const monthAgo = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 30);
-  const approvedTransfers = await db.query.leaseTransfers.findMany({
-    where: and(
-      eq(leaseTransfers.userId, userRecord.id),
-      eq(leaseTransfers.status, "approved"),
-      gt(leaseTransfers.approvedAt, monthAgo)
-    ),
-  });
-  if (approvedTransfers.length >= TRANSFER_MONTHLY_LIMIT) {
-    return Response.json(
-      { error: "Transfer limit exceeded" },
+      { error: "Please wait a moment before requesting another transfer" },
       { status: 429 }
     );
   }

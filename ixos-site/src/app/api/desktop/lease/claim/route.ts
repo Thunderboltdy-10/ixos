@@ -82,17 +82,9 @@ export async function POST(req: Request) {
     }
   }
 
-  const leaseResult = { success: true, leaseExpiresAt };
-
-  if ('error' in leaseResult) {
-    return new Response(leaseResult.error as string, { status: leaseResult.status as number });
-  }
-
-  if ('conflict' in leaseResult) {
-    return Response.json(leaseResult, { status: 409 });
-  }
-
-  const leaseExpiresAt = leaseResult.leaseExpiresAt;
+  // leaseResult is now guaranteed to be { success: true, leaseExpiresAt }
+  // because errors and conflicts were handled above.
+  const finalLeaseExpiresAt = leaseExpiresAt;
 
   const token = await issueEntitlementToken({
     clerkUserId,
@@ -105,7 +97,7 @@ export async function POST(req: Request) {
     plan,
     lease: {
       status: plan === "pro" ? "active" : "none",
-      expiresAt: leaseExpiresAt ? leaseExpiresAt.toISOString() : null,
+      expiresAt: finalLeaseExpiresAt ? finalLeaseExpiresAt.toISOString() : null,
     },
     token,
   });

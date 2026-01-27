@@ -13,9 +13,16 @@ Pro-tier pipeline that blends Flash and Potion embeddings with lexical signals f
 - Fusion: weighted linear blend of flash similarity, pro similarity, lexical match ratio, and dir prior
 - Learned weights (real_corpus_v2): flash=0.2697, pro=0.2672, lexical=0.4631, dir=0.0
 
-## Performance (subset suites, 2026-01-26)
-- real_corpus_v2: Recall@10 0.9700, MRR@10 0.9233, latency 521.34 ms/1k
-- synthetic_ambiguity_v1: MRR@10 0.9833
+## Performance (canonical, 2026-01-27)
+
+| Suite | MRR@10 | Recall@10 | Latency |
+|-------|--------|-----------|---------|
+| real_corpus_v2 | 0.9233 | 0.97 | ~674 ms/1k |
+| synthetic_ambiguity_v1 | 0.9833 | 1.00 | ~269 ms/1k |
+
+**Improvement over Flash-only:** +9.9% MRR@10
+
+See `models/lab/CANONICAL_RESULTS.md` for verified benchmarks.
 
 ## Hardware assumptions
 - CPU-first, no GPU required at runtime

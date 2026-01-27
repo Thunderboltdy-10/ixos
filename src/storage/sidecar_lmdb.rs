@@ -295,7 +295,7 @@ impl EmbeddingCache for LmdbSidecarCache {
         // However, the `contains` API is primarily for stats where we want to know if *something* is cached.
         // Since we can't iterate efficiently to find if *any* key matches the path prefix (hashed),
         // we might return false or try to iterate.
-        // 
+        //
         // Optimization: Iterating the whole DB is slow.
         // BUT, `make_key` requires the hash.
         //

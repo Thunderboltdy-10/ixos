@@ -25,6 +25,11 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(
+            tauri_plugin_prevent_default::Builder::new()
+                .with_flags(tauri_plugin_prevent_default::Flags::DOWNLOADS)
+                .build(),
+        )
         .setup(|app| {
             // Initialize application state
             app.manage(state::AppState::new());
@@ -72,7 +77,9 @@ pub fn run() {
             commands::system::get_default_search_directory,
             commands::system::select_directory,
             commands::system::get_model_status,
+            commands::system::get_model_status,
             commands::system::preload_model,
+            commands::system::download_model,
             // Storage
             commands::storage::write_encrypted_file,
             commands::storage::read_encrypted_file,

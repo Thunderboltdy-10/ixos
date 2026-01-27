@@ -9,9 +9,9 @@
 
 ## Executive Summary
 
-Ixos implements a **multi-model semantic search architecture** combining Model2Vec embeddings with cross-encoder reranking and learned fusion. The system achieves **MRR@10 0.8831** (8.8% above baseline) through intelligent model selection, distillation, quantization, and ensemble techniques—all optimized for sub-2-second latency on commodity hardware with zero persistent storage.
+Ixos implements a **multi-model semantic search architecture** combining Model2Vec embeddings with cross-encoder reranking and learned fusion. The system achieves **MRR@10 0.9233** (+9.9% above Flash baseline) through intelligent model selection, distillation, quantization, and ensemble techniques—all optimized for sub-2-second latency on commodity hardware with zero persistent storage.
 
-**Key Metric:** Production model `ixos-flash-v2` (512-dim float16 distilled Model2Vec) ships by default with **MRR@10 0.766** latency of **417ms/1k** tokens—a Pareto-optimal speed/quality tradeoff.
+**Key Metric:** Production model `ixos-flash-v2` (512-dim float16 distilled Model2Vec) ships by default with **MRR@10 0.8399** latency of **~456ms/1k** tokens—a Pareto-optimal speed/quality tradeoff. See `models/lab/CANONICAL_RESULTS.md` for verified benchmarks.
 
 ---
 
@@ -29,15 +29,15 @@ Ixos implements a **multi-model semantic search architecture** combining Model2V
 - License: MIT
 - Model Source: Hugging Face Hub (`ixos-flash-v2`)
 
-**Performance Metrics:**
+**Performance Metrics (real_corpus_v2, canonical):**
 | Metric | Value |
 |--------|-------|
-| MRR@10 (Mean Reciprocal Rank) | 0.766 |
-| Recall@10 | 0.875 |
-| Latency (per 1k tokens) | 417.49 ms |
-| Model Size | ~128 MB (float16) |
-| Load Time | 100-200 ms |
-| Memory Delta (per embedding) | 1 KB (512 × 2 bytes) |
+| MRR@10 (Mean Reciprocal Rank) | 0.8399 |
+| Recall@10 | 0.93 |
+| Latency (per 1k candidates) | ~456 ms |
+| Model Size | ~44 MB (float16) |
+| Load Time | ~155 ms |
+| Memory Delta | ~75 MB |
 
 **Why This Model:**
 - **Distillation Advantage:** Model2Vec reduces transformer overhead by ~40% vs teacher while preserving 99.5% quality
@@ -66,15 +66,15 @@ Student: ixos-flash-v2 (60M effective params, 128MB on disk)
 - License: MIT
 - Size: 7.64 MB (compressed)
 
-**Performance Metrics:**
+**Performance Metrics (real_corpus_v2, canonical):**
 | Metric | Value |
 |--------|-------|
-| MRR@10 | 0.727 |
-| Recall@10 | 0.841 |
-| Latency (per 1k tokens) | 192.09 ms |
-| Speedup vs float32 | 2.1× (SIMD operations) |
+| MRR@10 | 0.8073 |
+| Recall@10 | 0.90 |
+| Latency (per 1k candidates) | ~249 ms |
+| Speedup vs flash-v2 | 1.8× |
 | Model Size | 7.64 MB |
-| Load Time | 50-100 ms |
+| Load Time | ~87 ms |
 
 **Quantization Innovation:**
 - **Int8 Technique:** Affine quantization with per-channel scaling
@@ -191,12 +191,11 @@ Latency: +340ms for 10-20 documents
 
 | Model | MRR@10 | Latency (ms/1k) | Size (MB) | Notes |
 |-------|--------|-----------------|-----------|-------|
-| **ixos-flash-v2** | **0.766** | **417.49** | **128** | ✓ Ship default |
-| st-paraphrase-minilm-l6-v2 | 0.782 | 653 | 90 | Slower, marginal gain |
-| st-multi-qa-minilm-l6-dot-v1 | 0.751 | 225 | 85 | Worse MRR, faster |
-| potion-base-8m-int8 | 0.727 | 192.09 | 7.64 | Extreme compression, -5% quality |
-| e5-small-v2-onnx | 0.813 | 88000 | - | Severely overoptimized, ONNX broken |
-| st-small-dot-v5 | 0.612 | 150 | 33 | Too small, poor quality |
+| **ixos-flash-v2** | **0.8399** | **~456** | **44** | ✓ Ship default |
+| ixos-flash-v4-int8-512 | 0.8340 | ~411 | 18 | Quality match, size win |
+| ixos-flash-v4-int8-192 | 0.7950 | ~389 | 7 | Speed-first variant |
+| potion-base-8m-int8 | 0.8073 | ~249 | 7.6 | Fast baseline |
+| st-paraphrase-minilm-l6-v2 | ~0.78 | ~650 | 90 | Slower, marginal gain |
 
 ### Pro Tier (Quality-Optimized)
 
@@ -328,14 +327,14 @@ Fusion: score_final = w_s * s_sem + w_l * s_lex + w_d * s_dir
 | Lexical (BM25 from ripgrep) | 0.67 | 67% |
 | Directory (folder centroid) | 0.0 | 0% |
 
-**Performance:**
+**Performance (real_corpus_v2, canonical):**
 | Mode | MRR@10 | Improvement |
 |------|--------|-------------|
-| Semantic only | 0.766 | Baseline |
-| Lexical only | 0.645 | -15.8% |
-| Lexical + Semantic | 0.8122 | +5.9% |
-| **Learned Fusion** | **0.8831** | **+15.2%** |
-| Directory + Fusion | 0.8831 | Same (w_d=0) |
+| Semantic only (flash-v2) | 0.8399 | Baseline |
+| Lexical only | ~0.65 | -22.5% |
+| **Learned Fusion (Pro)** | **0.9233** | **+9.9%** |
+
+Note: Fusion weights learned via logistic regression on query-document relevance pairs.
 
 **Why Learned Fusion Works:**
 - **Information Complementarity:** Semantic catches synonyms; lexical excels at exact matches
@@ -975,7 +974,9 @@ Ixos implements a **production-grade semantic search system** using:
 4. **Optimized inference** (lexical funnel: 97% file reduction)
 5. **Zero storage** (JIT embeddings: maximum privacy, always fresh)
 
-**Key Metric:** Default mode (Flash) achieves **MRR@10 0.766** with **417ms latency/1k tokens**—a Pareto-optimal configuration selected from 40+ evaluated models. Advanced users can enable Pro mode (**MRR 0.8831**, +350ms latency) for maximum quality.
+**Key Metric:** Default mode (Flash) achieves **MRR@10 0.8399** with **~456ms latency/1k candidates**—a Pareto-optimal configuration selected from 40+ evaluated models. Advanced users can enable Pro mode (**MRR 0.9233**, dual-embedder fusion) for maximum quality.
+
+**Canonical benchmarks:** See `models/lab/CANONICAL_RESULTS.md` for reproducible, verified metrics.
 
 **Recommendation:** Ship Ixos-Flash-v2 by default; provide Auto/Pro toggles for users who prioritize quality over speed. Monitor production routing to ensure <35% reranker triggering rate (cost control).
 

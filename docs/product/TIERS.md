@@ -1,44 +1,124 @@
-# Product Tiers: Flash vs Pro
+# Search Modes: Fast vs Accurate
 
-This document defines the product distinction between Flash and Pro for Ixos.
+> **Update 2026-01-27:** Pro features are now free. Marketing simplified to two concepts: **Fast** and **Accurate**.
 
-## Flash (Free)
-**What it is:** A single-embedder semantic rerank on top of the lexical funnel.
+This document defines the user-facing search modes for Ixos.
+
+## Fast Mode (Default)
+
+**What it is:** Single-embedder semantic rerank on top of the lexical funnel.
 
 **Pipeline:**
-- Lexical funnel -> Flash embedder rerank -> secure ranking -> evidence.
+```
+Query -> Lexical funnel -> Flash embedder rerank -> Secure ranking -> Evidence
+```
 
-**Targets:**
-- CPU-first, local-first, minimal memory.
-- Typical real_corpus_v2 MRR@10: ~0.84 (Flash v2) with ~377 ms/1k latency.
+**Performance (canonical):**
+| Metric | Value |
+|--------|-------|
+| MRR@10 | 0.8399 |
+| Recall@10 | 0.93 |
+| Latency | ~456 ms/1k candidates |
+| Peak RAM | ~185 MB |
+
+**Default model:** `ixos-flash-v2` (512d, float16)
+
+**Use when:**
+- Speed matters most
+- Working with large file counts
+- Typical desktop searches
+
+## Accurate Mode
+
+**What it is:** Dual-embedder fusion pipeline combining Flash + Potion + lexical signals.
+
+**Pipeline:**
+```
+Query -> Lexical funnel -> Flash rerank -> Auto routing check
+    -> [if ambiguous] Pro rerank (Potion) -> Fusion blend
+    -> Secure ranking -> Evidence
+```
+
+**Performance (canonical):**
+| Metric | Value | vs Fast |
+|--------|-------|---------|
+| MRR@10 | 0.9233 | +9.9% |
+| Recall@10 | 0.97 | +4.3% |
+| Latency | ~674 ms/1k candidates | +48% |
+| Peak RAM | ~250 MB | +35% |
+
+**Fusion weights (learned):**
+| Signal | Weight |
+|--------|--------|
+| Flash semantic | 0.2697 |
+| Potion semantic | 0.2672 |
+| Lexical match | 0.4631 |
+| Directory prior | 0.0000 |
 
 **Default models:**
-- Flash Core: `ixos-flash-v2` (float16, 512d)
-- Flash Quartz: `ixos-flash-v4-int8-512` (int8, 512d) when available
-- Flash Ember: `ixos-flash-v4-int8-192` (int8, 192d) for speed-first use
+- Flash: `ixos-flash-v2` (512d, float16)
+- Potion: `potion-base-8m-int8` (256d, int8)
 
-## Pro (Paid)
-**What it is:** A dual-embedder refinement pipeline that fuses Flash + Potion + lexical signals to boost ranking quality.
+**Use when:**
+- Quality matters most
+- Searching ambiguous or short queries
+- Working with specialized terminology
 
-**Pipeline:**
-- Flash rerank -> Auto routing -> Pro rerank (Potion) -> fusion (flash/pro/lexical/dir) -> secure ranking.
+## Auto Mode (Default Behavior)
 
-**Targets:**
-- Meaningfully better ranking on real corpora.
-- Typical real_corpus_v2 MRR@10: ~0.92 with ~521 ms/1k latency (fusion weights learned).
-- Only invoked when Auto routing detects ambiguity, or explicitly in Pro mode.
+Auto mode dynamically routes to Accurate only when needed, keeping most queries at Fast latency.
 
-**Default Pro model:**
-- `potion` (fast, small, and complementary to Flash for fusion).
+**Routing triggers (any of):**
+- Score gap < 0.05 (top results too close)
+- Lexical match ratio < 0.15 (poor keyword overlap)
+- Query length <= 2 words (ambiguous)
+- Score entropy > 0.9 (flat distribution)
 
-## Auto mode (bridge)
-Auto routes to Pro only when needed (low score gap, weak lexical match, or high entropy). This keeps most queries at Flash latency while preserving Pro wins on ambiguous or difficult queries.
+**Pro top-K:** 120 candidates refined when triggered
 
-## Local-first trust
-Both Flash and Pro run entirely on-device. Paid value is delivered via offline model bundles, tuning, and UI features, never by remote inference or data collection.
+This provides Accurate wins on difficult queries without Accurate latency on easy ones.
 
-## Defensible differentiation
-- Flash: single embedder, lowest latency, smallest footprint.
-- Pro: dual embedder + fusion, higher MRR on real corpora, routed to avoid unnecessary cost.
+## Advanced: Eco Mode (Hidden)
 
-This remains defensible even if the code is open because the Pro value is in the curated model bundle, fusion tuning, and safe defaults that are shipped as a product pack.
+For battery-constrained or low-end devices, available under Advanced settings.
+
+**Pipeline:** Same as Fast, with smaller model
+
+**Performance:**
+| Metric | ixos-flash-v4-int8-192 | vs Fast |
+|--------|------------------------|---------|
+| MRR@10 | 0.7950 | -5.3% |
+| Latency | ~389 ms/1k | -15% |
+| Peak RAM | ~60 MB | -68% |
+
+**Use when:**
+- On battery power
+- Low-end hardware (4GB RAM)
+- Extremely large corpora
+
+## Model Selection Guide
+
+| Scenario | Recommended Mode | Why |
+|----------|------------------|-----|
+| Desktop daily use | Auto (default) | Best balance |
+| Code search | Fast | Speed + good quality |
+| Legal/medical docs | Accurate | Precision critical |
+| Laptop on battery | Eco (advanced) | Power efficiency |
+| >10k files | Fast or Eco | Memory constraints |
+
+## Ship Configuration Summary
+
+| Mode | Embedder(s) | MRR@10 | Latency | RAM |
+|------|-------------|--------|---------|-----|
+| **Fast** | Flash-v2 | 0.84 | ~456ms | ~185MB |
+| **Accurate** | Flash-v2 + Potion | 0.92 | ~674ms | ~250MB |
+| **Auto** | Adaptive | 0.84-0.92 | ~456-674ms | ~185-250MB |
+| **Eco** | Flash-v4-192 | 0.80 | ~389ms | ~60MB |
+
+## Local-First Trust
+
+All modes run entirely on-device. No remote inference, no data collection.
+
+## Canonical Benchmarks
+
+See `models/lab/CANONICAL_RESULTS.md` for verified, reproducible metrics.

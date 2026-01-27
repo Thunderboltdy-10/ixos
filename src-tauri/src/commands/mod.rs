@@ -3,8 +3,8 @@
 //! This module contains all the command handlers that bridge the frontend
 //! to the Ixos protocol library.
 
-pub mod config;
 pub mod auth;
+pub mod config;
 pub mod history;
 pub mod indexer;
 pub mod prefetch;

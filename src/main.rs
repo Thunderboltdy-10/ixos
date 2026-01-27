@@ -229,9 +229,10 @@ async fn handle_search(
             )?;
             return Ok(());
         }
-        let sandbox_config = ixos_protocol::security::sandbox::SandboxConfig::with_directories([
-            sandbox_dir.clone(),
-        ]);
+        let sandbox_config =
+            ixos_protocol::security::sandbox::SandboxConfig::with_directories(
+                [sandbox_dir.clone()],
+            );
         let sandbox = ixos_protocol::security::sandbox::Sandbox::new(sandbox_config)
             .map_err(|e| anyhow::anyhow!("{}", e))?;
         if let Err(e) = sandbox.validate_path(&search_dir) {
@@ -629,7 +630,6 @@ fn handle_daemon(foreground: bool, stop: bool, status: bool) -> anyhow::Result<(
 
 fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
     use ixos_protocol::storage::get_cache_for_path;
-
 
     match action {
         CacheCommands::Stats { dir, json } => {

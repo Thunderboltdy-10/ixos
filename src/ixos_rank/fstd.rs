@@ -278,20 +278,10 @@ fn default_adapter_paths() -> Vec<PathBuf> {
         paths.push(cwd.join("models").join("fstd").join("adapter.json"));
     }
     if let Some(data_dir) = dirs::data_dir() {
-        paths.push(
-            data_dir
-                .join("ixos")
-                .join("fstd")
-                .join("adapter.json"),
-        );
+        paths.push(data_dir.join("ixos").join("fstd").join("adapter.json"));
     }
     if let Some(config_dir) = dirs::config_dir() {
-        paths.push(
-            config_dir
-                .join("ixos")
-                .join("fstd")
-                .join("adapter.json"),
-        );
+        paths.push(config_dir.join("ixos").join("fstd").join("adapter.json"));
     }
     paths
 }

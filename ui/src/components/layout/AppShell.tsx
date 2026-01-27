@@ -5,6 +5,7 @@ import { Sidebar } from './Sidebar';
 import { SettingsPanel, type SettingsTabId } from '@/components/settings/SettingsPanel';
 import { useSearchStore } from '@/stores/searchStore';
 import { listen } from '@tauri-apps/api/event';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { InfoPanel } from '@/components/onboarding/InfoPanel';
 import { ArcNoiseBackground } from '@/components/effects/ArcNoiseBackground';
 import { PricingPanel } from '@/components/account/PricingPanel';
@@ -12,8 +13,7 @@ import { PricingPanel } from '@/components/account/PricingPanel';
 // Safe Tauri window import - falls back to no-op in browser
 const getTauriWindow = async () => {
   try {
-    const tauri = await import('@tauri-apps/api/window');
-    return tauri.getCurrentWindow();
+    return getCurrentWindow();
   } catch {
     console.log('Tauri window API not available (browser mode)');
     return {

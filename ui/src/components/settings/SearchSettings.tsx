@@ -5,7 +5,7 @@ import { useSearchStore } from '@/stores/searchStore';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Database, Trash2, RefreshCw, HardDrive } from 'lucide-react';
+import { Database, Trash2, RefreshCw, HardDrive, DownloadCloud, Loader2, Check } from 'lucide-react';
 import { formatFileSize } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
@@ -15,6 +15,16 @@ interface CacheStats {
   totalSizeBytes: number;
   available: boolean;
   cacheMode: string;
+}
+
+interface ModelStatus {
+  ixosFlashV2Available: boolean;
+  ixosFlashV2Path: string | null;
+  ixosProV1Available: boolean;
+  ixosProV1Path: string | null;
+  anyAvailable: boolean;
+  recommended: string | null;
+  loadedModel: string | null;
 }
 
 
@@ -187,6 +197,9 @@ export function SearchSettings() {
           <option value="cache">Persistent (ADS/xattr)</option>
         </select>
       </SettingRow>
+
+      {/* Model Management Panel */}
+      <ModelManagementPanel />
 
       {/* Cache Stats Panel */}
       <CachePanel />
@@ -369,6 +382,140 @@ function CachePanel() {
         </div>
       ) : (
         <div className="text-xs text-fg-dim">Unable to load cache statistics</div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Model management panel
+ */
+function ModelManagementPanel() {
+  const [status, setStatus] = useState<ModelStatus | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [downloading, setDownloading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [hfToken, setHfToken] = useState(() => localStorage.getItem('ix_hf_token') || '');
+
+  const loadStatus = async () => {
+    setIsLoading(true);
+    try {
+      const result = await invoke<ModelStatus>('get_model_status');
+      setStatus(result);
+    } catch (error) {
+      console.error('Failed to load model status:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDownload = async (modelType: string) => {
+    setDownloading(modelType);
+    setError(null);
+    try {
+      if (hfToken) localStorage.setItem('ix_hf_token', hfToken);
+      await invoke('download_model', { modelType, hfToken: hfToken || null });
+      await loadStatus();
+    } catch (err) {
+      console.error('Failed to download model:', err);
+      if (String(err).includes('401')) {
+        setError('Unauthorized. Please provide a generic HuggingFace token below.');
+      } else {
+        setError(typeof err === 'string' ? err : 'Download failed');
+      }
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  useEffect(() => {
+    loadStatus();
+  }, []);
+
+  if (!status && !isLoading) {
+    return (
+      <div className="py-3 border-b border-stroke-hairline">
+        <div className="text-xs text-fg-dim">Unable to load model status</div>
+      </div>
+    );
+  }
+
+  const models = [
+    { id: 'ixos-flash-v2', label: 'Ixos Flash', available: status?.ixosFlashV2Available },
+    { id: 'ixos-pro-v1', label: 'Ixos Pro', available: status?.ixosProV1Available },
+  ];
+
+  return (
+    <div className="py-3 border-b border-stroke-hairline">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <HardDrive className="w-4 h-4 text-accent-teal" />
+          <span className="text-sm font-medium text-porcelain">Installed Models</span>
+        </div>
+        <button
+          onClick={loadStatus}
+          disabled={isLoading}
+          className="p-1.5 rounded hover:bg-graphite-3 transition-colors"
+          title="Refresh status"
+        >
+          <RefreshCw className={cn('w-3.5 h-3.5 text-fg-dim', isLoading && 'animate-spin')} />
+        </button>
+      </div>
+
+      <div className="space-y-2">
+        {models.map((model) => (
+          <div key={model.id} className="flex items-center justify-between bg-graphite-2/50 rounded-md px-3 py-2">
+            <span className="text-sm text-porcelain">{model.label}</span>
+            <div className="flex items-center gap-3">
+              {model.available ? (
+                <div className="flex items-center gap-1.5 text-xs text-accent-teal">
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Installed</span>
+                </div>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs text-accent-teal hover:bg-accent-teal/10 hover:text-accent-teal"
+                  disabled={!!downloading}
+                  onClick={() => handleDownload(model.id)}
+                >
+                  {downloading === model.id ? (
+                    <>
+                      <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <DownloadCloud className="w-3 h-3 mr-1.5" />
+                      Download
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-stroke-hairline/50">
+        <label className="text-xs text-fg-dim font-medium mb-1.5 block">HuggingFace Token (Optional)</label>
+        <Input
+          type="password"
+          placeholder="hf_..."
+          value={hfToken}
+          onChange={(e) => setHfToken(e.target.value)}
+          className="bg-graphite-3 border-transparent focus:border-accent-teal/50 h-8 text-xs font-mono"
+        />
+        <p className="text-2xs text-fg-muted mt-1">
+          Required for private models. Saved locally.
+        </p>
+      </div>
+
+      {error && (
+        <div className="mt-2 text-xs text-error p-2 bg-error/10 border border-error/20 rounded">
+          {error}
+        </div>
       )}
     </div>
   );

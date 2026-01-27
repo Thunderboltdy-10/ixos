@@ -63,6 +63,10 @@ pub use ixos_rank::{
     CandidateSet,
     CandidateSource,
     CandidateStats,
+    DirectoryTopology,
+    FstdAdapter,
+    FstdConfig,
+    FstdState,
     LexicalEngine,
     LexicalMatch,
     LexicalStats,
@@ -89,10 +93,6 @@ pub use ixos_rank::{
     SemanticMatch,
     StubLexicalEngine,
     StubSemanticEngine,
-    DirectoryTopology,
-    FstdAdapter,
-    FstdConfig,
-    FstdState,
     UserBehaviorModel,
     MAX_BYTES_READ_PER_FILE,
     MAX_CANDIDATES_FOR_EMBEDDING,
@@ -158,8 +158,8 @@ pub use attestation::{Attestation, AttestationError, AttestationService, ExportF
 
 // P1: Instrumentation & Measurement
 pub use instrumentation::{
-    CorpusStats, LatencyPercentiles, MetricsCollector, PerformanceBaseline, ResourceMetrics,
-    ProfileBundle, ProfileRunConfig, ProfileSummary, SearchMetrics, StageMetrics, SummaryMetrics,
+    CorpusStats, LatencyPercentiles, MetricsCollector, PerformanceBaseline, ProfileBundle,
+    ProfileRunConfig, ProfileSummary, ResourceMetrics, SearchMetrics, StageMetrics, SummaryMetrics,
 };
 
 // P5: Daemon Service

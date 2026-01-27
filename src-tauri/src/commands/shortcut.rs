@@ -224,7 +224,7 @@ fn register_shortcut_internal(app: &AppHandle, shortcut: Shortcut) -> Result<(),
                         // Force window to show and focus
                         let _ = main.show();
                         let _ = main.set_focus();
-                        
+
                         // Emit event to frontend for handling
                         let _ = main.emit("shortcut-triggered", ());
                     }
@@ -253,7 +253,7 @@ pub fn setup_global_shortcut(app: &tauri::App) -> Result<(), Box<dyn std::error:
                             // Force window to show and focus
                             let _ = main.show();
                             let _ = main.set_focus();
-                            
+
                             // Emit event to frontend for handling
                             let _ = main.emit("shortcut-triggered", ());
                         }

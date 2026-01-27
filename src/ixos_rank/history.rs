@@ -47,9 +47,8 @@ impl SearchHistory {
         // Remove existing entry if it exists (deduplication)
         // Check for same query and directory (case-insensitive for query)
         let query_lower = query.to_lowercase();
-        self.entries.retain(|e| {
-             e.query.to_lowercase() != query_lower || e.directory != directory
-        });
+        self.entries
+            .retain(|e| e.query.to_lowercase() != query_lower || e.directory != directory);
 
         // Remove oldest if at capacity
         if self.entries.len() >= MAX_HISTORY_ENTRIES {
@@ -83,7 +82,8 @@ impl SearchHistory {
     /// Remove a specific query from history
     pub fn remove(&mut self, query: &str) {
         let query_lower = query.to_lowercase();
-        self.entries.retain(|e| e.query.to_lowercase() != query_lower);
+        self.entries
+            .retain(|e| e.query.to_lowercase() != query_lower);
     }
 
     /// Get all entries (for export)
@@ -165,15 +165,15 @@ mod tests {
         let mut history = SearchHistory::new();
         // Add initial entry
         history.add("apple".to_string(), PathBuf::from("/tmp"), 5);
-        
+
         // Add another entry
         history.add("banana".to_string(), PathBuf::from("/tmp"), 2);
-        
+
         // Add apple again (should replace previous)
         history.add("Apple".to_string(), PathBuf::from("/tmp"), 10); // Case insensitive check
-        
+
         assert_eq!(history.len(), 2);
-        
+
         // Check order - Apple should be first (most recent)
         let entries: Vec<_> = history.entries().collect();
         assert_eq!(entries[0].query, "Apple");
@@ -186,7 +186,7 @@ mod tests {
         let mut history = SearchHistory::new();
         history.add("apple".to_string(), PathBuf::from("/tmp1"), 5);
         history.add("apple".to_string(), PathBuf::from("/tmp2"), 2);
-        
+
         assert_eq!(history.len(), 2);
     }
 

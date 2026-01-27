@@ -9,6 +9,30 @@ import { useStarredStore } from '@/stores/starredStore';
 const MAX_LEXICAL_DISPLAY = 50;
 const MAX_SCAN_TRAIL = 6;
 
+/// Translate backend error messages to user-friendly messages
+function translateErrorMessage(error: string): string {
+  const msg = String(error).toLowerCase();
+  
+  // Session/auth errors
+  if (msg.includes('session expired') || msg.includes('unauthorized')) {
+    return 'Your session has expired. Please sign in again to continue.';
+  }
+  if (msg.includes('authentication required')) {
+    return 'Authentication is required. Please sign in.';
+  }
+  
+  // Model errors
+  if (msg.includes('model') && msg.includes('not found')) {
+    return 'Embedding model is not available. Please download a model in Settings.';
+  }
+  if (msg.includes('vocab.txt') || msg.includes('tokenizer')) {
+    return 'Model files are incomplete. Please re-download the model.';
+  }
+  
+  // Keep original message if no translation found
+  return String(error);
+}
+
 function mergeLexicalResults(existing: LexicalResult[], incoming: LexicalResult[]): LexicalResult[] {
   if (incoming.length === 0) return existing;
 
@@ -221,7 +245,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     } catch (error) {
       set({
         phase: 'error',
-        errorMessage: String(error),
+        errorMessage: translateErrorMessage(String(error)),
       });
     }
   },
@@ -346,13 +370,13 @@ export const useSearchStore = create<SearchState>((set, get) => ({
         set({ phase: 'cancelled', activeThreadId: null });
         break;
 
-      case 'error':
-        set({
-          phase: 'error',
-          errorMessage: event.message,
-          activeThreadId: null,
-        });
-        break;
+       case 'error':
+         set({
+           phase: 'error',
+           errorMessage: translateErrorMessage(event.message),
+           activeThreadId: null,
+         });
+         break;
     }
   },
 

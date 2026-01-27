@@ -410,8 +410,8 @@ pub fn detect_project_root(path: &std::path::Path) -> Option<ProjectContext> {
 
     // Markers and their corresponding project types
     let markers: &[(&str, ProjectType, bool)] = &[
-        (".git", ProjectType::Git, true),           // is_dir = true
-        ("Cargo.toml", ProjectType::Rust, false),   // is_dir = false
+        (".git", ProjectType::Git, true),         // is_dir = true
+        ("Cargo.toml", ProjectType::Rust, false), // is_dir = false
         ("package.json", ProjectType::Node, false),
         ("pyproject.toml", ProjectType::Python, false),
         ("setup.py", ProjectType::Python, false),

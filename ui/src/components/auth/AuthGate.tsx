@@ -427,45 +427,45 @@ function AuthGateInner({ children }: AuthGateProps) {
     setEntitlementToken,
   ]);
 
-  useEffect(() => {
-    if (!isSignedIn || !bootstrapped) return;
-    let cancelled = false;
-    const interval = setInterval(async () => {
-      if (cancelled) return;
-      const deviceId = useAuthStore.getState().deviceId;
-      const transferNeeded = useAuthStore.getState().transferRequired;
-      if (transferNeeded) return;
-      if (!deviceId) return;
-      const token = await getToken();
-      if (!token) return;
-      try {
-        const refreshResult = await refreshLease(token, deviceId);
-        if (refreshResult?.token) {
-          setEntitlementToken(refreshResult.token);
-          await storeEntitlementToken(refreshResult.token).catch(() => { });
-          try {
-            await invoke('set_entitlement_token', { token: refreshResult.token });
-          } catch {
-            // Ignore
-          }
-        }
-      } catch (error) {
-        const msg = error instanceof Error ? error.message : String(error);
-        if (msg === 'UNAUTHORIZED') {
-          console.log('Got 401 on refresh, attempting to force token refresh...');
-          // Force refresh logic here if possible, or just let the next cycle handle it. 
-          // Clerk's useAuth().getToken() usually handles expiration, but we can try to get a new one explicitly next time.
-          // For now, simple logging suffices as we rely on Clerk's proactive refresh.
-        }
-        console.warn('Entitlement refresh failed (non-fatal):', error);
-      }
-    }, 30000);
+   useEffect(() => {
+     if (!isSignedIn || !bootstrapped) return;
+     let cancelled = false;
+     const interval = setInterval(async () => {
+       if (cancelled) return;
+       const deviceId = useAuthStore.getState().deviceId;
+       const transferNeeded = useAuthStore.getState().transferRequired;
+       if (transferNeeded) return;
+       if (!deviceId) return;
+       const token = await getToken();
+       if (!token) return;
+       try {
+         const refreshResult = await refreshLease(token, deviceId);
+         if (refreshResult?.token) {
+           setEntitlementToken(refreshResult.token);
+           await storeEntitlementToken(refreshResult.token).catch(() => { });
+           try {
+             await invoke('set_entitlement_token', { token: refreshResult.token });
+           } catch {
+             // Ignore
+           }
+         }
+       } catch (error) {
+         const msg = error instanceof Error ? error.message : String(error);
+         if (msg === 'SESSION_EXPIRED') {
+           console.log('Session expired - user needs to re-authenticate');
+           // The error is already set in authStore by refreshLease
+           // Clerk will handle token refresh automatically on next action
+         } else {
+           console.warn('Entitlement refresh failed (non-fatal):', error);
+         }
+       }
+     }, 30000);
 
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, [isSignedIn, bootstrapped, getToken, refreshLease, setEntitlementToken]);
+     return () => {
+       cancelled = true;
+       clearInterval(interval);
+     };
+   }, [isSignedIn, bootstrapped, getToken, refreshLease, setEntitlementToken]);
 
   if (!isLoaded) {
     return <LoadingScreen message="Loading..." />;
@@ -528,6 +528,27 @@ interface ModelStatus {
 }
 
 function ModelWarningPopup({ onDismiss }: { onDismiss: () => void }) {
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    setDownloadError(null);
+    try {
+      // Default to recommended model
+      await invoke('download_model', { modelType: 'ixos-flash-v2', hfToken: localStorage.getItem('ix_hf_token') || null });
+      // Notify success/refresh (page reload or just dismiss effectively)
+      onDismiss();
+      // Optional: force reload state? The app checks status periodically or we can rely on reload
+      window.location.reload();
+    } catch (err) {
+      console.error('Download failed:', err);
+      setDownloadError(typeof err === 'string' ? err : 'Download failed');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-graphite-1 border border-stroke-hairline rounded-2xl p-6 max-w-md mx-4 shadow-lift">
@@ -544,17 +565,29 @@ function ModelWarningPopup({ onDismiss }: { onDismiss: () => void }) {
           Semantic search requires embedding models. Without them, search will use basic text matching only.
         </p>
 
-        <div className="bg-graphite-2 rounded-lg p-3 mb-4 text-sm font-mono text-fg-muted border border-stroke-hairline">
-          <p className="mb-2">To install models, run:</p>
-          <code className="text-accent-teal">python scripts/distill_model.py --potion</code>
-        </div>
+        {downloadError && (
+          <div className="mb-4 p-2 bg-error/10 border border-error/20 rounded text-xs text-error">
+            {downloadError}
+          </div>
+        )}
 
         <div className="flex gap-3">
           <button
-            onClick={onDismiss}
-            className="flex-1 px-4 py-2 bg-graphite-2 hover:bg-graphite-3 text-porcelain rounded-md transition-colors uppercase tracking-[0.14em] text-xs"
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="flex-1 px-4 py-2 bg-accent-teal hover:bg-accent-teal/90 text-graphite-0 rounded-md transition-colors uppercase tracking-[0.14em] text-xs font-bold disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            Continue Anyway
+            {isDownloading ? (
+              <>Downloading...</>
+            ) : (
+              <>Download Model</>
+            )}
+          </button>
+          <button
+            onClick={onDismiss}
+            className="px-4 py-2 bg-graphite-2 hover:bg-graphite-3 text-porcelain rounded-md transition-colors uppercase tracking-[0.14em] text-xs"
+          >
+            Dismiss
           </button>
         </div>
       </div>

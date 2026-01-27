@@ -3,10 +3,10 @@
 //! Provides file I/O operations for encrypted user data (history, stats, etc.)
 //! Also provides cache statistics and management for embedding caches.
 
+use serde::Serialize;
 use std::fs;
 use std::path::PathBuf;
 use tauri::Manager;
-use serde::Serialize;
 
 /// Cache statistics returned to the frontend
 #[derive(Serialize)]

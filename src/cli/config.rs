@@ -385,9 +385,7 @@ impl IxosConfig {
             ["index", "use_xattr"] => Some(self.index.use_xattr.to_string()),
             ["security", "sandbox_enabled"] => Some(self.security.sandbox_enabled.to_string()),
             ["security", "verify_integrity"] => Some(self.security.verify_integrity.to_string()),
-            ["security", "telemetry_opt_in"] => {
-                Some(self.security.telemetry_opt_in.to_string())
-            }
+            ["security", "telemetry_opt_in"] => Some(self.security.telemetry_opt_in.to_string()),
             _ => None,
         }
     }

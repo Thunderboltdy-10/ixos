@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Beaker, Wand2, ChevronDown, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { useAuth } from '@clerk/clerk-react';
+import { Beaker, Wand2, ChevronDown, Check, AlertCircle, Loader2, DownloadCloud } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { cn } from '@/lib/utils';
 import type { ModelType } from '@/lib/types';
@@ -13,16 +14,8 @@ interface ModelSwitcherProps {
 }
 
 interface ModelStatus {
-    potionAvailable: boolean;
-    potionPath: string | null;
-    qwenAvailable: boolean;
-    qwenPath: string | null;
     ixosFlashV2Available: boolean;
     ixosFlashV2Path: string | null;
-    ixosFlashV4Available: boolean;
-    ixosFlashV4Path: string | null;
-    ixosFlashV4FastAvailable: boolean;
-    ixosFlashV4FastPath: string | null;
     ixosProV1Available: boolean;
     ixosProV1Path: string | null;
     anyAvailable: boolean;
@@ -41,10 +34,12 @@ interface ModelOption {
 }
 
 export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps) {
+    const { isSignedIn } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
     const [status, setStatus] = useState<ModelStatus | null>(null);
     const [preloadingModel, setPreloadingModel] = useState<ModelType | null>(null);
+    const [downloadingModel, setDownloadingModel] = useState<ModelType | null>(null);
     const [currentLoadedModel, setCurrentLoadedModel] = useState<ModelType | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -72,7 +67,7 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
         const updatePosition = () => {
             const buttonRect = buttonRef.current?.getBoundingClientRect();
             const dropdownRect = dropdownRef.current?.getBoundingClientRect();
-            
+
             if (!buttonRect || !dropdownRect) return;
 
             // Calculate space below and above the button
@@ -104,17 +99,35 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
 
         // Skip preload if model is already loaded (fixes 6s delay on reselection)
         if (model !== currentLoadedModel) {
-            setPreloadingModel(model);
-            try {
-                await safeInvoke('preload_model', { modelType: model });
-                setCurrentLoadedModel(model);
-            } catch (err) {
-                console.warn('Failed to preload model:', err);
-            } finally {
-                setPreloadingModel(null);
+            if (isSignedIn) {
+                setPreloadingModel(model);
+                try {
+                    await safeInvoke('preload_model', { modelType: model });
+                    setCurrentLoadedModel(model);
+                } catch (err) {
+                    console.warn('Failed to preload model:', err);
+                } finally {
+                    setPreloadingModel(null);
+                }
             }
         }
     };
+
+    const handleDownload = async (e: React.MouseEvent, model: ModelType) => {
+        e.stopPropagation();
+        setDownloadingModel(model);
+        try {
+            await safeInvoke('download_model', { modelType: model });
+            // Refresh status
+            const result = await safeInvoke<ModelStatus>('get_model_status');
+            if (result) setStatus(result);
+        } catch (err) {
+            console.error('Failed to download model:', err);
+        } finally {
+            setDownloadingModel(null);
+        }
+    };
+
 
     // Fetch model status on mount
     useEffect(() => {
@@ -130,21 +143,13 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
                 else {
                     // Mock status for browser testing
                     setStatus({
-                        potionAvailable: true,
-                        potionPath: 'mock/path',
-                        qwenAvailable: true,
-                        qwenPath: 'mock/path',
                         ixosFlashV2Available: true,
                         ixosFlashV2Path: 'mock/path',
-                        ixosFlashV4Available: true,
-                        ixosFlashV4Path: 'mock/path',
-                        ixosFlashV4FastAvailable: true,
-                        ixosFlashV4FastPath: 'mock/path',
                         ixosProV1Available: true,
                         ixosProV1Path: 'mock/path',
                         anyAvailable: true,
-                        recommended: 'ixos-flash-v4-int8-512',
-                        loadedModel: 'ixos-flash-v4-int8-512',
+                        recommended: 'ixos-flash-v2',
+                        loadedModel: 'ixos-flash-v2',
                     });
                 }
             } catch (err) {
@@ -160,22 +165,17 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
 
         const isAvailable = (() => {
             switch (value) {
-                case 'potion':
-                    return status.potionAvailable;
-                case 'qwen':
-                    return status.qwenAvailable;
                 case 'ixos-pro-v1':
                     return status.ixosProV1Available;
-                case 'ixos-flash-v4-int8-512':
-                    return status.ixosFlashV4Available;
-                case 'ixos-flash-v4-int8-192':
-                    return status.ixosFlashV4FastAvailable;
                 case 'ixos-flash-v2':
                 default:
                     return status.ixosFlashV2Available;
             }
         })();
         if (!isAvailable) return;
+
+        if (!isAvailable) return;
+        if (!isSignedIn) return; // Don't preload if not authenticated
 
         setPreloadingModel(value);
         safeInvoke('preload_model', { modelType: value })
@@ -188,54 +188,18 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
 
     const models: ModelOption[] = [
         {
-            id: 'ixos-flash-v4-int8-512',
-            label: 'Ixos Flash v4',
-            description: 'Near-v2 quality with smaller memory footprint',
-            available: status?.ixosFlashV4Available ?? false,
-            recommended: status?.recommended === 'ixos-flash-v4-int8-512',
-            icon: Beaker,
-            color: 'text-accent-teal'
-        },
-        {
-            id: 'ixos-flash-v4-int8-192',
-            label: 'Ixos Flash v4 Fast',
-            description: 'Speed-first flash tier (lower dims)',
-            available: status?.ixosFlashV4FastAvailable ?? false,
-            recommended: status?.recommended === 'ixos-flash-v4-int8-192',
-            icon: Beaker,
-            color: 'text-accent-amber'
-        },
-        {
             id: 'ixos-flash-v2',
-            label: 'Ixos Flash v2 (Legacy)',
-            description: 'Baseline flash model',
+            label: 'Ixos Flash',
+            description: 'Fast, efficient model for mostly standard searches',
             available: status?.ixosFlashV2Available ?? false,
             recommended: status?.recommended === 'ixos-flash-v2',
             icon: Beaker,
             color: 'text-accent-teal'
         },
         {
-            id: 'potion',
-            label: 'Potion 8M (Legacy)',
-            description: 'Small and fast fallback',
-            available: status?.potionAvailable ?? false,
-            recommended: status?.recommended === 'potion',
-            icon: Beaker,
-            color: 'text-accent-amber'
-        },
-        {
-            id: 'qwen',
-            label: 'Ixos Embedder v1 (Qwen)',
-            description: 'Experimental student',
-            available: status?.qwenAvailable ?? false,
-            recommended: status?.recommended === 'qwen',
-            icon: Wand2,
-            color: 'text-accent-violet'
-        },
-        {
             id: 'ixos-pro-v1',
-            label: 'Ixos Pro v1 (Legacy)',
-            description: 'Legacy pro embedder (slower)',
+            label: 'Ixos Pro',
+            description: 'Higher precision for complex queries',
             available: status?.ixosProV1Available ?? false,
             recommended: status?.recommended === 'ixos-pro-v1',
             icon: Wand2,
@@ -252,7 +216,7 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
             <button
                 ref={buttonRef}
                 onClick={() => setIsOpen(!isOpen)}
-                disabled={!!preloadingModel}
+                disabled={!!preloadingModel || !!downloadingModel}
                 className={cn(
                     'flex items-center gap-2 px-3 py-2 rounded-md',
                     'bg-graphite-2 hover:bg-graphite-3',
@@ -262,7 +226,7 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
                     noModelsAvailable && 'border-amber-500/50'
                 )}
             >
-                {preloadingModel ? (
+                {preloadingModel || downloadingModel ? (
                     <Loader2 className="w-4 h-4 animate-spin text-accent-teal" />
                 ) : (
                     <SelectedIcon className={cn('w-4 h-4', noModelsAvailable ? 'text-accent-amber' : selectedModel.color)} />
@@ -270,9 +234,11 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
                 <span className="text-porcelain flex-1 text-left truncate">
                     {preloadingModel
                         ? 'Loading...'
-                        : currentLoadedModel && currentLoadedModel !== value
-                            ? `${selectedModel.label} (warming)`
-                            : selectedModel.label}
+                        : downloadingModel
+                            ? 'Downloading...'
+                            : currentLoadedModel && currentLoadedModel !== value
+                                ? `${selectedModel.label} (warming)`
+                                : selectedModel.label}
                 </span>
                 <ChevronDown
                     className={cn(
@@ -298,8 +264,8 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
                             transition={{ duration: 0.15 }}
                             className={cn(
                                 'absolute z-50 right-0',
+                                'w-80', // Slightly wider for download buttons
                                 dropdownPosition === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
-                                'w-72',
                                 'bg-graphite-2 rounded-xl border border-stroke-hairline',
                                 'shadow-lift overflow-hidden'
                             )}
@@ -308,7 +274,7 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
                                 <div className="px-3 py-2 bg-accent-amber/10 border-b border-accent-amber/20">
                                     <div className="flex items-center gap-2 text-xs text-accent-amber">
                                         <AlertCircle className="w-3 h-3" />
-                            <span>No models installed. Run distill_model2vec_lab.py</span>
+                                        <span>No models installed. Download one below.</span>
                                     </div>
                                 </div>
                             )}
@@ -319,15 +285,13 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
                                     <button
                                         key={model.id}
                                         onClick={() => handleSelect(model.id)}
-                                        disabled={!model.available}
+                                        disabled={!model.available && downloadingModel !== null}
                                         className={cn(
                                             'w-full flex items-center gap-3 px-4 py-3',
                                             'transition-colors duration-150',
                                             'text-left',
                                             model.id === value && 'bg-graphite-3',
-                                            !model.available
-                                                ? 'opacity-40 cursor-not-allowed'
-                                                : 'hover:bg-graphite-3'
+                                            'hover:bg-graphite-3'
                                         )}
                                     >
                                         <Icon className={cn(
@@ -347,9 +311,20 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
                                                     </span>
                                                 )}
                                                 {!model.available && (
-                                                    <span className="text-2xs px-1.5 py-0.5 rounded bg-graphite-3 text-fg-dim">
-                                                        N/A
-                                                    </span>
+                                                    !downloadingModel ? (
+                                                        <span
+                                                            onClick={(e) => handleDownload(e, model.id)}
+                                                            className="flex items-center gap-1 text-2xs px-2 py-0.5 rounded bg-accent-teal/10 text-accent-teal hover:bg-accent-teal/20 transition-colors cursor-pointer"
+                                                        >
+                                                            <DownloadCloud className="w-3 h-3" />
+                                                            Download
+                                                        </span>
+                                                    ) : downloadingModel === model.id && (
+                                                        <span className="flex items-center gap-1 text-2xs px-2 py-0.5 rounded bg-graphite-3 text-fg-dim">
+                                                            <Loader2 className="w-3 h-3 animate-spin" />
+                                                            ...
+                                                        </span>
+                                                    )
                                                 )}
                                             </div>
                                             <div className="text-2xs text-fg-dim mt-0.5">

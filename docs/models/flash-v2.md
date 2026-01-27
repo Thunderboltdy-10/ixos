@@ -19,9 +19,14 @@ Fast, CPU-first flash-tier embedder distilled from st-all-mpnet-base-v2.
 - Script: `python scripts/distill_model2vec_lab.py --mode flash --flash-teacher models/lab/st-all-mpnet-base-v2`
 - Vocab: built from `dataset/` + `dataset/synthetic_ambiguity` (default 15k tokens)
 
-## Performance (subset suites, 2026-01-26)
-- real_corpus_v2: Recall@10 0.9300, MRR@10 0.8399, latency 376.96 ms/1k
-- synthetic_ambiguity_v1: MRR@10 0.9500
+## Performance (canonical, 2026-01-27)
+
+| Suite | MRR@10 | Recall@10 | Latency |
+|-------|--------|-----------|---------|
+| real_corpus_v2 | 0.8399 | 0.93 | ~456 ms/1k |
+| synthetic_ambiguity_v1 | 0.9500 | 1.00 | ~195 ms/1k |
+
+See `models/lab/CANONICAL_RESULTS.md` for verified benchmarks.
 
 ## Hardware assumptions
 - CPU-first, no GPU required at runtime

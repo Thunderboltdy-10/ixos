@@ -596,7 +596,8 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         // Phase 2: Semantic search (slower, more accurate)
         let flash_engine: &dyn SemanticEngine = self.semantic_engine.as_ref();
         let pro_engine = self.pro_engine.as_ref().map(|p| p.as_ref());
-        let mut used_pro = matches!(self.config.search_mode, SearchMode::Pro) && pro_engine.is_some();
+        let mut used_pro =
+            matches!(self.config.search_mode, SearchMode::Pro) && pro_engine.is_some();
 
         let primary_engine: &dyn SemanticEngine = match self.config.search_mode {
             SearchMode::Pro => pro_engine.unwrap_or(flash_engine),
@@ -699,10 +700,9 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                         .iter()
                         .take(self.config.auto_mode.pro_top_k)
                         .map(|m| {
-                            lexical_lookup
-                                .get(&m.path)
-                                .cloned()
-                                .unwrap_or_else(|| LexicalMatch::new(m.path.clone(), 0.0, String::new(), 0, 0))
+                            lexical_lookup.get(&m.path).cloned().unwrap_or_else(|| {
+                                LexicalMatch::new(m.path.clone(), 0.0, String::new(), 0, 0)
+                            })
                         })
                         .collect();
 
@@ -711,9 +711,13 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                     }
 
                     let pro_results = if pro_candidates.is_empty() {
-                        pro_engine.search_pure(&semantic_query, self.config.max_results).await
+                        pro_engine
+                            .search_pure(&semantic_query, self.config.max_results)
+                            .await
                     } else {
-                        pro_engine.rerank(&semantic_query, pro_candidates.clone()).await
+                        pro_engine
+                            .rerank(&semantic_query, pro_candidates.clone())
+                            .await
                     };
 
                     match pro_results {
@@ -827,7 +831,10 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
 
         // Limit to max results and add evidence snippets
         let context_lines = self.config.context_lines;
-        let evidence_limit = self.config.evidence_max_results.min(self.config.max_results);
+        let evidence_limit = self
+            .config
+            .evidence_max_results
+            .min(self.config.max_results);
         let evidence_max_bytes = self.config.evidence_max_bytes;
         let evidence_engine: &dyn SemanticEngine = if used_pro {
             self.pro_engine
@@ -853,12 +860,10 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         for (index, result) in final_results.iter_mut().enumerate() {
             if index >= evidence_limit {
                 if context_lines > 0 {
-                    if let Some(content) =
-                        super::evidence::passage_extractor::read_file_content(
-                            &result.path,
-                            evidence_max_bytes,
-                        )
-                    {
+                    if let Some(content) = super::evidence::passage_extractor::read_file_content(
+                        &result.path,
+                        evidence_max_bytes,
+                    ) {
                         if let Some(snippet) = super::snippet::extract_context_from_string(
                             &content,
                             &semantic_query,
@@ -878,24 +883,22 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                         &result.path,
                         evidence_max_bytes,
                     ) {
-                        if let Some(passage) = passage_extractor.best_passage(
-                            &content,
-                            query_embedding,
-                            |chunk| evidence_engine.embed_passage_chunk(chunk),
-                        ) {
+                        if let Some(passage) =
+                            passage_extractor.best_passage(&content, query_embedding, |chunk| {
+                                evidence_engine.embed_passage_chunk(chunk)
+                            })
+                        {
                             let display = passage_extractor.truncate_for_display(&passage.text);
                             semantic_passage = Some(display.clone());
                             let matched_lines: Vec<String> =
                                 display.lines().map(|l| l.to_string()).collect();
-                            result.context_snippet = Some(
-                                super::snippet::ContextSnippet::new(
-                                    passage.line_number,
-                                    Vec::new(),
-                                    matched_lines,
-                                    Vec::new(),
-                                    display,
-                                ),
-                            );
+                            result.context_snippet = Some(super::snippet::ContextSnippet::new(
+                                passage.line_number,
+                                Vec::new(),
+                                matched_lines,
+                                Vec::new(),
+                                display,
+                            ));
                         }
                     }
                 }
@@ -1069,10 +1072,7 @@ fn score_entropy(scores: &[f32]) -> f32 {
     if scores.is_empty() {
         return 0.0;
     }
-    let max_score = scores
-        .iter()
-        .cloned()
-        .fold(f32::NEG_INFINITY, f32::max);
+    let max_score = scores.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
     let mut exp_scores = Vec::with_capacity(scores.len());
     let mut sum_exp = 0.0;
     for s in scores {

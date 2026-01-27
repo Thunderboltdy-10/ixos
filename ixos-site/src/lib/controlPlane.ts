@@ -255,10 +255,14 @@ export async function issueEntitlementToken({
   plan: Plan;
   features?: string[];
 }) {
-  const privateKeyPem = process.env.IXOS_JWT_PRIVATE_KEY;
+  let privateKeyPem = process.env.IXOS_JWT_PRIVATE_KEY;
   if (!privateKeyPem) {
     throw new Error("IXOS_JWT_PRIVATE_KEY is not set");
   }
+
+  // Fix PEM newlines if present (especially in Vercel)
+  privateKeyPem = privateKeyPem.replace(/\\n/g, "\n");
+
   const privateKey = await importPKCS8(privateKeyPem, "ES256");
   const now = Math.floor(Date.now() / 1000);
   return await new SignJWT({

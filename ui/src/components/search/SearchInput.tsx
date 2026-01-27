@@ -94,10 +94,10 @@ export function SearchInput({
       if (typeof window !== 'undefined' && '__TAURI__' in window) {
         return await invoke<T>(cmd, args);
       }
-      const { invoke: tauriInvoke } = await import('@tauri-apps/api/core');
-      return await tauriInvoke<T>(cmd, args);
+      console.log(`Simulating Tauri invoke '${cmd}' in browser mode`);
+      return null;
     } catch (e) {
-      console.log(`Tauri invoke '${cmd}' failed (browser mode):`, e);
+      console.log(`Tauri invoke '${cmd}' failed:`, e);
       return null;
     }
   }, []);
@@ -215,12 +215,12 @@ export function SearchInput({
     }
 
     // Enter key triggers explicit search when no suggestion is selected
-      if (e.key === 'Enter' && value.trim() && !isSearching) {
-        e.preventDefault();
-        setShowSuggestions(false);
-        setSuggestions([]);
-        onSearch?.();
-      }
+    if (e.key === 'Enter' && value.trim() && !isSearching) {
+      e.preventDefault();
+      setShowSuggestions(false);
+      setSuggestions([]);
+      onSearch?.();
+    }
   }, [showSuggestions, suggestions, selectedIndex, handleSuggestionSelect, value, isSearching, onSearch]);
 
   type AccentStyle = CSSProperties & {
@@ -230,15 +230,15 @@ export function SearchInput({
   const accentStyle: AccentStyle =
     hasSearchIntent || isSearching
       ? {
-          borderColor: activePalette.border,
-          boxShadow: `0 0 0 1px ${activePalette.border}, 0 18px 40px rgba(0, 0, 0, 0.55), 0 0 28px ${activePalette.glow}`,
-          '--accent-focus': activePalette.accent,
-          '--accent-focus-soft': activePalette.accentSoft,
-        }
+        borderColor: activePalette.border,
+        boxShadow: `0 0 0 1px ${activePalette.border}, 0 18px 40px rgba(0, 0, 0, 0.55), 0 0 28px ${activePalette.glow}`,
+        '--accent-focus': activePalette.accent,
+        '--accent-focus-soft': activePalette.accentSoft,
+      }
       : {
-          '--accent-focus': activePalette.accent,
-          '--accent-focus-soft': activePalette.accentSoft,
-        };
+        '--accent-focus': activePalette.accent,
+        '--accent-focus-soft': activePalette.accentSoft,
+      };
 
   return (
     <div ref={containerRef} className={cn('w-full relative', centered && 'max-w-3xl mx-auto px-8')}>
@@ -293,7 +293,7 @@ export function SearchInput({
             ? ''
             : 'hover:border-border-medium'
         )}
-        style={accentStyle}>
+          style={accentStyle}>
           {/* Search input row */}
           <SearchBar
             ref={inputRef}

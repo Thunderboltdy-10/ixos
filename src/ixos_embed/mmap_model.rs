@@ -89,8 +89,12 @@ impl ModelType {
             ModelType::Potion => "Quantized potion-base-8M. Simple, reliable, fast.",
             ModelType::Qwen => "Distilled from Qwen3. Experimental, potentially better quality.",
             ModelType::IxosFlashV2 => "Ixos Flash v2 distilled embedder (fast, tuned).",
-            ModelType::IxosFlashV4 => "Ixos Flash v4 distilled embedder (int8, 512d, near-v2 quality).",
-            ModelType::IxosFlashV4Fast => "Ixos Flash v4 fast distilled embedder (int8, 192d, speed-first).",
+            ModelType::IxosFlashV4 => {
+                "Ixos Flash v4 distilled embedder (int8, 512d, near-v2 quality)."
+            }
+            ModelType::IxosFlashV4Fast => {
+                "Ixos Flash v4 fast distilled embedder (int8, 192d, speed-first)."
+            }
             ModelType::IxosProV1 => "Ixos Pro v1 distilled embedder (higher quality).",
         }
     }
@@ -284,18 +288,12 @@ impl MmapModel2VecEmbedder {
 
     /// Find the Ixos-Flash-v4 model in standard locations
     fn find_ixos_flash_v4_model() -> Option<PathBuf> {
-        Self::find_model_in_locations(
-            Self::IXOS_FLASH_V4_SUBDIR,
-            "ixos-flash-v4-int8-512",
-        )
+        Self::find_model_in_locations(Self::IXOS_FLASH_V4_SUBDIR, "ixos-flash-v4-int8-512")
     }
 
     /// Find the Ixos-Flash-v4 fast model in standard locations
     fn find_ixos_flash_v4_fast_model() -> Option<PathBuf> {
-        Self::find_model_in_locations(
-            Self::IXOS_FLASH_V4_FAST_SUBDIR,
-            "ixos-flash-v4-int8-192",
-        )
+        Self::find_model_in_locations(Self::IXOS_FLASH_V4_FAST_SUBDIR, "ixos-flash-v4-int8-192")
     }
 
     /// Find the Ixos-Pro-v1 model in standard locations
@@ -319,6 +317,16 @@ impl MmapModel2VecEmbedder {
                 if Self::has_model_files(&model_path) {
                     return Some(model_path);
                 }
+
+                // 1.5 Check "resources" directory (Tauri bundled resources)
+                // Tauri bundles often end up in 'resources/models/...' relative to exe
+                let resources_path = exe_dir.join("resources").join(subdir);
+                if Self::has_model_files(&resources_path) {
+                    return Some(resources_path);
+                }
+
+                // Also check flattened resources if using sidecar-style bundling
+                // (less likely for directories but possible)
 
                 // 2. Check parent directories of executable (handles target/debug structure)
                 // This is common for Tauri dev builds where exe is in target/debug/
@@ -364,10 +372,34 @@ impl MmapModel2VecEmbedder {
         None
     }
 
-    /// Check if a directory contains model files
+    /// Check if a directory contains ALL required model files
     /// Supports both embeddings.safetensors (original) and model.safetensors (distilled)
+    /// Validates: config.json, model.safetensors/embeddings.safetensors, tokenizer.json, vocab.txt
     fn has_model_files(path: &std::path::Path) -> bool {
-        path.join("embeddings.safetensors").exists() || path.join("model.safetensors").exists()
+        // Check for safetensors file
+        let has_safetensors =
+            path.join("embeddings.safetensors").exists() || path.join("model.safetensors").exists();
+
+        // Check for all required supporting files
+        let has_config = path.join("config.json").exists();
+        let has_tokenizer = path.join("tokenizer.json").exists();
+        let has_vocab = path.join("vocab.txt").exists();
+
+        // All files must exist AND have non-zero size
+        has_safetensors
+            && has_config
+            && Self::file_has_content(&path.join("config.json"))
+            && has_tokenizer
+            && Self::file_has_content(&path.join("tokenizer.json"))
+            && has_vocab
+            && Self::file_has_content(&path.join("vocab.txt"))
+    }
+
+    /// Check if a file exists and has non-zero size
+    fn file_has_content(path: &std::path::Path) -> bool {
+        std::fs::metadata(path)
+            .map(|m| m.len() > 0)
+            .unwrap_or(false)
     }
 
     /// Get available models and their status

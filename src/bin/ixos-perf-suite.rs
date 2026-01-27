@@ -182,8 +182,7 @@ fn parse_cache_mode(raw: &str) -> CacheMode {
 }
 
 fn parse_model_type(raw: &str) -> anyhow::Result<ModelType> {
-    raw.parse::<ModelType>()
-        .map_err(|e| anyhow::anyhow!(e))
+    raw.parse::<ModelType>().map_err(|e| anyhow::anyhow!(e))
 }
 
 fn load_config(path: &Path) -> anyhow::Result<PerfSuiteConfig> {
@@ -213,7 +212,16 @@ fn build_corpus(name: &str, size: usize, seed: u64) -> anyhow::Result<PathBuf> {
     }
     std::fs::create_dir_all(&corpus_dir)?;
 
-    let subdirs = ["finance", "ops", "legal", "hr", "marketing", "product", "research", "sales"];
+    let subdirs = [
+        "finance",
+        "ops",
+        "legal",
+        "hr",
+        "marketing",
+        "product",
+        "research",
+        "sales",
+    ];
     for subdir in &subdirs {
         std::fs::create_dir_all(corpus_dir.join(subdir))?;
     }
@@ -242,7 +250,10 @@ async fn run_baseline(
     queries: &[String],
 ) -> anyhow::Result<PerformanceBaseline> {
     let corpus = collect_corpus_stats(corpus_dir);
-    let mut generator = CandidateGenerator::new(corpus_dir.to_path_buf(), CandidateGeneratorConfig::default());
+    let mut generator = CandidateGenerator::new(
+        corpus_dir.to_path_buf(),
+        CandidateGeneratorConfig::default(),
+    );
     generator.build_index();
 
     let model = MmapModel2VecEmbedder::new_with_type(model_type)

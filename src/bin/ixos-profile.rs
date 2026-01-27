@@ -10,11 +10,11 @@ use clap::{Parser, ValueEnum};
 use ixos_protocol::instrumentation::{
     CorpusStats, MetricsCollector, ProfileBundle, ProfileRunConfig, ResourceSampler,
 };
-use ixos_protocol::optimization::SystemSpecs;
 use ixos_protocol::ixos_embed::MmapModel2VecEmbedder;
 use ixos_protocol::ixos_rank::{
     CacheMode, CandidateGenerator, CandidateGeneratorConfig, SemanticEngine, StubSemanticEngine,
 };
+use ixos_protocol::optimization::SystemSpecs;
 use ixos_protocol::SecureEmbedder;
 
 #[derive(Clone, Copy, Debug, Default, ValueEnum)]
@@ -184,15 +184,18 @@ async fn main() -> anyhow::Result<()> {
         ProfileModelType::Qwen => {
             load_model_semantic(ixos_protocol::ixos_embed::ModelType::Qwen, cache_mode)?
         }
-        ProfileModelType::IxosFlashV2 => {
-            load_model_semantic(ixos_protocol::ixos_embed::ModelType::IxosFlashV2, cache_mode)?
-        }
-        ProfileModelType::IxosFlashV4 => {
-            load_model_semantic(ixos_protocol::ixos_embed::ModelType::IxosFlashV4, cache_mode)?
-        }
-        ProfileModelType::IxosFlashV4Fast => {
-            load_model_semantic(ixos_protocol::ixos_embed::ModelType::IxosFlashV4Fast, cache_mode)?
-        }
+        ProfileModelType::IxosFlashV2 => load_model_semantic(
+            ixos_protocol::ixos_embed::ModelType::IxosFlashV2,
+            cache_mode,
+        )?,
+        ProfileModelType::IxosFlashV4 => load_model_semantic(
+            ixos_protocol::ixos_embed::ModelType::IxosFlashV4,
+            cache_mode,
+        )?,
+        ProfileModelType::IxosFlashV4Fast => load_model_semantic(
+            ixos_protocol::ixos_embed::ModelType::IxosFlashV4Fast,
+            cache_mode,
+        )?,
         ProfileModelType::IxosProV1 => {
             load_model_semantic(ixos_protocol::ixos_embed::ModelType::IxosProV1, cache_mode)?
         }
@@ -287,9 +290,7 @@ async fn main() -> anyhow::Result<()> {
         runs: runs.len(),
     };
     let bundle = ProfileBundle::from_runs(runs, corpus, system, run_config);
-    bundle
-        .save_to_file(&args.out)
-        .map_err(anyhow::Error::msg)?;
+    bundle.save_to_file(&args.out).map_err(anyhow::Error::msg)?;
 
     if let Some(threshold) = args.slow_threshold_ms {
         let report = SlowQueryReport {

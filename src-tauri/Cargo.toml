@@ -52,6 +52,16 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 dirs = "5.0"
 tauri-plugin-fs = "2.4.5"
 
+# HTTP Client
+reqwest = { version = "0.12", features = ["stream", "rustls-tls"] }
+futures-util = "0.3"
+tauri-plugin-prevent-default = "4.0.3"
+
 [features]
 default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
+
+[target.'cfg(target_os = "windows")'.dependencies]
+webview2-com = "0.38.2"
+windows = { version = "0.58.0", features = ["Win32_System_Com", "Win32_UI_WindowsAndMessaging", "implement"] }
+windows-core = "0.58.0"

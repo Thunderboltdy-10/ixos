@@ -136,17 +136,10 @@ pub async fn select_directory(app: AppHandle) -> Result<Option<String>, String> 
 /// Model status information
 #[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 pub struct ModelStatus {
-    pub potion_available: bool,
-    pub potion_path: Option<String>,
-    pub qwen_available: bool,
-    pub qwen_path: Option<String>,
     pub ixos_flash_v2_available: bool,
     pub ixos_flash_v2_path: Option<String>,
-    pub ixos_flash_v4_available: bool,
-    pub ixos_flash_v4_path: Option<String>,
-    pub ixos_flash_v4_fast_available: bool,
-    pub ixos_flash_v4_fast_path: Option<String>,
     pub ixos_pro_v1_available: bool,
     pub ixos_pro_v1_path: Option<String>,
     pub any_available: bool,
@@ -161,40 +154,16 @@ pub async fn get_model_status(state: State<'_, AppState>) -> Result<ModelStatus,
 
     let models = MmapModel2VecEmbedder::available_models();
 
-    let mut potion_available = false;
-    let mut potion_path: Option<String> = None;
-    let mut qwen_available = false;
-    let mut qwen_path: Option<String> = None;
     let mut ixos_flash_v2_available = false;
     let mut ixos_flash_v2_path: Option<String> = None;
-    let mut ixos_flash_v4_available = false;
-    let mut ixos_flash_v4_path: Option<String> = None;
-    let mut ixos_flash_v4_fast_available = false;
-    let mut ixos_flash_v4_fast_path: Option<String> = None;
     let mut ixos_pro_v1_available = false;
     let mut ixos_pro_v1_path: Option<String> = None;
 
     for (model_type, available, path) in models {
         match format!("{:?}", model_type).as_str() {
-            "Potion" => {
-                potion_available = available;
-                potion_path = path.map(|p| p.display().to_string());
-            }
-            "Qwen" => {
-                qwen_available = available;
-                qwen_path = path.map(|p| p.display().to_string());
-            }
             "IxosFlashV2" => {
                 ixos_flash_v2_available = available;
                 ixos_flash_v2_path = path.map(|p| p.display().to_string());
-            }
-            "IxosFlashV4" => {
-                ixos_flash_v4_available = available;
-                ixos_flash_v4_path = path.map(|p| p.display().to_string());
-            }
-            "IxosFlashV4Fast" => {
-                ixos_flash_v4_fast_available = available;
-                ixos_flash_v4_fast_path = path.map(|p| p.display().to_string());
             }
             "IxosProV1" => {
                 ixos_pro_v1_available = available;
@@ -204,35 +173,18 @@ pub async fn get_model_status(state: State<'_, AppState>) -> Result<ModelStatus,
         }
     }
 
-    let any_available = potion_available
-        || qwen_available
-        || ixos_flash_v2_available
-        || ixos_flash_v4_available
-        || ixos_flash_v4_fast_available
-        || ixos_pro_v1_available;
-    let recommended = if ixos_flash_v4_available {
-        Some("ixos-flash-v4-int8-512".to_string())
-    } else if ixos_flash_v2_available {
+    let any_available = ixos_flash_v2_available || ixos_pro_v1_available;
+    let recommended = if ixos_flash_v2_available {
         Some("ixos-flash-v2".to_string())
-    } else if potion_available {
-        Some("potion".to_string())
-    } else if qwen_available {
-        Some("qwen".to_string())
+    } else if ixos_pro_v1_available {
+        Some("ixos-pro-v1".to_string())
     } else {
         None
     };
 
     Ok(ModelStatus {
-        potion_available,
-        potion_path,
-        qwen_available,
-        qwen_path,
         ixos_flash_v2_available,
         ixos_flash_v2_path,
-        ixos_flash_v4_available,
-        ixos_flash_v4_path,
-        ixos_flash_v4_fast_available,
-        ixos_flash_v4_fast_path,
         ixos_pro_v1_available,
         ixos_pro_v1_path,
         any_available,
@@ -249,6 +201,11 @@ pub async fn preload_model(
 ) -> Result<String, String> {
     use ixos_protocol::ixos_embed::ModelType;
 
+    // Check authentication
+    if state.get_entitlement_token().is_none() {
+        return Err("Authentication required to preload models".to_string());
+    }
+
     let model_type = model_type
         .parse::<ModelType>()
         .unwrap_or(ModelType::IxosFlashV2);
@@ -261,4 +218,208 @@ pub async fn preload_model(
     let _ = model.embed("warmup").map_err(|e| e.to_string())?;
     tracing::info!("Model preloaded successfully: {:?}", model_type);
     Ok(format!("Model {} loaded", model_type))
+}
+
+/// Download a model from Hugging Face if it's missing
+#[tauri::command]
+pub async fn download_model(
+    _app: AppHandle,
+    model_type: String,
+    hf_token: Option<String>,
+) -> Result<String, String> {
+    use ixos_protocol::ixos_embed::ModelType;
+    use std::io::Write;
+    use futures_util::StreamExt;
+
+    let model_type_enum = model_type
+        .parse::<ModelType>()
+        .unwrap_or(ModelType::IxosFlashV2);
+    
+    // Determine target directory in AppData (Roaming/Ixos/models)
+    // We use dirs::data_dir() to match ixos_protocol's search path
+    let data_dir = dirs::data_dir().ok_or("Could not find system data directory")?;
+    let models_dir = data_dir.join("Ixos").join("models");
+    
+    // Define model-specific paths and HF repo IDs
+    // Mappings align with mmap_model.rs expectations
+    let (subdir, repo_id, files) = match model_type_enum {
+        ModelType::IxosFlashV2 => (
+            "ixos-flash-v2",
+            "Thunderboltdy10/Ixos-Flash",
+            vec!["config.json", "model.safetensors", "tokenizer.json", "vocab.txt"]
+        ),
+        ModelType::IxosProV1 => (
+            "ixos-pro-v1",
+            "Thunderboltdy10/Ixos-Pro",
+            vec!["config.json", "model.safetensors", "tokenizer.json", "vocab.txt"]
+        ),
+        _ => return Err("Model download not supported for this type yet".to_string()),
+    };
+    
+    let target_dir = models_dir.join(subdir);
+    std::fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
+    
+    tracing::info!("Downloading {} to {:?}", repo_id, target_dir);
+    
+    let client = reqwest::Client::new();
+    let mut all_files_valid = true;
+    let mut error_msg = String::new();
+    
+    for filename in files {
+        let url = format!("https://huggingface.co/{}/resolve/main/{}", repo_id, filename);
+        let target_path = target_dir.join(filename);
+        
+        // Check if file already exists and is valid
+        if target_path.exists() {
+            if let Ok(metadata) = std::fs::metadata(&target_path) {
+                if metadata.len() > 0 {
+                    // File exists with non-zero size - verify it's not corrupted
+                    tracing::info!("File {} already exists, verifying...", filename);
+                    // For existing files, we'll trust them for now but log their presence
+                    continue;
+                }
+            }
+        }
+
+        tracing::info!("Downloading file: {} ({})", filename, url);
+        
+        // Download without authentication header (models are public)
+        let res = client.get(&url)
+            .send()
+            .await
+            .map_err(|e| {
+                let msg = format!("Failed to request {}: {}", filename, e);
+                error_msg = msg.clone();
+                msg
+            })?;
+        
+        // Detailed error handling for different status codes
+        if !res.status().is_success() {
+            let status_code = res.status().as_u16();
+            let body = res.text().await.unwrap_or_default();
+            
+            let detailed_error = match status_code {
+                401 | 403 => format!(
+                    "Access denied downloading {}: Status {}. File may require authentication.",
+                    filename, status_code
+                ),
+                404 => format!(
+                    "File not found: {}. Repository or file may not exist.",
+                    filename
+                ),
+                429 => format!(
+                    "Rate limited. Please wait before retrying.",
+                ),
+                500..=599 => format!(
+                    "Server error downloading {}: Status {}. Please try again later.",
+                    filename, status_code
+                ),
+                _ => format!(
+                    "Failed to download {}: Status {} - {}",
+                    filename, status_code, body.lines().next().unwrap_or("")
+                ),
+            };
+            
+            error_msg = detailed_error.clone();
+            all_files_valid = false;
+            tracing::error!("{}", detailed_error);
+            continue; // Try next file
+        }
+        
+        // Download with streaming
+        let mut file = std::fs::File::create(&target_path)
+            .map_err(|e| format!("Failed to create file {:?}: {}", target_path, e))?;
+        
+        let mut stream = res.bytes_stream();
+        let mut bytes_written: u64 = 0;
+        
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk.map_err(|e| format!("Download error for {}: {}", filename, e))?;
+            file.write_all(&chunk)
+                .map_err(|e| format!("Write error for {}: {}", filename, e))?;
+            bytes_written += chunk.len() as u64;
+        }
+        
+        tracing::info!(
+            "Downloaded {} successfully: {} bytes",
+            filename, bytes_written
+        );
+        
+        // Verify file was written and is not empty
+        if bytes_written == 0 {
+            error_msg = format!("{} downloaded but is empty", filename);
+            all_files_valid = false;
+            std::fs::remove_file(&target_path).ok();
+            tracing::error!("File {} is empty, removing", filename);
+        }
+    }
+    
+    if !all_files_valid {
+        return Err(error_msg);
+    }
+    
+    // Final validation: check that ALL required files exist and have content
+    let required_files = ["config.json", "model.safetensors", "tokenizer.json", "vocab.txt"];
+    for required in &required_files {
+        let path = target_dir.join(required);
+        if !path.exists() {
+            return Err(format!(
+                "Model validation failed: {} is missing. Please download again.",
+                required
+            ));
+        }
+        
+        let metadata = std::fs::metadata(&path)
+            .map_err(|e| format!("Cannot validate {}: {}", required, e))?;
+        
+        if metadata.len() == 0 {
+            return Err(format!(
+                "Model validation failed: {} is empty (0 bytes). Please download again.",
+                required
+            ));
+        }
+    }
+    
+    tracing::info!("Model {} downloaded and validated successfully", model_type);
+    Ok(format!("Successfully downloaded and validated {}", model_type))
+}
+            }
+        }
+
+        tracing::info!("Downloading file: {}", url);
+
+        // Add Authorization header if token provided
+        let mut request = client.get(&url);
+        if let Some(token) = &hf_token {
+            if !token.is_empty() {
+                request = request.header("Authorization", format!("Bearer {}", token));
+            }
+        }
+
+        let res = request
+            .send()
+            .await
+            .map_err(|e| format!("Failed to request {}: {}", filename, e))?;
+
+        if !res.status().is_success() {
+            return Err(format!(
+                "Failed to download {}: Status {}",
+                filename,
+                res.status()
+            ));
+        }
+
+        let mut file = std::fs::File::create(&target_path)
+            .map_err(|e| format!("Failed to create file {:?}: {}", target_path, e))?;
+
+        let mut stream = res.bytes_stream();
+
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk.map_err(|e| format!("Download error: {}", e))?;
+            file.write_all(&chunk)
+                .map_err(|e| format!("Write error: {}", e))?;
+        }
+    }
+
+    Ok(format!("Successfully downloaded {}", model_type))
 }

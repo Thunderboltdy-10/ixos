@@ -13,9 +13,9 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio::sync::Mutex;
 
+use crate::instrumentation::{content_extraction_span, embedding_batch_span, ranking_fusion_span};
 use crate::ixos_embed::augmented::{build_augmented_text, AugmentationConfig};
 use crate::ixos_embed::secure_embedder::SecureEmbedder;
-use crate::instrumentation::{content_extraction_span, embedding_batch_span, ranking_fusion_span};
 use crate::security::crypto::sha256;
 use crate::storage::{get_cache_for_path, EmbeddingCache};
 
@@ -225,7 +225,10 @@ impl StubSemanticEngine {
     pub async fn add_file(&mut self, path: PathBuf, content: &str) -> Result<(), SearchError> {
         // For backwards compatibility with tests, we compute and cache the embedding immediately
         let augmented = build_augmented_text(&path, content, &self.augmentation_config);
-        let embedding = self.embedder.embed_secure(&augmented).await
+        let embedding = self
+            .embedder
+            .embed_secure(&augmented)
+            .await
             .map_err(|e| SearchError::EmbeddingFailed(e.to_string()))?;
 
         self.files_to_search.push(path.clone());

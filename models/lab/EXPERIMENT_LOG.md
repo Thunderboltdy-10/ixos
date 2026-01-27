@@ -126,3 +126,43 @@ Decision:
 - Auto mode now captures Flash scores before Pro refinement; Pro mode computes Flash scores for top-K via Flash rerank when needed.
 - Default fusion weights aligned to learned flash+potion/lexical mix (flash=0.2697, pro=0.2672, lexical=0.4631, dir=0.0).
 - Notes: if Flash scores are missing, fusion falls back to Pro similarity; extra Flash rerank is time-bounded by semantic timeout.
+
+## 2026-01-27 Canonical baseline validation and profiling audit
+
+### Benchmark Reproducibility
+- Ran 3 independent evaluation runs on both suites with fixed seed 1337
+- MRR values are **deterministic** (0 variance) given same seed and corpus
+- Latency variance: ±10-15% due to system load
+- Created `models/lab/CANONICAL_RESULTS.md` as authoritative source
+
+### Performance Profile (ixos-bench, 1036 files)
+JIT mode (flash-v2):
+| Stage | P95 | % Total |
+|-------|-----|---------|
+| Directory Walk | 80ms | 15% |
+| Ripgrep Scan | 153ms | 29% |
+| Embedding | 109ms | 20% |
+| Ranking | 208ms | 39% |
+| **Total** | **536ms** | 100% |
+
+Potion baseline (256d int8):
+- Total P95: 272ms (49% faster than flash-v2)
+- Ranking P95: 71ms (66% faster due to lower dims)
+- Peak RAM: 54 MB (3.4x smaller than flash-v2)
+
+### Bottleneck Analysis
+1. **Ranking** (39-58%): Linear scan dot product, scales with embedding dim
+2. **Ripgrep Scan** (29%): I/O bound, already using SIMD regex
+3. **Directory Walk** (15%): Sequential file system traversal
+
+### Optimization Audit
+- **SIMD cosine similarity**: Already enabled via `simsimd` crate
+- **Batch embedding**: Already implemented (P4.1 optimization)
+- **Dual-embedder fusion**: Already implemented for Pro mode
+- **Auto routing**: Already implemented with gap/entropy/lexical thresholds
+
+### Recommendations for Ship Configuration
+1. **Default Flash model**: Keep ixos-flash-v2 (best MRR at 0.8399)
+2. **Speed-first alternative**: v4-int8-512 (99.3% quality, 50% less memory)
+3. **Eco/battery mode**: v4-int8-192 or Potion (fastest, -5% MRR)
+4. **Pro quality path**: Flash+Potion fusion (MRR 0.9233, +10% over Flash)

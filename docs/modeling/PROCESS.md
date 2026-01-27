@@ -76,4 +76,32 @@ The learned weights are stored in `models/lab/results_*` and should be applied i
 - `models/lab/<exp_id>/` - experiment artifacts
 - `models/lab/LEADERBOARD.md` - sortable metrics table
 - `models/lab/EXPERIMENT_LOG.md` - narrative log + summary table
+- `models/lab/CANONICAL_RESULTS.md` - **authoritative benchmark source**
 - `docs/models/` - model cards
+
+## Benchmark validity
+
+### Dataset versions
+- **synthetic_ambiguity_v1**: 7 folders with overlapping filenames, regenerated per difficulty level (small/medium/large)
+- **real_corpus_v2**: 200 files sampled from `dataset/` using seed 1337, 200 queries derived from file titles
+
+### Reproducibility
+- **Seed**: 1337 (fixed for deterministic sampling and query generation)
+- **MRR/Recall**: Deterministic given same seed, corpus, and model
+- **Latency**: Varies ±10-15% due to system load, CPU throttling; report mean±stdev from 3+ runs
+
+### Metric definitions
+- **MRR@10**: Mean Reciprocal Rank at top-10. If relevant doc at rank r (1-10), score = 1/r; else 0.
+- **Recall@10**: Fraction of queries where relevant doc appears in top-10.
+- **Latency ms/1k**: Milliseconds to embed 1000 candidates (embedding time only, not end-to-end)
+- **Load time**: Time to load model weights from disk into memory
+- **Memory delta**: RSS increase during model load
+
+### End-to-end latency (ixos-bench)
+For full pipeline timing (directory walk + ripgrep + embedding + ranking), use:
+```bash
+cargo run --bin ixos-bench -- --dir dataset --runs 5 --cache-mode jit --model ixos-flash-v2
+```
+
+### Canonical source
+All documents (MODELS_REPORT.md, TIERS.md, model cards) should reference `models/lab/CANONICAL_RESULTS.md` for metrics. If numbers disagree, the canonical file is authoritative.

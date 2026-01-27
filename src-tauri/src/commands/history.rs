@@ -60,10 +60,7 @@ pub fn add_to_history(
 
 /// Delete a specific item from history
 #[tauri::command]
-pub fn delete_history_item(
-    query: String,
-    state: State<'_, HistoryState>,
-) -> Result<(), String> {
+pub fn delete_history_item(query: String, state: State<'_, HistoryState>) -> Result<(), String> {
     let mut history = state.0.lock().map_err(|e| e.to_string())?;
     history.remove(&query);
     Ok(())

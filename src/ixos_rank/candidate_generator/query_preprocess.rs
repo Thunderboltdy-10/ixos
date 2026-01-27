@@ -85,9 +85,9 @@ impl QueryPreprocessor {
         let stop_words = stop_words();
         let question_stop_words = question_stop_words();
         let is_question = is_question_query(trimmed);
-        let has_ext_operator = tokens.iter().any(|t| {
-            t.kind == TokenKind::Operator && t.raw.to_lowercase().starts_with("ext:")
-        });
+        let has_ext_operator = tokens
+            .iter()
+            .any(|t| t.kind == TokenKind::Operator && t.raw.to_lowercase().starts_with("ext:"));
         let ext_hints = if is_question && !has_ext_operator {
             detect_ext_hints(trimmed)
         } else {
@@ -328,11 +328,57 @@ fn stop_words() -> HashSet<&'static str> {
 
 fn question_stop_words() -> HashSet<&'static str> {
     [
-        "what", "where", "when", "who", "why", "how", "which", "show", "find", "locate", "open",
-        "search", "searching", "look", "looking", "need", "want", "tell", "give", "get", "me",
-        "my", "your", "our", "their", "this", "that", "these", "those", "please", "could", "would",
-        "should", "can", "do", "does", "did", "is", "are", "was", "were", "be", "been", "being",
-        "have", "has", "had", "about", "from", "to", "for",
+        "what",
+        "where",
+        "when",
+        "who",
+        "why",
+        "how",
+        "which",
+        "show",
+        "find",
+        "locate",
+        "open",
+        "search",
+        "searching",
+        "look",
+        "looking",
+        "need",
+        "want",
+        "tell",
+        "give",
+        "get",
+        "me",
+        "my",
+        "your",
+        "our",
+        "their",
+        "this",
+        "that",
+        "these",
+        "those",
+        "please",
+        "could",
+        "would",
+        "should",
+        "can",
+        "do",
+        "does",
+        "did",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "being",
+        "have",
+        "has",
+        "had",
+        "about",
+        "from",
+        "to",
+        "for",
     ]
     .into_iter()
     .collect()
@@ -344,8 +390,22 @@ fn is_question_query(query: &str) -> bool {
         return true;
     }
     let starters = [
-        "what ", "where ", "when ", "who ", "why ", "how ", "which ", "show ", "find ", "locate ",
-        "open ", "search ", "look for ", "looking for ", "give me ", "tell me ",
+        "what ",
+        "where ",
+        "when ",
+        "who ",
+        "why ",
+        "how ",
+        "which ",
+        "show ",
+        "find ",
+        "locate ",
+        "open ",
+        "search ",
+        "look for ",
+        "looking for ",
+        "give me ",
+        "tell me ",
     ];
     starters.iter().any(|s| lower.starts_with(s))
         || lower.starts_with("do i ")
@@ -394,9 +454,7 @@ fn looks_like_extension(term: &str) -> bool {
     if !term.starts_with('.') || term.len() > 6 {
         return false;
     }
-    term.chars()
-        .skip(1)
-        .all(|c| c.is_ascii_alphanumeric())
+    term.chars().skip(1).all(|c| c.is_ascii_alphanumeric())
 }
 
 fn typo_map() -> HashMap<&'static str, &'static str> {

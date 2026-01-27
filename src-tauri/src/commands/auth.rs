@@ -24,12 +24,14 @@ fn decoding_key() -> Result<&'static DecodingKey, String> {
         return Ok(existing);
     }
 
-    let public_key = std::env::var("IXOS_JWT_PUBLIC_KEY")
-        .map_err(|_| "IXOS_JWT_PUBLIC_KEY is not set".to_string())?;
+    // Use compile-time environment variable injection for the public key
+    // This ensures it persists in the built binary
+    let public_key = env!("IXOS_JWT_PUBLIC_KEY");
     let parsed = DecodingKey::from_ec_pem(public_key.as_bytes())
         .map_err(|e| format!("Failed to parse public key: {}", e))?;
     let _ = KEY.set(parsed);
-    KEY.get().ok_or_else(|| "Failed to initialize decoding key".to_string())
+    KEY.get()
+        .ok_or_else(|| "Failed to initialize decoding key".to_string())
 }
 
 pub fn verify_entitlement_token_internal(token: &str) -> Result<EntitlementClaims, String> {
@@ -47,7 +49,10 @@ pub async fn verify_entitlement_token(token: String) -> Result<EntitlementClaims
 }
 
 #[tauri::command]
-pub async fn set_entitlement_token(state: State<'_, AppState>, token: String) -> Result<(), String> {
+pub async fn set_entitlement_token(
+    state: State<'_, AppState>,
+    token: String,
+) -> Result<(), String> {
     state.set_entitlement_token(Some(token));
     Ok(())
 }
@@ -58,7 +63,6 @@ pub async fn clear_entitlement_token(state: State<'_, AppState>) -> Result<(), S
     Ok(())
 }
 
-
 fn get_device_id_from_path(config_dir: &std::path::Path) -> Result<String, String> {
     let file_path = config_dir.join("device_id.txt");
 
@@ -67,18 +71,19 @@ fn get_device_id_from_path(config_dir: &std::path::Path) -> Result<String, Strin
             .map_err(|e| format!("Failed to read device id: {}", e));
     }
 
-    fs::create_dir_all(&config_dir)
-        .map_err(|e| format!("Failed to create config dir: {}", e))?;
+    fs::create_dir_all(&config_dir).map_err(|e| format!("Failed to create config dir: {}", e))?;
 
     let device_id = Uuid::new_v4().to_string();
-    fs::write(&file_path, &device_id)
-        .map_err(|e| format!("Failed to write device id: {}", e))?;
+    fs::write(&file_path, &device_id).map_err(|e| format!("Failed to write device id: {}", e))?;
 
     Ok(device_id)
 }
 
 #[tauri::command]
-pub async fn check_search_allowed(app: AppHandle, state: State<'_, AppState>) -> Result<bool, String> {
+pub async fn check_search_allowed(
+    app: AppHandle,
+    state: State<'_, AppState>,
+) -> Result<bool, String> {
     if let Some(token) = state.get_entitlement_token() {
         if let Ok(claims) = verify_entitlement_token_internal(&token) {
             // Verify DID matches local device
@@ -86,7 +91,7 @@ pub async fn check_search_allowed(app: AppHandle, state: State<'_, AppState>) ->
                 .path()
                 .app_config_dir()
                 .map_err(|e| format!("Failed to get config directory: {}", e))?;
-            
+
             if let Ok(device_id) = get_device_id_from_path(&config_dir) {
                 if claims.did == device_id {
                     return Ok(true);
@@ -103,7 +108,7 @@ pub async fn get_device_id(app: AppHandle) -> Result<String, String> {
         .path()
         .app_config_dir()
         .map_err(|e| format!("Failed to get config directory: {}", e))?;
-    
+
     get_device_id_from_path(&config_dir)
 }
 
@@ -120,20 +125,31 @@ pub async fn open_checkout(
     cancel_url: Option<String>,
 ) -> Result<(), String> {
     let site_url = std::env::var("IXOS_SITE_URL").ok();
-    let pricing_url = pricing_url.or_else(|| std::env::var("IXOS_PRICING_URL").ok()).or_else(|| {
-        site_url.as_ref().map(|base| {
-            let trimmed = base.trim_end_matches('/');
-            format!("{}/pricing", trimmed)
-        })
-    });
-    let template = checkout_url_template.or_else(|| std::env::var("IXOS_CHECKOUT_URL_TEMPLATE").ok());
+    let pricing_url = pricing_url
+        .or_else(|| std::env::var("IXOS_PRICING_URL").ok())
+        .or_else(|| {
+            site_url.as_ref().map(|base| {
+                let trimmed = base.trim_end_matches('/');
+                format!("{}/pricing", trimmed)
+            })
+        });
+    let template =
+        checkout_url_template.or_else(|| std::env::var("IXOS_CHECKOUT_URL_TEMPLATE").ok());
     let base = std::env::var("IXOS_CHECKOUT_URL").ok();
     let success_url = success_url
         .or_else(|| std::env::var("IXOS_CHECKOUT_SUCCESS_URL").ok())
-        .or_else(|| site_url.as_ref().map(|base| format!("{}/account?checkout=success", base.trim_end_matches('/'))));
+        .or_else(|| {
+            site_url
+                .as_ref()
+                .map(|base| format!("{}/account?checkout=success", base.trim_end_matches('/')))
+        });
     let cancel_url = cancel_url
         .or_else(|| std::env::var("IXOS_CHECKOUT_CANCEL_URL").ok())
-        .or_else(|| site_url.as_ref().map(|base| format!("{}/pricing?checkout=cancelled", base.trim_end_matches('/'))));
+        .or_else(|| {
+            site_url
+                .as_ref()
+                .map(|base| format!("{}/pricing?checkout=cancelled", base.trim_end_matches('/')))
+        });
 
     let mut target_url = if let Some(pricing_url) = pricing_url.as_ref() {
         pricing_url.clone()
@@ -142,7 +158,10 @@ pub async fn open_checkout(
     } else if let Some(base) = base {
         base
     } else {
-        return Err("IXOS_PRICING_URL or IXOS_CHECKOUT_URL_TEMPLATE or IXOS_CHECKOUT_URL is not set".to_string());
+        return Err(
+            "IXOS_PRICING_URL or IXOS_CHECKOUT_URL_TEMPLATE or IXOS_CHECKOUT_URL is not set"
+                .to_string(),
+        );
     };
 
     if target_url.contains("{variantId}") {
@@ -153,8 +172,8 @@ pub async fn open_checkout(
         target_url = format!("https://{}", target_url);
     }
 
-    let mut url = tauri::Url::parse(&target_url)
-        .map_err(|e| format!("Invalid checkout URL: {}", e))?;
+    let mut url =
+        tauri::Url::parse(&target_url).map_err(|e| format!("Invalid checkout URL: {}", e))?;
     {
         let mut pairs = url.query_pairs_mut();
         if pricing_url.is_some() {

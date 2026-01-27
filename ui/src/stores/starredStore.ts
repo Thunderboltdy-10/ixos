@@ -78,7 +78,10 @@ export const useStarredStore = create<StarredState>((set, get) => ({
     };
 
     set(state => ({
-      threads: [nextThread, ...state.threads.filter(t => t.id !== nextId)].slice(0, MAX_THREADS),
+      threads: [nextThread, ...state.threads.filter(t =>
+        t.id !== nextId &&
+        !(t.query === nextThread.query && t.directory === nextThread.directory && !t.starred)
+      )].slice(0, MAX_THREADS),
       activeThreadId: nextId,
     }));
 
@@ -88,7 +91,10 @@ export const useStarredStore = create<StarredState>((set, get) => ({
 
   recordThread: (thread) => {
     set(state => ({
-      threads: [thread, ...state.threads.filter(t => t.id !== thread.id)].slice(0, MAX_THREADS),
+      threads: [thread, ...state.threads.filter(t =>
+        t.id !== thread.id &&
+        !(t.query === thread.query && t.directory === thread.directory && !t.starred)
+      )].slice(0, MAX_THREADS),
       activeThreadId: thread.id,
     }));
 

@@ -171,46 +171,46 @@ export const useAuthStore = create<AuthState>((set) => ({
     return { token: data?.token ?? null };
   },
 
-  refreshLease: async (authToken, deviceId) => {
-    set({ isLoading: true, error: null });
-    const res = await apiRequest('/api/desktop/lease/refresh', authToken, {
-      method: 'POST',
-      body: JSON.stringify({ deviceId }),
-    });
-    if (res.status === 409) {
-      const data = await res.json().catch(() => null);
-      set({
-        isLoading: false,
-        transferRequired: true,
-        transferToken: data?.transferToken ?? null,
-        activeDeviceId: data?.activeDeviceId ?? null,
-      });
-      return {};
-    }
-    if (!res.ok) {
-      if (res.status === 401) {
-        console.warn('Lease refresh unauthorized (401) - Token might be expired or invalid');
-        set({ isLoading: false, error: 'Unauthorized: Please restart app or sign in again' });
-        throw new Error('UNAUTHORIZED');
-      }
-      const text = await res.text();
-      set({ isLoading: false, error: text || 'Lease refresh failed' });
-      throw new Error(text || 'Lease refresh failed');
-    }
-    const data = await res.json();
-    if (data?.plan && data?.lease) {
-      set({
-        entitlement: { ...data, ui: { showUpgrade: data.plan !== 'pro' } },
-        isLoading: false,
-        transferRequired: false,
-        transferToken: null,
-        activeDeviceId: null,
-      });
-    } else {
-      set({ isLoading: false });
-    }
-    return { token: data?.token ?? null };
-  },
+   refreshLease: async (authToken, deviceId) => {
+     set({ isLoading: true, error: null });
+     const res = await apiRequest('/api/desktop/lease/refresh', authToken, {
+       method: 'POST',
+       body: JSON.stringify({ deviceId }),
+     });
+     if (res.status === 409) {
+       const data = await res.json().catch(() => null);
+       set({
+         isLoading: false,
+         transferRequired: true,
+         transferToken: data?.transferToken ?? null,
+         activeDeviceId: data?.activeDeviceId ?? null,
+       });
+       return {};
+     }
+     if (!res.ok) {
+       if (res.status === 401) {
+         console.warn('Lease refresh unauthorized (401) - authentication token may be expired');
+         set({ isLoading: false, error: 'Session expired. Please sign in again.' });
+         throw new Error('SESSION_EXPIRED');
+       }
+       const text = await res.text();
+       set({ isLoading: false, error: text || 'Lease refresh failed' });
+       throw new Error(text || 'Lease refresh failed');
+     }
+     const data = await res.json();
+     if (data?.plan && data?.lease) {
+       set({
+         entitlement: { ...data, ui: { showUpgrade: data.plan !== 'pro' } },
+         isLoading: false,
+         transferRequired: false,
+         transferToken: null,
+         activeDeviceId: null,
+       });
+     } else {
+       set({ isLoading: false });
+     }
+     return { token: data?.token ?? null };
+   },
 
   requestTransfer: async (authToken, deviceId, transferToken) => {
     set({ isLoading: true, error: null });

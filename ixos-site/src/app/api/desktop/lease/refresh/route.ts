@@ -1,18 +1,23 @@
 import { z } from "zod";
 import { and, eq, gt } from "drizzle-orm";
-import { db, devices, leases } from "@/lib/db";
+import crypto from "crypto";
+import { db, devices, leases, leaseTransfers } from "@/lib/db";
 import {
   getActivePlanForUser,
   getClerkUserIdFromRequest,
   getOrCreateUserByClerkId,
   issueEntitlementToken,
 } from "@/lib/controlPlane";
+import { getResend, getResendFromAddress } from "@/lib/email/resend";
+import React from "react";
+import { DeviceTransferEmail } from "@/lib/email/templates/device-transfer";
 
 const bodySchema = z.object({
   deviceId: z.string().min(8),
 });
 
 const LEASE_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
+const TRANSFER_TOKEN_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
 
 export async function POST(req: Request) {
   const clerkUserId = await getClerkUserIdFromRequest(req);
@@ -46,25 +51,113 @@ export async function POST(req: Request) {
     ),
   });
 
+  // SMART MULTI-DEVICE DETECTION & TRANSFER FLOW
   if (plan === "pro" && activeLease && activeLease.deviceId !== device.id) {
-    return Response.json(
-      {
-        conflict: true,
-        activeDeviceId: activeLease.deviceId,
-      },
-      { status: 409 }
+    // Conflict: same user logging in from a different device
+    console.log(
+      `[Lease] Device conflict detected: User ${clerkUserId} attempting login from device ${device.id} while ${activeLease.deviceId} has active lease`
     );
+
+    // Check if there's already a pending transfer for this user
+    const existingPendingTransfer = await db.query.leaseTransfers.findFirst({
+      where: and(
+        eq(leaseTransfers.userId, userRecord.id),
+        eq(leaseTransfers.status, "pending"),
+        gt(leaseTransfers.expiresAt, now)
+      ),
+    });
+
+    if (!existingPendingTransfer) {
+      // Auto-trigger transfer request
+      console.log(
+        `[Lease] Auto-triggering device transfer for user ${clerkUserId}`
+      );
+
+      const token = crypto.randomUUID();
+      const transferExpiresAt = new Date(Date.now() + TRANSFER_TOKEN_TTL_MS);
+
+      await db.insert(leaseTransfers).values({
+        userId: userRecord.id,
+        fromDeviceId: activeLease.deviceId,
+        toDeviceId: device.id,
+        token,
+        status: "pending",
+        requestedAt: now,
+        expiresAt: transferExpiresAt,
+      });
+
+      // Send transfer approval email
+      const baseUrl =
+        process.env.IXOS_SITE_URL ||
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        "http://localhost:3000";
+      const approveUrl = `${baseUrl}/api/desktop/lease/transfer/approve?token=${token}`;
+      const revokeUrl =
+        process.env.IXOS_SUPPORT_REVOKE_URL ||
+        "mailto:support@ixos.app?subject=Revoke%20Ixos%20devices";
+
+      const resend = getResend();
+      if (resend) {
+        const oldDevice = await db.query.devices.findFirst({
+          where: eq(devices.id, activeLease.deviceId),
+        });
+
+        const email = React.createElement(DeviceTransferEmail, {
+          approveUrl,
+          revokeUrl,
+          newDeviceLabel: device.deviceLabel,
+          currentDeviceLabel: oldDevice?.deviceLabel ?? null,
+          requestedAt: now.toISOString(),
+        });
+
+        await resend.emails.send({
+          from: getResendFromAddress(),
+          to: userRecord.email,
+          subject: "Approve Ixos device transfer",
+          react: email,
+        });
+      }
+
+      return Response.json(
+        {
+          conflict: true,
+          activeDeviceId: activeLease.deviceId,
+          transferPending: true,
+          transferToken: token,
+          transferExpiresAt: transferExpiresAt.toISOString(),
+          message:
+            "Device conflict detected. Check your email to approve the transfer to this device.",
+        },
+        { status: 409 }
+      );
+    } else {
+      // Transfer already pending
+      return Response.json(
+        {
+          conflict: true,
+          activeDeviceId: activeLease.deviceId,
+          transferPending: true,
+          transferExpiresAt: existingPendingTransfer.expiresAt.toISOString(),
+          message:
+            "A transfer is already pending approval. Check your email to complete the transfer.",
+        },
+        { status: 409 }
+      );
+    }
   }
 
+  // No conflict or free plan: proceed normally
   let leaseExpiresAt: Date | null = null;
   if (plan === "pro") {
     leaseExpiresAt = new Date(Date.now() + LEASE_DURATION_MS);
     if (activeLease && activeLease.deviceId === device.id) {
+      // Refresh existing lease
       await db
         .update(leases)
         .set({ expiresAt: leaseExpiresAt })
         .where(eq(leases.id, activeLease.id));
     } else {
+      // Create new lease (no existing lease or free plan user upgrading)
       await db.insert(leases).values({
         userId: userRecord.id,
         deviceId: device.id,

@@ -24,9 +24,14 @@ fn decoding_key() -> Result<&'static DecodingKey, String> {
         return Ok(existing);
     }
 
-    // Use compile-time environment variable injection for the public key
-    // This ensures it persists in the built binary
-    let public_key = env!("IXOS_JWT_PUBLIC_KEY");
+    // Use runtime environment variable instead of compile-time env! 
+    // to allow the app to build even if the variable isn't set.
+    let mut public_key = std::env::var("IXOS_JWT_PUBLIC_KEY")
+        .map_err(|_| "IXOS_JWT_PUBLIC_KEY not set in environment".to_string())?;
+    
+    // Clean up escaped newlines if present
+    public_key = public_key.replace("\\n", "\n");
+
     let parsed = DecodingKey::from_ec_pem(public_key.as_bytes())
         .map_err(|e| format!("Failed to parse public key: {}", e))?;
     let _ = KEY.set(parsed);

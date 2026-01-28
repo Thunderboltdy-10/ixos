@@ -38,6 +38,7 @@ const defaultConfig: IxosConfig = {
     defaultFormat: 'human',
     color: true,
     showScores: false,
+    exitOnClose: false,
   },
   security: {
     sandboxEnabled: false,

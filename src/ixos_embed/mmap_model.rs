@@ -382,8 +382,10 @@ impl MmapModel2VecEmbedder {
 
         // Check for all required supporting files
         let has_config = path.join("config.json").exists();
+        // tokenizer.json is essential for our tokenizers
         let has_tokenizer = path.join("tokenizer.json").exists();
-        let has_vocab = path.join("vocab.txt").exists();
+        // vocab.txt is optional/deprecated for our distilled models (using tokenizer.json)
+        // let has_vocab = path.join("vocab.txt").exists();
 
         // All files must exist AND have non-zero size
         has_safetensors
@@ -391,8 +393,6 @@ impl MmapModel2VecEmbedder {
             && Self::file_has_content(&path.join("config.json"))
             && has_tokenizer
             && Self::file_has_content(&path.join("tokenizer.json"))
-            && has_vocab
-            && Self::file_has_content(&path.join("vocab.txt"))
     }
 
     /// Check if a file exists and has non-zero size

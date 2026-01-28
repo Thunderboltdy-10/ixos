@@ -233,14 +233,30 @@ function TransferScreen({ onRequest }: { onRequest: () => Promise<void> }) {
   const { deviceLabel } = useAuthStore();
   const [isRequesting, setIsRequesting] = useState(false);
   const [requested, setRequested] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (requested && cooldown > 0) {
+      timer = setInterval(() => {
+        setCooldown((c) => c - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [requested, cooldown]);
 
   const handleRequest = async () => {
+    if (cooldown > 0) return;
     setIsRequesting(true);
+    setError(null);
     try {
       await onRequest();
       setRequested(true);
+      setCooldown(60); // 1 minute cooldown
     } catch (error) {
       console.error('Transfer request failed:', error);
+      setError(typeof error === 'string' ? error : 'Transfer request failed');
     } finally {
       setIsRequesting(false);
     }
@@ -260,12 +276,29 @@ function TransferScreen({ onRequest }: { onRequest: () => Promise<void> }) {
           this device ({deviceLabel ?? 'current device'}).
         </p>
 
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-center">
+            <p className="text-xs text-red-400">{error}</p>
+          </div>
+        )}
+
         {requested ? (
-          <div className="p-4 bg-accent-teal/10 border border-accent-teal/20 rounded-lg text-center">
-            <p className="text-sm text-accent-teal font-medium">Check your email!</p>
-            <p className="text-xs text-fg-muted mt-1">
-              We've sent a transfer approval link to your email.
-            </p>
+          <div className="space-y-4">
+            <div className="p-4 bg-accent-teal/10 border border-accent-teal/20 rounded-lg text-center">
+              <p className="text-sm text-accent-teal font-medium">Check your email!</p>
+              <p className="text-xs text-fg-muted mt-1">
+                We've sent a transfer approval link to your email.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleRequest}
+              disabled={cooldown > 0 || isRequesting}
+              className="w-full py-2 rounded-lg bg-transparent border border-gray-600 text-gray-400 text-xs font-semibold disabled:opacity-50 hover:border-gray-500 hover:text-gray-300 transition-colors"
+            >
+              {cooldown > 0 ? `Resend available in ${cooldown}s` : 'Resend Email'}
+            </button>
           </div>
         ) : (
           <button
@@ -427,45 +460,45 @@ function AuthGateInner({ children }: AuthGateProps) {
     setEntitlementToken,
   ]);
 
-   useEffect(() => {
-     if (!isSignedIn || !bootstrapped) return;
-     let cancelled = false;
-     const interval = setInterval(async () => {
-       if (cancelled) return;
-       const deviceId = useAuthStore.getState().deviceId;
-       const transferNeeded = useAuthStore.getState().transferRequired;
-       if (transferNeeded) return;
-       if (!deviceId) return;
-       const token = await getToken();
-       if (!token) return;
-       try {
-         const refreshResult = await refreshLease(token, deviceId);
-         if (refreshResult?.token) {
-           setEntitlementToken(refreshResult.token);
-           await storeEntitlementToken(refreshResult.token).catch(() => { });
-           try {
-             await invoke('set_entitlement_token', { token: refreshResult.token });
-           } catch {
-             // Ignore
-           }
-         }
-       } catch (error) {
-         const msg = error instanceof Error ? error.message : String(error);
-         if (msg === 'SESSION_EXPIRED') {
-           console.log('Session expired - user needs to re-authenticate');
-           // The error is already set in authStore by refreshLease
-           // Clerk will handle token refresh automatically on next action
-         } else {
-           console.warn('Entitlement refresh failed (non-fatal):', error);
-         }
-       }
-     }, 30000);
+  useEffect(() => {
+    if (!isSignedIn || !bootstrapped) return;
+    let cancelled = false;
+    const interval = setInterval(async () => {
+      if (cancelled) return;
+      const deviceId = useAuthStore.getState().deviceId;
+      const transferNeeded = useAuthStore.getState().transferRequired;
+      if (transferNeeded) return;
+      if (!deviceId) return;
+      const token = await getToken();
+      if (!token) return;
+      try {
+        const refreshResult = await refreshLease(token, deviceId);
+        if (refreshResult?.token) {
+          setEntitlementToken(refreshResult.token);
+          await storeEntitlementToken(refreshResult.token).catch(() => { });
+          try {
+            await invoke('set_entitlement_token', { token: refreshResult.token });
+          } catch {
+            // Ignore
+          }
+        }
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        if (msg === 'SESSION_EXPIRED') {
+          console.log('Session expired - user needs to re-authenticate');
+          // The error is already set in authStore by refreshLease
+          // Clerk will handle token refresh automatically on next action
+        } else {
+          console.warn('Entitlement refresh failed (non-fatal):', error);
+        }
+      }
+    }, 30000);
 
-     return () => {
-       cancelled = true;
-       clearInterval(interval);
-     };
-   }, [isSignedIn, bootstrapped, getToken, refreshLease, setEntitlementToken]);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [isSignedIn, bootstrapped, getToken, refreshLease, setEntitlementToken]);
 
   if (!isLoaded) {
     return <LoadingScreen message="Loading..." />;

@@ -25,11 +25,13 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(
-            tauri_plugin_prevent_default::Builder::new()
+        .plugin(tauri_plugin_prevent_default::Builder::new()
                 .with_flags(tauri_plugin_prevent_default::Flags::DOWNLOADS)
                 .build(),
         )
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            let _ = app.get_webview_window("main").expect("no main window").set_focus();
+        }))
         .setup(|app| {
             // Initialize application state
             app.manage(state::AppState::new());
@@ -49,11 +51,18 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| {
-            // Minimize to tray instead of closing
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 if window.label() == "main" {
-                    window.hide().ok();
-                    api.prevent_close();
+                    // Check if "Quit on Close" is enabled
+                    // We load config here (synchronously) to avoid complex state management
+                    // This is acceptable for a UI event handler
+                    let config = ixos_protocol::cli::IxosConfig::load();
+                    if !config.output.exit_on_close {
+                         // Default behavior: minimize to tray
+                         window.hide().ok();
+                         api.prevent_close();
+                    }
+                    // Else: allow close (which quits the app since it's the main window)
                 }
             }
         })

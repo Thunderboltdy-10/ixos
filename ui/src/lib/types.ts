@@ -172,6 +172,7 @@ export interface OutputConfig {
   defaultFormat: string;
   color: boolean;
   showScores: boolean;
+  exitOnClose: boolean;
 }
 
 export interface SecurityConfig {

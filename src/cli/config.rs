@@ -123,6 +123,10 @@ pub struct OutputConfig {
     /// Show score breakdown in results
     #[serde(default)]
     pub show_scores: bool,
+
+    /// Exit the application when the main window is closed (instead of minimizing to tray)
+    #[serde(default = "default_false")]
+    pub exit_on_close: bool,
 }
 
 /// Indexing configuration
@@ -262,6 +266,7 @@ impl Default for OutputConfig {
             default_format: default_format(),
             color: true,
             show_scores: false,
+            exit_on_close: false,
         }
     }
 }
@@ -382,6 +387,7 @@ impl IxosConfig {
             ["output", "default_format"] => Some(self.output.default_format.clone()),
             ["output", "color"] => Some(self.output.color.to_string()),
             ["output", "show_scores"] => Some(self.output.show_scores.to_string()),
+            ["output", "exit_on_close"] => Some(self.output.exit_on_close.to_string()),
             ["index", "use_xattr"] => Some(self.index.use_xattr.to_string()),
             ["security", "sandbox_enabled"] => Some(self.security.sandbox_enabled.to_string()),
             ["security", "verify_integrity"] => Some(self.security.verify_integrity.to_string()),
@@ -513,6 +519,13 @@ impl IxosConfig {
             }
             ["output", "show_scores"] => {
                 self.output.show_scores = value.parse().map_err(|_| ConfigError::InvalidValue {
+                    key: key.to_string(),
+                    value: value.to_string(),
+                    expected: "true or false".to_string(),
+                })?;
+            }
+            ["output", "exit_on_close"] => {
+                self.output.exit_on_close = value.parse().map_err(|_| ConfigError::InvalidValue {
                     key: key.to_string(),
                     value: value.to_string(),
                     expected: "true or false".to_string(),

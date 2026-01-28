@@ -59,6 +59,7 @@ tauri-plugin-prevent-default = "4.0.3"
 
 # Environment variables
 dotenvy = "0.15"
+tauri-plugin-single-instance = "2.3.7"
 
 [features]
 default = ["custom-protocol"]

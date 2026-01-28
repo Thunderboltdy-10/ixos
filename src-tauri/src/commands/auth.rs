@@ -24,10 +24,23 @@ fn decoding_key() -> Result<&'static DecodingKey, String> {
         return Ok(existing);
     }
 
-    // Use runtime environment variable instead of compile-time env! 
-    // to allow the app to build even if the variable isn't set.
-    let mut public_key = std::env::var("IXOS_JWT_PUBLIC_KEY")
-        .map_err(|_| "IXOS_JWT_PUBLIC_KEY not set in environment".to_string())?;
+    // Try compile-time environment variable first (loaded from .env during build)
+    // We use include_str! to bake the local env file content if the var isn't set,
+    // ensuring the key is available even if .env loading fails at runtime.
+    let env_str = option_env!("IXOS_JWT_PUBLIC_KEY")
+        .map(|s| s.to_string())
+        .or_else(|| std::env::var("IXOS_JWT_PUBLIC_KEY").ok())
+        .or_else(|| {
+             // Fallback: try to parse from the included .env.local file content
+             // This is a "brute force" verify to ensure we have the key
+             let local_env = include_str!("../../.env.local");
+             local_env.lines()
+                 .find(|line| line.starts_with("IXOS_JWT_PUBLIC_KEY="))
+                 .map(|line| line.trim_start_matches("IXOS_JWT_PUBLIC_KEY=").trim_matches('"').to_string())
+        });
+
+    let mut public_key = env_str
+        .ok_or_else(|| "IXOS_JWT_PUBLIC_KEY not set in environment".to_string())?;
     
     // Clean up escaped newlines if present
     public_key = public_key.replace("\\n", "\n");

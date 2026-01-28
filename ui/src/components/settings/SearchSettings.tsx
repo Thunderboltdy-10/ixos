@@ -204,7 +204,6 @@ export function SearchSettings() {
       {/* Cache Stats Panel */}
       <CachePanel />
 
-      {/* Show scores */}
       <SettingRow
         label="Show score breakdown"
         description="Display detailed score components in results"
@@ -214,6 +213,21 @@ export function SearchSettings() {
           onCheckedChange={(checked) =>
             updateConfig({
               output: { ...config.output, showScores: checked },
+            })
+          }
+        />
+      </SettingRow>
+
+      {/* Exit on Close */}
+      <SettingRow
+        label="Quit on Close"
+        description="Quit the application when the window is closed (instead of minimizing to tray)"
+      >
+        <Switch
+          checked={config.output.exitOnClose}
+          onCheckedChange={(checked) =>
+            updateConfig({
+              output: { ...config.output, exitOnClose: checked },
             })
           }
         />
@@ -395,7 +409,6 @@ function ModelManagementPanel() {
   const [isLoading, setIsLoading] = useState(false);
   const [downloading, setDownloading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [hfToken, setHfToken] = useState(() => localStorage.getItem('ix_hf_token') || '');
 
   const loadStatus = async () => {
     setIsLoading(true);
@@ -413,13 +426,12 @@ function ModelManagementPanel() {
     setDownloading(modelType);
     setError(null);
     try {
-      if (hfToken) localStorage.setItem('ix_hf_token', hfToken);
-      await invoke('download_model', { modelType, hfToken: hfToken || null });
+      await invoke('download_model', { modelType });
       await loadStatus();
     } catch (err) {
       console.error('Failed to download model:', err);
       if (String(err).includes('401')) {
-        setError('Unauthorized. Please provide a generic HuggingFace token below.');
+        setError('Unauthorized. Please check your internet connection.');
       } else {
         setError(typeof err === 'string' ? err : 'Download failed');
       }
@@ -498,19 +510,7 @@ function ModelManagementPanel() {
         ))}
       </div>
 
-      <div className="mt-4 pt-4 border-t border-stroke-hairline/50">
-        <label className="text-xs text-fg-dim font-medium mb-1.5 block">HuggingFace Token (Optional)</label>
-        <Input
-          type="password"
-          placeholder="hf_..."
-          value={hfToken}
-          onChange={(e) => setHfToken(e.target.value)}
-          className="bg-graphite-3 border-transparent focus:border-accent-teal/50 h-8 text-xs font-mono"
-        />
-        <p className="text-2xs text-fg-muted mt-1">
-          Required for private models. Saved locally.
-        </p>
-      </div>
+
 
       {error && (
         <div className="mt-2 text-xs text-error p-2 bg-error/10 border border-error/20 rounded">

@@ -224,7 +224,6 @@ pub async fn preload_model(
 pub async fn download_model(
     _app: AppHandle,
     model_type: String,
-    _hf_token: Option<String>,
 ) -> Result<String, String> {
     use ixos_protocol::ixos_embed::ModelType;
     use std::io::Write;
@@ -241,16 +240,17 @@ pub async fn download_model(
     
     // Define model-specific paths and HF repo IDs
     // Mappings align with mmap_model.rs expectations
+    // Note: vocab.txt is not required for these models (tokenizer.json is sufficient)
     let (subdir, repo_id, files) = match model_type_enum {
         ModelType::IxosFlashV2 => (
             "ixos-flash-v2",
             "Thunderboltdy10/Ixos-Flash",
-            vec!["config.json", "model.safetensors", "tokenizer.json", "vocab.txt"]
+            vec!["config.json", "model.safetensors", "tokenizer.json"]
         ),
         ModelType::IxosProV1 => (
             "ixos-pro-v1",
             "Thunderboltdy10/Ixos-Pro",
-            vec!["config.json", "model.safetensors", "tokenizer.json", "vocab.txt"]
+            vec!["config.json", "model.safetensors", "tokenizer.json"]
         ),
         _ => return Err("Model download not supported for this type yet".to_string()),
     };
@@ -358,7 +358,7 @@ pub async fn download_model(
     }
     
     // Final validation: check that ALL required files exist and have content
-    let required_files = ["config.json", "model.safetensors", "tokenizer.json", "vocab.txt"];
+    let required_files = ["config.json", "model.safetensors", "tokenizer.json"];
     for required in &required_files {
         let path = target_dir.join(required);
         if !path.exists() {

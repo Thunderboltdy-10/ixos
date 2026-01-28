@@ -43,6 +43,7 @@ pub struct OutputConfigPayload {
     pub default_format: String,
     pub color: bool,
     pub show_scores: bool,
+    pub exit_on_close: bool,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -92,6 +93,7 @@ impl From<IxosConfig> for ConfigPayload {
                 default_format: config.output.default_format.clone(),
                 color: config.output.color,
                 show_scores: config.output.show_scores,
+                exit_on_close: config.output.exit_on_close,
             },
             security: SecurityConfigPayload {
                 sandbox_enabled: config.security.sandbox_enabled,
@@ -132,6 +134,7 @@ impl From<ConfigPayload> for IxosConfig {
                 default_format: payload.output.default_format,
                 color: payload.output.color,
                 show_scores: payload.output.show_scores,
+                exit_on_close: payload.output.exit_on_close,
             },
             index: ixos_protocol::cli::IndexConfig::default(),
             security: ixos_protocol::cli::SecurityConfig {

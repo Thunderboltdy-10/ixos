@@ -26,10 +26,14 @@ export async function GET(req: Request) {
   });
 
   if (device) {
-    await db
-      .update(devices)
-      .set({ lastSeenAt: new Date(), updatedAt: new Date() })
-      .where(eq(devices.id, device.id));
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    // Only update lastSeenAt if it's older than 1 hour or null
+    if (!device.lastSeenAt || device.lastSeenAt < oneHourAgo) {
+      await db
+        .update(devices)
+        .set({ lastSeenAt: new Date(), updatedAt: new Date() })
+        .where(eq(devices.id, device.id));
+    }
   }
 
   const now = new Date();

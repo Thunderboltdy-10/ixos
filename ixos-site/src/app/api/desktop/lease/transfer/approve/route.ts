@@ -1,5 +1,5 @@
 import { eq, and } from "drizzle-orm";
-import { db, leases, leaseTransfers } from "@/lib/db";
+import { db, leases, leaseTransfers, trustedDevices } from "@/lib/db";
 
 const LEASE_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
 
@@ -42,6 +42,13 @@ async function handleApprove(token: string | null) {
     issuedAt: now,
     expiresAt: new Date(Date.now() + LEASE_DURATION_MS),
   });
+
+  // Mark device as trusted for future instant transfers (no email needed)
+  await db.insert(trustedDevices).values({
+    userId: transfer.userId,
+    deviceId: transfer.toDeviceId,
+    trustedAt: now,
+  }).onConflictDoNothing();
 
   await db
     .update(leaseTransfers)

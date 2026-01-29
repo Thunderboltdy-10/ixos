@@ -72,6 +72,17 @@ export const leaseTransfers = pgTable("lease_transfers", {
   expiresAt: timestamp("expires_at").notNull(),
 });
 
+// Trusted devices (previously approved via email, can switch instantly)
+export const trustedDevices = pgTable("trusted_devices", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").references(() => users.id).notNull(),
+  deviceId: uuid("device_id").references(() => devices.id).notNull(),
+  trustedAt: timestamp("trusted_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("unique_trusted_device_idx").on(table.userId, table.deviceId)
+]);
+
 // Webhook audit log
 export const webhookEvents = pgTable(
   "webhook_events",
@@ -100,4 +111,5 @@ export type Subscription = typeof subscriptions.$inferSelect;
 export type Device = typeof devices.$inferSelect;
 export type Lease = typeof leases.$inferSelect;
 export type LeaseTransfer = typeof leaseTransfers.$inferSelect;
+export type TrustedDevice = typeof trustedDevices.$inferSelect;
 export type WebhookEvent = typeof webhookEvents.$inferSelect;

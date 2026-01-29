@@ -13,7 +13,7 @@ Fast, CPU-first flash-tier embedder distilled from st-all-mpnet-base-v2.
 - Teacher: st-all-mpnet-base-v2 (Sentence Transformers)
 - Dimensions: 512
 - Dtype: float16
-- Disk size: ~44.46 MB (local `models/ixos-flash-v2`)
+- Disk size: ~44.46 MB (local `models/ixos-flash-v1`)
 
 ## Distillation
 - Script: `python scripts/distill_model2vec_lab.py --mode flash --flash-teacher models/lab/st-all-mpnet-base-v2`
@@ -32,7 +32,7 @@ See `models/lab/CANONICAL_RESULTS.md` for verified benchmarks.
 - CPU-first, no GPU required at runtime
 
 ## Packaging and usage
-- Model directory: `models/ixos-flash-v2`
+- Model directory: `models/ixos-flash-v1`
 - Rust: `MmapModel2VecEmbedder::new_with_type(ModelType::IxosFlashV1)`
 
 ## License

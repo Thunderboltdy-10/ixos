@@ -13,6 +13,8 @@ export function getResend() {
 }
 
 export function getResendFromAddress() {
-  return process.env.RESEND_FROM_EMAIL || "Ixos <noreply@ixos.app>";
+  // Use Resend's shared domain for immediate functionality (no DNS setup needed)
+  // Can upgrade to custom domain later by setting RESEND_FROM_EMAIL
+  return process.env.RESEND_FROM_EMAIL || "Ixos <onboarding@resend.dev>";
 }
 

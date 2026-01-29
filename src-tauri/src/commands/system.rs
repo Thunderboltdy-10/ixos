@@ -219,15 +219,29 @@ pub async fn preload_model(
     Ok(format!("Model {} loaded", model_type))
 }
 
+/// Progress event for model download
+#[derive(Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModelDownloadProgress {
+    pub model_type: String,
+    pub filename: String,
+    pub bytes_downloaded: u64,
+    pub total_bytes: Option<u64>,
+    pub percent: Option<u32>,
+    pub status: String, // "downloading", "complete", "error"
+    pub message: Option<String>,
+}
+
 /// Download a model from Hugging Face if it's missing
 #[tauri::command]
 pub async fn download_model(
-    _app: AppHandle,
+    app: AppHandle,
     model_type: String,
 ) -> Result<String, String> {
     use ixos_protocol::ixos_embed::ModelType;
     use std::io::Write;
     use futures_util::StreamExt;
+    use tauri::Emitter;
 
     let model_type_enum = model_type
         .parse::<ModelType>()
@@ -325,20 +339,50 @@ pub async fn download_model(
             continue; // Try next file
         }
         
-        // Download with streaming
+        // Get total size from Content-Length header if available
+        let total_size = res.content_length();
+
+        // Download with streaming and progress events
         let mut file = std::fs::File::create(&target_path)
             .map_err(|e| format!("Failed to create file {:?}: {}", target_path, e))?;
-        
+
         let mut stream = res.bytes_stream();
         let mut bytes_written: u64 = 0;
-        
+        let mut last_emit = std::time::Instant::now();
+
         while let Some(chunk) = stream.next().await {
             let chunk = chunk.map_err(|e| format!("Download error for {}: {}", filename, e))?;
             file.write_all(&chunk)
                 .map_err(|e| format!("Write error for {}: {}", filename, e))?;
             bytes_written += chunk.len() as u64;
+
+            // Emit progress event every 100ms to avoid flooding
+            if last_emit.elapsed().as_millis() >= 100 {
+                let percent = total_size.map(|t| ((bytes_written as f64 / t as f64) * 100.0) as u32);
+                let _ = app.emit("model_download_progress", ModelDownloadProgress {
+                    model_type: model_type.clone(),
+                    filename: filename.to_string(),
+                    bytes_downloaded: bytes_written,
+                    total_bytes: total_size,
+                    percent,
+                    status: "downloading".to_string(),
+                    message: None,
+                });
+                last_emit = std::time::Instant::now();
+            }
         }
-        
+
+        // Emit final progress for this file
+        let _ = app.emit("model_download_progress", ModelDownloadProgress {
+            model_type: model_type.clone(),
+            filename: filename.to_string(),
+            bytes_downloaded: bytes_written,
+            total_bytes: total_size,
+            percent: Some(100),
+            status: "complete".to_string(),
+            message: Some(format!("Downloaded {}", filename)),
+        });
+
         tracing::info!(
             "Downloaded {} successfully: {} bytes",
             filename, bytes_written
@@ -381,4 +425,64 @@ pub async fn download_model(
     
     tracing::info!("Model {} downloaded and validated successfully", model_type);
     Ok(format!("Successfully downloaded and validated {}", model_type))
+}
+
+/// Check if models exist and download if missing (for background startup download)
+#[tauri::command]
+pub async fn check_and_download_models(app: AppHandle) -> Result<bool, String> {
+    use ixos_protocol::ixos_embed::MmapModel2VecEmbedder;
+    use tauri::Emitter;
+
+    let models = MmapModel2VecEmbedder::available_models();
+
+    // Check if Flash model is available
+    let flash_available = models.iter()
+        .any(|(model_type, available, _)| {
+            format!("{:?}", model_type) == "IxosFlashV1" && *available
+        });
+
+    if flash_available {
+        tracing::info!("Flash model already available, no download needed");
+        return Ok(true);
+    }
+
+    // Emit starting event
+    let _ = app.emit("model_download_progress", ModelDownloadProgress {
+        model_type: "ixos-flash-v1".to_string(),
+        filename: "".to_string(),
+        bytes_downloaded: 0,
+        total_bytes: None,
+        percent: Some(0),
+        status: "starting".to_string(),
+        message: Some("Starting model download...".to_string()),
+    });
+
+    // Download Flash model
+    tracing::info!("Flash model not found, initiating background download");
+    match download_model(app.clone(), "ixos-flash-v1".to_string()).await {
+        Ok(_) => {
+            let _ = app.emit("model_download_progress", ModelDownloadProgress {
+                model_type: "ixos-flash-v1".to_string(),
+                filename: "all".to_string(),
+                bytes_downloaded: 0,
+                total_bytes: None,
+                percent: Some(100),
+                status: "complete".to_string(),
+                message: Some("Model download complete!".to_string()),
+            });
+            Ok(true)
+        }
+        Err(e) => {
+            let _ = app.emit("model_download_progress", ModelDownloadProgress {
+                model_type: "ixos-flash-v1".to_string(),
+                filename: "".to_string(),
+                bytes_downloaded: 0,
+                total_bytes: None,
+                percent: None,
+                status: "error".to_string(),
+                message: Some(format!("Download failed: {}", e)),
+            });
+            Err(e)
+        }
+    }
 }

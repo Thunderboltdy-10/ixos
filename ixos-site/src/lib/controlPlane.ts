@@ -11,6 +11,12 @@ export type Plan = "free" | "pro";
 
 const ACTIVE_SUB_STATUSES = new Set(["active", "trialing", "past_due"]);
 
+// Conditional debug logging to reduce Vercel log spam
+const DEBUG = process.env.NODE_ENV === "development" || process.env.IXOS_DEBUG === "true";
+function debugLog(...args: unknown[]) {
+  if (DEBUG) console.log("[ControlPlane]", ...args);
+}
+
 export async function getClerkUserId(): Promise<string | null> {
   const { userId } = await auth();
   return userId ?? null;
@@ -29,17 +35,14 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
 
   if (bearerToken) {
     try {
-      // LOGGING: Decode without verify to see what we are dealing with
-      try {
-        const decoded = decodeJwt(bearerToken);
-        console.log("[Auth] Token PEEK (pre-verify):", {
-          sub: decoded.sub,
-          iss: decoded.iss,
-          exp: decoded.exp,
-          sid: decoded.sid // session id
-        });
-      } catch (e) {
-        console.error("[Auth] Token PEEK FAILED: Could not decode JWT.", e);
+      // Debug: Decode without verify to see what we are dealing with
+      if (DEBUG) {
+        try {
+          const decoded = decodeJwt(bearerToken);
+          debugLog("Token PEEK:", { sub: decoded.sub, iss: decoded.iss });
+        } catch {
+          // Silent in production
+        }
       }
 
       let jwtKey = process.env.CLERK_JWT_KEY;
@@ -54,34 +57,27 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
       if (jwtKey) {
         try {
           const verified = await verifyToken(bearerToken, { jwtKey });
-          // verifyToken returns the payload directly or throws
           if (verified?.sub) {
             return verified.sub as string;
           }
-        } catch (e) {
-          console.warn(`[Auth] jwtKey verification failed: ${e}`);
-          // Continue to secretKey fallback
+        } catch {
+          // Continue to secretKey fallback (silent)
         }
       }
 
       // 2. Fallback to Secret Key (Network, Robust)
       if (secretKey) {
         try {
-          console.log("[Auth] Attempting fallback to Secret Key verification...");
+          debugLog("Attempting Secret Key verification fallback");
           const verified = await verifyToken(bearerToken, { secretKey });
-
           if (verified?.sub) {
-            console.log("[Auth] Secret Key verification SUCCESS.");
             return verified.sub as string;
-          } else {
-            console.error("[Auth] Secret Key verification passed but 'sub' is missing.", verified);
           }
         } catch (e) {
-          console.error(`[Auth] Secret Key verification failed: ${e}`);
+          // Only log errors in debug mode
+          debugLog("Secret Key verification failed:", e);
         }
       }
-
-      console.error("[Auth] All token verification attempts failed.");
 
     } catch (error) {
       console.error("Fatal error in getClerkUserIdFromRequest:", error);
@@ -100,14 +96,14 @@ export async function getOrCreateUserByClerkId(clerkUserId: string) {
     return existing;
   }
 
-  console.log(`[Auth] User not found in DB for ClerkID: ${clerkUserId}. Fetching from Clerk...`);
+  debugLog("User not found in DB, fetching from Clerk:", clerkUserId);
   let clerkUser = await currentUser();
   if (!clerkUser) {
     try {
       const client = await clerkClient();
       clerkUser = await client.users.getUser(clerkUserId);
     } catch (e) {
-      console.error(`[Auth] Failed to fetch user from Clerk Client:`, e);
+      debugLog("Failed to fetch user from Clerk Client:", e);
     }
   }
   if (!clerkUser) {
@@ -128,7 +124,7 @@ export async function getOrCreateUserByClerkId(clerkUserId: string) {
   });
 
   if (existingByEmail) {
-    console.warn(`[Auth] HEALING: Found user by email '${primaryEmail.emailAddress}' with old ID '${existingByEmail.clerkUserId}'. Updating to '${clerkUserId}'.`);
+    debugLog("HEALING: Found user by email with old ID, updating");
     const [updated] = await db.update(users)
       .set({ clerkUserId: clerkUserId, updatedAt: new Date() })
       .where(eq(users.id, existingByEmail.id))
@@ -151,7 +147,7 @@ export async function getOrCreateUserByClerkId(clerkUserId: string) {
     .returning();
 
   if (created) {
-    console.log(`[Auth] Created new user in DB: ${created.id}`);
+    debugLog("Created new user in DB:", created.id);
     return created;
   }
 
@@ -199,35 +195,21 @@ export function isSubscriptionActive({
   const GRACE_PERIOD_MS = 1000 * 60 * 60 * 24;
   const now = Date.now();
 
-  console.log(`[isSubscriptionActive] Checking: status=${status} (norm=${normalized}), ends=${currentPeriodEnd?.toISOString()}`);
-
   // If active/trialing/past_due, logic is standard
   if (ACTIVE_SUB_STATUSES.has(normalized)) {
-    // If we have an end date and it's long passed (outside grace), then inactive
-    // But usually 'active' status from Lemon should be enough unless we want to enforce local expiration
     if (currentPeriodEnd && currentPeriodEnd.getTime() + GRACE_PERIOD_MS < now) {
-      // It says active but date is old + grace period passed -> likely webhook failure or expired
-      // But let's trust the status more if it says "active"? 
-      // Actually, if it says active but date is old, assume renewal webhook is just Late. 
-      // So as long as status is Active, we are good?
-      // No, let's keep the date check but with grace.
-      console.log(`[isSubscriptionActive] >> False: Active status but expired beyond grace period. Diff=${now - currentPeriodEnd.getTime()}ms`);
       return false;
     }
-    console.log(`[isSubscriptionActive] >> True: Status '${normalized}' is active/trialing/past_due.`);
     return true;
   }
 
   // If cancelled, they should still have access until the period ends
   if (normalized === "cancelled") {
     if (currentPeriodEnd && currentPeriodEnd.getTime() > now) {
-      console.log(`[isSubscriptionActive] >> True: Cancelled but still in period.`);
       return true;
     }
-    console.log(`[isSubscriptionActive] >> False: Cancelled and period ended.`);
   }
 
-  console.log(`[isSubscriptionActive] >> False: Status '${normalized}' not in active set.`);
   return false;
 }
 
@@ -294,14 +276,13 @@ export async function issueEntitlementToken({
   let privateKey;
   try {
     // jose's importPKCS8 is strict about the PKCS#8 format (BEGIN PRIVATE KEY)
-    // If the user has a SEC1/EC key (BEGIN EC PRIVATE KEY), this will likely fail
     if (privateKeyPem.includes("BEGIN EC PRIVATE KEY")) {
-      console.warn("[JWT] EC (SEC1) format detected. Attempting import, but PKCS#8 is preferred.");
+      debugLog("EC (SEC1) format detected, PKCS#8 preferred");
     }
 
     privateKey = await importPKCS8(privateKeyPem, "ES256");
   } catch (importError) {
-    console.error("[JWT] Key import failed:", importError);
+    debugLog("Key import failed:", importError);
 
     if (privateKeyPem.includes("BEGIN EC PRIVATE KEY")) {
       throw new Error(

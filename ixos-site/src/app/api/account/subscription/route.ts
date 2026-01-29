@@ -9,6 +9,9 @@ import { getLemonCustomerPortalUrl } from "@/lib/lemonsqueezy";
 
 export const dynamic = "force-dynamic";
 
+// Conditional debug logging to reduce production log spam
+const DEBUG = process.env.NODE_ENV === "development" || process.env.IXOS_DEBUG === "true";
+
 export async function GET(req: Request) {
   try {
     const clerkUserId = await getClerkUserIdFromRequest(req);
@@ -17,7 +20,6 @@ export async function GET(req: Request) {
     }
 
     const userRecord = await getOrCreateUserByClerkId(clerkUserId);
-    console.log(`[SubAPI] Checked User: ClerkID=${clerkUserId} -> DbID=${userRecord.id}, Email=${userRecord.email}`);
 
     // Robustness: Find ALL users with this email (handles ghost users created by webhooks)
     const linkedUsers = await db.query.users.findMany({
@@ -30,21 +32,10 @@ export async function GET(req: Request) {
       userIds.push(userRecord.id);
     }
 
-    console.log(`[SubAPI] Searching subs for UserIDs: ${userIds.join(', ')}`);
-
     const subscription = await db.query.subscriptions.findFirst({
       where: inArray(subscriptions.userId, userIds),
       orderBy: desc(subscriptions.updatedAt),
     });
-
-    console.log(`[SubAPI] Found Subscription:`, subscription ? {
-      id: subscription.id,
-      lemonId: subscription.lemonSubscriptionId,
-      status: subscription.status,
-      plan: subscription.plan,
-      ends: subscription.currentPeriodEnd,
-      updated: subscription.updatedAt
-    } : "None");
 
     if (!subscription) {
       return Response.json({
@@ -61,14 +52,13 @@ export async function GET(req: Request) {
       currentPeriodEnd: subscription.currentPeriodEnd,
     });
 
-    console.log(`[SubAPI] Calculated Active: ${active}`);
-
+    // Only fetch portal URL if subscription is active (reduces external API calls)
     let portalUrl: string | null = null;
     if (active) {
       try {
         portalUrl = await getLemonCustomerPortalUrl(subscription.lemonSubscriptionId);
       } catch (error) {
-        console.error("Failed to fetch Lemon portal URL:", error);
+        if (DEBUG) console.error("Failed to fetch Lemon portal URL:", error);
       }
     }
 

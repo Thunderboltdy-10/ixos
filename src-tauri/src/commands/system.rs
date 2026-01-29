@@ -137,8 +137,8 @@ pub async fn select_directory(app: AppHandle) -> Result<Option<String>, String> 
 #[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ModelStatus {
-    pub ixos_flash_v2_available: bool,
-    pub ixos_flash_v2_path: Option<String>,
+    pub ixos_flash_v1_available: bool,
+    pub ixos_flash_v1_path: Option<String>,
     pub ixos_pro_v1_available: bool,
     pub ixos_pro_v1_path: Option<String>,
     pub any_available: bool,
@@ -153,16 +153,16 @@ pub async fn get_model_status(state: State<'_, AppState>) -> Result<ModelStatus,
 
     let models = MmapModel2VecEmbedder::available_models();
 
-    let mut ixos_flash_v2_available = false;
-    let mut ixos_flash_v2_path: Option<String> = None;
+    let mut ixos_flash_v1_available = false;
+    let mut ixos_flash_v1_path: Option<String> = None;
     let mut ixos_pro_v1_available = false;
     let mut ixos_pro_v1_path: Option<String> = None;
 
     for (model_type, available, path) in models {
         match format!("{:?}", model_type).as_str() {
-            "IxosFlashV2" => {
-                ixos_flash_v2_available = available;
-                ixos_flash_v2_path = path.map(|p| p.display().to_string());
+            "IxosFlashV1" => {
+                ixos_flash_v1_available = available;
+                ixos_flash_v1_path = path.map(|p| p.display().to_string());
             }
             "IxosProV1" => {
                 ixos_pro_v1_available = available;
@@ -172,9 +172,9 @@ pub async fn get_model_status(state: State<'_, AppState>) -> Result<ModelStatus,
         }
     }
 
-    let any_available = ixos_flash_v2_available || ixos_pro_v1_available;
-    let recommended = if ixos_flash_v2_available {
-        Some("ixos-flash-v2".to_string())
+    let any_available = ixos_flash_v1_available || ixos_pro_v1_available;
+    let recommended = if ixos_flash_v1_available {
+        Some("ixos-flash-v1".to_string())
     } else if ixos_pro_v1_available {
         Some("ixos-pro-v1".to_string())
     } else {
@@ -182,8 +182,8 @@ pub async fn get_model_status(state: State<'_, AppState>) -> Result<ModelStatus,
     };
 
     Ok(ModelStatus {
-        ixos_flash_v2_available,
-        ixos_flash_v2_path,
+        ixos_flash_v1_available,
+        ixos_flash_v1_path,
         ixos_pro_v1_available,
         ixos_pro_v1_path,
         any_available,
@@ -207,7 +207,7 @@ pub async fn preload_model(
 
     let model_type = model_type
         .parse::<ModelType>()
-        .unwrap_or(ModelType::IxosFlashV2);
+        .unwrap_or(ModelType::IxosFlashV1);
 
     tracing::info!("Preloading model: {:?}", model_type);
 
@@ -231,7 +231,7 @@ pub async fn download_model(
 
     let model_type_enum = model_type
         .parse::<ModelType>()
-        .unwrap_or(ModelType::IxosFlashV2);
+        .unwrap_or(ModelType::IxosFlashV1);
     
     // Determine target directory in AppData (Roaming/Ixos/models)
     // We use dirs::data_dir() to match ixos_protocol's search path
@@ -242,8 +242,8 @@ pub async fn download_model(
     // Mappings align with mmap_model.rs expectations
     // Note: vocab.txt is not required for these models (tokenizer.json is sufficient)
     let (subdir, repo_id, files) = match model_type_enum {
-        ModelType::IxosFlashV2 => (
-            "ixos-flash-v2",
+        ModelType::IxosFlashV1 => (
+            "ixos-flash-v1",
             "Thunderboltdy10/Ixos-Flash",
             vec!["config.json", "model.safetensors", "tokenizer.json"]
         ),

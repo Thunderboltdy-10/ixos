@@ -20,8 +20,8 @@ interface ModelStatus {
   potionPath: string | null;
   qwenAvailable: boolean;
   qwenPath: string | null;
-  ixosFlashV2Available: boolean;
-  ixosFlashV2Path: string | null;
+  ixosFlashV1Available: boolean;
+  ixosFlashV1Path: string | null;
   ixosFlashV4Available: boolean;
   ixosFlashV4Path: string | null;
   ixosFlashV4FastAvailable: boolean;

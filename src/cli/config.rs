@@ -214,7 +214,7 @@ fn default_context_lines() -> usize {
 }
 
 fn default_model_type() -> String {
-    "ixos-flash-v2".to_string()
+    "ixos-flash-v1".to_string()
 }
 
 fn default_pro_model_type() -> String {
@@ -471,21 +471,21 @@ impl IxosConfig {
                     })?;
             }
             ["search", "model_type"] => {
-                if !["potion", "qwen", "ixos-flash-v2", "ixos-pro-v1"].contains(&value) {
+                if !["potion", "qwen", "ixos-flash-v1", "ixos-pro-v1"].contains(&value) {
                     return Err(ConfigError::InvalidValue {
                         key: key.to_string(),
                         value: value.to_string(),
-                        expected: "potion, qwen, ixos-flash-v2, or ixos-pro-v1".to_string(),
+                        expected: "potion, qwen, ixos-flash-v1, or ixos-pro-v1".to_string(),
                     });
                 }
                 self.search.model_type = value.to_string();
             }
             ["search", "pro_model_type"] => {
-                if !["potion", "qwen", "ixos-flash-v2", "ixos-pro-v1"].contains(&value) {
+                if !["potion", "qwen", "ixos-flash-v1", "ixos-pro-v1"].contains(&value) {
                     return Err(ConfigError::InvalidValue {
                         key: key.to_string(),
                         value: value.to_string(),
-                        expected: "potion, qwen, ixos-flash-v2, or ixos-pro-v1".to_string(),
+                        expected: "potion, qwen, ixos-flash-v1, or ixos-pro-v1".to_string(),
                     });
                 }
                 self.search.pro_model_type = value.to_string();

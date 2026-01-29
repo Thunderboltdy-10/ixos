@@ -1,4 +1,4 @@
-# Ixos Flash v2
+# Ixos Flash v1
 
 ## Summary
 Fast, CPU-first flash-tier embedder distilled from st-all-mpnet-base-v2.
@@ -33,7 +33,7 @@ See `models/lab/CANONICAL_RESULTS.md` for verified benchmarks.
 
 ## Packaging and usage
 - Model directory: `models/ixos-flash-v2`
-- Rust: `MmapModel2VecEmbedder::new_with_type(ModelType::IxosFlashV2)`
+- Rust: `MmapModel2VecEmbedder::new_with_type(ModelType::IxosFlashV1)`
 
 ## License
 - Distilled weights: Ixos internal (MIT per MODELS_REPORT)

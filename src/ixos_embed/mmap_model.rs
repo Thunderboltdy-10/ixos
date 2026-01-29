@@ -60,8 +60,8 @@ pub enum ModelType {
     Potion,
     /// Distilled Qwen3-Embedding-0.6B (experimental, potentially better)
     Qwen,
-    /// Ixos Flash v2 (distilled, fast)
-    IxosFlashV2,
+    /// Ixos Flash v1 (distilled, fast)
+    IxosFlashV1,
     /// Ixos Flash v4 (512d, int8, quality-leaning)
     IxosFlashV4,
     /// Ixos Flash v4 Fast (192d, int8, speed-leaning)
@@ -76,7 +76,7 @@ impl ModelType {
         match self {
             ModelType::Potion => "Potion-8M-int8",
             ModelType::Qwen => "Ixos-Embedder-v1 (Qwen)",
-            ModelType::IxosFlashV2 => "Ixos-Flash-v2",
+            ModelType::IxosFlashV1 => "Ixos-Flash-v1",
             ModelType::IxosFlashV4 => "Ixos-Flash-v4 (512d)",
             ModelType::IxosFlashV4Fast => "Ixos-Flash-v4 Fast (192d)",
             ModelType::IxosProV1 => "Ixos-Pro-v1",
@@ -88,7 +88,7 @@ impl ModelType {
         match self {
             ModelType::Potion => "Quantized potion-base-8M. Simple, reliable, fast.",
             ModelType::Qwen => "Distilled from Qwen3. Experimental, potentially better quality.",
-            ModelType::IxosFlashV2 => "Ixos Flash v2 distilled embedder (fast, tuned).",
+            ModelType::IxosFlashV1 => "Ixos Flash v1 distilled embedder (fast, tuned).",
             ModelType::IxosFlashV4 => {
                 "Ixos Flash v4 distilled embedder (int8, 512d, near-v2 quality)."
             }
@@ -107,7 +107,7 @@ impl FromStr for ModelType {
         match s.to_lowercase().as_str() {
             "potion" | "potion-8m" | "potion-base-8m" => Ok(ModelType::Potion),
             "qwen" | "ixos" | "ixos-embedder" => Ok(ModelType::Qwen),
-            "ixos-flash-v2" | "flash" | "ixos-flash" => Ok(ModelType::IxosFlashV2),
+            "ixos-flash-v1" | "flash" | "ixos-flash" => Ok(ModelType::IxosFlashV1),
             "ixos-flash-v4"
             | "flash-v4"
             | "ixos-flash-v4-512"
@@ -119,7 +119,7 @@ impl FromStr for ModelType {
             | "ixos-flash-v4-int8-192" => Ok(ModelType::IxosFlashV4Fast),
             "ixos-pro-v1" | "pro" | "ixos-pro" => Ok(ModelType::IxosProV1),
             _ => Err(format!(
-                "Unknown model type: {}. Use: potion, qwen, ixos-flash-v2, ixos-flash-v4, ixos-flash-v4-fast, or ixos-pro-v1",
+                "Unknown model type: {}. Use: potion, qwen, ixos-flash-v1, ixos-flash-v4, ixos-flash-v4-fast, or ixos-pro-v1",
                 s
             )),
         }
@@ -131,7 +131,7 @@ impl std::fmt::Display for ModelType {
         match self {
             ModelType::Potion => write!(f, "potion"),
             ModelType::Qwen => write!(f, "qwen"),
-            ModelType::IxosFlashV2 => write!(f, "ixos-flash-v2"),
+            ModelType::IxosFlashV1 => write!(f, "ixos-flash-v1"),
             ModelType::IxosFlashV4 => write!(f, "ixos-flash-v4-int8-512"),
             ModelType::IxosFlashV4Fast => write!(f, "ixos-flash-v4-int8-192"),
             ModelType::IxosProV1 => write!(f, "ixos-pro-v1"),
@@ -172,8 +172,8 @@ impl MmapModel2VecEmbedder {
 
     /// P1.3: Qwen-distilled embedder path (distilled from Qwen3-Embedding-0.6B, int8)
     const QWEN_MODEL_SUBDIR: &'static str = "models/ixos-embedder-v1";
-    /// Ixos Flash v2 distilled embedder path
-    const IXOS_FLASH_V2_SUBDIR: &'static str = "models/ixos-flash-v2";
+    /// Ixos Flash v1 distilled embedder path
+    const IXOS_FLASH_V1_SUBDIR: &str = "models/ixos-flash-v1";
     /// Ixos Flash v4 (quality) distilled embedder path
     const IXOS_FLASH_V4_SUBDIR: &'static str = "models/ixos-flash-v4-int8-512";
     /// Ixos Flash v4 fast distilled embedder path
@@ -220,13 +220,13 @@ impl MmapModel2VecEmbedder {
                     "Qwen model not found. Run: python scripts/distill_model.py --qwen".into(),
                 ))
             }
-            ModelType::IxosFlashV2 => {
-                if let Some(path) = Self::find_ixos_flash_v2_model() {
-                    tracing::info!("Using Ixos-Flash-v2 model from {:?}", path);
+            ModelType::IxosFlashV1 => {
+                if let Some(path) = Self::find_ixos_flash_v1_model() {
+                    tracing::info!("Using Ixos-Flash-v1 model from {:?}", path);
                     return Self::from_path(&path);
                 }
                 Err(ModelError::LoadError(
-                    "Ixos-Flash-v2 model not found. Run: python scripts/distill_model2vec_lab.py --mode flash".into(),
+                    "Ixos-Flash-v1 model not found. Run: python scripts/distill_model2vec_lab.py --mode flash".into(),
                 ))
             }
             ModelType::IxosFlashV4 => {
@@ -281,9 +281,9 @@ impl MmapModel2VecEmbedder {
         Self::find_model_in_locations(Self::QWEN_MODEL_SUBDIR, "ixos-embedder-v1")
     }
 
-    /// Find the Ixos-Flash-v2 model in standard locations
-    fn find_ixos_flash_v2_model() -> Option<PathBuf> {
-        Self::find_model_in_locations(Self::IXOS_FLASH_V2_SUBDIR, "ixos-flash-v2")
+    /// Find the Ixos-Flash-v1 model in standard locations
+    fn find_ixos_flash_v1_model() -> Option<PathBuf> {
+        Self::find_model_in_locations(Self::IXOS_FLASH_V1_SUBDIR, "ixos-flash-v1")
     }
 
     /// Find the Ixos-Flash-v4 model in standard locations
@@ -416,9 +416,9 @@ impl MmapModel2VecEmbedder {
                 Self::find_qwen_model(),
             ),
             (
-                ModelType::IxosFlashV2,
-                Self::find_ixos_flash_v2_model().is_some(),
-                Self::find_ixos_flash_v2_model(),
+                ModelType::IxosFlashV1,
+                Self::find_ixos_flash_v1_model().is_some(),
+                Self::find_ixos_flash_v1_model(),
             ),
             (
                 ModelType::IxosFlashV4,
@@ -885,7 +885,7 @@ mod tests {
         // Order should match the advertised list
         assert_eq!(models[0].0, ModelType::Potion);
         assert_eq!(models[1].0, ModelType::Qwen);
-        assert_eq!(models[2].0, ModelType::IxosFlashV2);
+        assert_eq!(models[2].0, ModelType::IxosFlashV1);
         assert_eq!(models[3].0, ModelType::IxosFlashV4);
         assert_eq!(models[4].0, ModelType::IxosFlashV4Fast);
         assert_eq!(models[5].0, ModelType::IxosProV1);

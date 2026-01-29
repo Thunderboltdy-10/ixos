@@ -93,12 +93,19 @@ pub enum TerminationReason {
 pub struct RipgrepFunnel {
     root_dir: PathBuf,
     config: RipgrepFunnelConfig,
+    /// Pre-computed file list (optional, for optimization)
+    /// When set, skips directory walking and uses this list directly
+    cached_file_list: Option<Vec<PathBuf>>,
 }
 
 impl RipgrepFunnel {
     /// Create a new ripgrep funnel for a directory
     pub fn new(root_dir: PathBuf, config: RipgrepFunnelConfig) -> Self {
-        Self { root_dir, config }
+        Self {
+            root_dir,
+            config,
+            cached_file_list: None,
+        }
     }
 
     /// Create with default config
@@ -106,7 +113,24 @@ impl RipgrepFunnel {
         Self::new(root_dir, RipgrepFunnelConfig::default())
     }
 
+    /// Set pre-computed file list for optimized searching (P5 optimization)
+    ///
+    /// When set, `search_capped` will skip directory walking and iterate
+    /// directly over this list. This can significantly reduce search latency
+    /// when the file list is already known (e.g., from PathIndex).
+    pub fn set_cached_file_list(&mut self, files: Vec<PathBuf>) {
+        self.cached_file_list = Some(files);
+    }
+
+    /// Clear the cached file list
+    pub fn clear_cached_file_list(&mut self) {
+        self.cached_file_list = None;
+    }
+
     /// Search with hard cap, returning all candidates at once
+    ///
+    /// P5 optimization: When `cached_file_list` is set, skips directory walking
+    /// and uses the pre-computed file list for faster searching.
     pub fn search_capped(&self, query: &str) -> (Vec<ScoredCandidate>, RipgrepStats) {
         let start = Instant::now();
         let deadline = start + Duration::from_millis(self.config.timeout_ms);
@@ -132,61 +156,103 @@ impl RipgrepFunnel {
         let mut candidates: Vec<ScoredCandidate> = Vec::new();
         let mut seen_paths: HashSet<PathBuf> = HashSet::new();
 
-        // Build walker
-        let walker = WalkBuilder::new(&self.root_dir)
-            .hidden(!self.config.skip_hidden)
-            .git_ignore(self.config.respect_gitignore)
-            .follow_links(false)
-            .max_filesize(Some(self.config.max_file_size))
-            .threads(self.config.thread_count)
-            .build();
+        // P5 optimization: Use cached file list if available, otherwise walk directory
+        if let Some(ref file_list) = self.cached_file_list {
+            // Fast path: iterate over pre-computed file list
+            for path in file_list {
+                // Check timeout
+                if Instant::now() > deadline {
+                    return (
+                        candidates,
+                        RipgrepStats {
+                            files_scanned: file_count.load(Ordering::Relaxed),
+                            hits_found: hit_count.load(Ordering::Relaxed),
+                            terminated_by: TerminationReason::Timeout,
+                            duration_ms: start.elapsed().as_millis() as u64,
+                        },
+                    );
+                }
 
-        for entry in walker.flatten() {
-            // Check timeout
-            if Instant::now() > deadline {
-                return (
-                    candidates,
-                    RipgrepStats {
-                        files_scanned: file_count.load(Ordering::Relaxed),
-                        hits_found: hit_count.load(Ordering::Relaxed),
-                        terminated_by: TerminationReason::Timeout,
-                        duration_ms: start.elapsed().as_millis() as u64,
-                    },
-                );
+                // Check hit limit
+                if hit_count.load(Ordering::Relaxed) >= self.config.max_hits {
+                    return (
+                        candidates,
+                        RipgrepStats {
+                            files_scanned: file_count.load(Ordering::Relaxed),
+                            hits_found: hit_count.load(Ordering::Relaxed),
+                            terminated_by: TerminationReason::MaxHitsReached,
+                            duration_ms: start.elapsed().as_millis() as u64,
+                        },
+                    );
+                }
+
+                // Files in cached list are already filtered
+                file_count.fetch_add(1, Ordering::Relaxed);
+
+                if let Some(candidate) = self.search_file(path, &matcher, &hit_count) {
+                    if !seen_paths.contains(path) {
+                        seen_paths.insert(path.clone());
+                        candidates.push(candidate);
+                    }
+                }
             }
+        } else {
+            // Fallback: walk directory (original implementation)
+            let walker = WalkBuilder::new(&self.root_dir)
+                .hidden(!self.config.skip_hidden)
+                .git_ignore(self.config.respect_gitignore)
+                .follow_links(false)
+                .max_filesize(Some(self.config.max_file_size))
+                .threads(self.config.thread_count)
+                .build();
 
-            // Check hit limit
-            if hit_count.load(Ordering::Relaxed) >= self.config.max_hits {
-                return (
-                    candidates,
-                    RipgrepStats {
-                        files_scanned: file_count.load(Ordering::Relaxed),
-                        hits_found: hit_count.load(Ordering::Relaxed),
-                        terminated_by: TerminationReason::MaxHitsReached,
-                        duration_ms: start.elapsed().as_millis() as u64,
-                    },
-                );
-            }
+            for entry in walker.flatten() {
+                // Check timeout
+                if Instant::now() > deadline {
+                    return (
+                        candidates,
+                        RipgrepStats {
+                            files_scanned: file_count.load(Ordering::Relaxed),
+                            hits_found: hit_count.load(Ordering::Relaxed),
+                            terminated_by: TerminationReason::Timeout,
+                            duration_ms: start.elapsed().as_millis() as u64,
+                        },
+                    );
+                }
 
-            let path = entry.path();
+                // Check hit limit
+                if hit_count.load(Ordering::Relaxed) >= self.config.max_hits {
+                    return (
+                        candidates,
+                        RipgrepStats {
+                            files_scanned: file_count.load(Ordering::Relaxed),
+                            hits_found: hit_count.load(Ordering::Relaxed),
+                            terminated_by: TerminationReason::MaxHitsReached,
+                            duration_ms: start.elapsed().as_millis() as u64,
+                        },
+                    );
+                }
 
-            // Skip directories
-            if path.is_dir() {
-                continue;
-            }
+                let path = entry.path();
 
-            // Check extension
-            if !self.should_search_file(path) {
-                continue;
-            }
+                // Skip directories
+                if path.is_dir() {
+                    continue;
+                }
 
-            // Search the file
-            file_count.fetch_add(1, Ordering::Relaxed);
+                // Check extension
+                if !self.should_search_file(path) {
+                    continue;
+                }
 
-            if let Some(candidate) = self.search_file(path, &matcher, &hit_count) {
-                if !seen_paths.contains(path) {
-                    seen_paths.insert(path.to_path_buf());
-                    candidates.push(candidate);
+                // Search the file
+                file_count.fetch_add(1, Ordering::Relaxed);
+
+                if let Some(candidate) = self.search_file(path, &matcher, &hit_count) {
+                    if !seen_paths.contains(path) {
+                        seen_paths.insert(path.to_path_buf());
+                        candidates.push(candidate);
+                    }
                 }
             }
         }

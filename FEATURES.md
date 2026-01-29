@@ -166,7 +166,7 @@ Unlock achievements as you use Ixos:
 
 Ixos supports intelligent quality modes in the desktop UI:
 
-- **Flash**: Uses Ixos Flash v2 model. Fastest, optimized for instant feedback.
+- **Flash**: Uses Ixos Flash v1 model. Fastest, optimized for instant feedback.
 - **Auto** (recommended): Starts with Flash, automatically refines using Pro fusion when ambiguity is detected (score gap < 0.05, weak lexical match, short queries).
 - **Pro**: Always uses Pro fusion (semantic 0.33 / lexical 0.67 weights) for maximum accuracy.
 

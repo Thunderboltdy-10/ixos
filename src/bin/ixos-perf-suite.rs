@@ -41,7 +41,7 @@ struct PerfSuiteArgs {
     #[arg(long, default_value = "jit")]
     cache_mode: String,
     /// Model to use
-    #[arg(long, default_value = "ixos-flash-v2")]
+    #[arg(long, default_value = "ixos-flash-v1")]
     model: String,
 }
 

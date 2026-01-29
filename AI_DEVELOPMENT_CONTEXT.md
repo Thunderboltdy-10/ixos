@@ -6,7 +6,7 @@
 ---
 
 **Update (2026-01-26):**
-- Flash v4 int8 candidates added (512d quality, 192d speed). Flash v2 remains default until v4 is packaged.
+- Flash v4 int8 candidates added (512d quality, 192d speed). Flash v1 remains default until v4 is packaged.
 - Pro quality now best via Flash + Potion + lexical fusion; ixos-pro-v1 is legacy.
 - UI/config defaults now use `potion` as the Pro model type in Auto/Pro mode.
 
@@ -62,7 +62,7 @@ Query → [Intent Parser] → [Candidate Generation] → [Semantic Rerank] → [
 
 | Model | Type | Dimensions | Speed | Quality (MRR@10) |
 |-------|------|------------|-------|------------------|
-| **Ixos Flash v2** | Model2Vec, mpnet-distilled | 512 (f16) | ~170-420ms/1k | 0.766 |
+| **Ixos Flash v1** | Model2Vec, mpnet-distilled | 512 (f16) | ~170-420ms/1k | 0.766 |
 | **Ixos Pro v1** | Flash + lexical fusion | N/A | Flash + ~200ms | 0.883 |
 | **Potion 8M** | Model2Vec, int8 | 256 | ~22-200ms/1k | 0.727 |
 | **Qwen (v1)** | Distilled student | 512 | ~480ms/1k | 0.435 (not competitive) |

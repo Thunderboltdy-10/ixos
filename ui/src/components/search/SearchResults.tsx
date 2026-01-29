@@ -146,7 +146,7 @@ export function SearchResults({
         )}
       </div>
 
-      <div className="divide-y divide-stroke-hairline/70">
+      <div className="flex flex-col gap-1">
         <AnimatePresence mode="popLayout">
           {displayResults.map((result, index) => (
             <motion.div

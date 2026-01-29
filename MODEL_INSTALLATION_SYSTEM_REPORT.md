@@ -34,7 +34,7 @@ Models are searched in this priority order:
 
 ```rust
 // Model repositories defined at download time
-ModelType::IxosFlashV2 => (
+ModelType::IxosFlashV1 => (
     "ixos-flash-v2",                          // Subdir
     "Thunderboltdy10/Ixos-Flash",             // HF repo
     vec!["config.json", "model.safetensors", 
@@ -65,7 +65,7 @@ ModelType::IxosProV1 => (
 Six model types are defined:
 1. **Potion** - Quantized potion-base-8M (recommended, reliable)
 2. **Qwen** - Distilled from Qwen3-Embedding-0.6B (experimental)
-3. **IxosFlashV2** - Ixos Flash v2 (distilled, fast)
+3. **IxosFlashV1** - Ixos Flash v1 (distilled, fast)
 4. **IxosFlashV4** - Ixos Flash v4 (512d, int8, quality-leaning)
 5. **IxosFlashV4Fast** - Ixos Flash v4 Fast (192d, int8, speed-leaning)
 6. **IxosProV1** - Ixos Pro v1 (distilled, higher quality)
@@ -79,7 +79,7 @@ The system tracks **ALL available model types** for:
 - **Documented migration path** - See `docs/CHANGELOG_MODELS.md`
 
 **However, only 2 are actively shipped to users:**
-- **Ixos Flash v2** (Fast mode) - Default, fastest option
+- **Ixos Flash v1** (Fast mode) - Default, fastest option
 - **Ixos Pro v1** (Accurate mode) - Higher quality reranking
 
 ### UI Presentation
@@ -89,10 +89,10 @@ The UI switcher shows only these two options:
 ```typescript
 const models: ModelOption[] = [
     {
-        id: 'ixos-flash-v2',
-        label: 'Ixos Flash',
+        id: 'ixos-flash-v1',
+        label: 'Ixos Flash V1',
         description: 'Fast, efficient model for mostly standard searches',
-        available: status?.ixosFlashV2Available ?? false,
+        available: status?.ixosFlashV1Available ?? false,
         icon: Beaker,
     },
     {
@@ -138,8 +138,8 @@ models/ixos-flash-v2/
 The `get_model_status` command returns:
 ```rust
 pub struct ModelStatus {
-    pub ixos_flash_v2_available: bool,
-    pub ixos_flash_v2_path: Option<String>,
+    pub ixos_flash_v1_available: bool,
+    pub ixos_flash_v1_path: Option<String>,
     pub ixos_pro_v1_available: bool,
     pub ixos_pro_v1_path: Option<String>,
     pub any_available: bool,

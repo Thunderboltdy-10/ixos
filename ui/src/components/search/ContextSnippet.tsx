@@ -36,8 +36,14 @@ export function ContextSnippet({ context, className, mode = 'cache' }: ContextSn
   const startLine = lineNumber - beforeLines.length;
 
   return (
-    <div className={cn('rounded-md bg-graphite-2/80 overflow-hidden border border-stroke-hairline/70', className)}>
-      <div className="px-3 py-1.5 bg-graphite-3/60 border-b border-stroke-hairline">
+    <div
+      className={cn('bg-graphite-2/80 overflow-hidden', className)}
+      style={{ borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)' }}
+    >
+      <div
+        className="px-3 py-1.5 bg-graphite-3/60"
+        style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}
+      >
         <span className="text-xs text-fg-dim uppercase tracking-[0.2em]">
           Line {lineNumber}
         </span>

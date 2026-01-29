@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Nav } from "@/components/ui/Nav";
+import { SectionDivider } from "@/components/ui/SectionDivider";
 import { Footer } from "@/components/sections/Footer";
 import { Button } from "@/components/ui/Button";
 import { getDownloadUrl } from "@/lib/downloads";
@@ -8,7 +9,10 @@ export default function DocsPage() {
     return (
         <>
             <Nav />
-            <main className="pt-32 pb-24 container mx-auto px-6 max-w-6xl flex gap-12">
+            <div className="pt-20">
+                <SectionDivider accent="teal" label="DOCUMENTATION" />
+            </div>
+            <main className="pt-8 pb-24 container mx-auto px-6 max-w-6xl flex gap-12">
 
                 {/* Sidebar */}
                 <aside className="hidden lg:block w-64 shrink-0 space-y-8 sticky top-32 h-fit">

@@ -26,6 +26,28 @@ export function Benchmarks() {
         return () => observer.disconnect();
     }, []);
 
+    const useCountUp = (end: number, duration: number = 2000, isVis: boolean) => {
+        const [count, setCount] = useState(0);
+        useEffect(() => {
+            if (!isVis) return;
+            let startTimestamp: number | null = null;
+            const step = (timestamp: number) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                setCount(Math.floor(progress * end));
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    setCount(end);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }, [end, duration, isVis]);
+        return count;
+    };
+
+    const ttfr = useCountUp(199, 800, isVisible);
+
     return (
         <div ref={containerRef} className="relative">
             <SectionDivider accent="violet" label="SYSTEM_METRICS" />
@@ -65,22 +87,22 @@ export function Benchmarks() {
                                 <div>
                                     <div className="text-xs font-mono text-fg-muted uppercase tracking-wider mb-2">TTFR (P50)</div>
                                     <div className="text-7xl font-mono font-medium text-fg-porcelain tracking-tighter">
-                                        <span className="text-accent-violet">199</span>ms
+                                        <span className="text-accent-violet">{ttfr}</span>ms
                                     </div>
                                 </div>
                                 <div className="space-y-4">
                                     <div className="h-px w-full bg-white/10" />
                                     <div className="flex justify-between text-xs font-mono text-fg-muted">
                                         <span>CACHE_HIT_RATE</span>
-                                        <span className="text-accent-violet">80%</span>
+                                        <span className="text-accent-violet"><CountUp end={80} suffix="%" duration={800} isVisible={true} /></span>
                                     </div>
                                     <div className="flex justify-between text-xs font-mono text-fg-muted">
                                         <span>PEAK_RAM</span>
-                                        <span>194 MB</span>
+                                        <span><CountUp end={194} suffix=" MB" duration={800} isVisible={true} /></span>
                                     </div>
                                     <div className="flex justify-between text-xs font-mono text-fg-muted">
                                         <span>PERSISTENT_INDEX</span>
-                                        <span className="text-accent-teal">0 KB</span>
+                                        <span className="text-fg-porcelain">0 KB</span>
                                     </div>
                                 </div>
                             </div>
@@ -100,21 +122,21 @@ export function Benchmarks() {
                                     value={198}
                                     maxValue={2000}
                                     isVisible={isVisible}
-                                    delay={200}
+                                    delay={100}
                                 />
                                 <ChartBar
                                     label="Windows Search"
                                     value={1500}
                                     maxValue={2000}
                                     isVisible={isVisible}
-                                    delay={400}
+                                    delay={200}
                                 />
                                 <ChartBar
                                     label="Manual Browsing"
                                     value={2000}
                                     maxValue={2000}
                                     isVisible={isVisible}
-                                    delay={600}
+                                    delay={300}
                                     isOverflow
                                 />
                                 <div className="pt-2 text-[10px] font-mono text-fg-muted text-right mt-4 opacity-50">
@@ -128,10 +150,10 @@ export function Benchmarks() {
 
                     {/* Additional stats - Using actual data */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                        <StatCard value="199ms" label="FIRST_RESULT" delay={100} isVisible={isVisible} />
-                        <StatCard value="80%" label="CACHE_HIT" delay={200} isVisible={isVisible} />
-                        <StatCard value="194MB" label="PEAK_RAM" delay={300} isVisible={isVisible} />
-                        <StatCard value="0 KB" label="INDEX_SIZE" delay={400} isVisible={isVisible} highlight />
+                        <StatCard value="199" suffix="ms" label="FIRST_RESULT" delay={50} isVisible={isVisible} />
+                        <StatCard value="80" suffix="%" label="CACHE_HIT" delay={100} isVisible={isVisible} />
+                        <StatCard value="194" suffix="MB" label="PEAK_RAM" delay={150} isVisible={isVisible} />
+                        <StatCard value="0" suffix=" KB" label="INDEX_SIZE" delay={200} isVisible={isVisible} />
                     </div>
                 </div>
             </div>
@@ -172,14 +194,14 @@ function ChartBar({
                         <div
                             key={i}
                             className={cn(
-                                "flex-1 rounded-[1px] transition-all duration-500",
+                                "flex-1 rounded-[1px] transition-all duration-300",
                                 active
                                     ? (highlight ? "bg-accent-violet" : "bg-fg-muted/60")
                                     : "bg-white/5"
                             )}
                             style={{
                                 opacity: isVisible && active ? 1 : 0.2,
-                                transitionDelay: `${delay + (i * 10)}ms`
+                                transitionDelay: `${delay + (i * 5)}ms`
                             }}
                         />
                     );
@@ -191,17 +213,44 @@ function ChartBar({
 
 function StatCard({
     value,
+    suffix = '',
     label,
     isVisible,
     delay,
     highlight = false,
 }: {
     value: string;
+    suffix?: string;
     label: string;
     isVisible: boolean;
     delay: number;
     highlight?: boolean;
 }) {
+    // Basic CountUp internal hook for StatCard
+    const [count, setCount] = useState(0);
+    useEffect(() => {
+        if (!isVisible) return;
+        const end = parseInt(value, 10);
+        if (isNaN(end)) return;
+
+        const duration = 1000;
+        let startTimestamp: number | null = null;
+        const step = (timestamp: number) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            setCount(Math.floor(progress * end));
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                setCount(end);
+            }
+        };
+        const timer = setTimeout(() => {
+            window.requestAnimationFrame(step);
+        }, delay);
+        return () => clearTimeout(timer);
+    }, [isVisible, value, delay]);
+
     return (
         <div
             className={cn(
@@ -223,9 +272,29 @@ function StatCard({
                     ? "text-accent-teal group-hover:text-accent-teal"
                     : "text-fg-porcelain group-hover:text-accent-violet"
             )}>
-                {value}
+                {count}{suffix}
             </div>
             <div className="text-[10px] text-fg-muted tracking-widest mt-1 opacity-60">{label}</div>
         </div>
     );
+}
+
+function CountUp({ end, suffix = '', duration = 800, isVisible }: { end: number, suffix?: string, duration?: number, isVisible: boolean }) {
+    const [count, setCount] = useState(0);
+    useEffect(() => {
+        if (!isVisible) return;
+        let startTimestamp: number | null = null;
+        const step = (timestamp: number) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            setCount(Math.floor(progress * end));
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                setCount(end);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }, [end, duration, isVisible]);
+    return <>{count}{suffix}</>;
 }

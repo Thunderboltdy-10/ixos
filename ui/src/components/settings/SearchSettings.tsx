@@ -18,8 +18,8 @@ interface CacheStats {
 }
 
 interface ModelStatus {
-  ixosFlashV2Available: boolean;
-  ixosFlashV2Path: string | null;
+  ixosFlashV1Available: boolean;
+  ixosFlashV1Path: string | null;
   ixosProV1Available: boolean;
   ixosProV1Path: string | null;
   anyAvailable: boolean;
@@ -169,7 +169,7 @@ export function SearchSettings() {
           <option value="potion">Potion 8M (recommended)</option>
           <option value="ixos-flash-v4-int8-512">Ixos Flash v4 (quality)</option>
           <option value="ixos-flash-v4-int8-192">Ixos Flash v4 Fast</option>
-          <option value="ixos-flash-v2">Ixos Flash v2 (legacy)</option>
+          <option value="ixos-flash-v1">Ixos Flash v1 (legacy)</option>
           <option value="ixos-pro-v1">Ixos Pro v1 (legacy)</option>
           <option value="qwen">Ixos Embedder v1 (Qwen)</option>
         </select>
@@ -453,8 +453,8 @@ function ModelManagementPanel() {
   }
 
   const models = [
-    { id: 'ixos-flash-v2', label: 'Ixos Flash', available: status?.ixosFlashV2Available },
-    { id: 'ixos-pro-v1', label: 'Ixos Pro', available: status?.ixosProV1Available },
+    { id: 'ixos-flash-v1', label: 'Ixos Flash V1', available: status?.ixosFlashV1Available },
+    { id: 'ixos-pro-v1', label: 'Ixos Pro V1', available: status?.ixosProV1Available },
   ];
 
   return (

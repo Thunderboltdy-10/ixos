@@ -73,8 +73,8 @@ pub enum CliModelType {
     Potion,
     /// Qwen-distilled: Experimental, potentially better quality (~5-10MB)
     Qwen,
-    /// Ixos-Flash-v2: Distilled flash model (fast)
-    IxosFlashV2,
+    /// Ixos-Flash-v1: Distilled flash model (fast)
+    IxosFlashV1,
     /// Ixos-Flash-v4: Distilled flash model (512d, quality-leaning)
     IxosFlashV4,
     /// Ixos-Flash-v4-fast: Distilled flash model (192d, speed-leaning)
@@ -88,7 +88,7 @@ impl From<CliModelType> for crate::ixos_embed::ModelType {
         match model {
             CliModelType::Potion => crate::ixos_embed::ModelType::Potion,
             CliModelType::Qwen => crate::ixos_embed::ModelType::Qwen,
-            CliModelType::IxosFlashV2 => crate::ixos_embed::ModelType::IxosFlashV2,
+            CliModelType::IxosFlashV1 => crate::ixos_embed::ModelType::IxosFlashV1,
             CliModelType::IxosFlashV4 => crate::ixos_embed::ModelType::IxosFlashV4,
             CliModelType::IxosFlashV4Fast => crate::ixos_embed::ModelType::IxosFlashV4Fast,
             CliModelType::IxosProV1 => crate::ixos_embed::ModelType::IxosProV1,

@@ -82,17 +82,15 @@ export function ResultCard({
   const { handleMouseEnter, handleMouseLeave } = usePrefetch();
 
   // Color mapping based on mode
-  const accentColor = {
-    jit: 'text-accent-amber border-l-accent-amber shadow-[inset_0_1px_0_rgba(246,185,76,0.1)]',
-    cache: 'text-accent-teal border-l-accent-teal shadow-[inset_0_1px_0_rgba(20,184,166,0.1)]',
-    journalist: 'text-accent-violet border-l-accent-violet shadow-[inset_0_1px_0_rgba(167,139,250,0.1)]'
+  const modeColors = {
+    jit: { accent: '#F6B94C', bg: 'rgba(246, 185, 76, 0.08)' },
+    cache: { accent: '#14B8A6', bg: 'rgba(20, 184, 166, 0.08)' },
+    journalist: { accent: '#A78BFA', bg: 'rgba(167, 139, 250, 0.08)' },
   };
 
-  const selectedClass = isSelected
-    ? `bg-graphite-3 border-l-2 ${accentColor[mode]}`
-    : 'hover:bg-graphite-3/50';
+  const selectedClass = isSelected ? 'bg-graphite-3' : '';
 
-  const iconColor = isSelected
+  const iconColorClass = isSelected
     ? (mode === 'jit' ? 'text-accent-amber' : mode === 'journalist' ? 'text-accent-violet' : 'text-accent-teal')
     : 'text-fg-dim';
 
@@ -143,22 +141,31 @@ export function ResultCard({
     }
   };
 
+  // Hover classes - apply to all items
+  const hoverClass = cn(
+    mode === 'jit' && 'hover:bg-accent-amber/5 hover:shadow-[0_0_25px_rgba(246,185,76,0.15)]',
+    mode === 'cache' && 'hover:bg-accent-teal/5 hover:shadow-[0_0_25px_rgba(20,184,166,0.15)]',
+    mode === 'journalist' && 'hover:bg-accent-violet/5 hover:shadow-[0_0_25px_rgba(167,139,250,0.15)]',
+  );
+
   return (
     <div
       ref={cardRef}
       className={cn(
-        'px-5 py-4 cursor-pointer transition-all duration-200 relative overflow-hidden group',
-        mode === 'jit' && 'hover:bg-accent-amber/5 hover:border-accent-amber hover:shadow-[0_0_25px_rgba(246,185,76,0.15)]',
-        mode === 'cache' && 'hover:bg-accent-teal/5 hover:border-accent-teal hover:shadow-[0_0_25px_rgba(20,184,166,0.15)]',
-        mode === 'journalist' && 'hover:bg-accent-violet/5 hover:border-accent-violet hover:shadow-[0_0_25px_rgba(167,139,250,0.15)]',
+        'px-5 py-4 cursor-pointer transition-all duration-300 relative overflow-hidden group',
+        'bg-graphite-1/40',
+        hoverClass,
         selectedClass,
         'no-drag'
       )}
       style={{
+        borderRadius: '8px',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        borderLeft: isSelected ? `3px solid ${modeColors[mode].accent}` : '1px solid rgba(255, 255, 255, 0.08)',
         opacity: animatedOpacity,
         visibility: animatedOpacity > 0 ? 'visible' : 'hidden',
         // @ts-ignore - Custom CSS variable for highlight color
-        '--highlight-color': mode === 'jit' ? '#F6B94C' : mode === 'journalist' ? '#A78BFA' : '#14B8A6',
+        '--highlight-color': modeColors[mode].accent,
       }}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
@@ -183,7 +190,7 @@ export function ResultCard({
 
         <FileIcon className={cn(
           'w-4 h-4 flex-shrink-0 transition-colors',
-          iconColor
+          iconColorClass
         )} />
 
         <div className="flex-1 min-w-0">
@@ -316,7 +323,10 @@ export function ResultCard({
                   if (preferSemanticPassage) {
                     return (
                       <div className="space-y-2">
-                        <div className="text-sm text-fg-muted bg-graphite-2/30 border border-stroke-hairline/50 rounded-md px-3 py-2 font-mono whitespace-pre-wrap leading-relaxed">
+                        <div
+                          className="text-sm text-fg-muted bg-graphite-2/30 px-3 py-2 font-mono whitespace-pre-wrap leading-relaxed"
+                          style={{ borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+                        >
                           <div className="text-2xs text-accent-teal uppercase tracking-widest mb-1.5 font-semibold">Semantic Match</div>
                           {evidence!.semanticPassage}
                         </div>
@@ -340,7 +350,10 @@ export function ResultCard({
 
                   if (evidence?.semanticPassage) {
                     return (
-                      <div className="text-sm text-fg-muted bg-graphite-2/30 border border-stroke-hairline/50 rounded-md px-3 py-2 font-mono whitespace-pre-wrap leading-relaxed">
+                      <div
+                        className="text-sm text-fg-muted bg-graphite-2/30 px-3 py-2 font-mono whitespace-pre-wrap leading-relaxed"
+                        style={{ borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+                      >
                         {evidence.semanticPassage}
                       </div>
                     );
@@ -351,7 +364,10 @@ export function ResultCard({
               </div>
 
               {!isRankedResult && 'snippet' in result && result.snippet && (
-                <div className="p-3 bg-graphite-0 rounded-md mb-4">
+                <div
+                  className="p-3 bg-graphite-0 mb-4"
+                  style={{ borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+                >
                   <p className="text-sm text-fg-muted font-mono">{result.snippet}</p>
                 </div>
               )}

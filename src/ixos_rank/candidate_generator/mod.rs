@@ -151,12 +151,20 @@ impl CandidateGenerator {
     }
 
     /// Build or rebuild the path index
+    ///
+    /// P5 optimization: Also updates RipgrepFunnel with the file list
+    /// to skip redundant directory walking during search.
     pub fn build_index(&mut self) {
         let start = Instant::now();
         let _span = directory_walk_span(&self.root_dir);
         let _enter = _span.enter();
         let index = PathIndex::build_from_walk(&self.root_dir, &self.config.path_config);
         self.last_index_build_ms = start.elapsed().as_millis() as u64;
+
+        // P5 optimization: Share file list with ripgrep funnel
+        let file_paths = index.get_file_paths();
+        self.ripgrep.set_cached_file_list(file_paths);
+
         self.path_index = Some(index);
     }
 

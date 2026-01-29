@@ -50,7 +50,7 @@
       "icons/icon.ico"
     ],
     "resources": [
-      "../models/ixos-flash-v2/*",
+      "../models/ixos-flash-v1/*",
       "../models/ixos-pro-v1/*"
     ],
     "windows": {

@@ -465,10 +465,10 @@ pub async fn search_progressive(
     use ixos_protocol::ixos_embed::ModelType;
     use ixos_protocol::SecureEmbedder;
 
-    let model_type_str = options.model_type.as_deref().unwrap_or("ixos-flash-v2");
+    let model_type_str = options.model_type.as_deref().unwrap_or("ixos-flash-v1");
     let model_type = model_type_str
         .parse::<ModelType>()
-        .unwrap_or(ModelType::IxosFlashV2);
+        .unwrap_or(ModelType::IxosFlashV1);
 
     let pro_model_type_str = options.pro_model_type.as_deref().unwrap_or("potion");
     let pro_model_type = pro_model_type_str
@@ -511,6 +511,18 @@ pub async fn search_progressive(
         let lexical = CandidateLexicalEngine::new(dir_path.clone());
 
         // Create semantic engine with pre-loaded model
+        let (subdir, repo_id, files) = match model_type {
+        ModelType::IxosFlashV1 => (
+            "ixos-flash-v1",
+            "Thunderboltdy10/Ixos-Flash",
+            vec!["config.json", "model.safetensors", "tokenizer.json"]
+        ),
+            _ => (
+                "default",
+                "default_repo",
+                vec!["default_file"]
+            )
+        };
         let mut semantic = match model_result {
             Ok(model) => {
                 tracing::info!(

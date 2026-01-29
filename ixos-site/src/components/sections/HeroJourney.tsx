@@ -260,7 +260,7 @@ export function HeroJourney() {
                     </div>
                 </div>
             </div>
-        </section>
+        </section >
     );
 }
 

@@ -3,6 +3,7 @@
 import { useRef, useEffect, useCallback } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { cn } from "@/lib/utils";
 import { ScribbleStrike } from "@/components/effects/ScribbleStrike";
 
 // Register ScrollTrigger
@@ -58,20 +59,20 @@ export function HowItWorks() {
     }, [activatePipelineNode]);
 
     return (
-        <section ref={containerRef} id="how-it-works" className="relative py-32 w-full max-w-6xl mx-auto px-6 section-how">
+        <section ref={containerRef} id="how-it-works" className="relative py-32 container mx-auto px-6 section-how">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 relative">
 
                 {/* Sticky Pipeline Diagram (Left) */}
-                <div className="hidden lg:block lg:col-span-4 relative">
-                    <div className="sticky top-32 space-y-10 p-10 bg-bg-graphite-2 backdrop-blur-sm border border-stroke-hairline rounded-3xl shadow-lift">
-                        <h2 className="text-4xl font-semibold mb-10 text-fg-porcelain">How it works</h2>
+                <div className="hidden lg:block lg:col-span-5 relative">
+                    <div className="sticky top-32 space-y-8 p-8 bg-bg-graphite-2 backdrop-blur-sm border border-stroke-hairline rounded-2xl shadow-lift">
+                        <h2 className="text-3xl font-semibold mb-8 text-fg-porcelain">How it works</h2>
 
                         <div className="relative space-y-12 pl-8 border-l-2 border-stroke-hairline">
                             {['Type Naturally', 'On-Demand AI', 'Local Search', 'Auto Cleanup', 'Stream Results'].map((label, i) => (
-                                <div key={i} className="pipeline-node relative flex items-center gap-6 p-8 rounded-2xl bg-bg-elevated border border-white/5 transition-all duration-300 opacity-50">
-                                    <div className="absolute -left-[60px] w-8 h-8 rounded-full bg-bg-primary border-[5px] border-bg-elevated ring-2 ring-white/10 z-10" />
-                                    <span className="font-mono text-xl text-accent-teal">0{i + 1}</span>
-                                    <span className="font-bold text-2xl">{label}</span>
+                                <div key={i} className="pipeline-node relative flex items-center gap-4 p-4 rounded-lg bg-bg-elevated border border-white/5 transition-all duration-300 opacity-50">
+                                    <div className="absolute -left-[41px] w-5 h-5 rounded-full bg-bg-primary border-4 border-bg-elevated ring-2 ring-white/10 z-10" />
+                                    <span className="font-mono text-sm text-accent-teal">0{i + 1}</span>
+                                    <span className="font-medium">{label}</span>
                                 </div>
                             ))}
                         </div>
@@ -80,7 +81,7 @@ export function HowItWorks() {
                 </div>
 
                 {/* Scrolling Steps (Right) */}
-                <div className="lg:col-span-8 space-y-32 pt-12 lg:pt-0">
+                <div className="lg:col-span-7 space-y-32 pt-12 lg:pt-0">
 
                     <div className="how-step group">
                         <div className="text-accent-teal font-mono mb-4 text-xl">01</div>

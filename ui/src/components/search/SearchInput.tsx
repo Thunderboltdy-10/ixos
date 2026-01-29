@@ -15,6 +15,7 @@ import type { SearchMode as QualityMode } from '@/lib/types';
 import { invoke } from '@tauri-apps/api/core';
 import { SearchBar } from '@ixos/ui';
 
+
 interface SearchInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -46,7 +47,10 @@ export function SearchInput({
 }: SearchInputProps) {
   const { config, updateConfig } = useSettingsStore();
   const getSuggestions = useStarredStore((s) => s.getSuggestions);
+  const getThreadById = useStarredStore((s) => s.getThreadById);
   const hasSearchIntent = useSearchStore((s) => s.hasSearchIntent);
+  const restoreFromHistory = useSearchStore((s) => s.restoreFromHistory);
+  const searchPhase = useSearchStore((s) => s.phase);
   const setSearchBarBox = useLayoutStore((s) => s.setSearchBarBox);
 
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -57,7 +61,7 @@ export function SearchInput({
   const searchBarRef = useRef<HTMLDivElement>(null);
   const preloadedModels = useRef(new Set<ModelType>());
 
-  const modelType = (config?.search?.modelType || 'ixos-flash-v2') as ModelType;
+  const modelType = (config?.search?.modelType || 'ixos-flash-v1') as ModelType;
   const proModelType = (config?.search?.proModelType || 'potion') as ModelType;
   const qualityMode = (config?.search?.searchMode || 'auto') as QualityMode;
 
@@ -155,16 +159,25 @@ export function SearchInput({
   }, [config, modelType, proModelType, qualityMode, safeInvoke]);
 
   // Fetch suggestions when value changes
+  // Show suggestions when:
+  // - User is typing (value.length >= 1)
+  // - Not currently searching
+  // - Either idle OR typing a different query than what's currently showing results
+  const activeQuery = useSearchStore((s) => s.activeQuery);
+
   useEffect(() => {
-    if (value.length >= 1 && !isSearching) {
-      setSuggestions(getSuggestions(value));
-      setShowSuggestions(true);
+    const isTypingNewQuery = value.trim().toLowerCase() !== (activeQuery || '').toLowerCase();
+    const canShowSuggestions = value.length >= 1 && !isSearching && (searchPhase === 'idle' || isTypingNewQuery);
+
+    if (canShowSuggestions) {
+      const fetchedSuggestions = getSuggestions(value);
+      setSuggestions(fetchedSuggestions);
+      setShowSuggestions(fetchedSuggestions.length > 0);
       setSelectedIndex(-1);
     } else {
-      setSuggestions([]);
       setShowSuggestions(false);
     }
-  }, [value, isSearching, getSuggestions]);
+  }, [value, getSuggestions, searchPhase, isSearching, activeQuery]);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -177,14 +190,22 @@ export function SearchInput({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Handle suggestion selection
+  // Handle suggestion selection - restore cached results from history
   const handleSuggestionSelect = useCallback((suggestion: HistorySuggestion) => {
-    onChange(suggestion.query);
-    onDirectoryChange(suggestion.directory);
+    // Get the full thread from history to restore cached results
+    const thread = getThreadById(suggestion.id);
+    if (thread) {
+      // Restore from history without re-searching
+      restoreFromHistory(thread);
+    } else {
+      // Fallback: just set query and directory (will need to search again)
+      onChange(suggestion.query);
+      onDirectoryChange(suggestion.directory);
+    }
     setShowSuggestions(false);
     setSuggestions([]);
     inputRef.current?.focus();
-  }, [onChange, onDirectoryChange]);
+  }, [onChange, onDirectoryChange, getThreadById, restoreFromHistory]);
 
   // Keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {

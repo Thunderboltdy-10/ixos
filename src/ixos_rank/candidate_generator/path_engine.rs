@@ -398,6 +398,14 @@ impl PathIndex {
             .find(|e| e.path == path)
             .map(|e| &e.metadata)
     }
+
+    /// Get all indexed file paths (P5 optimization)
+    ///
+    /// Returns a vector of all file paths in the index.
+    /// Useful for passing to RipgrepFunnel to skip directory walking.
+    pub fn get_file_paths(&self) -> Vec<PathBuf> {
+        self.entries.iter().map(|e| e.path.clone()).collect()
+    }
 }
 
 #[cfg(test)]

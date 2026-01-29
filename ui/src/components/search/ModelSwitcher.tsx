@@ -14,8 +14,8 @@ interface ModelSwitcherProps {
 }
 
 interface ModelStatus {
-    ixosFlashV2Available: boolean;
-    ixosFlashV2Path: string | null;
+    ixosFlashV1Available: boolean;
+    ixosFlashV1Path: string | null;
     ixosProV1Available: boolean;
     ixosProV1Path: string | null;
     anyAvailable: boolean;
@@ -143,13 +143,13 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
                 else {
                     // Mock status for browser testing
                     setStatus({
-                        ixosFlashV2Available: true,
-                        ixosFlashV2Path: 'mock/path',
+                        ixosFlashV1Available: true,
+                        ixosFlashV1Path: 'mock/path',
                         ixosProV1Available: true,
                         ixosProV1Path: 'mock/path',
                         anyAvailable: true,
-                        recommended: 'ixos-flash-v2',
-                        loadedModel: 'ixos-flash-v2',
+                        recommended: 'ixos-flash-v1',
+                        loadedModel: 'ixos-flash-v1',
                     });
                 }
             } catch (err) {
@@ -167,9 +167,9 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
             switch (value) {
                 case 'ixos-pro-v1':
                     return status.ixosProV1Available;
-                case 'ixos-flash-v2':
+                case 'ixos-flash-v1':
                 default:
-                    return status.ixosFlashV2Available;
+                    return status.ixosFlashV1Available;
             }
         })();
         if (!isAvailable) return;
@@ -188,11 +188,11 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
 
     const models: ModelOption[] = [
         {
-            id: 'ixos-flash-v2',
-            label: 'Ixos Flash',
+            id: 'ixos-flash-v1',
+            label: 'Ixos Flash V1',
             description: 'Fast, efficient model for mostly standard searches',
-            available: status?.ixosFlashV2Available ?? false,
-            recommended: status?.recommended === 'ixos-flash-v2',
+            available: status?.ixosFlashV1Available ?? false,
+            recommended: status?.recommended === 'ixos-flash-v1',
             icon: Beaker,
             color: 'text-accent-teal'
         },

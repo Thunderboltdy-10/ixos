@@ -106,7 +106,7 @@ This audit reproduced baselines, profiled bottlenecks, fixed documentation incon
 
 ### To use Fast mode (default):
 ```rust
-let model = MmapModel2VecEmbedder::new_with_type(ModelType::IxosFlashV2)?;
+let model = MmapModel2VecEmbedder::new_with_type(ModelType::IxosFlashV1)?;
 let config = ProgressiveSearchConfig::default(); // search_mode: Auto
 ```
 

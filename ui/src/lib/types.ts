@@ -104,6 +104,16 @@ export interface TagObject {
 
 export type EvidenceTag = string | TagObject;
 
+export interface ModelStatus {
+  ixosFlashV1Available: boolean;
+  ixosFlashV1Path: string | null;
+  ixosProV1Available: boolean;
+  ixosProV1Path: string | null;
+  anyAvailable: boolean;
+  recommended: string | null;
+  loadedModel: string | null;
+}
+
 export interface Evidence {
   tags: EvidenceTag[];
   explanation?: string | null;
@@ -145,7 +155,7 @@ export interface IxosConfig {
 export type ModelType =
   | 'potion'
   | 'qwen'
-  | 'ixos-flash-v2'
+  | 'ixos-flash-v1'
   | 'ixos-flash-v4-int8-512'
   | 'ixos-flash-v4-int8-192'
   | 'ixos-pro-v1';

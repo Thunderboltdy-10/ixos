@@ -16,6 +16,7 @@ use ixos_protocol::ixos_rank::{
 };
 use ixos_protocol::optimization::SystemSpecs;
 use ixos_protocol::SecureEmbedder;
+use serde::Serialize;
 
 #[derive(Clone, Copy, Debug, Default, ValueEnum)]
 enum ProfileCacheMode {
@@ -24,13 +25,13 @@ enum ProfileCacheMode {
     Cache,
 }
 
-#[derive(Clone, Copy, Debug, ValueEnum)]
+#[derive(Clone, Copy, Debug, Default, ValueEnum)]
 enum ProfileModelType {
     Stub,
     #[default]
     Potion,
     Qwen,
-    IxosFlashV2,
+    IxosFlashV1,
     IxosFlashV4,
     IxosFlashV4Fast,
     IxosProV1,
@@ -184,8 +185,8 @@ async fn main() -> anyhow::Result<()> {
         ProfileModelType::Qwen => {
             load_model_semantic(ixos_protocol::ixos_embed::ModelType::Qwen, cache_mode)?
         }
-        ProfileModelType::IxosFlashV2 => load_model_semantic(
-            ixos_protocol::ixos_embed::ModelType::IxosFlashV2,
+        ProfileModelType::IxosFlashV1 => load_model_semantic(
+            ixos_protocol::ixos_embed::ModelType::IxosFlashV1,
             cache_mode,
         )?,
         ProfileModelType::IxosFlashV4 => load_model_semantic(

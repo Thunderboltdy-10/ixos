@@ -7,6 +7,7 @@ import { getDeviceLabel } from '@/lib/device';
 import { loadEntitlementToken, storeEntitlementToken } from '@/lib/authToken';
 import { invoke } from '@tauri-apps/api/core';
 import ixosIcon from '@/assets/ixos-icon.png';
+import { SectionDivider } from "@/components/ui/SectionDivider";
 
 interface AuthGateProps {
   children: React.ReactNode;
@@ -64,7 +65,7 @@ class AuthErrorBoundary extends Component<{ children: ReactNode; onReset: () => 
   }
 }
 
-// import { SectionDivider } from "@/components/ui/SectionDivider";
+
 
 // ... (imports remain the same)
 
@@ -123,15 +124,14 @@ const signUpAppearance: Appearance = {
 
 function AuthScreen() {
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in');
+  console.log('AuthScreen rendering', { mode });
 
   return (
     <div className="min-h-screen bg-graphite-0 flex flex-col items-center justify-center px-6">
 
       {/* Section Divider */}
-      <div className="w-full max-w-2xl mb-8 flex items-center gap-4">
-        <div className="h-px bg-white/10 flex-1" />
-        <span className="text-xs uppercase tracking-widest text-fg-muted font-mono">AUTHENTICATION</span>
-        <div className="h-px bg-white/10 flex-1" />
+      <div className="w-full max-w-2xl mb-4">
+        <SectionDivider label="DOWNLOAD_MODULE" accent="amber" />
       </div>
 
       <div className="w-full max-w-md">
@@ -162,7 +162,7 @@ function AuthScreen() {
           <button
             type="button"
             onClick={() => setMode('sign-in')}
-            className={`flex-1 py-3 rounded-sm text-xs uppercase tracking-[0.15em] font-bold transition-all font-mono ${mode === 'sign-in'
+            className={`flex-1 py-3 rounded-sm text-xs uppercase tracking-[0.15em] font-bold transition-all font-mono flex items-center justify-center ${mode === 'sign-in'
               ? 'bg-[#1A1A1E] text-accent-teal shadow-sm border border-white/5'
               : 'text-fg-muted hover:text-porcelain hover:bg-white/5'
               }`}
@@ -172,7 +172,7 @@ function AuthScreen() {
           <button
             type="button"
             onClick={() => setMode('sign-up')}
-            className={`flex-1 py-3 rounded-sm text-xs uppercase tracking-[0.15em] font-bold transition-all font-mono ${mode === 'sign-up'
+            className={`flex-1 py-3 rounded-sm text-xs uppercase tracking-[0.15em] font-bold transition-all font-mono flex items-center justify-center ${mode === 'sign-up'
               ? 'bg-[#1A1A1E] text-accent-magenta shadow-sm border border-white/5'
               : 'text-fg-muted hover:text-porcelain hover:bg-white/5'
               }`}
@@ -547,8 +547,8 @@ interface ModelStatus {
   potionPath: string | null;
   qwenAvailable: boolean;
   qwenPath: string | null;
-  ixosFlashV2Available: boolean;
-  ixosFlashV2Path: string | null;
+  ixosFlashV1Available: boolean;
+  ixosFlashV1Path: string | null;
   ixosFlashV4Available: boolean;
   ixosFlashV4Path: string | null;
   ixosFlashV4FastAvailable: boolean;
@@ -569,7 +569,7 @@ function ModelWarningPopup({ onDismiss }: { onDismiss: () => void }) {
     setDownloadError(null);
     try {
       // Default to recommended model
-      await invoke('download_model', { modelType: 'ixos-flash-v2', hfToken: localStorage.getItem('ix_hf_token') || null });
+      await invoke('download_model', { modelType: 'ixos-flash-v1', hfToken: localStorage.getItem('ix_hf_token') || null });
       // Notify success/refresh (page reload or just dismiss effectively)
       onDismiss();
       // Optional: force reload state? The app checks status periodically or we can rely on reload

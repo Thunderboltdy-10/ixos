@@ -17,7 +17,7 @@ Positioning: The Pro tier that blends multiple signals to surface the most relev
 
 Technical explanation: Pro Prism fuses Flash embeddings, Potion embeddings, and lexical match ratios with learned weights (flash=0.2697, pro=0.2672, lexical=0.4631, dir=0.0). It runs only when Pro is selected or Auto routing triggers refinement, delivering a large MRR gain while keeping latency close to Flash on CPU.
 
-## Flash Core (ixos-flash-v2)
+## Flash Core (ixos-flash-v1)
 Positioning: The stable baseline Flash tier with tuned relevance and predictable latency.
 
 Technical explanation: Flash Core is a float16 Model2Vec distilled embedder at 512 dimensions. It remains the current default flash model and serves as the baseline for quality comparisons in the lab leaderboard.

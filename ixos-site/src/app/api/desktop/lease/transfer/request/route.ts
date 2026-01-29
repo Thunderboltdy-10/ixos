@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { and, desc, eq, gt } from "drizzle-orm";
 import crypto from "crypto";
-import { db, devices, leases, leaseTransfers } from "@/lib/db";
+import { db, devices, leases, leaseTransfers, trustedDevices } from "@/lib/db";
 import {
   getActivePlanForUser,
   getClerkUserIdFromRequest,
@@ -10,6 +10,8 @@ import {
 import { getResend, getResendFromAddress } from "@/lib/email/resend";
 import React from "react";
 import { DeviceTransferEmail } from "@/lib/email/templates/device-transfer";
+
+const LEASE_DURATION_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
 const bodySchema = z.object({
   deviceId: z.string().min(8),
@@ -59,6 +61,40 @@ export async function POST(req: Request) {
     return Response.json({
       ok: true,
       message: "Device already active",
+    });
+  }
+
+  // Check if device is trusted (previously approved via email)
+  const isTrusted = await db.query.trustedDevices.findFirst({
+    where: and(
+      eq(trustedDevices.userId, userRecord.id),
+      eq(trustedDevices.deviceId, targetDevice.id)
+    ),
+  });
+
+  if (isTrusted) {
+    // Trusted device: skip email, directly switch lease
+    // Revoke existing lease
+    if (activeLease) {
+      await db
+        .update(leases)
+        .set({ status: "revoked", revokedAt: now })
+        .where(eq(leases.id, activeLease.id));
+    }
+
+    // Create new lease on trusted device
+    await db.insert(leases).values({
+      userId: userRecord.id,
+      deviceId: targetDevice.id,
+      status: "active",
+      issuedAt: now,
+      expiresAt: new Date(Date.now() + LEASE_DURATION_MS),
+    });
+
+    return Response.json({
+      ok: true,
+      instant: true,
+      message: "Switched to trusted device instantly",
     });
   }
 

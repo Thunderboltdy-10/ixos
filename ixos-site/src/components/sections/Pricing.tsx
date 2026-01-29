@@ -51,7 +51,6 @@ export function Pricing() {
 
     useEffect(() => {
         let cancelled = false;
-        let intervalId: NodeJS.Timeout;
 
         async function loadSubscription() {
             if (!isLoaded || !isSignedIn || hasDesktopContext) {
@@ -60,7 +59,6 @@ export function Pricing() {
             }
             if (!cancelled) setIsLoadingSubscription(true);
             try {
-
                 const res = await fetch("/api/account/subscription", {
                     method: "GET",
                 });
@@ -81,14 +79,20 @@ export function Pricing() {
 
         loadSubscription();
 
-        // POLL: Check every 5s if we are waiting for a purchase to clear
-        if (isSignedIn && !hasDesktopContext) {
-            intervalId = setInterval(loadSubscription, 5000);
-        }
+        // Use visibility-based refresh instead of polling (reduces API load significantly)
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible' && isSignedIn && !hasDesktopContext) {
+                loadSubscription();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleVisibilityChange);
 
         return () => {
             cancelled = true;
-            if (intervalId) clearInterval(intervalId);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleVisibilityChange);
         };
     }, [isLoaded, isSignedIn, hasDesktopContext]);
 

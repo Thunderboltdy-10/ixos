@@ -4,6 +4,7 @@
 //! Uses BM25-inspired scoring for relevance ranking.
 
 use super::scorer::{CandidateSource, ScoredCandidate};
+use ignore::WalkBuilder;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -64,6 +65,8 @@ pub struct PathIndexConfig {
     pub follow_symlinks: bool,
     /// Skip hidden files/directories
     pub skip_hidden: bool,
+    /// Whether to respect .gitignore files
+    pub respect_gitignore: bool,
 }
 
 impl Default for PathIndexConfig {
@@ -84,6 +87,7 @@ impl Default for PathIndexConfig {
             max_file_size: 100 * 1024 * 1024, // 100MB
             follow_symlinks: false,
             skip_hidden: true,
+            respect_gitignore: true, // Respect .gitignore by default for privacy
         }
     }
 }
@@ -120,73 +124,78 @@ impl PathIndex {
         }
     }
 
-    /// Recursive path collection with filtering
+    /// Path collection with filtering using WalkBuilder (respects .gitignore)
     fn collect_paths(dir: &Path, entries: &mut Vec<PathEntry>, config: &PathIndexConfig) {
-        let read_dir = match std::fs::read_dir(dir) {
-            Ok(rd) => rd,
-            Err(_) => return,
-        };
+        // Use WalkBuilder for proper .gitignore support (consistent with ripgrep_funnel.rs)
+        let mut builder = WalkBuilder::new(dir);
+        builder
+            .hidden(!config.skip_hidden) // WalkBuilder's hidden() is inverted (true = show hidden)
+            .git_ignore(config.respect_gitignore)
+            .git_global(config.respect_gitignore)
+            .git_exclude(config.respect_gitignore)
+            .follow_links(config.follow_symlinks)
+            .max_filesize(Some(config.max_file_size));
 
-        for entry in read_dir.flatten() {
+        // Also respect .gitignore files even in non-git directories
+        if config.respect_gitignore {
+            builder.add_custom_ignore_filename(".gitignore");
+        }
+
+        let walker = builder.build();
+
+        for result in walker {
+            let entry = match result {
+                Ok(e) => e,
+                Err(_) => continue,
+            };
+
             let path = entry.path();
 
-            // Skip hidden files if configured
-            if config.skip_hidden {
-                if let Some(name) = path.file_name() {
-                    if name.to_string_lossy().starts_with('.') {
-                        continue;
-                    }
-                }
+            // Skip directories
+            if path.is_dir() {
+                continue;
             }
 
-            if path.is_dir() {
-                // Skip symlinks if not following
-                if !config.follow_symlinks
-                    && path
-                        .symlink_metadata()
-                        .map(|m| m.file_type().is_symlink())
-                        .unwrap_or(false)
+            // Must be a file
+            if !path.is_file() {
+                continue;
+            }
+
+            // Check extension filter
+            if let Some(ext) = path.extension() {
+                let ext_lower = ext.to_string_lossy().to_lowercase();
+
+                // Skip excluded extensions
+                if config.exclude_extensions.contains(&ext_lower) {
+                    continue;
+                }
+
+                // Check included extensions if list is not empty
+                if !config.include_extensions.is_empty()
+                    && !config.include_extensions.contains(&ext_lower)
                 {
                     continue;
                 }
-                Self::collect_paths(&path, entries, config);
-            } else if path.is_file() {
-                // Check extension filter
-                if let Some(ext) = path.extension() {
-                    let ext_lower = ext.to_string_lossy().to_lowercase();
-
-                    // Skip excluded extensions
-                    if config.exclude_extensions.contains(&ext_lower) {
-                        continue;
-                    }
-
-                    // Check included extensions if list is not empty
-                    if !config.include_extensions.is_empty()
-                        && !config.include_extensions.contains(&ext_lower)
-                    {
-                        continue;
-                    }
-                }
-
-                // Get metadata
-                let metadata = entry
-                    .metadata()
-                    .ok()
-                    .map(|m| PathMetadata {
-                        mtime: m.modified().unwrap_or(SystemTime::UNIX_EPOCH),
-                        size_bytes: m.len(),
-                    })
-                    .unwrap_or_default();
-
-                // Skip files that are too large
-                if metadata.size_bytes > config.max_file_size {
+            } else {
+                // No extension - skip if include list is specified
+                if !config.include_extensions.is_empty() {
                     continue;
                 }
-
-                // Tokenize the path
-                let path_entry = Self::create_entry(path, metadata);
-                entries.push(path_entry);
             }
+
+            // Get metadata
+            let metadata = entry
+                .metadata()
+                .ok()
+                .map(|m| PathMetadata {
+                    mtime: m.modified().unwrap_or(SystemTime::UNIX_EPOCH),
+                    size_bytes: m.len(),
+                })
+                .unwrap_or_default();
+
+            // Tokenize the path and add to entries
+            let path_entry = Self::create_entry(path.to_path_buf(), metadata);
+            entries.push(path_entry);
         }
     }
 
@@ -484,5 +493,49 @@ mod tests {
 
         let results = index.score("", 10);
         assert!(results.is_empty());
+    }
+
+    #[test]
+    fn test_respects_gitignore() {
+        let temp = TempDir::new().unwrap();
+        let root = temp.path();
+
+        // Create test structure
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::write(root.join("src/main.rs"), "fn main() {}").unwrap();
+        std::fs::write(root.join("src/secret.rs"), "// secret code").unwrap();
+        std::fs::write(root.join("public.txt"), "public content").unwrap();
+
+        // Create .gitignore that excludes secret.rs
+        std::fs::write(root.join(".gitignore"), "src/secret.rs\n").unwrap();
+
+        // Test with gitignore enabled (default)
+        let config = PathIndexConfig::default();
+        let index = PathIndex::build_from_walk(root, &config);
+
+        // Should not find secret.rs
+        let paths: Vec<String> = index
+            .entries
+            .iter()
+            .map(|e| e.path.to_string_lossy().to_string())
+            .collect();
+
+        assert!(!paths.iter().any(|p| p.contains("secret.rs")), "secret.rs should be excluded by .gitignore");
+        assert!(paths.iter().any(|p| p.contains("main.rs")), "main.rs should be included");
+        assert!(paths.iter().any(|p| p.contains("public.txt")), "public.txt should be included");
+
+        // Test with gitignore disabled
+        let mut config_no_gitignore = PathIndexConfig::default();
+        config_no_gitignore.respect_gitignore = false;
+        let index_no_gitignore = PathIndex::build_from_walk(root, &config_no_gitignore);
+
+        let paths_no_gitignore: Vec<String> = index_no_gitignore
+            .entries
+            .iter()
+            .map(|e| e.path.to_string_lossy().to_string())
+            .collect();
+
+        // With gitignore disabled, secret.rs should be found
+        assert!(paths_no_gitignore.iter().any(|p| p.contains("secret.rs")), "secret.rs should be included when gitignore is disabled");
     }
 }

@@ -86,9 +86,9 @@ pub fn run() {
             commands::system::get_default_search_directory,
             commands::system::select_directory,
             commands::system::get_model_status,
-            commands::system::get_model_status,
             commands::system::preload_model,
             commands::system::download_model,
+            commands::system::check_and_download_models,
             // Storage
             commands::storage::write_encrypted_file,
             commands::storage::read_encrypted_file,

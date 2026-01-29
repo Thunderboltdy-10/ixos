@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useClerk } from "@clerk/nextjs";
+import { useClerk, useAuth } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { FadeInView } from "@/components/effects/FadeInView";
@@ -26,6 +26,7 @@ interface AccountDashboardProps {
     deviceLabel: string;
     lastSeenAt: string | null;
     isActive: boolean;
+    isTrusted?: boolean;
   }[];
   isPro: boolean;
   portalUrl: string | null;
@@ -40,7 +41,12 @@ export function AccountDashboard({
 }: AccountDashboardProps) {
   const router = useRouter();
   const { signOut, openUserProfile } = useClerk();
+  const { getToken } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [deviceActionLoading, setDeviceActionLoading] = useState<string | null>(null);
+  const [showConfirmForget, setShowConfirmForget] = useState<string | null>(null);
+  const [showConfirmDelete, setShowConfirmDelete] = useState<string | null>(null);
+  const [showConfirmForgetAll, setShowConfirmForgetAll] = useState(false);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -52,6 +58,63 @@ export function AccountDashboard({
       setIsSigningOut(false);
     }
   };
+
+  const handleForgetDevice = useCallback(async (deviceId: string) => {
+    setDeviceActionLoading(deviceId);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/desktop/devices/${deviceId}/forget`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Failed to forget device:", error);
+    } finally {
+      setDeviceActionLoading(null);
+      setShowConfirmForget(null);
+    }
+  }, [getToken, router]);
+
+  const handleDeleteDevice = useCallback(async (deviceId: string) => {
+    setDeviceActionLoading(deviceId);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/desktop/devices/${deviceId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Failed to delete device:", error);
+    } finally {
+      setDeviceActionLoading(null);
+      setShowConfirmDelete(null);
+    }
+  }, [getToken, router]);
+
+  const handleForgetAllDevices = useCallback(async () => {
+    setDeviceActionLoading("all");
+    try {
+      const token = await getToken();
+      const res = await fetch("/api/desktop/devices/trusted", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Failed to forget all devices:", error);
+    } finally {
+      setDeviceActionLoading(null);
+      setShowConfirmForgetAll(false);
+    }
+  }, [getToken, router]);
 
   // Auto-refresh on return (Intent-based)
   useEffect(() => {
@@ -304,6 +367,11 @@ export function AccountDashboard({
                               ACTIVE
                             </span>
                           )}
+                          {device.isTrusted && (
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-accent-amber/20 text-accent-amber">
+                              TRUSTED
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-fg-dim font-mono mt-1">
                           {device.deviceId.slice(0, 8)}...
@@ -313,6 +381,59 @@ export function AccountDashboard({
                         {formatRelativeTime(device.lastSeenAt)}
                       </span>
                     </div>
+                    {/* Device actions */}
+                    <div className="flex gap-3 mt-2 pt-2 border-t border-white/5">
+                      {showConfirmForget === device.deviceId ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-fg-dim">Forget?</span>
+                          <button
+                            onClick={() => handleForgetDevice(device.deviceId)}
+                            disabled={deviceActionLoading === device.deviceId}
+                            className="text-xs text-accent-amber hover:text-accent-amber/80 disabled:opacity-50"
+                          >
+                            {deviceActionLoading === device.deviceId ? "..." : "Yes"}
+                          </button>
+                          <button
+                            onClick={() => setShowConfirmForget(null)}
+                            className="text-xs text-fg-dim hover:text-porcelain"
+                          >
+                            No
+                          </button>
+                        </div>
+                      ) : showConfirmDelete === device.deviceId ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-fg-dim">Remove?</span>
+                          <button
+                            onClick={() => handleDeleteDevice(device.deviceId)}
+                            disabled={deviceActionLoading === device.deviceId}
+                            className="text-xs text-red-400 hover:text-red-300 disabled:opacity-50"
+                          >
+                            {deviceActionLoading === device.deviceId ? "..." : "Yes"}
+                          </button>
+                          <button
+                            onClick={() => setShowConfirmDelete(null)}
+                            className="text-xs text-fg-dim hover:text-porcelain"
+                          >
+                            No
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => setShowConfirmForget(device.deviceId)}
+                            className="text-xs text-fg-dim hover:text-accent-amber transition-colors"
+                          >
+                            Forget
+                          </button>
+                          <button
+                            onClick={() => setShowConfirmDelete(device.deviceId)}
+                            className="text-xs text-fg-dim hover:text-red-400 transition-colors"
+                          >
+                            Remove
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -320,10 +441,36 @@ export function AccountDashboard({
 
             {isPro && devices.length > 0 && (
               <div className="mt-4 pt-4 border-t border-stroke-hairline">
-                <p className="text-xs text-fg-dim">
-                  Pro license is active on one device at a time. Transfer via the desktop
-                  app.
-                </p>
+                <div className="flex justify-between items-center">
+                  <p className="text-xs text-fg-dim">
+                    Pro license is active on one device at a time.
+                  </p>
+                  {showConfirmForgetAll ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-fg-dim">Forget all?</span>
+                      <button
+                        onClick={handleForgetAllDevices}
+                        disabled={deviceActionLoading === "all"}
+                        className="text-xs text-accent-amber hover:text-accent-amber/80 disabled:opacity-50"
+                      >
+                        {deviceActionLoading === "all" ? "..." : "Yes"}
+                      </button>
+                      <button
+                        onClick={() => setShowConfirmForgetAll(false)}
+                        className="text-xs text-fg-dim hover:text-porcelain"
+                      >
+                        No
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setShowConfirmForgetAll(true)}
+                      className="text-xs text-fg-dim hover:text-accent-amber transition-colors"
+                    >
+                      Forget All Devices
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>

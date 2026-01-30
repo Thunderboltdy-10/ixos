@@ -49,13 +49,14 @@ jobs:
       - name: install UI dependencies with platform-specific native modules
         working-directory: ui
         run: |
-          npm ci --prefer-offline --no-audit --include=optional
+          npm install --no-audit --include=optional
 
       - name: build UI
         working-directory: ui
         run: npm run build
 
       - name: verify built assets
+        shell: bash
         run: |
           if [ ! -d "ui/dist" ]; then
             echo "ERROR: UI build failed - dist directory not found"

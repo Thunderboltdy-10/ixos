@@ -1,4 +1,4 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, or } from "drizzle-orm";
 import { db, leases, leaseTransfers, trustedDevices } from "@/lib/db";
 import { normalizeTransferCode } from "@/lib/transferCode";
 
@@ -11,7 +11,7 @@ async function handleApprove(rawToken: string | null) {
 
   const token = normalizeTransferCode(rawToken);
   const transfer = await db.query.leaseTransfers.findFirst({
-    where: eq(leaseTransfers.token, token),
+    where: or(eq(leaseTransfers.token, token), eq(leaseTransfers.token, rawToken)),
   });
   if (!transfer) {
     return new Response("Transfer request not found", { status: 404 });

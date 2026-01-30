@@ -199,6 +199,8 @@ fn find_best_match_line(lines: &[&str], query_terms: &[&str]) -> (usize, usize) 
     (best_idx, best_score)
 }
 
+use regex::RegexBuilder;
+
 /// Highlight query terms in text with ANSI colors
 ///
 /// # Arguments
@@ -213,34 +215,38 @@ pub fn highlight_terms(text: &str, terms: &[&str], use_color: bool) -> String {
         return text.to_string();
     }
 
-    let mut result = text.to_string();
+    // Escape terms to be safe for regex
+    let escaped_terms: Vec<String> = terms.iter().map(|t| regex::escape(t)).collect();
+    let pattern = escaped_terms.join("|");
 
-    // Sort terms by length (longest first) to avoid partial replacements
-    let mut sorted_terms: Vec<&str> = terms.to_vec();
-    sorted_terms.sort_by(|a, b| b.len().cmp(&a.len()));
+    let re = match RegexBuilder::new(&pattern)
+        .case_insensitive(true)
+        .build()
+    {
+        Ok(re) => re,
+        Err(_) => return text.to_string(),
+    };
 
-    for term in sorted_terms {
-        // Case-insensitive replacement with highlighting
-        let term_lower = term.to_lowercase();
-        let mut new_result = String::new();
-        let mut last_end = 0;
-        let result_lower = result.to_lowercase();
+    let mut result = String::new();
+    let mut last_end = 0;
 
-        for (start, _) in result_lower.match_indices(&term_lower) {
-            // Add text before match
-            new_result.push_str(&result[last_end..start]);
-            // Add highlighted match (preserving original case)
-            new_result.push_str(colors::HIGHLIGHT);
-            new_result.push_str(&result[start..start + term.len()]);
-            new_result.push_str(colors::RESET);
-            last_end = start + term.len();
-        }
+    for mat in re.find_iter(text) {
+        let start = mat.start();
+        let end = mat.end();
 
-        // Add remaining text
-        new_result.push_str(&result[last_end..]);
-        result = new_result;
+        // Append text before match
+        result.push_str(&text[last_end..start]);
+
+        // Append highlighted match
+        result.push_str(colors::HIGHLIGHT);
+        result.push_str(&text[start..end]);
+        result.push_str(colors::RESET);
+
+        last_end = end;
     }
 
+    // Append remaining text
+    result.push_str(&text[last_end..]);
     result
 }
 

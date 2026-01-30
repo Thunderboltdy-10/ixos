@@ -56,7 +56,35 @@ export async function POST(req: Request) {
   }
 
   if (transfer.status !== "pending") {
-    return new Response("Transfer already processed", { status: 200 });
+    // If approved and matching this device, try to return current active lease
+    if (transfer.status === "approved" && transfer.toDeviceId === device.id) {
+      const activeLease = await db.query.leases.findFirst({
+        where: and(
+          eq(leases.userId, userRecord.id),
+          eq(leases.deviceId, device.id),
+          eq(leases.status, "active")
+        ),
+      });
+
+      if (activeLease) {
+        const tokenJwt = await issueEntitlementToken({
+          clerkUserId,
+          deviceId,
+          plan,
+          features: [],
+        });
+        return Response.json({
+          plan,
+          lease: {
+            status: "active",
+            expiresAt: activeLease.expiresAt.toISOString(),
+          },
+          token: tokenJwt,
+        });
+      }
+    }
+
+    return Response.json({ message: "Transfer already processed" }, { status: 200 });
   }
 
   if (transfer.expiresAt && transfer.expiresAt.getTime() < Date.now()) {

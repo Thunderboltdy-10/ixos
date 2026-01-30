@@ -1,13 +1,15 @@
 import { eq, and } from "drizzle-orm";
 import { db, leases, leaseTransfers, trustedDevices } from "@/lib/db";
+import { normalizeTransferCode } from "@/lib/transferCode";
 
 const LEASE_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
 
-async function handleApprove(token: string | null) {
-  if (!token) {
+async function handleApprove(rawToken: string | null) {
+  if (!rawToken) {
     return new Response("Missing token", { status: 400 });
   }
 
+  const token = normalizeTransferCode(rawToken);
   const transfer = await db.query.leaseTransfers.findFirst({
     where: eq(leaseTransfers.token, token),
   });
@@ -56,7 +58,7 @@ async function handleApprove(token: string | null) {
     .where(eq(leaseTransfers.id, transfer.id));
 
   return new Response(
-    "Transfer approved. You can reopen Ixos and refresh your entitlement.",
+    "Transfer approved. Enter the code in Ixos to activate instantly, or reopen the app.",
     { status: 200 }
   );
 }
@@ -64,12 +66,13 @@ async function handleApprove(token: string | null) {
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
-  return handleApprove(token);
+  const code = url.searchParams.get("code");
+  return handleApprove(code ?? token);
 }
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
-  const token = body?.token ?? null;
+  const token = body?.token ?? body?.code ?? null;
   return handleApprove(token);
 }
 

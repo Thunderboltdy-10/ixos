@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { db, leases, trustedDevices } from "@/lib/db";
+import { db, leases, leaseTransfers, trustedDevices } from "@/lib/db";
 import { getClerkUserIdFromRequest, getOrCreateUserByClerkId } from "@/lib/controlPlane";
 
 export async function POST(req: Request) {
@@ -19,6 +19,16 @@ export async function POST(req: Request) {
   await db
     .delete(trustedDevices)
     .where(eq(trustedDevices.userId, userRecord.id));
+
+  await db
+    .update(leaseTransfers)
+    .set({ status: "cancelled", expiresAt: now })
+    .where(
+      and(
+        eq(leaseTransfers.userId, userRecord.id),
+        eq(leaseTransfers.status, "pending")
+      )
+    );
 
   return Response.json({ ok: true });
 }

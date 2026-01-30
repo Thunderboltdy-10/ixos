@@ -55,6 +55,10 @@ interface AuthState {
   claimLease: (authToken: string, deviceId: string) => Promise<{ token?: string | null }>;
   refreshLease: (authToken: string, deviceId: string) => Promise<{ token?: string | null }>;
   requestTransfer: (authToken: string, deviceId: string, transferToken?: string) => Promise<void>;
+  confirmTransfer: (authToken: string, deviceId: string, code: string) => Promise<{ token?: string | null }>;
+  logoutDevice: (authToken: string, deviceId: string) => Promise<void>;
+  forgetDevice: (authToken: string, deviceId: string) => Promise<void>;
+  logoutAllDevices: (authToken: string) => Promise<void>;
   fetchDevices: (authToken: string) => Promise<DeviceInfo[]>;
   fetchBillingPortal: (authToken: string) => Promise<{ portalUrl: string | null }>;
 
@@ -222,6 +226,71 @@ export const useAuthStore = create<AuthState>((set) => ({
       const text = await res.text();
       set({ isLoading: false, error: text || 'Transfer request failed' });
       throw new Error(text || 'Transfer request failed');
+    }
+    set({ isLoading: false });
+  },
+
+  confirmTransfer: async (authToken, deviceId, code) => {
+    set({ isLoading: true, error: null });
+    const res = await apiRequest('/api/desktop/lease/transfer/confirm', authToken, {
+      method: 'POST',
+      body: JSON.stringify({ deviceId, code }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      set({ isLoading: false, error: text || 'Transfer confirmation failed' });
+      throw new Error(text || 'Transfer confirmation failed');
+    }
+    const data = await res.json();
+    if (data?.plan && data?.lease) {
+      set({
+        entitlement: { ...data, ui: { showUpgrade: data.plan !== 'pro' } },
+        isLoading: false,
+        transferRequired: false,
+        transferToken: null,
+        activeDeviceId: null,
+      });
+    } else {
+      set({ isLoading: false });
+    }
+    return { token: data?.token ?? null };
+  },
+
+  logoutDevice: async (authToken, deviceId) => {
+    set({ isLoading: true, error: null });
+    const res = await apiRequest(`/api/desktop/devices/${encodeURIComponent(deviceId)}/logout`, authToken, {
+      method: 'POST',
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      set({ isLoading: false, error: text || 'Device logout failed' });
+      throw new Error(text || 'Device logout failed');
+    }
+    set({ isLoading: false });
+  },
+
+  forgetDevice: async (authToken, deviceId) => {
+    set({ isLoading: true, error: null });
+    const res = await apiRequest(`/api/desktop/devices/${encodeURIComponent(deviceId)}/forget`, authToken, {
+      method: 'POST',
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      set({ isLoading: false, error: text || 'Forget device failed' });
+      throw new Error(text || 'Forget device failed');
+    }
+    set({ isLoading: false });
+  },
+
+  logoutAllDevices: async (authToken) => {
+    set({ isLoading: true, error: null });
+    const res = await apiRequest('/api/desktop/devices/logout-all', authToken, {
+      method: 'POST',
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      set({ isLoading: false, error: text || 'Logout all devices failed' });
+      throw new Error(text || 'Logout all devices failed');
     }
     set({ isLoading: false });
   },

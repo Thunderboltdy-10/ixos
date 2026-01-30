@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { and, eq, gt } from "drizzle-orm";
-import crypto from "crypto";
 import { db, devices, leases } from "@/lib/db";
 import {
   getActivePlanForUser,
@@ -8,6 +7,7 @@ import {
   getOrCreateUserByClerkId,
   issueEntitlementToken,
 } from "@/lib/controlPlane";
+import { generateTransferCode } from "@/lib/transferCode";
 
 const bodySchema = z.object({
   deviceId: z.string().min(8),
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     return Response.json({
       conflict: true,
       activeDeviceId: activeLease.deviceId,
-      transferToken: crypto.randomUUID(),
+      transferToken: generateTransferCode(),
     }, { status: 409 });
   }
 

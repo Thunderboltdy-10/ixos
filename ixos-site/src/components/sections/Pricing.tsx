@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { SectionDivider } from "@/components/ui/SectionDivider";
 import { SignedIn, SignedOut, useAuth, useUser } from "@clerk/nextjs";
 
 import { FadeInView } from "@/components/effects/FadeInView";
@@ -132,8 +131,6 @@ export function Pricing() {
 
     return (
         <div className="relative">
-            <SectionDivider accent="magenta" label="LICENSING_MODULE" />
-
             <div className="py-24 container mx-auto px-6">
                 <div className="text-center max-w-2xl mx-auto mb-16">
                     <FadeInView direction="up">

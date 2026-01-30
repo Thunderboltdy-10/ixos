@@ -172,10 +172,7 @@ export function HeroJourney() {
                                         data-trace-color="amber"
                                         asChild
                                     >
-                                        <Link href="/download">Download</Link>
-                                    </Button>
-                                    <Button variant="secondary" size="lg" className="border-white/10 hover:bg-white/5">
-                                        Watch Demo
+                                        <Link href="/sign-up">Get Started</Link>
                                     </Button>
                                 </div>
                             </div>

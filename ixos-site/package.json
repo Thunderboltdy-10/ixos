@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.7.0",
+    "nodemailer": "^6.9.16",
     "@neondatabase/serverless": "^0.9.5",
     "@studio-freight/lenis": "^1.0.42",
     "class-variance-authority": "^0.7.1",
@@ -23,7 +24,6 @@
     "next": "16.1.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "resend": "^3.5.0",
     "svix": "^1.33.0",
     "tailwind-merge": "^3.4.0",
     "zod": "^3.23.8"
@@ -31,6 +31,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^6.4.17",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^16.6.1",

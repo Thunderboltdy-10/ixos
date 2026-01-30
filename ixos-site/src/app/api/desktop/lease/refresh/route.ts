@@ -1,14 +1,14 @@
 import { z } from "zod";
 import { and, eq, gt } from "drizzle-orm";
 import crypto from "crypto";
-import { db, devices, leases, leaseTransfers } from "@/lib/db";
+import { db, devices, leases, leaseTransfers, trustedDevices } from "@/lib/db";
 import {
   getActivePlanForUser,
   getClerkUserIdFromRequest,
   getOrCreateUserByClerkId,
   issueEntitlementToken,
 } from "@/lib/controlPlane";
-import { getResend, getResendFromAddress } from "@/lib/email/resend";
+import { sendEmail } from "@/lib/email/gmail";
 import React from "react";
 import { DeviceTransferEmail } from "@/lib/email/templates/device-transfer";
 
@@ -50,6 +50,49 @@ export async function POST(req: Request) {
       gt(leases.expiresAt, now)
     ),
   });
+
+  // Trusted device auto-switch (skip email approval)
+  if (plan === "pro" && activeLease && activeLease.deviceId !== device.id) {
+    const trustedDevice = await db.query.trustedDevices.findFirst({
+      where: and(
+        eq(trustedDevices.userId, userRecord.id),
+        eq(trustedDevices.deviceId, device.id)
+      ),
+    });
+
+    if (trustedDevice) {
+      await db
+        .update(leases)
+        .set({ status: "revoked", revokedAt: now })
+        .where(eq(leases.id, activeLease.id));
+
+      const newExpiresAt = new Date(Date.now() + LEASE_DURATION_MS);
+      await db.insert(leases).values({
+        userId: userRecord.id,
+        deviceId: device.id,
+        status: "active",
+        issuedAt: now,
+        expiresAt: newExpiresAt,
+      });
+
+      const token = await issueEntitlementToken({
+        clerkUserId,
+        deviceId,
+        plan,
+        features: [],
+      });
+
+      return Response.json({
+        plan,
+        lease: {
+          status: "active",
+          expiresAt: newExpiresAt.toISOString(),
+        },
+        token,
+        autoTransferred: true,
+      });
+    }
+  }
 
   // SMART MULTI-DEVICE DETECTION & TRANSFER FLOW
   if (plan === "pro" && activeLease && activeLease.deviceId !== device.id) {
@@ -96,25 +139,26 @@ export async function POST(req: Request) {
         process.env.IXOS_SUPPORT_REVOKE_URL ||
         "mailto:support@ixos.app?subject=Revoke%20Ixos%20devices";
 
-      const resend = getResend();
-      if (resend) {
+      if (userRecord.email) {
         const oldDevice = await db.query.devices.findFirst({
           where: eq(devices.id, activeLease.deviceId),
         });
 
-        const email = React.createElement(DeviceTransferEmail, {
-          approveUrl,
-          revokeUrl,
-          newDeviceLabel: device.deviceLabel,
-          currentDeviceLabel: oldDevice?.deviceLabel ?? null,
-          requestedAt: now.toISOString(),
-        });
+        const { renderToStaticMarkup } = await import("react-dom/server");
+        const htmlContent = renderToStaticMarkup(
+          React.createElement(DeviceTransferEmail, {
+            approveUrl,
+            revokeUrl,
+            newDeviceLabel: device.deviceLabel,
+            currentDeviceLabel: oldDevice?.deviceLabel ?? null,
+            requestedAt: now.toISOString(),
+          })
+        );
 
-        await resend.emails.send({
-          from: getResendFromAddress(),
+        await sendEmail({
           to: userRecord.email,
           subject: "Approve Ixos device transfer",
-          react: email,
+          html: htmlContent,
         });
       }
 

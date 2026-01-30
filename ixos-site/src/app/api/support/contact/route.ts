@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { sendEmail } from "@/lib/email/gmail";
+import React from "react";
+import { SupportContactEmail } from "@/lib/email/templates/support-contact";
 
 const bodySchema = z.object({
   name: z.string().min(1).max(120),
@@ -11,15 +13,6 @@ const bodySchema = z.object({
 function extractEmail(value: string) {
   const match = value.match(/<([^>]+)>/);
   return match ? match[1] : value;
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }
 
 export async function POST(req: Request) {
@@ -43,15 +36,17 @@ export async function POST(req: Request) {
     "unknown";
 
   try {
-    const htmlContent = [
-      `Name: ${escapeHtml(name)}`,
-      `Email: ${escapeHtml(email)}`,
-      `Topic: ${escapeHtml(topic ?? "General")}`,
-      `IP: ${escapeHtml(ip)}`,
-      `User Agent: ${escapeHtml(userAgent ?? "unknown")}`,
-      "",
-      escapeHtml(message),
-    ].join("<br/>");
+    const { renderToStaticMarkup } = await import("react-dom/server");
+    const htmlContent = renderToStaticMarkup(
+      React.createElement(SupportContactEmail, {
+        name,
+        email,
+        topic: topic ?? "General",
+        message,
+        ip,
+        userAgent: userAgent ?? "unknown",
+      })
+    );
 
     const result = await sendEmail({
       to: supportEmail,

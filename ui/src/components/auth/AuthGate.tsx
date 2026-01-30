@@ -232,17 +232,21 @@ function LoadingScreen({ message }: { message: string }) {
 function TransferScreen({
   onRequest,
   onSignOut,
-  onCancel,
+  onConfirm,
 }: {
   onRequest: () => Promise<void>;
   onSignOut: () => void;
-  onCancel: () => void;
+  onConfirm: (code: string) => Promise<void>;
 }) {
   const { deviceLabel } = useAuthStore();
   const [isRequesting, setIsRequesting] = useState(false);
   const [requested, setRequested] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
+  const [code, setCode] = useState('');
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -270,6 +274,22 @@ function TransferScreen({
     }
   };
 
+  const handleConfirm = async () => {
+    const trimmed = code.trim();
+    if (!trimmed) return;
+    setIsConfirming(true);
+    setConfirmError(null);
+    try {
+      await onConfirm(trimmed);
+      setConfirmed(true);
+    } catch (error) {
+      console.error('Transfer confirmation failed:', error);
+      setConfirmError(typeof error === 'string' ? error : 'Invalid or expired code');
+    } finally {
+      setIsConfirming(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-graphite-0 px-6">
       <div className="max-w-md w-full bg-graphite-1 border border-stroke-hairline rounded-2xl p-6 shadow-lift">
@@ -290,12 +310,24 @@ function TransferScreen({
           </div>
         )}
 
+        {confirmError && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-center">
+            <p className="text-xs text-red-400">{confirmError}</p>
+          </div>
+        )}
+
+        {confirmed && (
+          <div className="mb-4 p-3 bg-accent-teal/10 border border-accent-teal/20 rounded-lg text-center">
+            <p className="text-xs text-accent-teal">Transfer approved. Pro is active on this device.</p>
+          </div>
+        )}
+
         {requested ? (
           <div className="space-y-4">
             <div className="p-4 bg-accent-teal/10 border border-accent-teal/20 rounded-lg text-center">
-              <p className="text-sm text-accent-teal font-medium">Check your email!</p>
+              <p className="text-sm text-accent-teal font-medium">Code sent to your email</p>
               <p className="text-xs text-fg-muted mt-1">
-                We've sent a transfer approval link to your email.
+                Enter the one-time code below to activate instantly.
               </p>
             </div>
 
@@ -315,18 +347,29 @@ function TransferScreen({
             disabled={isRequesting}
             className="w-full py-3 rounded-lg bg-accent-magenta text-graphite-0 text-xs uppercase tracking-[0.2em] font-semibold disabled:opacity-60 disabled:cursor-not-allowed transition-opacity"
           >
-            {isRequesting ? 'Sending...' : 'Send approval email'}
+            {isRequesting ? 'Sending...' : 'Email me a code'}
           </button>
         )}
 
-        <div className="mt-6 pt-4 border-t border-white/10 space-y-2">
-          <button
-            onClick={onCancel}
-            className="w-full py-2 text-sm text-fg-muted hover:text-white"
-            type="button"
-          >
-            Continue without Pro features
-          </button>
+        <div className="mt-6 pt-4 border-t border-white/10 space-y-3">
+          <div className="space-y-2">
+            <label className="text-xs uppercase tracking-[0.2em] text-fg-muted">Approval code</label>
+            <input
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              placeholder="XXXX-XXXX"
+              className="w-full px-3 py-2 rounded-lg bg-graphite-2 border border-white/10 text-porcelain text-sm tracking-[0.2em] font-mono focus:outline-none focus:border-accent-magenta/60"
+            />
+            <button
+              type="button"
+              onClick={handleConfirm}
+              disabled={!code.trim() || isConfirming}
+              className="w-full py-2 rounded-lg bg-graphite-2 border border-white/10 text-xs uppercase tracking-[0.2em] font-semibold hover:border-accent-magenta/40 hover:text-white disabled:opacity-50"
+            >
+              {isConfirming ? 'Verifying...' : 'Activate now'}
+            </button>
+          </div>
+
           <button
             onClick={onSignOut}
             className="w-full py-2 text-sm text-accent-magenta hover:text-accent-magenta/80"
@@ -350,7 +393,7 @@ function AuthGateInner({ children }: AuthGateProps) {
     claimLease,
     refreshLease,
     fetchEntitlement,
-    setEntitlement,
+    confirmTransfer,
     requestTransfer,
     setEntitlementToken,
     transferRequired,
@@ -553,20 +596,21 @@ function AuthGateInner({ children }: AuthGateProps) {
           if (!deviceId) return;
           await requestTransfer(token, deviceId, transferToken ?? undefined);
         }}
-        onCancel={() => {
-          setEntitlement({
-            plan: "free",
-            features: [],
-            lease: { status: "none", expiresAt: null },
-            ui: { showUpgrade: true },
-          });
-          setEntitlementToken(null);
-          useAuthStore.setState({
-            transferRequired: false,
-            transferToken: null,
-            activeDeviceId: null,
-          });
-          invoke('clear_entitlement_token').catch(() => { });
+        onConfirm={async (code) => {
+          const token = await getToken();
+          if (!token) return;
+          const { deviceId } = useAuthStore.getState();
+          if (!deviceId) return;
+          const result = await confirmTransfer(token, deviceId, code);
+          if (result?.token) {
+            setEntitlementToken(result.token);
+            await storeEntitlementToken(result.token).catch(() => { });
+            try {
+              await invoke('set_entitlement_token', { token: result.token });
+            } catch {
+              // Ignore
+            }
+          }
         }}
         onSignOut={() => {
           signOut().catch(() => { });

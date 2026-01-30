@@ -40,6 +40,12 @@ export function SearchSuggestions({ isOpen, onSelect, selectedIndex, suggestions
     }
   };
 
+  const getFolderTail = (path: string) => {
+    const normalized = path.replace(/\\/g, '/');
+    const parts = normalized.split('/').filter(Boolean);
+    return parts.length ? parts[parts.length - 1] : path;
+  };
+
   return (
     <AnimatePresence>
       <motion.div
@@ -96,6 +102,9 @@ export function SearchSuggestions({ isOpen, onSelect, selectedIndex, suggestions
                   )}>
                     {getModeLabel(suggestion.mode)}
                   </span>
+                </div>
+                <div className="text-[11px] text-fg-muted mb-1">
+                  Folder: <span className="text-porcelain">{getFolderTail(suggestion.directory)}</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] text-fg-dim">
                   <FolderOpen className="w-3 h-3 shrink-0" />

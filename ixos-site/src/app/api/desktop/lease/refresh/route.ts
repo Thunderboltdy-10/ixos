@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { and, eq, gt } from "drizzle-orm";
-import crypto from "crypto";
 import { db, devices, leases, leaseTransfers, trustedDevices } from "@/lib/db";
 import {
   getActivePlanForUser,
@@ -11,6 +10,7 @@ import {
 import { sendEmail } from "@/lib/email/gmail";
 import React from "react";
 import { DeviceTransferEmail } from "@/lib/email/templates/device-transfer";
+import { formatTransferCode, generateTransferCode, normalizeTransferCode } from "@/lib/transferCode";
 
 const bodySchema = z.object({
   deviceId: z.string().min(8),
@@ -116,7 +116,9 @@ export async function POST(req: Request) {
         `[Lease] Auto-triggering device transfer for user ${clerkUserId}`
       );
 
-      const token = crypto.randomUUID();
+      const rawCode = generateTransferCode();
+      const token = normalizeTransferCode(rawCode);
+      const formattedCode = formatTransferCode(token);
       const transferExpiresAt = new Date(Date.now() + TRANSFER_TOKEN_TTL_MS);
 
       await db.insert(leaseTransfers).values({
@@ -134,7 +136,7 @@ export async function POST(req: Request) {
         process.env.IXOS_SITE_URL ||
         process.env.NEXT_PUBLIC_SITE_URL ||
         "http://localhost:3000";
-      const approveUrl = `${baseUrl}/api/desktop/lease/transfer/approve?token=${token}`;
+      const approveUrl = `${baseUrl}/api/desktop/lease/transfer/approve?code=${encodeURIComponent(formattedCode)}`;
       const revokeUrl =
         process.env.IXOS_SUPPORT_REVOKE_URL ||
         "mailto:support@ixos.app?subject=Revoke%20Ixos%20devices";
@@ -148,6 +150,7 @@ export async function POST(req: Request) {
         const htmlContent = renderToStaticMarkup(
           React.createElement(DeviceTransferEmail, {
             approveUrl,
+            approveCode: formattedCode,
             revokeUrl,
             newDeviceLabel: device.deviceLabel,
             currentDeviceLabel: oldDevice?.deviceLabel ?? null,
@@ -162,7 +165,7 @@ export async function POST(req: Request) {
         });
       }
 
-      return Response.json(
+          return Response.json(
         {
           conflict: true,
           activeDeviceId: activeLease.deviceId,

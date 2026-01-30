@@ -1,15 +1,40 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { useAuthStore } from '@/stores/authStore';
 import { PlanBadge } from '@/components/account/PlanBadge';
 import { openExternalUrl } from '@/lib/tauri';
 import { buildCheckoutUrl, getVariantId } from '@/lib/checkout';
+import { cn } from '@/lib/utils';
 
 const variantId = getVariantId();
 
 export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
-  const { user, entitlement, deviceLabel, devices, fetchDevices, fetchBillingPortal, refreshLease } = useAuthStore();
+  const {
+    user,
+    entitlement,
+    deviceLabel,
+    deviceId,
+    devices,
+    fetchDevices,
+    fetchBillingPortal,
+    refreshLease,
+    logoutDevice,
+    forgetDevice,
+    logoutAllDevices,
+  } = useAuthStore();
   const { getToken } = useAuth();
+  const [actionDeviceId, setActionDeviceId] = useState<string | null>(null);
+  const [logoutAllLoading, setLogoutAllLoading] = useState(false);
+
+  const currentDeviceId = deviceId ?? useAuthStore.getState().deviceId;
+
+  const sortedDevices = useMemo(() => {
+    return [...devices].sort((a, b) => {
+      if (a.deviceId === currentDeviceId) return -1;
+      if (b.deviceId === currentDeviceId) return 1;
+      return (b.updatedAt ?? '').localeCompare(a.updatedAt ?? '');
+    });
+  }, [devices, currentDeviceId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -108,6 +133,48 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
     }
   };
 
+  const handleLogoutDevice = async (targetDeviceId: string) => {
+    const token = await getToken();
+    if (!token) return;
+    setActionDeviceId(targetDeviceId);
+    try {
+      await logoutDevice(token, targetDeviceId);
+      await fetchDevices(token);
+    } catch (error) {
+      console.warn('Failed to logout device:', error);
+    } finally {
+      setActionDeviceId(null);
+    }
+  };
+
+  const handleForgetDevice = async (targetDeviceId: string) => {
+    const token = await getToken();
+    if (!token) return;
+    setActionDeviceId(targetDeviceId);
+    try {
+      await forgetDevice(token, targetDeviceId);
+      await fetchDevices(token);
+    } catch (error) {
+      console.warn('Failed to forget device:', error);
+    } finally {
+      setActionDeviceId(null);
+    }
+  };
+
+  const handleLogoutAll = async () => {
+    const token = await getToken();
+    if (!token) return;
+    setLogoutAllLoading(true);
+    try {
+      await logoutAllDevices(token);
+      await fetchDevices(token);
+    } catch (error) {
+      console.warn('Failed to logout all devices:', error);
+    } finally {
+      setLogoutAllLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
       <div className="flex items-center justify-between">
@@ -140,21 +207,84 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
       </div>
 
       <div className="bg-graphite-2/55 rounded-xl p-6 border border-stroke-hairline">
-        <h3 className="text-sm font-semibold text-porcelain mb-3">Registered Devices</h3>
-        {devices.length === 0 ? (
-          <p className="text-xs text-fg-secondary">No devices registered yet.</p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-base font-semibold text-porcelain">Registered Devices</h3>
+            <p className="text-xs text-fg-secondary mt-1">Manage active sessions and trusted devices.</p>
+          </div>
+        </div>
+        {sortedDevices.length === 0 ? (
+          <p className="text-sm text-fg-secondary">No devices registered yet.</p>
         ) : (
-          <div className="space-y-2 text-xs">
-            {devices.map((device) => (
-              <div key={device.id} className="flex items-center justify-between">
-                <div className="text-porcelain">{device.deviceLabel}</div>
-                <div className="text-fg-secondary">
-                  {device.lastSeenAt ? new Date(device.lastSeenAt).toLocaleString() : 'â€”'}
+          <div className="space-y-3">
+            {sortedDevices.map((device) => {
+              const isCurrent = device.deviceId === currentDeviceId;
+              return (
+                <div key={device.id} className="rounded-lg border border-white/5 bg-graphite-2/40 px-4 py-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <div className="text-porcelain text-sm font-medium truncate">
+                          {device.deviceLabel}
+                        </div>
+                        {isCurrent && (
+                          <span className="text-[10px] uppercase tracking-[0.2em] px-2 py-0.5 rounded-full bg-accent-teal/15 text-accent-teal border border-accent-teal/30">
+                            Current
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-fg-secondary mt-1">
+                        Last seen: {device.lastSeenAt ? new Date(device.lastSeenAt).toLocaleString() : '—'}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleLogoutDevice(device.deviceId)}
+                        disabled={actionDeviceId === device.deviceId}
+                        className={cn(
+                          "px-3 py-1.5 text-xs uppercase tracking-[0.18em] rounded-md border",
+                          "border-white/10 text-fg-muted hover:text-white hover:border-white/30 transition-colors",
+                          actionDeviceId === device.deviceId && "opacity-60 cursor-not-allowed"
+                        )}
+                      >
+                        Log out
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleForgetDevice(device.deviceId)}
+                        disabled={actionDeviceId === device.deviceId}
+                        className={cn(
+                          "px-3 py-1.5 text-xs uppercase tracking-[0.18em] rounded-md border",
+                          "border-accent-magenta/30 text-accent-magenta hover:border-accent-magenta/60 transition-colors",
+                          actionDeviceId === device.deviceId && "opacity-60 cursor-not-allowed"
+                        )}
+                      >
+                        Forget
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
+
+        <div className="mt-4 pt-4 border-t border-white/5">
+          <button
+            type="button"
+            onClick={handleLogoutAll}
+            disabled={logoutAllLoading}
+            className={cn(
+              "w-full px-4 py-2 rounded-md text-xs uppercase tracking-[0.2em] font-semibold",
+              "bg-error/10 text-error border border-error/30 hover:bg-error/20 transition-colors",
+              logoutAllLoading && "opacity-60 cursor-not-allowed"
+            )}
+          >
+            {logoutAllLoading ? 'Logging out...' : 'Log out all devices'}
+          </button>
+        </div>
       </div>
 
       <div className="flex justify-end">

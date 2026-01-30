@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { and, desc, eq, gt } from "drizzle-orm";
-import crypto from "crypto";
 import { db, devices, leases, leaseTransfers, trustedDevices } from "@/lib/db";
 import {
   getActivePlanForUser,
@@ -10,6 +9,7 @@ import {
 import { sendEmail } from "@/lib/email/gmail";
 import React from "react";
 import { DeviceTransferEmail } from "@/lib/email/templates/device-transfer";
+import { formatTransferCode, generateTransferCode, isValidTransferCode, normalizeTransferCode } from "@/lib/transferCode";
 
 const LEASE_DURATION_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
@@ -117,24 +117,47 @@ export async function POST(req: Request) {
     );
   }
 
-  const token = transferToken ?? crypto.randomUUID();
+  const normalizedTransferToken = transferToken ? normalizeTransferCode(transferToken) : "";
   const expiresAt = new Date(Date.now() + TRANSFER_TOKEN_TTL_MS);
+  let token = generateTransferCode();
 
-  await db.insert(leaseTransfers).values({
-    userId: userRecord.id,
-    fromDeviceId: activeLease?.deviceId ?? null,
-    toDeviceId: targetDevice.id,
-    token,
-    status: "pending",
-    requestedAt: now,
-    expiresAt,
+  if (isValidTransferCode(normalizedTransferToken)) {
+    const existingTransfer = await db.query.leaseTransfers.findFirst({
+      where: eq(leaseTransfers.token, normalizedTransferToken),
+    });
+
+    if (existingTransfer?.status === "pending" && existingTransfer.expiresAt > now) {
+      await db
+        .update(leaseTransfers)
+        .set({ requestedAt: now, expiresAt })
+        .where(eq(leaseTransfers.id, existingTransfer.id));
+      token = existingTransfer.token;
+    }
+  }
+
+  const formattedCode = formatTransferCode(token);
+
+  const existingTokenTransfer = await db.query.leaseTransfers.findFirst({
+    where: eq(leaseTransfers.token, token),
   });
+
+  if (!existingTokenTransfer) {
+    await db.insert(leaseTransfers).values({
+      userId: userRecord.id,
+      fromDeviceId: activeLease?.deviceId ?? null,
+      toDeviceId: targetDevice.id,
+      token,
+      status: "pending",
+      requestedAt: now,
+      expiresAt,
+    });
+  }
 
   const baseUrl =
     process.env.IXOS_SITE_URL ||
     process.env.NEXT_PUBLIC_SITE_URL ||
     "http://localhost:3000";
-  const approveUrl = `${baseUrl}/api/desktop/lease/transfer/approve?token=${token}`;
+  const approveUrl = `${baseUrl}/api/desktop/lease/transfer/approve?code=${encodeURIComponent(formattedCode)}`;
   const revokeUrl =
     process.env.IXOS_SUPPORT_REVOKE_URL ||
     "mailto:support@ixos.app?subject=Revoke%20Ixos%20devices";
@@ -152,6 +175,7 @@ export async function POST(req: Request) {
     const htmlContent = renderToStaticMarkup(
       React.createElement(DeviceTransferEmail, {
         approveUrl,
+        approveCode: formattedCode,
         revokeUrl,
         newDeviceLabel: targetDevice.deviceLabel,
         currentDeviceLabel,

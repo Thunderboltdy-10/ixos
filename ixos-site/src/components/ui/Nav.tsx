@@ -60,9 +60,6 @@ export function Nav() {
                     </nav>
 
                     <div className="hidden md:flex items-center gap-4">
-                        <Button variant="ghost" size="sm" asChild>
-                            <Link href="#demo">Watch Demo</Link>
-                        </Button>
                         <Button variant="primary" size="sm" hasParticleMagnet asChild>
                             <Link href="/download">Download</Link>
                         </Button>
@@ -113,7 +110,6 @@ export function Nav() {
                         <Link href="/pricing" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
                         <Link href="/docs" onClick={() => setIsMobileMenuOpen(false)}>Docs</Link>
                         <hr className="border-white/10" />
-                        <Link href="#demo" onClick={() => setIsMobileMenuOpen(false)}>Watch Demo</Link>
                         <Button variant="primary" size="lg" className="w-full" asChild>
                             <Link href="/download" onClick={() => setIsMobileMenuOpen(false)}>Download for Windows</Link>
                         </Button>

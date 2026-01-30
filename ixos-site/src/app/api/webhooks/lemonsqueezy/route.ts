@@ -6,7 +6,7 @@ import {
   normalizePlanFromProductName,
   normalizeSubscriptionStatus,
 } from "@/lib/controlPlane";
-import { getResend, getResendFromAddress } from "@/lib/email/resend";
+import { sendEmail } from "@/lib/email/gmail";
 import { PurchaseConfirmationEmail } from "@/lib/email/templates/purchase-confirmation";
 
 function normalizeSignature(signature: string) {
@@ -342,15 +342,12 @@ export async function POST(req: Request) {
 
     // Send welcome email for new subscriptions
     if (isNewSubscription && userRecord.email && eventName === "subscription_created") {
-      const resend = getResend();
-      if (resend) {
+      if (userRecord.email) {
         const siteUrl = process.env.IXOS_SITE_URL || "https://ixos.app";
         try {
-          await resend.emails.send({
-            from: getResendFromAddress(),
-            to: userEmail || userRecord.email,
-            subject: "Welcome to Ixos Pro!",
-            react: PurchaseConfirmationEmail({
+          const { renderToStaticMarkup } = await import("react-dom/server");
+          const htmlContent = renderToStaticMarkup(
+            PurchaseConfirmationEmail({
               planName: getAttrString("product_name") ?? "Ixos Pro",
               amount: "$7.99/mo",
               billingPeriod: "Monthly",
@@ -359,7 +356,13 @@ export async function POST(req: Request) {
               }),
               receiptUrl: customerPortalUrl,
               accountUrl: `${siteUrl}/account`,
-            }),
+            })
+          );
+
+          await sendEmail({
+            to: userEmail || userRecord.email,
+            subject: "Welcome to Ixos Pro!",
+            html: htmlContent,
           });
           console.log("Welcome email sent");
         } catch (emailError) {

@@ -229,7 +229,15 @@ function LoadingScreen({ message }: { message: string }) {
   );
 }
 
-function TransferScreen({ onRequest }: { onRequest: () => Promise<void> }) {
+function TransferScreen({
+  onRequest,
+  onSignOut,
+  onCancel,
+}: {
+  onRequest: () => Promise<void>;
+  onSignOut: () => void;
+  onCancel: () => void;
+}) {
   const { deviceLabel } = useAuthStore();
   const [isRequesting, setIsRequesting] = useState(false);
   const [requested, setRequested] = useState(false);
@@ -310,13 +318,30 @@ function TransferScreen({ onRequest }: { onRequest: () => Promise<void> }) {
             {isRequesting ? 'Sending...' : 'Send approval email'}
           </button>
         )}
+
+        <div className="mt-6 pt-4 border-t border-white/10 space-y-2">
+          <button
+            onClick={onCancel}
+            className="w-full py-2 text-sm text-fg-muted hover:text-white"
+            type="button"
+          >
+            Continue without Pro features
+          </button>
+          <button
+            onClick={onSignOut}
+            className="w-full py-2 text-sm text-accent-magenta hover:text-accent-magenta/80"
+            type="button"
+          >
+            Sign out / Use different account
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
 function AuthGateInner({ children }: AuthGateProps) {
-  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { isLoaded, isSignedIn, getToken, signOut } = useAuth();
   const { user } = useUser();
   const {
     setUser,
@@ -325,6 +350,7 @@ function AuthGateInner({ children }: AuthGateProps) {
     claimLease,
     refreshLease,
     fetchEntitlement,
+    setEntitlement,
     requestTransfer,
     setEntitlementToken,
     transferRequired,
@@ -526,6 +552,31 @@ function AuthGateInner({ children }: AuthGateProps) {
           const { deviceId } = useAuthStore.getState();
           if (!deviceId) return;
           await requestTransfer(token, deviceId, transferToken ?? undefined);
+        }}
+        onCancel={() => {
+          setEntitlement({
+            plan: "free",
+            features: [],
+            lease: { status: "none", expiresAt: null },
+            ui: { showUpgrade: true },
+          });
+          setEntitlementToken(null);
+          useAuthStore.setState({
+            transferRequired: false,
+            transferToken: null,
+            activeDeviceId: null,
+          });
+          invoke('clear_entitlement_token').catch(() => { });
+        }}
+        onSignOut={() => {
+          signOut().catch(() => { });
+          setEntitlementToken(null);
+          useAuthStore.setState({
+            transferRequired: false,
+            transferToken: null,
+            activeDeviceId: null,
+          });
+          invoke('clear_entitlement_token').catch(() => { });
         }}
       />
     );

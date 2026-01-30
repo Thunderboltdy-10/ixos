@@ -1,10 +1,13 @@
 import { Clock, Shield, AlertTriangle } from 'lucide-react';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useStarredStore } from '@/stores/starredStore';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
+import { invoke } from '@tauri-apps/api/core';
 
 export function PrivacySettings() {
   const { config, updateConfig } = useSettingsStore();
+  const clearAll = useStarredStore((s) => s.clearAll);
 
   if (!config) {
     return <div className="text-fg-dim">Loading...</div>;
@@ -62,6 +65,23 @@ export function PrivacySettings() {
           }
         />
       </SettingCard>
+
+      <div className="flex items-center justify-between bg-graphite-2 rounded-lg border border-stroke-hairline p-4">
+        <div>
+          <p className="text-sm font-medium text-porcelain">Search History</p>
+          <p className="text-xs text-fg-dim mt-1">Clear all saved search history on this device.</p>
+        </div>
+        <button
+          onClick={() => {
+            clearAll();
+            invoke('clear_history').catch(() => { });
+          }}
+          className="px-4 py-2 bg-error/10 text-error rounded-md"
+          type="button"
+        >
+          Clear All Search History
+        </button>
+      </div>
 
       {/* Privacy Notice */}
       <div className="bg-accent-amber/10 border border-accent-amber/20 rounded-lg p-4">

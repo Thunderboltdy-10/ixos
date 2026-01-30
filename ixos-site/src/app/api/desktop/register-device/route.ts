@@ -2,7 +2,7 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { db, devices } from "@/lib/db";
 import { getClerkUserIdFromRequest, getOrCreateUserByClerkId } from "@/lib/controlPlane";
-import { getResend, getResendFromAddress } from "@/lib/email/resend";
+import { sendEmail } from "@/lib/email/gmail";
 import { NewDeviceLoginEmail } from "@/lib/email/templates/new-device-login";
 
 const bodySchema = z.object({
@@ -68,22 +68,25 @@ export async function POST(req: Request) {
     .returning();
 
   // Send new device login notification email
-  const resend = getResend();
-  if (resend && userRecord.email) {
+  if (userRecord.email) {
     const siteUrl = process.env.IXOS_SITE_URL || "https://ixos.app";
     try {
-      await resend.emails.send({
-        from: getResendFromAddress(),
-        to: userRecord.email,
-        subject: "New device signed in to Ixos",
-        react: NewDeviceLoginEmail({
+      const { renderToStaticMarkup } = await import("react-dom/server");
+      const htmlContent = renderToStaticMarkup(
+        NewDeviceLoginEmail({
           deviceLabel,
           loginTime: new Date().toLocaleString("en-US", {
             dateStyle: "medium",
             timeStyle: "short",
           }),
           accountUrl: `${siteUrl}/account`,
-        }),
+        })
+      );
+
+      await sendEmail({
+        to: userRecord.email,
+        subject: "New device signed in to Ixos",
+        html: htmlContent,
       });
     } catch (error) {
       // Log but don't fail the request if email fails

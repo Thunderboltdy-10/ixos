@@ -7,7 +7,7 @@ import {
   getClerkUserIdFromRequest,
   getOrCreateUserByClerkId,
 } from "@/lib/controlPlane";
-import { getResend, getResendFromAddress } from "@/lib/email/resend";
+import { sendEmail } from "@/lib/email/gmail";
 import React from "react";
 import { DeviceTransferEmail } from "@/lib/email/templates/device-transfer";
 
@@ -139,8 +139,7 @@ export async function POST(req: Request) {
     process.env.IXOS_SUPPORT_REVOKE_URL ||
     "mailto:support@ixos.app?subject=Revoke%20Ixos%20devices";
 
-  const resend = getResend();
-  if (resend) {
+  if (userRecord.email) {
     let currentDeviceLabel: string | null = null;
     if (activeLease?.deviceId) {
       const activeDevice = await db.query.devices.findFirst({
@@ -149,19 +148,21 @@ export async function POST(req: Request) {
       currentDeviceLabel = activeDevice?.deviceLabel ?? null;
     }
 
-    const email = React.createElement(DeviceTransferEmail, {
-      approveUrl,
-      revokeUrl,
-      newDeviceLabel: targetDevice.deviceLabel,
-      currentDeviceLabel,
-      requestedAt: now.toISOString(),
-    });
+    const { renderToStaticMarkup } = await import("react-dom/server");
+    const htmlContent = renderToStaticMarkup(
+      React.createElement(DeviceTransferEmail, {
+        approveUrl,
+        revokeUrl,
+        newDeviceLabel: targetDevice.deviceLabel,
+        currentDeviceLabel,
+        requestedAt: now.toISOString(),
+      })
+    );
 
-    await resend.emails.send({
-      from: getResendFromAddress(),
+    await sendEmail({
       to: userRecord.email,
       subject: "Approve Ixos device transfer",
-      react: email,
+      html: htmlContent,
     });
   }
 

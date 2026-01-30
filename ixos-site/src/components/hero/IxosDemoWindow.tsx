@@ -139,16 +139,6 @@ export function IxosDemoWindow({ onInteract }: { onInteract?: () => void }) {
       {/* Floating "TRY ME" Note */}
 
 
-      {/* Window Controls */}
-      <div className="relative z-20 flex items-center justify-end px-4 py-3 gap-2 border-b border-white/5 bg-[#050507]/50 backdrop-blur-sm">
-        <div className="w-full absolute top-0 left-0 h-10 app-drag-region" />
-        <div className="flex gap-1.5 z-30">
-          <div className="w-3 h-3 rounded-full bg-white/10" />
-          <div className="w-3 h-3 rounded-full bg-white/10" />
-          <div className="w-3 h-3 rounded-full bg-white/10" />
-        </div>
-      </div>
-
       <div className="relative z-10 flex-1 flex flex-col items-center p-6 md:p-12 transition-all duration-300">
         <div
           className={cn(

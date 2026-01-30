@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getResend, getResendFromAddress } from "@/lib/email/resend";
+import { sendEmail } from "@/lib/email/gmail";
 
 const bodySchema = z.object({
   name: z.string().min(1).max(120),
@@ -13,6 +13,15 @@ function extractEmail(value: string) {
   return match ? match[1] : value;
 }
 
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export async function POST(req: Request) {
   const payload = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(payload);
@@ -21,15 +30,10 @@ export async function POST(req: Request) {
   }
 
   const { name, email, topic, message } = parsed.data;
-  const resend = getResend();
-  if (!resend) {
-    return new Response("Email service not configured", { status: 500 });
-  }
 
   const supportEmailRaw =
     process.env.IXOS_SUPPORT_EMAIL ||
-    process.env.RESEND_FROM_EMAIL ||
-    "support@ixos.app";
+    "Ixos Support <support@ixos.app>";
   const supportEmail = extractEmail(supportEmailRaw);
 
   const userAgent = req.headers.get("user-agent");
@@ -39,21 +43,26 @@ export async function POST(req: Request) {
     "unknown";
 
   try {
-    await resend.emails.send({
-      from: getResendFromAddress(),
+    const htmlContent = [
+      `Name: ${escapeHtml(name)}`,
+      `Email: ${escapeHtml(email)}`,
+      `Topic: ${escapeHtml(topic ?? "General")}`,
+      `IP: ${escapeHtml(ip)}`,
+      `User Agent: ${escapeHtml(userAgent ?? "unknown")}`,
+      "",
+      escapeHtml(message),
+    ].join("<br/>");
+
+    const result = await sendEmail({
       to: supportEmail,
-      replyTo: email,
+      replyTo: `${name} <${email}>`,
       subject: `[Ixos Support] ${topic ?? "General"} - ${name}`,
-      text: [
-        `Name: ${name}`,
-        `Email: ${email}`,
-        `Topic: ${topic ?? "General"}`,
-        `IP: ${ip}`,
-        `User Agent: ${userAgent ?? "unknown"}`,
-        "",
-        message,
-      ].join("\n"),
+      html: htmlContent,
     });
+
+    if (!result) {
+      return new Response("Email service not configured", { status: 500 });
+    }
   } catch (error) {
     console.error("Failed to send support email:", error);
     return new Response("Failed to send email", { status: 500 });

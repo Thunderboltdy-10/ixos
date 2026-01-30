@@ -23,7 +23,7 @@ export function SupportContactEmail({
       accent="amber"
       title="New support request"
       subtitle="A user just submitted a support message."
-      footer={<>{"Ixos Support Desk"}</>}
+      footer={<>Ixos Support Desk</>}
     >
       <div
         style={{

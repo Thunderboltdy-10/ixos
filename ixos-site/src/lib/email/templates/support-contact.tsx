@@ -1,4 +1,4 @@
-import * as React from "react";
+ï»¿import * as React from "react";
 import { EmailLayout } from "@/lib/email/templates/layout";
 
 type SupportContactEmailProps = {
@@ -68,7 +68,7 @@ export function SupportContactEmail({
       </div>
 
       <div style={{ fontSize: "12px", color: "#6B6B70" }}>
-        IP: {ip} · User Agent: {userAgent}
+        IP: {ip} - User Agent: {userAgent}
       </div>
     </EmailLayout>
   );

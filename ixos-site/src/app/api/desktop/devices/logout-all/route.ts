@@ -1,5 +1,4 @@
 import { and, eq } from "drizzle-orm";
-import { and, eq } from "drizzle-orm";
 import { db, leases, leaseTransfers, trustedDevices } from "@/lib/db";
 import { getClerkUserIdFromRequest, getOrCreateUserByClerkId } from "@/lib/controlPlane";
 

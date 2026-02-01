@@ -43,13 +43,12 @@ jobs:
           # Those targets are meant for build on CI correctly
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: install root dependencies
-        run: npm ci --prefer-offline --no-audit
-
-      - name: install UI dependencies with platform-specific native modules
-        working-directory: ui
+      - name: install dependencies
+        shell: bash
         run: |
-          npm install --no-audit --include=optional
+          rm -f package-lock.json
+          rm -rf node_modules
+          npm install
 
       - name: build UI
         working-directory: ui

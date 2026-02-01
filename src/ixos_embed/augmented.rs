@@ -215,7 +215,12 @@ pub fn build_augmented_text(path: &Path, content: &str, config: &AugmentationCon
     }
 
     let content_snippet = if content.len() > 500 {
-        &content[..500]
+        // Find a valid UTF-8 boundary at or before byte 500
+        let mut end = 500;
+        while end > 0 && !content.is_char_boundary(end) {
+            end -= 1;
+        }
+        &content[..end]
     } else {
         content
     };

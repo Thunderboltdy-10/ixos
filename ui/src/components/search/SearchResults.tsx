@@ -110,14 +110,28 @@ export function SearchResults({
     }
   };
 
+  // Detect Ask Mode from the active query
+  const isAskMode = (() => {
+    const query = searchStore.activeQuery || searchStore.query || '';
+    return query.trim().endsWith('?') || /^(who|what|when|where|how|why)\s/i.test(query);
+  })();
+
   return (
     <div>
       <div className="flex items-center justify-between py-4 px-1 border-b border-stroke-hairline/70 mb-2">
         <div>
           <span className="text-xs uppercase tracking-[0.2em] text-fg-dim">Results</span>
-          <div className="text-sm text-porcelain mt-1">
-            {displayResults.length} {displayResults.length === 1 ? 'result' : 'results'}
-            {isSemanticPhase && <span className="text-accent-teal ml-2 text-xs uppercase tracking-[0.2em]">Semantic</span>}
+          <div className="text-sm text-porcelain mt-1 flex items-center gap-2">
+            <span>
+              {displayResults.length} {displayResults.length === 1 ? 'result' : 'results'}
+            </span>
+            {isSemanticPhase && <span className="text-accent-teal text-xs uppercase tracking-[0.2em]">Semantic</span>}
+            {isAskMode && isSemanticPhase && (
+              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-accent-violet/10 border border-accent-violet/20">
+                <span className="w-1 h-1 rounded-full bg-accent-violet" />
+                <span className="text-[10px] font-medium text-accent-violet uppercase tracking-wider">Ask Mode</span>
+              </span>
+            )}
           </div>
         </div>
         {showStar && (

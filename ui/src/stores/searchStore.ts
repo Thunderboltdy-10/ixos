@@ -17,8 +17,14 @@ function translateErrorMessage(error: string): string {
   if (msg.includes('session expired') || msg.includes('unauthorized')) {
     return 'Your session has expired. Please sign in again to continue.';
   }
-  if (msg.includes('authentication required')) {
-    return 'Authentication is required. Please sign in.';
+  if (msg.includes('authentication required') || msg.includes('no entitlement token')) {
+    return 'Authentication required. Your session may have been transferred to another device.';
+  }
+  if (msg.includes('entitlement expired')) {
+    return 'Your Pro subscription has expired. Please renew to continue searching.';
+  }
+  if (msg.includes('entitlement token not issued for this device')) {
+    return 'Your license is active on another device. Please transfer it to continue.';
   }
 
   // Model errors

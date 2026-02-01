@@ -16,6 +16,7 @@ export interface EntitlementInfo {
   ui: {
     showUpgrade: boolean;
   };
+  token?: string;
 }
 
 export interface AuthUser {
@@ -50,10 +51,10 @@ interface AuthState {
   setEntitlementToken: (token: string | null) => void;
   setDevices: (devices: DeviceInfo[]) => void;
 
-  registerDevice: (authToken: string, deviceId: string, deviceLabel: string) => Promise<void>;
+  registerDevice: (authToken: string, deviceId: string, deviceLabel: string, devicePublicKey?: string | null) => Promise<void>;
   fetchEntitlement: (authToken: string, deviceId: string) => Promise<EntitlementInfo | null>;
-  claimLease: (authToken: string, deviceId: string) => Promise<{ token?: string | null }>;
-  refreshLease: (authToken: string, deviceId: string) => Promise<{ token?: string | null }>;
+  claimLease: (authToken: string, deviceId: string, devicePublicKey?: string | null) => Promise<{ token?: string | null }>;
+  refreshLease: (authToken: string, deviceId: string, devicePublicKey?: string | null) => Promise<{ token?: string | null }>;
   requestTransfer: (authToken: string, deviceId: string, transferToken?: string) => Promise<void>;
   confirmTransfer: (authToken: string, deviceId: string, code: string) => Promise<{ token?: string | null }>;
   logoutDevice: (authToken: string, deviceId: string) => Promise<void>;
@@ -110,11 +111,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   setEntitlementToken: (token) => set({ entitlementToken: token }),
   setDevices: (devices) => set({ devices }),
 
-  registerDevice: async (authToken, deviceId, deviceLabel) => {
+  registerDevice: async (authToken, deviceId, deviceLabel, devicePublicKey) => {
     set({ isLoading: true, error: null });
     const res = await apiRequest('/api/desktop/register-device', authToken, {
       method: 'POST',
-      body: JSON.stringify({ deviceId, deviceLabel }),
+      body: JSON.stringify({ deviceId, deviceLabel, devicePublicKey }),
     });
     if (!res.ok) {
       const text = await res.text();
@@ -134,16 +135,20 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ isLoading: false, error: text || 'Entitlement fetch failed' });
       throw new Error(text || 'Entitlement fetch failed');
     }
-    const data = (await res.json()) as EntitlementInfo;
-    set({ entitlement: data, isLoading: false });
-    return data;
+    const data = await res.json();
+    set({
+      entitlement: data as EntitlementInfo,
+      entitlementToken: data?.token ?? null,
+      isLoading: false,
+    });
+    return data as EntitlementInfo & { token?: string };
   },
 
-  claimLease: async (authToken, deviceId) => {
+  claimLease: async (authToken, deviceId, devicePublicKey) => {
     set({ isLoading: true, error: null });
     const res = await apiRequest('/api/desktop/lease/claim', authToken, {
       method: 'POST',
-      body: JSON.stringify({ deviceId }),
+      body: JSON.stringify({ deviceId, devicePublicKey }),
     });
     if (res.status === 409) {
       const data = await res.json().catch(() => null);
@@ -175,11 +180,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     return { token: data?.token ?? null };
   },
 
-   refreshLease: async (authToken, deviceId) => {
+   refreshLease: async (authToken, deviceId, devicePublicKey) => {
      set({ isLoading: true, error: null });
      const res = await apiRequest('/api/desktop/lease/refresh', authToken, {
        method: 'POST',
-       body: JSON.stringify({ deviceId }),
+       body: JSON.stringify({ deviceId, devicePublicKey }),
      });
      if (res.status === 409) {
        const data = await res.json().catch(() => null);

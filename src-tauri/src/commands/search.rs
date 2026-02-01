@@ -273,9 +273,12 @@ pub async fn search_progressive(
     if let Some(token) = state.get_entitlement_token() {
         let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
         let mut manager = state.entitlement_manager.lock();
-        manager.refresh_if_needed(Some(token), &device)?;
+        if let Err(e) = manager.refresh_if_needed(Some(token), &device) {
+            tracing::warn!("Entitlement validation failed: {}", e);
+            return Err(format!("Entitlement validation failed: {}", e));
+        }
         if !manager.is_valid() {
-            return Err("Entitlement expired".into());
+            return Err("Entitlement expired - please refresh your session".into());
         }
     } else {
         #[cfg(debug_assertions)]
@@ -290,7 +293,7 @@ pub async fn search_progressive(
         }
         #[cfg(not(debug_assertions))]
         {
-            return Err("Authentication required".into());
+            return Err("Authentication required - no entitlement token".into());
         }
     }
 

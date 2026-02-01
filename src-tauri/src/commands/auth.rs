@@ -76,9 +76,13 @@ pub(crate) fn validate_entitlement_for_device(
     claims: &EntitlementClaims,
     device: &DeviceIdentity,
 ) -> Result<(), String> {
+    // Allow tokens without device binding for backward compatibility
+    // This handles tokens issued before device binding was implemented
     if claims.trusted_device_pubkey_hash.is_empty() {
-        return Err("Entitlement missing trusted device binding".to_string());
+        tracing::debug!("Token has no device binding - allowing for backward compatibility");
+        return Ok(());
     }
+    // When device binding is present, verify it matches this device
     if claims.trusted_device_pubkey_hash != device.device_id() {
         return Err("Entitlement token not issued for this device".to_string());
     }

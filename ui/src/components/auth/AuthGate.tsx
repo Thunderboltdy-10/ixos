@@ -451,6 +451,7 @@ function AuthGateInner({ children }: AuthGateProps) {
       try {
         const deviceId = await getMachineId();
         const deviceLabel = await getDeviceLabel();
+        const devicePublicKey = await invoke<string>('get_device_public_key').catch(() => null);
         setDevice(deviceId, deviceLabel);
         setUser({ id: user.id, email: userEmail ?? user.id });
 
@@ -477,14 +478,14 @@ function AuthGateInner({ children }: AuthGateProps) {
 
         // Register device - don't fail if this fails
         try {
-          await registerDevice(clerkToken, deviceId, deviceLabel);
+          await registerDevice(clerkToken, deviceId, deviceLabel, devicePublicKey);
         } catch (err) {
           console.warn('Device registration failed (non-fatal):', err);
         }
 
         // Try to claim lease
         try {
-          const claimResult = await claimLease(clerkToken, deviceId);
+          const claimResult = await claimLease(clerkToken, deviceId, devicePublicKey);
           if (claimResult?.token) {
             setEntitlementToken(claimResult.token);
             await storeEntitlementToken(claimResult.token).catch(() => { });
@@ -494,13 +495,50 @@ function AuthGateInner({ children }: AuthGateProps) {
               // Ignore
             }
           } else {
-            // Fetch entitlement as fallback
-            await fetchEntitlement(clerkToken, deviceId).catch(() => { });
+            // Check if transfer is required (409 conflict)
+            // If so, don't fetch entitlement - let the TransferScreen handle it
+            const { transferRequired: needsTransfer } = useAuthStore.getState();
+            if (!needsTransfer) {
+              // Fetch entitlement as fallback only if no transfer is needed
+              try {
+                const entitlementResult = await fetchEntitlement(clerkToken, deviceId);
+                // Use token from entitlement if available
+                if (entitlementResult?.token) {
+                  setEntitlementToken(entitlementResult.token);
+                  await storeEntitlementToken(entitlementResult.token).catch(() => { });
+                  try {
+                    await invoke('set_entitlement_token', { token: entitlementResult.token });
+                  } catch {
+                    // Ignore
+                  }
+                }
+              } catch {
+                // Ignore entitlement fetch errors
+              }
+            }
           }
         } catch (err) {
           console.warn('Lease claim failed (non-fatal):', err);
-          // Try to fetch entitlement anyway
-          await fetchEntitlement(clerkToken, deviceId).catch(() => { });
+          // Check if transfer is required before fetching entitlement
+          const { transferRequired: needsTransfer } = useAuthStore.getState();
+          if (!needsTransfer) {
+            // Try to fetch entitlement only if no transfer is needed
+            try {
+              const entitlementResult = await fetchEntitlement(clerkToken, deviceId);
+              // Use token from entitlement if available
+              if (entitlementResult?.token) {
+                setEntitlementToken(entitlementResult.token);
+                await storeEntitlementToken(entitlementResult.token).catch(() => { });
+                try {
+                  await invoke('set_entitlement_token', { token: entitlementResult.token });
+                } catch {
+                  // Ignore
+                }
+              }
+            } catch {
+              // Ignore entitlement fetch errors
+            }
+          }
         }
       } catch (error) {
         console.error('Auth bootstrap error:', error);
@@ -550,7 +588,8 @@ function AuthGateInner({ children }: AuthGateProps) {
       const token = await getToken();
       if (!token) return;
       try {
-        const refreshResult = await refreshLease(token, deviceId);
+        const devicePublicKey = await invoke<string>('get_device_public_key').catch(() => null);
+        const refreshResult = await refreshLease(token, deviceId, devicePublicKey);
         if (refreshResult?.token) {
           setEntitlementToken(refreshResult.token);
           await storeEntitlementToken(refreshResult.token).catch(() => { });

@@ -9,6 +9,8 @@ fn main() {
     // Search in current directory, project root, and executable directory
     dotenvy::dotenv().ok();
     dotenvy::from_filename(".env.local").ok();
+    dotenvy::from_filename("src-tauri/.env").ok();
+    dotenvy::from_filename("src-tauri/.env.local").ok();
     
     if let Ok(exe_path) = std::env::current_exe() {
         if let Some(exe_dir) = exe_path.parent() {

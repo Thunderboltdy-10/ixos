@@ -80,12 +80,7 @@ export async function decrypt(encrypted: string, key: CryptoKey): Promise<string
   }
 }
 
-/**
- * Get a machine-specific identifier for deriving encryption keys
- * Uses combination of user agent, screen resolution, and timezone
- * Note: Not cryptographically secure, but provides basic device binding
- */
-export async function getMachineId(): Promise<string> {
+async function getLegacyMachineId(): Promise<string> {
   const components = [
     navigator.userAgent,
     screen.width.toString(),
@@ -103,4 +98,26 @@ export async function getMachineId(): Promise<string> {
   const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
   return hashHex;
+}
+
+/**
+ * Get a machine-specific identifier for deriving encryption keys.
+ * Uses Tauri device identity when available, falls back to legacy fingerprint.
+ */
+export async function getMachineId(): Promise<string> {
+  if (typeof window !== 'undefined' && '__TAURI__' in window) {
+    try {
+      const { invoke } = await import('@tauri-apps/api/core');
+      const deviceId = await invoke<string>('get_device_id');
+      if (deviceId) return deviceId;
+    } catch {
+      // Fall back to legacy fingerprint
+    }
+  }
+
+  return getLegacyMachineId();
+}
+
+export async function getLegacyMachineIdForFallback(): Promise<string> {
+  return getLegacyMachineId();
 }

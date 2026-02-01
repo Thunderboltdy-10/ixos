@@ -4,7 +4,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core';
-import { encrypt, decrypt, deriveKey, getMachineId } from './crypto';
+import { encrypt, decrypt, deriveKey, getMachineId, getLegacyMachineIdForFallback } from './crypto';
 
 const STORAGE_DIR = 'ixos-data';
 
@@ -60,7 +60,17 @@ export async function loadEncrypted<T>(filename: string): Promise<T | null> {
 
     const machineId = await getMachineId();
     const key = await deriveKey(machineId);
-    const decrypted = await decrypt(encrypted, key);
+    let decrypted: string;
+    try {
+      decrypted = await decrypt(encrypted, key);
+    } catch {
+      const legacyId = await getLegacyMachineIdForFallback();
+      if (legacyId === machineId) throw new Error('Decrypt failed');
+      const legacyKey = await deriveKey(legacyId);
+      decrypted = await decrypt(encrypted, legacyKey);
+      // Migrate forward with new key
+      await saveEncrypted(filename, JSON.parse(decrypted)).catch(() => { });
+    }
 
     return JSON.parse(decrypted) as T;
   } catch (error) {

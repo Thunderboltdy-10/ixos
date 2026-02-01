@@ -259,16 +259,29 @@ function parsePrivateKey(rawKey: string): string {
   return key;
 }
 
+// Pro capabilities to include in the token
+const PRO_CAPABILITIES = [
+  "ask_mode_plus",
+  "memory_graph",
+  "today_tab",
+  "related_graph",
+  "brief_inbox",
+  "verified_session",
+  "automation_actions",
+];
+
 export async function issueEntitlementToken({
   clerkUserId,
   deviceId,
   plan,
   features = [],
+  offlineGraceDays = 14,
 }: {
   clerkUserId: string;
   deviceId: string;
   plan: Plan;
   features?: string[];
+  offlineGraceDays?: number;
 }) {
   const rawKey = process.env.IXOS_JWT_PRIVATE_KEY || "";
   const privateKeyPem = parsePrivateKey(rawKey);
@@ -297,11 +310,19 @@ export async function issueEntitlementToken({
     );
   }
 
+  // Determine capabilities based on plan
+  const capabilities = plan === "pro"
+    ? [...new Set([...PRO_CAPABILITIES, ...features])]
+    : features;
+
   const now = Math.floor(Date.now() / 1000);
   return await new SignJWT({
     plan,
-    features,
+    capabilities,
     did: deviceId,
+    // trusted_device_pubkey_hash is the deviceId itself (SHA256 of public key)
+    trusted_device_pubkey_hash: deviceId,
+    offline_grace_days: offlineGraceDays,
   })
     .setProtectedHeader({ alg: "ES256", typ: "JWT" })
     .setIssuer(TOKEN_ISSUER)

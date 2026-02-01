@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import { decrypt, deriveKey, encrypt, getMachineId } from '@/lib/crypto';
+import { decrypt, deriveKey, encrypt, getMachineId, getLegacyMachineIdForFallback } from '@/lib/crypto';
 
 const AUTH_TOKEN_FILE = 'auth_token.encrypted';
 
@@ -15,7 +15,19 @@ export async function loadEntitlementToken(): Promise<string | null> {
     const encrypted = await invoke<string>('read_encrypted_file', { filename: AUTH_TOKEN_FILE });
     const machineId = await getMachineId();
     const key = await deriveKey(machineId);
-    return await decrypt(encrypted, key);
+    try {
+      return await decrypt(encrypted, key);
+    } catch {
+      const legacyId = await getLegacyMachineIdForFallback();
+      if (legacyId !== machineId) {
+        const legacyKey = await deriveKey(legacyId);
+        const token = await decrypt(encrypted, legacyKey);
+        // Migrate to new key for future loads.
+        await storeEntitlementToken(token).catch(() => { });
+        return token;
+      }
+      throw new Error('Decrypt failed');
+    }
   } catch {
     return null;
   }

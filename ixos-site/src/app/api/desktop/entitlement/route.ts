@@ -4,6 +4,7 @@ import {
   getActivePlanForUser,
   getClerkUserIdFromRequest,
   getOrCreateUserByClerkId,
+  issueEntitlementToken,
 } from "@/lib/controlPlane";
 
 export async function GET(req: Request) {
@@ -48,6 +49,15 @@ export async function GET(req: Request) {
   const isActiveOnDevice =
     !!activeLease && device && activeLease.deviceId === device.id;
 
+  // Issue a token for the device (even if they don't have an active lease)
+  // This allows free users and Pro users with active lease to search
+  const token = await issueEntitlementToken({
+    clerkUserId,
+    deviceId,
+    plan,
+    features: [],
+  });
+
   return Response.json({
     plan,
     features: [],
@@ -59,5 +69,6 @@ export async function GET(req: Request) {
     ui: {
       showUpgrade: plan !== "pro",
     },
+    token,
   });
 }

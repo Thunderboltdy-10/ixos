@@ -23,38 +23,38 @@ interface ModeOption {
   bgColor: string;
 }
 
-  const modes: ModeOption[] = [
-    {
-      id: 'jit',
-      icon: Zap,
-      label: 'JIT Mode',
-      shortLabel: 'JIT',
-      description: 'Just-In-Time (Default)',
-      details: 'Computes embeddings on-the-fly. No data written to disk. Maximum privacy.',
-      color: 'text-accent-amber',
-      bgColor: 'bg-accent-amber/10',
-    },
-    {
-      id: 'cache',
-      icon: Shield,
-      label: 'Cache Mode',
-      shortLabel: 'Cache',
-      description: 'Persistent Cache',
-      details: 'Stores embeddings in ADS (Windows) or xattr (Mac/Linux). Faster repeat searches.',
-      color: 'text-accent-teal',
-      bgColor: 'bg-accent-teal/10',
-    },
-    {
-      id: 'journalist',
-      icon: Lock,
-      label: 'Journalist Mode',
-      shortLabel: 'Secure',
-      description: 'Maximum Security',
-      details: 'JIT + encrypted history + emergency clear (Ctrl+Shift+X). For sensitive investigations.',
-      color: 'text-accent-violet',
-      bgColor: 'bg-accent-violet/10',
-    }
-  ];
+const modes: ModeOption[] = [
+  {
+    id: 'jit',
+    icon: Zap,
+    label: 'JIT Mode',
+    shortLabel: 'JIT',
+    description: 'Just-In-Time (Default)',
+    details: 'Computes embeddings on-the-fly. No data written to disk. Maximum privacy.',
+    color: 'text-accent-amber',
+    bgColor: 'bg-accent-amber/10',
+  },
+  {
+    id: 'cache',
+    icon: Shield,
+    label: 'Cache Mode',
+    shortLabel: 'Cache',
+    description: 'Persistent Cache',
+    details: 'Stores embeddings in ADS (Windows) or xattr (Mac/Linux). Faster repeat searches.',
+    color: 'text-accent-teal',
+    bgColor: 'bg-accent-teal/10',
+  },
+  {
+    id: 'journalist',
+    icon: Lock,
+    label: 'Journalist Mode',
+    shortLabel: 'Secure',
+    description: 'Maximum Security',
+    details: 'JIT + encrypted history + emergency clear (Ctrl+Shift+X). For sensitive investigations.',
+    color: 'text-accent-violet',
+    bgColor: 'bg-accent-violet/10',
+  }
+];
 
 export function ModeSwitcher({ value, onChange, className, compact = false }: ModeSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -71,7 +71,7 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
     const updatePosition = () => {
       const buttonRect = buttonRef.current?.getBoundingClientRect();
       const dropdownRect = dropdownRef.current?.getBoundingClientRect();
-      
+
       if (!buttonRect || !dropdownRect) return;
 
       // Calculate space below and above the button
@@ -190,7 +190,7 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
               className={cn(
                 'absolute z-50',
                 dropdownPosition === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
-                'left-0',
+                'right-0',
                 'w-80',
                 'bg-graphite-2 rounded-xl border border-stroke-hairline',
                 'shadow-lift overflow-hidden'

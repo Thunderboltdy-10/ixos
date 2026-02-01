@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "src-tauri"]
+members = [".", "src-tauri", "ixos-pro"]
 exclude = ["ixos-site"]
 resolver = "2"
 
@@ -25,6 +25,8 @@ tokio = { version = "1.43", features = ["full", "time", "sync"] }
 ring = "0.17"
 ed25519-dalek = { version = "2.1", features = ["rand_core"] }
 rand = "0.8"
+chacha20poly1305 = "0.10"
+x25519-dalek = { version = "2.0", features = ["static_secrets"] }
 
 # Memory protection - secure memory zeroing
 zeroize = { version = "1.7", features = ["derive"] }
@@ -108,7 +110,7 @@ xxhash-rust = { version = "0.8", features = ["xxh3"] }
 
 # Platform-specific: Windows ADS support and memory locking
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.59", features = ["Win32_Storage_FileSystem", "Win32_System_Memory"] }
+windows-sys = { version = "0.59", features = ["Win32_Storage_FileSystem", "Win32_System_Memory", "Win32_Security_Credentials"] }
 
 # Platform-specific: Unix xattr support and memory locking
 [target.'cfg(unix)'.dependencies]
@@ -140,3 +142,11 @@ harness = false
 [[bench]]
 name = "directory_centroids_boost"
 harness = false
+
+
+
+
+[target.'cfg(target_os = "macos")'.dependencies]
+security-framework = "2.9"
+[target.'cfg(target_os = "linux")'.dependencies]
+secret-service = "4.0"

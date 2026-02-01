@@ -76,6 +76,38 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
 
+  build-pro-module:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: install rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: build ixos-pro
+        run: cargo build -p ixos-pro --release
+
+      - name: package module
+        env:
+          IXOS_PRO_SIGNING_KEY: ${{ secrets.IXOS_PRO_SIGNING_KEY }}
+          IXOS_PRO_SYMMETRIC_KEY: ${{ secrets.IXOS_PRO_SYMMETRIC_KEY }}
+        run: node scripts/upload-pro-module.js --input target/release --out-dir dist
+
+      - name: upload pro module
+        uses: actions/upload-artifact@v4
+        with:
+          name: ixos-pro-${{ matrix.platform }}
+          path: dist
   upload-to-blob:
     needs: publish-tauri
     runs-on: ubuntu-latest
@@ -103,3 +135,5 @@ jobs:
           BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
           ARTIFACTS_DIR: artifacts
         run: node scripts/upload-release.js
+
+

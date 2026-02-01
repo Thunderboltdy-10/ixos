@@ -8,6 +8,8 @@ use std::num::NonZeroUsize;
 
 use lru::LruCache;
 
+use crate::ixos_rank::ask_mode::{AnchorExtractor, AnchorTerm, IntentDetector, QueryIntent, QueryMode, TimeIntent};
+
 #[derive(Debug, Clone)]
 pub struct QueryPreprocessConfig {
     /// Maximum synonyms to add per term.
@@ -37,12 +39,18 @@ pub struct ProcessedQuery {
     pub applied_corrections: bool,
     pub applied_expansions: bool,
     pub question_rewritten: bool,
+    pub mode: QueryMode,
+    pub anchor_terms: Vec<AnchorTerm>,
+    pub detected_intent: Option<QueryIntent>,
+    pub time_intent: Option<TimeIntent>,
 }
 
 #[derive(Debug)]
 pub struct QueryPreprocessor {
     config: QueryPreprocessConfig,
     cache: LruCache<String, ProcessedQuery>,
+    anchor_extractor: AnchorExtractor,
+    intent_detector: IntentDetector,
 }
 
 impl QueryPreprocessor {
@@ -51,6 +59,8 @@ impl QueryPreprocessor {
         Self {
             config,
             cache: LruCache::new(cache_size),
+            anchor_extractor: AnchorExtractor::with_corpus_defaults(),
+            intent_detector: IntentDetector::new(),
         }
     }
 
@@ -72,6 +82,10 @@ impl QueryPreprocessor {
                 applied_corrections: false,
                 applied_expansions: false,
                 question_rewritten: false,
+                mode: QueryMode::Keyword,
+                anchor_terms: Vec::new(),
+                detected_intent: None,
+                time_intent: None,
             };
         }
 
@@ -198,6 +212,15 @@ impl QueryPreprocessor {
         let expanded_query = expanded_tokens.join(" ");
         let semantic_query = semantic_terms.join(" ");
 
+        let mode = if is_question { QueryMode::Ask } else { QueryMode::Keyword };
+        let mut anchor_candidates = terms.clone();
+        for phrase in semantic_terms.iter().filter(|t| t.contains(" ")) {
+            anchor_candidates.push(phrase.clone());
+        }
+        let anchor_terms = self.anchor_extractor.extract(&anchor_candidates);
+        let detected_intent = self.intent_detector.detect_intent(trimmed);
+        let time_intent = self.intent_detector.detect_time_intent(trimmed);
+
         let processed = ProcessedQuery {
             original: trimmed.to_string(),
             corrected_query,
@@ -209,6 +232,10 @@ impl QueryPreprocessor {
             applied_corrections,
             applied_expansions,
             question_rewritten,
+            mode,
+            anchor_terms,
+            detected_intent,
+            time_intent,
         };
 
         self.cache.put(trimmed.to_string(), processed.clone());
@@ -564,5 +591,21 @@ mod tests {
         let processed = pre.preprocess("Find my PDF invoice");
         assert!(processed.expanded_query.contains("ext:pdf"));
         assert!(processed.question_rewritten);
+    }
+    #[test]
+    fn test_anchor_filters_common_words() {
+        let mut pre = QueryPreprocessor::with_defaults();
+        let processed = pre.preprocess("The Financial Times");
+        assert!(processed.anchor_terms.iter().all(|a| a.term != "the"));
+        assert!(processed.anchor_terms.iter().any(|a| a.term == "financial"));
+    }
+
+    #[test]
+    fn test_meeting_query_finds_meeting_notes() {
+        let mut pre = QueryPreprocessor::with_defaults();
+        let processed = pre.preprocess("when was the meeting?");
+        assert_eq!(processed.mode, QueryMode::Ask);
+        assert!(processed.anchor_terms.iter().any(|a| a.term == "meeting"));
+        assert!(processed.time_intent.is_some());
     }
 }

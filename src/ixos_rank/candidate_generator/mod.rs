@@ -52,6 +52,8 @@ use std::collections::HashSet;
 use std::path::PathBuf;
 use std::time::Instant;
 
+use crate::ixos_rank::ask_mode::{AnchorTerm, QueryMode};
+
 use crate::instrumentation::{
     candidate_merge_span, directory_walk_span, metadata_priors_span, path_scoring_span,
     ripgrep_scan_span,
@@ -233,6 +235,11 @@ impl CandidateGenerator {
         let _priors_enter = _priors_span.enter();
         self.apply_priors(&mut merged);
 
+        if processed.mode == QueryMode::Ask && !processed.anchor_terms.is_empty() {
+            merged = self.filter_by_anchors(merged, &processed.anchor_terms);
+            stats.merged_candidates = merged.len();
+        }
+
         // Phase 5: Sort by combined score
         merged.sort_by(|a, b| {
             b.combined_score
@@ -332,6 +339,11 @@ impl CandidateGenerator {
         let _priors_enter = _priors_span.enter();
         self.apply_priors(&mut merged);
 
+        if processed.mode == QueryMode::Ask && !processed.anchor_terms.is_empty() {
+            merged = self.filter_by_anchors(merged, &processed.anchor_terms);
+            stats.merged_candidates = merged.len();
+        }
+
         // Phase 5: Sort by combined score
         merged.sort_by(|a, b| {
             b.combined_score
@@ -358,6 +370,31 @@ impl CandidateGenerator {
             candidates: merged,
             stats,
         }
+    }
+
+    pub fn filter_by_anchors(
+        &self,
+        candidates: Vec<ScoredCandidate>,
+        anchors: &[AnchorTerm],
+    ) -> Vec<ScoredCandidate> {
+        if anchors.is_empty() {
+            return candidates;
+        }
+
+        candidates
+            .into_iter()
+            .filter(|candidate| {
+                let preview = candidate
+                    .content_preview
+                    .as_ref()
+                    .or_else(|| candidate.match_context.as_ref().and_then(|ctx| ctx.snippet.as_ref()));
+                let preview = match preview {
+                    Some(text) => text.to_lowercase(),
+                    None => return false,
+                };
+                anchors.iter().any(|anchor| preview.contains(&anchor.term))
+            })
+            .collect()
     }
 
     /// Merge candidates from path scoring and ripgrep
@@ -558,3 +595,9 @@ mod tests {
             .any(|m| m.path.to_string_lossy().contains("report")));
     }
 }
+
+
+
+
+
+

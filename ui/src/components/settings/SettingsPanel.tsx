@@ -54,7 +54,7 @@ export function SettingsPanel({ initialTab, onUpgrade }: { initialTab?: Settings
                 'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                 isActive
                   ? 'bg-accent-teal/10 text-accent-teal shadow-glow-teal-sm'
-                  : 'text-fg-secondary hover:bg-graphite-2 hover:text-porcelain'
+                  : 'text-fg-secondary hover:bg-graphite-2 hover:text-porcelain cursor-pointer'
               )}
             >
               <Icon className={cn("w-4 h-4", isActive ? "text-accent-teal" : "text-fg-muted")} />

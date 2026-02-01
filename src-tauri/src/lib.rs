@@ -11,9 +11,11 @@
 
 pub mod commands;
 pub mod state;
+pub mod pro_loader;
 pub mod tray;
 
 use tauri::Manager;
+use ixos_protocol::security::DeviceIdentity;
 
 /// Initialize and run the Tauri application
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -40,6 +42,20 @@ pub fn run() {
             app.manage(commands::history::HistoryState::default());
             app.manage(commands::prefetch::PrefetchState::default());
             app.manage(commands::indexer::IndexerState::default());
+            let app_handle = app.handle();
+            let app_handle_for_task = app_handle.clone();
+            tauri::async_runtime::spawn(async move {
+                loop {
+                    tokio::time::sleep(std::time::Duration::from_secs(24 * 60 * 60)).await;
+                    let state = app_handle_for_task.state::<state::AppState>();
+                    if let Some(token) = state.get_entitlement_token() {
+                        if let Ok(device) = DeviceIdentity::load_or_create() {
+                            let mut manager = state.entitlement_manager.lock();
+                            let _ = manager.refresh_if_needed(Some(token), &device);
+                        }
+                    }
+                }
+            });
 
             // Setup system tray
             tray::setup_tray(app)?;
@@ -100,8 +116,13 @@ pub fn run() {
             commands::auth::clear_entitlement_token,
             commands::auth::check_search_allowed,
             commands::auth::get_device_id,
+            commands::auth::get_device_public_key,
             commands::auth::open_checkout,
             commands::auth::open_external_url,
+            // Pro
+            commands::pro::load_pro_module,
+            commands::pro::ask_mode_plus,
+            commands::pro::extract_answer_card,
             // Cache Management
             commands::storage::get_cache_stats,
             commands::storage::clear_embedding_cache,
@@ -127,3 +148,10 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+
+
+
+
+
+
+

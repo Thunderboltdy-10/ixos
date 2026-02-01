@@ -275,12 +275,21 @@ function TransferScreen({
   };
 
   const handleConfirm = async () => {
-    const trimmed = code.trim();
-    if (!trimmed) return;
+    // Normalize code: Remove non-alphanumeric characters, then format as XXXX-XXXX if length is 8
+    const cleanCode = code.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+
+    let finalCode = cleanCode;
+    // Auto-format to XXXX-XXXX if we have exactly 8 characters
+    if (cleanCode.length === 8) {
+      finalCode = `${cleanCode.slice(0, 4)}-${cleanCode.slice(4)}`;
+    }
+
+    if (!finalCode) return;
+
     setIsConfirming(true);
     setConfirmError(null);
     try {
-      await onConfirm(trimmed);
+      await onConfirm(finalCode);
       setConfirmed(true);
     } catch (error) {
       console.error('Transfer confirmation failed:', error);

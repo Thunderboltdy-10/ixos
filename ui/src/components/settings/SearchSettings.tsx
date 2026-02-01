@@ -157,22 +157,12 @@ export function SearchSettings() {
         label="Pro model"
         description="Model used when Pro or Auto refinement is enabled"
       >
-        <select
-          value={config.search.proModelType}
-          onChange={(e) =>
-            updateConfig({
-              search: { ...config.search, proModelType: e.target.value as typeof config.search.proModelType },
-            })
-          }
-          className="w-44 bg-graphite-2 border border-stroke-hairline rounded-md px-2 py-1 text-xs text-porcelain"
-        >
-          <option value="potion">Potion 8M (recommended)</option>
-          <option value="ixos-flash-v4-int8-512">Ixos Flash v4 (quality)</option>
-          <option value="ixos-flash-v4-int8-192">Ixos Flash v4 Fast</option>
-          <option value="ixos-flash-v1">Ixos Flash v1 (legacy)</option>
-          <option value="ixos-pro-v1">Ixos Pro v1 (legacy)</option>
-          <option value="qwen">Ixos Embedder v1 (Qwen)</option>
-        </select>
+        <div className="flex items-center gap-2">
+          <div className="text-sm text-porcelain font-medium px-2 py-1 bg-graphite-2 rounded-md border border-stroke-hairline">
+            Potion 8M
+          </div>
+          <span className="text-xs text-fg-dim">(Standard)</span>
+        </div>
       </SettingRow>
 
       {/* Cache Mode */}

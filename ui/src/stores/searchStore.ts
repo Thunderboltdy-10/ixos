@@ -230,7 +230,14 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       const settings = useSettingsStore.getState().config?.search;
       const modelType = settings?.modelType || 'ixos-flash-v1';
       const proModelType = settings?.proModelType || 'potion';
-      const searchMode = settings?.searchMode || 'auto';
+
+      // Ask Mode detection (question mark or question word)
+      const isAskMode = normalizedQuery.endsWith('?')
+        || /^(who|what|when|where|how|why)\s/i.test(normalizedQuery);
+      const settingsMode = settings?.searchMode || 'auto';
+      // Force Pro mode if question mark is present, otherwise utilize settings
+      const searchMode = isAskMode ? 'pro' : settingsMode;
+
       const timeoutSeconds = settings?.timeoutSeconds || 30;
 
       await tauri.searchProgressive(state.query, state.directory, {

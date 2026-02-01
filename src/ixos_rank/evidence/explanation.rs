@@ -49,6 +49,23 @@ pub fn explain_evidence(evidence: &[Evidence], score: f32) -> String {
                     parts.push(format!("Semantic similarity: {}%", pct));
                 }
             }
+            Evidence::AskModeTrust {
+                anchor_coverage,
+                matched_anchors,
+                ..
+            } => {
+                if matched_anchors.is_empty() {
+                    parts.push("Trusted snippet".to_string());
+                } else {
+                    parts.push(format!(
+                        "Trusted snippet (anchors: {})",
+                        matched_anchors.join(", ")
+                    ));
+                }
+                if *anchor_coverage > 0.0 {
+                    parts.push(format!("Anchor coverage: {:.0}%", anchor_coverage * 100.0));
+                }
+            }
             Evidence::PathMatch {
                 tokens,
                 matched_parts,
@@ -187,6 +204,15 @@ pub fn generate_tags_from_evidence(evidence: &[Evidence]) -> Vec<EvidenceTag> {
                     tags.push(EvidenceTag::semantic(*similarity));
                 }
             }
+            Evidence::AskModeTrust {
+                anchor_coverage,
+                matched_anchors,
+                ..
+            } => {
+                if *anchor_coverage > 0.0 {
+                    tags.push(EvidenceTag::ask_mode_trust(matched_anchors, *anchor_coverage));
+                }
+            }
             Evidence::PathMatch { matched_parts, .. } => {
                 if !matched_parts.is_empty() {
                     tags.push(EvidenceTag::path_match(matched_parts));
@@ -299,6 +325,24 @@ pub fn format_for_cli(evidence: &[Evidence], score: f32) -> String {
                         best_chunk.clone()
                     };
                     lines.push(format!("            Best match: \"{}\"", short));
+                }
+            }
+            Evidence::AskModeTrust {
+                anchor_coverage,
+                matched_anchors,
+                why_matched,
+            } => {
+                lines.push(format!(
+                    "  [AskMode] Anchors: {} (coverage: {:.0}%)",
+                    if matched_anchors.is_empty() {
+                        "none".into()
+                    } else {
+                        matched_anchors.join(", ")
+                    },
+                    anchor_coverage * 100.0
+                ));
+                if !why_matched.is_empty() {
+                    lines.push(format!("            {}", why_matched));
                 }
             }
             Evidence::PathMatch {

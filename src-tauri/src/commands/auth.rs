@@ -1,19 +1,26 @@
+use base64::{engine::general_purpose::STANDARD, Engine as _};
 use crate::state::AppState;
+use ixos_protocol::capabilities::Capabilities;
+use ixos_protocol::security::DeviceIdentity;
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
-use std::fs;
 use std::sync::OnceLock;
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, State};
 use tauri_plugin_opener::OpenerExt;
-use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EntitlementClaims {
     pub sub: String,
+    #[serde(default)]
     pub did: String,
+    #[serde(default)]
+    pub trusted_device_pubkey_hash: String,
     pub plan: String,
-    pub features: Vec<String>,
+    #[serde(default, alias = "features")]
+    pub capabilities: Vec<String>,
     pub exp: usize,
+    #[serde(default)]
+    pub offline_grace_days: Option<u32>,
     pub iss: String,
     pub iat: Option<usize>,
 }
@@ -29,19 +36,11 @@ fn decoding_key() -> Result<&'static DecodingKey, String> {
     // ensuring the key is available even if .env loading fails at runtime.
     let env_str = option_env!("IXOS_JWT_PUBLIC_KEY")
         .map(|s| s.to_string())
-        .or_else(|| std::env::var("IXOS_JWT_PUBLIC_KEY").ok())
-        .or_else(|| {
-             // Fallback: try to parse from the included .env.local file content
-             // This is a "brute force" verify to ensure we have the key
-             let local_env = include_str!("../../.env.local");
-             local_env.lines()
-                 .find(|line| line.starts_with("IXOS_JWT_PUBLIC_KEY="))
-                 .map(|line| line.trim_start_matches("IXOS_JWT_PUBLIC_KEY=").trim_matches('"').to_string())
-        });
+        .or_else(|| std::env::var("IXOS_JWT_PUBLIC_KEY").ok());
 
     let mut public_key = env_str
         .ok_or_else(|| "IXOS_JWT_PUBLIC_KEY not set in environment".to_string())?;
-    
+
     // Clean up escaped newlines if present
     public_key = public_key.replace("\\n", "\n");
 
@@ -61,6 +60,31 @@ pub fn verify_entitlement_token_internal(token: &str) -> Result<EntitlementClaim
     Ok(data.claims)
 }
 
+pub(crate) fn decode_entitlement_token_allow_expired(
+    token: &str,
+) -> Result<EntitlementClaims, String> {
+    let key = decoding_key()?;
+    let mut validation = Validation::new(Algorithm::ES256);
+    validation.set_issuer(&["ixos-control-plane"]);
+    validation.validate_exp = false;
+    let data = decode::<EntitlementClaims>(token, key, &validation)
+        .map_err(|e| format!("Invalid token: {}", e))?;
+    Ok(data.claims)
+}
+
+pub(crate) fn validate_entitlement_for_device(
+    claims: &EntitlementClaims,
+    device: &DeviceIdentity,
+) -> Result<(), String> {
+    if claims.trusted_device_pubkey_hash.is_empty() {
+        return Err("Entitlement missing trusted device binding".to_string());
+    }
+    if claims.trusted_device_pubkey_hash != device.device_id() {
+        return Err("Entitlement token not issued for this device".to_string());
+    }
+    Ok(())
+}
+
 #[tauri::command]
 pub async fn verify_entitlement_token(token: String) -> Result<EntitlementClaims, String> {
     verify_entitlement_token_internal(&token)
@@ -71,63 +95,58 @@ pub async fn set_entitlement_token(
     state: State<'_, AppState>,
     token: String,
 ) -> Result<(), String> {
-    state.set_entitlement_token(Some(token));
+    if let Ok(claims) = decode_entitlement_token_allow_expired(&token) {
+        let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+        if let Err(err) = validate_entitlement_for_device(&claims, &device) {
+            state.set_entitlement_token(None);
+            state.set_capabilities(Capabilities::default());
+            state.entitlement_manager.lock().clear();
+            return Err(err);
+        }
+        state.set_entitlement_token(Some(token.clone()));
+        state.set_capabilities(Capabilities::from_entitlements(&claims.capabilities));
+        state.entitlement_manager.lock().update_from_claims(&claims);
+    } else {
+        state.set_entitlement_token(None);
+        state.set_capabilities(Capabilities::default());
+        state.entitlement_manager.lock().clear();
+    }
     Ok(())
 }
 
 #[tauri::command]
 pub async fn clear_entitlement_token(state: State<'_, AppState>) -> Result<(), String> {
     state.set_entitlement_token(None);
+    state.set_capabilities(Capabilities::default());
+    state.entitlement_manager.lock().clear();
     Ok(())
-}
-
-fn get_device_id_from_path(config_dir: &std::path::Path) -> Result<String, String> {
-    let file_path = config_dir.join("device_id.txt");
-
-    if file_path.exists() {
-        return fs::read_to_string(&file_path)
-            .map_err(|e| format!("Failed to read device id: {}", e));
-    }
-
-    fs::create_dir_all(&config_dir).map_err(|e| format!("Failed to create config dir: {}", e))?;
-
-    let device_id = Uuid::new_v4().to_string();
-    fs::write(&file_path, &device_id).map_err(|e| format!("Failed to write device id: {}", e))?;
-
-    Ok(device_id)
 }
 
 #[tauri::command]
 pub async fn check_search_allowed(
-    app: AppHandle,
+    _app: AppHandle,
     state: State<'_, AppState>,
 ) -> Result<bool, String> {
     if let Some(token) = state.get_entitlement_token() {
-        if let Ok(claims) = verify_entitlement_token_internal(&token) {
-            // Verify DID matches local device
-            let config_dir = app
-                .path()
-                .app_config_dir()
-                .map_err(|e| format!("Failed to get config directory: {}", e))?;
-
-            if let Ok(device_id) = get_device_id_from_path(&config_dir) {
-                if claims.did == device_id {
-                    return Ok(true);
-                }
-            }
-        }
+        let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+        let mut manager = state.entitlement_manager.lock();
+        manager.refresh_if_needed(Some(token), &device)?;
+        return Ok(manager.is_valid());
     }
     Ok(false)
 }
 
 #[tauri::command]
-pub async fn get_device_id(app: AppHandle) -> Result<String, String> {
-    let config_dir = app
-        .path()
-        .app_config_dir()
-        .map_err(|e| format!("Failed to get config directory: {}", e))?;
+pub async fn get_device_id(_app: AppHandle) -> Result<String, String> {
+    let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+    Ok(device.device_id().to_string())
+}
 
-    get_device_id_from_path(&config_dir)
+#[tauri::command]
+pub async fn get_device_public_key(_app: AppHandle) -> Result<String, String> {
+    let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+    let encoded = STANDARD.encode(device.public_key());
+    Ok(encoded)
 }
 
 /// Open checkout URL in the system's default browser

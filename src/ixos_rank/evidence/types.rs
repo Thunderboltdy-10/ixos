@@ -12,6 +12,8 @@ pub enum EvidenceType {
     Lexical,
     /// Semantic similarity match
     Semantic,
+    /// Ask Mode trusted snippet
+    AskModeTrust,
     /// Path/filename match
     PathMatch,
     /// Directory context (hot folder, related files)
@@ -88,6 +90,16 @@ pub enum Evidence {
         chunk_offset: usize,
         /// Semantic concepts identified
         concepts: Vec<String>,
+    },
+
+    /// Ask Mode trusted snippet evidence
+    AskModeTrust {
+        /// Anchor coverage ratio (0-1)
+        anchor_coverage: f32,
+        /// Anchors matched in the trusted snippet
+        matched_anchors: Vec<String>,
+        /// Human-readable reason for trust
+        why_matched: String,
     },
 
     /// Path/filename match evidence
@@ -189,6 +201,7 @@ impl Evidence {
         match self {
             Evidence::Lexical { .. } => EvidenceType::Lexical,
             Evidence::Semantic { .. } => EvidenceType::Semantic,
+            Evidence::AskModeTrust { .. } => EvidenceType::AskModeTrust,
             Evidence::PathMatch { .. } => EvidenceType::PathMatch,
             Evidence::DirectoryContext { .. } => EvidenceType::DirectoryContext,
             Evidence::Temporal { .. } => EvidenceType::Temporal,
@@ -202,6 +215,7 @@ impl Evidence {
         match self {
             Evidence::Lexical { tf_score, .. } => *tf_score,
             Evidence::Semantic { similarity, .. } => *similarity,
+            Evidence::AskModeTrust { anchor_coverage, .. } => *anchor_coverage,
             Evidence::PathMatch { path_score, .. } => *path_score,
             Evidence::DirectoryContext {
                 centroid_similarity,
@@ -233,6 +247,13 @@ impl Evidence {
             }
             Evidence::Semantic { similarity, .. } => {
                 format!("Semantic: {:.0}%", similarity * 100.0)
+            }
+            Evidence::AskModeTrust { matched_anchors, .. } => {
+                if matched_anchors.is_empty() {
+                    "Trusted snippet".into()
+                } else {
+                    format!("Trusted: {}", matched_anchors.join(", "))
+                }
             }
             Evidence::PathMatch { tokens, .. } => {
                 format!("Path: {}", tokens.join("/"))
@@ -313,6 +334,24 @@ impl EvidenceTag {
             tooltip: format!("Content meaning similarity: {:.1}%", similarity * 100.0),
             strength: similarity,
             color: Some("#38bdf8".into()), // cyan
+        }
+    }
+
+    /// Create an Ask Mode trust tag
+    pub fn ask_mode_trust(matched_anchors: &[String], strength: f32) -> Self {
+        let label = if matched_anchors.is_empty() {
+            "Trusted snippet".into()
+        } else if matched_anchors.len() <= 2 {
+            format!("Anchors: {}", matched_anchors.join(", "))
+        } else {
+            format!("Anchors: {}+", matched_anchors.len())
+        };
+        Self {
+            tag_type: EvidenceType::AskModeTrust,
+            label,
+            tooltip: format!("Trusted snippet matched anchors: {}", matched_anchors.join(", ")),
+            strength,
+            color: Some("#f59e0b".into()), // amber
         }
     }
 
@@ -592,3 +631,16 @@ mod tests {
         assert!(tag.label.contains("90%"));
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

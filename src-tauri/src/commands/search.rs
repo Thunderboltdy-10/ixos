@@ -2,9 +2,9 @@
 //!
 //! Provides progressive search with streaming results to the frontend.
 
-use crate::commands::auth::verify_entitlement_token_internal;
 use crate::state::AppState;
 use ixos_protocol::instrumentation::ipc_send_span;
+use ixos_protocol::security::DeviceIdentity;
 use ixos_protocol::ixos_rank::{
     progressive::{SearchEvent, SearchMode, StreamEventKind, StreamStage},
     CandidateLexicalEngine, ProgressiveSearchConfig, ProgressiveSearchEngine, RankedResult,
@@ -271,11 +271,22 @@ pub async fn search_progressive(
 ) -> Result<(), String> {
     // Verify entitlement token before allowing search
     if let Some(token) = state.get_entitlement_token() {
-        verify_entitlement_token_internal(&token)?;
+        let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+        let mut manager = state.entitlement_manager.lock();
+        manager.refresh_if_needed(Some(token), &device)?;
+        if !manager.is_valid() {
+            return Err("Entitlement expired".into());
+        }
     } else {
         #[cfg(debug_assertions)]
         {
-            tracing::warn!("Search allowed without entitlement token (DEBUG MODE)");
+            let allow_unentitled = std::env::var("IXOS_DEV_ALLOW_UNENTITLED")
+                .ok()
+                .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+                .unwrap_or(false);
+            if !allow_unentitled {
+                return Err("Authentication required (set IXOS_DEV_ALLOW_UNENTITLED=1 to bypass in dev)".into());
+            }
         }
         #[cfg(not(debug_assertions))]
         {
@@ -511,7 +522,7 @@ pub async fn search_progressive(
         let lexical = CandidateLexicalEngine::new(dir_path.clone());
 
         // Create semantic engine with pre-loaded model
-        let (subdir, repo_id, files) = match model_type {
+        let (_subdir, _repo_id, _files) = match model_type {
         ModelType::IxosFlashV1 => (
             "ixos-flash-v1",
             "Thunderboltdy10/Ixos-Flash",
@@ -584,3 +595,7 @@ pub async fn cancel_search(state: State<'_, AppState>) -> Result<(), String> {
     state.cancel_search();
     Ok(())
 }
+
+
+
+

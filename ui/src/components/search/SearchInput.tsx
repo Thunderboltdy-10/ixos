@@ -37,7 +37,7 @@ export function SearchInput({
   onSearch,
   directory,
   onDirectoryChange,
-  isSearching,
+  isSearching: activeSearch,
   onCancel,
   mode,
   onModeChange,
@@ -167,7 +167,7 @@ export function SearchInput({
 
   useEffect(() => {
     const isTypingNewQuery = value.trim().toLowerCase() !== (activeQuery || '').toLowerCase();
-    const canShowSuggestions = value.length >= 1 && !isSearching && (searchPhase === 'idle' || isTypingNewQuery);
+    const canShowSuggestions = value.length >= 1 && !activeSearch && (searchPhase === 'idle' || isTypingNewQuery);
 
     if (canShowSuggestions) {
       const fetchedSuggestions = getSuggestions(value);
@@ -177,7 +177,7 @@ export function SearchInput({
     } else {
       setShowSuggestions(false);
     }
-  }, [value, getSuggestions, searchPhase, isSearching, activeQuery]);
+  }, [value, getSuggestions, searchPhase, activeSearch, activeQuery]);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -236,20 +236,20 @@ export function SearchInput({
     }
 
     // Enter key triggers explicit search when no suggestion is selected
-    if (e.key === 'Enter' && value.trim() && !isSearching) {
+    if (e.key === 'Enter' && value.trim() && !activeSearch) {
       e.preventDefault();
       setShowSuggestions(false);
       setSuggestions([]);
       onSearch?.();
     }
-  }, [showSuggestions, suggestions, selectedIndex, handleSuggestionSelect, value, isSearching, onSearch]);
+  }, [showSuggestions, suggestions, selectedIndex, handleSuggestionSelect, value, activeSearch, onSearch]);
 
   type AccentStyle = CSSProperties & {
     '--accent-focus'?: string;
     '--accent-focus-soft'?: string;
   };
   const accentStyle: AccentStyle =
-    hasSearchIntent || isSearching
+    hasSearchIntent || activeSearch
       ? {
         borderColor: activePalette.border,
         boxShadow: `0 0 0 1px ${activePalette.border}, 0 18px 40px rgba(0, 0, 0, 0.55), 0 0 28px ${activePalette.glow}`,
@@ -270,7 +270,7 @@ export function SearchInput({
             background: `radial-gradient(circle at 50% 45%, ${activePalette.glow} 0%, transparent 70%)`,
           }}
           initial={{ opacity: 0 }}
-          animate={{ opacity: hasSearchIntent || isSearching ? 0.9 : 0 }}
+          animate={{ opacity: hasSearchIntent || activeSearch ? 0.9 : 0 }}
           transition={{ duration: 0.25 }}
         />
 
@@ -281,13 +281,13 @@ export function SearchInput({
           }}
           initial={{ opacity: 0 }}
           animate={{
-            opacity: hasSearchIntent || isSearching ? 1 : 0,
-            scale: hasSearchIntent || isSearching ? 1 : 0.98,
+            opacity: hasSearchIntent || activeSearch ? 1 : 0,
+            scale: hasSearchIntent || activeSearch ? 1 : 0.98,
           }}
           transition={{ duration: 0.2 }}
         />
 
-        {(hasSearchIntent || isSearching) && (
+        {(hasSearchIntent || activeSearch) && (
           <motion.div
             className="absolute -inset-[4px] rounded-2xl pointer-events-none"
             style={{
@@ -310,7 +310,7 @@ export function SearchInput({
           'relative gradient-border-focus rounded-xl overflow-visible',
           'bg-graphite-2/80 border border-stroke-hairline',
           'transition-all duration-200',
-          hasSearchIntent || isSearching
+          hasSearchIntent || activeSearch
             ? ''
             : 'hover:border-border-medium'
         )}
@@ -323,32 +323,54 @@ export function SearchInput({
             onKeyDown={handleKeyDown}
             onFocus={() => value.length >= 1 && suggestions.length > 0 && setShowSuggestions(true)}
             placeholder="Type what you remember..."
-            isSearching={isSearching}
+            isSearching={activeSearch}
             autoFocus={autoFocus}
             tone={mode}
             withFrame={false}
             showClear={false}
             className="w-full"
-            rightSlot={(value || isSearching) ? (
-              <button
-                onClick={() => {
-                  if (isSearching) {
-                    onCancel();
-                  } else {
-                    onChange('');
-                  }
-                }}
-                className={cn(
-                  'flex-shrink-0 p-1.5 rounded-md',
-                  'text-fg-dim hover:text-porcelain hover:bg-graphite-3/50',
-                  'transition-colors duration-150'
+            rightSlot={
+              <div className="flex items-center gap-2">
+                {/* Ask Mode Indicator */}
+                {(value.trim().endsWith('?') || /^(who|what|when|where|how|why)\s/i.test(value)) && (
+                  <div className="relative group">
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-accent-violet/10 border border-accent-violet/20 cursor-help">
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent-violet animate-pulse" />
+                      <span className="text-xs font-medium text-accent-violet">Ask Mode</span>
+                    </div>
+
+                    {/* Tooltip */}
+                    <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-graphite-2 border border-accent-violet/20 rounded-xl shadow-xl backdrop-blur-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 pointer-events-none z-50 origin-top-right">
+                      <div className="text-xs text-porcelain mb-1 font-medium">Deep Understanding Enabled</div>
+                      <div className="text-[11px] text-fg-muted leading-relaxed">
+                        I'll read through your documents to find exact answers and extract facts, instead of just matching keywords.
+                      </div>
+                    </div>
+                  </div>
                 )}
-                title={isSearching ? 'Cancel search' : 'Clear'}
-                type="button"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            ) : null}
+
+                {(value || activeSearch) ? (
+                  <button
+                    onClick={() => {
+                      if (activeSearch) {
+                        onCancel();
+                      } else {
+                        onChange('');
+                      }
+                    }}
+                    className={cn(
+                      'flex-shrink-0 p-1.5 rounded-md',
+                      'text-fg-dim hover:text-porcelain hover:bg-graphite-3/50',
+                      'transition-colors duration-150'
+                    )}
+                    title={activeSearch ? 'Cancel search' : 'Clear'}
+                    type="button"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                ) : null}
+              </div>
+            }
           />
 
           {/* Controls row - no separator, seamless */}

@@ -2,6 +2,8 @@ import { Settings, Minus, Square, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useAuth } from '@clerk/clerk-react';
+import { useUIStore } from '@/stores/uiStore';
+import { useAuthStore } from '@/stores/authStore';
 
 // Safe Tauri window import - falls back to no-op in browser
 const getTauriWindow = async () => {
@@ -45,9 +47,7 @@ function WindowControl({ icon, onClick, variant = 'default' }: WindowControlProp
     );
 }
 
-import { useUIStore } from '@/stores/uiStore';
 
-import { useAuthStore } from '@/stores/authStore';
 
 export function WindowControls() {
     const { isSignedIn } = useAuth();

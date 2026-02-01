@@ -45,8 +45,8 @@ export function MainSearchView() {
   const searchBarRef = useSearchBarLayout();
 
   // Derived state
-  const hasActiveSearch = query.length > 0;
   const isSearching = searchPhase === 'lexical' || searchPhase === 'semantic' || searchPhase === 'refining';
+  const hasActiveSearch = hasSearchIntent || isSearching || results.length > 0 || searchPhase === 'complete';
   const showResults = results.length > 0;
   const showGhostScaffold = hasSearchIntent && !showResults && searchPhase !== 'complete';
   const showDeck = hasSearchIntent || isSearching || searchPhase === 'complete';

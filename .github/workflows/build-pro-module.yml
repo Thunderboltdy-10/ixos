@@ -1,0 +1,35 @@
+name: Build Pro Module
+
+on:
+  push:
+    tags:
+      - "pro-v*"
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build ixos-pro
+        run: cargo build -p ixos-pro --release
+
+      - name: Package module
+        env:
+          IXOS_PRO_SIGNING_KEY: ${{ secrets.IXOS_PRO_SIGNING_KEY }}
+          IXOS_PRO_SYMMETRIC_KEY: ${{ secrets.IXOS_PRO_SYMMETRIC_KEY }}
+        run: |
+          node scripts/upload-pro-module.js --input target/release --out-dir dist
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ixos-pro-${{ matrix.os }}
+          path: dist

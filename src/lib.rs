@@ -26,6 +26,7 @@
 //! ```
 
 pub mod attestation;
+pub mod capabilities;
 pub mod cli;
 pub mod compliance;
 pub mod daemon;
@@ -173,3 +174,4 @@ pub use ixos_rank::evidence::{
 
 // P6: Path-Augmented Embeddings
 pub use ixos_embed::augmented::{AugmentationConfig, AugmentedEmbedder};
+

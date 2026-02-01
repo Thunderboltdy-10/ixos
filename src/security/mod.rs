@@ -5,7 +5,10 @@
 //! - Sandbox mode for restricting file operations to specific directories
 
 pub mod crypto;
+pub mod device_identity;
 pub mod sandbox;
 
 pub use crypto::{load_or_create_key, sha256};
 pub use sandbox::{Sandbox, SandboxConfig, SandboxError, SandboxedOps};
+pub use device_identity::{DeviceIdentity, DeviceIdentityError};
+

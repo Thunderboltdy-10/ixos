@@ -1,302 +1,362 @@
-# Ixos Master Roadmap — Product, UX, Performance, Monetization, Marketing
+# Ixos Pro Roadmap — “Second Brain” + Ask Mode (No IDE Integrations)
 
-_Last updated: 2026-01-23 (Europe/Madrid)._
+_Last updated: 2026-02-01_
 
-This roadmap merges:
-- the **103-page Ixos research PDF** (No Index Tax, mode-based design, retention engines, landing copy),
-- your existing Ixos internal docs (Hybrid Cascade / performance architecture, JIT embeddings, model lab harness),
-- and your current plan: **make the desktop app match the landing page**, and replace the hero video with an **interactive desktop-app mock** on the website.
+## North Star
+Turn Ixos from “weekly search tool” into an “always-open daily companion” by shipping:
+1) **Ask Mode** (question-style search that returns trustworthy snippets)
+2) **Second Brain** (Today tab + Related/Backlinks + Workstreams)
+3) **Pro Memory** (personalized ranking + daily brief + inbox)
+4) **Verified Session Mode** (Journalist mode that feels like a real tool)
 
-The roadmap is intentionally “long” and phase-based so you can execute it with AI agents in one-shot chunks.
-
----
-
-## Non‑negotiable pillars (must show up in product + marketing)
-1) **No Index Tax** (default behavior is zero persistent index)
-2) **Speed you can feel** (streaming + perceived-performance)
-3) **Trust** (preview + explainability + privacy proof)
-4) **Power when needed** (modes, not clutter)
-5) **Cross-surface parity** (desktop + CLI stay consistent)
+## Non-Negotiables
+- Local-first. No cloud indexing of user files.
+- Pro value compounds over time (not “a toggle”).
+- Free stays strong (core search is not paywalled).
+- Paywall must be **structural**: Pro code not shipped to free users.
 
 ---
 
-## Workstreams (run in parallel, but phase-gated)
-A. **Engine & Performance** (Hybrid Cascade, funnel strategy, caching philosophy)  
-B. **Desktop UI & Design System** (theme parity with landing page)  
-C. **Search Experience** (result card, preview, evidence, actions)  
-D. **Retention & “Pro” Value** (saved searches, Watch & Notify, projects)  
-E. **Integrations** (CLI, quick actions, VS Code, launcher hooks)  
-F. **Security & Enterprise** (Journalist Mode, audit logs, encryption choices)  
-G. **Quality / Testing / Release** (feature registry, E2E, perf CI, installers)  
-H. **Marketing & Web** (interactive demo, docs, benchmarks, launch assets)  
-I. **Monetization** (licensing, tiers, paywall that respects trust)
+# 0) Pro Paywall That’s Hard to Bypass (FOUNDATION)
 
----
-
-
-## Phase 1 — Measurement & bottleneck surgery (internal P1)
-**Goal:** stop guessing. Make latency measurable and regressions visible.
-
-**Key tasks**
-- Engine spans & telemetry (local-only): scan → candidate gen → embed → rerank → render
-- Benchmark harness: small/medium/huge corpora fixtures
-- Budgets: first-result time, full-results time, memory, CPU
-
-**Outputs**
-- `bench/` harness runnable on any machine
-- Perf report generated in CI (as artifacts)
-- “slow query” profiler output for real user corpora (opt-in)
+## 0.1 Capability Model
+Define a single source of truth in core:
+- `Capabilities` = set of feature flags (e.g., `ask_mode_plus`, `memory_graph`, `today_tab`, `related_graph`, `brief_inbox`, `verified_session`, `automation_actions`)
+- Every Pro-only command in Rust checks `capabilities.has(...)` **below the UI layer**.
 
 **Acceptance**
-- You can pinpoint the top 2 bottlenecks in any query.
-- You have a perf budget file that fails CI when violated.
+- No Pro feature is gated only by frontend conditionals.
+- All Pro functionality fails closed when entitlements are missing/invalid.
 
----
-
-## Phase 2 — Desktop UI redesign: match the landing page
-**Goal:** the desktop app should feel like the product you’re marketing.
-
-**Key tasks**
-- Build a **shared design system** used by both Desktop (Tauri/React) and Web (Next/Tailwind):
-  - shared Tailwind preset
-  - shared tokens (CSS variables): background elevations, borders, radii, typography
-  - shared components: SearchBar, ResultCard, Tabs, Badges, Buttons, Panels
-- Replace “boxy” layout with a tighter, hardware-grade instrument feel:
-  - fewer nested rectangles
-  - consistent 1px borders, controlled rounding
-  - calmer hierarchy, better typographic scale
-- Motion discipline: one signature animation (search “power-up”) + subtle micro-interactions only
-
-**Outputs**
-- `packages/ui` (or equivalent) consumed by both apps
-- Theme parity checklist: colors, font, spacing, shadows, radii, icon style
+## 0.2 Device Identity (Cryptographic)
+On first login:
+- Generate device keypair (Ed25519 or X25519).
+- Store private key in OS secure storage.
+- Send device public key to backend (trusted device = the one you already lease).
 
 **Acceptance**
-- Side-by-side screenshot: landing mock + desktop app match visually.
-- No “old theme” remnants.
+- Device is represented by a keypair, not a spoofable fingerprint.
+- Your “one active device + email transfer” updates which public key is trusted.
 
----
-
-## Phase 3 — Search experience overhaul (internal P3 perceived performance)
-**Goal:** make search feel alive and fast even on big corpora.
-
-**Key tasks**
-- True streaming UI:
-  - show “first credible results” fast
-  - progressively enrich (snippets, highlights, score reasons)
-- Remove repetitive skeleton artifacts; reduce dead space
-- Result cards:
-  - consistent preview block
-  - match evidence highlighting
-  - quick actions row (open/reveal/copy path)
-- “Why matched” toggle (default off; power users can open)
-
-**Outputs**
-- New SearchDeck timeline + streaming pipeline
-- ResultCard v2 with evidence + actions
+## 0.3 Server-Issued Entitlements
+Backend issues a signed entitlement token:
+- Contains: user_id, plan, expiry, trusted_device_pubkey_hash, enabled capabilities
+- Short lifetime (e.g., 7 days) + offline grace (e.g., 14–30 days)
+- Refresh when online
 
 **Acceptance**
-- The experience feels instant even when full computation continues.
-- Users can see *why* a result is relevant.
+- Pro works offline within grace.
+- Entitlements cannot be replayed on a different device.
 
----
+## 0.4 Pro Code Delivery (DO NOT SHIP PRO CODE IN FREE)
+### Approach: Encrypted Pro Module Bundle
+- Ship Free app with **no Pro module binaries**.
+- After entitlement, app downloads a **platform-specific Pro module** (dll/dylib/so) or pack.
+- Module is:
+  - Signed (integrity)
+  - Encrypted at rest
+  - Bound to device via envelope encryption
 
-## Phase 4 — Scale: candidate generation without touching everything (internal P2 + P4)
-**Goal:** semantic search at scale without cheating the wedge.
-
-**Key tasks**
-- Hybrid cascade candidate stage:
-  - fast lexical/metadata prefilter
-  - directory centroids / smart narrowing
-- Funnel strategy:
-  - embed only what you must
-  - batch & prioritize
-- Optional micro-caching that respects No Index Tax:
-  - xattr/ADS bytes
-  - opt-in encrypted local cache (bounded + transparent)
-
-**Outputs**
-- Candidate engine + routing rules
-- Cache modes UX: Off / Ephemeral / xattr / Encrypted
+### Envelope encryption design
+- Pro module encrypted with random symmetric key `K`.
+- Backend encrypts `K` to the trusted device public key.
+- App decrypts `K` using private key in secure storage, decrypts module, verifies signature, loads it.
+- Module never exists decrypted on disk (best effort):
+  - Decrypt to memory, or
+  - Decrypt to temp file with delete-on-close semantics.
 
 **Acceptance**
-- Large corpora queries stay within budgets without a heavy persistent index.
-- Cache behavior is transparent, reversible, and explained.
+- Copying the module to another device does not work (cannot decrypt `K`).
+- Without a valid entitlement, module is not downloadable, not loadable.
 
----
-
-## Phase 5 — Evidence engine + directory-aware relevance (internal P6)
-**Goal:** make results feel smarter than competitors with minimal compute.
-
-**Key tasks**
-- Evidence payload per result (top-K): snippet spans, match explanation, folder context
-- Directory awareness: project detection, locality + recency heuristics
-- UI explainability: minimal by default, rich on demand
-
-**Outputs**
-- Evidence schema shared across Desktop + CLI
-- CLI `--json` parity for evidence
+## 0.5 “Tamper Friction” Layer (not perfect, but raises cost)
+- Code-sign release builds.
+- Add lightweight integrity checks (self-check sums) + “attestation mismatch” kill-switch (feature disable, not app bricking).
+- Obfuscate entitlement verification flow in release builds.
+- Rate-limit license refresh & module download.
 
 **Acceptance**
-- Relevance improves measurably on benchmark queries.
-- Evidence is consistent across surfaces.
+- Casual patching breaks feature functionality (not just UI).
 
 ---
 
-## Phase 6 — Retention engines (turn Ixos into a daily tool)
-**Goal:** shift from “occasionally useful” to “always running because it pays off”.
+# 1) Search Bar: Ask Mode That Actually Works (HIGH IMPACT)
 
-**Key tasks**
-- Saved searches (pin, rename, tags)
-- **Watch & Notify**:
-  - background file watching
-  - notify when new/changed files match a saved semantic query
-  - rate limits + quiet hours
-- Projects/workspaces: scoped search + presets
-- Search history with privacy controls + Journalist Mode overrides
+## 1.1 Dual Input Modes (no new UI noise)
+- Default = Keyword mode.
+- If query ends in `?`, toggle **Ask Mode** automatically (UI shows a subtle “ASK” badge).
+- Optional: small radial hint bubble on `?` explaining Ask mode.
 
-**Outputs**
-- Saved search library + watcher system
-- Notification UX + preferences
+## 1.2 Ask Mode Pipeline (No LLM Required)
+### Step A — Query Understanding
+- Detect question pattern.
+- Remove stopwords + question words (when/what/was/the/etc.).
+- Extract **anchor terms** using IDF (rare/high-signal terms).
+- Detect phrases and treat quoted phrases as must-hit.
+- Detect time intent (“when”, “last week”, “yesterday”) → add recency bias.
+
+### Step B — Candidate Retrieval (Hybrid)
+- Lexical funnel: require at least 1 anchor (or a phrase) to appear in candidate text when possible.
+- Semantic rerank on candidates (existing pipeline).
+
+### Step C — Snippet Trust (Fix the “random snippet” problem)
+- Snippet passage must contain anchor terms OR phrase hits.
+- If top semantic passage lacks anchors, pick next best passage that does.
+- Show: highlights + “why matched” (anchors + semantic score).
+
+### Step D — Tiny Description (Optional, safe)
+Without an LLM, generate a 1-line “description” via extraction:
+- Pick the best sentence from the chosen snippet passage (TextRank-ish or simple scoring: anchor hits + position + punctuation).
+- Display as: “Likely answer context:” (not a factual claim).
+
+**Free vs Pro**
+- Free: Ask mode + anchor snippets.
+- Pro: Ask mode “Plus”:
+  - more aggressive intent parsing (dates/entities),
+  - better passage selection,
+  - optional “Answer Card” for simple recall (date/name/number extraction).
 
 **Acceptance**
-- There is at least one feature users *want running* (Watchers).
-- Pro tier has an obvious reason to exist.
+- Query: “The Financial Times” does not return docs dominated by “the”.
+- Query: “when was the meeting?” surfaces meeting notes and shows a meaningful snippet.
+
+**Metrics**
+- Search-to-open rate
+- Query reformulation rate (should drop)
+- “Bad result” dismiss rate (thumbs down / escape / new query)
 
 ---
 
-## Phase 7 — Integrations + workflow accelerators
-**Goal:** make Ixos plug into real workflows.
+# 2) Second Brain v1 (Today + Related + Workstreams)
 
-**Key tasks**
-- CLI parity (first-class): same engine, same evidence, stable contract tests
-- Quick actions: open, reveal, copy, batch operations
-- Developer hooks: semantic-grep mode, optional IDE integration later
-- Optional launcher bridging: hotkey + quick search
+## 2.1 Local Activity Ledger (Pro Memory Core)
+Create a local event store (encrypted):
+- events: search, result clicked, file opened, file modified (from watchers), file moved/renamed
+- minimal fields: file_id (path hash), timestamp, action_type, query_hash, workstream_id (optional)
 
-**Outputs**
-- CLI docs + examples
-- Thin integration interface / plugin system (if needed)
+**Free vs Pro**
+- Free: ephemeral session-only activity (RAM).
+- Pro: persistent encrypted ledger (powers daily value).
+
+## 2.2 Today Tab (Pro)
+A new top-level tab:
+- “Resume” (last active workstream + top files)
+- “Recently touched” (files opened/modified)
+- “Suggested next” (based on co-open/co-edit patterns)
+- “Pinned” (user pins files/workstreams)
+
+**Hook**
+- Show Today tab on app open.
+- On Ctrl+Space summon, default focus to Today unless user starts typing.
 
 **Acceptance**
-- Every feature declares whether it exists on CLI and why.
-- CLI and Desktop outputs match for the same query.
+- Opening Ixos without searching still gives value within 1 second.
 
----
-
-## Phase 8 — Security & enterprise hardening (trust moat)
-**Goal:** become the tool professionals can install without fear.
-
-**Key tasks**
-- **Journalist Mode**: no history, no caches, wipe ephemeral artifacts, panic shortcut
-- Audit logs: prove offline behavior, show what is stored and where
-- Installer hardening: signing, notarization, auto-updates you can trust
-
-**Outputs**
-- Understandable security settings panel
-- Exportable audit report (explicit consent)
+## 2.3 Related Files Panel (Pro)
+For any selected result:
+- “Related (co-open)” — files frequently opened within 30 minutes of this file
+- “Related (co-edit)” — files edited within X hours of edits to this file
+- “Similar content” — semantic similarity fallback
+- “Backlinks” — files that mention key identifiers from this file (simple: filename tokens + extracted headings/identifiers)
 
 **Acceptance**
-- A security-conscious user can verify Ixos is not leaking data.
-- Modes are clear and reversible.
+- Users can “walk” across a project without new queries.
+
+## 2.4 Workstreams (Pro)
+Auto clusters (and user-adjustable):
+- Each workstream is a named cluster:
+  - top folders, top files, top queries, last activity
+- UI:
+  - Workstreams list (left sidebar)
+  - Each workstream has Today-like overview
+
+**MVP clustering**
+- Start with time-window session clustering (co-open/co-edit).
+- Add folder + project-root heuristics.
+- Add semantic similarity if needed.
 
 ---
 
-## Phase 9 — Model suite + routing (internal P7)
-**Goal:** accuracy + speed under constraints, with measurable routing.
+# 3) “Always-On” That Feels Worth It (Brief + Inbox, not spam)
 
-**Key tasks**
-- Model harness + registry
-- Auto routing logic (speed vs quality)
-- Regression tests for relevance and speed
+## 3.1 Scoped Watch Engine (Pro)
+Watches are limited to:
+- user-defined “important scopes” (folders, workstreams)
+- no whole-disk scanning
 
-**Outputs**
-- Model compatibility matrix + CI benchmarks
-- “Why this model” debug output (optional)
+A Watch includes:
+- query (keyword or ask)
+- scope
+- trigger (on change, or digest)
+- quiet hours
+- strictness threshold
+
+## 3.2 File Intelligence Inbox (Pro)
+Not “notifications spam”.
+A persistent panel:
+- “New matches”
+- “Important changes”
+- “Workstream updates”
+- Dedupe + batching by design
+
+## 3.3 Daily Brief (Pro)
+A scheduled digest:
+- “3 docs updated in Workstream: X”
+- “2 new PDFs in Downloads”
+- “1 doc mentions deadline”
+Click → opens Inbox filtered.
 
 **Acceptance**
-- Switching models never breaks the pipeline.
-- Auto routing decisions are explainable.
+- Users can ignore it for a day and still benefit tomorrow.
+- No spam: rate-limited, deduped, digest-first.
 
 ---
 
-## Phase 10 — Ship the moat (internal P8 + P10)
-**Goal:** deliver the thing nobody else has that still respects No Index Tax.
+# 4) Change Lens (Pro)
 
-Pick one primary first:
-- FSTD / topology-distilled re-ranking prior
-- directory-centroid intelligence (practical moat)
-- ultra-light caching (xattr/ADS) + transparency UX
-- evidence engine + explainability as a product feature (trust moat)
+## 4.1 What Changed
+For text-like files:
+- show diff-ish view (line changes)
+For PDFs/docs:
+- show “changed passages” via re-extract + passage compare (simple, not perfect)
 
-**Outputs**
-- A single headline-worthy differentiator
-- Benchmark + demo proving it
+## 4.2 Change Context
+- show what else changed around same time in the same workstream/folder
+- show “related files impacted”
 
 **Acceptance**
-- A before/after demo is obviously better than substitutes.
+- “What changed since yesterday?” becomes a 5-second task.
 
 ---
 
-## Phase 11 — Website hero upgrade: interactive desktop mock (replace video)
-**Goal:** let users *feel* Ixos on the landing page.
+# 5) Smart Collections (Pro)
 
-**Key tasks**
-- Build a desktop window mock component in Next.js using shared UI components
-- Fake search engine (local-only demo dataset) with scenario packs + progressive reveal
-- Replace hero video; keep video as fallback
+Auto-generated collections:
+- “Hot this week”
+- “Stale but important” (historically high interactions, low recent)
+- “Recently modified in Workstream X”
+- “Likely relevant to current workstream”
 
-**Outputs**
-- `IxosDemoWindow` component + dataset + example queries chips
-
-**Acceptance**
-- The hero is interactive, crisp, and never buggy.
-- The mock stays visually identical to the desktop app (shared components).
+Collections are “saved views”, not new index structures.
 
 ---
 
-## Phase 12 — Monetization + licensing + production polish
-**Goal:** convert “cool” into “sellable”.
+# 6) Verified Session Mode (Journalist Mode that’s a Tool)
 
-**Key tasks**
-- Tiering (Free / Pro / Team later)
-- Offline licensing (privacy-safe) + graceful degradation
-- Release engineering (internal P9): signed builds, update channel, crash reporting (opt-in)
+Keep it in-app, but make it concrete:
 
-**Outputs**
-- Pricing page + in-app upgrade flow
-- License system + release checklist
+## 6.1 Verified Session Dashboard (Pro)
+Shows toggles and proofs:
+- History OFF
+- Cache OFF
+- No persistent ledger
+- Scope allowlist ON
+- Secure timing ON
+- Panic hotkey enabled
 
-**Acceptance**
-- Shipping updates is safe and repeatable.
-- Users understand Pro value immediately.
+## 6.2 Panic Hotkey
+Instantly:
+- closes UI
+- wipes in-memory buffers (best effort)
+- clears session state
+- deletes temp artifacts (best effort)
 
----
-
-## Phase 13 — Launch assets + growth loops (AFTER polish)
-**Goal:** go public with proof, not promises.
-
-**Key tasks**
-- Benchmark story: No Index Tax + speed + trust
-- Comparison pages + docs + short clips
-- Product Hunt / HN / Reddit playbook + newsletter/changelog
-- Optional social presence (no paid ads until retention is proven)
-
-**Outputs**
-- Launch kit + outreach calendar
-
-**Acceptance**
-- Story is coherent and backed by demos.
-- You can ship + announce on a cadence.
+**Note**
+- This is not your main Pro selling point; it’s credibility + niche value.
 
 ---
 
-## Ongoing: solving the “features are hard to test” problem
-Implement early and enforce forever:
-- Feature registry with surfaces/tests/docs
-- Capability matrix (Desktop vs CLI vs Web demo)
-- Contract tests (same query → same evidence JSON)
-- Golden corpora fixtures in CI
-- Perf CI budgets
-- Release gates checklist
+# 7) Presentation + Habit Hooks (how users discover & keep using it)
 
+## 7.1 First-Run Onboarding (30 seconds)
+- Pick 2–3 important folders
+- Create first workstream automatically
+- Enable Today tab
+- Offer 1 “Watch Template” (optional)
+
+## 7.2 Progressive Disclosure
+- Keep UI calm (hardware-grade).
+- Advanced panels appear only when relevant:
+  - Ask mode badge only when `?`
+  - Related panel expands on selection
+  - Inbox shows only when items exist
+
+## 7.3 “Aha” Moments (built-in)
+- After 5 searches: show “Turn this into a workstream?”
+- After repeated opens: “Pin this file/workstream?”
+
+---
+
+# 8) Rollout Plan (Phased)
+
+## Phase 0 (Week 1–2): Paywall & Plumbing
+- Capabilities registry + backend entitlements + device keypair
+- Pro module download + encryption + signature verification + loader
+- Offline grace + error states
+
+## Phase 1 (Week 2–4): Ask Mode + Snippet Trust
+- `?` trigger + parsing + anchor enforcement + phrase handling
+- Snippet selection fixes + tiny description extraction
+- Metrics + feedback affordance
+
+## Phase 2 (Month 2): Second Brain v1
+- Pro encrypted activity ledger
+- Today tab
+- Related panel (co-open/co-edit + semantic fallback)
+- Workstreams v1 clustering + pins
+
+## Phase 3 (Month 3): Brief + Inbox + Watches (scoped)
+- Watch engine for scopes/workstreams
+- Inbox + digest
+- Dedupe + quiet hours + batching
+
+## Phase 4 (Month 4–6): Change Lens + Smart Collections
+- Change lens views
+- Smart collections
+- Personalized ranking signals (lightweight)
+
+## Phase 5 (Month 6–12): Moat + Hardening
+- Forensic canary (tamper-evident file hash snapshots)
+- Advanced privacy tooling
+- Security review of agent/CLI surfaces
+
+---
+
+# 9) Free vs Pro Packaging (Simple)
+
+## Free
+- Core search (hybrid)
+- Ask mode basic (via `?`)
+- Starred searches (limited)
+- Basic UI + actions (open/reveal/copy)
+- Cache mode available (manual)
+
+## Pro
+- Pro module features:
+  - Today tab
+  - Workstreams
+  - Related/Backlinks
+  - Persistent encrypted activity ledger
+  - Personalized ranking
+  - File Intelligence Inbox + Daily Brief
+  - Scoped Watches
+  - Change Lens
+  - Smart Collections
+  - Verified Session Dashboard
+- History becomes part of “Memory” (not a standalone selling point)
+
+---
+
+# 10) Risks & Mitigations
+
+## Paywall bypass
+- Mitigation: do not ship Pro code in free; device-bound encrypted module; verify below UI.
+
+## Privacy concerns (“Ixos is watching me”)
+- Mitigation: clear UI: what’s tracked, local-only, encrypted; disable/clear controls; Verified Session.
+
+## “Always-on” resource cost
+- Mitigation: watchers only on scopes; batch processing; idle throttling; digest-first.
+
+## Snippet trust / multi-word queries
+- Mitigation: anchor enforcement + phrase rules + Ask mode parsing + user feedback loop.

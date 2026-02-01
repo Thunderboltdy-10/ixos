@@ -49,6 +49,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::instrumentation::search_total_span;
 
+use super::ask_mode::{AnchorTerm, QueryMode, TrustedSnippet, TrustedSnippetSelector};
 use super::candidate_generator::QueryPreprocessor;
 use super::evidence::{Evidence, EvidenceChain, PassageExtractor};
 use super::lexical_engine::LexicalEngine;
@@ -447,6 +448,9 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         let lexical_slot_index = Arc::new(AtomicUsize::new(0));
         let scan_event_count = Arc::new(AtomicUsize::new(0));
 
+        let mut preprocessor = QueryPreprocessor::with_defaults();
+        let processed = preprocessor.preprocess(&query);
+
         let echo_stats = stream_stats.lock().unwrap().clone();
         let _ = tx
             .send(SearchEvent::StreamUpdate {
@@ -466,7 +470,7 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         let scan_event_count_for_batches = Arc::clone(&scan_event_count);
         let mut batch_number = 0u32;
 
-        let lexical_results = tokio::select! {
+        let mut lexical_results = tokio::select! {
             biased; // Check cancellation first
 
             _ = cancel.cancelled() => {
@@ -551,6 +555,9 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                 }
             }
         };
+        if processed.mode == QueryMode::Ask && !processed.anchor_terms.is_empty() {
+            lexical_results = filter_lexical_by_anchors(lexical_results, &processed.anchor_terms);
+        }
         let lexical_results_len = lexical_results.len();
         let has_lexical_results = !lexical_results.is_empty();
         let lexical_lookup: std::collections::HashMap<_, _> = lexical_results
@@ -571,8 +578,6 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         }
 
         // Prepare semantic query (question rewrite, typo fixes)
-        let mut preprocessor = QueryPreprocessor::with_defaults();
-        let processed = preprocessor.preprocess(&query);
         let mut semantic_query = processed.semantic_query.clone();
         if semantic_query.trim().is_empty() {
             semantic_query = processed.corrected_query.clone();
@@ -877,13 +882,44 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             }
 
             let mut semantic_passage: Option<String> = None;
+            let mut ask_mode_trust: Option<TrustedSnippet> = None;
             if let Some(query_embedding) = query_embedding.as_ref() {
                 if should_extract_evidence(&result.path) {
                     if let Some(content) = super::evidence::passage_extractor::read_file_content(
                         &result.path,
                         evidence_max_bytes,
                     ) {
-                        if let Some(passage) =
+                        if processed.mode == QueryMode::Ask && !processed.anchor_terms.is_empty() {
+                            let passages = passage_extractor.extract(&content, query_embedding, |chunk| {
+                                evidence_engine.embed_passage_chunk(chunk)
+                            });
+                            if !passages.is_empty() {
+                                let semantic_scores: Vec<(usize, f32)> = passages
+                                    .iter()
+                                    .enumerate()
+                                    .map(|(idx, passage)| (idx, passage.score))
+                                    .collect();
+                                let selector = TrustedSnippetSelector::new(Default::default());
+                                if let Some(trusted) = selector.select_trusted_passage(
+                                    &passages,
+                                    &processed.anchor_terms,
+                                    &semantic_scores,
+                                ) {
+                                    let display = passage_extractor.truncate_for_display(&trusted.passage.text);
+                                    semantic_passage = Some(display.clone());
+                                    let matched_lines: Vec<String> =
+                                        display.lines().map(|l| l.to_string()).collect();
+                                    result.context_snippet = Some(super::snippet::ContextSnippet::new(
+                                        trusted.passage.line_number,
+                                        Vec::new(),
+                                        matched_lines,
+                                        Vec::new(),
+                                        display,
+                                    ));
+                                    ask_mode_trust = Some(trusted);
+                                }
+                            }
+                        } else if let Some(passage) =
                             passage_extractor.best_passage(&content, query_embedding, |chunk| {
                                 evidence_engine.embed_passage_chunk(chunk)
                             })
@@ -904,7 +940,10 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                 }
             }
 
-            if result.context_snippet.is_none() && context_lines > 0 {
+            if result.context_snippet.is_none()
+                && context_lines > 0
+                && (processed.mode != QueryMode::Ask || processed.anchor_terms.is_empty())
+            {
                 if let Some(content) = super::evidence::passage_extractor::read_file_content(
                     &result.path,
                     evidence_max_bytes,
@@ -924,6 +963,7 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                 lexical_lookup.get(&result.path),
                 &query_terms,
                 semantic_passage,
+                ask_mode_trust,
             );
             result.evidence = Some(evidence);
         }
@@ -1195,6 +1235,23 @@ fn extract_query_terms(query: &str) -> Vec<String> {
     terms
 }
 
+fn filter_lexical_by_anchors(
+    results: Vec<LexicalMatch>,
+    anchors: &[AnchorTerm],
+) -> Vec<LexicalMatch> {
+    if anchors.is_empty() {
+        return results;
+    }
+
+    results
+        .into_iter()
+        .filter(|item| {
+            let snippet = item.content_snippet.to_lowercase();
+            anchors.iter().any(|anchor| snippet.contains(&anchor.term))
+        })
+        .collect()
+}
+
 fn push_term(terms: &mut Vec<String>, raw: &str) {
     let lower = raw.to_lowercase();
     if lower.len() < 2 {
@@ -1215,6 +1272,7 @@ fn build_evidence_summary(
     lexical: Option<&LexicalMatch>,
     query_terms: &[String],
     semantic_passage: Option<String>,
+    ask_mode_trust: Option<TrustedSnippet>,
 ) -> EvidenceSummary {
     let mut evidence_items: Vec<Evidence> = Vec::new();
 
@@ -1239,6 +1297,14 @@ fn build_evidence_summary(
             best_chunk: passage.clone(),
             chunk_offset: 0,
             concepts: Vec::new(),
+        });
+    }
+
+    if let Some(trusted) = ask_mode_trust {
+        evidence_items.push(Evidence::AskModeTrust {
+            anchor_coverage: trusted.anchor_coverage,
+            matched_anchors: trusted.matched_anchors,
+            why_matched: trusted.why_matched,
         });
     }
 
@@ -1496,3 +1562,11 @@ mod tests {
         assert_eq!(engine.secure_ranker().cache_size(), 0);
     }
 }
+
+
+
+
+
+
+
+

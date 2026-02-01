@@ -32,6 +32,13 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 jsonwebtoken = "9"
 uuid = { version = "1", features = ["v4"] }
+# Pro module loading crypto
+libloading = "0.8"
+chacha20poly1305 = "0.10"
+x25519-dalek = "2.0"
+base64 = "0.22"
+ed25519-dalek = { version = "2.1" }
+tempfile = "3.15"
 
 # Async runtime (shared with ixos-protocol)
 tokio = { version = "1.43", features = ["full", "sync"] }
@@ -69,3 +76,6 @@ custom-protocol = ["tauri/custom-protocol"]
 webview2-com = "0.38.2"
 windows = { version = "0.58.0", features = ["Win32_System_Com", "Win32_UI_WindowsAndMessaging", "implement"] }
 windows-core = "0.58.0"
+
+
+

@@ -112,6 +112,20 @@ impl EvidenceChain {
         });
     }
 
+    /// Add Ask Mode trusted snippet evidence
+    pub fn add_ask_mode_trust(
+        &mut self,
+        anchor_coverage: f32,
+        matched_anchors: Vec<String>,
+        why_matched: String,
+    ) {
+        self.evidence.push(Evidence::AskModeTrust {
+            anchor_coverage,
+            matched_anchors,
+            why_matched,
+        });
+    }
+
     /// Add path match evidence
     pub fn add_path_match(
         &mut self,
@@ -288,6 +302,21 @@ impl EvidenceChainBuilder {
         self
     }
 
+    /// Add Ask Mode trusted snippet evidence
+    pub fn ask_mode_trust(
+        mut self,
+        anchor_coverage: f32,
+        matched_anchors: Vec<String>,
+        why_matched: String,
+    ) -> Self {
+        self.evidence.push(Evidence::AskModeTrust {
+            anchor_coverage,
+            matched_anchors,
+            why_matched,
+        });
+        self
+    }
+
     /// Add path match evidence
     pub fn path_match(mut self, tokens: Vec<String>, score: f32) -> Self {
         self.evidence.push(Evidence::PathMatch {
@@ -373,3 +402,8 @@ mod tests {
         assert_eq!(lexical.len(), 2);
     }
 }
+
+
+
+
+

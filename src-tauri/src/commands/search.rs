@@ -297,7 +297,7 @@ pub async fn search_progressive(
             }
             #[cfg(not(debug_assertions))]
             {
-                return Err("Authentication required - no entitlement token".into());
+                return Err("Authentication required - no entitlement token found in Rust backend".into());
             }
         }
     }

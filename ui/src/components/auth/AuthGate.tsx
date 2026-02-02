@@ -104,6 +104,14 @@ const signInAppearance: Appearance = {
     alertText: 'text-[#A1A1A6] font-mono',
     footer: 'hidden',
     formFieldInputShowPasswordButton: 'text-[#6B6B70] hover:text-[#A1A1A6] transition-colors',
+    // OTP / Verification code styling - centered with separate digit boxes
+    otpCodeFieldInputs: 'flex justify-center gap-2',
+    otpCodeFieldInput: 'w-12 h-14 text-center text-2xl font-mono font-bold bg-[#1A1A1E] border-2 border-white/10 text-[#E5E5E7] focus:border-[#14B8A6] focus:ring-2 focus:ring-[#14B8A6]/30 rounded-lg transition-all caret-[#14B8A6]',
+    otpCodeField: 'flex flex-col items-center gap-4',
+    // Center the verification view
+    formFieldRow: 'flex justify-center',
+    form: 'flex flex-col items-center',
+    verificationLinkStatusBox: 'text-center mx-auto font-mono',
   },
 };
 
@@ -482,75 +490,75 @@ function AuthGateInner({ children }: AuthGateProps) {
 
         const clerkToken = await getToken();
         if (!clerkToken) {
+          console.log('[Auth] No Clerk token available');
           if (!cancelled) setBootstrapped(true);
           return;
         }
+        console.log('[Auth] Got Clerk token');
 
-        // Register device - don't fail if this fails
+        // Register device - this is critical for lease/entitlement to work
         try {
+          console.log('[Auth] Registering device...');
           await registerDevice(clerkToken, deviceId, deviceLabel, devicePublicKey);
+          console.log('[Auth] Device registered successfully');
         } catch (err) {
-          console.warn('Device registration failed (non-fatal):', err);
+          console.error('[Auth] Device registration failed:', err);
+          // Continue anyway - entitlement endpoint might still work
         }
 
-        // Try to claim lease
+        // Try to claim lease first
+        let gotToken = false;
         try {
           console.log('[Auth] Attempting to claim lease...');
           const claimResult = await claimLease(clerkToken, deviceId, devicePublicKey);
+          console.log('[Auth] Lease claim response:', claimResult);
           if (claimResult?.token) {
             console.log('[Auth] Lease claimed successfully, plan:', claimResult.plan);
             setEntitlementToken(claimResult.token);
-            await storeEntitlementToken(claimResult.token).catch(() => { });
+            await storeEntitlementToken(claimResult.token).catch((e) => console.warn('[Auth] Failed to store token:', e));
             try {
               await invoke('set_entitlement_token', { token: claimResult.token });
               console.log('[Auth] Fresh token set in Rust backend');
+              gotToken = true;
             } catch (err) {
               console.warn('[Auth] Failed to set fresh token in backend:', err);
             }
           } else {
-            console.log('[Auth] Lease claim returned no token, checking transfer status');
+            console.log('[Auth] Lease claim returned no token');
             // Check if transfer is required (409 conflict)
             // If so, don't fetch entitlement - let the TransferScreen handle it
             const { transferRequired: needsTransfer } = useAuthStore.getState();
-            if (!needsTransfer) {
-              // Fetch entitlement as fallback only if no transfer is needed
-              try {
-                const entitlementResult = await fetchEntitlement(clerkToken, deviceId);
-                // Use token from entitlement if available
-                if (entitlementResult?.token) {
-                  setEntitlementToken(entitlementResult.token);
-                  await storeEntitlementToken(entitlementResult.token).catch(() => { });
-                  try {
-                    await invoke('set_entitlement_token', { token: entitlementResult.token });
-                  } catch {
-                    // Ignore
-                  }
-                }
-              } catch {
-                // Ignore entitlement fetch errors
-              }
+            if (needsTransfer) {
+              console.log('[Auth] Transfer required, skipping entitlement fetch');
             }
           }
         } catch (err) {
-          console.warn('Lease claim failed (non-fatal):', err);
-          // Check if transfer is required before fetching entitlement
+          console.warn('[Auth] Lease claim failed:', err);
+        }
+
+        // If lease claim didn't get a token, try entitlement endpoint as fallback
+        if (!gotToken) {
           const { transferRequired: needsTransfer } = useAuthStore.getState();
           if (!needsTransfer) {
-            // Try to fetch entitlement only if no transfer is needed
+            console.log('[Auth] Trying entitlement fetch as fallback...');
             try {
               const entitlementResult = await fetchEntitlement(clerkToken, deviceId);
-              // Use token from entitlement if available
+              console.log('[Auth] Entitlement response:', entitlementResult);
               if (entitlementResult?.token) {
+                console.log('[Auth] Got token from entitlement endpoint');
                 setEntitlementToken(entitlementResult.token);
-                await storeEntitlementToken(entitlementResult.token).catch(() => { });
+                await storeEntitlementToken(entitlementResult.token).catch((e) => console.warn('[Auth] Failed to store token:', e));
                 try {
                   await invoke('set_entitlement_token', { token: entitlementResult.token });
-                } catch {
-                  // Ignore
+                  console.log('[Auth] Entitlement token set in Rust backend');
+                } catch (e) {
+                  console.warn('[Auth] Failed to set entitlement token in backend:', e);
                 }
+              } else {
+                console.warn('[Auth] Entitlement endpoint returned no token');
               }
-            } catch {
-              // Ignore entitlement fetch errors
+            } catch (err) {
+              console.error('[Auth] Entitlement fetch failed:', err);
             }
           }
         }
@@ -630,6 +638,24 @@ function AuthGateInner({ children }: AuthGateProps) {
       clearInterval(interval);
     };
   }, [isSignedIn, bootstrapped, getToken, refreshLease, setEntitlementToken]);
+
+  // Listen for window focus to check if verification completed (e.g. email link clicked)
+  useEffect(() => {
+    const handleFocus = async () => {
+      console.log('[Auth] Window focused - checking session...');
+      if (user) {
+        try {
+          await user.reload();
+          console.log('[Auth] User session reloaded');
+        } catch (e) {
+          console.warn('[Auth] Failed to reload user session:', e);
+        }
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [user]);
 
   useEffect(() => {
     let cancelled = false;

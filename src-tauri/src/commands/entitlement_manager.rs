@@ -123,7 +123,7 @@ impl EntitlementManager {
         let years_since_1970 = days / 365;
         let year = 1970 + years_since_1970 as u32;
         let day_of_year = days % 365;
-        let month = (day_of_year / 30).min(11) + 1;
+        let month = ((day_of_year / 30).min(11) + 1) as u32;
         year * 100 + month
     }
 
@@ -132,7 +132,7 @@ impl EntitlementManager {
         // Pro users have unlimited Pro searches
         if let Some(ref token) = self.cache.entitlement_token {
             if let Ok(claims) = decode_entitlement_token_allow_expired(token) {
-                if claims.plan.as_deref() == Some("pro") {
+                if claims.plan == "pro" {
                     return true;
                 }
             }
@@ -154,7 +154,7 @@ impl EntitlementManager {
         // Don't count for Pro users
         if let Some(ref token) = self.cache.entitlement_token {
             if let Ok(claims) = decode_entitlement_token_allow_expired(token) {
-                if claims.plan.as_deref() == Some("pro") {
+                if claims.plan == "pro" {
                     return;
                 }
             }
@@ -175,7 +175,7 @@ impl EntitlementManager {
         // Pro users have unlimited
         if let Some(ref token) = self.cache.entitlement_token {
             if let Ok(claims) = decode_entitlement_token_allow_expired(token) {
-                if claims.plan.as_deref() == Some("pro") {
+                if claims.plan == "pro" {
                     return None; // Unlimited
                 }
             }

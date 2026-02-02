@@ -535,14 +535,11 @@ function EntitlementPanel() {
     setIsRefreshing(true);
     setRefreshError(null);
     setRefreshSuccess(false);
-    try {
-      // Trigger a page reload to re-run bootstrap flow
+    console.log('[Settings] Refreshing entitlement - reloading page to re-run auth flow');
+    // Small delay to show loading state before reload
+    setTimeout(() => {
       window.location.reload();
-    } catch (error) {
-      console.error('[Settings] Entitlement refresh failed:', error);
-      setRefreshError('Refresh failed - please sign out and sign in again');
-      setIsRefreshing(false);
-    }
+    }, 500);
   };
 
   const getStatusBadge = () => {

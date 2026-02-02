@@ -13,8 +13,14 @@ use tauri_plugin_opener::OpenerExt;
 pub struct EntitlementClaims {
     #[serde(alias = "user_id")]
     pub sub: String,
-    #[serde(default, alias = "device_pubkey_hash", alias = "device_id", alias = "did")]
-    pub trusted_device_pubkey_hash: String,
+    
+    // Handle potential duplicate fields from backend by making them separate Options
+    #[serde(default, alias = "device_pubkey_hash")]
+    pub trusted_device_pubkey_hash: Option<String>,
+    
+    #[serde(default, alias = "device_id")]
+    pub did: Option<String>,
+    
     pub plan: String,
     #[serde(default, alias = "features")]
     pub capabilities: Vec<String>,
@@ -41,16 +47,36 @@ fn decoding_key() -> Result<&'static DecodingKey, String> {
         .or_else(|| std::env::var("IXOS_JWT_PUBLIC_KEY").ok());
 
     let mut public_key = env_str
-        .ok_or_else(|| "IXOS_JWT_PUBLIC_KEY not set in environment".to_string())?;
+        .ok_or_else(|| {
+            println!("[Rust] IXOS_JWT_PUBLIC_KEY not set in environment!");
+            "IXOS_JWT_PUBLIC_KEY not set in environment".to_string()
+        })?;
 
     // Clean up escaped newlines if present
     public_key = public_key.replace("\\n", "\n");
+    // Check if key looks valid (has correct header)
+    if !public_key.contains("BEGIN PUBLIC KEY") {
+        println!("[Rust] Warning: Public key does not contain 'BEGIN PUBLIC KEY'");
+    }
 
     let parsed = DecodingKey::from_ec_pem(public_key.as_bytes())
-        .map_err(|e| format!("Failed to parse public key: {}", e))?;
+        .map_err(|e| {
+            println!("[Rust] Failed to parse public key: {}", e);
+            format!("Failed to parse public key: {}", e)
+        })?;
     let _ = KEY.set(parsed);
+    println!("[Rust] Decoding key initialized successfully");
     KEY.get()
         .ok_or_else(|| "Failed to initialize decoding key".to_string())
+}
+
+impl EntitlementClaims {
+    pub fn get_device_hash(&self) -> String {
+        self.trusted_device_pubkey_hash
+            .clone()
+            .or_else(|| self.did.clone())
+            .unwrap_or_default()
+    }
 }
 
 pub fn verify_entitlement_token_internal(token: &str) -> Result<EntitlementClaims, String> {
@@ -78,20 +104,28 @@ pub(crate) fn validate_entitlement_for_device(
     claims: &EntitlementClaims,
     device: &DeviceIdentity,
 ) -> Result<(), String> {
+    let claim_raw = claims.get_device_hash();
+    
     // Allow tokens without device binding for backward compatibility
     // This handles tokens issued before device binding was implemented
-    if claims.trusted_device_pubkey_hash.is_empty() {
+    if claim_raw.is_empty() {
         tracing::debug!("Token has no device binding - allowing for backward compatibility");
         return Ok(());
     }
-    let claim = claims.trusted_device_pubkey_hash.trim();
+    let claim = claim_raw.trim();
     let device_id = device.device_id();
+    
+    println!("[Rust] Validating device binding. Claim: '{}', DeviceID: '{}'", claim, device_id);
+
     if claim.eq_ignore_ascii_case(device_id) {
+        println!("[Rust] Device ID matched directly");
         return Ok(());
     }
 
     let pubkey = device.public_key();
     let pubkey_hex = hex_encode(&pubkey);
+    println!("[Rust] Checking pubkey hex: '{}'", pubkey_hex);
+    
     if claim.eq_ignore_ascii_case(&pubkey_hex) {
         return Ok(());
     }
@@ -108,6 +142,7 @@ pub(crate) fn validate_entitlement_for_device(
     }
 
     // When device binding is present, verify it matches this device
+    println!("[Rust] Device binding FAILED. Expected: '{}' or '{}', Got: '{}'", device_id, pubkey_hex, claim);
     return Err("Entitlement token not issued for this device".to_string());
 }
 
@@ -128,10 +163,13 @@ impl EntitlementClaims {
             capabilities: self.capabilities.clone(),
             exp: self.exp as u64,
             iat: self.iat.map(|v| v as u64),
-            device_pubkey_hash: if self.trusted_device_pubkey_hash.is_empty() {
-                None
-            } else {
-                Some(self.trusted_device_pubkey_hash.clone())
+            device_pubkey_hash: {
+                let hash = self.get_device_hash();
+                if hash.is_empty() {
+                    None
+                } else {
+                    Some(hash)
+                }
             },
             server_time: self.server_time.map(|v| v as u64),
         }
@@ -148,11 +186,16 @@ pub async fn set_entitlement_token(
     state: State<'_, AppState>,
     token: String,
 ) -> Result<(), String> {
+    println!("[Rust] set_entitlement_token called");
     let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
     let mut manager = state.entitlement_manager.lock();
     match manager.set_entitlement_token(token, &device) {
-        Ok(()) => Ok(()),
+        Ok(()) => {
+            println!("[Rust] Token set successfully");
+            Ok(())
+        }
         Err(err) => {
+            println!("[Rust] Token set FAILED: {}", err);
             manager.clear();
             Err(err)
         }

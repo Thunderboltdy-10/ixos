@@ -8,6 +8,9 @@ import { InfoPanel } from '@/components/onboarding/InfoPanel';
 import { ArcNoiseBackground } from '@/components/effects/ArcNoiseBackground';
 import { PricingPanel } from '@/components/account/PricingPanel';
 import { useUIStore } from '@/stores/uiStore';
+import { useAuthStore } from '@/stores/authStore';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { Button } from '@/components/ui/button';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -22,6 +25,27 @@ export function AppShell({ children }: AppShellProps) {
   } = useUIStore();
 
   const searchStore = useSearchStore();
+  const proStatus = useAuthStore((s) => s.proStatus);
+  const entitlementToken = useAuthStore((s) => s.entitlementToken);
+  const { config, updateConfig } = useSettingsStore();
+
+  const refreshBy =
+    entitlementToken && proStatus?.status === 'grace' ? proStatus.refreshBy : null;
+  const refreshByLabel = refreshBy ? new Date(refreshBy * 1000).toLocaleString() : null;
+  const proLocked =
+    !!entitlementToken &&
+    (proStatus?.status === 'expired' || proStatus?.status === 'timeSuspect');
+  const shouldLock =
+    proLocked && (config?.search.searchMode === 'pro' || config?.search.searchMode === 'auto');
+
+  const lockTitle =
+    proStatus?.status === 'timeSuspect'
+      ? 'Device time change detected'
+      : 'Pro access expired';
+  const lockBody =
+    proStatus?.status === 'timeSuspect'
+      ? 'Connect to the internet to refresh your entitlement. Pro features are locked until verified.'
+      : 'Your Pro entitlement has expired. Renew to unlock Pro features. Your data remains intact.';
 
   const handleNewSearch = () => {
     searchStore.reset();
@@ -82,10 +106,47 @@ export function AppShell({ children }: AppShellProps) {
 
       {/* Main content */}
       <main className="flex-1 flex flex-col pt-10 overflow-hidden relative z-10">
+        {refreshByLabel && (
+          <div className="px-6 py-2 border-b border-accent-amber/30 bg-accent-amber/10 text-xs text-porcelain">
+            Pro needs internet refresh by{' '}
+            <span className="text-accent-amber font-semibold">{refreshByLabel}</span>
+          </div>
+        )}
 
         <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
           {children}
         </div>
+
+        {shouldLock && (
+          <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+            <div className="max-w-md w-full bg-graphite-1 border border-stroke-hairline rounded-2xl p-6 shadow-lift text-center">
+              <h3 className="text-lg font-semibold text-porcelain mb-2">{lockTitle}</h3>
+              <p className="text-sm text-fg-muted mb-6">{lockBody}</p>
+              <div className="flex items-center justify-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (!config) return;
+                    updateConfig({
+                      search: { ...config.search, searchMode: 'flash' },
+                    });
+                  }}
+                >
+                  Switch to Flash
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowPricing(true);
+                    setShowSettings(false);
+                    setShowInfo(false);
+                  }}
+                >
+                  Renew Pro
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Settings Panel Overlay */}
         {showSettings && (

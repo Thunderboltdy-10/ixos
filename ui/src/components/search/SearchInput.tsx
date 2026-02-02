@@ -14,6 +14,7 @@ import { useLayoutStore } from '@/stores/layoutStore';
 import type { SearchMode as QualityMode } from '@/lib/types';
 import { invoke } from '@tauri-apps/api/core';
 import { SearchBar } from '@ixos/ui';
+import { useAuthStore } from '@/stores/authStore';
 
 
 interface SearchInputProps {
@@ -52,6 +53,8 @@ export function SearchInput({
   const restoreFromHistory = useSearchStore((s) => s.restoreFromHistory);
   const searchPhase = useSearchStore((s) => s.phase);
   const setSearchBarBox = useLayoutStore((s) => s.setSearchBarBox);
+  const proStatus = useAuthStore((s) => s.proStatus);
+  const entitlementToken = useAuthStore((s) => s.entitlementToken);
 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -64,6 +67,9 @@ export function SearchInput({
   const modelType = (config?.search?.modelType || 'ixos-flash-v1') as ModelType;
   const proModelType = (config?.search?.proModelType || 'potion') as ModelType;
   const qualityMode = (config?.search?.searchMode || 'auto') as QualityMode;
+  const proLocked =
+    !!entitlementToken &&
+    (proStatus?.status === 'expired' || proStatus?.status === 'timeSuspect');
 
   const modePalette = {
     jit: {
@@ -388,6 +394,7 @@ export function SearchInput({
                 <QualitySwitcher
                   value={qualityMode}
                   onChange={handleQualityChange}
+                  proLocked={proLocked}
                 />
               </div>
 

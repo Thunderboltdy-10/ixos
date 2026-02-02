@@ -24,18 +24,7 @@ impl Default for PrefetchState {
 /// * `path` - The file path to prefetch
 #[tauri::command]
 pub async fn prefetch_file(path: String, state: State<'_, PrefetchState>) -> Result<(), String> {
-    let path_buf = PathBuf::from(path);
-    // Clone the Arc to avoid holding the lock across await
-    let prefetcher = state.0.clone();
-    // Spawn a blocking task to handle the prefetch
-    tokio::task::spawn_blocking(move || {
-        let prefetcher = prefetcher.lock();
-        // Use blocking prefetch or schedule it
-        prefetcher.prefetch_sync(path_buf);
-    })
-    .await
-    .map_err(|e| e.to_string())?;
-    Ok(())
+    prefetch_file_inner(path, &state).await
 }
 
 /// Get cached file content if available
@@ -52,21 +41,49 @@ pub fn get_file_content(
     path: String,
     state: State<'_, PrefetchState>,
 ) -> Result<Option<String>, String> {
-    let prefetcher = state.0.lock();
-    Ok(prefetcher.get_cached(&PathBuf::from(path)))
+    get_file_content_inner(path, &state)
 }
 
 /// Clear all prefetched content
 #[tauri::command]
 pub fn clear_prefetch_cache(state: State<'_, PrefetchState>) -> Result<(), String> {
-    let prefetcher = state.0.lock();
-    prefetcher.clear();
-    Ok(())
+    clear_prefetch_cache_inner(&state)
 }
 
 /// Get prefetch cache statistics
 #[tauri::command]
 pub fn get_prefetch_stats(state: State<'_, PrefetchState>) -> Result<PrefetchStats, String> {
+    get_prefetch_stats_inner(&state)
+}
+
+async fn prefetch_file_inner(path: String, state: &PrefetchState) -> Result<(), String> {
+    let path_buf = PathBuf::from(path);
+    // Clone the Arc to avoid holding the lock across await
+    let prefetcher = state.0.clone();
+    tokio::task::spawn_blocking(move || {
+        let prefetcher = prefetcher.lock();
+        prefetcher.prefetch_sync(path_buf);
+    })
+    .await
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+fn get_file_content_inner(
+    path: String,
+    state: &PrefetchState,
+) -> Result<Option<String>, String> {
+    let prefetcher = state.0.lock();
+    Ok(prefetcher.get_cached(&PathBuf::from(path)))
+}
+
+fn clear_prefetch_cache_inner(state: &PrefetchState) -> Result<(), String> {
+    let prefetcher = state.0.lock();
+    prefetcher.clear();
+    Ok(())
+}
+
+fn get_prefetch_stats_inner(state: &PrefetchState) -> Result<PrefetchStats, String> {
     let prefetcher = state.0.lock();
     Ok(PrefetchStats {
         cached_files: prefetcher.cache_size(),
@@ -88,7 +105,7 @@ mod tests {
     #[tokio::test]
     async fn test_prefetch_state() {
         let state = PrefetchState::default();
-        let stats = get_prefetch_stats(State::from(&state)).unwrap();
+        let stats = get_prefetch_stats_inner(&state).unwrap();
         assert_eq!(stats.cached_files, 0);
         assert_eq!(stats.pending_files, 0);
     }
@@ -96,8 +113,8 @@ mod tests {
     #[tokio::test]
     async fn test_clear_cache() {
         let state = PrefetchState::default();
-        clear_prefetch_cache(State::from(&state)).unwrap();
-        let stats = get_prefetch_stats(State::from(&state)).unwrap();
+        clear_prefetch_cache_inner(&state).unwrap();
+        let stats = get_prefetch_stats_inner(&state).unwrap();
         assert_eq!(stats.cached_files, 0);
     }
 }

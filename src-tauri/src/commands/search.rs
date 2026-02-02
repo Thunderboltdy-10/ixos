@@ -13,6 +13,7 @@ use ixos_protocol::ixos_rank::{
 use ixos_protocol::EvidenceTag;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 use tauri::{Emitter, State, Window};
 use tokio::sync::mpsc;
 
@@ -270,30 +271,34 @@ pub async fn search_progressive(
     options: SearchOptions,
 ) -> Result<(), String> {
     // Verify entitlement token before allowing search
-    if let Some(token) = state.get_entitlement_token() {
-        let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+    {
         let mut manager = state.entitlement_manager.lock();
-        if let Err(e) = manager.refresh_if_needed(Some(token), &device) {
-            tracing::warn!("Entitlement validation failed: {}", e);
-            return Err(format!("Entitlement validation failed: {}", e));
-        }
-        if !manager.is_valid() {
-            return Err("Entitlement expired - please refresh your session".into());
-        }
-    } else {
-        #[cfg(debug_assertions)]
-        {
-            let allow_unentitled = std::env::var("IXOS_DEV_ALLOW_UNENTITLED")
-                .ok()
-                .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
-                .unwrap_or(false);
-            if !allow_unentitled {
-                return Err("Authentication required (set IXOS_DEV_ALLOW_UNENTITLED=1 to bypass in dev)".into());
+        if manager.entitlement_token().is_some() {
+            let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+            let status = manager.pro_status(SystemTime::now(), &device);
+            if !status.is_enabled() {
+                return Err(match status {
+                    ixos_protocol::ProStatus::TimeSuspect { .. } => {
+                        "Local time change detected - refresh required to continue".into()
+                    }
+                    _ => "Entitlement expired - please refresh your session".into(),
+                });
             }
-        }
-        #[cfg(not(debug_assertions))]
-        {
-            return Err("Authentication required - no entitlement token".into());
+        } else {
+            #[cfg(debug_assertions)]
+            {
+                let allow_unentitled = std::env::var("IXOS_DEV_ALLOW_UNENTITLED")
+                    .ok()
+                    .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+                    .unwrap_or(false);
+                if !allow_unentitled {
+                    return Err("Authentication required (set IXOS_DEV_ALLOW_UNENTITLED=1 to bypass in dev)".into());
+                }
+            }
+            #[cfg(not(debug_assertions))]
+            {
+                return Err("Authentication required - no entitlement token".into());
+            }
         }
     }
 

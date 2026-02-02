@@ -17,66 +17,100 @@ Turn Ixos from “weekly search tool” into an “always-open daily companion�
 
 ---
 
-# 0) Pro Paywall That’s Hard to Bypass (FOUNDATION)
+# Phase 0 — Pro Gating in a Single Shipped App (No Separate Pro Module)
 
-## 0.1 Capability Model
-Define a single source of truth in core:
-- `Capabilities` = set of feature flags (e.g., `ask_mode_plus`, `memory_graph`, `today_tab`, `related_graph`, `brief_inbox`, `verified_session`, `automation_actions`)
-- Every Pro-only command in Rust checks `capabilities.has(...)` **below the UI layer**.
+## Objective
+Ship **one executable/installer** containing all features. Pro access is controlled by **signed entitlements** that:
+- expire locally (even offline),
+- allow a configurable offline grace window,
+- resist clock rollback,
+- and are bound to a trusted device.
+
+> Note: There is no “perfect” client-side protection against reverse engineering. The goal is fail-closed behavior for normal users and high friction for casual abuse.
+
+---
+
+## 0.1 Capability-Based Enforcement (Core, not UI)
+- Define a canonical `Capabilities` registry (strings → flags).
+- Every Pro-only operation must check `capabilities.has("...")` inside Rust core.
+- UI may hide/show, but **never** controls access.
 
 **Acceptance**
-- No Pro feature is gated only by frontend conditionals.
-- All Pro functionality fails closed when entitlements are missing/invalid.
+- Removing UI checks does not unlock Pro features.
+
+---
 
 ## 0.2 Device Identity (Cryptographic)
-On first login:
-- Generate device keypair (Ed25519 or X25519).
+- On first run/login, generate a device keypair.
 - Store private key in OS secure storage.
-- Send device public key to backend (trusted device = the one you already lease).
+- Compute `device_pubkey_hash` as a stable device binding identifier.
+- Backend “trusted device” leasing stays as-is (email-confirm transfer).
 
 **Acceptance**
-- Device is represented by a keypair, not a spoofable fingerprint.
-- Your “one active device + email transfer” updates which public key is trusted.
+- Device binding can’t be faked by changing a machine name or config file.
 
-## 0.3 Server-Issued Entitlements
-Backend issues a signed entitlement token:
-- Contains: user_id, plan, expiry, trusted_device_pubkey_hash, enabled capabilities
-- Short lifetime (e.g., 7 days) + offline grace (e.g., 14–30 days)
-- Refresh when online
+---
 
-**Acceptance**
-- Pro works offline within grace.
-- Entitlements cannot be replayed on a different device.
+## 0.3 Signed Entitlement Tokens (Subscription Source of Truth)
+Backend issues a signed token (JWT or equivalent) containing:
+- `plan` (free/pro)
+- `capabilities` (array)
+- `exp` (expiry timestamp)
+- `device_pubkey_hash` (binding)
+- optionally `iat` and `server_time` to help time integrity
 
-## 0.4 Pro Code Delivery (DO NOT SHIP PRO CODE IN FREE)
-### Approach: Encrypted Pro Module Bundle
-- Ship Free app with **no Pro module binaries**.
-- After entitlement, app downloads a **platform-specific Pro module** (dll/dylib/so) or pack.
-- Module is:
-  - Signed (integrity)
-  - Encrypted at rest
-  - Bound to device via envelope encryption
-
-### Envelope encryption design
-- Pro module encrypted with random symmetric key `K`.
-- Backend encrypts `K` to the trusted device public key.
-- App decrypts `K` using private key in secure storage, decrypts module, verifies signature, loads it.
-- Module never exists decrypted on disk (best effort):
-  - Decrypt to memory, or
-  - Decrypt to temp file with delete-on-close semantics.
+Client verifies signature + binding and derives the active Capabilities set.
 
 **Acceptance**
-- Copying the module to another device does not work (cannot decrypt `K`).
-- Without a valid entitlement, module is not downloadable, not loadable.
+- Invalid signature → Pro disabled (fail closed).
+- Binding mismatch → cached entitlement cleared + Pro disabled.
 
-## 0.5 “Tamper Friction” Layer (not perfect, but raises cost)
-- Code-sign release builds.
-- Add lightweight integrity checks (self-check sums) + “attestation mismatch” kill-switch (feature disable, not app bricking).
-- Obfuscate entitlement verification flow in release builds.
-- Rate-limit license refresh & module download.
+---
+
+## 0.4 Offline Expiry + Grace Window (No “Forever Offline”)
+Enforce expiry locally:
+- If `now <= exp`: Pro Active.
+- If `exp < now <= exp + GRACE`: Pro Grace (enabled, but must refresh online by deadline).
+- If `now > exp + GRACE`: Pro Expired (disabled until refresh).
+
+Recommended defaults:
+- Token lifetime: 7 days
+- Grace: 7–14 days (choose based on tolerance)
 
 **Acceptance**
-- Casual patching breaks feature functionality (not just UI).
+- Pro disables after `exp + grace` even with no internet.
+
+---
+
+## 0.5 Anti-Clock-Rollback Friction
+- Persist `last_seen_time` locally (secure storage).
+- If system time moves backwards beyond tolerance:
+  - mark `time_suspect = true`,
+  - require online refresh to re-enable Pro (or allow a short temporary window).
+
+**Acceptance**
+- Rolling system clock backwards does not preserve Pro indefinitely.
+
+---
+
+## 0.6 Expiry UX (No Data Deletion)
+- Grace: show banner “Pro needs refresh by <date>”.
+- Expired: lock Pro panels/views with an overlay explaining renewal.
+- Do **not** delete user data (history/workstreams/graph remain stored locally).
+
+**Acceptance**
+- Users don’t lose their data, but cannot use Pro features while expired.
+
+---
+
+## 0.7 Remove Pro Module Infrastructure
+- Remove module download, encryption, dynamic loading, and related env vars.
+- Remove module upload scripts.
+- Keep only entitlement-based gating.
+
+**Acceptance**
+- No module URL/base/version/public-key config is required at runtime.
+- App is a single installer with all features compiled in.
 
 ---
 

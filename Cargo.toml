@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "src-tauri", "ixos-pro"]
+members = [".", "src-tauri"]
 exclude = ["ixos-site"]
 resolver = "2"
 

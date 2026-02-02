@@ -1,19 +1,19 @@
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use crate::state::AppState;
-use ixos_protocol::capabilities::Capabilities;
 use ixos_protocol::security::DeviceIdentity;
+use ixos_protocol::entitlements::ProStatus;
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
+use std::time::SystemTime;
 use tauri::{AppHandle, State};
 use tauri_plugin_opener::OpenerExt;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EntitlementClaims {
+    #[serde(alias = "user_id")]
     pub sub: String,
-    #[serde(default)]
-    pub did: String,
-    #[serde(default)]
+    #[serde(default, alias = "device_pubkey_hash", alias = "device_id", alias = "did")]
     pub trusted_device_pubkey_hash: String,
     pub plan: String,
     #[serde(default, alias = "features")]
@@ -23,6 +23,8 @@ pub struct EntitlementClaims {
     pub offline_grace_days: Option<u32>,
     pub iss: String,
     pub iat: Option<usize>,
+    #[serde(default, alias = "server_time_unix")]
+    pub server_time: Option<usize>,
 }
 
 fn decoding_key() -> Result<&'static DecodingKey, String> {
@@ -82,11 +84,58 @@ pub(crate) fn validate_entitlement_for_device(
         tracing::debug!("Token has no device binding - allowing for backward compatibility");
         return Ok(());
     }
-    // When device binding is present, verify it matches this device
-    if claims.trusted_device_pubkey_hash != device.device_id() {
-        return Err("Entitlement token not issued for this device".to_string());
+    let claim = claims.trusted_device_pubkey_hash.trim();
+    let device_id = device.device_id();
+    if claim.eq_ignore_ascii_case(device_id) {
+        return Ok(());
     }
-    Ok(())
+
+    let pubkey = device.public_key();
+    let pubkey_hex = hex_encode(&pubkey);
+    if claim.eq_ignore_ascii_case(&pubkey_hex) {
+        return Ok(());
+    }
+
+    if let Ok(decoded) = STANDARD.decode(claim) {
+        if decoded == pubkey {
+            return Ok(());
+        }
+    }
+    if let Ok(decoded) = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(claim) {
+        if decoded == pubkey {
+            return Ok(());
+        }
+    }
+
+    // When device binding is present, verify it matches this device
+    return Err("Entitlement token not issued for this device".to_string());
+}
+
+fn hex_encode(bytes: &[u8]) -> String {
+    let mut out = String::with_capacity(bytes.len() * 2);
+    for b in bytes {
+        use std::fmt::Write;
+        let _ = write!(out, "{:02x}", b);
+    }
+    out
+}
+
+impl EntitlementClaims {
+    pub fn to_entitlement(&self) -> ixos_protocol::Entitlement {
+        ixos_protocol::Entitlement {
+            user_id: self.sub.clone(),
+            plan: self.plan.clone(),
+            capabilities: self.capabilities.clone(),
+            exp: self.exp as u64,
+            iat: self.iat.map(|v| v as u64),
+            device_pubkey_hash: if self.trusted_device_pubkey_hash.is_empty() {
+                None
+            } else {
+                Some(self.trusted_device_pubkey_hash.clone())
+            },
+            server_time: self.server_time.map(|v| v as u64),
+        }
+    }
 }
 
 #[tauri::command]
@@ -99,29 +148,19 @@ pub async fn set_entitlement_token(
     state: State<'_, AppState>,
     token: String,
 ) -> Result<(), String> {
-    if let Ok(claims) = decode_entitlement_token_allow_expired(&token) {
-        let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
-        if let Err(err) = validate_entitlement_for_device(&claims, &device) {
-            state.set_entitlement_token(None);
-            state.set_capabilities(Capabilities::default());
-            state.entitlement_manager.lock().clear();
-            return Err(err);
+    let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+    let mut manager = state.entitlement_manager.lock();
+    match manager.set_entitlement_token(token, &device) {
+        Ok(()) => Ok(()),
+        Err(err) => {
+            manager.clear();
+            Err(err)
         }
-        state.set_entitlement_token(Some(token.clone()));
-        state.set_capabilities(Capabilities::from_entitlements(&claims.capabilities));
-        state.entitlement_manager.lock().update_from_claims(&claims);
-    } else {
-        state.set_entitlement_token(None);
-        state.set_capabilities(Capabilities::default());
-        state.entitlement_manager.lock().clear();
     }
-    Ok(())
 }
 
 #[tauri::command]
 pub async fn clear_entitlement_token(state: State<'_, AppState>) -> Result<(), String> {
-    state.set_entitlement_token(None);
-    state.set_capabilities(Capabilities::default());
     state.entitlement_manager.lock().clear();
     Ok(())
 }
@@ -131,13 +170,23 @@ pub async fn check_search_allowed(
     _app: AppHandle,
     state: State<'_, AppState>,
 ) -> Result<bool, String> {
-    if let Some(token) = state.get_entitlement_token() {
-        let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
-        let mut manager = state.entitlement_manager.lock();
-        manager.refresh_if_needed(Some(token), &device)?;
-        return Ok(manager.is_valid());
-    }
-    Ok(false)
+    let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+    let mut manager = state.entitlement_manager.lock();
+    Ok(manager.pro_status(SystemTime::now(), &device).is_enabled())
+}
+
+#[tauri::command]
+pub async fn get_pro_status(state: State<'_, AppState>) -> Result<ProStatus, String> {
+    let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+    let mut manager = state.entitlement_manager.lock();
+    Ok(manager.pro_status(SystemTime::now(), &device))
+}
+
+/// Get remaining Pro searches for free users this month (None = unlimited for Pro)
+#[tauri::command]
+pub async fn get_remaining_pro_searches(state: State<'_, AppState>) -> Result<Option<u32>, String> {
+    let mut manager = state.entitlement_manager.lock();
+    Ok(manager.remaining_pro_searches())
 }
 
 #[tauri::command]

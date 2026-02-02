@@ -227,6 +227,29 @@ export async function getActivePlanForUser(userId: string): Promise<Plan> {
 }
 
 /**
+ * Get subscription details including plan and period end date.
+ * Used to set proper token expiry for Pro users.
+ */
+export async function getSubscriptionDetailsForUser(userId: string): Promise<{
+  plan: Plan;
+  currentPeriodEnd: Date | null;
+}> {
+  const sub = await db.query.subscriptions.findFirst({
+    where: eq(subscriptions.userId, userId),
+    orderBy: desc(subscriptions.updatedAt),
+  });
+  if (!sub) return { plan: "free", currentPeriodEnd: null };
+
+  if (!isSubscriptionActive({ status: sub.status, currentPeriodEnd: sub.currentPeriodEnd })) {
+    return { plan: "free", currentPeriodEnd: null };
+  }
+  return {
+    plan: sub.plan === "pro" ? "pro" : "free",
+    currentPeriodEnd: sub.currentPeriodEnd,
+  };
+}
+
+/**
  * Parse and sanitize private key from environment variable.
  * Handles both PKCS#8 (BEGIN PRIVATE KEY) and EC (BEGIN EC PRIVATE KEY) format labels,
  * but note that the underlying content must be in a format supported by the library.
@@ -276,12 +299,14 @@ export async function issueEntitlementToken({
   plan,
   features = [],
   offlineGraceDays = 14,
+  subscriptionEnd,
 }: {
   clerkUserId: string;
   deviceId: string;
   plan: Plan;
   features?: string[];
   offlineGraceDays?: number;
+  subscriptionEnd?: Date | null;  // For Pro users, token expires at subscription end
 }) {
   const rawKey = process.env.IXOS_JWT_PRIVATE_KEY || "";
   const privateKeyPem = parsePrivateKey(rawKey);
@@ -316,18 +341,32 @@ export async function issueEntitlementToken({
     : features;
 
   const now = Math.floor(Date.now() / 1000);
+
+  // For Pro users with a subscription end date, expire token at subscription end
+  // This ensures offline access ends when subscription ends
+  // For free users or Pro without end date, use standard TTL
+  let expirationTime: number;
+  if (plan === "pro" && subscriptionEnd) {
+    const subscriptionEndUnix = Math.floor(subscriptionEnd.getTime() / 1000);
+    // Use the earlier of subscription end or standard TTL (for refresh purposes)
+    expirationTime = Math.min(subscriptionEndUnix, now + ENTITLEMENT_TTL_SECONDS);
+  } else {
+    expirationTime = now + ENTITLEMENT_TTL_SECONDS;
+  }
+
   return await new SignJWT({
     plan,
     capabilities,
     did: deviceId,
     // trusted_device_pubkey_hash is the deviceId itself (SHA256 of public key)
     trusted_device_pubkey_hash: deviceId,
-    offline_grace_days: offlineGraceDays,
+    offline_grace_days: plan === "pro" ? 0 : offlineGraceDays, // No grace for Pro - strict sub end
+    subscription_end: subscriptionEnd ? Math.floor(subscriptionEnd.getTime() / 1000) : undefined,
   })
     .setProtectedHeader({ alg: "ES256", typ: "JWT" })
     .setIssuer(TOKEN_ISSUER)
     .setSubject(clerkUserId)
     .setIssuedAt(now)
-    .setExpirationTime(now + ENTITLEMENT_TTL_SECONDS)
+    .setExpirationTime(expirationTime)
     .sign(privateKey);
 }

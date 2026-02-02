@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { IxosConfig, SearchOptions, ConsentStatus } from './types';
+import type { IxosConfig, SearchOptions, ConsentStatus, ProStatus } from './types';
 
 /**
  * Start a progressive search
@@ -131,6 +131,13 @@ export async function setShortcutConfig(config: import('./types').ShortcutConfig
  */
 export async function setEntitlementToken(token: string): Promise<void> {
   await invoke('set_entitlement_token', { token });
+}
+
+/**
+ * Get current Pro status from the backend
+ */
+export async function getProStatus(): Promise<ProStatus> {
+  return await invoke('get_pro_status');
 }
 
 /**

@@ -1,9 +1,9 @@
 import { and, eq, gt } from "drizzle-orm";
 import { db, devices, leases } from "@/lib/db";
 import {
-  getActivePlanForUser,
   getClerkUserIdFromRequest,
   getOrCreateUserByClerkId,
+  getSubscriptionDetailsForUser,
   issueEntitlementToken,
 } from "@/lib/controlPlane";
 
@@ -20,7 +20,7 @@ export async function GET(req: Request) {
   }
 
   const userRecord = await getOrCreateUserByClerkId(clerkUserId);
-  const plan = await getActivePlanForUser(userRecord.id);
+  const { plan, currentPeriodEnd } = await getSubscriptionDetailsForUser(userRecord.id);
 
   const device = await db.query.devices.findFirst({
     where: and(eq(devices.userId, userRecord.id), eq(devices.deviceId, deviceId)),
@@ -51,11 +51,13 @@ export async function GET(req: Request) {
 
   // Issue a token for the device (even if they don't have an active lease)
   // This allows free users and Pro users with active lease to search
+  // For Pro users, pass subscriptionEnd so token expires at subscription end
   const token = await issueEntitlementToken({
     clerkUserId,
     deviceId,
     plan,
     features: [],
+    subscriptionEnd: currentPeriodEnd,
   });
 
   return Response.json({

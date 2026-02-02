@@ -8,6 +8,7 @@ interface QualitySwitcherProps {
   value: SearchMode;
   onChange: (mode: SearchMode) => void;
   className?: string;
+  proLocked?: boolean;
 }
 
 interface QualityOption {
@@ -50,7 +51,7 @@ interface QualityOption {
     },
   ];
 
-export function QualitySwitcher({ value, onChange, className }: QualitySwitcherProps) {
+export function QualitySwitcher({ value, onChange, className, proLocked = false }: QualitySwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -87,6 +88,7 @@ export function QualitySwitcher({ value, onChange, className }: QualitySwitcherP
   }, [isOpen]);
 
   const handleSelect = (mode: SearchMode) => {
+    if (mode === 'pro' && proLocked) return;
     onChange(mode);
     setIsOpen(false);
   };
@@ -143,7 +145,8 @@ export function QualitySwitcher({ value, onChange, className }: QualitySwitcherP
                       'w-full flex items-start gap-3 px-4 py-3',
                       'hover:bg-graphite-3 transition-colors duration-150',
                       'text-left',
-                      mode.id === value && 'bg-graphite-3'
+                      mode.id === value && 'bg-graphite-3',
+                      mode.id === 'pro' && proLocked && 'opacity-50 cursor-not-allowed'
                     )}
                   >
                     <div className={cn('p-2 rounded-md mt-0.5', mode.bgColor)}>
@@ -154,6 +157,11 @@ export function QualitySwitcher({ value, onChange, className }: QualitySwitcherP
                         <span className="text-sm font-semibold text-porcelain">
                           {mode.label}
                         </span>
+                        {mode.id === 'pro' && proLocked && (
+                          <span className="text-2xs px-1.5 py-0.5 rounded bg-error/20 text-error">
+                            Locked
+                          </span>
+                        )}
                         {mode.id === 'auto' && (
                           <span className="text-2xs px-1.5 py-0.5 rounded bg-accent-teal/20 text-accent-teal">
                             Default

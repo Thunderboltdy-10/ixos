@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { getMachineId } from '@/lib/crypto';
 import { getDeviceLabel } from '@/lib/device';
 import { loadEntitlementToken, storeEntitlementToken } from '@/lib/authToken';
+import { getProStatus } from '@/lib/tauri';
 import { invoke } from '@tauri-apps/api/core';
 import ixosIcon from '@/assets/ixos-icon.png';
 import { SectionDivider } from "@/components/ui/SectionDivider";
@@ -131,7 +132,7 @@ function AuthScreen() {
 
       {/* Section Divider */}
       <div className="w-full max-w-2xl mb-4">
-        <SectionDivider label="DOWNLOAD_MODULE" accent="amber" />
+        <SectionDivider label="ACCOUNT_ACCESS" accent="amber" />
       </div>
 
       <div className="w-full max-w-md">
@@ -405,6 +406,8 @@ function AuthGateInner({ children }: AuthGateProps) {
     confirmTransfer,
     requestTransfer,
     setEntitlementToken,
+    entitlementToken,
+    setProStatus,
     transferRequired,
     transferToken,
   } = useAuthStore();
@@ -455,19 +458,26 @@ function AuthGateInner({ children }: AuthGateProps) {
         setDevice(deviceId, deviceLabel);
         setUser({ id: user.id, email: userEmail ?? user.id });
 
+        console.log('[Auth] Bootstrap started for user:', user.id);
+        console.log('[Auth] Device ID:', deviceId);
+
         // Load cached token first
         try {
           const cachedToken = await loadEntitlementToken();
           if (cachedToken) {
+            console.log('[Auth] Loaded cached entitlement token');
             setEntitlementToken(cachedToken);
             try {
               await invoke('set_entitlement_token', { token: cachedToken });
-            } catch {
-              // Ignore - command might not be available
+              console.log('[Auth] Cached token set in Rust backend');
+            } catch (err) {
+              console.warn('[Auth] Failed to set cached token in backend:', err);
             }
+          } else {
+            console.log('[Auth] No cached entitlement token found');
           }
-        } catch {
-          // Ignore token loading errors
+        } catch (err) {
+          console.warn('[Auth] Error loading cached token:', err);
         }
 
         const clerkToken = await getToken();
@@ -485,16 +495,20 @@ function AuthGateInner({ children }: AuthGateProps) {
 
         // Try to claim lease
         try {
+          console.log('[Auth] Attempting to claim lease...');
           const claimResult = await claimLease(clerkToken, deviceId, devicePublicKey);
           if (claimResult?.token) {
+            console.log('[Auth] Lease claimed successfully, plan:', claimResult.plan);
             setEntitlementToken(claimResult.token);
             await storeEntitlementToken(claimResult.token).catch(() => { });
             try {
               await invoke('set_entitlement_token', { token: claimResult.token });
-            } catch {
-              // Ignore
+              console.log('[Auth] Fresh token set in Rust backend');
+            } catch (err) {
+              console.warn('[Auth] Failed to set fresh token in backend:', err);
             }
           } else {
+            console.log('[Auth] Lease claim returned no token, checking transfer status');
             // Check if transfer is required (409 conflict)
             // If so, don't fetch entitlement - let the TransferScreen handle it
             const { transferRequired: needsTransfer } = useAuthStore.getState();
@@ -616,6 +630,30 @@ function AuthGateInner({ children }: AuthGateProps) {
       clearInterval(interval);
     };
   }, [isSignedIn, bootstrapped, getToken, refreshLease, setEntitlementToken]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const refreshStatus = async () => {
+      try {
+        const status = await getProStatus();
+        if (!cancelled) {
+          setProStatus(status);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.warn('Failed to refresh Pro status:', err);
+        }
+      }
+    };
+
+    refreshStatus();
+    const interval = setInterval(refreshStatus, 15 * 60 * 1000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [entitlementToken, setProStatus]);
 
   if (!isLoaded) {
     return <LoadingScreen message="Loading..." />;

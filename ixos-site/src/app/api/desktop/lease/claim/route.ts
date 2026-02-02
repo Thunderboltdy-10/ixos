@@ -2,9 +2,9 @@ import { z } from "zod";
 import { and, eq, gt } from "drizzle-orm";
 import { db, devices, leases } from "@/lib/db";
 import {
-  getActivePlanForUser,
   getClerkUserIdFromRequest,
   getOrCreateUserByClerkId,
+  getSubscriptionDetailsForUser,
   issueEntitlementToken,
 } from "@/lib/controlPlane";
 import { generateTransferCode } from "@/lib/transferCode";
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
   const { deviceId } = parsed.data;
   const userRecord = await getOrCreateUserByClerkId(clerkUserId);
-  const plan = await getActivePlanForUser(userRecord.id);
+  const { plan, currentPeriodEnd } = await getSubscriptionDetailsForUser(userRecord.id);
 
   const now = new Date();
 
@@ -86,11 +86,13 @@ export async function POST(req: Request) {
   // because errors and conflicts were handled above.
   const finalLeaseExpiresAt = leaseExpiresAt;
 
+  // For Pro users, pass subscriptionEnd so token expires at subscription end
   const token = await issueEntitlementToken({
     clerkUserId,
     deviceId,
     plan,
     features: [],
+    subscriptionEnd: currentPeriodEnd,
   });
 
   return Response.json({

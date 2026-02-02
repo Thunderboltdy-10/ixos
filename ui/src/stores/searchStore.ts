@@ -23,6 +23,9 @@ function translateErrorMessage(error: string): string {
   if (msg.includes('entitlement expired')) {
     return 'Your Pro subscription has expired. Please renew to continue searching.';
   }
+  if (msg.includes('time change') || msg.includes('time suspect') || msg.includes('clock rollback')) {
+    return 'We detected a device time change. Connect to the internet to refresh your Pro entitlement.';
+  }
   if (msg.includes('entitlement token not issued for this device')) {
     return 'Your license is active on another device. Please transfer it to continue.';
   }

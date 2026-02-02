@@ -7,8 +7,6 @@
 //! - Cached directory for faster repeated searches
 
 use crate::commands::entitlement_manager::EntitlementManager;
-use crate::pro_loader::ProModule;
-use ixos_protocol::capabilities::Capabilities;
 use ixos_protocol::ixos_embed::{MmapModel2VecEmbedder, ModelType};
 use parking_lot::Mutex;
 use std::collections::HashMap;
@@ -62,14 +60,8 @@ pub struct AppState {
     pub model_cache: Arc<Mutex<HashMap<String, Arc<MmapModel2VecEmbedder>>>>,
     /// Last loaded model type
     pub loaded_model: Arc<Mutex<Option<String>>>,
-    /// Cached entitlement token for auth gating
-    pub entitlement_token: Arc<Mutex<Option<String>>>,
-    /// Cached capability set for feature gating
-    pub capabilities: Arc<Mutex<Capabilities>>,
     /// Entitlement manager for offline grace + refresh
     pub entitlement_manager: Arc<Mutex<EntitlementManager>>,
-    /// Loaded Pro module (if available)
-    pub pro_module: Arc<Mutex<Option<ProModule>>>,
 }
 
 impl AppState {
@@ -83,10 +75,7 @@ impl AppState {
             cached_directory: Arc::new(Mutex::new(None)),
             model_cache: Arc::new(Mutex::new(HashMap::new())),
             loaded_model: Arc::new(Mutex::new(None)),
-            entitlement_token: Arc::new(Mutex::new(None)),
-            capabilities: Arc::new(Mutex::new(Capabilities::default())),
             entitlement_manager: Arc::new(Mutex::new(EntitlementManager::new())),
-            pro_module: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -171,21 +160,7 @@ impl AppState {
         self.loaded_model.lock().clone()
     }
 
-    pub fn set_entitlement_token(&self, token: Option<String>) {
-        *self.entitlement_token.lock() = token;
-    }
-
-    pub fn get_entitlement_token(&self) -> Option<String> {
-        self.entitlement_token.lock().clone()
-    }
-
-    pub fn set_capabilities(&self, caps: Capabilities) {
-        *self.capabilities.lock() = caps;
-    }
-
-    pub fn capabilities(&self) -> Capabilities {
-        self.capabilities.lock().clone()
-    }
+    // Entitlement and capability management lives in EntitlementManager.
 }
 
 impl Default for AppState {

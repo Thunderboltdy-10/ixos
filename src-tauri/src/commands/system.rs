@@ -201,7 +201,7 @@ pub async fn preload_model(
     use ixos_protocol::ixos_embed::ModelType;
 
     // Check authentication
-    if state.get_entitlement_token().is_none() {
+    if state.entitlement_manager.lock().entitlement_token().is_none() {
         return Err("Authentication required to preload models".to_string());
     }
 

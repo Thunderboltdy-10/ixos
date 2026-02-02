@@ -30,6 +30,7 @@ pub mod capabilities;
 pub mod cli;
 pub mod compliance;
 pub mod daemon;
+pub mod entitlements;
 pub mod instrumentation;
 pub mod integrations;
 pub mod ixos_embed;
@@ -38,6 +39,7 @@ pub mod ixos_watcher;
 pub mod journalist_mode;
 pub mod optimization;
 pub mod parsers;
+pub mod pro;
 pub mod security;
 pub mod storage;
 pub mod telemetry;
@@ -99,6 +101,8 @@ pub use ixos_rank::{
     MAX_CANDIDATES_FOR_EMBEDDING,
     MAX_TEXT_CHARS_PER_FILE,
 };
+pub use entitlements::{Entitlement, ProStatus};
+pub use pro::{ask_mode_plus, extract_answer_card, AnswerCard, AskModePlusResult, ProEntity};
 pub use ixos_watcher::{
     EventType, FileEvent, ProcessedEvent, ResilienceConfig, ResilientWatcher, WatcherStats,
 };

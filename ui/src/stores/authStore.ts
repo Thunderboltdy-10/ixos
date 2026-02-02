@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { getApiBase } from '@/lib/api';
+import type { ProStatus } from '@/lib/types';
 
 export type PlanTier = 'free' | 'pro';
 
@@ -38,6 +39,7 @@ interface AuthState {
   deviceLabel: string | null;
   entitlement: EntitlementInfo | null;
   entitlementToken: string | null;
+  proStatus: ProStatus | null;
   devices: DeviceInfo[];
   transferRequired: boolean;
   transferToken: string | null;
@@ -49,6 +51,7 @@ interface AuthState {
   setDevice: (deviceId: string, deviceLabel: string) => void;
   setEntitlement: (entitlement: EntitlementInfo | null) => void;
   setEntitlementToken: (token: string | null) => void;
+  setProStatus: (status: ProStatus | null) => void;
   setDevices: (devices: DeviceInfo[]) => void;
 
   registerDevice: (authToken: string, deviceId: string, deviceLabel: string, devicePublicKey?: string | null) => Promise<void>;
@@ -95,6 +98,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   deviceLabel: null,
   entitlement: null,
   entitlementToken: null,
+  proStatus: null,
   devices: [],
   transferRequired: false,
   transferToken: null,
@@ -109,6 +113,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   setDevice: (deviceId, deviceLabel) => set({ deviceId, deviceLabel }),
   setEntitlement: (entitlement) => set({ entitlement }),
   setEntitlementToken: (token) => set({ entitlementToken: token }),
+  setProStatus: (status) => set({ proStatus: status }),
   setDevices: (devices) => set({ devices }),
 
   registerDevice: async (authToken, deviceId, deviceLabel, devicePublicKey) => {

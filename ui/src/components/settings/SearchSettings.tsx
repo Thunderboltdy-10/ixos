@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Database, Trash2, RefreshCw, HardDrive, DownloadCloud, Loader2, Check } from 'lucide-react';
 import { formatFileSize } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/stores/authStore';
 
 interface CacheStats {
   backendType: string;
@@ -30,6 +31,11 @@ interface ModelStatus {
 
 export function SearchSettings() {
   const { config, updateConfig, resetConfig, isLoading } = useSettingsStore();
+  const proStatus = useAuthStore((s) => s.proStatus);
+  const entitlementToken = useAuthStore((s) => s.entitlementToken);
+  const proLocked =
+    !!entitlementToken &&
+    (proStatus?.status === 'expired' || proStatus?.status === 'timeSuspect');
 
   if (!config) {
     return <div className="text-fg-dim">Loading...</div>;
@@ -148,22 +154,16 @@ export function SearchSettings() {
         >
           <option value="flash">Flash</option>
           <option value="auto">Auto</option>
-          <option value="pro">Pro</option>
+          <option value="pro" disabled={proLocked}>Pro</option>
         </select>
+        {proLocked && (
+          <div className="mt-2 text-2xs text-error">
+            Pro is locked until your entitlement is refreshed.
+          </div>
+        )}
       </SettingRow>
 
-      {/* Pro model selection */}
-      <SettingRow
-        label="Pro model"
-        description="Model used when Pro or Auto refinement is enabled"
-      >
-        <div className="flex items-center gap-2">
-          <div className="text-sm text-porcelain font-medium px-2 py-1 bg-graphite-2 rounded-md border border-stroke-hairline">
-            Potion 8M
-          </div>
-          <span className="text-xs text-fg-dim">(Standard)</span>
-        </div>
-      </SettingRow>
+
 
       {/* Cache Mode */}
       <SettingRow
@@ -193,6 +193,9 @@ export function SearchSettings() {
 
       {/* Cache Stats Panel */}
       <CachePanel />
+
+      {/* Entitlement / Pro Status Panel */}
+      <EntitlementPanel />
 
       <SettingRow
         label="Show score breakdown"
@@ -505,6 +508,105 @@ function ModelManagementPanel() {
       {error && (
         <div className="mt-2 text-xs text-error p-2 bg-error/10 border border-error/20 rounded">
           {error}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Entitlement status and refresh panel
+ */
+function EntitlementPanel() {
+  const proStatus = useAuthStore((s) => s.proStatus);
+  const entitlementToken = useAuthStore((s) => s.entitlementToken);
+  const refreshLease = useAuthStore((s) => s.refreshLease);
+  const setEntitlementToken = useAuthStore((s) => s.setEntitlementToken);
+  const deviceId = useAuthStore((s) => s.deviceId);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [refreshSuccess, setRefreshSuccess] = useState(false);
+
+  const handleRefresh = async () => {
+    if (!deviceId) {
+      setRefreshError('Device not registered');
+      return;
+    }
+    setIsRefreshing(true);
+    setRefreshError(null);
+    setRefreshSuccess(false);
+    try {
+      // Trigger a page reload to re-run bootstrap flow
+      window.location.reload();
+    } catch (error) {
+      console.error('[Settings] Entitlement refresh failed:', error);
+      setRefreshError('Refresh failed - please sign out and sign in again');
+      setIsRefreshing(false);
+    }
+  };
+
+  const getStatusBadge = () => {
+    if (!entitlementToken) {
+      return <span className="text-2xs px-1.5 py-0.5 rounded bg-fg-dim/20 text-fg-dim">Not signed in</span>;
+    }
+    switch (proStatus?.status) {
+      case 'active':
+        return <span className="text-2xs px-1.5 py-0.5 rounded bg-accent-teal/20 text-accent-teal">Active</span>;
+      case 'grace':
+        return <span className="text-2xs px-1.5 py-0.5 rounded bg-accent-amber/20 text-accent-amber">Grace Period</span>;
+      case 'expired':
+        return <span className="text-2xs px-1.5 py-0.5 rounded bg-error/20 text-error">Expired</span>;
+      case 'timeSuspect':
+        return <span className="text-2xs px-1.5 py-0.5 rounded bg-accent-amber/20 text-accent-amber">Time Issue</span>;
+      default:
+        return <span className="text-2xs px-1.5 py-0.5 rounded bg-fg-dim/20 text-fg-dim">Free</span>;
+    }
+  };
+
+  return (
+    <div className="py-3 border-b border-stroke-hairline">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <RefreshCw className="w-4 h-4 text-accent-magenta" />
+          <span className="text-sm font-medium text-porcelain">Pro Entitlement</span>
+          {getStatusBadge()}
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs"
+          onClick={handleRefresh}
+          disabled={isRefreshing || !entitlementToken}
+        >
+          {isRefreshing ? (
+            <>
+              <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+              Refreshing...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="w-3 h-3 mr-1.5" />
+              Refresh
+            </>
+          )}
+        </Button>
+      </div>
+
+      {proStatus?.expiresAt && (
+        <div className="text-xs text-fg-dim mb-2">
+          Expires: {new Date(proStatus.expiresAt * 1000).toLocaleDateString()}
+        </div>
+      )}
+
+      {refreshSuccess && (
+        <div className="text-xs text-accent-teal p-2 bg-accent-teal/10 border border-accent-teal/20 rounded">
+          Entitlement refreshed successfully
+        </div>
+      )}
+
+      {refreshError && (
+        <div className="text-xs text-error p-2 bg-error/10 border border-error/20 rounded">
+          {refreshError}
         </div>
       )}
     </div>

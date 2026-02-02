@@ -215,3 +215,136 @@ export type ProStatus =
   | { status: 'expired'; expiredAt: number }
   | { status: 'timeSuspect'; limitedUntil?: number | null };
 
+// ============================================================================
+// Phase 2: Second Brain Types
+// ============================================================================
+
+/**
+ * Activity action types
+ */
+export type ActivityAction =
+  | 'search_query'
+  | 'result_clicked'
+  | 'file_opened'
+  | 'file_revealed'
+  | 'file_modified'
+  | 'file_moved'
+  | 'file_renamed'
+  | 'file_pinned'
+  | 'file_unpinned';
+
+/**
+ * Activity event from the ledger
+ */
+export interface ActivityEvent {
+  id: string;
+  fileId: string;
+  filePath: string;
+  timestamp: number;
+  actionType: ActivityAction;
+  queryHash?: string | null;
+  workstreamId?: string | null;
+}
+
+/**
+ * Time range for activity queries
+ */
+export interface TimeRange {
+  start?: number;
+  end?: number;
+}
+
+/**
+ * Co-occurrence data for related files
+ */
+export interface CoOccurrence {
+  fileId: string;
+  count: number;
+  lastSeen: number;
+  avgGapMs: number;
+  reason: 'co_open' | 'co_edit' | 'frequent';
+}
+
+/**
+ * Recently touched file
+ */
+export interface RecentFile {
+  path: string;
+  fileId: string;
+  lastTouched: number;
+  touchCount: number;
+  actions: ActivityAction[];
+}
+
+/**
+ * Activity statistics
+ */
+export interface ActivityStats {
+  eventCount: number;
+  isDirty: boolean;
+}
+
+/**
+ * Workstream (auto-clustered or manual session)
+ */
+export interface Workstream {
+  id: string;
+  name: string;
+  createdAt: number;
+  lastActive: number;
+  topFolders: [string, number][];
+  topFiles: [string, number][];
+  topQueries: [string, number][];
+  eventCount: number;
+  isAuto: boolean;
+  description?: string | null;
+  isPinned: boolean;
+  durationMs: number;
+}
+
+/**
+ * Workstreams statistics
+ */
+export interface WorkstreamsStats {
+  totalCount: number;
+  pinnedCount: number;
+  autoCount: number;
+  isDirty: boolean;
+}
+
+/**
+ * Today Tab data structure
+ */
+export interface TodayTabData {
+  resume: {
+    workstream: Workstream | null;
+    topFiles: RecentFile[];
+    lastActive: number;
+  };
+  recentlyTouched: RecentFile[];
+  suggestedNext: SuggestedFile[];
+  pinned: PinnedItem[];
+}
+
+/**
+ * Suggested file based on co-occurrence
+ */
+export interface SuggestedFile {
+  path: string;
+  name: string;
+  score: number;
+  reason: 'co-open' | 'co-edit' | 'frequent';
+  coOccurredWith: string;
+}
+
+/**
+ * Pinned item (file or workstream)
+ */
+export interface PinnedItem {
+  id: string;
+  type: 'file' | 'workstream';
+  path?: string;
+  name: string;
+  pinnedAt: number;
+}
+

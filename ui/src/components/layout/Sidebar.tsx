@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, FileText, Clock, Trash2, Star, BookOpen, EyeOff } from 'lucide-react';
+import { Plus, FileText, Clock, Trash2, Star, BookOpen, EyeOff, Calendar, Layers, Search, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStatsStore } from '@/stores/statsStore';
 import { useStarredStore, type SearchThread } from '@/stores/starredStore';
@@ -13,15 +13,29 @@ import { openExternalUrl } from '@/lib/tauri';
 import { useAuth } from '@clerk/clerk-react';
 // import { getVariantId } from '@/lib/checkout';
 
+// Navigation views for Phase 2 Second Brain
+export type SidebarView = 'search' | 'today' | 'workstreams';
+
 interface SidebarProps {
   onNewSearch?: () => void;
   onOpenGuide?: () => void;
   onOpenSettings?: (tab?: 'search' | 'account' | 'keyboard' | 'privacy' | 'compliance' | 'about') => void;
   onOpenPricing?: () => void;
   className?: string;
+  // Phase 2: Second Brain navigation
+  activeView?: SidebarView;
+  onViewChange?: (view: SidebarView) => void;
 }
 
-export function Sidebar({ onNewSearch, onOpenGuide, onOpenSettings, onOpenPricing, className }: SidebarProps) {
+export function Sidebar({
+  onNewSearch,
+  onOpenGuide,
+  onOpenSettings,
+  onOpenPricing,
+  className,
+  activeView = 'search',
+  onViewChange,
+}: SidebarProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'recent' | 'starred'>('recent');
 
@@ -120,7 +134,38 @@ export function Sidebar({ onNewSearch, onOpenGuide, onOpenSettings, onOpenPricin
         </button>
       </div>
 
-      {/* Tab toggle */}
+      {/* Phase 2: Main navigation */}
+      <div className="px-3 pb-3">
+        <nav className="space-y-1">
+          <NavItem
+            icon={Search}
+            label="Search"
+            isActive={activeView === 'search'}
+            onClick={() => onViewChange?.('search')}
+          />
+          <NavItem
+            icon={Calendar}
+            label="Today"
+            isActive={activeView === 'today'}
+            onClick={() => onViewChange?.('today')}
+            isPro
+            isLocked={entitlement?.plan !== 'pro'}
+            onLockedClick={onOpenPricing}
+          />
+          <NavItem
+            icon={Layers}
+            label="Workstreams"
+            isActive={activeView === 'workstreams'}
+            onClick={() => onViewChange?.('workstreams')}
+            isPro
+            isLocked={entitlement?.plan !== 'pro'}
+            onLockedClick={onOpenPricing}
+          />
+        </nav>
+      </div>
+
+      {/* Tab toggle for history (only show on search view) */}
+      {activeView === 'search' && (
       <div className="px-3 pb-3">
         <div className="flex items-center p-1 bg-graphite-2/40 border border-white/[0.04] rounded-lg">
           <button
@@ -150,9 +195,10 @@ export function Sidebar({ onNewSearch, onOpenGuide, onOpenSettings, onOpenPricin
           </button>
         </div>
       </div>
+      )}
 
-      {/* Journalist mode notice - Only show when in Recent tab */}
-      {journalistMode && activeTab === 'recent' && (
+      {/* Journalist mode notice - Only show when in Recent tab and search view */}
+      {journalistMode && activeTab === 'recent' && activeView === 'search' && (
         <div className="mx-3 mt-3 px-3 py-2 bg-accent-violet/5 border border-accent-violet/10 rounded-md">
           <div className="flex items-start gap-2">
             <EyeOff className="w-3.5 h-3.5 text-accent-violet flex-shrink-0 mt-0.5" />
@@ -166,7 +212,8 @@ export function Sidebar({ onNewSearch, onOpenGuide, onOpenSettings, onOpenPricin
 
       {showUpgrade && <UpgradeBanner onUpgrade={onOpenPricing} />}
 
-      {/* Search history list */}
+      {/* Search history list (only show on search view) */}
+      {activeView === 'search' && (
       <nav className="flex-1 overflow-y-auto px-2 pt-2 scrollbar-hide">
         {activeTab === 'recent' ? (
           // Recent searches from history store
@@ -275,6 +322,7 @@ export function Sidebar({ onNewSearch, onOpenGuide, onOpenSettings, onOpenPricin
           )
         )}
       </nav>
+      )}
 
       {/* Guide button */}
       <div className="px-3 py-2 border-t border-stroke-hairline">
@@ -447,6 +495,55 @@ function RecentSearchItem({
           </motion.div>
         )}
       </AnimatePresence>
+    </button>
+  );
+}
+
+// Navigation item component for Phase 2 main nav
+interface NavItemProps {
+  icon: React.ElementType;
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+  isPro?: boolean;
+  isLocked?: boolean;
+  onLockedClick?: () => void;
+}
+
+function NavItem({ icon: Icon, label, isActive, onClick, isPro, isLocked, onLockedClick }: NavItemProps) {
+  const handleClick = () => {
+    if (isLocked) {
+      onLockedClick?.();
+    } else {
+      onClick();
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className={cn(
+        'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left',
+        'transition-colors duration-150',
+        isActive
+          ? 'bg-graphite-2 text-porcelain'
+          : 'text-fg-muted hover:text-porcelain hover:bg-graphite-1',
+        isLocked && 'opacity-60'
+      )}
+    >
+      <Icon className={cn(
+        'w-4 h-4',
+        isActive ? 'text-accent-teal' : 'text-fg-dim'
+      )} />
+      <span className="text-sm flex-1">{label}</span>
+      {isPro && (
+        isLocked ? (
+          <Lock className="w-3 h-3 text-fg-ghost" />
+        ) : (
+          <span className="text-2xs text-accent-teal uppercase tracking-wider">Pro</span>
+        )
+      )}
     </button>
   );
 }

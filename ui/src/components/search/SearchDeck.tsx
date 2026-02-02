@@ -114,20 +114,24 @@ export function SearchDeck() {
     return () => observer.disconnect();
   }, [setDeckUnderlineBox]);
 
-  // Freeze elapsed time on completion
+  // Determine if we have results (timer should freeze when first results arrive)
+  const hasResults = semanticResults.length > 0 || lexicalResults.length > 0;
+
+  // Freeze elapsed time when first results arrive (not just on completion)
   useEffect(() => {
-    if (isComplete && finalElapsedMs === null && searchStartTime) {
+    // Freeze timer when results arrive OR when complete
+    if ((hasResults || isComplete) && finalElapsedMs === null && searchStartTime) {
       setFinalElapsedMs(Date.now() - searchStartTime);
     }
     // Reset for next search
     if (!isComplete && !isActive && !hasSearchIntent) {
       setFinalElapsedMs(null);
     }
-  }, [isComplete, isActive, hasSearchIntent, searchStartTime, finalElapsedMs]);
+  }, [isComplete, isActive, hasSearchIntent, searchStartTime, finalElapsedMs, hasResults]);
 
-  // Elapsed time tracking (only when not complete)
+  // Elapsed time tracking (stop when results arrive or complete)
   useEffect(() => {
-    if (!shouldShow || !searchStartTime || isComplete) return;
+    if (!shouldShow || !searchStartTime || isComplete || hasResults) return;
 
     setElapsedMs(Date.now() - searchStartTime);
     const timer = window.setInterval(() => {
@@ -135,7 +139,7 @@ export function SearchDeck() {
     }, 100);
 
     return () => window.clearInterval(timer);
-  }, [shouldShow, searchStartTime, isComplete]);
+  }, [shouldShow, searchStartTime, isComplete, hasResults]);
 
   // Use frozen time for complete state
   const displayElapsedMs = finalElapsedMs ?? elapsedMs;

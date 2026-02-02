@@ -40,6 +40,10 @@ pub fn run() {
             app.manage(commands::history::HistoryState::default());
             app.manage(commands::prefetch::PrefetchState::default());
             app.manage(commands::indexer::IndexerState::default());
+
+            // Initialize Phase 2 Second Brain state
+            app.manage(commands::activity::ActivityState::default());
+            app.manage(commands::workstreams::WorkstreamsState::default());
             // Setup system tray
             tray::setup_tray(app)?;
 
@@ -99,7 +103,6 @@ pub fn run() {
             commands::auth::clear_entitlement_token,
             commands::auth::check_search_allowed,
             commands::auth::get_pro_status,
-            commands::auth::get_remaining_pro_searches,
             commands::auth::get_device_id,
             commands::auth::get_device_public_key,
             commands::auth::open_checkout,
@@ -128,6 +131,25 @@ pub fn run() {
             // Keyboard Shortcuts
             commands::shortcut::get_shortcut_config,
             commands::shortcut::set_shortcut_config,
+            // Phase 2: Activity Ledger
+            commands::activity::log_activity,
+            commands::activity::get_activity,
+            commands::activity::get_co_occurrence,
+            commands::activity::get_recently_touched,
+            commands::activity::clear_activity,
+            commands::activity::get_activity_stats,
+            commands::activity::save_activity_ledger,
+            commands::activity::load_activity_ledger,
+            // Phase 2: Workstreams
+            commands::workstreams::list_workstreams,
+            commands::workstreams::get_workstream,
+            commands::workstreams::create_workstream,
+            commands::workstreams::rename_workstream,
+            commands::workstreams::merge_workstreams,
+            commands::workstreams::delete_workstream,
+            commands::workstreams::recluster_workstreams,
+            commands::workstreams::pin_workstream,
+            commands::workstreams::get_workstreams_stats,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

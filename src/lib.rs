@@ -25,6 +25,7 @@
 //! let cache = get_cache_for_path(path);
 //! ```
 
+pub mod activity_ledger;
 pub mod attestation;
 pub mod capabilities;
 pub mod cli;
@@ -43,6 +44,7 @@ pub mod pro;
 pub mod security;
 pub mod storage;
 pub mod telemetry;
+pub mod workstreams;
 
 // Re-exports for convenience
 pub use ixos_embed::memory_protection::{
@@ -178,4 +180,13 @@ pub use ixos_rank::evidence::{
 
 // P6: Path-Augmented Embeddings
 pub use ixos_embed::augmented::{AugmentationConfig, AugmentedEmbedder};
+
+// Phase 2: Second Brain - Activity Ledger
+pub use activity_ledger::{
+    ActivityAction, ActivityEvent, ActivityLedger, CoOccurrence, CoOccurrenceAnalyzer,
+    RecentFile, TimeRange, create_event, hash_file_path, hash_query,
+};
+
+// Phase 2: Second Brain - Workstreams
+pub use workstreams::{Workstream, WorkstreamManager, auto_cluster_sessions};
 

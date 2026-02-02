@@ -274,16 +274,11 @@ pub async fn search_progressive(
     {
         let mut manager = state.entitlement_manager.lock();
         if manager.entitlement_token().is_some() {
-            let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
-            let status = manager.pro_status(SystemTime::now(), &device);
-            if !status.is_enabled() {
-                return Err(match status {
-                    ixos_protocol::ProStatus::TimeSuspect { .. } => {
-                        "Local time change detected - refresh required to continue".into()
-                    }
-                    _ => "Entitlement expired - please refresh your session".into(),
-                });
-            }
+            // Start of Pro Access Check Removal
+            // Original logic checked manager.pro_status().is_enabled()
+            // Removed to allow Free users to use Pro model unrestricted.
+            let _device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+            // End of Pro Access Check Removal
         } else {
             #[cfg(debug_assertions)]
             {
@@ -297,7 +292,7 @@ pub async fn search_progressive(
             }
             #[cfg(not(debug_assertions))]
             {
-                return Err("Authentication required - no entitlement token".into());
+                return Err("Authentication required - no entitlement token found in Rust backend".into());
             }
         }
     }

@@ -225,12 +225,6 @@ pub async fn get_pro_status(state: State<'_, AppState>) -> Result<ProStatus, Str
     Ok(manager.pro_status(SystemTime::now(), &device))
 }
 
-/// Get remaining Pro searches for free users this month (None = unlimited for Pro)
-#[tauri::command]
-pub async fn get_remaining_pro_searches(state: State<'_, AppState>) -> Result<Option<u32>, String> {
-    let mut manager = state.entitlement_manager.lock();
-    Ok(manager.remaining_pro_searches())
-}
 
 #[tauri::command]
 pub async fn get_device_id(_app: AppHandle) -> Result<String, String> {

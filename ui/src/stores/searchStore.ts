@@ -5,6 +5,7 @@ import * as tauri from '@/lib/tauri';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { sanitizeResults } from '@/lib/searchHistory';
 import { useStarredStore } from '@/stores/starredStore';
+import { useActivityStore } from '@/stores/activityStore';
 
 const MAX_LEXICAL_DISPLAY = 50;
 const MAX_SCAN_TRAIL = 6;
@@ -241,11 +242,14 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       const proModelType = settings?.proModelType || 'potion';
 
       // Ask Mode detection (question mark or question word)
-      const isAskMode = normalizedQuery.endsWith('?')
-        || /^(who|what|when|where|how|why)\s/i.test(normalizedQuery);
+      // Note: Ask Mode enhances query processing but does NOT force model selection
+      // Users can use Ask Mode with Flash model for faster searches
+      // Detection kept for future use (e.g., query enhancement)
+      void (normalizedQuery.endsWith('?')
+        || /^(who|what|when|where|how|why|find|show|whats|wheres|hows)\s/i.test(normalizedQuery));
       const settingsMode = settings?.searchMode || 'auto';
-      // Force Pro mode if question mark is present, otherwise utilize settings
-      const searchMode = isAskMode ? 'pro' : settingsMode;
+      // Respect user's selected search mode - don't force Pro for Ask Mode
+      const searchMode = settingsMode;
 
       const timeoutSeconds = settings?.timeoutSeconds || 30;
 
@@ -373,6 +377,11 @@ export const useSearchStore = create<SearchState>((set, get) => ({
             durationMs: state.searchStartTime ? Date.now() - state.searchStartTime : 0,
             starred: existing?.starred ?? false,
           });
+
+          // Log search activity (Phase 2: Second Brain)
+          useActivityStore.getState().logSearchQuery(threadQuery).catch(() => {
+            // Silent failure - activity logging is non-critical
+          });
         }
 
         // Increment search count safely
@@ -458,9 +467,15 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
   openSelected: async () => {
     const result = get().getSelectedResult();
+    const query = get().activeQuery;
     if (result) {
       try {
         await tauri.openFile(result.path);
+
+        // Log file opened activity (Phase 2: Second Brain)
+        useActivityStore.getState().logFileOpened(result.path, query ?? undefined).catch(() => {
+          // Silent failure - activity logging is non-critical
+        });
       } catch (error) {
         console.error('Failed to open file:', error);
         set({ errorMessage: `Failed to open file: ${result.filename}` });
@@ -470,9 +485,15 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
   revealSelected: async () => {
     const result = get().getSelectedResult();
+    const query = get().activeQuery;
     if (result) {
       try {
         await tauri.revealInExplorer(result.path);
+
+        // Log file revealed activity (Phase 2: Second Brain)
+        useActivityStore.getState().logFileRevealed(result.path, query ?? undefined).catch(() => {
+          // Silent failure - activity logging is non-critical
+        });
       } catch (error) {
         console.error('Failed to reveal file:', error);
         set({ errorMessage: `Failed to reveal file: ${result.filename}` });

@@ -142,10 +142,11 @@ export function ResultCard({
   };
 
   // Hover classes - apply to all items
+  // Fixed: Increased opacity to 0.25 and reduced blur to 12px for better legibility
   const hoverClass = cn(
-    mode === 'jit' && 'hover:bg-accent-amber/5 hover:shadow-[0_0_25px_rgba(246,185,76,0.15)]',
-    mode === 'cache' && 'hover:bg-accent-teal/5 hover:shadow-[0_0_25px_rgba(20,184,166,0.15)]',
-    mode === 'journalist' && 'hover:bg-accent-violet/5 hover:shadow-[0_0_25px_rgba(167,139,250,0.15)]',
+    mode === 'jit' && 'hover:bg-accent-amber/8 hover:shadow-[0_0_12px_rgba(246,185,76,0.25)]',
+    mode === 'cache' && 'hover:bg-accent-teal/8 hover:shadow-[0_0_12px_rgba(20,184,166,0.25)]',
+    mode === 'journalist' && 'hover:bg-accent-violet/8 hover:shadow-[0_0_12px_rgba(167,139,250,0.25)]',
   );
 
   return (
@@ -172,14 +173,13 @@ export function ResultCard({
       onMouseEnter={() => handleMouseEnter(result.path)}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Swoosh Animation */}
+      {/* Subtle left border accent on hover (replaces dramatic swoosh) */}
       <div
         className={cn(
-          "absolute inset-0 w-full h-full -translate-x-[200%] group-hover:translate-x-[200%] transition-transform duration-500 ease-out z-0 pointer-events-none",
-          "bg-gradient-to-r from-transparent to-transparent opacity-50",
-          mode === 'jit' && "via-accent-amber/30",
-          mode === 'cache' && "via-accent-teal/30",
-          mode === 'journalist' && "via-accent-violet/30"
+          "absolute left-0 top-0 bottom-0 w-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none",
+          mode === 'jit' && "bg-accent-amber",
+          mode === 'cache' && "bg-accent-teal",
+          mode === 'journalist' && "bg-accent-violet"
         )}
       />
 

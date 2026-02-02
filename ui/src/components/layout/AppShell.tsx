@@ -11,6 +11,9 @@ import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { Button } from '@/components/ui/button';
+import { TodayTab } from '@/components/today/TodayTab';
+import { WorkstreamsList } from '@/components/workstreams/WorkstreamsList';
+import * as tauri from '@/lib/tauri';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -21,7 +24,8 @@ export function AppShell({ children }: AppShellProps) {
     showSettings, setShowSettings,
     showInfo, setShowInfo,
     showPricing, setShowPricing,
-    settingsTab, openSettings
+    settingsTab, openSettings,
+    activeView, setActiveView
   } = useUIStore();
 
   const searchStore = useSearchStore();
@@ -49,6 +53,16 @@ export function AppShell({ children }: AppShellProps) {
 
   const handleNewSearch = () => {
     searchStore.reset();
+    setActiveView('search');
+  };
+
+  const handleOpenFile = async (path: string) => {
+    await tauri.openFile(path);
+  };
+
+  const handleSelectWorkstream = (id: string) => {
+    // For now, just log - could navigate to workstream detail view
+    console.log('Selected workstream:', id);
   };
 
   // Listen for global shortcut trigger to focus search
@@ -101,6 +115,8 @@ export function AppShell({ children }: AppShellProps) {
           setShowSettings(false);
           setShowInfo(false);
         }}
+        activeView={activeView}
+        onViewChange={setActiveView}
         className="flex-shrink-0 relative z-20 backdrop-blur-sm bg-graphite-0/80"
       />
 
@@ -114,7 +130,20 @@ export function AppShell({ children }: AppShellProps) {
         )}
 
         <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
-          {children}
+          {activeView === 'search' && children}
+          {activeView === 'today' && (
+            <TodayTab
+              onStartSearch={() => setActiveView('search')}
+              onOpenFile={handleOpenFile}
+              onSelectWorkstream={handleSelectWorkstream}
+            />
+          )}
+          {activeView === 'workstreams' && (
+            <WorkstreamsList
+              onSelectWorkstream={handleSelectWorkstream}
+              onOpenFile={handleOpenFile}
+            />
+          )}
         </div>
 
         {shouldLock && (

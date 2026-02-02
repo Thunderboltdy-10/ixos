@@ -1,5 +1,18 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { IxosConfig, SearchOptions, ConsentStatus, ProStatus } from './types';
+import type {
+  IxosConfig,
+  SearchOptions,
+  ConsentStatus,
+  ProStatus,
+  ActivityAction,
+  ActivityEvent,
+  ActivityStats,
+  CoOccurrence,
+  RecentFile,
+  TimeRange,
+  Workstream,
+  WorkstreamsStats,
+} from './types';
 
 /**
  * Start a progressive search
@@ -170,4 +183,156 @@ export async function openCheckout(
  */
 export async function openExternalUrl(url: string, title?: string, label?: string): Promise<void> {
   await invoke('open_external_url', { url, title, label });
+}
+
+// ============================================================================
+// Phase 2: Activity Ledger
+// ============================================================================
+
+/**
+ * Log an activity event
+ */
+export async function logActivity(
+  filePath: string,
+  actionType: ActivityAction,
+  query?: string,
+  metadata?: Record<string, string>
+): Promise<void> {
+  await invoke('log_activity', {
+    request: { filePath, actionType, query, metadata }
+  });
+}
+
+/**
+ * Get activity events
+ */
+export async function getActivity(
+  timeRange?: TimeRange,
+  actionTypes?: ActivityAction[],
+  limit?: number
+): Promise<ActivityEvent[]> {
+  return await invoke('get_activity', {
+    request: { timeRange, actionTypes, limit }
+  });
+}
+
+/**
+ * Get co-occurrence data for related files
+ */
+export async function getCoOccurrence(
+  filePath: string,
+  windowMins?: number
+): Promise<CoOccurrence[]> {
+  return await invoke('get_co_occurrence', { filePath, windowMins });
+}
+
+/**
+ * Get recently touched files (today)
+ */
+export async function getRecentlyTouched(limit?: number): Promise<RecentFile[]> {
+  return await invoke('get_recently_touched', { limit });
+}
+
+/**
+ * Clear activity data (GDPR deletion)
+ */
+export async function clearActivity(timeRange?: TimeRange): Promise<void> {
+  await invoke('clear_activity', { timeRange });
+}
+
+/**
+ * Get activity statistics
+ */
+export async function getActivityStats(): Promise<ActivityStats> {
+  return await invoke('get_activity_stats');
+}
+
+/**
+ * Save activity ledger to encrypted storage (Pro only)
+ */
+export async function saveActivityLedger(): Promise<void> {
+  await invoke('save_activity_ledger');
+}
+
+/**
+ * Load activity ledger from encrypted storage (Pro only)
+ */
+export async function loadActivityLedger(): Promise<ActivityStats> {
+  return await invoke('load_activity_ledger');
+}
+
+// ============================================================================
+// Phase 2: Workstreams
+// ============================================================================
+
+/**
+ * List all workstreams
+ */
+export async function listWorkstreams(
+  limit?: number,
+  offset?: number
+): Promise<Workstream[]> {
+  return await invoke('list_workstreams', { limit, offset });
+}
+
+/**
+ * Get a specific workstream
+ */
+export async function getWorkstream(id: string): Promise<Workstream> {
+  return await invoke('get_workstream', { id });
+}
+
+/**
+ * Create a new workstream
+ */
+export async function createWorkstream(
+  name: string,
+  description?: string,
+  eventIds?: string[]
+): Promise<Workstream> {
+  return await invoke('create_workstream', {
+    request: { name, description, eventIds }
+  });
+}
+
+/**
+ * Rename a workstream
+ */
+export async function renameWorkstream(id: string, newName: string): Promise<boolean> {
+  return await invoke('rename_workstream', { id, newName });
+}
+
+/**
+ * Merge workstreams
+ */
+export async function mergeWorkstreams(ids: string[]): Promise<string | null> {
+  return await invoke('merge_workstreams', { ids });
+}
+
+/**
+ * Delete a workstream
+ */
+export async function deleteWorkstream(id: string): Promise<boolean> {
+  return await invoke('delete_workstream', { id });
+}
+
+/**
+ * Re-cluster workstreams from activity
+ */
+export async function reclusterWorkstreams(gapThresholdMins?: number): Promise<number> {
+  return await invoke('recluster_workstreams', { gapThresholdMins });
+}
+
+/**
+ * Pin or unpin a workstream
+ */
+export async function pinWorkstream(id: string, pinned: boolean): Promise<boolean> {
+  return await invoke('pin_workstream', { id, pinned });
+}
+
+/**
+ * Get workstreams statistics
+ */
+export async function getWorkstreamsStats(): Promise<WorkstreamsStats> {
+  return await invoke('get_workstreams_stats');
 }

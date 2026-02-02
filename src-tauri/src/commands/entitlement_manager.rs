@@ -14,8 +14,6 @@ const ENTITLEMENT_LABEL: &str = "Ixos Entitlement";
 const DEFAULT_GRACE_DAYS: u64 = 14;
 const ROLLBACK_TOLERANCE_SECONDS: u64 = 5 * 60;
 const TIME_SUSPECT_GRACE_SECONDS: u64 = 24 * 60 * 60;
-/// Maximum Pro model searches per month for free users
-const FREE_USER_PRO_SEARCHES_PER_MONTH: u32 = 200;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -25,12 +23,6 @@ pub struct EntitlementCache {
     pub last_verified_wall_time: Option<u64>,
     pub last_server_time: Option<u64>,
     pub time_suspect: bool,
-    /// Pro search count for current month (free users only)
-    #[serde(default)]
-    pub pro_search_count: u32,
-    /// Month (YYYYMM format) for the pro_search_count
-    #[serde(default)]
-    pub pro_search_month: u32,
 }
 
 impl Default for EntitlementCache {
@@ -41,8 +33,6 @@ impl Default for EntitlementCache {
             last_verified_wall_time: None,
             last_server_time: None,
             time_suspect: false,
-            pro_search_count: 0,
-            pro_search_month: 0,
         }
     }
 }
@@ -68,7 +58,7 @@ impl EntitlementManager {
 
     #[cfg(test)]
     pub fn new_in_memory(cache: EntitlementCache) -> Self {
-        let mut manager = Self {
+        let manager = Self {
             cache,
             cached_capabilities: Capabilities::default(),
             persist: false,
@@ -111,85 +101,6 @@ impl EntitlementManager {
         &self.cached_capabilities
     }
 
-    /// Get current month as YYYYMM integer
-    fn current_month() -> u32 {
-        use std::time::UNIX_EPOCH;
-        let secs = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_secs();
-        // Approximate: 31,557,600 seconds per year, derive year and month
-        let days = secs / 86400;
-        let years_since_1970 = days / 365;
-        let year = 1970 + years_since_1970 as u32;
-        let day_of_year = days % 365;
-        let month = ((day_of_year / 30).min(11) + 1) as u32;
-        year * 100 + month
-    }
-
-    /// Check if free user can use Pro model (under 200/month limit)
-    pub fn can_use_pro_search(&mut self) -> bool {
-        // Pro users have unlimited Pro searches
-        if let Some(ref token) = self.cache.entitlement_token {
-            if let Ok(claims) = decode_entitlement_token_allow_expired(token) {
-                if claims.plan == "pro" {
-                    return true;
-                }
-            }
-        }
-        
-        // Check and reset monthly counter if new month
-        let current_month = Self::current_month();
-        if self.cache.pro_search_month != current_month {
-            self.cache.pro_search_count = 0;
-            self.cache.pro_search_month = current_month;
-            self.persist_cache();
-        }
-        
-        self.cache.pro_search_count < FREE_USER_PRO_SEARCHES_PER_MONTH
-    }
-
-    /// Increment Pro search counter (call after successful Pro search)
-    pub fn increment_pro_search_count(&mut self) {
-        // Don't count for Pro users
-        if let Some(ref token) = self.cache.entitlement_token {
-            if let Ok(claims) = decode_entitlement_token_allow_expired(token) {
-                if claims.plan == "pro" {
-                    return;
-                }
-            }
-        }
-        
-        let current_month = Self::current_month();
-        if self.cache.pro_search_month != current_month {
-            self.cache.pro_search_count = 0;
-            self.cache.pro_search_month = current_month;
-        }
-        
-        self.cache.pro_search_count = self.cache.pro_search_count.saturating_add(1);
-        self.persist_cache();
-    }
-
-    /// Get remaining Pro searches for free users this month
-    pub fn remaining_pro_searches(&mut self) -> Option<u32> {
-        // Pro users have unlimited
-        if let Some(ref token) = self.cache.entitlement_token {
-            if let Ok(claims) = decode_entitlement_token_allow_expired(token) {
-                if claims.plan == "pro" {
-                    return None; // Unlimited
-                }
-            }
-        }
-        
-        let current_month = Self::current_month();
-        if self.cache.pro_search_month != current_month {
-            self.cache.pro_search_count = 0;
-            self.cache.pro_search_month = current_month;
-            self.persist_cache();
-        }
-        
-        Some(FREE_USER_PRO_SEARCHES_PER_MONTH.saturating_sub(self.cache.pro_search_count))
-    }
 
     pub fn pro_status(&mut self, now: SystemTime, device: &DeviceIdentity) -> ProStatus {
         let now_unix = unix_seconds(now);

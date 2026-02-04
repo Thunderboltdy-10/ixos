@@ -1,0 +1,123 @@
+# RUNLOG.md (append-only)
+
+## Log format (use this every entry)
+- Date/Time:
+- Branch/Commit:
+- Goal:
+- Commands run:
+- Outputs saved to:
+- Key results:
+- Decision: KEEP / REVERT / PIVOT
+- Next:
+
+---
+
+## Entry 001 - Repo ingest started
+- Date/Time: 2026-02-02
+- Branch/Commit: (unknown)
+- Goal: Initialize tracking files and start Phase 0 doc ingest
+- Commands run: ls; Get-Content PLAN.md; Get-Content RUNLOG.md; Get-Content DECISIONS.md; New-Item reports; Set-Content reports/REALITY_MAP.md
+- Outputs saved to: reports/REALITY_MAP.md
+- Key results: Tracking files created/normalized; reports directory created
+- Decision: KEEP
+- Next: Phase 0 doc ingest + Reality Map build
+## Entry 002 - Phase 0 doc ingest + Reality Map
+- Date/Time: 2026-02-02
+- Branch/Commit: (unknown)
+- Goal: Read required docs/code and produce Reality Map
+- Commands run: Get-Content models/lab/CANONICAL_RESULTS.md; Get-Content models/lab/LEADERBOARD.md; Get-Content models/lab/PERF_LEADERBOARD.md; Get-Content docs/models/pro-fusion.md; Get-Content docs/models/flash-v1.md; Get-Content AI_DEVELOPMENT_CONTEXT.md; Get-Content FEATURES.md; Get-Content MODEL_INSTALLATION_SYSTEM_REPORT.md; Get-Content Ixos_Master_Roadmap.md; rg for flash-v2/pro-v1; inspected src/ixos_rank/progressive.rs and ui config files
+- Outputs saved to: reports/REALITY_MAP.md
+- Key results: Identified default model = ixos-flash-v1, Pro fusion uses potion, CLI defaults to potion and lacks pro engine, flash-v2 naming conflict
+- Decision: KEEP
+- Next: Phase 1 baseline measurements (build + eval + perf)
+## Entry 003 - Phase 1 baseline measurements
+- Date/Time: 2026-02-02
+- Branch/Commit: (unknown)
+- Goal: Capture baseline quality + perf with real models
+- Commands run: cargo build --release; python scripts/ixos_eval.py --suite both --only-ids ixos-flash-v2,potion-base-8m-int8,ixos-pro-v1 ...; python scripts/ixos_eval.py --fusion learned --flash-id ixos-flash-v2 --pro-id potion-base-8m-int8 ...; cargo run --release --bin ixos-profile --model ixos-flash-v1 ...; cargo run --release --bin ixos-profile --model potion ...; cargo run --release --bin ixos-profile --model ixos-pro-v1 ...
+- Outputs saved to: models/lab/results_baseline_2026-02-02.{json,csv}; models/lab/results_baseline_fusion_2026-02-02.{json,csv}; reports/baseline_profile_*_2026-02-02.json; reports/baseline_slow_*_2026-02-02.json; reports/model_v2_benchmark_report.md
+- Key results: Baseline Flash MRR@10 0.8399, Potion 0.8073, Pro v1 0.7354; Pro fusion MRR@10 0.9233; Flash JIT P95 337ms; Potion JIT P95 202ms; Pro v1 JIT P95 401ms
+- Decision: KEEP
+- Next: Phase 2 bottleneck hunt (analyze profile + instrument if needed)
+## Entry 004 - Phase 2 bottleneck analysis
+- Date/Time: 2026-02-02
+- Branch/Commit: (unknown)
+- Goal: Derive stage-level bottlenecks from baseline profiles
+- Commands run: python reports/_tmp_profile_summary.py
+- Outputs saved to: reports/PERF_BOTTLENECKS.md
+- Key results: Ranking P95 + ripgrep + directory walk dominate cold path; embedding spikes on Flash/Pro v1
+- Decision: KEEP
+- Next: Implement speedups (ranking top-k + cascade + ripgrep/file list reuse)
+## Entry 005 - Flash v1 vs lab v2 hash check
+- Date/Time: 2026-02-02
+- Branch/Commit: (unknown)
+- Goal: Verify if lab ixos-flash-v2 matches shipped ixos-flash-v1
+- Commands run: Get-FileHash models/ixos-flash-v1/model.safetensors models/lab/ixos-flash-v2/model.safetensors
+- Outputs saved to: reports/REALITY_MAP.md (updated note)
+- Key results: SHA256 hashes match; lab ixos-flash-v2 == shipped ixos-flash-v1
+- Decision: KEEP
+- Next: Naming cleanup + true Flash v2 creation
+## Entry 006 - Parsing + cascade + CLI wiring
+- Date/Time: 2026-02-02
+- Branch/Commit: (unknown)
+- Goal: Implement parsing support + pipeline improvements (ranking top-k + Pro cascade) + CLI pro wiring
+- Commands run: python scripts/create_parsing_fixtures.py
+- Outputs saved to: reports/PARSING_STATUS.md; tests/fixtures/*; scripts/create_parsing_fixtures.py
+- Key results: Added PDF/DOCX/PPTX/RTF parsing with byte caps; fixtures/tests added; semantic rerank now uses top-k selection; Pro v2 cascade uses potion fast pass + flash top-k refinement; CLI accepts search_mode/pro_model and uses config defaults when flags absent
+- Decision: KEEP
+- Next: Run cargo test; run perf + scale bench; adjust Auto thresholds if quality regresses
+## Entry 007 - Parser tests
+- Date/Time: 2026-02-02
+- Branch/Commit: (unknown)
+- Goal: Validate parsing fixtures/tests after parser changes
+- Commands run: cargo test -p ixos-protocol test_extract_
+- Outputs saved to: (test run only)
+- Key results: Parser fixture tests passed; warnings remain (unused temp_dir in sandbox tests)
+- Decision: KEEP
+- Next: Run perf/profile + scale bench; proceed with v2 model sweep
+## Entry 008 - Flash v2 default + Pro v2 fusion + benchmarks
+- Date/Time: 2026-02-03
+- Branch/Commit: (unknown)
+- Goal: Promote Flash v2, define Pro v2, run benchmarks/perf/scale, update docs and tests
+- Commands run: 
+  - python scripts/ixos_eval.py --suite both --only-ids ixos-flash-v1,ixos-flash-v2,potion-base-8m-int8,ixos-pro-v1 --real-limit 50 --real-queries 50 --candidate-cap 600 --output models/lab/results_v2_baseline_2026-02-03.json --csv models/lab/results_v2_baseline_2026-02-03.csv
+  - python scripts/ixos_eval.py --suite real --real-limit 10 --real-queries 10 --candidate-cap 200 --fusion learned --flash-id ixos-flash-v1 --pro-id potion-base-8m-int8 --output models/lab/results_v2_fusion_baseline_real_2026-02-03.json --csv models/lab/results_v2_fusion_baseline_real_2026-02-03.csv
+  - python scripts/ixos_eval.py --suite synthetic --candidate-cap 200 --fusion learned --flash-id ixos-flash-v1 --pro-id potion-base-8m-int8 --output models/lab/results_v2_fusion_baseline_synth_2026-02-03.json --csv models/lab/results_v2_fusion_baseline_synth_2026-02-03.csv
+  - python scripts/ixos_eval.py --suite real --real-limit 10 --real-queries 10 --candidate-cap 200 --fusion learned --flash-id ixos-flash-v2 --pro-id potion-base-8m-int8 --output models/lab/results_v2_fusion_flashv2_real_2026-02-03.json --csv models/lab/results_v2_fusion_flashv2_real_2026-02-03.csv
+  - python scripts/ixos_eval.py --suite synthetic --candidate-cap 200 --fusion learned --flash-id ixos-flash-v2 --pro-id potion-base-8m-int8 --output models/lab/results_v2_fusion_flashv2_synth_2026-02-03.json --csv models/lab/results_v2_fusion_flashv2_synth_2026-02-03.csv
+  - cargo test -p ixos-protocol test_ask_mode_respects_selected_model
+  - cargo build --release
+  - cargo run --release --bin ixos-profile -- --dir dataset --runs 6 --cache-mode jit --model ixos-flash-v2 --out reports/profile_flashv2_2026-02-03.json --slow-threshold-ms 1500 --slow-out reports/slow_flashv2_2026-02-03.json
+  - cargo run --release --bin ixos-profile -- --dir dataset --runs 6 --cache-mode jit --model potion --out reports/profile_potion_2026-02-03.json --slow-threshold-ms 1500 --slow-out reports/slow_potion_2026-02-03.json
+  - python scripts/scale_bench.py --search-mode auto --cache-mode jit --model ixos-flash-v2 --pro-model ixos-pro-v2 --max-queries 50
+- Outputs saved to:
+  - models/lab/results_v2_baseline_2026-02-03.{json,csv}
+  - models/lab/results_v2_fusion_baseline_real_2026-02-03.{json,csv}
+  - models/lab/results_v2_fusion_baseline_synth_2026-02-03.{json,csv}
+  - models/lab/results_v2_fusion_flashv2_real_2026-02-03.{json,csv}
+  - models/lab/results_v2_fusion_flashv2_synth_2026-02-03.{json,csv}
+  - reports/profile_flashv2_2026-02-03.json
+  - reports/profile_potion_2026-02-03.json
+  - reports/scale_bench.json
+  - reports/SCALE_BENCH.md
+- Key results:
+  - Flash v2 canonical: MRR@10 0.8340, Recall@10 0.925, latency 339.76 ms/1k
+  - Pro v2 smoke: real_corpus_v2 MRR@10 1.00 (10 queries), latency 819.8 ms/1k
+  - Perf after: Flash v2 total p95 315ms; Potion total p95 195ms
+  - Scale bench on `C:\Users\pablo\Downloads` (322,184 files / 87.6 GB): TTFR p50/p95 87/371ms, total p50/p95 1065/6520ms
+- Decision: KEEP
+- Next: Finish docs/changelogs, update PLAN snapshot, run final formatting and verify
+## Entry 009 - Pro v2 canonical fusion rerun (full)
+- Date/Time: 2026-02-03
+- Branch/Commit: (unknown)
+- Goal: Run full canonical Pro v2 fusion and update weights/docs
+- Commands run:
+  - python scripts/ixos_eval.py --suite both --fusion learned --flash-id ixos-flash-v2 --pro-id potion-base-8m-int8 --output models/lab/results_v2_fusion_flashv2_2026-02-03.json --csv models/lab/results_v2_fusion_flashv2_2026-02-03.csv (aborted: full manifest run)
+  - python scripts/ixos_eval.py --suite both --only-ids ixos-flash-v2,potion-base-8m-int8 --fusion learned --flash-id ixos-flash-v2 --pro-id potion-base-8m-int8 --output models/lab/results_v2_fusion_flashv2_2026-02-03.json --csv models/lab/results_v2_fusion_flashv2_2026-02-03.csv
+- Outputs saved to:
+  - models/lab/results_v2_fusion_flashv2_2026-02-03.{json,csv}
+- Key results:
+  - real_corpus_v2: MRR@10 0.9209, Recall@10 0.97, latency 430.57 ms/1k
+  - synthetic_ambiguity_v1: MRR@10 0.9833, Recall@10 1.00, latency 131.83 ms/1k
+- Decision: KEEP
+- Next: Update docs + canonical results + fusion weights

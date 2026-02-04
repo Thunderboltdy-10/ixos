@@ -65,33 +65,52 @@ impl From<CliCacheMode> for crate::ixos_rank::semantic_engine::CacheMode {
     }
 }
 
-/// P1.3: Embedding model type selector (CLI compatible)
+/// Search mode selector (flash/pro/auto)
 #[derive(Clone, Copy, Debug, Default, ValueEnum)]
-pub enum CliModelType {
-    /// Potion-8M-int8: Simple, reliable, fast (~7.5MB)
+pub enum CliSearchMode {
+    Flash,
+    Pro,
     #[default]
-    Potion,
-    /// Qwen-distilled: Experimental, potentially better quality (~5-10MB)
-    Qwen,
-    /// Ixos-Flash-v1: Distilled flash model (fast)
+    Auto,
+}
+
+/// Flash embedding model selector (CLI compatible)
+#[derive(Clone, Copy, Debug, Default, ValueEnum)]
+pub enum CliFlashModelType {
+    /// Ixos-Flash-v2: Default fast model
+    #[default]
+    IxosFlashV2,
+    /// Ixos-Flash-v1: Legacy flash model
+    #[value(hide = true)]
     IxosFlashV1,
-    /// Ixos-Flash-v4: Distilled flash model (512d, quality-leaning)
-    IxosFlashV4,
-    /// Ixos-Flash-v4-fast: Distilled flash model (192d, speed-leaning)
-    IxosFlashV4Fast,
-    /// Ixos-Pro-v1: Distilled pro model (higher quality)
+}
+
+impl From<CliFlashModelType> for crate::ixos_embed::ModelType {
+    fn from(model: CliFlashModelType) -> Self {
+        match model {
+            CliFlashModelType::IxosFlashV2 => crate::ixos_embed::ModelType::IxosFlashV2,
+            CliFlashModelType::IxosFlashV1 => crate::ixos_embed::ModelType::IxosFlashV1,
+        }
+    }
+}
+
+/// Pro model selector (CLI compatible)
+#[derive(Clone, Copy, Debug, Default, ValueEnum)]
+pub enum CliProModelType {
+    /// Ixos-Pro-v2: Fusion/cascade (flash + potion + lexical)
+    #[default]
+    #[value(alias = "potion", alias = "potion-base-8m-int8", hide = true)]
+    IxosProV2,
+    /// Ixos-Pro-v1: Legacy single embedder
+    #[value(hide = true)]
     IxosProV1,
 }
 
-impl From<CliModelType> for crate::ixos_embed::ModelType {
-    fn from(model: CliModelType) -> Self {
+impl From<CliProModelType> for crate::ixos_embed::ModelType {
+    fn from(model: CliProModelType) -> Self {
         match model {
-            CliModelType::Potion => crate::ixos_embed::ModelType::Potion,
-            CliModelType::Qwen => crate::ixos_embed::ModelType::Qwen,
-            CliModelType::IxosFlashV1 => crate::ixos_embed::ModelType::IxosFlashV1,
-            CliModelType::IxosFlashV4 => crate::ixos_embed::ModelType::IxosFlashV4,
-            CliModelType::IxosFlashV4Fast => crate::ixos_embed::ModelType::IxosFlashV4Fast,
-            CliModelType::IxosProV1 => crate::ixos_embed::ModelType::IxosProV1,
+            CliProModelType::IxosProV2 => crate::ixos_embed::ModelType::Potion,
+            CliProModelType::IxosProV1 => crate::ixos_embed::ModelType::IxosProV1,
         }
     }
 }
@@ -155,14 +174,17 @@ pub enum Commands {
         #[arg(long)]
         stub_model: bool,
 
-        /// P1.3: Embedding model to use (potion, qwen)
-        ///
-        /// - potion: Use potion-base-8M-int8 (simple, reliable, ~7.5MB)
-        /// - qwen: Use Qwen-distilled embedder (experimental, potentially better)
-        ///
-        /// Run `python scripts/distill_model.py` to create local models.
-        #[arg(long, value_enum, default_value = "potion")]
-        model: CliModelType,
+        /// Search mode: flash, pro, or auto (defaults to config setting)
+        #[arg(long, value_enum)]
+        search_mode: Option<CliSearchMode>,
+
+        /// Flash model to use (defaults to ixos-flash-v2)
+        #[arg(long, value_enum)]
+        model: Option<CliFlashModelType>,
+
+        /// Pro model to use for auto/pro modes (defaults to ixos-pro-v2)
+        #[arg(long, value_enum)]
+        pro_model: Option<CliProModelType>,
 
         /// Enable secure timing mode (100ms floor for timing attack protection)
         ///

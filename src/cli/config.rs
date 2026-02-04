@@ -96,11 +96,11 @@ pub struct SearchConfig {
     #[serde(default = "default_min_score")]
     pub min_score_threshold: f32,
 
-    /// Embedding model type: "potion" or "qwen"
+    /// Embedding model type: "ixos-flash-v2" (default)
     #[serde(default = "default_model_type")]
     pub model_type: String,
 
-    /// Pro embedding model type (used for auto/pro modes)
+    /// Pro model type (used for auto/pro modes)
     #[serde(default = "default_pro_model_type")]
     pub pro_model_type: String,
 
@@ -214,15 +214,31 @@ fn default_context_lines() -> usize {
 }
 
 fn default_model_type() -> String {
-    "ixos-flash-v1".to_string()
+    "ixos-flash-v2".to_string()
 }
 
 fn default_pro_model_type() -> String {
-    "potion".to_string()
+    "ixos-pro-v2".to_string()
 }
 
 fn default_search_mode() -> String {
     "auto".to_string()
+}
+
+fn normalize_flash_model_type(value: &str) -> String {
+    match value.trim().to_lowercase().as_str() {
+        "ixos-flash-v2" | "flash" | "flash-v2" => "ixos-flash-v2".to_string(),
+        "ixos-flash-v1" | "flash-v1" => "ixos-flash-v2".to_string(),
+        _ => "ixos-flash-v2".to_string(),
+    }
+}
+
+fn normalize_pro_model_type(value: &str) -> String {
+    match value.trim().to_lowercase().as_str() {
+        "ixos-pro-v2" | "pro-v2" | "pro" => "ixos-pro-v2".to_string(),
+        "potion" | "potion-base-8m-int8" | "ixos-pro-v1" => "ixos-pro-v2".to_string(),
+        _ => "ixos-pro-v2".to_string(),
+    }
 }
 
 // =============================================================================
@@ -322,9 +338,29 @@ impl IxosConfig {
     /// Returns default configuration if the file doesn't exist or can't be parsed.
     pub fn load_from(path: PathBuf) -> Self {
         match std::fs::read_to_string(&path) {
-            Ok(content) => match toml::from_str(&content) {
-                Ok(config) => {
+            Ok(content) => match toml::from_str::<Self>(&content) {
+                Ok(mut config) => {
                     tracing::debug!("Loaded config from {:?}", path);
+                    let mut changed = false;
+                    let normalized_model = normalize_flash_model_type(&config.search.model_type);
+                    if normalized_model != config.search.model_type {
+                        config.search.model_type = normalized_model;
+                        changed = true;
+                    }
+                    let normalized_pro = normalize_pro_model_type(&config.search.pro_model_type);
+                    if normalized_pro != config.search.pro_model_type {
+                        config.search.pro_model_type = normalized_pro;
+                        changed = true;
+                    }
+                    if !["flash", "auto", "pro"].contains(&config.search.search_mode.as_str()) {
+                        config.search.search_mode = default_search_mode();
+                        changed = true;
+                    }
+                    if changed {
+                        if let Err(e) = config.save_to(path.clone()) {
+                            tracing::warn!("Failed to persist normalized config {:?}: {}", path, e);
+                        }
+                    }
                     config
                 }
                 Err(e) => {
@@ -471,21 +507,21 @@ impl IxosConfig {
                     })?;
             }
             ["search", "model_type"] => {
-                if !["potion", "qwen", "ixos-flash-v1", "ixos-pro-v1"].contains(&value) {
+                if value != "ixos-flash-v2" {
                     return Err(ConfigError::InvalidValue {
                         key: key.to_string(),
                         value: value.to_string(),
-                        expected: "potion, qwen, ixos-flash-v1, or ixos-pro-v1".to_string(),
+                        expected: "ixos-flash-v2".to_string(),
                     });
                 }
                 self.search.model_type = value.to_string();
             }
             ["search", "pro_model_type"] => {
-                if !["potion", "qwen", "ixos-flash-v1", "ixos-pro-v1"].contains(&value) {
+                if value != "ixos-pro-v2" {
                     return Err(ConfigError::InvalidValue {
                         key: key.to_string(),
                         value: value.to_string(),
-                        expected: "potion, qwen, ixos-flash-v1, or ixos-pro-v1".to_string(),
+                        expected: "ixos-pro-v2".to_string(),
                     });
                 }
                 self.search.pro_model_type = value.to_string();
@@ -525,11 +561,12 @@ impl IxosConfig {
                 })?;
             }
             ["output", "exit_on_close"] => {
-                self.output.exit_on_close = value.parse().map_err(|_| ConfigError::InvalidValue {
-                    key: key.to_string(),
-                    value: value.to_string(),
-                    expected: "true or false".to_string(),
-                })?;
+                self.output.exit_on_close =
+                    value.parse().map_err(|_| ConfigError::InvalidValue {
+                        key: key.to_string(),
+                        value: value.to_string(),
+                        expected: "true or false".to_string(),
+                    })?;
             }
             ["index", "use_xattr"] => {
                 self.index.use_xattr = value.parse().map_err(|_| ConfigError::InvalidValue {

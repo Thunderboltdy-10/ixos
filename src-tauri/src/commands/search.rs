@@ -4,16 +4,15 @@
 
 use crate::state::AppState;
 use ixos_protocol::instrumentation::ipc_send_span;
-use ixos_protocol::security::DeviceIdentity;
 use ixos_protocol::ixos_rank::{
     progressive::{SearchEvent, SearchMode, StreamEventKind, StreamStage},
     CandidateLexicalEngine, ProgressiveSearchConfig, ProgressiveSearchEngine, RankedResult,
     StubSemanticEngine,
 };
+use ixos_protocol::security::DeviceIdentity;
 use ixos_protocol::EvidenceTag;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use std::time::SystemTime;
 use tauri::{Emitter, State, Window};
 use tokio::sync::mpsc;
 
@@ -272,7 +271,7 @@ pub async fn search_progressive(
 ) -> Result<(), String> {
     // Verify entitlement token before allowing search
     {
-        let mut manager = state.entitlement_manager.lock();
+        let manager = state.entitlement_manager.lock();
         if manager.entitlement_token().is_some() {
             // Start of Pro Access Check Removal
             // Original logic checked manager.pro_status().is_enabled()
@@ -292,7 +291,9 @@ pub async fn search_progressive(
             }
             #[cfg(not(debug_assertions))]
             {
-                return Err("Authentication required - no entitlement token found in Rust backend".into());
+                return Err(
+                    "Authentication required - no entitlement token found in Rust backend".into(),
+                );
             }
         }
     }
@@ -479,15 +480,19 @@ pub async fn search_progressive(
     use ixos_protocol::ixos_embed::ModelType;
     use ixos_protocol::SecureEmbedder;
 
-    let model_type_str = options.model_type.as_deref().unwrap_or("ixos-flash-v1");
+    let model_type_str = options.model_type.as_deref().unwrap_or("ixos-flash-v2");
     let model_type = model_type_str
         .parse::<ModelType>()
-        .unwrap_or(ModelType::IxosFlashV1);
+        .unwrap_or(ModelType::IxosFlashV2);
 
-    let pro_model_type_str = options.pro_model_type.as_deref().unwrap_or("potion");
-    let pro_model_type = pro_model_type_str
-        .parse::<ModelType>()
-        .unwrap_or(ModelType::Potion);
+    let pro_model_type_str = options.pro_model_type.as_deref().unwrap_or("ixos-pro-v2");
+    let pro_model_type = match pro_model_type_str.to_lowercase().as_str() {
+        "ixos-pro-v2" | "pro-v2" | "pro" => ModelType::Potion,
+        "potion" | "potion-base-8m-int8" => ModelType::Potion,
+        _ => pro_model_type_str
+            .parse::<ModelType>()
+            .unwrap_or(ModelType::Potion),
+    };
 
     let model_result = state.get_or_load_model(model_type);
     let use_pro = matches!(config.search_mode, SearchMode::Auto | SearchMode::Pro);
@@ -526,16 +531,17 @@ pub async fn search_progressive(
 
         // Create semantic engine with pre-loaded model
         let (_subdir, _repo_id, _files) = match model_type {
-        ModelType::IxosFlashV1 => (
-            "ixos-flash-v1",
-            "Thunderboltdy10/Ixos-Flash",
-            vec!["config.json", "model.safetensors", "tokenizer.json"]
-        ),
-            _ => (
-                "default",
-                "default_repo",
-                vec!["default_file"]
-            )
+            ModelType::IxosFlashV2 => (
+                "ixos-flash-v2",
+                "Thunderboltdy10/Ixos-Flash-v2",
+                vec!["config.json", "model.safetensors", "tokenizer.json"],
+            ),
+            ModelType::IxosFlashV1 => (
+                "ixos-flash-v1",
+                "Thunderboltdy10/Ixos-Flash",
+                vec!["config.json", "model.safetensors", "tokenizer.json"],
+            ),
+            _ => ("default", "default_repo", vec!["default_file"]),
         };
         let mut semantic = match model_result {
             Ok(model) => {
@@ -598,7 +604,3 @@ pub async fn cancel_search(state: State<'_, AppState>) -> Result<(), String> {
     state.cancel_search();
     Ok(())
 }
-
-
-
-

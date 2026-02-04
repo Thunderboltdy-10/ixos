@@ -69,10 +69,7 @@ async fn prefetch_file_inner(path: String, state: &PrefetchState) -> Result<(), 
     Ok(())
 }
 
-fn get_file_content_inner(
-    path: String,
-    state: &PrefetchState,
-) -> Result<Option<String>, String> {
+fn get_file_content_inner(path: String, state: &PrefetchState) -> Result<Option<String>, String> {
     let prefetcher = state.0.lock();
     Ok(prefetcher.get_cached(&PathBuf::from(path)))
 }

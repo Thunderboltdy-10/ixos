@@ -1,6 +1,58 @@
 # Model Pipeline Changelog
 
-**Date:** 2026-01-27
+## 2026-02-03 (Flash v2 + Pro v2)
+
+**Author:** Codex  
+**Summary:** Shipped Flash v2 (int8) as default, defined Pro v2 as a fusion/cascade system, and aligned naming + UI/CLI + installer paths. Added scale bench and updated canonical results.
+
+### Key Outcomes
+
+| Improvement | Before | After | Impact |
+|-------------|--------|-------|--------|
+| Flash default | Flash v1 (f16) | Flash v2 (int8) | ~20% faster, ~63% smaller model |
+| Pro definition | Confused (ixos-pro-v1) | Pro v2 = Flash v2 + Potion + lexical | Correct Pro quality |
+| CLI/UI parity | CLI default = potion | CLI default = flash v2 | Consistent UX |
+| Canonical metrics | flash-v2 mislabeled | flash-v1 vs flash-v2 separated | Naming cleanup |
+| Scale bench | None | reports/scale_bench.json + SCALE_BENCH.md | Real-world throughput |
+
+### Metrics (Canonical)
+- Flash v2 (real_corpus_v2): MRR@10 0.8340, Recall@10 0.925, latency 339.76 ms/1k.
+- Pro v2 fusion (real_corpus_v2): MRR@10 0.9209, Recall@10 0.97, latency 430.57 ms/1k.
+
+### Files Added / Updated
+- `models/ixos-flash-v2` (new default model folder)
+- `models/ixos-pro-v2` (fusion system definition)
+- `reports/model_v2_benchmark_report.md`
+- `reports/SCALE_BENCH.md`, `reports/scale_bench.json`
+- `reports/HF_UPLOAD_PLAYBOOK.md`
+- `reports/MODEL_NAMING_MIGRATION.md`
+
+### Implementation Guide (updated defaults)
+
+```rust
+// Fast mode (default)
+let model = MmapModel2VecEmbedder::new_with_type(ModelType::IxosFlashV2)?;
+let config = ProgressiveSearchConfig::default(); // search_mode: Auto
+
+// Pro mode (Pro v2)
+let config = ProgressiveSearchConfig {
+    search_mode: SearchMode::Pro,
+    ..Default::default()
+};
+```
+
+```bash
+# Fast mode (default)
+ixos search "query" --dir ./data
+
+# Pro v2
+ixos search "query" --dir ./data --search-mode pro --pro-model ixos-pro-v2
+```
+
+---
+
+## 2026-01-27 (Historical audit)
+
 **Author:** Claude (audit + improvements)
 
 ## Summary
@@ -71,9 +123,9 @@ This audit reproduced baselines, profiled bottlenecks, fixed documentation incon
 
 | Mode | Embedder(s) | MRR@10 | Latency | RAM | Default |
 |------|-------------|--------|---------|-----|---------|
-| **Fast** | flash-v2 | 0.84 | ~456ms | ~185MB | - |
-| **Accurate** | flash-v2 + potion | 0.92 | ~674ms | ~250MB | - |
-| **Auto** | Adaptive | 0.84-0.92 | Variable | Variable | Yes |
+| **Fast** | flash-v2 | 0.834 | ~340ms | ~45MB | - |
+| **Accurate** | pro-v2 (flash-v2 + potion) | 0.921 | ~431ms | ~102MB | - |
+| **Auto** | Adaptive | 0.834-0.921 | ~340-431ms | ~45-102MB | Yes |
 | **Eco** | flash-v4-192 | 0.80 | ~389ms | ~60MB | Hidden |
 
 ### Phase 5: Documentation
@@ -106,7 +158,7 @@ This audit reproduced baselines, profiled bottlenecks, fixed documentation incon
 
 ### To use Fast mode (default):
 ```rust
-let model = MmapModel2VecEmbedder::new_with_type(ModelType::IxosFlashV1)?;
+let model = MmapModel2VecEmbedder::new_with_type(ModelType::IxosFlashV2)?;
 let config = ProgressiveSearchConfig::default(); // search_mode: Auto
 ```
 
@@ -128,8 +180,8 @@ let model = MmapModel2VecEmbedder::new_with_type(ModelType::IxosFlashV4Fast)?;
 # Fast mode (default)
 ixos search "query" --dir ./data
 
-# Accurate mode
-ixos search "query" --dir ./data --search-mode pro
+# Pro v2
+ixos search "query" --dir ./data --search-mode pro --pro-model ixos-pro-v2
 
 # Eco mode
 ixos search "query" --dir ./data --model ixos-flash-v4-fast
@@ -167,4 +219,4 @@ The Ixos model pipeline is **production-ready** with:
 - Clear user-facing modes (Fast/Accurate/Auto/Eco)
 - Consistent documentation across all files
 
-**Ship recommendation: Deploy with current defaults (Auto mode, flash-v2 primary, potion secondary).**
+**Ship recommendation: Deploy with current defaults (Auto mode, Flash v2 primary, Pro v2 fusion for refinement).**

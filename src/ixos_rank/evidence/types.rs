@@ -215,7 +215,9 @@ impl Evidence {
         match self {
             Evidence::Lexical { tf_score, .. } => *tf_score,
             Evidence::Semantic { similarity, .. } => *similarity,
-            Evidence::AskModeTrust { anchor_coverage, .. } => *anchor_coverage,
+            Evidence::AskModeTrust {
+                anchor_coverage, ..
+            } => *anchor_coverage,
             Evidence::PathMatch { path_score, .. } => *path_score,
             Evidence::DirectoryContext {
                 centroid_similarity,
@@ -248,7 +250,9 @@ impl Evidence {
             Evidence::Semantic { similarity, .. } => {
                 format!("Semantic: {:.0}%", similarity * 100.0)
             }
-            Evidence::AskModeTrust { matched_anchors, .. } => {
+            Evidence::AskModeTrust {
+                matched_anchors, ..
+            } => {
                 if matched_anchors.is_empty() {
                     "Trusted snippet".into()
                 } else {
@@ -349,7 +353,10 @@ impl EvidenceTag {
         Self {
             tag_type: EvidenceType::AskModeTrust,
             label,
-            tooltip: format!("Trusted snippet matched anchors: {}", matched_anchors.join(", ")),
+            tooltip: format!(
+                "Trusted snippet matched anchors: {}",
+                matched_anchors.join(", ")
+            ),
             strength,
             color: Some("#f59e0b".into()), // amber
         }
@@ -631,16 +638,3 @@ mod tests {
         assert!(tag.label.contains("90%"));
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

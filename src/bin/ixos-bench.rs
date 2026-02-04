@@ -28,6 +28,7 @@ enum BenchModelType {
     #[default]
     Potion,
     Qwen,
+    IxosFlashV2,
     IxosFlashV1,
     IxosFlashV4,
     IxosFlashV4Fast,
@@ -142,6 +143,7 @@ async fn main() -> anyhow::Result<()> {
     let model_type = match args.model {
         BenchModelType::Potion => ixos_protocol::ixos_embed::ModelType::Potion,
         BenchModelType::Qwen => ixos_protocol::ixos_embed::ModelType::Qwen,
+        BenchModelType::IxosFlashV2 => ixos_protocol::ixos_embed::ModelType::IxosFlashV2,
         BenchModelType::IxosFlashV1 => ixos_protocol::ixos_embed::ModelType::IxosFlashV1,
         BenchModelType::IxosFlashV4 => ixos_protocol::ixos_embed::ModelType::IxosFlashV4,
         BenchModelType::IxosFlashV4Fast => ixos_protocol::ixos_embed::ModelType::IxosFlashV4Fast,
@@ -188,7 +190,8 @@ async fn main() -> anyhow::Result<()> {
 
         collector.mark_semantic_start();
         let semantic_start = Instant::now();
-        let _semantic_results = semantic.rerank(query, lexical_results).await?;
+        let limit = lexical_results.len();
+        let _semantic_results = semantic.rerank(query, lexical_results, limit).await?;
         let semantic_elapsed = semantic_start.elapsed().as_millis() as u64;
 
         let semantic_metrics = semantic.take_metrics().await;

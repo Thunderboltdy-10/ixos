@@ -210,7 +210,10 @@ pub fn generate_tags_from_evidence(evidence: &[Evidence]) -> Vec<EvidenceTag> {
                 ..
             } => {
                 if *anchor_coverage > 0.0 {
-                    tags.push(EvidenceTag::ask_mode_trust(matched_anchors, *anchor_coverage));
+                    tags.push(EvidenceTag::ask_mode_trust(
+                        matched_anchors,
+                        *anchor_coverage,
+                    ));
                 }
             }
             Evidence::PathMatch { matched_parts, .. } => {

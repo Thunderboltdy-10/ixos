@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import { saveEncrypted, loadEncrypted } from '@/lib/storage';
+import { useNotificationStore } from './notificationStore';
 
 const STATS_FILE = 'statistics.encrypted';
 
@@ -115,6 +116,21 @@ export const ACHIEVEMENTS: Achievement[] = [
 ];
 
 /**
+ * Milestone definition for engagement tracking
+ */
+export interface Milestone {
+  type: 'searches' | 'streak' | 'files';
+  value: number;
+  date: string; // ISO date string
+}
+
+/** Search milestones to track */
+const SEARCH_MILESTONES = [10, 50, 100, 500, 1000, 5000];
+
+/** Streak milestones to track */
+const STREAK_MILESTONES = [3, 7, 14, 30, 60, 100];
+
+/**
  * Statistics data structure
  */
 export interface Stats {
@@ -133,9 +149,13 @@ export interface Stats {
   currentStreak: number;
   longestStreak: number;
   lastSearchDate: string | null; // ISO date string (YYYY-MM-DD)
+  lastActiveDate: string | null; // ISO date string for daily activity tracking
 
   // Achievements
   unlockedAchievements: string[];
+
+  // Milestones achieved
+  milestones: Milestone[];
 
   // Per-mode stats
   modeStats: {
@@ -181,7 +201,9 @@ const DEFAULT_STATS: Stats = {
   currentStreak: 0,
   longestStreak: 0,
   lastSearchDate: null,
+  lastActiveDate: null,
   unlockedAchievements: [],
+  milestones: [],
   modeStats: {
     cache: 0,
     jit: 0,
@@ -195,6 +217,10 @@ export const useStatsStore = create<StatsState>((set, get) => ({
   newAchievements: [],
 
   incrementSearch: (mode, durationMs) => {
+    const prevState = get();
+    const prevTotal = prevState.totalSearches;
+    const prevStreak = prevState.currentStreak;
+
     set(state => {
       const newTotal = state.totalSearches + 1;
       const newAverage = (state.averageSearchMs * state.totalSearches + durationMs) / newTotal;
@@ -226,6 +252,23 @@ export const useStatsStore = create<StatsState>((set, get) => ({
         newLongest = 1;
       }
 
+      // Check for new milestones
+      const newMilestones: Milestone[] = [];
+
+      // Search milestones
+      for (const threshold of SEARCH_MILESTONES) {
+        if (prevTotal < threshold && newTotal >= threshold) {
+          newMilestones.push({ type: 'searches', value: threshold, date: today });
+        }
+      }
+
+      // Streak milestones
+      for (const threshold of STREAK_MILESTONES) {
+        if (prevStreak < threshold && newStreak >= threshold) {
+          newMilestones.push({ type: 'streak', value: threshold, date: today });
+        }
+      }
+
       return {
         totalSearches: newTotal,
         modeStats: {
@@ -238,8 +281,34 @@ export const useStatsStore = create<StatsState>((set, get) => ({
         currentStreak: newStreak,
         longestStreak: newLongest,
         lastSearchDate: today,
+        lastActiveDate: today,
+        milestones: [...state.milestones, ...newMilestones],
       };
     });
+
+    // Check for new milestones and show notifications
+    const newState = get();
+    const notificationStore = useNotificationStore.getState();
+
+    // Show search milestone notifications
+    for (const threshold of SEARCH_MILESTONES) {
+      if (prevTotal < threshold && newState.totalSearches >= threshold) {
+        notificationStore.showMilestone(
+          `${threshold} Searches!`,
+          `You've completed ${threshold} searches. Keep exploring!`
+        );
+      }
+    }
+
+    // Show streak milestone notifications
+    for (const threshold of STREAK_MILESTONES) {
+      if (prevStreak < threshold && newState.currentStreak >= threshold) {
+        notificationStore.showStreak(
+          `${threshold}-Day Streak!`,
+          `Amazing! You've maintained a ${threshold}-day streak.`
+        );
+      }
+    }
 
     // Check for new achievements
     get().checkAchievements();
@@ -327,7 +396,9 @@ export const useStatsStore = create<StatsState>((set, get) => ({
       currentStreak: state.currentStreak,
       longestStreak: state.longestStreak,
       lastSearchDate: state.lastSearchDate,
+      lastActiveDate: state.lastActiveDate,
       unlockedAchievements: state.unlockedAchievements,
+      milestones: state.milestones,
       modeStats: state.modeStats,
     };
 

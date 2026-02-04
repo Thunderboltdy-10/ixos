@@ -135,21 +135,7 @@ function SkeletonRow({ index, variant, isEnergizing }: SkeletonRowProps) {
         />
       </div>
 
-      {/* Shimmer overlay effect */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.02) 50%, transparent 100%)',
-        }}
-        animate={{ x: ['-100%', '200%'] }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          repeatDelay: 1,
-          delay: shimmerDelay,
-          ease: 'easeInOut'
-        }}
-      />
+
     </motion.div>
   );
 }

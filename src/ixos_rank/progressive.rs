@@ -177,9 +177,9 @@ impl Default for ProgressiveSearchConfig {
             },
             enable_fusion: true,
             fusion: FusionConfig {
-                flash: 0.2697,
-                pro: 0.2672,
-                lexical: 0.4631,
+                flash: 0.2672,
+                pro: 0.2725,
+                lexical: 0.4602,
                 dir_prior: 0.0,
             },
         }
@@ -211,9 +211,9 @@ impl ProgressiveSearchConfig {
             },
             enable_fusion: true,
             fusion: FusionConfig {
-                flash: 0.2697,
-                pro: 0.2672,
-                lexical: 0.4631,
+                flash: 0.2672,
+                pro: 0.2725,
+                lexical: 0.4602,
                 dir_prior: 0.0,
             },
         }
@@ -243,9 +243,9 @@ impl ProgressiveSearchConfig {
             },
             enable_fusion: true,
             fusion: FusionConfig {
-                flash: 0.2697,
-                pro: 0.2672,
-                lexical: 0.4631,
+                flash: 0.2672,
+                pro: 0.2725,
+                lexical: 0.4602,
                 dir_prior: 0.0,
             },
         }
@@ -601,14 +601,18 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         // Phase 2: Semantic search (slower, more accurate)
         let flash_engine: &dyn SemanticEngine = self.semantic_engine.as_ref();
         let pro_engine = self.pro_engine.as_ref().map(|p| p.as_ref());
-        let mut used_pro =
-            matches!(self.config.search_mode, SearchMode::Pro) && pro_engine.is_some();
+        let has_pro_engine = pro_engine.is_some();
+        let use_pro_primary =
+            matches!(self.config.search_mode, SearchMode::Pro | SearchMode::Auto) && has_pro_engine;
+        let used_pro = use_pro_primary;
 
-        let primary_engine: &dyn SemanticEngine = match self.config.search_mode {
-            SearchMode::Pro => pro_engine.unwrap_or(flash_engine),
-            _ => flash_engine,
+        let primary_engine: &dyn SemanticEngine = if use_pro_primary {
+            pro_engine.unwrap_or(flash_engine)
+        } else {
+            flash_engine
         };
         let mut flash_scores: Option<std::collections::HashMap<std::path::PathBuf, f32>> = None;
+        let mut embedded_count: usize = 0;
 
         let mut semantic_results = if lexical_results.is_empty() {
             // No lexical results, try pure semantic search
@@ -650,7 +654,11 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
 
                 result = tokio::time::timeout(
                     self.config.semantic_timeout,
-                    primary_engine.rerank(&semantic_query, lexical_results.clone())
+                    primary_engine.rerank(
+                        &semantic_query,
+                        lexical_results.clone(),
+                        lexical_limit,
+                    )
                 ) => {
                     match result {
                         Ok(Ok(results)) => results,
@@ -668,133 +676,109 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             }
         };
 
-        // Auto mode refinement using Pro engine on top-K
-        if matches!(self.config.search_mode, SearchMode::Auto) {
-            if let Some(pro_engine) = pro_engine {
-                let should_refine = should_refine(
-                    query_terms.len(),
-                    &lexical_results,
-                    &semantic_results,
-                    self.config.auto_mode,
-                );
-                if should_refine {
-                    if self.config.enable_fusion
-                        && self.config.fusion.flash > 0.0
-                        && flash_scores.is_none()
-                    {
+        if lexical_results.is_empty() {
+            embedded_count = semantic_results.len();
+        } else {
+            embedded_count = embedded_count.saturating_add(lexical_results.len());
+        }
+
+        // Pro v2 cascade: potion fast pass -> flash only for top-K/uncertain region -> fusion
+        let mut run_flash_refine = false;
+        if use_pro_primary && self.config.enable_fusion && self.config.fusion.flash > 0.0 {
+            run_flash_refine = if matches!(self.config.search_mode, SearchMode::Pro) {
+                true
+            } else if matches!(self.config.search_mode, SearchMode::Auto) {
+                !lexical_results.is_empty()
+                    && should_refine(
+                        query_terms.len(),
+                        &lexical_results,
+                        &semantic_results,
+                        self.config.auto_mode,
+                    )
+            } else {
+                false
+            };
+        }
+
+        if run_flash_refine {
+            let _ = tx
+                .send(SearchEvent::Status("Refining with Flash model...".into()))
+                .await;
+            let refine_stats = stream_stats.lock().unwrap().clone();
+            let _ = tx
+                .send(SearchEvent::StreamUpdate {
+                    stage: StreamStage::Refining,
+                    stats: refine_stats,
+                    events: Vec::new(),
+                })
+                .await;
+
+            let mut flash_candidates: Vec<LexicalMatch> = semantic_results
+                .iter()
+                .take(self.config.auto_mode.pro_top_k)
+                .map(|m| {
+                    lexical_lookup.get(&m.path).cloned().unwrap_or_else(|| {
+                        LexicalMatch::new(m.path.clone(), 0.0, String::new(), 0, 0)
+                    })
+                })
+                .collect();
+
+            if flash_candidates.is_empty() && !lexical_results.is_empty() {
+                flash_candidates = lexical_results.clone();
+            }
+
+            if !flash_candidates.is_empty() {
+                let flash_candidate_count = flash_candidates.len();
+                match tokio::time::timeout(
+                    self.config.semantic_timeout,
+                    flash_engine.rerank(
+                        &semantic_query,
+                        flash_candidates,
+                        self.config.auto_mode.pro_top_k,
+                    ),
+                )
+                .await
+                {
+                    Ok(Ok(results)) => {
                         flash_scores = Some(
-                            semantic_results
-                                .iter()
-                                .map(|m| (m.path.clone(), m.similarity))
+                            results
+                                .into_iter()
+                                .map(|m| (m.path, m.similarity))
                                 .collect(),
                         );
+                        embedded_count = embedded_count.saturating_add(flash_candidate_count);
                     }
-                    let _ = tx
-                        .send(SearchEvent::Status("Refining with Pro model...".into()))
-                        .await;
-                    let refine_stats = stream_stats.lock().unwrap().clone();
-                    let _ = tx
-                        .send(SearchEvent::StreamUpdate {
-                            stage: StreamStage::Refining,
-                            stats: refine_stats,
-                            events: Vec::new(),
-                        })
-                        .await;
-
-                    let mut pro_candidates: Vec<LexicalMatch> = semantic_results
-                        .iter()
-                        .take(self.config.auto_mode.pro_top_k)
-                        .map(|m| {
-                            lexical_lookup.get(&m.path).cloned().unwrap_or_else(|| {
-                                LexicalMatch::new(m.path.clone(), 0.0, String::new(), 0, 0)
-                            })
-                        })
-                        .collect();
-
-                    if pro_candidates.is_empty() && !lexical_results.is_empty() {
-                        pro_candidates = lexical_results.clone();
+                    Ok(Err(e)) => {
+                        tracing::warn!("Flash refinement failed: {}", e);
                     }
-
-                    let pro_results = if pro_candidates.is_empty() {
-                        pro_engine
-                            .search_pure(&semantic_query, self.config.max_results)
-                            .await
-                    } else {
-                        pro_engine
-                            .rerank(&semantic_query, pro_candidates.clone())
-                            .await
-                    };
-
-                    match pro_results {
-                        Ok(results) => {
-                            semantic_results = results;
-                            used_pro = true;
-                            let mut stats = stream_stats.lock().unwrap();
-                            stats.embedded = stats.embedded.saturating_add(pro_candidates.len());
-                        }
-                        Err(e) => {
-                            tracing::warn!("Pro refinement failed: {}", e);
-                        }
+                    Err(_) => {
+                        tracing::warn!("Flash refinement timed out");
                     }
                 }
             }
+        } else if matches!(self.config.search_mode, SearchMode::Pro) && !has_pro_engine {
+            flash_scores = Some(
+                semantic_results
+                    .iter()
+                    .map(|m| (m.path.clone(), m.similarity))
+                    .collect(),
+            );
         }
 
         // Apply lexical-semantic fusion for Pro/Auto refinement
         if self.config.enable_fusion
             && (matches!(self.config.search_mode, SearchMode::Pro) || used_pro)
         {
-            if self.config.fusion.flash > 0.0
-                && flash_scores.is_none()
-                && !semantic_results.is_empty()
-            {
-                if matches!(self.config.search_mode, SearchMode::Pro) && pro_engine.is_none() {
-                    flash_scores = Some(
-                        semantic_results
-                            .iter()
-                            .map(|m| (m.path.clone(), m.similarity))
-                            .collect(),
-                    );
-                } else {
-                    let flash_candidates: Vec<LexicalMatch> = semantic_results
-                        .iter()
-                        .take(self.config.max_results)
-                        .map(|m| LexicalMatch::new(m.path.clone(), 0.0, String::new(), 0, 0))
-                        .collect();
-                    if !flash_candidates.is_empty() {
-                        let flash_candidate_count = flash_candidates.len();
-                        match tokio::time::timeout(
-                            self.config.semantic_timeout,
-                            flash_engine.rerank(&semantic_query, flash_candidates),
-                        )
-                        .await
-                        {
-                            Ok(Ok(results)) => {
-                                flash_scores = Some(
-                                    results
-                                        .into_iter()
-                                        .map(|m| (m.path, m.similarity))
-                                        .collect(),
-                                );
-                                let mut stats = stream_stats.lock().unwrap();
-                                stats.embedded =
-                                    stats.embedded.saturating_add(flash_candidate_count);
-                            }
-                            Ok(Err(e)) => {
-                                tracing::warn!("Flash fusion rerank failed: {}", e);
-                            }
-                            Err(_) => {
-                                tracing::warn!("Flash fusion rerank timed out");
-                            }
-                        }
-                    }
-                }
+            let mut fusion = self.config.fusion;
+            if flash_scores.is_none() && fusion.flash > 0.0 {
+                fusion.pro += fusion.flash;
+                fusion.flash = 0.0;
             }
             apply_fusion(
                 &mut semantic_results,
                 &lexical_lookup,
                 &query_terms,
-                self.config.fusion,
+                fusion,
                 flash_scores.as_ref(),
             );
         }
@@ -890,9 +874,10 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                         evidence_max_bytes,
                     ) {
                         if processed.mode == QueryMode::Ask && !processed.anchor_terms.is_empty() {
-                            let passages = passage_extractor.extract(&content, query_embedding, |chunk| {
-                                evidence_engine.embed_passage_chunk(chunk)
-                            });
+                            let passages =
+                                passage_extractor.extract(&content, query_embedding, |chunk| {
+                                    evidence_engine.embed_passage_chunk(chunk)
+                                });
                             if !passages.is_empty() {
                                 let semantic_scores: Vec<(usize, f32)> = passages
                                     .iter()
@@ -905,17 +890,19 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                                     &processed.anchor_terms,
                                     &semantic_scores,
                                 ) {
-                                    let display = passage_extractor.truncate_for_display(&trusted.passage.text);
+                                    let display = passage_extractor
+                                        .truncate_for_display(&trusted.passage.text);
                                     semantic_passage = Some(display.clone());
                                     let matched_lines: Vec<String> =
                                         display.lines().map(|l| l.to_string()).collect();
-                                    result.context_snippet = Some(super::snippet::ContextSnippet::new(
-                                        trusted.passage.line_number,
-                                        Vec::new(),
-                                        matched_lines,
-                                        Vec::new(),
-                                        display,
-                                    ));
+                                    result.context_snippet =
+                                        Some(super::snippet::ContextSnippet::new(
+                                            trusted.passage.line_number,
+                                            Vec::new(),
+                                            matched_lines,
+                                            Vec::new(),
+                                            display,
+                                        ));
                                     ask_mode_trust = Some(trusted);
                                 }
                             }
@@ -979,7 +966,7 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             } else {
                 final_results.len()
             };
-            stats.embedded = stats.candidates;
+            stats.embedded = embedded_count.max(stats.candidates);
         }
 
         let mut semantic_events: Vec<StreamEventItem> = Vec::new();
@@ -1409,7 +1396,71 @@ fn tokenize_path_segment(segment: &str) -> Vec<String> {
 mod tests {
     use super::*;
     use crate::ixos_rank::{StubLexicalEngine, StubSemanticEngine};
+    use async_trait::async_trait;
     use std::path::PathBuf;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::Arc;
+
+    #[derive(Clone, Default)]
+    struct CountingSemanticEngine {
+        rerank_calls: Arc<AtomicUsize>,
+        search_calls: Arc<AtomicUsize>,
+        embed_calls: Arc<AtomicUsize>,
+    }
+
+    impl CountingSemanticEngine {
+        fn new() -> Self {
+            Self::default()
+        }
+
+        fn rerank_calls(&self) -> usize {
+            self.rerank_calls.load(Ordering::Relaxed)
+        }
+
+        fn search_calls(&self) -> usize {
+            self.search_calls.load(Ordering::Relaxed)
+        }
+
+        fn embed_calls(&self) -> usize {
+            self.embed_calls.load(Ordering::Relaxed)
+        }
+    }
+
+    #[async_trait]
+    impl SemanticEngine for CountingSemanticEngine {
+        async fn rerank(
+            &self,
+            _query: &str,
+            candidates: Vec<LexicalMatch>,
+            limit: usize,
+        ) -> Result<Vec<SemanticMatch>, SearchError> {
+            self.rerank_calls.fetch_add(1, Ordering::Relaxed);
+            Ok(candidates
+                .into_iter()
+                .take(limit)
+                .map(|m| SemanticMatch::new(m.path, 0.5))
+                .collect())
+        }
+
+        async fn search_pure(
+            &self,
+            _query: &str,
+            _limit: usize,
+        ) -> Result<Vec<SemanticMatch>, SearchError> {
+            self.search_calls.fetch_add(1, Ordering::Relaxed);
+            Ok(Vec::new())
+        }
+
+        async fn embed_query(&self, _query: &str) -> Result<Vec<f32>, SearchError> {
+            self.embed_calls.fetch_add(1, Ordering::Relaxed);
+            Ok(vec![0.0, 0.0, 0.0])
+        }
+
+        fn embed_passage_chunk(&self, _text: &str) -> Option<Vec<f32>> {
+            self.embed_calls.fetch_add(1, Ordering::Relaxed);
+            Some(vec![0.0, 0.0, 0.0])
+        }
+    }
 
     fn create_test_engine() -> ProgressiveSearchEngine<StubLexicalEngine, StubSemanticEngine> {
         let lexical = StubLexicalEngine::new();
@@ -1561,12 +1612,54 @@ mod tests {
         assert_eq!(engine.config().max_results, 20);
         assert_eq!(engine.secure_ranker().cache_size(), 0);
     }
+
+    #[tokio::test]
+    async fn test_ask_mode_respects_selected_model() {
+        let mut lexical = StubLexicalEngine::new();
+        lexical.add_file(
+            PathBuf::from("/test/ask.txt"),
+            "Rust search question content".to_string(),
+        );
+
+        let flash_engine = CountingSemanticEngine::new();
+        let pro_engine = CountingSemanticEngine::new();
+        let flash_probe = flash_engine.clone();
+        let pro_probe = pro_engine.clone();
+
+        let mut config = ProgressiveSearchConfig::default();
+        config.search_mode = SearchMode::Flash;
+        config.evidence_max_results = 0;
+        config.context_lines = 0;
+
+        let mut engine = ProgressiveSearchEngine::with_config_and_pro(
+            lexical,
+            flash_engine,
+            Some(pro_engine),
+            config,
+        );
+
+        let (tx, mut rx) = mpsc::channel(10);
+        let cancel = CancellationToken::new();
+
+        engine
+            .search_progressive("why rust?".to_string(), tx, cancel)
+            .await
+            .unwrap();
+
+        while let Some(event) = rx.recv().await {
+            if matches!(event, SearchEvent::Complete) {
+                break;
+            }
+        }
+
+        let flash_calls = flash_probe.rerank_calls() + flash_probe.search_calls();
+        assert!(flash_calls > 0, "Flash should be used");
+        assert_eq!(
+            pro_probe.rerank_calls(),
+            0,
+            "Pro should not be forced for Ask Mode"
+        );
+        assert_eq!(pro_probe.search_calls(), 0);
+        assert_eq!(pro_probe.embed_calls(), 0);
+    }
 }
-
-
-
-
-
-
-
-

@@ -4,10 +4,11 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Layers, RefreshCw, Lock } from 'lucide-react';
+import { Layers, RefreshCw, Lock, Plus } from 'lucide-react';
 import { useWorkstreamStore } from '@/stores/workstreamStore';
 import { useAuthStore } from '@/stores/authStore';
 import { WorkstreamCard } from './WorkstreamCard';
+import { CreateWorkstreamModal } from './CreateWorkstreamModal';
 import { cn } from '@/lib/utils';
 
 interface WorkstreamsListProps {
@@ -22,12 +23,14 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
     error,
     loadWorkstreams,
     recluster,
+    createWorkstream,
   } = useWorkstreamStore();
 
   const proStatus = useAuthStore((s) => s.proStatus);
   const isPro = proStatus?.status === 'active' || proStatus?.status === 'grace';
 
   const [isReclustering, setIsReclustering] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Load workstreams on mount
   useEffect(() => {
@@ -42,6 +45,13 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
       await recluster(30);
     } finally {
       setIsReclustering(false);
+    }
+  };
+
+  const handleCreateWorkstream = async (name: string, description?: string) => {
+    const result = await createWorkstream(name, description);
+    if (!result) {
+      throw new Error('Failed to create workstream');
     }
   };
 
@@ -99,6 +109,18 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
             <RefreshCw className={cn('w-3.5 h-3.5', isReclustering && 'animate-spin')} />
             Re-cluster
           </button>
+
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium',
+              'bg-accent-teal text-graphite-0',
+              'hover:bg-accent-teal/90 transition-colors'
+            )}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            New
+          </button>
         </div>
       </div>
 
@@ -143,6 +165,13 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
           </div>
         )}
       </div>
+
+      {/* Create Modal */}
+      <CreateWorkstreamModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={handleCreateWorkstream}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 //! Cryptographic device identity backed by OS secure storage.
 
-use ed25519_dalek::{Signature, SigningKey, Signer};
+use ed25519_dalek::{Signature, Signer, SigningKey};
 use rand::rngs::OsRng;
 use ring::digest::{digest, SHA512};
 use thiserror::Error;
@@ -296,7 +296,13 @@ fn store_key_bytes(key_bytes: &[u8]) -> Result<(), DeviceIdentityError> {
     attributes.insert("account", KEY_ACCOUNT);
 
     collection
-        .create_item(KEY_LABEL, attributes, key_bytes, true, "application/octet-stream")
+        .create_item(
+            KEY_LABEL,
+            attributes,
+            key_bytes,
+            true,
+            "application/octet-stream",
+        )
         .map_err(|e| DeviceIdentityError::Storage(e.to_string()))?;
 
     Ok(())

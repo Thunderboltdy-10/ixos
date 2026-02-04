@@ -91,8 +91,26 @@ export const useTodayStore = create<TodayState>((set, get) => ({
         : [];
 
       // Generate suggestions based on co-occurrence
-      // This is a simplified version - full implementation would query co-occurrence API
-      const suggestedNext: SuggestedFile[] = [];
+      // Query co-occurrence API using the top recently touched file
+      let suggestedNext: SuggestedFile[] = [];
+      if (recentlyTouched.length > 0) {
+        try {
+          const topFilePath = recentlyTouched[0].path;
+          const coOccurrences = await tauri.getCoOccurrence(topFilePath, 30);
+          suggestedNext = coOccurrences
+            .filter((co) => co.filePath) // Only include if we have file path
+            .slice(0, 5)
+            .map((co) => ({
+              path: co.filePath!, // Use the new filePath field
+              name: co.filePath!.split(/[/\\]/).pop() || 'Unknown',
+              score: Math.min(co.count / 10, 1),
+              reason: co.reason === 'co_edit' ? 'co-edit' : co.reason === 'co_open' ? 'co-open' : 'frequent',
+              coOccurredWith: topFilePath,
+            }));
+        } catch {
+          // Silent failure - suggestions are non-critical
+        }
+      }
 
       // Get pinned items
       const pinnedItems = get().pinnedItems;

@@ -26,9 +26,10 @@ const defaultConfig: IxosConfig = {
     enableSecureRanking: true,
     progressiveByDefault: true,
     cacheMode: 'jit',
-    modelType: 'ixos-flash-v1',
-    proModelType: 'potion',
+    modelType: 'ixos-flash-v2',
+    proModelType: 'ixos-pro-v2',
     searchMode: 'auto',
+    askMode: 'auto',
     useStubModel: true,
     secureTiming: false,
     contextLines: 3,
@@ -60,12 +61,14 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       const config = await tauri.getConfig();
 
 
-      // Fix for proModelType being set to flash (user report: "logs show flash")
-      // If the user has "ixos-flash-v1" as their Pro Model, it defeats the purpose.
-      // We automatically migrate them back to "potion" to keep Pro refinement distinct.
+      // Normalize legacy model settings to v2 defaults.
       let needsUpdate = false;
-      if (config.search.proModelType === 'ixos-flash-v1') {
-        config.search.proModelType = 'potion';
+      if (config.search.modelType !== 'ixos-flash-v2') {
+        config.search.modelType = 'ixos-flash-v2';
+        needsUpdate = true;
+      }
+      if (config.search.proModelType !== 'ixos-pro-v2') {
+        config.search.proModelType = 'ixos-pro-v2';
         needsUpdate = true;
       }
 

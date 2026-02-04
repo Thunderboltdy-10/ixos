@@ -5,7 +5,6 @@
 
 use super::{ActivityEvent, ActivityLedger, MAX_EVENTS, ROLLING_WINDOW_DAYS};
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 
 /// Storage configuration
 #[derive(Debug, Clone)]
@@ -29,6 +28,7 @@ impl Default for StorageConfig {
 }
 
 /// Serializable format for activity ledger persistence
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ActivityStorageData {
     /// Version for migration support
@@ -40,6 +40,7 @@ pub struct ActivityStorageData {
 }
 
 impl ActivityStorageData {
+    #[allow(dead_code)]
     pub fn new(events: Vec<ActivityEvent>) -> Self {
         use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -86,12 +87,14 @@ pub enum StorageError {
 }
 
 /// In-memory storage for testing and non-Pro users
+#[allow(dead_code)]
 #[derive(Debug, Default)]
 pub struct MemoryStorage {
     data: std::sync::Mutex<Option<Vec<ActivityEvent>>>,
 }
 
 impl MemoryStorage {
+    #[allow(dead_code)]
     pub fn new() -> Self {
         Self::default()
     }
@@ -99,13 +102,19 @@ impl MemoryStorage {
 
 impl ActivityStorage for MemoryStorage {
     fn save(&self, ledger: &ActivityLedger) -> Result<(), StorageError> {
-        let mut data = self.data.lock().map_err(|e| StorageError::Io(e.to_string()))?;
+        let mut data = self
+            .data
+            .lock()
+            .map_err(|e| StorageError::Io(e.to_string()))?;
         *data = Some(ledger.export_events());
         Ok(())
     }
 
     fn load(&self) -> Result<ActivityLedger, StorageError> {
-        let data = self.data.lock().map_err(|e| StorageError::Io(e.to_string()))?;
+        let data = self
+            .data
+            .lock()
+            .map_err(|e| StorageError::Io(e.to_string()))?;
         match data.as_ref() {
             Some(events) => Ok(ActivityLedger::from_events(events.clone())),
             None => Err(StorageError::NotFound),
@@ -113,7 +122,10 @@ impl ActivityStorage for MemoryStorage {
     }
 
     fn clear(&self) -> Result<(), StorageError> {
-        let mut data = self.data.lock().map_err(|e| StorageError::Io(e.to_string()))?;
+        let mut data = self
+            .data
+            .lock()
+            .map_err(|e| StorageError::Io(e.to_string()))?;
         *data = None;
         Ok(())
     }
@@ -130,7 +142,11 @@ mod tests {
         let mut ledger = ActivityLedger::new();
 
         ledger.log_activity(create_event("/file1.txt", ActivityAction::FileOpened, None));
-        ledger.log_activity(create_event("/file2.txt", ActivityAction::SearchQuery, Some("test")));
+        ledger.log_activity(create_event(
+            "/file2.txt",
+            ActivityAction::SearchQuery,
+            Some("test"),
+        ));
 
         storage.save(&ledger).unwrap();
 

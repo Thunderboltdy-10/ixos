@@ -44,7 +44,11 @@ impl AnchorExtractor {
     pub fn with_corpus_defaults() -> Self {
         let total_documents = 1_000_000;
         let document_frequencies = default_document_frequencies(total_documents);
-        Self::new(AnchorConfig::default(), document_frequencies, total_documents)
+        Self::new(
+            AnchorConfig::default(),
+            document_frequencies,
+            total_documents,
+        )
     }
 
     pub fn extract(&self, terms: &[String]) -> Vec<AnchorTerm> {
@@ -102,11 +106,11 @@ impl AnchorExtractor {
 fn default_document_frequencies(total_documents: usize) -> HashMap<String, usize> {
     let mut map = HashMap::new();
     let common_terms = [
-        "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of",
-        "with", "by", "from", "as", "is", "was", "are", "were", "be", "been", "being",
-        "have", "has", "had", "do", "does", "did", "will", "would", "could", "should",
-        "may", "might", "must", "can", "who", "what", "when", "where", "why", "how",
-        "this", "that", "these", "those", "my", "your", "our", "their", "me", "you",
+        "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by",
+        "from", "as", "is", "was", "are", "were", "be", "been", "being", "have", "has", "had",
+        "do", "does", "did", "will", "would", "could", "should", "may", "might", "must", "can",
+        "who", "what", "when", "where", "why", "how", "this", "that", "these", "those", "my",
+        "your", "our", "their", "me", "you",
     ];
 
     for term in common_terms {

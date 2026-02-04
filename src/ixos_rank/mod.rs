@@ -57,9 +57,9 @@
 //! }
 //! ```
 
+pub mod ask_mode;
 pub mod candidate_generator;
 pub mod candidate_lexical;
-pub mod ask_mode;
 pub mod evidence;
 pub mod fstd;
 pub mod history;
@@ -72,8 +72,12 @@ pub mod snippet;
 pub mod types;
 
 // Re-exports
+pub use ask_mode::{
+    AnchorConfig, AnchorExtractor, AnchorTerm, DescriptionExtractor, IntentDetector, QueryIntent,
+    QueryMode, SnippetTrustConfig, TimeIntent, TinyDescription, TrustedSnippet,
+    TrustedSnippetSelector,
+};
 pub use candidate_lexical::CandidateLexicalEngine;
-pub use ask_mode::{AnchorConfig, AnchorExtractor, AnchorTerm, DescriptionExtractor, IntentDetector, QueryIntent, QueryMode, SnippetTrustConfig, TinyDescription, TimeIntent, TrustedSnippet, TrustedSnippetSelector};
 pub use history::{HistoryEntry, SearchHistory};
 pub use hybrid_engine::{AdaptiveHybridEngine, AttackDetectionConfig};
 pub use lexical_engine::{LexicalEngine, RipgrepConfig, RipgrepLexicalEngine, StubLexicalEngine};
@@ -91,9 +95,9 @@ pub use types::{
 pub use candidate_generator::{
     CandidateGenerator, CandidateGeneratorConfig, CandidateScoreBreakdown, CandidateSet,
     CandidateSource, CandidateStats, MatchContext, MetadataPriors, PathIndex, PathIndexConfig,
-    PathMetadata, PriorScores, PriorWeights, ProcessedQuery, RipgrepFunnel, RipgrepFunnelConfig, RipgrepStats,
-    ScoredCandidate, TerminationReason, MAX_BYTES_READ_PER_FILE, MAX_CANDIDATES_FOR_EMBEDDING,
-    MAX_TEXT_CHARS_PER_FILE,
+    PathMetadata, PriorScores, PriorWeights, ProcessedQuery, RipgrepFunnel, RipgrepFunnelConfig,
+    RipgrepStats, ScoredCandidate, TerminationReason, MAX_BYTES_READ_PER_FILE,
+    MAX_CANDIDATES_FOR_EMBEDDING, MAX_TEXT_CHARS_PER_FILE,
 };
 
 // P6: Evidence Engine
@@ -104,6 +108,3 @@ pub use evidence::{
 
 // P8: FSTD topology adapter
 pub use fstd::{DirectoryTopology, FstdAdapter, FstdConfig, FstdState};
-
-
-

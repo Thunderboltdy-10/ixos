@@ -8,7 +8,9 @@ use std::num::NonZeroUsize;
 
 use lru::LruCache;
 
-use crate::ixos_rank::ask_mode::{AnchorExtractor, AnchorTerm, IntentDetector, QueryIntent, QueryMode, TimeIntent};
+use crate::ixos_rank::ask_mode::{
+    AnchorExtractor, AnchorTerm, IntentDetector, QueryIntent, QueryMode, TimeIntent,
+};
 
 #[derive(Debug, Clone)]
 pub struct QueryPreprocessConfig {
@@ -212,7 +214,11 @@ impl QueryPreprocessor {
         let expanded_query = expanded_tokens.join(" ");
         let semantic_query = semantic_terms.join(" ");
 
-        let mode = if is_question { QueryMode::Ask } else { QueryMode::Keyword };
+        let mode = if is_question {
+            QueryMode::Ask
+        } else {
+            QueryMode::Keyword
+        };
         let mut anchor_candidates = terms.clone();
         for phrase in semantic_terms.iter().filter(|t| t.contains(" ")) {
             anchor_candidates.push(phrase.clone());

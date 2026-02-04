@@ -50,6 +50,7 @@ pub fn can_extract_text(path: &Path) -> bool {
             | "xls"
             | "pptx"
             | "ppt"
+            | "rtf"
     )
 }
 
@@ -61,11 +62,20 @@ pub fn extract_text(path: &Path, max_bytes: usize, max_chars: usize) -> Option<S
         .unwrap_or("")
         .to_lowercase();
 
+    if is_heavy_ext(&ext) {
+        let size = std::fs::metadata(path).ok()?.len() as usize;
+        if size > max_bytes {
+            return None;
+        }
+    }
+
     let mut text = match ext.as_str() {
         "pdf" => extract_pdf(path),
         "docx" => extract_docx(path),
         "xlsx" | "xls" => extract_xlsx(path),
-        "pptx" | "ppt" => None,
+        "pptx" => extract_pptx(path),
+        "ppt" => None,
+        "rtf" => extract_plain_text(path, max_bytes),
         _ => extract_plain_text(path, max_bytes),
     }?;
 
@@ -136,6 +146,39 @@ fn extract_xlsx(path: &Path) -> Option<String> {
                     last_space = true;
                 }
             }
+        }
+    }
+
+    if out.trim().is_empty() {
+        None
+    } else {
+        Some(out)
+    }
+}
+
+fn extract_pptx(path: &Path) -> Option<String> {
+    let file = File::open(path).ok()?;
+    let mut archive = ZipArchive::new(file).ok()?;
+    let mut slide_names: Vec<String> = archive
+        .file_names()
+        .filter(|name| name.starts_with("ppt/slides/slide") && name.ends_with(".xml"))
+        .map(|name| name.to_string())
+        .collect();
+    if slide_names.is_empty() {
+        return None;
+    }
+    slide_names.sort();
+
+    let mut out = String::new();
+    for name in slide_names {
+        let mut slide = archive.by_name(&name).ok()?;
+        let mut xml = String::new();
+        slide.read_to_string(&mut xml).ok()?;
+        if let Some(text) = extract_text_from_xml(&xml) {
+            if !out.is_empty() {
+                out.push('\n');
+            }
+            out.push_str(&text);
         }
     }
 
@@ -217,4 +260,60 @@ fn truncate_chars(text: &str, max_chars: usize) -> String {
         return text.to_string();
     }
     text.chars().take(max_chars).collect()
+}
+
+fn is_heavy_ext(ext: &str) -> bool {
+    matches!(ext, "pdf" | "docx" | "xlsx" | "xls" | "pptx")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    fn fixture(name: &str) -> PathBuf {
+        PathBuf::from("tests").join("fixtures").join(name)
+    }
+
+    #[test]
+    fn test_extract_txt_fixture() {
+        let path = fixture("sample.txt");
+        let text = extract_text(&path, 8 * 1024, 8 * 1024).expect("txt extract");
+        assert!(text.contains("Ixos TXT Fixture"));
+    }
+
+    #[test]
+    fn test_extract_rtf_fixture() {
+        let path = fixture("sample.rtf");
+        let text = extract_text(&path, 8 * 1024, 8 * 1024).expect("rtf extract");
+        assert!(text.contains("Ixos RTF Fixture"));
+    }
+
+    #[test]
+    fn test_extract_pdf_fixture() {
+        let path = fixture("sample.pdf");
+        let text = extract_text(&path, 64 * 1024, 16 * 1024).expect("pdf extract");
+        assert!(text.contains("Ixos PDF Fixture"));
+    }
+
+    #[test]
+    fn test_extract_docx_fixture() {
+        let path = fixture("sample.docx");
+        let text = extract_text(&path, 64 * 1024, 16 * 1024).expect("docx extract");
+        assert!(text.contains("Ixos DOCX Fixture"));
+    }
+
+    #[test]
+    fn test_extract_pptx_fixture() {
+        let path = fixture("sample.pptx");
+        let text = extract_text(&path, 64 * 1024, 16 * 1024).expect("pptx extract");
+        assert!(text.contains("Ixos PPTX Fixture"));
+    }
+
+    #[test]
+    fn test_heavy_format_respects_byte_cap() {
+        let path = fixture("sample.pdf");
+        let text = extract_text(&path, 1, 512);
+        assert!(text.is_none());
+    }
 }

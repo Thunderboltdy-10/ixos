@@ -147,7 +147,10 @@ impl<L: LexicalEngine, S: SemanticEngine> AdaptiveHybridEngine<L, S> {
 
         // Normal hybrid cascade
         let candidates = self.limit_candidates(lexical_results, self.config.normal_candidate_limit);
-        let semantic_results = self.semantic_engine.rerank(query, candidates).await?;
+        let semantic_results = self
+            .semantic_engine
+            .rerank(query, candidates, limit)
+            .await?;
 
         let results = semantic_results
             .into_iter()
@@ -228,7 +231,7 @@ impl<L: LexicalEngine, S: SemanticEngine> AdaptiveHybridEngine<L, S> {
                 let filtered = self
                     .aggressive_phrase_filter(query, self.config.defensive_candidate_limit)
                     .await?;
-                let semantic_results = self.semantic_engine.rerank(query, filtered).await?;
+                let semantic_results = self.semantic_engine.rerank(query, filtered, limit).await?;
 
                 semantic_results
                     .into_iter()
@@ -245,7 +248,10 @@ impl<L: LexicalEngine, S: SemanticEngine> AdaptiveHybridEngine<L, S> {
                     .await?;
                 let candidates =
                     self.limit_candidates(lexical_results, self.config.defensive_candidate_limit);
-                let semantic_results = self.semantic_engine.rerank(query, candidates).await?;
+                let semantic_results = self
+                    .semantic_engine
+                    .rerank(query, candidates, limit)
+                    .await?;
 
                 semantic_results
                     .into_iter()

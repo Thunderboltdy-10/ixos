@@ -206,9 +206,7 @@ fn semantic_search(root: &PathBuf, query: &str) -> Vec<(PathBuf, f32)> {
     let semantic_concepts: Vec<(&str, Vec<&str>)> = vec![
         (
             "error",
-            vec![
-                "error", "exception", "handle", "fail", "result", "unwrap",
-            ],
+            vec!["error", "exception", "handle", "fail", "result", "unwrap"],
         ),
         (
             "authentication",
@@ -221,12 +219,7 @@ fn semantic_search(root: &PathBuf, query: &str) -> Vec<(PathBuf, f32)> {
         (
             "validation",
             vec![
-                "validate",
-                "sanitize",
-                "check",
-                "input",
-                "password",
-                "email",
+                "validate", "sanitize", "check", "input", "password", "email",
             ],
         ),
         (
@@ -264,9 +257,11 @@ fn semantic_search(root: &PathBuf, query: &str) -> Vec<(PathBuf, f32)> {
 
                             if query_relevance > 0.0 {
                                 // Check how well file matches concept
-                                let file_matches =
-                                    related.iter().filter(|r| content_lower.contains(*r)).count()
-                                        as f32;
+                                let file_matches = related
+                                    .iter()
+                                    .filter(|r| content_lower.contains(*r))
+                                    .count()
+                                    as f32;
                                 total_score += query_relevance * file_matches * 0.1;
                             }
                         }
@@ -402,10 +397,10 @@ fn bench_search_effectiveness(c: &mut Criterion) {
 
     // Queries where semantic should beat lexical
     let semantic_preferred_queries = [
-        ("find user login code", "authentication"),           // No exact "login" in file
-        ("where are exceptions caught", "error"),             // Semantic: exceptions ≈ errors
-        ("data persistence layer", "database"),               // Semantic: persistence ≈ database
-        ("sanitize untrusted input", "validation"),           // Semantic understanding
+        ("find user login code", "authentication"), // No exact "login" in file
+        ("where are exceptions caught", "error"),   // Semantic: exceptions ≈ errors
+        ("data persistence layer", "database"),     // Semantic: persistence ≈ database
+        ("sanitize untrusted input", "validation"), // Semantic understanding
     ];
 
     group.bench_function("semantic_vs_lexical_quality", |b| {

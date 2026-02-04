@@ -95,6 +95,10 @@ interface SearchState {
   cacheMode: 'cache' | 'jit';
   fileCount: number | null;
 
+  // Ask Mode
+  askModeOverride: 'off' | 'auto' | 'always' | null;  // Per-search override (Ctrl+Shift+A)
+  isAskModeActive: boolean;  // Computed: whether Ask Mode is currently active
+
   // Actions
   setQuery: (query: string) => void;
   setDirectory: (directory: string) => void;
@@ -126,6 +130,10 @@ interface SearchState {
   // Animation actions (Signal Rail)
   consumeSparkTarget: () => number | null;
   clearSparkTargets: () => void;
+
+  // Ask Mode actions
+  setAskModeOverride: (mode: 'off' | 'auto' | 'always' | null) => void;
+  toggleAskModeOverride: () => void;
 }
 
 export const useSearchStore = create<SearchState>((set, get) => ({
@@ -153,6 +161,8 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   searchStartTime: null,
   cacheMode: 'jit',
   fileCount: null,
+  askModeOverride: null,
+  isAskModeActive: false,
 
   // Setters
   setQuery: (query) => set({ query, hasSearchIntent: query.trim().length >= 2 }),
@@ -179,6 +189,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       pendingSparkTargets: [],
       searchStartTime: null,
       activeThreadId: null,
+      askModeOverride: null,
     }),
 
   moveSelection: (direction) => {
@@ -238,19 +249,33 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     try {
       // Get model type from settings store (using static import)
       const settings = useSettingsStore.getState().config?.search;
-      const modelType = settings?.modelType || 'ixos-flash-v1';
-      const proModelType = settings?.proModelType || 'potion';
+      const modelType = settings?.modelType || 'ixos-flash-v2';
+      const proModelType = settings?.proModelType || 'ixos-pro-v2';
 
-      // Ask Mode detection (question mark or question word)
-      // Note: Ask Mode enhances query processing but does NOT force model selection
-      // Users can use Ask Mode with Flash model for faster searches
-      // Detection kept for future use (e.g., query enhancement)
-      void (normalizedQuery.endsWith('?')
-        || /^(who|what|when|where|how|why|find|show|whats|wheres|hows)\s/i.test(normalizedQuery));
-      const settingsMode = settings?.searchMode || 'auto';
-      // Respect user's selected search mode - don't force Pro for Ask Mode
-      const searchMode = settingsMode;
+      // Ask Mode detection
+      const askModeSetting = settings?.askMode || 'auto';
+      const askModeOverride = state.askModeOverride;
 
+      let isAskMode = false;
+      if (askModeOverride) {
+        isAskMode = askModeOverride === 'always'; // 'off' -> false
+        if (askModeOverride === 'auto') {
+          isAskMode = normalizedQuery.endsWith('?') ||
+            /^(who|what|when|where|how|why|find|show|whats|wheres|hows)\s/i.test(normalizedQuery);
+        }
+      } else {
+        if (askModeSetting === 'always') isAskMode = true;
+        else if (askModeSetting === 'off') isAskMode = false;
+        else {
+          // Auto
+          isAskMode = normalizedQuery.endsWith('?') ||
+            /^(who|what|when|where|how|why|find|show|whats|wheres|hows)\s/i.test(normalizedQuery);
+        }
+      }
+
+      set({ isAskModeActive: isAskMode });
+
+      const searchMode = settings?.searchMode || 'auto';
       const timeoutSeconds = settings?.timeoutSeconds || 30;
 
       await tauri.searchProgressive(state.query, state.directory, {
@@ -261,6 +286,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
         proModelType: proModelType,
         searchMode: searchMode,
         timeoutSeconds: timeoutSeconds,
+        isAskMode: isAskMode,
       });
     } catch (error) {
       set({
@@ -382,6 +408,12 @@ export const useSearchStore = create<SearchState>((set, get) => ({
           useActivityStore.getState().logSearchQuery(threadQuery).catch(() => {
             // Silent failure - activity logging is non-critical
           });
+
+          // Auto-recluster workstreams after search completes (Pro feature)
+          // This ensures the Today Tab stays up-to-date without manual intervention
+          tauri.reclusterWorkstreams().catch(() => {
+            // Silent failure - reclustering is non-critical for non-Pro users
+          });
         }
 
         // Increment search count safely
@@ -426,6 +458,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       scanTrail: [],
       pendingSparkTargets: [],
       hasSearchIntent: false,
+      askModeOverride: null,
     }),
 
   restoreFromHistory: (thread) =>
@@ -470,6 +503,12 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     const query = get().activeQuery;
     if (result) {
       try {
+        // Log result clicked BEFORE opening (Phase 2: Second Brain)
+        // This captures the user's selection intent for co-occurrence analysis
+        useActivityStore.getState().logResultClicked(result.path, query ?? '').catch(() => {
+          // Silent failure - activity logging is non-critical
+        });
+
         await tauri.openFile(result.path);
 
         // Log file opened activity (Phase 2: Second Brain)
@@ -542,4 +581,16 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   },
 
   clearSparkTargets: () => set({ pendingSparkTargets: [] }),
+
+  // Ask Mode actions
+  setAskModeOverride: (mode) => set({ askModeOverride: mode }),
+  toggleAskModeOverride: () => {
+    const state = get();
+    // Cycle through: null -> 'always' -> null (toggle on/off)
+    if (state.askModeOverride === 'always') {
+      set({ askModeOverride: null });
+    } else {
+      set({ askModeOverride: 'always' });
+    }
+  },
 }));

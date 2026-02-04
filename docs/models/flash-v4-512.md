@@ -5,7 +5,7 @@ Quality-leaning Flash variant with int8 embeddings and reduced disk footprint.
 
 ## Tier and status
 - Tier: Flash
-- Status: Candidate (quality-focused)
+- Status: Promoted (basis for Flash v2)
 - Intended use: Default flash replacement where disk + memory reduction is needed
 
 ## Specs

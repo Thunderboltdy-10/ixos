@@ -58,16 +58,15 @@ impl DescriptionExtractor {
             };
 
             let position_score = 1.0 / (1.0 + idx as f32);
-            let punctuation_bonus = if trimmed.ends_with('.')
-                || trimmed.ends_with('!')
-                || trimmed.ends_with('?')
-            {
-                0.2
-            } else {
-                0.0
-            };
+            let punctuation_bonus =
+                if trimmed.ends_with('.') || trimmed.ends_with('!') || trimmed.ends_with('?') {
+                    0.2
+                } else {
+                    0.0
+                };
 
-            let score = anchor_hits as f32 * 2.0 + position_score + length_score + punctuation_bonus;
+            let score =
+                anchor_hits as f32 * 2.0 + position_score + length_score + punctuation_bonus;
 
             let candidate = TinyDescription {
                 sentence: trimmed.to_string(),

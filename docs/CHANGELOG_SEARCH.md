@@ -1,5 +1,31 @@
 # Search Pipeline Changelog
 
+## v0.4.0 - Flash v2 + Pro v2 Cascade (2026-02-03)
+
+### Performance / Quality Changes
+
+- **Pro v2 cascade implemented**: Potion fast pass → Flash v2 refine on top-K/uncertain region → lexical fusion.
+- **Ranking speedup**: top-K partial selection in semantic rerank (avoids full sort).
+- **Ask Mode safeguard**: Ask Mode respects selected model (flash/pro/auto), verified by regression test.
+- **Scale bench added**: automated real-world benchmark with query sampling and TTFR/total stats.
+
+### Bench Artifacts
+
+- `reports/profile_flashv2_2026-02-03.json`
+- `reports/profile_potion_2026-02-03.json`
+- `reports/scale_bench.json`, `reports/SCALE_BENCH.md`
+
+### Repro
+
+```bash
+# Profiles (JIT)
+cargo run --release --bin ixos-profile -- --dir dataset --runs 6 --cache-mode jit --model ixos-flash-v2 --out reports/profile_flashv2_2026-02-03.json
+cargo run --release --bin ixos-profile -- --dir dataset --runs 6 --cache-mode jit --model potion --out reports/profile_potion_2026-02-03.json
+
+# Scale bench (auto-discover)
+python scripts/scale_bench.py --search-mode auto --cache-mode jit --model ixos-flash-v2 --pro-model ixos-pro-v2 --max-queries 50
+```
+
 ## v0.3.0 - Performance Optimization Release (2026-01-28)
 
 ### Performance Improvements
@@ -93,9 +119,7 @@
 ## Future Improvements (Not Yet Implemented)
 
 ### Cascade Retrieval
-- Use Potion for initial fast pass
-- Use Flash-v2 only for uncertain top-K
-- Expected: Could reduce Flash P95 to ~250ms
+- Implemented in v0.4.0 as Pro v2 cascade (Potion fast pass → Flash v2 refine → fusion).
 
 ### Incremental Lexical Index
 - Build trigram/token index updated by file watcher

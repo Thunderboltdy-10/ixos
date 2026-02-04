@@ -50,11 +50,12 @@ impl Default for RipgrepFunnelConfig {
             include_extensions: vec![
                 "txt", "md", "json", "yaml", "yml", "toml", "rs", "py", "js", "ts", "html", "css",
                 "java", "go", "c", "cpp", "h", "hpp", "rb", "php", "sh", "xml", "csv", "log",
+                "pdf", "docx", "xlsx", "xls", "pptx", "ppt", "rtf",
             ]
             .into_iter()
             .map(String::from)
             .collect(),
-            exclude_extensions: vec!["exe", "dll", "so", "dylib", "bin", "pdf", "docx", "xlsx"]
+            exclude_extensions: vec!["exe", "dll", "so", "dylib", "bin"]
                 .into_iter()
                 .map(String::from)
                 .collect(),

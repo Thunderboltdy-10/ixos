@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google"; // New premium font system
+import { Space_Grotesk, Geist_Mono } from "next/font/google"; // New premium font system
 import "./globals.css";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { ArcNoiseBackground } from "@/components/effects/ArcNoiseBackground";
@@ -13,7 +13,7 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
+const geistMono = Geist_Mono({
   variable: "--font-ixo-mono",
   weight: ["400", "500", "600"],
   subsets: ["latin"],
@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} antialiased`}
+        className={`${spaceGrotesk.variable} ${geistMono.variable} antialiased`}
       >
         <ClerkProvider>
           <SmoothScrollProvider>

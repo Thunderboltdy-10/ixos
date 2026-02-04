@@ -6,6 +6,7 @@ import { getMachineId } from '@/lib/crypto';
 import { getDeviceLabel } from '@/lib/device';
 import { loadEntitlementToken, storeEntitlementToken } from '@/lib/authToken';
 import { getProStatus } from '@/lib/tauri';
+import type { ModelStatus } from '@/lib/types';
 import { invoke } from '@tauri-apps/api/core';
 import ixosIcon from '@/assets/ixos-icon.png';
 import { SectionDivider } from "@/components/ui/SectionDivider";
@@ -81,7 +82,7 @@ const signInAppearance: Appearance = {
     colorTextSecondary: '#A1A1A6',
     colorDanger: '#EF4444',
     borderRadius: '0.25rem',
-    fontFamily: '"IBM Plex Mono", monospace', // Enforce Mono
+    fontFamily: '"Geist Mono", ui-monospace, monospace', // Enforce Mono
   },
   elements: {
     rootBox: 'w-full',
@@ -227,8 +228,11 @@ function LoadingScreen({ message }: { message: string }) {
         {/* Shimmer Text Animation */}
         <div className="relative overflow-hidden">
           <div
-            className="text-xs uppercase tracking-[0.2em] font-bold bg-clip-text text-transparent animate-shimmer bg-gradient-to-r from-porcelain via-accent-amber to-porcelain bg-[length:200%_100%]"
-            style={{ WebkitBackgroundClip: 'text' }}
+            className="text-xs uppercase tracking-[0.2em] font-bold bg-clip-text text-transparent animate-shimmer-slow bg-[length:200%_100%]"
+            style={{
+              WebkitBackgroundClip: 'text',
+              backgroundImage: `linear-gradient(90deg, rgba(243,245,247,0.8) 0%, rgba(243,245,247,0.8) 20%, #F6B94C 45%, #F6B94C 55%, rgba(243,245,247,0.8) 80%, rgba(243,245,247,0.8) 100%)`
+            }}
           >
             {message}
           </div>
@@ -513,7 +517,7 @@ function AuthGateInner({ children }: AuthGateProps) {
           const claimResult = await claimLease(clerkToken, deviceId, devicePublicKey);
           console.log('[Auth] Lease claim response:', claimResult);
           if (claimResult?.token) {
-            console.log('[Auth] Lease claimed successfully, plan:', claimResult.plan);
+            console.log('[Auth] Lease claimed successfully');
             setEntitlementToken(claimResult.token);
             await storeEntitlementToken(claimResult.token).catch((e) => console.warn('[Auth] Failed to store token:', e));
             try {
@@ -749,24 +753,6 @@ function AuthGateInner({ children }: AuthGateProps) {
   );
 }
 
-interface ModelStatus {
-  potionAvailable: boolean;
-  potionPath: string | null;
-  qwenAvailable: boolean;
-  qwenPath: string | null;
-  ixosFlashV1Available: boolean;
-  ixosFlashV1Path: string | null;
-  ixosFlashV4Available: boolean;
-  ixosFlashV4Path: string | null;
-  ixosFlashV4FastAvailable: boolean;
-  ixosFlashV4FastPath: string | null;
-  ixosProV1Available: boolean;
-  ixosProV1Path: string | null;
-  anyAvailable: boolean;
-  recommended: string | null;
-  loadedModel: string | null;
-}
-
 function ModelWarningPopup({ onDismiss }: { onDismiss: () => void }) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
@@ -776,7 +762,7 @@ function ModelWarningPopup({ onDismiss }: { onDismiss: () => void }) {
     setDownloadError(null);
     try {
       // Default to recommended model
-      await invoke('download_model', { modelType: 'ixos-flash-v1', hfToken: localStorage.getItem('ix_hf_token') || null });
+      await invoke('download_model', { modelType: 'ixos-flash-v2', hfToken: localStorage.getItem('ix_hf_token') || null });
       // Notify success/refresh (page reload or just dismiss effectively)
       onDismiss();
       // Optional: force reload state? The app checks status periodically or we can rely on reload

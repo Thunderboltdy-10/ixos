@@ -31,6 +31,7 @@ enum ProfileModelType {
     #[default]
     Potion,
     Qwen,
+    IxosFlashV2,
     IxosFlashV1,
     IxosFlashV4,
     IxosFlashV4Fast,
@@ -185,6 +186,10 @@ async fn main() -> anyhow::Result<()> {
         ProfileModelType::Qwen => {
             load_model_semantic(ixos_protocol::ixos_embed::ModelType::Qwen, cache_mode)?
         }
+        ProfileModelType::IxosFlashV2 => load_model_semantic(
+            ixos_protocol::ixos_embed::ModelType::IxosFlashV2,
+            cache_mode,
+        )?,
         ProfileModelType::IxosFlashV1 => load_model_semantic(
             ixos_protocol::ixos_embed::ModelType::IxosFlashV1,
             cache_mode,
@@ -235,7 +240,8 @@ async fn main() -> anyhow::Result<()> {
 
         collector.mark_semantic_start();
         let semantic_start = Instant::now();
-        let _semantic_results = semantic.rerank(query, lexical_results).await?;
+        let limit = lexical_results.len();
+        let _semantic_results = semantic.rerank(query, lexical_results, limit).await?;
         let semantic_elapsed = semantic_start.elapsed().as_millis() as u64;
 
         let semantic_metrics = semantic.take_metrics().await;

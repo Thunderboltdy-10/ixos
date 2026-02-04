@@ -75,7 +75,8 @@ impl Default for PathIndexConfig {
             include_extensions: vec![
                 "txt", "md", "json", "yaml", "yml", "toml", "rs", "py", "js", "ts", "html", "css",
                 "java", "go", "c", "cpp", "h", "hpp", "rb", "php", "sh", "bat", "ps1", "xml",
-                "csv", "log", "conf", "cfg", "ini",
+                "csv", "log", "conf", "cfg", "ini", "pdf", "docx", "xlsx", "xls", "pptx", "ppt",
+                "rtf",
             ]
             .into_iter()
             .map(String::from)
@@ -520,9 +521,18 @@ mod tests {
             .map(|e| e.path.to_string_lossy().to_string())
             .collect();
 
-        assert!(!paths.iter().any(|p| p.contains("secret.rs")), "secret.rs should be excluded by .gitignore");
-        assert!(paths.iter().any(|p| p.contains("main.rs")), "main.rs should be included");
-        assert!(paths.iter().any(|p| p.contains("public.txt")), "public.txt should be included");
+        assert!(
+            !paths.iter().any(|p| p.contains("secret.rs")),
+            "secret.rs should be excluded by .gitignore"
+        );
+        assert!(
+            paths.iter().any(|p| p.contains("main.rs")),
+            "main.rs should be included"
+        );
+        assert!(
+            paths.iter().any(|p| p.contains("public.txt")),
+            "public.txt should be included"
+        );
 
         // Test with gitignore disabled
         let mut config_no_gitignore = PathIndexConfig::default();
@@ -536,6 +546,9 @@ mod tests {
             .collect();
 
         // With gitignore disabled, secret.rs should be found
-        assert!(paths_no_gitignore.iter().any(|p| p.contains("secret.rs")), "secret.rs should be included when gitignore is disabled");
+        assert!(
+            paths_no_gitignore.iter().any(|p| p.contains("secret.rs")),
+            "secret.rs should be included when gitignore is disabled"
+        );
     }
 }

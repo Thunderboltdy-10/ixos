@@ -17,11 +17,18 @@
 //! - Only stores aggregated metadata (not full events)
 //! - ~1KB per workstream
 
+mod storage;
+
+pub use storage::{
+    MemoryWorkstreamStorage, WorkstreamStorage, WorkstreamStorageConfig, WorkstreamStorageData,
+    WorkstreamStorageError,
+};
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::Path;
 
-use crate::activity_ledger::{ActivityAction, ActivityEvent};
+use crate::activity_ledger::ActivityEvent;
 
 /// Default gap threshold for session detection (30 minutes)
 pub const DEFAULT_GAP_THRESHOLD_MINS: u32 = 30;
@@ -215,10 +222,7 @@ fn format_timestamp(timestamp: u64) -> String {
 }
 
 /// Auto-cluster activity events into workstreams based on time gaps
-pub fn auto_cluster_sessions(
-    events: &[ActivityEvent],
-    gap_threshold_mins: u32,
-) -> Vec<Workstream> {
+pub fn auto_cluster_sessions(events: &[ActivityEvent], gap_threshold_mins: u32) -> Vec<Workstream> {
     if events.is_empty() {
         return Vec::new();
     }
@@ -379,7 +383,12 @@ impl WorkstreamManager {
     /// Re-cluster workstreams from activity events
     pub fn recluster(&mut self, events: &[ActivityEvent], gap_threshold_mins: u32) {
         // Keep pinned workstreams
-        let pinned: Vec<_> = self.workstreams.iter().filter(|w| w.is_pinned).cloned().collect();
+        let pinned: Vec<_> = self
+            .workstreams
+            .iter()
+            .filter(|w| w.is_pinned)
+            .cloned()
+            .collect();
 
         // Generate new clusters
         let mut new_workstreams = auto_cluster_sessions(events, gap_threshold_mins);

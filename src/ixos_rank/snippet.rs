@@ -219,10 +219,7 @@ pub fn highlight_terms(text: &str, terms: &[&str], use_color: bool) -> String {
     let escaped_terms: Vec<String> = terms.iter().map(|t| regex::escape(t)).collect();
     let pattern = escaped_terms.join("|");
 
-    let re = match RegexBuilder::new(&pattern)
-        .case_insensitive(true)
-        .build()
-    {
+    let re = match RegexBuilder::new(&pattern).case_insensitive(true).build() {
         Ok(re) => re,
         Err(_) => return text.to_string(),
     };

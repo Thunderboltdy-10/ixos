@@ -14,6 +14,10 @@ interface ModelSwitcherProps {
 }
 
 interface ModelStatus {
+    ixosFlashV2Available: boolean;
+    ixosFlashV2Path: string | null;
+    ixosProV2Available: boolean;
+    ixosProV2Path: string | null;
     ixosFlashV1Available: boolean;
     ixosFlashV1Path: string | null;
     ixosProV1Available: boolean;
@@ -143,13 +147,17 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
                 else {
                     // Mock status for browser testing
                     setStatus({
-                        ixosFlashV1Available: true,
-                        ixosFlashV1Path: 'mock/path',
-                        ixosProV1Available: true,
-                        ixosProV1Path: 'mock/path',
+                        ixosFlashV2Available: true,
+                        ixosFlashV2Path: 'mock/path',
+                        ixosProV2Available: true,
+                        ixosProV2Path: 'mock/path',
+                        ixosFlashV1Available: false,
+                        ixosFlashV1Path: null,
+                        ixosProV1Available: false,
+                        ixosProV1Path: null,
                         anyAvailable: true,
-                        recommended: 'ixos-flash-v1',
-                        loadedModel: 'ixos-flash-v1',
+                        recommended: 'ixos-flash-v2',
+                        loadedModel: 'ixos-flash-v2',
                     });
                 }
             } catch (err) {
@@ -165,11 +173,11 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
 
         const isAvailable = (() => {
             switch (value) {
-                case 'ixos-pro-v1':
-                    return status.ixosProV1Available;
-                case 'ixos-flash-v1':
+                case 'ixos-pro-v2':
+                    return status.ixosProV2Available;
+                case 'ixos-flash-v2':
                 default:
-                    return status.ixosFlashV1Available;
+                    return status.ixosFlashV2Available;
             }
         })();
         if (!isAvailable) return;
@@ -188,20 +196,20 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
 
     const models: ModelOption[] = [
         {
-            id: 'ixos-flash-v1',
-            label: 'Ixos Flash V1',
-            description: 'Fast, efficient model for mostly standard searches',
-            available: status?.ixosFlashV1Available ?? false,
-            recommended: status?.recommended === 'ixos-flash-v1',
+            id: 'ixos-flash-v2',
+            label: 'Ixos Flash V2',
+            description: 'Fast, efficient default model (v2 generation)',
+            available: status?.ixosFlashV2Available ?? false,
+            recommended: status?.recommended === 'ixos-flash-v2',
             icon: Beaker,
             color: 'text-accent-teal'
         },
         {
-            id: 'ixos-pro-v1',
-            label: 'Ixos Pro',
-            description: 'Higher precision for complex queries',
-            available: status?.ixosProV1Available ?? false,
-            recommended: status?.recommended === 'ixos-pro-v1',
+            id: 'ixos-pro-v2',
+            label: 'Ixos Pro V2',
+            description: 'Fusion + cascade for maximum precision',
+            available: status?.ixosProV2Available ?? false,
+            recommended: status?.recommended === 'ixos-pro-v2',
             icon: Wand2,
             color: 'text-accent-magenta'
         }

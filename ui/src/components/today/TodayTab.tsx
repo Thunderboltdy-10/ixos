@@ -2,13 +2,14 @@
  * Today Tab - Phase 2 Second Brain
  *
  * Default view for Pro users showing:
+ * - Daily Brief (first open of day)
  * - Resume section (last workstream + top files)
  * - Recently touched files
  * - Suggested next files (based on co-occurrence)
  * - Pinned items
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Sparkles } from 'lucide-react';
 import { useTodayStore } from '@/stores/todayStore';
@@ -18,7 +19,9 @@ import { RecentlyTouched } from './RecentlyTouched';
 import { SuggestedNext } from './SuggestedNext';
 import { PinnedSection } from './PinnedSection';
 import { TodayEmptyState } from './TodayEmptyState';
+import { DailyBrief } from './DailyBrief';
 import { cn } from '@/lib/utils';
+import * as tauri from '@/lib/tauri';
 
 interface TodayTabProps {
   onStartSearch?: () => void;
@@ -27,14 +30,65 @@ interface TodayTabProps {
 }
 
 export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: TodayTabProps) {
-  const { data, isLoading, error, initialize, pinnedItems } = useTodayStore();
+  const { data, isLoading, error, initialize, pinnedItems, shouldShowBrief, markBriefSeen } = useTodayStore();
   const proStatus = useAuthStore((s) => s.proStatus);
   const isPro = proStatus?.status === 'active' || proStatus?.status === 'grace';
+
+  // State for Daily Brief
+  const [showDailyBrief, setShowDailyBrief] = useState(false);
+  const [workstreamCount, setWorkstreamCount] = useState(0);
+  const [filesTouchedYesterday, setFilesTouchedYesterday] = useState(0);
 
   // Initialize Today data on mount
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  // Check if we should show daily brief
+  useEffect(() => {
+    if (isPro && data && shouldShowBrief()) {
+      // Fetch workstream stats for the brief
+      tauri.getWorkstreamsStats().then((stats) => {
+        setWorkstreamCount(stats.totalCount);
+      }).catch(() => {});
+
+      // Count files touched yesterday (approximate from recentlyTouched)
+      setFilesTouchedYesterday(data.recentlyTouched?.length || 0);
+
+      setShowDailyBrief(true);
+    }
+  }, [isPro, data, shouldShowBrief]);
+
+  // Handle keyboard escape for daily brief
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showDailyBrief) {
+        handleDismissBrief();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showDailyBrief]);
+
+  const handleDismissBrief = useCallback(() => {
+    setShowDailyBrief(false);
+    markBriefSeen();
+  }, [markBriefSeen]);
+
+  const handleResume = useCallback(() => {
+    // If there's a workstream, select it
+    if (data?.resume.workstream && onSelectWorkstream) {
+      onSelectWorkstream(data.resume.workstream.id);
+    }
+  }, [data, onSelectWorkstream]);
+
+  const handleStartFresh = useCallback(() => {
+    // Just dismiss and let user start searching
+    if (onStartSearch) {
+      onStartSearch();
+    }
+  }, [onStartSearch]);
 
   // Show upgrade overlay for non-Pro users
   if (!isPro) {
@@ -108,12 +162,24 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
   });
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="flex flex-col h-full overflow-auto p-6"
-    >
-      {/* Header */}
+    <>
+      {/* Daily Brief overlay */}
+      <DailyBrief
+        isVisible={showDailyBrief}
+        workstreamCount={workstreamCount}
+        filesTouchedYesterday={filesTouchedYesterday}
+        topWorkstream={data?.resume.workstream || null}
+        onResume={handleResume}
+        onStartFresh={handleStartFresh}
+        onDismiss={handleDismissBrief}
+      />
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex flex-col h-full overflow-auto p-6"
+      >
+        {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <Calendar className="w-5 h-5 text-accent-amber" />
         <div>
@@ -160,5 +226,6 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
         )}
       </div>
     </motion.div>
+    </>
   );
 }

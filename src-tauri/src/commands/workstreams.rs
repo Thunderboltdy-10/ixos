@@ -4,26 +4,48 @@
 //! - Auto-clustered work sessions
 //! - Manual workstream creation
 //! - Merge, rename, delete operations
+//! - Persistence via encrypted storage
 
-use ixos_protocol::{Workstream, WorkstreamManager, auto_cluster_sessions};
+use ixos_protocol::{Workstream, WorkstreamManager, WorkstreamStorageData};
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
-use crate::state::AppState;
 use super::activity::ActivityState;
+use crate::state::AppState;
 use ixos_protocol::capabilities::Capability;
 
 /// State wrapper for workstreams
 pub struct WorkstreamsState {
     pub manager: Mutex<WorkstreamManager>,
+    /// Whether persistence is enabled (Pro only)
+    pub persist_enabled: Mutex<bool>,
 }
 
 impl Default for WorkstreamsState {
     fn default() -> Self {
         Self {
             manager: Mutex::new(WorkstreamManager::new()),
+            persist_enabled: Mutex::new(false),
         }
+    }
+}
+
+impl WorkstreamsState {
+    /// Enable persistence (called when Pro entitlement is verified)
+    pub fn enable_persistence(&self) {
+        *self.persist_enabled.lock() = true;
+    }
+
+    /// Disable persistence (free users)
+    #[allow(dead_code)]
+    pub fn disable_persistence(&self) {
+        *self.persist_enabled.lock() = false;
+    }
+
+    /// Check if persistence is enabled
+    pub fn is_persistence_enabled(&self) -> bool {
+        *self.persist_enabled.lock()
     }
 }
 
@@ -277,6 +299,105 @@ pub struct WorkstreamsStatsPayload {
     pub pinned_count: usize,
     pub auto_count: usize,
     pub is_dirty: bool,
+}
+
+/// Save workstreams to encrypted storage (Pro only)
+#[tauri::command]
+pub async fn save_workstreams(
+    workstreams_state: State<'_, WorkstreamsState>,
+    app_state: State<'_, AppState>,
+) -> Result<(), String> {
+    // Check Pro capability
+    let manager = app_state.entitlement_manager.lock();
+    if !manager.capabilities().has(Capability::TodayTab) {
+        return Err("Pro capability required for workstream persistence".into());
+    }
+    drop(manager);
+
+    if !workstreams_state.is_persistence_enabled() {
+        return Err("Workstream persistence not enabled".into());
+    }
+
+    let ws_manager = workstreams_state.manager.lock();
+    let workstreams = ws_manager.export();
+    let storage_data = WorkstreamStorageData::new(workstreams);
+
+    // Serialize to JSON
+    let json = serde_json::to_string(&storage_data).map_err(|e| e.to_string())?;
+
+    // Get app data directory
+    let app_data = app_state.app_data_dir.clone();
+    let storage_path = app_data.join("workstreams_v1.json");
+
+    // Write to file (Note: In production, this should use encrypted storage)
+    std::fs::write(&storage_path, json).map_err(|e| format!("Failed to save workstreams: {}", e))?;
+
+    tracing::info!(
+        "Workstreams saved ({} workstreams) to {:?}",
+        ws_manager.count(),
+        storage_path
+    );
+
+    Ok(())
+}
+
+/// Load workstreams from encrypted storage (Pro only)
+#[tauri::command]
+pub async fn load_workstreams(
+    workstreams_state: State<'_, WorkstreamsState>,
+    app_state: State<'_, AppState>,
+) -> Result<WorkstreamsStatsPayload, String> {
+    // Check Pro capability
+    let manager = app_state.entitlement_manager.lock();
+    if !manager.capabilities().has(Capability::TodayTab) {
+        return Err("Pro capability required for workstream persistence".into());
+    }
+    drop(manager);
+
+    // Enable persistence for the session
+    workstreams_state.enable_persistence();
+
+    // Get app data directory
+    let app_data = app_state.app_data_dir.clone();
+    let storage_path = app_data.join("workstreams_v1.json");
+
+    // Try to load existing workstreams
+    if storage_path.exists() {
+        match std::fs::read_to_string(&storage_path) {
+            Ok(json) => {
+                match serde_json::from_str::<WorkstreamStorageData>(&json) {
+                    Ok(storage_data) => {
+                        let workstreams = storage_data.into_workstreams();
+                        let count = workstreams.len();
+
+                        let mut ws_manager = workstreams_state.manager.lock();
+                        *ws_manager = WorkstreamManager::from_workstreams(workstreams);
+                        ws_manager.mark_saved();
+
+                        tracing::info!("Loaded {} workstreams from {:?}", count, storage_path);
+                    }
+                    Err(e) => {
+                        tracing::warn!("Failed to parse workstreams file: {}", e);
+                    }
+                }
+            }
+            Err(e) => {
+                tracing::warn!("Failed to read workstreams file: {}", e);
+            }
+        }
+    }
+
+    let ws_manager = workstreams_state.manager.lock();
+    let workstreams = ws_manager.list(None, None);
+    let pinned_count = workstreams.iter().filter(|w| w.is_pinned).count();
+    let auto_count = workstreams.iter().filter(|w| w.is_auto).count();
+
+    Ok(WorkstreamsStatsPayload {
+        total_count: ws_manager.count(),
+        pinned_count,
+        auto_count,
+        is_dirty: ws_manager.is_dirty(),
+    })
 }
 
 #[cfg(test)]

@@ -5,7 +5,9 @@ use ixos_protocol::entitlements::ProStatus;
 use ixos_protocol::security::{DeviceIdentity, SecureStore};
 use serde::{Deserialize, Serialize};
 
-use crate::commands::auth::{decode_entitlement_token_allow_expired, validate_entitlement_for_device};
+use crate::commands::auth::{
+    decode_entitlement_token_allow_expired, validate_entitlement_for_device,
+};
 
 const ENTITLEMENT_SERVICE: &str = "ixos";
 const ENTITLEMENT_ACCOUNT: &str = "entitlement_v1";
@@ -58,7 +60,7 @@ impl EntitlementManager {
 
     #[cfg(test)]
     pub fn new_in_memory(cache: EntitlementCache) -> Self {
-        let manager = Self {
+        let mut manager = Self {
             cache,
             cached_capabilities: Capabilities::default(),
             persist: false,
@@ -101,7 +103,6 @@ impl EntitlementManager {
         &self.cached_capabilities
     }
 
-
     pub fn pro_status(&mut self, now: SystemTime, device: &DeviceIdentity) -> ProStatus {
         let now_unix = unix_seconds(now);
         self.pro_status_at(now_unix, device)
@@ -119,7 +120,9 @@ impl EntitlementManager {
             Some(token) => token,
             None => {
                 self.persist_cache();
-                return ProStatus::Expired { expired_at: now_unix };
+                return ProStatus::Expired {
+                    expired_at: now_unix,
+                };
             }
         };
 
@@ -128,18 +131,24 @@ impl EntitlementManager {
             Err(err) => {
                 tracing::warn!("Entitlement token decode failed: {}", err);
                 self.clear();
-                return ProStatus::Expired { expired_at: now_unix };
+                return ProStatus::Expired {
+                    expired_at: now_unix,
+                };
             }
         };
 
         if let Err(err) = validate_entitlement_for_device(&claims, device) {
             tracing::warn!("Entitlement device mismatch: {}", err);
             self.clear();
-            return ProStatus::Expired { expired_at: now_unix };
+            return ProStatus::Expired {
+                expired_at: now_unix,
+            };
         }
 
         let exp = claims.exp as u64;
-        let grace_days = claims.offline_grace_days.unwrap_or(DEFAULT_GRACE_DAYS as u32) as u64;
+        let grace_days = claims
+            .offline_grace_days
+            .unwrap_or(DEFAULT_GRACE_DAYS as u32) as u64;
         let grace_seconds = grace_days.saturating_mul(24 * 60 * 60);
         let grace_until = exp.saturating_add(grace_seconds);
 
@@ -222,8 +231,8 @@ fn unix_seconds(time: SystemTime) -> u64 {
 }
 
 fn load_cache_from_store() -> Result<EntitlementCache, String> {
-    let raw = SecureStore::load(ENTITLEMENT_SERVICE, ENTITLEMENT_ACCOUNT)
-        .map_err(|e| e.to_string())?;
+    let raw =
+        SecureStore::load(ENTITLEMENT_SERVICE, ENTITLEMENT_ACCOUNT).map_err(|e| e.to_string())?;
     if let Some(bytes) = raw {
         let cache =
             serde_json::from_slice::<EntitlementCache>(&bytes).map_err(|e| e.to_string())?;
@@ -284,7 +293,8 @@ mod tests {
     ) -> String {
         let claims = EntitlementClaims {
             sub: "user_123".into(),
-            trusted_device_pubkey_hash: device_id.to_string(),
+            trusted_device_pubkey_hash: Some(device_id.to_string()),
+            did: None,
             plan: "pro".into(),
             capabilities: vec!["ask_mode_plus".into()],
             exp: exp as usize,

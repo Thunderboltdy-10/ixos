@@ -47,6 +47,7 @@ pub mod telemetry;
 pub mod workstreams;
 
 // Re-exports for convenience
+pub use entitlements::{Entitlement, ProStatus};
 pub use ixos_embed::memory_protection::{
     MemoryProtectionConfig, MemoryProtectionError, SecureBuffer, SecureEmbeddingBuffer,
 };
@@ -103,11 +104,10 @@ pub use ixos_rank::{
     MAX_CANDIDATES_FOR_EMBEDDING,
     MAX_TEXT_CHARS_PER_FILE,
 };
-pub use entitlements::{Entitlement, ProStatus};
-pub use pro::{ask_mode_plus, extract_answer_card, AnswerCard, AskModePlusResult, ProEntity};
 pub use ixos_watcher::{
     EventType, FileEvent, ProcessedEvent, ResilienceConfig, ResilientWatcher, WatcherStats,
 };
+pub use pro::{ask_mode_plus, extract_answer_card, AnswerCard, AskModePlusResult, ProEntity};
 pub use security::sandbox::{Sandbox, SandboxConfig, SandboxError, SandboxedOps};
 pub use storage::validator::{MetadataValidator, ValidatorError};
 pub use storage::{get_cache_for_path, CacheError, EmbeddingCache};
@@ -183,10 +183,9 @@ pub use ixos_embed::augmented::{AugmentationConfig, AugmentedEmbedder};
 
 // Phase 2: Second Brain - Activity Ledger
 pub use activity_ledger::{
-    ActivityAction, ActivityEvent, ActivityLedger, CoOccurrence, CoOccurrenceAnalyzer,
-    RecentFile, TimeRange, create_event, hash_file_path, hash_query,
+    create_event, hash_file_path, hash_query, ActivityAction, ActivityEvent, ActivityLedger,
+    CoOccurrence, CoOccurrenceAnalyzer, RecentFile, TimeRange,
 };
 
 // Phase 2: Second Brain - Workstreams
-pub use workstreams::{Workstream, WorkstreamManager, auto_cluster_sessions};
-
+pub use workstreams::{auto_cluster_sessions, Workstream, WorkstreamManager, WorkstreamStorageData};

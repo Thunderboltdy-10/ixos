@@ -53,7 +53,10 @@ impl IntentDetector {
 
     pub fn detect_time_intent(&self, query: &str) -> Option<TimeIntent> {
         let lower = query.trim().to_lowercase();
-        if lower.starts_with("when ") || lower.starts_with("when was ") || lower.starts_with("when were ") {
+        if lower.starts_with("when ")
+            || lower.starts_with("when was ")
+            || lower.starts_with("when were ")
+        {
             return Some(TimeIntent::Recent);
         }
         let recent_terms = [
@@ -114,8 +117,18 @@ fn extract_year(haystack: &str) -> Option<String> {
 
 fn extract_month(haystack: &str) -> Option<String> {
     let months = [
-        "january", "february", "march", "april", "may", "june", "july", "august",
-        "september", "october", "november", "december",
+        "january",
+        "february",
+        "march",
+        "april",
+        "may",
+        "june",
+        "july",
+        "august",
+        "september",
+        "october",
+        "november",
+        "december",
     ];
 
     for month in months {

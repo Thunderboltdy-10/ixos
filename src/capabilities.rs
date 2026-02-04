@@ -18,21 +18,21 @@ pub enum Capability {
     AutomationActions,
 
     // Phase 2: Second Brain
-    AskModeExpansion,   // Enhanced Ask Mode (entity extraction, synonyms)
-    ActivityLedger,     // Activity tracking persistence
+    AskModeExpansion, // Enhanced Ask Mode (entity extraction, synonyms)
+    ActivityLedger,   // Activity tracking persistence
 
     // Phase 3: Watches & Inbox
-    WatchEngine,        // Scoped file watches
-    FileInbox,          // File change inbox
-    DailyBrief,         // Daily digest briefing
+    WatchEngine, // Scoped file watches
+    FileInbox,   // File change inbox
+    DailyBrief,  // Daily digest briefing
 
     // Phase 4: Change Lens & Collections
-    ChangeLens,         // Diff view for file changes
-    SmartCollections,   // Auto-generated collections (hot, stale, etc.)
+    ChangeLens,       // Diff view for file changes
+    SmartCollections, // Auto-generated collections (hot, stale, etc.)
 
     // Phase 5: Security & Hardening
-    ForensicCanary,     // Tamper detection for sensitive files
-    ScoreBreakdown,     // Detailed score breakdown (vs basic for free)
+    ForensicCanary, // Tamper detection for sensitive files
+    ScoreBreakdown, // Detailed score breakdown (vs basic for free)
 }
 
 impl Capability {

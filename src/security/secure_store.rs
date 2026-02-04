@@ -93,9 +93,7 @@ fn store_secret(
 
     let ok = unsafe { CredWriteW(&mut credential, 0) };
     if ok == 0 {
-        return Err(SecureStoreError::Storage(
-            "CredWriteW failed".to_string(),
-        ));
+        return Err(SecureStoreError::Storage("CredWriteW failed".to_string()));
     }
 
     Ok(())

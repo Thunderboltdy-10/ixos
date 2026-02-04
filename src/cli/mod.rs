@@ -39,8 +39,8 @@ pub mod output;
 
 // Re-exports for convenience
 pub use commands::{
-    CacheCommands, CcpaCommands, Cli, CliCacheMode, CliCacheModePreference, CliOutputFormat,
-    Commands, ComplianceCommands, GdprCommands,
+    CacheCommands, CcpaCommands, Cli, CliCacheMode, CliCacheModePreference, CliFlashModelType,
+    CliOutputFormat, CliProModelType, CliSearchMode, Commands, ComplianceCommands, GdprCommands,
 };
 pub use config::{
     ConfigError, IndexConfig, IxosConfig, OutputConfig, SearchConfig, SecurityConfig,

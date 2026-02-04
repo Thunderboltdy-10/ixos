@@ -68,7 +68,8 @@ impl TrustedSnippetSelector {
 
             let coverage = matched.len() as f32 / anchors.len().max(1) as f32;
             let semantic = semantic_map.get(&idx).copied().unwrap_or(passage.score);
-            let trust_score = coverage * self.config.weight_anchor + semantic * self.config.weight_semantic;
+            let trust_score =
+                coverage * self.config.weight_anchor + semantic * self.config.weight_semantic;
             let why = format!(
                 "Anchors: {} (coverage {:.2}), semantic {:.2}",
                 matched.join(", "),

@@ -336,3 +336,17 @@ export async function pinWorkstream(id: string, pinned: boolean): Promise<boolea
 export async function getWorkstreamsStats(): Promise<WorkstreamsStats> {
   return await invoke('get_workstreams_stats');
 }
+
+/**
+ * Save workstreams to encrypted storage (Pro only)
+ */
+export async function saveWorkstreams(): Promise<void> {
+  await invoke('save_workstreams');
+}
+
+/**
+ * Load workstreams from encrypted storage (Pro only)
+ */
+export async function loadWorkstreams(): Promise<WorkstreamsStats> {
+  return await invoke('load_workstreams');
+}

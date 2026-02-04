@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star } from 'lucide-react';
+import { Star, MessageCircleQuestion } from 'lucide-react';
 import { ResultCard } from './ResultCard';
 import { ResultCardErrorBoundary } from './ResultCardErrorBoundary';
 import { useStarredStore } from '@/stores/starredStore';
@@ -110,11 +110,8 @@ export function SearchResults({
     }
   };
 
-  // Detect Ask Mode from the active query
-  const isAskMode = (() => {
-    const query = searchStore.activeQuery || searchStore.query || '';
-    return query.trim().endsWith('?') || /^(who|what|when|where|how|why)\s/i.test(query);
-  })();
+  // Use Ask Mode state from store
+  const isAskMode = searchStore.isAskModeActive;
 
   return (
     <div>
@@ -127,9 +124,9 @@ export function SearchResults({
             </span>
             {isSemanticPhase && <span className="text-accent-teal text-xs uppercase tracking-[0.2em]">Semantic</span>}
             {isAskMode && isSemanticPhase && (
-              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-accent-violet/10 border border-accent-violet/20">
-                <span className="w-1 h-1 rounded-full bg-accent-violet" />
-                <span className="text-[10px] font-medium text-accent-violet uppercase tracking-wider">Ask Mode</span>
+              <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-accent-violet/10 border border-accent-violet/30 shadow-[0_0_10px_rgba(167,139,250,0.15)] animate-pulse-subtle">
+                <MessageCircleQuestion className="w-3.5 h-3.5 text-accent-violet" />
+                <span className="text-[10px] font-bold text-accent-violet uppercase tracking-wider">Ask Mode Active</span>
               </span>
             )}
           </div>
@@ -189,7 +186,9 @@ export function SearchResults({
                   index={index}
                   isSelected={index === selectedIndex}
                   isSemanticResult={isSemanticPhase && 'scoreBreakdown' in result}
+                  matchType={'scoreBreakdown' in result ? (result.scoreBreakdown.semantic > 0.4 ? 'semantic' : 'text') : undefined}
                   mode={mode}
+                  isAskMode={isAskMode}
                   onSelect={() => onSelect(index)}
                   onOpen={onOpen}
                   onReveal={onReveal}

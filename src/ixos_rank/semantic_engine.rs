@@ -50,6 +50,7 @@ pub trait SemanticEngine: Send + Sync {
         &self,
         query: &str,
         candidates: Vec<LexicalMatch>,
+        limit: usize,
     ) -> Result<Vec<SemanticMatch>, SearchError>;
 
     /// Pure semantic search (expensive - may scan all files)
@@ -445,6 +446,7 @@ impl SemanticEngine for StubSemanticEngine {
         &self,
         query: &str,
         candidates: Vec<LexicalMatch>,
+        limit: usize,
     ) -> Result<Vec<SemanticMatch>, SearchError> {
         if candidates.is_empty() {
             return Ok(Vec::new());
@@ -515,7 +517,8 @@ impl SemanticEngine for StubSemanticEngine {
                     let _enter = _span.enter();
                     match read_text_for_embedding(path) {
                         Ok((content, bytes_read, file_hash)) => {
-                            let augmented = build_augmented_text(path, &content, augmentation_config);
+                            let augmented =
+                                build_augmented_text(path, &content, augmentation_config);
                             Some(FileReadResult {
                                 idx,
                                 content,
@@ -538,7 +541,8 @@ impl SemanticEngine for StubSemanticEngine {
                     let _enter = _span.enter();
                     match read_text_for_embedding(path) {
                         Ok((content, bytes_read, file_hash)) => {
-                            let augmented = build_augmented_text(path, &content, augmentation_config);
+                            let augmented =
+                                build_augmented_text(path, &content, augmentation_config);
                             Some(FileReadResult {
                                 idx,
                                 content,
@@ -621,8 +625,9 @@ impl SemanticEngine for StubSemanticEngine {
         let all_embeddings: Vec<(usize, Vec<f32>)> = {
             let mut cache = self.memory_cache.lock().await;
 
-            let mut embeddings: Vec<(usize, Vec<f32>)> =
-                Vec::with_capacity(cached_indices.len() + storage_hits.len() + batch_embeddings.len());
+            let mut embeddings: Vec<(usize, Vec<f32>)> = Vec::with_capacity(
+                cached_indices.len() + storage_hits.len() + batch_embeddings.len(),
+            );
 
             // Add memory cache hits
             for &idx in &cached_indices {
@@ -710,8 +715,27 @@ impl SemanticEngine for StubSemanticEngine {
             }
         }
 
-        // Sort by similarity descending
-        results.sort_by(|a, b| {
+        let cap = if limit == 0 {
+            results.len()
+        } else {
+            limit.min(results.len())
+        };
+        if cap < results.len() {
+            let nth = cap.saturating_sub(1);
+            if cap > 0 {
+                results.select_nth_unstable_by(nth, |a, b| {
+                    b.similarity
+                        .partial_cmp(&a.similarity)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                });
+                results.truncate(cap);
+            } else {
+                results.clear();
+            }
+        }
+
+        // Sort by similarity descending (top-k only)
+        results.sort_unstable_by(|a, b| {
             b.similarity
                 .partial_cmp(&a.similarity)
                 .unwrap_or(std::cmp::Ordering::Equal)
@@ -917,7 +941,7 @@ mod tests {
     #[tokio::test]
     async fn test_rerank_empty_candidates() {
         let engine = StubSemanticEngine::with_stub_model();
-        let results = engine.rerank("test", Vec::new()).await.unwrap();
+        let results = engine.rerank("test", Vec::new(), 10).await.unwrap();
         assert!(results.is_empty());
     }
 }

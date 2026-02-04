@@ -16,12 +16,12 @@ Query -> Lexical funnel -> Flash embedder rerank -> Secure ranking -> Evidence
 **Performance (canonical):**
 | Metric | Value |
 |--------|-------|
-| MRR@10 | 0.8399 |
-| Recall@10 | 0.93 |
-| Latency | ~456 ms/1k candidates |
-| Peak RAM | ~185 MB |
+| MRR@10 | 0.8340 |
+| Recall@10 | 0.925 |
+| Latency | ~339.76 ms/1k candidates |
+| Peak RAM | ~45 MB |
 
-**Default model:** `ixos-flash-v2` (512d, float16)
+**Default model:** `ixos-flash-v2` (512d, int8)
 
 **Use when:**
 - Speed matters most
@@ -42,22 +42,22 @@ Query -> Lexical funnel -> Flash rerank -> Auto routing check
 **Performance (canonical):**
 | Metric | Value | vs Fast |
 |--------|-------|---------|
-| MRR@10 | 0.9233 | +9.9% |
-| Recall@10 | 0.97 | +4.3% |
-| Latency | ~674 ms/1k candidates | +48% |
-| Peak RAM | ~250 MB | +35% |
+| MRR@10 | 0.9209 | +10.4% |
+| Recall@10 | 0.97 | +4.9% |
+| Latency | ~430.57 ms/1k candidates | +27% |
+| Peak RAM | ~102 MB | +57% |
 
 **Fusion weights (learned):**
 | Signal | Weight |
 |--------|--------|
-| Flash semantic | 0.2697 |
-| Potion semantic | 0.2672 |
-| Lexical match | 0.4631 |
+| Flash semantic | 0.2672 |
+| Potion semantic | 0.2725 |
+| Lexical match | 0.4602 |
 | Directory prior | 0.0000 |
 
 **Default models:**
-- Flash: `ixos-flash-v2` (512d, float16)
-- Potion: `potion-base-8m-int8` (256d, int8)
+- Flash: `ixos-flash-v2` (512d, int8)
+- Pro v2 (fusion): `ixos-pro-v2` (Flash v2 + Potion int8 + lexical)
 
 **Use when:**
 - Quality matters most
@@ -110,9 +110,9 @@ For battery-constrained or low-end devices, available under Advanced settings.
 
 | Mode | Embedder(s) | MRR@10 | Latency | RAM |
 |------|-------------|--------|---------|-----|
-| **Fast** | Flash-v2 | 0.84 | ~456ms | ~185MB |
-| **Accurate** | Flash-v2 + Potion | 0.92 | ~674ms | ~250MB |
-| **Auto** | Adaptive | 0.84-0.92 | ~456-674ms | ~185-250MB |
+| **Fast** | Flash-v2 | 0.834 | ~340ms | ~45MB |
+| **Accurate** | Pro v2 (Flash-v2 + Potion) | 0.921 | ~431ms | ~102MB |
+| **Auto** | Adaptive | 0.834-0.921 | ~340-431ms | ~45-102MB |
 | **Eco** | Flash-v4-192 | 0.80 | ~389ms | ~60MB |
 
 ## Local-First Trust

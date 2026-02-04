@@ -233,15 +233,7 @@ fn run_ixos_search(dir: &str, query: &str) -> Vec<PathBuf> {
     };
 
     let output = Command::new(ixos_path)
-        .args([
-            "search",
-            query,
-            "--dir",
-            dir,
-            "--json",
-            "--limit",
-            "20",
-        ])
+        .args(["search", query, "--dir", dir, "--json", "--limit", "20"])
         .output();
 
     match output {

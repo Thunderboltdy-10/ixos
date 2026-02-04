@@ -253,7 +253,16 @@ fn lexical_search(dir: &str, pattern: &str) -> Vec<(PathBuf, String)> {
 fn ixos_search(dir: &str, query: &str) -> Vec<(PathBuf, String)> {
     // Try to run real Ixos CLI
     let output = std::process::Command::new("./target/release/ixos")
-        .args(["search", query, "--dir", dir, "--stub-model", "--json", "--limit", "20"])
+        .args([
+            "search",
+            query,
+            "--dir",
+            dir,
+            "--stub-model",
+            "--json",
+            "--limit",
+            "20",
+        ])
         .output();
 
     match output {
@@ -307,13 +316,7 @@ fn simulate_semantic_search(dir: &str, query: &str) -> Vec<(PathBuf, String)> {
                         let content_lower = content.to_lowercase();
                         let score: f32 = query_words
                             .iter()
-                            .map(|w| {
-                                if content_lower.contains(w) {
-                                    1.0
-                                } else {
-                                    0.0
-                                }
-                            })
+                            .map(|w| if content_lower.contains(w) { 1.0 } else { 0.0 })
                             .sum::<f32>()
                             / query_words.len() as f32;
 
@@ -363,10 +366,10 @@ fn print_summary(results: &[ComparisonResult]) {
     let ixos_wins = results.iter().filter(|r| r.ixos_wins).count();
     let lexical_wins = results.len() - ixos_wins;
 
-    let avg_ixos_precision: f32 = results.iter().map(|r| r.ixos_precision).sum::<f32>()
-        / results.len() as f32;
-    let avg_lexical_precision: f32 = results.iter().map(|r| r.lexical_precision).sum::<f32>()
-        / results.len() as f32;
+    let avg_ixos_precision: f32 =
+        results.iter().map(|r| r.ixos_precision).sum::<f32>() / results.len() as f32;
+    let avg_lexical_precision: f32 =
+        results.iter().map(|r| r.lexical_precision).sum::<f32>() / results.len() as f32;
 
     let avg_ixos_time: u64 =
         results.iter().map(|r| r.ixos_time_ms).sum::<u64>() / results.len() as u64;

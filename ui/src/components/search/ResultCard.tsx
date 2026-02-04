@@ -61,6 +61,7 @@ interface ResultCardProps {
   isSemanticResult: boolean;
   matchType?: 'text' | 'semantic';
   mode?: 'jit' | 'cache' | 'journalist';
+  isAskMode?: boolean;
   onSelect: () => void;
   onOpen: () => void;
   onReveal: () => void;
@@ -73,6 +74,7 @@ export function ResultCard({
   isSemanticResult,
   matchType,
   mode = 'cache',
+  isAskMode = false,
   onSelect,
   onOpen,
   onReveal,
@@ -81,17 +83,19 @@ export function ResultCard({
   const [copied, setCopied] = useState(false);
   const { handleMouseEnter, handleMouseLeave } = usePrefetch();
 
-  // Color mapping based on mode
+  // Color mapping based on mode - override for Ask Mode
   const modeColors = {
     jit: { accent: '#F6B94C', bg: 'rgba(246, 185, 76, 0.08)' },
     cache: { accent: '#14B8A6', bg: 'rgba(20, 184, 166, 0.08)' },
     journalist: { accent: '#A78BFA', bg: 'rgba(167, 139, 250, 0.08)' },
+    ask: { accent: '#A78BFA', bg: 'rgba(167, 139, 250, 0.12)' }, // Ask Mode uses same purple but slightly stronger bg
   };
 
+  const currentModeKey = isAskMode ? 'ask' : mode;
   const selectedClass = isSelected ? 'bg-graphite-3' : '';
 
   const iconColorClass = isSelected
-    ? (mode === 'jit' ? 'text-accent-amber' : mode === 'journalist' ? 'text-accent-violet' : 'text-accent-teal')
+    ? (isAskMode ? 'text-accent-violet' : mode === 'jit' ? 'text-accent-amber' : mode === 'journalist' ? 'text-accent-violet' : 'text-accent-teal')
     : 'text-fg-dim';
 
   // Layout sync for Seamless Morph animation
@@ -142,11 +146,11 @@ export function ResultCard({
   };
 
   // Hover classes - apply to all items
-  // Fixed: Increased opacity to 0.25 and reduced blur to 12px for better legibility
   const hoverClass = cn(
-    mode === 'jit' && 'hover:bg-accent-amber/8 hover:shadow-[0_0_12px_rgba(246,185,76,0.25)]',
-    mode === 'cache' && 'hover:bg-accent-teal/8 hover:shadow-[0_0_12px_rgba(20,184,166,0.25)]',
-    mode === 'journalist' && 'hover:bg-accent-violet/8 hover:shadow-[0_0_12px_rgba(167,139,250,0.25)]',
+    !isAskMode && mode === 'jit' && 'hover:bg-accent-amber/8 hover:shadow-[0_0_12px_rgba(246,185,76,0.25)]',
+    !isAskMode && mode === 'cache' && 'hover:bg-accent-teal/8 hover:shadow-[0_0_12px_rgba(20,184,166,0.25)]',
+    !isAskMode && mode === 'journalist' && 'hover:bg-accent-violet/8 hover:shadow-[0_0_12px_rgba(167,139,250,0.25)]',
+    isAskMode && 'hover:bg-accent-violet/12 hover:shadow-[0_0_15px_rgba(167,139,250,0.3)]',
   );
 
   return (
@@ -162,11 +166,11 @@ export function ResultCard({
       style={{
         borderRadius: '8px',
         border: '1px solid rgba(255, 255, 255, 0.08)',
-        borderLeft: isSelected ? `3px solid ${modeColors[mode].accent}` : '1px solid rgba(255, 255, 255, 0.08)',
+        borderLeft: isSelected ? `3px solid ${modeColors[currentModeKey].accent}` : '1px solid rgba(255, 255, 255, 0.08)',
         opacity: animatedOpacity,
         visibility: animatedOpacity > 0 ? 'visible' : 'hidden',
         // @ts-ignore - Custom CSS variable for highlight color
-        '--highlight-color': modeColors[mode].accent,
+        '--highlight-color': modeColors[currentModeKey].accent,
       }}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
@@ -177,9 +181,10 @@ export function ResultCard({
       <div
         className={cn(
           "absolute left-0 top-0 bottom-0 w-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none",
-          mode === 'jit' && "bg-accent-amber",
-          mode === 'cache' && "bg-accent-teal",
-          mode === 'journalist' && "bg-accent-violet"
+          mode === 'jit' && !isAskMode && "bg-accent-amber",
+          mode === 'cache' && !isAskMode && "bg-accent-teal",
+          mode === 'journalist' && !isAskMode && "bg-accent-violet",
+          isAskMode && "bg-accent-violet"
         )}
       />
 
@@ -253,8 +258,8 @@ export function ResultCard({
             variant={integrityVerified ? 'secure' : 'warning'}
             className={cn(
               'font-mono font-semibold transition-colors duration-300 border',
-              result.score >= 0.9 ? `bg-${mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/15 text-${mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'} border-${mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/30` :
-                result.score >= 0.7 ? `bg-${mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/10 text-${mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'} border-${mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/20` :
+              result.score >= 0.9 ? `bg-${isAskMode ? 'accent-violet' : mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/15 text-${isAskMode ? 'accent-violet' : mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'} border-${isAskMode ? 'accent-violet' : mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/30` :
+                result.score >= 0.7 ? `bg-${isAskMode ? 'accent-violet' : mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/10 text-${isAskMode ? 'accent-violet' : mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'} border-${isAskMode ? 'accent-violet' : mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/20` :
                   'bg-fg-dim/15 text-fg-muted border-fg-dim/30'
             )}
           >
@@ -387,9 +392,9 @@ export function ResultCard({
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] rounded-md',
                     // Mode-aware colors
-                    mode === 'jit' && 'bg-accent-amber/10 text-accent-amber border border-accent-amber/30 hover:bg-accent-amber/20 hover:border-accent-amber/50',
-                    mode === 'cache' && 'bg-accent-teal/10 text-accent-teal border border-accent-teal/30 hover:bg-accent-teal/20 hover:border-accent-teal/50',
-                    mode === 'journalist' && 'bg-accent-violet/10 text-accent-violet border border-accent-violet/30 hover:bg-accent-violet/20 hover:border-accent-violet/50',
+                    mode === 'jit' && !isAskMode && 'bg-accent-amber/10 text-accent-amber border border-accent-amber/30 hover:bg-accent-amber/20 hover:border-accent-amber/50',
+                    mode === 'cache' && !isAskMode && 'bg-accent-teal/10 text-accent-teal border border-accent-teal/30 hover:bg-accent-teal/20 hover:border-accent-teal/50',
+                    (mode === 'journalist' || isAskMode) && 'bg-accent-violet/10 text-accent-violet border border-accent-violet/30 hover:bg-accent-violet/20 hover:border-accent-violet/50',
                     'transition-all duration-150'
                   )}
                 >

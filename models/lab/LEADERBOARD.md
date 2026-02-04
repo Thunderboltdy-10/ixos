@@ -1,5 +1,16 @@
 # Ixos Model Lab Leaderboard
 
+## Update (2026-02-03)
+- **Current default:** `ixos-flash-v2` (int8, 512d). See `models/lab/CANONICAL_RESULTS.md` for authoritative numbers.
+- **Naming fix:** Historical rows labeled `ixos-flash-v2` in the 2026-01-26 sections correspond to the **legacy Flash v1** artifact (pre-rename).
+
+| Suite | Model | Tier | Recall@10 | MRR@10 | Latency ms/1k | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| real_corpus_v2 | ixos-flash-v2 | flash | 0.925 | 0.8340 | 339.76 | New default (int8) |
+| synthetic_ambiguity_v1 | ixos-flash-v2 | flash | 1.000 | 0.9444 | 111.26 | New default (int8) |
+| real_corpus_v2 | Flash+Potion Fusion (Pro v2) | pro | 0.97 | 0.9209 | 430.57 | Canonical Pro v2 |
+| synthetic_ambiguity_v1 | Flash+Potion Fusion (Pro v2) | pro | 1.00 | 0.9833 | 131.83 | Canonical Pro v2 |
+
 ## Baseline (2026-01-26)
 Settings: candidate_cap=1500, batch_size=64, topk=10, synthetic difficulty=medium, real_limit=200, real_queries=200.
 

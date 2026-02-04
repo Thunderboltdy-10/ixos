@@ -9,18 +9,20 @@ Pro-tier pipeline that blends Flash and Potion embeddings with lexical signals f
 - Intended use: Auto/Pro mode refinement on ambiguous queries
 
 ## Pipeline overview
-- Embedders: Flash (Ixos Flash v1 or v4) + Potion 8M int8
+- Embedders: Flash v2 (`ixos-flash-v2`) + Potion 8M int8 (internal)
 - Fusion: weighted linear blend of flash similarity, pro similarity, lexical match ratio, and dir prior
-- Learned weights (real_corpus_v2): flash=0.2697, pro=0.2672, lexical=0.4631, dir=0.0
+- Learned weights (real_corpus_v2): flash=0.2672, pro=0.2725, lexical=0.4602, dir=0.0
 
-## Performance (canonical, 2026-01-27)
+## Performance (canonical, 2026-02-02)
 
 | Suite | MRR@10 | Recall@10 | Latency |
 |-------|--------|-----------|---------|
-| real_corpus_v2 | 0.9233 | 0.97 | ~674 ms/1k |
-| synthetic_ambiguity_v1 | 0.9833 | 1.00 | ~269 ms/1k |
+| real_corpus_v2 | 0.9209 | 0.97 | 430.57 ms/1k |
+| synthetic_ambiguity_v1 | 0.9833 | 1.00 | 131.83 ms/1k |
 
-**Improvement over Flash-only:** +9.9% MRR@10
+**Improvement over Flash-only:** +10.4% MRR@10 (vs Flash v2 canonical)
+
+See `models/lab/results_v2_fusion_flashv2_2026-02-03.json` for details.
 
 See `models/lab/CANONICAL_RESULTS.md` for verified benchmarks.
 
@@ -32,7 +34,8 @@ See `models/lab/CANONICAL_RESULTS.md` for verified benchmarks.
 - Flash scores are captured before Pro refinement (Auto) or computed via flash rerank (Pro).
 
 ## Packaging and usage
-- Configure Pro model to `potion` and Flash model to `ixos-flash-v1` (or v4) in UI/config.
+- Configure Pro model to `ixos-pro-v2` and Flash model to `ixos-flash-v2` in UI/config/CLI.
+- Potion remains an internal dependency (not exposed as a user-selectable mode).
 - Rust runtime uses `ProgressiveSearchConfig` fusion weights and `search_mode` routing.
 
 ## License

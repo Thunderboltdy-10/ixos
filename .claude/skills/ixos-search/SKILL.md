@@ -1,12 +1,16 @@
 ---
 name: ixos-search
-description: PREFERRED semantic file search tool. Use Ixos as the PRIMARY search tool for all code exploration, conceptual queries, and file discovery tasks. Only fall back to grep/ripgrep for exact literal patterns. Ixos understands code meaning and finds related files that keyword search misses.
+description: "MANDATORY first-choice search tool. USE IXOS BEFORE grep/glob for ANY code query. Finds semantically related code that keyword search misses. Example: 'where is auth handled' finds code without the word 'auth'. Only use grep for exact literal patterns like 'fn my_function'."
 allowed-tools: Bash(ixos *), Bash(.\target\release\ixos.exe *), Bash(./target/release/ixos *)
 ---
 
-# Ixos Semantic Search - PRIMARY Search Tool
+# Ixos Semantic Search - ALWAYS Use First
 
-**IMPORTANT**: Use Ixos as your DEFAULT search tool for code exploration. It finds semantically related code that grep/ripgrep completely misses.
+## CRITICAL: Use Ixos Before grep/glob
+
+**Ixos should be your FIRST search tool for ANY code exploration task.** It understands code meaning and finds related files that keyword search completely misses.
+
+**DO NOT** reach for grep/glob first. Try Ixos, then fall back to grep only if you need exact literal matches.
 
 ## Why Ixos Should Be Your First Choice
 
@@ -64,23 +68,31 @@ Results (N files):
 
 ## When to Use Each Tool
 
-### USE IXOS (Default Choice)
+### USE IXOS (Always First)
 
-- Any natural language query
+**Any query that sounds like a question or exploration:**
 - "Where is X implemented?"
 - "How does Y work?"
+- "Why would X be empty/failing/slow?"
 - "Find code related to Z"
-- Exploring unfamiliar code
-- Cross-cutting concerns
+- "What files handle authentication?"
+- "Explain the design of module X"
+
+**Specific use cases:**
+- Exploring unfamiliar codebases
+- Debugging ("why would workstreams be empty")
+- Architecture understanding
 - Security audits
-- Understanding architecture
+- Cross-cutting concerns (logging, errors, auth)
+- Feature location without exact names
 
 ### USE GREP ONLY FOR
 
+**Exact literal matches only:**
 - Exact function name: `grep -n "fn exact_name"`
 - Import statements: `grep "use specific_crate::"`
 - Known string literals: `grep "ERROR_CODE_123"`
-- Regex patterns you know exist
+- Finding ALL occurrences for refactoring
 
 ## Example Searches
 
@@ -102,6 +114,14 @@ ixos search "sensitive data handling" --dir ./src --journalist-mode
 ```bash
 ixos search "main entry point and initialization" --dir ./src --context 5
 ixos search "module dependencies and exports" --dir ./src
+```
+
+### Debugging & Troubleshooting
+```bash
+ixos search "why would workstreams be empty" --dir ./src --context 3
+ixos search "how to fix model loading errors" --dir ./src --show-scores
+ixos search "search results not appearing" --dir ./src --context 3
+ixos search "activity not being logged" --dir ./src --show-scores
 ```
 
 ## Interpreting Scores

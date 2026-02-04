@@ -1,7 +1,7 @@
-use base64::{engine::general_purpose::STANDARD, Engine as _};
 use crate::state::AppState;
-use ixos_protocol::security::DeviceIdentity;
+use base64::{engine::general_purpose::STANDARD, Engine as _};
 use ixos_protocol::entitlements::ProStatus;
+use ixos_protocol::security::DeviceIdentity;
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
@@ -13,14 +13,16 @@ use tauri_plugin_opener::OpenerExt;
 pub struct EntitlementClaims {
     #[serde(alias = "user_id")]
     pub sub: String,
-    
-    // Handle potential duplicate fields from backend by making them separate Options
+
+    // Device binding fields - backend may send one OR BOTH of these claim names
+    // We capture them separately to avoid serde "duplicate field" errors when both are present
     #[serde(default, alias = "device_pubkey_hash")]
     pub trusted_device_pubkey_hash: Option<String>,
-    
+
+    // Alternate device ID field - some backends use "did" or "device_id" instead
     #[serde(default, alias = "device_id")]
     pub did: Option<String>,
-    
+
     pub plan: String,
     #[serde(default, alias = "features")]
     pub capabilities: Vec<String>,
@@ -46,11 +48,10 @@ fn decoding_key() -> Result<&'static DecodingKey, String> {
         .map(|s| s.to_string())
         .or_else(|| std::env::var("IXOS_JWT_PUBLIC_KEY").ok());
 
-    let mut public_key = env_str
-        .ok_or_else(|| {
-            println!("[Rust] IXOS_JWT_PUBLIC_KEY not set in environment!");
-            "IXOS_JWT_PUBLIC_KEY not set in environment".to_string()
-        })?;
+    let mut public_key = env_str.ok_or_else(|| {
+        println!("[Rust] IXOS_JWT_PUBLIC_KEY not set in environment!");
+        "IXOS_JWT_PUBLIC_KEY not set in environment".to_string()
+    })?;
 
     // Clean up escaped newlines if present
     public_key = public_key.replace("\\n", "\n");
@@ -59,11 +60,10 @@ fn decoding_key() -> Result<&'static DecodingKey, String> {
         println!("[Rust] Warning: Public key does not contain 'BEGIN PUBLIC KEY'");
     }
 
-    let parsed = DecodingKey::from_ec_pem(public_key.as_bytes())
-        .map_err(|e| {
-            println!("[Rust] Failed to parse public key: {}", e);
-            format!("Failed to parse public key: {}", e)
-        })?;
+    let parsed = DecodingKey::from_ec_pem(public_key.as_bytes()).map_err(|e| {
+        println!("[Rust] Failed to parse public key: {}", e);
+        format!("Failed to parse public key: {}", e)
+    })?;
     let _ = KEY.set(parsed);
     println!("[Rust] Decoding key initialized successfully");
     KEY.get()
@@ -72,6 +72,7 @@ fn decoding_key() -> Result<&'static DecodingKey, String> {
 
 impl EntitlementClaims {
     pub fn get_device_hash(&self) -> String {
+        // Check trusted_device_pubkey_hash first, then fall back to did
         self.trusted_device_pubkey_hash
             .clone()
             .or_else(|| self.did.clone())
@@ -105,7 +106,7 @@ pub(crate) fn validate_entitlement_for_device(
     device: &DeviceIdentity,
 ) -> Result<(), String> {
     let claim_raw = claims.get_device_hash();
-    
+
     // Allow tokens without device binding for backward compatibility
     // This handles tokens issued before device binding was implemented
     if claim_raw.is_empty() {
@@ -114,8 +115,11 @@ pub(crate) fn validate_entitlement_for_device(
     }
     let claim = claim_raw.trim();
     let device_id = device.device_id();
-    
-    println!("[Rust] Validating device binding. Claim: '{}', DeviceID: '{}'", claim, device_id);
+
+    println!(
+        "[Rust] Validating device binding. Claim: '{}', DeviceID: '{}'",
+        claim, device_id
+    );
 
     if claim.eq_ignore_ascii_case(device_id) {
         println!("[Rust] Device ID matched directly");
@@ -125,7 +129,7 @@ pub(crate) fn validate_entitlement_for_device(
     let pubkey = device.public_key();
     let pubkey_hex = hex_encode(&pubkey);
     println!("[Rust] Checking pubkey hex: '{}'", pubkey_hex);
-    
+
     if claim.eq_ignore_ascii_case(&pubkey_hex) {
         return Ok(());
     }
@@ -142,7 +146,10 @@ pub(crate) fn validate_entitlement_for_device(
     }
 
     // When device binding is present, verify it matches this device
-    println!("[Rust] Device binding FAILED. Expected: '{}' or '{}', Got: '{}'", device_id, pubkey_hex, claim);
+    println!(
+        "[Rust] Device binding FAILED. Expected: '{}' or '{}', Got: '{}'",
+        device_id, pubkey_hex, claim
+    );
     return Err("Entitlement token not issued for this device".to_string());
 }
 
@@ -224,7 +231,6 @@ pub async fn get_pro_status(state: State<'_, AppState>) -> Result<ProStatus, Str
     let mut manager = state.entitlement_manager.lock();
     Ok(manager.pro_status(SystemTime::now(), &device))
 }
-
 
 #[tauri::command]
 pub async fn get_device_id(_app: AppHandle) -> Result<String, String> {

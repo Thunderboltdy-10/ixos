@@ -6,16 +6,14 @@
 //! - Workstreams
 
 use ixos_protocol::{
-    ActivityAction, ActivityEvent, ActivityLedger, CoOccurrence, RecentFile, TimeRange,
-    create_event, hash_query,
+    create_event, ActivityAction, ActivityEvent, ActivityLedger, CoOccurrence, RecentFile,
+    TimeRange,
 };
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 use tauri::State;
 
 use crate::state::AppState;
-use super::entitlement_manager::EntitlementManager;
 use ixos_protocol::capabilities::Capability;
 use ixos_protocol::security::device_identity::DeviceIdentity;
 
@@ -124,6 +122,8 @@ impl From<&ActivityEvent> for ActivityEventPayload {
 #[serde(rename_all = "camelCase")]
 pub struct CoOccurrencePayload {
     pub file_id: String,
+    /// File path resolved from file_id - populated for UI display
+    pub file_path: Option<String>,
     pub count: u32,
     pub last_seen: u64,
     pub avg_gap_ms: u64,
@@ -134,6 +134,7 @@ impl From<CoOccurrence> for CoOccurrencePayload {
     fn from(c: CoOccurrence) -> Self {
         Self {
             file_id: c.file_id,
+            file_path: c.file_path,
             count: c.count,
             last_seen: c.last_seen,
             avg_gap_ms: c.avg_gap_ms,
@@ -224,13 +225,10 @@ pub fn get_co_occurrence(
     app_state: State<'_, AppState>,
 ) -> Result<Vec<CoOccurrencePayload>, String> {
     // Check Pro capability for related files
-    let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+    let _device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
     let manager = app_state.entitlement_manager.lock();
 
-    if !manager
-        .capabilities()
-        .has(Capability::RelatedGraph)
-    {
+    if !manager.capabilities().has(Capability::RelatedGraph) {
         return Err("Pro capability required for related files".into());
     }
 
@@ -310,7 +308,7 @@ pub async fn save_activity_ledger(
     let events = ledger.export_events();
 
     // Serialize to JSON
-    let json = serde_json::to_string(&events).map_err(|e| e.to_string())?;
+    let _json = serde_json::to_string(&events).map_err(|e| e.to_string())?;
 
     // Save using encrypted storage (via existing storage commands)
     // This will be integrated with the existing write_encrypted_file command

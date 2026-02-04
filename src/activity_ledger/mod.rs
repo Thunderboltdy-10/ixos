@@ -27,7 +27,7 @@ pub use storage::{ActivityStorage, StorageConfig};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Maximum number of events to store (auto-prune oldest)
 pub const MAX_EVENTS: usize = 10_000;
@@ -191,10 +191,13 @@ impl ActivityLedger {
 
     /// Internal event addition with index updates
     fn add_event_internal(&mut self, event: ActivityEvent, mark_dirty: bool) {
-        // Update co-occurrence analyzer
+        // Update co-occurrence analyzer with file path for reverse mapping
         if event.action_type.contributes_to_co_occurrence() {
-            self.co_occurrence
-                .record_activity(&event.file_id, event.timestamp);
+            self.co_occurrence.record_activity_with_path(
+                &event.file_id,
+                Some(&event.file_path),
+                event.timestamp,
+            );
         }
 
         // Find insertion point (maintain sorted order, newest first)
@@ -218,7 +221,10 @@ impl ActivityLedger {
 
         // Update query index if applicable
         if let Some(ref qh) = event.query_hash {
-            self.query_index.entry(qh.clone()).or_default().push(insert_idx);
+            self.query_index
+                .entry(qh.clone())
+                .or_default()
+                .push(insert_idx);
         }
 
         if mark_dirty {
@@ -310,11 +316,7 @@ impl ActivityLedger {
     }
 
     /// Get co-occurrence data for a file (files opened/edited together)
-    pub fn get_co_occurrence(
-        &self,
-        file_path: &str,
-        window_mins: u32,
-    ) -> Vec<CoOccurrence> {
+    pub fn get_co_occurrence(&self, file_path: &str, window_mins: u32) -> Vec<CoOccurrence> {
         let file_id = hash_file_path(file_path);
         self.co_occurrence.get_co_occurrences(&file_id, window_mins)
     }
@@ -498,7 +500,11 @@ mod tests {
         let mut ledger = ActivityLedger::new();
 
         ledger.log_activity(create_event("/file1.txt", ActivityAction::FileOpened, None));
-        ledger.log_activity(create_event("/file2.txt", ActivityAction::SearchQuery, Some("test")));
+        ledger.log_activity(create_event(
+            "/file2.txt",
+            ActivityAction::SearchQuery,
+            Some("test"),
+        ));
         ledger.log_activity(create_event("/file3.txt", ActivityAction::FileOpened, None));
 
         let opened = ledger.get_activity(None, Some(vec![ActivityAction::FileOpened]), None);

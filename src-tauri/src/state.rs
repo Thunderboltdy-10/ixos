@@ -62,11 +62,21 @@ pub struct AppState {
     pub loaded_model: Arc<Mutex<Option<String>>>,
     /// Entitlement manager for offline grace + refresh
     pub entitlement_manager: Arc<Mutex<EntitlementManager>>,
+    /// Application data directory for persistence
+    pub app_data_dir: PathBuf,
 }
 
 impl AppState {
     /// Create new application state
     pub fn new() -> Self {
+        // Get app data directory (cross-platform)
+        let app_data_dir = dirs::data_dir()
+            .map(|d| d.join("Ixos"))
+            .unwrap_or_else(|| PathBuf::from(".ixos"));
+
+        // Ensure directory exists
+        std::fs::create_dir_all(&app_data_dir).ok();
+
         Self {
             cancel_token: Arc::new(Mutex::new(None)),
             journalist_mode: Arc::new(Mutex::new(
@@ -76,6 +86,7 @@ impl AppState {
             model_cache: Arc::new(Mutex::new(HashMap::new())),
             loaded_model: Arc::new(Mutex::new(None)),
             entitlement_manager: Arc::new(Mutex::new(EntitlementManager::new())),
+            app_data_dir,
         }
     }
 
@@ -168,28 +179,3 @@ impl Default for AppState {
         Self::new()
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -6,6 +6,8 @@ import { FolderPicker } from './FolderPicker';
 import { ModeSwitcher, type SearchMode } from './ModeSwitcher';
 import type { ModelType } from './ModelSwitcher';
 import { QualitySwitcher } from './QualitySwitcher';
+import { AskModeSwitcher } from './AskModeSwitcher';
+import type { AskMode } from '@/lib/types';
 import { SearchSuggestions } from './SearchSuggestions';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useStarredStore, type HistorySuggestion } from '@/stores/starredStore';
@@ -64,9 +66,10 @@ export function SearchInput({
   const searchBarRef = useRef<HTMLDivElement>(null);
   const preloadedModels = useRef(new Set<ModelType>());
 
-  const modelType = (config?.search?.modelType || 'ixos-flash-v1') as ModelType;
-  const proModelType = (config?.search?.proModelType || 'potion') as ModelType;
+  const modelType = (config?.search?.modelType || 'ixos-flash-v2') as ModelType;
+  const proModelType = (config?.search?.proModelType || 'ixos-pro-v2') as ModelType;
   const qualityMode = (config?.search?.searchMode || 'auto') as QualityMode;
+  const askMode = (config?.search?.askMode || 'auto') as AskMode;
   const proLocked =
     !!entitlementToken &&
     (proStatus?.status === 'expired' || proStatus?.status === 'timeSuspect');
@@ -148,6 +151,22 @@ export function SearchInput({
       });
     }
   };
+
+  const handleAskModeChange = async (mode: AskMode) => {
+    if (config) {
+      await updateConfig({
+        search: { ...config.search, askMode: mode },
+      });
+    }
+  };
+
+  // Determine if Ask Mode should show indicator based on settings and query
+  const shouldShowAskModeIndicator = (() => {
+    if (askMode === 'off') return false;
+    if (askMode === 'always') return value.trim().length > 0;
+    // Auto mode: detect question mark or question words
+    return value.trim().endsWith('?') || /^(who|what|when|where|how|why|whats|wheres|hows|find|show)\s/i.test(value);
+  })();
 
   useEffect(() => {
     if (!config) return;
@@ -288,9 +307,8 @@ export function SearchInput({
           initial={{ opacity: 0 }}
           animate={{
             opacity: hasSearchIntent || activeSearch ? 1 : 0,
-            scale: hasSearchIntent || activeSearch ? 1 : 0.98,
           }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.3 }}
         />
 
         {(hasSearchIntent || activeSearch) && (
@@ -298,14 +316,17 @@ export function SearchInput({
             className="absolute -inset-[4px] rounded-2xl pointer-events-none"
             style={{
               border: `1px solid ${activePalette.border}`,
-              boxShadow: `0 0 28px ${activePalette.glowStrong}`,
             }}
             animate={{
-              opacity: [0.5, 0.2, 0.5],
-              scale: [1, 1.01, 1],
+              opacity: [0.6, 0.3, 0.6],
+              boxShadow: [
+                `0 0 40px ${activePalette.glowStrong}, 0 0 80px ${activePalette.glow}`,
+                `0 0 20px ${activePalette.glow}, 0 0 40px ${activePalette.accentFade}`,
+                `0 0 40px ${activePalette.glowStrong}, 0 0 80px ${activePalette.glow}`
+              ]
             }}
             transition={{
-              duration: 2,
+              duration: 2.5,
               repeat: Infinity,
               ease: 'easeInOut',
             }}
@@ -313,9 +334,10 @@ export function SearchInput({
         )}
 
         <div className={cn(
-          'relative gradient-border-focus rounded-xl overflow-visible',
+          'relative gradient-border-focus overflow-visible',
           'bg-graphite-2/80 border border-stroke-hairline',
           'transition-all duration-200',
+          showSuggestions && suggestions.length > 0 ? 'rounded-t-xl rounded-b-none border-b-transparent' : 'rounded-xl',
           hasSearchIntent || activeSearch
             ? ''
             : 'hover:border-border-medium'
@@ -338,7 +360,7 @@ export function SearchInput({
             rightSlot={
               <div className="flex items-center gap-2">
                 {/* Ask Mode Indicator */}
-                {(value.trim().endsWith('?') || /^(who|what|when|where|how|why)\s/i.test(value)) && (
+                {shouldShowAskModeIndicator && (
                   <div className="relative group">
                     <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-accent-violet/10 border border-accent-violet/20 cursor-help">
                       <span className="w-1.5 h-1.5 rounded-full bg-accent-violet animate-pulse" />
@@ -395,6 +417,13 @@ export function SearchInput({
                   value={qualityMode}
                   onChange={handleQualityChange}
                   proLocked={proLocked}
+                />
+              </div>
+
+              <div className="flex-shrink-0">
+                <AskModeSwitcher
+                  value={askMode}
+                  onChange={handleAskModeChange}
                 />
               </div>
 

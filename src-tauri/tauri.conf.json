@@ -50,8 +50,8 @@
       "icons/icon.ico"
     ],
     "resources": [
-      "../models/ixos-flash-v1/*",
-      "../models/ixos-pro-v1/*"
+      "../models/ixos-flash-v2/*",
+      "../models/potion-base-8M-int8/*"
     ],
     "windows": {
       "certificateThumbprint": null,

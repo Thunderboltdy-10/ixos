@@ -3,14 +3,12 @@ use std::time::SystemTime;
 use crate::state::AppState;
 use ixos_protocol::capabilities::Capability;
 use ixos_protocol::entitlements::ProStatus;
+use ixos_protocol::ixos_rank::candidate_generator::QueryPreprocessor;
 use ixos_protocol::security::DeviceIdentity;
 use ixos_protocol::{
-    ask_mode_plus as run_ask_mode_plus,
-    extract_answer_card as run_extract_answer_card,
-    AnswerCard,
+    ask_mode_plus as run_ask_mode_plus, extract_answer_card as run_extract_answer_card, AnswerCard,
     AskModePlusResult,
 };
-use ixos_protocol::ixos_rank::candidate_generator::QueryPreprocessor;
 use tauri::State;
 
 #[tauri::command]

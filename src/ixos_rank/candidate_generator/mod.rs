@@ -48,9 +48,10 @@ pub use scorer::{
     ScoreWeights, ScoredCandidate,
 };
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
-use std::time::Instant;
+use std::sync::{Arc, Mutex, OnceLock};
+use std::time::{Duration, Instant};
 
 use crate::ixos_rank::ask_mode::{AnchorTerm, QueryMode};
 
@@ -123,7 +124,7 @@ pub struct CandidateGenerator {
     /// Configuration
     config: CandidateGeneratorConfig,
     /// Path index (built lazily)
-    path_index: Option<PathIndex>,
+    path_index: Option<Arc<PathIndex>>,
     /// Ripgrep funnel
     ripgrep: RipgrepFunnel,
     /// Query preprocessor (typos + synonyms)
@@ -131,6 +132,16 @@ pub struct CandidateGenerator {
     /// Last directory walk/index build duration
     last_index_build_ms: u64,
 }
+
+struct CachedIndex {
+    index: Arc<PathIndex>,
+    file_list: Vec<PathBuf>,
+    built_at: Instant,
+}
+
+const INDEX_CACHE_TTL_SECS: u64 = 300;
+
+static INDEX_CACHE: OnceLock<Mutex<HashMap<PathBuf, CachedIndex>>> = OnceLock::new();
 
 impl CandidateGenerator {
     /// Create a new candidate generator for a directory
@@ -157,17 +168,46 @@ impl CandidateGenerator {
     /// P5 optimization: Also updates RipgrepFunnel with the file list
     /// to skip redundant directory walking during search.
     pub fn build_index(&mut self) {
+        let cache_key = self
+            .root_dir
+            .canonicalize()
+            .unwrap_or(self.root_dir.clone());
+        let cache = INDEX_CACHE.get_or_init(|| Mutex::new(HashMap::new()));
+        {
+            let cache_guard = cache.lock().unwrap();
+            if let Some(entry) = cache_guard.get(&cache_key) {
+                if entry.built_at.elapsed() < Duration::from_secs(INDEX_CACHE_TTL_SECS) {
+                    self.path_index = Some(Arc::clone(&entry.index));
+                    self.ripgrep.set_cached_file_list(entry.file_list.clone());
+                    self.last_index_build_ms = 0;
+                    return;
+                }
+            }
+        }
+
         let start = Instant::now();
         let _span = directory_walk_span(&self.root_dir);
         let _enter = _span.enter();
         let index = PathIndex::build_from_walk(&self.root_dir, &self.config.path_config);
-        self.last_index_build_ms = start.elapsed().as_millis() as u64;
+        let build_ms = start.elapsed().as_millis() as u64;
+        self.last_index_build_ms = build_ms;
 
         // P5 optimization: Share file list with ripgrep funnel
         let file_paths = index.get_file_paths();
-        self.ripgrep.set_cached_file_list(file_paths);
+        self.ripgrep.set_cached_file_list(file_paths.clone());
 
-        self.path_index = Some(index);
+        let index = Arc::new(index);
+        self.path_index = Some(Arc::clone(&index));
+
+        let mut cache_guard = cache.lock().unwrap();
+        cache_guard.insert(
+            cache_key,
+            CachedIndex {
+                index,
+                file_list: file_paths,
+                built_at: Instant::now(),
+            },
+        );
     }
 
     /// Ensure path index is built
@@ -384,10 +424,12 @@ impl CandidateGenerator {
         candidates
             .into_iter()
             .filter(|candidate| {
-                let preview = candidate
-                    .content_preview
-                    .as_ref()
-                    .or_else(|| candidate.match_context.as_ref().and_then(|ctx| ctx.snippet.as_ref()));
+                let preview = candidate.content_preview.as_ref().or_else(|| {
+                    candidate
+                        .match_context
+                        .as_ref()
+                        .and_then(|ctx| ctx.snippet.as_ref())
+                });
                 let preview = match preview {
                     Some(text) => text.to_lowercase(),
                     None => return false,
@@ -595,9 +637,3 @@ mod tests {
             .any(|m| m.path.to_string_lossy().contains("report")));
     }
 }
-
-
-
-
-
-

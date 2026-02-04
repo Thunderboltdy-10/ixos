@@ -25,12 +25,16 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(tauri_plugin_prevent_default::Builder::new()
+        .plugin(
+            tauri_plugin_prevent_default::Builder::new()
                 .with_flags(tauri_plugin_prevent_default::Flags::DOWNLOADS)
                 .build(),
         )
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            let _ = app.get_webview_window("main").expect("no main window").set_focus();
+            let _ = app
+                .get_webview_window("main")
+                .expect("no main window")
+                .set_focus();
         }))
         .setup(|app| {
             // Initialize application state
@@ -61,9 +65,9 @@ pub fn run() {
                     // This is acceptable for a UI event handler
                     let config = ixos_protocol::cli::IxosConfig::load();
                     if !config.output.exit_on_close {
-                         // Default behavior: minimize to tray
-                         window.hide().ok();
-                         api.prevent_close();
+                        // Default behavior: minimize to tray
+                        window.hide().ok();
+                        api.prevent_close();
                     }
                     // Else: allow close (which quits the app since it's the main window)
                 }
@@ -150,14 +154,9 @@ pub fn run() {
             commands::workstreams::recluster_workstreams,
             commands::workstreams::pin_workstream,
             commands::workstreams::get_workstreams_stats,
+            commands::workstreams::save_workstreams,
+            commands::workstreams::load_workstreams,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
-
-
-
-
-
-

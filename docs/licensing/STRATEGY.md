@@ -30,11 +30,11 @@ Why: The product value is trust and performance. An open core preserves local-fi
 | st-all-mpnet-base-v2 | Sentence Transformers | Apache-2.0 | Teacher | Used for Flash v2/v4 distillation |
 | st-paraphrase-mpnet-base-v2 | Sentence Transformers | Apache-2.0 | Teacher | Used for ixos-pro-v1 |
 | potion-base-8m | Potion Research | MIT | Flash baseline, Pro fusion | int8 variant used in prod |
-| ixos-flash-v2 | Ixos (distilled) | MIT (internal) | Flash default | Derived from mpnet teacher |
+| ixos-flash-v2 | Ixos (distilled) | MIT (internal) | Flash default | Derived from mpnet teacher (int8) |
 | ixos-flash-v4-int8-512 | Ixos (distilled) | Apache-2.0 (derived) | Flash candidate | Derived from mpnet teacher |
 | ixos-flash-v4-int8-192 | Ixos (distilled) | Apache-2.0 (derived) | Flash candidate | Derived from mpnet teacher |
 | ixos-pro-v1 | Ixos (distilled) | Apache-2.0 (derived) | Legacy pro | Deprecated for quality |
-| Pro fusion (flash + potion + lexical) | Ixos pipeline | Composite | Pro pipeline | Requires compatible licenses for each component |
+| ixos-pro-v2 | Ixos pipeline | Composite | Pro default | Flash v2 + Potion + lexical fusion |
 | Qwen3-Embedding-0.6B | Alibaba | Alibaba License | Experimental | Not recommended for prod |
 
 ### Notes

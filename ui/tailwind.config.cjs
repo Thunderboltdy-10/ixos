@@ -98,9 +98,9 @@ module.exports = {
                 }
             },
             fontFamily: {
-                sans: ['"IBM Plex Mono"', 'monospace'],
+                sans: ['"Geist Mono"', 'ui-monospace', 'monospace'],
                 display: ['"Space Grotesk"', 'sans-serif'],
-                mono: ['"IBM Plex Mono"', 'monospace'],
+                mono: ['"Geist Mono"', 'ui-monospace', 'monospace'],
             },
             borderRadius: {
                 lg: "var(--radius)",
@@ -124,6 +124,7 @@ module.exports = {
             },
             animation: {
                 shimmer: 'shimmer 2s linear infinite',
+                'shimmer-slow': 'shimmer 3s linear infinite',
             },
         },
     },

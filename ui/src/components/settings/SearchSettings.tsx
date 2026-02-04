@@ -19,6 +19,10 @@ interface CacheStats {
 }
 
 interface ModelStatus {
+  ixosFlashV2Available: boolean;
+  ixosFlashV2Path: string | null;
+  ixosProV2Available: boolean;
+  ixosProV2Path: string | null;
   ixosFlashV1Available: boolean;
   ixosFlashV1Path: string | null;
   ixosProV1Available: boolean;
@@ -446,8 +450,8 @@ function ModelManagementPanel() {
   }
 
   const models = [
-    { id: 'ixos-flash-v1', label: 'Ixos Flash V1', available: status?.ixosFlashV1Available },
-    { id: 'ixos-pro-v1', label: 'Ixos Pro V1', available: status?.ixosProV1Available },
+    { id: 'ixos-flash-v2', label: 'Ixos Flash V2', available: status?.ixosFlashV2Available },
+    { id: 'ixos-pro-v2', label: 'Ixos Pro V2', available: status?.ixosProV2Available },
   ];
 
   return (
@@ -520,8 +524,6 @@ function ModelManagementPanel() {
 function EntitlementPanel() {
   const proStatus = useAuthStore((s) => s.proStatus);
   const entitlementToken = useAuthStore((s) => s.entitlementToken);
-  const refreshLease = useAuthStore((s) => s.refreshLease);
-  const setEntitlementToken = useAuthStore((s) => s.setEntitlementToken);
   const deviceId = useAuthStore((s) => s.deviceId);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
@@ -589,7 +591,7 @@ function EntitlementPanel() {
         </Button>
       </div>
 
-      {proStatus?.expiresAt && (
+      {proStatus && 'expiresAt' in proStatus && proStatus.expiresAt && (
         <div className="text-xs text-fg-dim mb-2">
           Expires: {new Date(proStatus.expiresAt * 1000).toLocaleDateString()}
         </div>

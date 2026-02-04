@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Time window in milliseconds (default: 30 minutes)
+#[allow(dead_code)]
 pub const DEFAULT_WINDOW_MS: u64 = 30 * 60 * 1000;
 
 /// Represents a co-occurrence relationship between two files
@@ -14,6 +15,10 @@ pub const DEFAULT_WINDOW_MS: u64 = 30 * 60 * 1000;
 pub struct CoOccurrence {
     /// The other file that co-occurred with the query file
     pub file_id: String,
+    /// The file path (resolved from file_id via reverse mapping)
+    /// This is populated when returning results so UI can display
+    #[serde(rename = "filePath")]
+    pub file_path: Option<String>,
     /// Number of times these files were accessed together
     pub count: u32,
     /// Most recent co-occurrence timestamp
@@ -39,6 +44,7 @@ pub enum CoOccurrenceReason {
 /// Activity record for a single file
 #[derive(Debug, Clone)]
 struct FileActivity {
+    #[allow(dead_code)]
     file_id: String,
     timestamps: Vec<u64>,
 }
@@ -53,7 +59,11 @@ impl FileActivity {
 
     fn add_timestamp(&mut self, ts: u64) {
         // Keep sorted, newest first
-        let idx = self.timestamps.iter().position(|&t| t < ts).unwrap_or(self.timestamps.len());
+        let idx = self
+            .timestamps
+            .iter()
+            .position(|&t| t < ts)
+            .unwrap_or(self.timestamps.len());
         self.timestamps.insert(idx, ts);
 
         // Limit to last 1000 timestamps per file
@@ -82,6 +92,8 @@ pub struct CoOccurrenceAnalyzer {
     activities: HashMap<String, FileActivity>,
     /// Session timeline for temporal analysis
     session_timeline: Vec<(u64, String)>, // (timestamp, file_id)
+    /// Reverse mapping from file_id to file_path for UI display
+    file_id_to_path: HashMap<String, String>,
 }
 
 impl CoOccurrenceAnalyzer {
@@ -90,13 +102,29 @@ impl CoOccurrenceAnalyzer {
         Self::default()
     }
 
-    /// Record a file activity
+    /// Record a file activity with file path for reverse mapping
     pub fn record_activity(&mut self, file_id: &str, timestamp: u64) {
+        self.record_activity_with_path(file_id, None, timestamp);
+    }
+
+    /// Record a file activity with optional file path for reverse mapping
+    pub fn record_activity_with_path(
+        &mut self,
+        file_id: &str,
+        file_path: Option<&str>,
+        timestamp: u64,
+    ) {
         // Update file activity
         self.activities
             .entry(file_id.to_string())
             .or_insert_with(|| FileActivity::new(file_id.to_string()))
             .add_timestamp(timestamp);
+
+        // Update file_id -> path mapping if path provided
+        if let Some(path) = file_path {
+            self.file_id_to_path
+                .insert(file_id.to_string(), path.to_string());
+        }
 
         // Update session timeline
         self.session_timeline.push((timestamp, file_id.to_string()));
@@ -108,6 +136,11 @@ impl CoOccurrenceAnalyzer {
 
         // Keep timeline sorted
         self.session_timeline.sort_by(|a, b| b.0.cmp(&a.0));
+    }
+
+    /// Get file path for a file_id (if known)
+    pub fn get_file_path(&self, file_id: &str) -> Option<&String> {
+        self.file_id_to_path.get(file_id)
     }
 
     /// Get co-occurring files for a given file
@@ -152,8 +185,10 @@ impl CoOccurrenceAnalyzer {
             .filter(|stats| stats.count > 0)
             .map(|stats| {
                 let avg_gap = stats.avg_gap_ms();
+                let file_path = self.file_id_to_path.get(&stats.file_id).cloned();
                 CoOccurrence {
                     file_id: stats.file_id,
+                    file_path,
                     count: stats.count,
                     last_seen: stats.last_seen,
                     avg_gap_ms: avg_gap,
@@ -175,6 +210,7 @@ impl CoOccurrenceAnalyzer {
     pub fn clear(&mut self) {
         self.activities.clear();
         self.session_timeline.clear();
+        self.file_id_to_path.clear();
     }
 
     /// Get total tracked files

@@ -10,29 +10,15 @@ import { useAppInit } from './hooks/useAppInit';
 import { AchievementNotifications } from './components/stats';
 import { IxosClerkProvider } from './providers/ClerkProvider';
 import { AuthGate } from './components/auth/AuthGate';
+import { ToastContainer } from './components/notifications/ToastContainer';
+import type { ModelStatus } from './lib/types';
 // import { useAuthStore } from './stores/authStore';
 
 type WindowType = 'overlay' | 'main' | 'unknown';
 
 
 
-interface ModelStatus {
-  potionAvailable: boolean;
-  potionPath: string | null;
-  qwenAvailable: boolean;
-  qwenPath: string | null;
-  ixosFlashV1Available: boolean;
-  ixosFlashV1Path: string | null;
-  ixosFlashV4Available: boolean;
-  ixosFlashV4Path: string | null;
-  ixosFlashV4FastAvailable: boolean;
-  ixosFlashV4FastPath: string | null;
-  ixosProV1Available: boolean;
-  ixosProV1Path: string | null;
-  anyAvailable: boolean;
-  recommended: string | null;
-  loadedModel: string | null;
-}
+
 
 function ModelWarningPopup({ onDismiss }: { onDismiss: () => void }) {
   // Simple inline fallback if the component was missing
@@ -116,6 +102,7 @@ function App() {
               <MainSearchView />
             </AppShell>
             <AchievementNotifications />
+            <ToastContainer />
             {showModelWarning && (
               <ModelWarningPopup onDismiss={() => setShowModelWarning(false)} />
             )}

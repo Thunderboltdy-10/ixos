@@ -5,7 +5,7 @@ Fast, CPU-first flash-tier embedder distilled from st-all-mpnet-base-v2.
 
 ## Tier and status
 - Tier: Flash
-- Status: Default (current)
+- Status: Legacy (replaced by Ixos Flash v2)
 - Intended use: Low-latency local search on CPU
 
 ## Specs
@@ -34,6 +34,10 @@ See `models/lab/CANONICAL_RESULTS.md` for verified benchmarks.
 ## Packaging and usage
 - Model directory: `models/ixos-flash-v1`
 - Rust: `MmapModel2VecEmbedder::new_with_type(ModelType::IxosFlashV1)`
+
+## Migration note
+Flash v1 is retained for regression testing and legacy compatibility. New installs should use
+Ixos Flash v2 (`models/ixos-flash-v2`) as the production default.
 
 ## License
 - Distilled weights: Ixos internal (MIT per MODELS_REPORT)

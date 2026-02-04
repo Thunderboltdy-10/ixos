@@ -85,14 +85,10 @@ export function SearchCorridor() {
   const containerRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
-  const lastSpawnRef = useRef<number>(0);
-
   // Animation state refs (mutable for performance)
-  const arcsRef = useRef<Arc[]>([]);
   const dustRef = useRef<Dust[]>([]);
   const sparksRef = useRef<Spark[]>([]);
   const signalPulsesRef = useRef<SignalPulse[]>([]);
-  const arcIdRef = useRef(0);
   const sparkIdRef = useRef(0);
   const signalIdRef = useRef(0);
   const lastSignalSpawnRef = useRef(0);
@@ -314,7 +310,8 @@ export function SearchCorridor() {
     window.addEventListener('resize', resize);
 
     const tick = (now: number) => {
-      const dt = Math.min(33, now - lastTimeRef.current); // Cap at ~30fps worth of dt
+      // Track delta time for frame-rate independent animation (currently unused)
+      void Math.min(33, now - lastTimeRef.current);
       lastTimeRef.current = now;
 
       const rect = container.getBoundingClientRect();
@@ -326,27 +323,6 @@ export function SearchCorridor() {
 
       const color = journalistMode ? COLORS.violet : cacheMode === 'cache' ? COLORS.teal : COLORS.amber;
 
-      // Draw faint corridor rails (only during active search, fade with complete)
-      if ((isActive || isComplete) && fadeOutProgressRef.current < 1) {
-        const railAlpha = isComplete ? 0.04 * (1 - fadeOutProgressRef.current) : 0.04;
-        const railOffset = 100; // Corridor width from center
-
-        ctx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${railAlpha})`;
-        ctx.lineWidth = 1;
-
-        // Left rail
-        ctx.beginPath();
-        ctx.moveTo(centerX - railOffset, 0);
-        ctx.lineTo(centerX - railOffset, height);
-        ctx.stroke();
-
-        // Right rail
-        ctx.beginPath();
-        ctx.moveTo(centerX + railOffset, 0);
-        ctx.lineTo(centerX + railOffset, height);
-        ctx.stroke();
-      }
-
       // Handle fade-out on complete
       if (isComplete) {
         if (fadeOutStartRef.current === null) {
@@ -356,8 +332,6 @@ export function SearchCorridor() {
 
         // If fade-out is complete, clear all animations and stop drawing
         if (fadeOutProgressRef.current >= 1) {
-          arcsRef.current = [];
-          dustRef.current = [];
           sparksRef.current = [];
           signalPulsesRef.current = [];
           frameRef.current = requestAnimationFrame(tick);
@@ -399,55 +373,19 @@ export function SearchCorridor() {
         });
       }
 
-      // Spawn arcs during active search (not when complete)
-      if (isActive && !isComplete && now - lastSpawnRef.current > ARC_CONFIG.spawnInterval) {
-        if (arcsRef.current.length < ARC_CONFIG.maxArcs) {
-          arcsRef.current.push({
-            id: arcIdRef.current++,
-            progress: 0,
-            curvePhase: Math.random() * Math.PI * 2,
-            alpha: 0.6 + Math.random() * 0.4,
-          });
-          lastSpawnRef.current = now;
-        }
-      }
+      // Update and draw sparks (with fade multiplier)
+      sparksRef.current = sparksRef.current.filter(spark => {
+        spark.progress = Math.min(1, (now - spark.startTime) / SPARK_CONFIG.travelTime);
 
-      // Update and draw arcs
-      arcsRef.current = arcsRef.current.filter(arc => {
-        arc.progress += dt / ARC_CONFIG.travelTime;
+        if (spark.progress >= 1) return false;
 
-        if (arc.progress >= 1) return false;
-
-        // Fade in at start, fade out at end
-        const fadeAlpha = arc.progress < 0.1
-          ? arc.progress / 0.1
-          : arc.progress > 0.9
-            ? (1 - arc.progress) / 0.1
-            : 1;
-
-        const adjustedArc = { ...arc, alpha: arc.alpha * fadeAlpha * fadeMultiplier };
-        drawArc(ctx, adjustedArc, centerX, height, color);
+        // Apply fade multiplier to spark alpha via context globalAlpha
+        ctx.save();
+        ctx.globalAlpha = fadeMultiplier;
+        drawSpark(ctx, spark, centerX, color);
+        ctx.restore();
         return true;
       });
-
-      // Update and draw dust (only during active search, fade during complete)
-      if (isActive || (isComplete && fadeMultiplier > 0)) {
-        dustRef.current.forEach(dust => {
-          if (!isComplete) {
-            dust.y += dust.speed;
-            if (dust.y > height) {
-              dust.y = 0;
-              dust.x = centerX + (Math.random() - 0.5) * 200;
-            }
-          }
-
-          // Only draw dust within corridor bounds, with fade multiplier
-          if (Math.abs(dust.x - centerX) < 100) {
-            const fadedDust = { ...dust, alpha: dust.alpha * fadeMultiplier };
-            drawDust(ctx, fadedDust, color);
-          }
-        });
-      }
 
       // Update and draw sparks (with fade multiplier)
       sparksRef.current = sparksRef.current.filter(spark => {

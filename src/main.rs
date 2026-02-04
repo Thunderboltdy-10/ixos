@@ -15,10 +15,12 @@ use tokio_util::sync::CancellationToken;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use ixos_protocol::cli::{
-    create_formatter_with_options, CacheCommands, CcpaCommands, Cli, Commands, ComplianceCommands,
-    GdprCommands, IxosConfig, OutputFormat,
+    create_formatter_with_options, CacheCommands, CcpaCommands, Cli, CliFlashModelType,
+    CliProModelType, CliSearchMode, Commands, ComplianceCommands, GdprCommands, IxosConfig,
+    OutputFormat,
 };
 use ixos_protocol::compliance::{ComplianceManager, DeletionScope};
+use ixos_protocol::ixos_embed::ModelType;
 use ixos_protocol::ixos_rank::{
     CandidateLexicalEngine, ProgressiveSearchConfig, ProgressiveSearchEngine, SearchEvent,
     StubSemanticEngine,
@@ -75,7 +77,9 @@ async fn main() -> anyhow::Result<()> {
             no_secure_ranking,
             cache_mode,
             stub_model,
+            search_mode,
             model,
+            pro_model,
             secure_timing,
             context,
             journalist_mode,
@@ -94,7 +98,9 @@ async fn main() -> anyhow::Result<()> {
                 !no_secure_ranking && config.search.enable_secure_ranking,
                 cache_mode.into(),
                 stub_model || config.search.use_stub_model,
-                model.into(),
+                search_mode,
+                model,
+                pro_model,
                 secure_timing || config.search.secure_timing,
                 context,
                 journalist_mode,
@@ -152,6 +158,19 @@ async fn main() -> anyhow::Result<()> {
 // Search Handler
 // =============================================================================
 
+fn resolve_flash_model_type(raw: &str) -> ModelType {
+    raw.parse::<ModelType>().unwrap_or(ModelType::IxosFlashV2)
+}
+
+fn resolve_pro_model_type(raw: &str) -> ModelType {
+    let normalized = raw.trim().to_lowercase();
+    match normalized.as_str() {
+        "ixos-pro-v2" | "pro-v2" | "pro" => ModelType::Potion,
+        "potion" | "potion-base-8m-int8" => ModelType::Potion,
+        _ => raw.parse::<ModelType>().unwrap_or(ModelType::Potion),
+    }
+}
+
 async fn handle_search(
     query: &str,
     limit: usize,
@@ -165,7 +184,9 @@ async fn handle_search(
     secure_ranking: bool,
     cache_mode: ixos_protocol::CacheMode,
     stub_model: bool,
-    model_type: ixos_protocol::ixos_embed::ModelType,
+    search_mode: Option<CliSearchMode>,
+    model: Option<CliFlashModelType>,
+    pro_model: Option<CliProModelType>,
     secure_timing: bool,
     context_lines: usize,
     journalist_mode: bool,
@@ -252,6 +273,28 @@ async fn handle_search(
         return Ok(());
     }
 
+    // Resolve model and mode selection (CLI override > config)
+    let resolved_search_mode = match search_mode {
+        Some(mode) => match mode {
+            CliSearchMode::Flash => ixos_protocol::ixos_rank::progressive::SearchMode::Flash,
+            CliSearchMode::Pro => ixos_protocol::ixos_rank::progressive::SearchMode::Pro,
+            CliSearchMode::Auto => ixos_protocol::ixos_rank::progressive::SearchMode::Auto,
+        },
+        None => match config.search.search_mode.as_str() {
+            "flash" => ixos_protocol::ixos_rank::progressive::SearchMode::Flash,
+            "pro" => ixos_protocol::ixos_rank::progressive::SearchMode::Pro,
+            _ => ixos_protocol::ixos_rank::progressive::SearchMode::Auto,
+        },
+    };
+
+    let model_type = model
+        .map(ModelType::from)
+        .unwrap_or_else(|| resolve_flash_model_type(&config.search.model_type));
+
+    let pro_model_type = pro_model
+        .map(ModelType::from)
+        .unwrap_or_else(|| resolve_pro_model_type(&config.search.pro_model_type));
+
     // Create search engines
     // P2: Use CandidateLexicalEngine to enforce hard caps and fast funneling
     let lexical = CandidateLexicalEngine::new(search_dir.clone());
@@ -302,8 +345,55 @@ async fn handle_search(
         }
     };
 
+    let mut pro_engine: Option<StubSemanticEngine> = None;
+    if matches!(
+        resolved_search_mode,
+        ixos_protocol::ixos_rank::progressive::SearchMode::Auto
+            | ixos_protocol::ixos_rank::progressive::SearchMode::Pro
+    ) {
+        pro_engine = if stub_model {
+            Some(StubSemanticEngine::with_stub_model_and_mode(
+                effective_cache_mode,
+            ))
+        } else {
+            use ixos_protocol::ixos_embed::MmapModel2VecEmbedder;
+            use ixos_protocol::SecureEmbedder;
+            use std::sync::Arc;
+
+            tracing::info!(
+                "Using pro embedding model: {} ({})",
+                pro_model_type.display_name(),
+                pro_model_type.description()
+            );
+            let model_result = MmapModel2VecEmbedder::new_with_type(pro_model_type);
+            match model_result {
+                Ok(model) => {
+                    let embedder = if secure_timing {
+                        tracing::info!("Secure timing mode enabled (100ms floor)");
+                        SecureEmbedder::new_secure(Arc::new(model))
+                    } else {
+                        SecureEmbedder::new_fast(Arc::new(model))
+                    };
+                    Some(StubSemanticEngine::with_cache_mode(
+                        embedder,
+                        effective_cache_mode,
+                    ))
+                }
+                Err(e) => {
+                    tracing::warn!("Failed to create pro model ({}): {}", pro_model_type, e);
+                    None
+                }
+            }
+        };
+    }
+
     if let Err(e) = semantic.index_directory(&search_dir).await {
         tracing::warn!("Failed to index for semantic search: {}", e);
+    }
+    if let Some(engine) = pro_engine.as_mut() {
+        if let Err(e) = engine.index_directory(&search_dir).await {
+            tracing::warn!("Failed to index for pro search: {}", e);
+        }
     }
 
     // Determine secure timing (used in future for timing-based attack detection)
@@ -314,6 +404,9 @@ async fn handle_search(
 
     // Set threshold on semantic engine
     semantic.set_min_score_threshold(threshold);
+    if let Some(engine) = pro_engine.as_mut() {
+        engine.set_min_score_threshold(threshold);
+    }
 
     // Create progressive search engine
     let search_config = ProgressiveSearchConfig {
@@ -321,10 +414,12 @@ async fn handle_search(
         enable_secure_ranking: secure_ranking,
         context_lines,
         min_score_threshold: threshold,
+        search_mode: resolved_search_mode,
         ..ProgressiveSearchConfig::default()
     };
 
-    let mut engine = ProgressiveSearchEngine::with_config(lexical, semantic, search_config);
+    let mut engine =
+        ProgressiveSearchEngine::with_config_and_pro(lexical, semantic, pro_engine, search_config);
 
     let start_time = std::time::Instant::now();
 

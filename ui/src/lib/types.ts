@@ -105,6 +105,10 @@ export interface TagObject {
 export type EvidenceTag = string | TagObject;
 
 export interface ModelStatus {
+  ixosFlashV2Available: boolean;
+  ixosFlashV2Path: string | null;
+  ixosProV2Available: boolean;
+  ixosProV2Path: string | null;
   ixosFlashV1Available: boolean;
   ixosFlashV1Path: string | null;
   ixosProV1Available: boolean;
@@ -137,6 +141,7 @@ export interface SearchOptions {
   modelType?: ModelType;
   proModelType?: ModelType;
   searchMode?: SearchMode;
+  isAskMode?: boolean;
   timeoutSeconds?: number;
 }
 
@@ -156,11 +161,15 @@ export type ModelType =
   | 'potion'
   | 'qwen'
   | 'ixos-flash-v1'
+  | 'ixos-flash-v2'
   | 'ixos-flash-v4-int8-512'
   | 'ixos-flash-v4-int8-192'
-  | 'ixos-pro-v1';
+  | 'ixos-pro-v1'
+  | 'ixos-pro-v2';
 
 export type SearchMode = 'flash' | 'pro' | 'auto';
+
+export type AskMode = 'off' | 'auto' | 'always';
 
 export interface SearchConfig {
   defaultLimit: number;
@@ -172,6 +181,7 @@ export interface SearchConfig {
   modelType: ModelType;
   proModelType: ModelType;
   searchMode: SearchMode;
+  askMode: AskMode;
   useStubModel: boolean;
   secureTiming: boolean;
   contextLines: number;
@@ -259,6 +269,8 @@ export interface TimeRange {
  */
 export interface CoOccurrence {
   fileId: string;
+  /** File path resolved from file_id - populated by backend for UI display */
+  filePath: string | null;
   count: number;
   lastSeen: number;
   avgGapMs: number;

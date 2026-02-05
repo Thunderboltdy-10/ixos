@@ -1,89 +1,156 @@
-import { useEffect, useMemo, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Check, MessageCircleQuestion } from 'lucide-react';
 import { useSearchStore } from '@/stores/searchStore';
 import { useLayoutStore } from '@/stores/layoutStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { cn } from '@/lib/utils';
+
+type StepState = 'pending' | 'active' | 'done';
+
+interface PipelineStep {
+  key: 'scan' | 'embed' | 'rank' | 'done';
+  label: string;
+  detail: string;
+  state: StepState;
+}
 
 function formatDuration(ms: number) {
   const seconds = Math.max(0, ms / 1000);
   return `${seconds.toFixed(1)}s`;
 }
 
-const STAGE_MESSAGES = {
-  priming: ['Preparing search...', 'Initializing...'],
-  enumerating: ['Exploring your files...', 'Scanning directories...'],
-  reading: ['Reading content...', 'Analyzing files...'],
-  embedding: ['Finding relationships...', 'Understanding context...'],
-  scoring: ['Ranking results...', 'Calculating relevance...'],
-  converging: ['Finalizing...', 'Almost there...'],
-} as const;
+function fileTail(path: string): string {
+  const normalized = path.replace(/\\/g, '/');
+  const parts = normalized.split('/').filter(Boolean);
+  return parts[parts.length - 1] ?? path;
+}
 
 export function SearchDeck() {
   const underlineRef = useRef<HTMLDivElement>(null);
-  const setDeckUnderlineBox = useLayoutStore((s) => s.setDeckUnderlineBox);
+  const setDeckUnderlineBox = useLayoutStore((state) => state.setDeckUnderlineBox);
 
-  // Store selectors
-  const phase = useSearchStore((s) => s.phase);
-  const streamStats = useSearchStore((s) => s.streamStats);
-  const streamStage = useSearchStore((s) => s.streamStage);
-  const statusFromStore = useSearchStore((s) => s.statusMessage);
-  const searchStartTime = useSearchStore((s) => s.searchStartTime);
-  const cacheMode = useSearchStore((s) => s.cacheMode);
-  const journalistMode = useSearchStore((s) => s.journalistMode);
-  const lexicalResults = useSearchStore((s) => s.lexicalResults);
-  const semanticResults = useSearchStore((s) => s.semanticResults);
-  const hasSearchIntent = useSearchStore((s) => s.hasSearchIntent);
-  const scanTrail = useSearchStore((s) => s.scanTrail);
-  const askModeOverride = useSearchStore((s) => s.askModeOverride);
-  const toggleAskModeOverride = useSearchStore((s) => s.toggleAskModeOverride);
+  const phase = useSearchStore((state) => state.phase);
+  const streamStats = useSearchStore((state) => state.streamStats);
+  const streamStage = useSearchStore((state) => state.streamStage);
+  const searchStartTime = useSearchStore((state) => state.searchStartTime);
+  const cacheMode = useSearchStore((state) => state.cacheMode);
+  const journalistMode = useSearchStore((state) => state.journalistMode);
+  const lexicalResults = useSearchStore((state) => state.lexicalResults);
+  const semanticResults = useSearchStore((state) => state.semanticResults);
+  const hasSearchIntent = useSearchStore((state) => state.hasSearchIntent);
+  const scanTrail = useSearchStore((state) => state.scanTrail);
+  const askModeOverride = useSearchStore((state) => state.askModeOverride);
+  const toggleAskModeOverride = useSearchStore((state) => state.toggleAskModeOverride);
+  const qualityMode = useSettingsStore((state) => state.config?.search.searchMode ?? 'auto');
 
-  // Toast state for Ask Mode shortcut
   const [showAskModeToast, setShowAskModeToast] = useState(false);
   const toastTimeoutRef = useRef<number | null>(null);
-
-  // Local state
   const [elapsedMs, setElapsedMs] = useState(0);
   const [finalElapsedMs, setFinalElapsedMs] = useState<number | null>(null);
   const [animatedProgress, setAnimatedProgress] = useState(0);
-  const [messageIndex, setMessageIndex] = useState(0);
   const [predictedProgress, setPredictedProgress] = useState(0);
 
-  // Derived state
   const isActive = phase === 'lexical' || phase === 'semantic' || phase === 'refining';
   const isComplete = phase === 'complete';
   const shouldShow = hasSearchIntent || isActive || isComplete;
   const resultCount = semanticResults.length > 0 ? semanticResults.length : lexicalResults.length;
-  const mode = journalistMode ? 'journalist' : cacheMode;
+  const hasResults = resultCount > 0;
+  const stats = streamStats ?? { filesScanned: 0, candidates: 0, embedded: 0, cacheHits: 0 };
 
-  const modePalette = {
-    jit: {
-      accent: 'var(--accent-amber)',
-      accentSoft: 'rgba(246, 185, 76, 0.2)',
-      accentStrong: 'rgba(246, 185, 76, 0.7)',
-    },
-    cache: {
-      accent: 'var(--accent-teal)',
-      accentSoft: 'rgba(20, 184, 166, 0.2)',
-      accentStrong: 'rgba(20, 184, 166, 0.7)',
-    },
-    journalist: {
-      accent: 'var(--accent-violet)',
-      accentSoft: 'rgba(124, 92, 255, 0.2)',
-      accentStrong: 'rgba(124, 92, 255, 0.7)',
-    },
-  } as const;
+  const averageSearchMs = useMemo(() => {
+    let base = qualityMode === 'flash' ? 9_000 : qualityMode === 'pro' ? 28_000 : 18_000;
+    if (journalistMode) base += 3_000;
+    if (cacheMode === 'cache') base = Math.max(6_000, base - 4_000);
+    return base;
+  }, [cacheMode, journalistMode, qualityMode]);
 
-  const activePalette = modePalette[mode];
+  const embedTarget = useMemo(() => {
+    const baseline = Math.max(stats.candidates, lexicalResults.length, semanticResults.length, 1);
+    return baseline;
+  }, [lexicalResults.length, semanticResults.length, stats.candidates]);
 
-  // Keyboard shortcut: Ctrl+Shift+A to toggle Ask Mode for this search
+  const stageIndex = useMemo(() => {
+    if (isComplete) return 3;
+    if (streamStage === 'tail' || phase === 'refining') return 2;
+    if (phase === 'semantic') {
+      if (semanticResults.length > 0) return 2;
+      return 1;
+    }
+    if (phase === 'lexical' || streamStage === 'lexical') return 0;
+    return hasSearchIntent ? 0 : -1;
+  }, [hasSearchIntent, isComplete, phase, semanticResults.length, streamStage]);
+
+  const progress = useMemo(() => {
+    if (isComplete) return 1;
+    if (!isActive && hasSearchIntent) return 0.05;
+
+    const scanProgress = 0.12 * (1 - Math.exp(-stats.filesScanned / 180));
+    const embedProgress = 0.38 * Math.min(1, stats.embedded / embedTarget);
+    const rankProgress = semanticResults.length > 0 ? 0.35 : 0;
+    const dataProgress = Math.min(0.92, 0.08 + scanProgress + embedProgress + rankProgress);
+
+    return Math.max(dataProgress, predictedProgress);
+  }, [embedTarget, hasSearchIntent, isActive, isComplete, predictedProgress, semanticResults.length, stats.embedded, stats.filesScanned]);
+
+  const statusMessage = useMemo(() => {
+    if (isComplete) {
+      return `Done ${resultCount} ${resultCount === 1 ? 'result' : 'results'} in ${formatDuration(finalElapsedMs ?? elapsedMs)}`;
+    }
+    if (!isActive && hasSearchIntent) return 'Starting search';
+    if (phase === 'lexical') return `Scanning ${stats.filesScanned} files`;
+    if (phase === 'semantic' && semanticResults.length === 0) {
+      return `Embedding ${stats.embedded}/${embedTarget}`;
+    }
+    if (phase === 'semantic' || phase === 'refining' || streamStage === 'tail') {
+      return `Ranking ${Math.max(resultCount, semanticResults.length)} results`;
+    }
+    return 'Preparing search';
+  }, [embedTarget, elapsedMs, finalElapsedMs, hasSearchIntent, isActive, isComplete, phase, resultCount, semanticResults.length, stats.embedded, stats.filesScanned, streamStage]);
+
+  const trailLabel = useMemo(() => {
+    if (scanTrail.length === 0) return '';
+    return scanTrail.slice(-4).map(fileTail).join(' • ');
+  }, [scanTrail]);
+
+  const pipelineSteps = useMemo<PipelineStep[]>(() => {
+    const doneDetail = isComplete
+      ? `${resultCount} ${resultCount === 1 ? 'result' : 'results'} • ${formatDuration(finalElapsedMs ?? elapsedMs)}`
+      : 'Awaiting final ranking';
+
+    return [
+      {
+        key: 'scan',
+        label: 'Scan',
+        detail: `${stats.filesScanned} files`,
+        state: stageIndex > 0 || isComplete ? 'done' : stageIndex === 0 ? 'active' : 'pending',
+      },
+      {
+        key: 'embed',
+        label: 'Embed',
+        detail: `${stats.embedded}/${embedTarget}`,
+        state: stageIndex > 1 || isComplete ? 'done' : stageIndex === 1 ? 'active' : 'pending',
+      },
+      {
+        key: 'rank',
+        label: 'Rank',
+        detail: `${Math.max(resultCount, semanticResults.length)} candidates`,
+        state: stageIndex > 2 || isComplete ? 'done' : stageIndex === 2 ? 'active' : 'pending',
+      },
+      {
+        key: 'done',
+        label: 'Done',
+        detail: doneDetail,
+        state: isComplete ? 'done' : stageIndex === 3 ? 'active' : 'pending',
+      },
+    ];
+  }, [elapsedMs, embedTarget, finalElapsedMs, isComplete, resultCount, semanticResults.length, stageIndex, stats.embedded, stats.filesScanned]);
+
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
-        e.preventDefault();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'a') {
+        event.preventDefault();
         toggleAskModeOverride();
-
-        // Show toast notification
         setShowAskModeToast(true);
         if (toastTimeoutRef.current) {
           window.clearTimeout(toastTimeoutRef.current);
@@ -103,174 +170,79 @@ export function SearchDeck() {
     };
   }, [toggleAskModeOverride]);
 
-  // Rotate messages occasionally
-  useEffect(() => {
-    if (!isActive) {
-      setMessageIndex(0);
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setMessageIndex(prev => (prev + 1) % 2);
-    }, 2500);
-
-    return () => clearInterval(interval);
-  }, [isActive]);
-
-  // Progress calculation - combines real data with time-based prediction
-  const progress = useMemo(() => {
-    if (isComplete) return 1;
-    if (!isActive && hasSearchIntent) return 0.05;
-    const stats = streamStats ?? { filesScanned: 0, candidates: 0, embedded: 0, cacheHits: 0 };
-
-    // Real data-based progress
-    let dataProgress = 0.05;
-    if (phase === 'semantic' || phase === 'refining') {
-      if (stats.embedded > 0) {
-        dataProgress = 0.4 + (0.55 * (1 - Math.exp(-stats.embedded / 50)));
-      } else {
-        dataProgress = 0.4;
-      }
-    } else if (phase === 'lexical') {
-      if (stats.filesScanned > 0) {
-        dataProgress = 0.1 + (0.3 * (1 - Math.exp(-stats.filesScanned / 200)));
-      } else {
-        dataProgress = 0.1;
-      }
-    }
-
-    // Use whichever is higher: real data or time-based prediction
-    return Math.max(dataProgress, predictedProgress);
-  }, [isComplete, isActive, hasSearchIntent, streamStats, phase, predictedProgress]);
-
-  // Time-based progress prediction (ensures bar always moves)
   useEffect(() => {
     if (!shouldShow || isComplete) {
       setPredictedProgress(0);
       return;
     }
 
-    // Predict progress based on elapsed time (assume ~15s average search)
-    const avgSearchTime = 15000; // 15 seconds
-    const updateInterval = setInterval(() => {
+    const intervalId = window.setInterval(() => {
       const elapsed = searchStartTime ? Date.now() - searchStartTime : 0;
-      // Asymptotic curve: approaches 0.9 but never reaches it
-      const timePrediction = 0.9 * (1 - Math.exp(-elapsed / (avgSearchTime * 0.6)));
-      setPredictedProgress(timePrediction);
+      const prediction = 0.9 * (1 - Math.exp(-elapsed / (averageSearchMs * 0.65)));
+      setPredictedProgress(prediction);
     }, 100);
 
-    return () => clearInterval(updateInterval);
-  }, [shouldShow, isComplete, searchStartTime]);
+    return () => window.clearInterval(intervalId);
+  }, [averageSearchMs, isComplete, searchStartTime, shouldShow]);
 
-  // Smoothly animate progress
   useEffect(() => {
     if (isComplete) {
       setAnimatedProgress(1);
-    } else if (!shouldShow) {
-      setAnimatedProgress(0);
-    } else {
-      // Only animate forward, never backward (except reset)
-      setAnimatedProgress(prev => Math.max(prev, progress));
+      return;
     }
-  }, [progress, isComplete, shouldShow]);
+    if (!shouldShow) {
+      setAnimatedProgress(0);
+      return;
+    }
+    setAnimatedProgress((previous) => Math.max(previous, progress));
+  }, [isComplete, progress, shouldShow]);
 
-  // Measure underline position
+  useEffect(() => {
+    if ((hasResults || isComplete) && finalElapsedMs === null && searchStartTime) {
+      setFinalElapsedMs(Date.now() - searchStartTime);
+    }
+    if (!isComplete && !isActive && !hasSearchIntent) {
+      setFinalElapsedMs(null);
+    }
+  }, [finalElapsedMs, hasResults, hasSearchIntent, isActive, isComplete, searchStartTime]);
+
+  useEffect(() => {
+    if (!shouldShow || !searchStartTime || isComplete || hasResults) return;
+    setElapsedMs(Date.now() - searchStartTime);
+    const timer = window.setInterval(() => {
+      setElapsedMs(Date.now() - searchStartTime);
+    }, 100);
+    return () => window.clearInterval(timer);
+  }, [hasResults, isComplete, searchStartTime, shouldShow]);
+
   useEffect(() => {
     if (!underlineRef.current) return;
-
     const measure = () => {
       const rect = underlineRef.current?.getBoundingClientRect();
-      if (rect) {
-        setDeckUnderlineBox({
-          x: rect.left + rect.width / 2,
-          y: rect.top + rect.height / 2,
-          width: rect.width,
-          height: rect.height,
-          top: rect.top,
-          left: rect.left,
-        });
-      }
+      if (!rect) return;
+      setDeckUnderlineBox({
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+        width: rect.width,
+        height: rect.height,
+        top: rect.top,
+        left: rect.left,
+      });
     };
 
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(underlineRef.current);
-
     return () => observer.disconnect();
   }, [setDeckUnderlineBox]);
 
-  // Determine if we have results (timer should freeze when first results arrive)
-  const hasResults = semanticResults.length > 0 || lexicalResults.length > 0;
-
-  // Freeze elapsed time when first results arrive (not just on completion)
-  useEffect(() => {
-    // Freeze timer when results arrive OR when complete
-    if ((hasResults || isComplete) && finalElapsedMs === null && searchStartTime) {
-      setFinalElapsedMs(Date.now() - searchStartTime);
-    }
-    // Reset for next search
-    if (!isComplete && !isActive && !hasSearchIntent) {
-      setFinalElapsedMs(null);
-    }
-  }, [isComplete, isActive, hasSearchIntent, searchStartTime, finalElapsedMs, hasResults]);
-
-  // Elapsed time tracking (stop when results arrive or complete)
-  useEffect(() => {
-    if (!shouldShow || !searchStartTime || isComplete || hasResults) return;
-
-    setElapsedMs(Date.now() - searchStartTime);
-    const timer = window.setInterval(() => {
-      setElapsedMs(Date.now() - searchStartTime);
-    }, 100);
-
-    return () => window.clearInterval(timer);
-  }, [shouldShow, searchStartTime, isComplete, hasResults]);
-
-  // Use frozen time for complete state
-  const displayElapsedMs = finalElapsedMs ?? elapsedMs;
-
-  // Status message
-  const statusMessage = useMemo(() => {
-    if (statusFromStore) return statusFromStore;
-    if (isComplete) return 'Search complete';
-    if (!isActive && hasSearchIntent) return 'Starting search...';
-
-    // Use predefined stage messages
-    let stageKey: keyof typeof STAGE_MESSAGES = 'priming';
-    const stats = streamStats ?? { filesScanned: 0, candidates: 0, embedded: 0 };
-
-    if (streamStage === 'tail') stageKey = 'converging';
-    else if (streamStage === 'semantic') {
-      if (stats.embedded > 0) stageKey = 'scoring';
-      else stageKey = 'embedding';
-    }
-    else if (stats.filesScanned > 10) stageKey = 'reading';
-    else if (stats.filesScanned > 0) stageKey = 'enumerating';
-
-    const messages = STAGE_MESSAGES[stageKey];
-    return messages[messageIndex % messages.length];
-
-  }, [isActive, isComplete, hasSearchIntent, streamStats, statusFromStore, streamStage, messageIndex]);
-
-  // Mode badge text
-  const modeBadge = useMemo(() => {
-    if (journalistMode) return 'Secure';
-    return cacheMode === 'cache' ? 'Cache' : 'JIT';
-  }, [journalistMode, cacheMode]);
-
-  const streamStatsSafe = streamStats ?? { filesScanned: 0, candidates: 0, embedded: 0, cacheHits: 0 };
-  const stageLabel = streamStage
-    ? streamStage.charAt(0).toUpperCase() + streamStage.slice(1)
-    : 'Boot';
-  const trailLabel = scanTrail.length > 0
-    ? scanTrail.slice(-3).map((item) => item.split(/[/\\\\]/).pop() || item).join(' - ')
-    : '';
-
   if (!shouldShow) return null;
+
+  const displayElapsedMs = finalElapsedMs ?? elapsedMs;
+  const modeBadge = journalistMode ? 'Secure' : cacheMode === 'cache' ? 'Cache' : 'JIT';
 
   return (
     <>
-      {/* Ask Mode Toggle Toast */}
       <AnimatePresence>
         {showAskModeToast && (
           <motion.div
@@ -278,18 +250,18 @@ export function SearchDeck() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-lg bg-graphite-2 border border-accent-violet/30 shadow-xl backdrop-blur-md flex items-center gap-3"
+            className="fixed left-1/2 top-4 z-50 flex -translate-x-1/2 items-center gap-3 rounded-lg border border-accent-violet/30 bg-graphite-2 px-4 py-3 shadow-xl backdrop-blur-md"
           >
-            <MessageCircleQuestion className="w-5 h-5 text-accent-violet" />
+            <MessageCircleQuestion className="h-5 w-5 text-accent-violet" />
             <div>
               <span className="text-sm font-medium text-porcelain">
-                Ask Mode: {askModeOverride === 'always' ? 'ON' : 'OFF'}
+                Ask Mode: {askModeOverride === 'always' ? 'On' : 'Off'}
               </span>
-              <span className="text-xs text-fg-dim ml-2">
+              <span className="ml-2 text-xs text-fg-dim">
                 {askModeOverride === 'always' ? 'for this search' : 'using settings'}
               </span>
             </div>
-            <span className="text-2xs text-fg-ghost px-1.5 py-0.5 rounded bg-graphite-3">
+            <span className="rounded bg-graphite-3 px-1.5 py-0.5 text-2xs text-fg-ghost">
               Ctrl+Shift+A
             </span>
           </motion.div>
@@ -301,125 +273,82 @@ export function SearchDeck() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -4 }}
         transition={{ duration: 0.2 }}
-        className="w-full mt-4 rounded-lg overflow-hidden bg-graphite-1 border border-stroke-hairline"
+        className="mt-4 w-full overflow-hidden rounded-lg border border-stroke-hairline bg-graphite-1"
       >
-        {/* Status bar */}
-        <div className="px-4 py-3 flex items-center gap-3">
-          {/* Status icon - only show check when complete */}
-          {isComplete && (
-            <Check className="w-4 h-4 text-success flex-shrink-0" />
-          )}
-
-          {/* Status message with shimmer animation during search */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={statusMessage}
-              initial={{ opacity: 0, y: 2 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -2 }}
-              transition={{ duration: 0.2 }}
-              className="flex-1 truncate"
-            >
-              {isSearching() ? (
-                <span
-                  className="text-sm uppercase tracking-[0.15em] font-semibold bg-clip-text text-transparent animate-shimmer-slow bg-[length:200%_100%]"
-                  style={{
-                    WebkitBackgroundClip: 'text',
-                    backgroundImage: `linear-gradient(90deg, rgba(243,245,247,0.8) 0%, rgba(243,245,247,0.8) 20%, ${activePalette.accent} 45%, ${activePalette.accent} 55%, rgba(243,245,247,0.8) 80%, rgba(243,245,247,0.8) 100%)`
-                  }}
-                >
-                  {statusMessage}
-                </span>
-              ) : (
-                <span className="text-sm text-fg-muted">{statusMessage}</span>
-              )}
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Metrics */}
-          <div className="flex items-center gap-3 text-xs text-fg-dim font-mono">
-            {resultCount > 0 && (
-              <span className="tabular-nums">{resultCount} results</span>
-            )}
-            {displayElapsedMs > 0 && (
-              <span className="tabular-nums">{formatDuration(displayElapsedMs)}</span>
-            )}
+        <div className="px-4 pb-2 pt-3">
+          <div className="flex items-center gap-3">
             <span className={cn(
-              "px-1.5 py-0.5 rounded text-2xs uppercase tracking-wider",
-              mode === 'jit'
-                ? "text-accent-amber"
-                : mode === 'cache'
-                  ? "text-accent-teal"
-                  : "text-accent-violet"
-            )}>
-              {modeBadge}
-            </span>
+              'h-2.5 w-2.5 rounded-full',
+              isComplete ? 'bg-success' : 'bg-accent-teal animate-pulse'
+            )} />
+            <span className="flex-1 truncate text-sm font-medium text-fg-muted">{statusMessage}</span>
+            <div className="flex items-center gap-3 text-xs font-mono text-fg-dim">
+              {resultCount > 0 && <span className="tabular-nums">{resultCount} results</span>}
+              {displayElapsedMs > 0 && <span className="tabular-nums">{formatDuration(displayElapsedMs)}</span>}
+              <span className="rounded px-1.5 py-0.5 text-2xs text-fg-muted bg-graphite-2">{modeBadge}</span>
+            </div>
           </div>
+
+          {trailLabel && (
+            <motion.div
+              key={trailLabel}
+              initial={{ opacity: 0, y: 3 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.18 }}
+              className="mt-1 truncate text-xs text-fg-dim"
+            >
+              Scanning: {trailLabel}
+            </motion.div>
+          )}
         </div>
 
-        {/* Live stats - only show when we have meaningful data */}
-        {(streamStatsSafe.filesScanned > 0 || streamStatsSafe.embedded > 0 || trailLabel) && (
-          <div className="px-4 pb-3 -mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-fg-dim font-mono">
-            <span className="uppercase tracking-[0.2em] text-fg-ghost">Live</span>
-            <span>{stageLabel}</span>
-            {streamStatsSafe.filesScanned > 0 && (
-              <span className="tabular-nums">{streamStatsSafe.filesScanned} scanned</span>
-            )}
-            {streamStatsSafe.embedded > 0 && (
-              <span className="tabular-nums">{streamStatsSafe.embedded} embedded</span>
-            )}
-            {streamStatsSafe.cacheHits > 0 && (
-              <span className="tabular-nums">{streamStatsSafe.cacheHits} cache hits</span>
-            )}
-            {trailLabel && (
-              <span className="text-fg-ghost truncate max-w-[40%]">Last: {trailLabel}</span>
-            )}
-          </div>
-        )}
+        <div className="grid grid-cols-1 gap-2 px-4 pb-3 md:grid-cols-4">
+          {pipelineSteps.map((step) => (
+            <div
+              key={step.key}
+              className={cn(
+                'rounded-md border px-3 py-2 transition-colors',
+                step.state === 'active'
+                  ? 'border-accent-teal/40 bg-accent-teal/10'
+                  : step.state === 'done'
+                    ? 'border-white/10 bg-graphite-2/60'
+                    : 'border-white/5 bg-graphite-2/35'
+              )}
+            >
+              <div className="flex items-center gap-2 text-xs">
+                {step.state === 'done' ? (
+                  <Check className="h-3.5 w-3.5 text-success" />
+                ) : (
+                  <span className={cn(
+                    'h-2.5 w-2.5 rounded-full border',
+                    step.state === 'active'
+                      ? 'border-accent-teal bg-accent-teal animate-pulse'
+                      : 'border-fg-ghost/40 bg-transparent'
+                  )} />
+                )}
+                <span className={cn(
+                  'font-medium',
+                  step.state === 'active' ? 'text-accent-teal' : 'text-fg-muted'
+                )}>
+                  {step.label}
+                </span>
+              </div>
+              <div className="mt-1 truncate text-2xs text-fg-dim">{step.detail}</div>
+            </div>
+          ))}
+        </div>
 
-        {/* Progress underline */}
-        <div
-          ref={underlineRef}
-          className="relative h-[3px] w-full overflow-hidden bg-graphite-3"
-        >
-          {/* Background track */}
+        <div ref={underlineRef} className="relative h-[3px] w-full overflow-hidden bg-graphite-3">
           <div className="absolute inset-0 bg-graphite-2" />
-
-          {/* Progress fill - solid accent bar with flowing light */}
           <motion.div
-            className="absolute top-0 left-0 h-full overflow-hidden"
-            style={{
-              backgroundColor: isComplete ? 'var(--accent-success)' : activePalette.accent,
-            }}
+            className="absolute left-0 top-0 h-full overflow-hidden"
+            style={{ backgroundColor: isComplete ? 'var(--accent-success)' : 'var(--accent-teal)' }}
             initial={{ width: 0 }}
             animate={{ width: `${animatedProgress * 100}%` }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {/* Flowing light indicator within the filled portion */}
-            {isSearching() && animatedProgress > 0.05 && (
-              <motion.div
-                className="absolute inset-y-0 w-12"
-                style={{
-                  background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 30%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.4) 70%, transparent 100%)`,
-                }}
-                animate={{
-                  left: ['-10%', '110%'],
-                }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: 'linear',
-                  repeatDelay: 0
-                }}
-              />
-            )}
-          </motion.div>
+          />
         </div>
       </motion.div>
     </>
   );
-
-  function isSearching() {
-    return isActive || (hasSearchIntent && !isComplete);
-  }
 }

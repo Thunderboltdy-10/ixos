@@ -43,7 +43,7 @@ export function ResumeSection({
     >
       {/* Section header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-fg-muted uppercase tracking-wider flex items-center gap-2">
+        <h2 className="text-sm font-semibold text-fg-muted flex items-center gap-2">
           <Play className="w-4 h-4 text-accent-teal" />
           Resume
         </h2>
@@ -110,7 +110,7 @@ export function ResumeSection({
         {/* Top files quick access */}
         {topFiles.length > 0 && (
           <div className="space-y-1">
-            <p className="text-2xs text-fg-ghost uppercase tracking-wider mb-2">Quick Access</p>
+            <p className="mb-2 text-2xs text-fg-ghost">Quick access</p>
             {topFiles.slice(0, 5).map((file) => {
               const filename = file.path.split(/[/\\]/).pop() || file.path;
               return (

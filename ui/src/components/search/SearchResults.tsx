@@ -68,10 +68,16 @@ export function SearchResults({
   phase,
   showStar = true,
 }: SearchResultsProps) {
-  const isSemanticPhase = phase === 'semantic' || phase === 'complete';
   const starred = useStarredStore();
   const searchStore = useSearchStore();
   const displayResults = useStabilizedResults(results, phase);
+  const firstResult = displayResults[0] as RankedResult | LexicalResult | undefined;
+  const hasSemanticResults = !!firstResult && 'scoreBreakdown' in firstResult;
+  const isSemanticPhase = hasSemanticResults && (phase === 'semantic' || phase === 'refining' || phase === 'complete');
+  const isLexicalFallbackDuringRefine =
+    !hasSemanticResults &&
+    (phase === 'semantic' || phase === 'refining') &&
+    displayResults.length > 0;
   useClearLayoutOnChange([displayResults.length]);
 
   // Check if current search is starred
@@ -117,16 +123,19 @@ export function SearchResults({
     <div>
       <div className="flex items-center justify-between py-4 px-1 border-b border-stroke-hairline/70 mb-2">
         <div>
-          <span className="text-xs uppercase tracking-[0.2em] text-fg-dim">Results</span>
+          <span className="text-xs text-fg-dim">Results</span>
           <div className="text-sm text-porcelain mt-1 flex items-center gap-2">
             <span>
               {displayResults.length} {displayResults.length === 1 ? 'result' : 'results'}
             </span>
-            {isSemanticPhase && <span className="text-accent-teal text-xs uppercase tracking-[0.2em]">Semantic</span>}
+            {isSemanticPhase && <span className="text-accent-teal text-xs">Semantic ranking</span>}
+            {isLexicalFallbackDuringRefine && (
+              <span className="text-accent-amber text-xs">Quick results - ranking...</span>
+            )}
             {isAskMode && isSemanticPhase && (
               <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-accent-violet/10 border border-accent-violet/30 shadow-[0_0_10px_rgba(167,139,250,0.15)] animate-pulse-subtle">
                 <MessageCircleQuestion className="w-3.5 h-3.5 text-accent-violet" />
-                <span className="text-[10px] font-bold text-accent-violet uppercase tracking-wider">Ask Mode Active</span>
+                <span className="text-[10px] font-bold text-accent-violet">Ask Mode active</span>
               </span>
             )}
           </div>
@@ -137,7 +146,7 @@ export function SearchResults({
             onClick={handleStarClick}
             disabled={!canStar}
             className={cn(
-              'flex items-center gap-2 px-3 py-2 rounded-md text-xs uppercase tracking-[0.18em]',
+              'flex items-center gap-2 px-3 py-2 rounded-md text-xs',
               'transition-all duration-150 border',
               isStarred
                 ? 'text-accent-amber bg-accent-amber/10 border-accent-amber/30'

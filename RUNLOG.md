@@ -121,3 +121,37 @@
   - synthetic_ambiguity_v1: MRR@10 0.9833, Recall@10 1.00, latency 131.83 ms/1k
 - Decision: KEEP
 - Next: Update docs + canonical results + fusion weights
+## Entry 010 - Rescue UI/perf pass + Auto startup latency fix
+- Date/Time: 2026-02-05
+- Branch/Commit: (working tree)
+- Goal: Execute rescue plan across UI + search pipeline, verify builds/tests, and remove Auto mode large-repo startup penalty.
+- Commands run:
+  - cargo test
+  - cargo build --release
+  - npm run build (ui)
+  - npm run build (ixos-site)
+  - target/release/ixos-bench.exe --dir dataset --runs 5 --cache-mode jit --model ixos-flash-v2 --out reports/v2_bench_flash_dataset_2026-02-05.md
+  - target/release/ixos-bench.exe --dir dataset --runs 5 --cache-mode jit --model potion --out reports/v2_bench_potion_dataset_2026-02-05.md
+  - target/release/ixos-bench.exe --dir dataset --runs 5 --cache-mode jit --model ixos-pro-v1 --out reports/v2_bench_prov1_dataset_2026-02-05.md
+  - target/release/ixos-profile.exe --dir . --runs 2 --cache-mode jit --model ixos-flash-v2 --out reports/v2_profile_flash_repo_2026-02-05.json --slow-threshold-ms 20000 --slow-out reports/v2_profile_flash_slow_repo_2026-02-05.json
+  - target/release/ixos-profile.exe --dir . --runs 2 --cache-mode jit --model potion --out reports/v2_profile_potion_repo_2026-02-05.json --slow-threshold-ms 20000 --slow-out reports/v2_profile_potion_slow_repo_2026-02-05.json
+  - Repo latency sweeps using `target/release/ixos.exe search ... --dir . --cache-mode jit --format json --limit 1` (flash/pro/auto; pre and post fixes)
+- Outputs saved to:
+  - reports/v2_repo_latency_summary_2026-02-05_213420.json
+  - reports/v2_repo_latency_after_auto_gate_v2_summary_2026-02-05_220605.json
+  - reports/v2_repo_latency_after_auto_index_fix_summary_2026-02-05_221919.json
+  - reports/v2_repo_latency_after_auto_index_fix_raw_2026-02-05_221919.csv
+  - reports/v2_bench_flash_dataset_2026-02-05.{md,json}
+  - reports/v2_bench_potion_dataset_2026-02-05.{md,json}
+  - reports/v2_bench_prov1_dataset_2026-02-05.{md,json}
+  - reports/v2_profile_flash_repo_2026-02-05.json
+  - reports/v2_profile_potion_repo_2026-02-05.json
+  - reports/v2_rescue_search_pass_2026-02-05.md
+- Key results:
+  - Repo-scale E2E before fix: Flash 17153.32 ms avg, Auto 33289.55 ms avg, Pro 32985.66 ms avg.
+  - Root cause found: Auto eagerly indexed pro engine in CLI startup path, paying near-Pro startup cost before search timing.
+  - Repo-scale E2E after fix: Flash 16838.65 ms avg, Auto 15754.25 ms avg.
+  - Auto improvement: -52.68% avg latency on large repo.
+  - cargo test fully green (451 passed + docs).
+- Decision: KEEP
+- Next: Run targeted quality A/B for tightened Auto refinement gate and implement non-blocking evidence completion path for CLI/UI parity.

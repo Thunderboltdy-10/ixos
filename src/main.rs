@@ -391,8 +391,17 @@ async fn handle_search(
         tracing::warn!("Failed to index for semantic search: {}", e);
     }
     if let Some(engine) = pro_engine.as_mut() {
-        if let Err(e) = engine.index_directory(&search_dir).await {
-            tracing::warn!("Failed to index for pro search: {}", e);
+        // Auto mode reranks top-K lexical candidates and does not require a full
+        // pro index upfront. Eager indexing here made Auto pay near-Pro startup cost.
+        if matches!(
+            resolved_search_mode,
+            ixos_protocol::ixos_rank::progressive::SearchMode::Pro
+        ) {
+            if let Err(e) = engine.index_directory(&search_dir).await {
+                tracing::warn!("Failed to index for pro search: {}", e);
+            }
+        } else {
+            tracing::debug!("Skipping eager pro index in Auto mode");
         }
     }
 

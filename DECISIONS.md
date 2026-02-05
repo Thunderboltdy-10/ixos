@@ -84,3 +84,23 @@
 - Evidence (links to /reports or output files): models/lab/results_v2_fusion_flashv2_2026-02-03.json, models/ixos-pro-v2/pro_v2.json
 - Risks: Minor behavior shift vs legacy weights
 - Follow-ups: Monitor Auto routing thresholds if quality shifts
+- Decision: Skip eager Pro index initialization in CLI Auto mode
+- Options considered: Keep indexing both engines in Auto; index Pro lazily only when refinement triggered; disable Pro refinement entirely in Auto
+- Why chosen: Auto refinement reranks top-K lexical candidates and does not require a full Pro index upfront; eager indexing made Auto as slow as Pro on large repos
+- Evidence (links to /reports or output files): src/main.rs, reports/v2_repo_latency_summary_2026-02-05_213420.json, reports/v2_repo_latency_after_auto_index_fix_summary_2026-02-05_221919.json, reports/v2_rescue_search_pass_2026-02-05.md
+- Risks: If future Auto path needs Pro pure search with empty lexical candidates, lazy/no index path may underperform for that edge case
+- Follow-ups: Add conditional lazy Pro indexing only when an Auto path actually requires Pro pure search
+
+- Decision: Tighten Auto refinement gate and cap refinement timeout at 2.5s
+- Options considered: Always refine Auto; keep existing OR-based heuristic; disable refinement for short queries entirely
+- Why chosen: Existing heuristic over-triggered refinement on short queries and hurt perceived latency; multi-signal gating preserves refinement for low-confidence cases while reducing unnecessary Pro work
+- Evidence (links to /reports or output files): src/ixos_rank/progressive.rs, reports/v2_repo_latency_after_auto_gate_v2_summary_2026-02-05_220605.json, reports/v2_repo_latency_after_auto_index_fix_summary_2026-02-05_221919.json
+- Risks: Possible quality loss for ambiguous short queries where refinement is now skipped
+- Follow-ups: Run relevance A/B on real user query logs and retune thresholds if recall drops
+
+- Decision: Clamp lexical match ratio to [0,1]
+- Options considered: Keep unbounded ratio values; rescale thresholds only in Auto heuristic
+- Why chosen: Ratio values above 1.0 break the intended semantics of matched_terms/total_terms and distort downstream gating/fusion
+- Evidence (links to /reports or output files): src/ixos_rank/types.rs, src/ixos_rank/progressive.rs
+- Risks: Small score distribution shift in components that previously relied on over-1 ratios
+- Follow-ups: Verify fusion relevance on canonical eval suite after clamp

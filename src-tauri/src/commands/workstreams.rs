@@ -235,6 +235,7 @@ pub fn recluster_workstreams(
     if !manager.capabilities().has(Capability::TodayTab) {
         return Err("Pro capability required for workstreams".into());
     }
+    drop(manager);
 
     // Get all events from activity ledger
     let ledger = activity_state.ledger.lock();
@@ -244,8 +245,25 @@ pub fn recluster_workstreams(
     // Recluster
     let mut ws_manager = workstreams_state.manager.lock();
     ws_manager.recluster(&events, gap_threshold_mins.unwrap_or(30));
+    let count = ws_manager.count();
 
-    Ok(ws_manager.count())
+    // Persist automatically after recluster when persistence is enabled.
+    if workstreams_state.is_persistence_enabled() {
+        let workstreams = ws_manager.export();
+        let storage_data = WorkstreamStorageData::new(workstreams);
+        let json = serde_json::to_string(&storage_data).map_err(|e| e.to_string())?;
+        let storage_path = app_state.app_data_dir.join("workstreams_v1.json");
+        std::fs::write(&storage_path, json)
+            .map_err(|e| format!("Failed to save workstreams: {}", e))?;
+        ws_manager.mark_saved();
+        tracing::info!(
+            "Auto-saved {} workstreams after recluster to {:?}",
+            count,
+            storage_path
+        );
+    }
+
+    Ok(count)
 }
 
 /// Pin or unpin a workstream
@@ -330,7 +348,8 @@ pub async fn save_workstreams(
     let storage_path = app_data.join("workstreams_v1.json");
 
     // Write to file (Note: In production, this should use encrypted storage)
-    std::fs::write(&storage_path, json).map_err(|e| format!("Failed to save workstreams: {}", e))?;
+    std::fs::write(&storage_path, json)
+        .map_err(|e| format!("Failed to save workstreams: {}", e))?;
 
     tracing::info!(
         "Workstreams saved ({} workstreams) to {:?}",
@@ -364,23 +383,21 @@ pub async fn load_workstreams(
     // Try to load existing workstreams
     if storage_path.exists() {
         match std::fs::read_to_string(&storage_path) {
-            Ok(json) => {
-                match serde_json::from_str::<WorkstreamStorageData>(&json) {
-                    Ok(storage_data) => {
-                        let workstreams = storage_data.into_workstreams();
-                        let count = workstreams.len();
+            Ok(json) => match serde_json::from_str::<WorkstreamStorageData>(&json) {
+                Ok(storage_data) => {
+                    let workstreams = storage_data.into_workstreams();
+                    let count = workstreams.len();
 
-                        let mut ws_manager = workstreams_state.manager.lock();
-                        *ws_manager = WorkstreamManager::from_workstreams(workstreams);
-                        ws_manager.mark_saved();
+                    let mut ws_manager = workstreams_state.manager.lock();
+                    *ws_manager = WorkstreamManager::from_workstreams(workstreams);
+                    ws_manager.mark_saved();
 
-                        tracing::info!("Loaded {} workstreams from {:?}", count, storage_path);
-                    }
-                    Err(e) => {
-                        tracing::warn!("Failed to parse workstreams file: {}", e);
-                    }
+                    tracing::info!("Loaded {} workstreams from {:?}", count, storage_path);
                 }
-            }
+                Err(e) => {
+                    tracing::warn!("Failed to parse workstreams file: {}", e);
+                }
+            },
             Err(e) => {
                 tracing::warn!("Failed to read workstreams file: {}", e);
             }

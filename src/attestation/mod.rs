@@ -31,7 +31,7 @@
 //! assert!(service.verify_attestation(&attestation));
 //!
 //! // Export for eDiscovery
-//! let json = AttestationService::export_attestation(&attestation);
+//! let json = AttestationService::export_attestation(&attestation).unwrap();
 //! println!("{}", json);
 //! ```
 

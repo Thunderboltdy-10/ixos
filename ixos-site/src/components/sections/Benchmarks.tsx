@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -50,7 +50,7 @@ export function Benchmarks() {
 
     return (
         <div ref={containerRef} className="relative">
-            <SectionDivider accent="violet" label="SYSTEM_METRICS" />
+            <SectionDivider accent="violet" label="System metrics" />
 
             <div className="py-24 container mx-auto px-6">
                 <div className="max-w-6xl mx-auto">
@@ -63,8 +63,8 @@ export function Benchmarks() {
                             </h2>
                         </div>
                         <div className="md:col-span-7 pb-2 border-b border-white/10 flex justify-between items-end">
-                            <span className="font-mono text-xs text-accent-violet">BENCHMARK_v1.0</span>
-                            <span className="font-mono text-xs text-fg-muted opacity-50">1,036 files • 2.46 MB corpus</span>
+                            <span className="font-mono text-xs text-accent-violet">Benchmark v1.0</span>
+                            <span className="font-mono text-xs text-fg-muted opacity-50">1,036 files - 2.46 MB corpus</span>
                         </div>
                     </div>
 
@@ -298,3 +298,4 @@ function CountUp({ end, suffix = '', duration = 800, isVisible }: { end: number,
     }, [end, duration, isVisible]);
     return <>{count}{suffix}</>;
 }
+

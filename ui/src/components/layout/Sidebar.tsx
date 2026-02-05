@@ -357,7 +357,7 @@ export function Sidebar({
             <button
               type="button"
               onClick={() => onOpenSettings?.('account')}
-              className="py-1.5 px-2 rounded-md text-2xs uppercase tracking-[0.18em] bg-graphite-2 text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors"
+              className="py-1.5 px-2 rounded-md text-2xs bg-graphite-2 text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors"
             >
               Account
             </button>
@@ -365,7 +365,7 @@ export function Sidebar({
               <button
                 type="button"
                 onClick={handleManageBilling}
-                className="py-1.5 px-2 rounded-md text-2xs uppercase tracking-[0.18em] bg-accent-teal/15 text-accent-teal hover:bg-accent-teal/25 transition-colors"
+                className="py-1.5 px-2 rounded-md text-2xs bg-accent-teal/15 text-accent-teal hover:bg-accent-teal/25 transition-colors"
               >
                 Billing
               </button>
@@ -373,7 +373,7 @@ export function Sidebar({
               <button
                 type="button"
                 onClick={handleManageBilling}
-                className="py-1.5 px-2 rounded-md text-2xs uppercase tracking-[0.18em] bg-accent-magenta/20 text-accent-magenta hover:bg-accent-magenta/30 transition-colors"
+                className="py-1.5 px-2 rounded-md text-2xs bg-accent-magenta/20 text-accent-magenta hover:bg-accent-magenta/30 transition-colors"
               >
                 Upgrade
               </button>
@@ -381,7 +381,7 @@ export function Sidebar({
             <button
               type="button"
               onClick={() => signOut()}
-              className="col-span-2 py-1.5 px-2 rounded-md text-2xs uppercase tracking-[0.18em] bg-graphite-2 text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors"
+              className="col-span-2 py-1.5 px-2 rounded-md text-2xs bg-graphite-2 text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors"
             >
               Sign Out
             </button>
@@ -541,7 +541,7 @@ function NavItem({ icon: Icon, label, isActive, onClick, isPro, isLocked, onLock
         isLocked ? (
           <Lock className="w-3 h-3 text-fg-ghost" />
         ) : (
-          <span className="text-2xs text-accent-teal uppercase tracking-wider">Pro</span>
+          <span className="text-2xs text-accent-teal">Pro</span>
         )
       )}
     </button>

@@ -325,23 +325,42 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       case 'status':
         set((state) => ({
           statusMessage: event.message,
-          phase: event.message.toLowerCase().includes('refining') ? 'refining' : state.phase,
+          phase: (() => {
+            const lowered = event.message.toLowerCase();
+            if (lowered.includes('refining')) return 'refining';
+            if (lowered.includes('understanding') || lowered.includes('collecting evidence')) {
+              return state.semanticResults.length > 0 ? state.phase : 'semantic';
+            }
+            return state.phase;
+          })(),
         }));
         break;
 
       case 'semanticResults': {
-        const currentCount = get().semanticResults.length;
+        const state = get();
+        const previousSelectedPath =
+          state.semanticResults[state.selectedIndex]?.path ??
+          state.lexicalResults[state.selectedIndex]?.path ??
+          null;
+        const currentCount = state.semanticResults.length;
         const newCount = event.results.length;
         // Queue spark targets for new results
         const newTargets = Array.from(
           { length: Math.max(0, newCount - currentCount) },
           (_, i) => currentCount + i
         );
+        const nextSelectedIndex = (() => {
+          if (previousSelectedPath) {
+            const matchedIndex = event.results.findIndex((result) => result.path === previousSelectedPath);
+            if (matchedIndex >= 0) return matchedIndex;
+          }
+          return state.selectedIndex < newCount ? state.selectedIndex : 0;
+        })();
         set((state) => ({
           semanticResults: event.results,
           phase: 'semantic',
           statusMessage: `Found ${event.count} results`,
-          selectedIndex: 0,
+          selectedIndex: nextSelectedIndex,
           pendingSparkTargets: [...state.pendingSparkTargets, ...newTargets],
         }));
         break;
@@ -408,6 +427,14 @@ export const useSearchStore = create<SearchState>((set, get) => ({
           useActivityStore.getState().logSearchQuery(threadQuery).catch(() => {
             // Silent failure - activity logging is non-critical
           });
+
+          // Log top shown result paths for workstream clustering.
+          const topResultPaths = results.slice(0, 5).map((result) => result.path);
+          for (const resultPath of topResultPaths) {
+            useActivityStore.getState().logResultShown(resultPath, threadQuery).catch(() => {
+              // Silent failure - activity logging is non-critical
+            });
+          }
 
           // Auto-recluster workstreams after search completes (Pro feature)
           // This ensures the Today Tab stays up-to-date without manual intervention

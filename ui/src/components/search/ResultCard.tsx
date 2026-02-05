@@ -92,7 +92,7 @@ export function ResultCard({
   };
 
   const currentModeKey = isAskMode ? 'ask' : mode;
-  const selectedClass = isSelected ? 'bg-graphite-3' : '';
+  const selectedClass = isSelected ? 'bg-graphite-2/80' : '';
 
   const iconColorClass = isSelected
     ? (isAskMode ? 'text-accent-violet' : mode === 'jit' ? 'text-accent-amber' : mode === 'journalist' ? 'text-accent-violet' : 'text-accent-teal')
@@ -166,7 +166,12 @@ export function ResultCard({
       style={{
         borderRadius: '8px',
         border: '1px solid rgba(255, 255, 255, 0.08)',
-        borderLeft: isSelected ? `3px solid ${modeColors[currentModeKey].accent}` : '1px solid rgba(255, 255, 255, 0.08)',
+        borderLeft: isSelected
+          ? `3px solid ${modeColors[currentModeKey].accent}`
+          : '1px solid rgba(255, 255, 255, 0.08)',
+        boxShadow: isSelected
+          ? `inset 4px 0 12px -4px ${modeColors[currentModeKey].accent}33`
+          : 'none',
         opacity: animatedOpacity,
         visibility: animatedOpacity > 0 ? 'visible' : 'hidden',
         // @ts-ignore - Custom CSS variable for highlight color
@@ -332,7 +337,7 @@ export function ResultCard({
                           className="text-sm text-fg-muted bg-graphite-2/30 px-3 py-2 font-mono whitespace-pre-wrap leading-relaxed"
                           style={{ borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}
                         >
-                          <div className="text-2xs text-accent-teal uppercase tracking-widest mb-1.5 font-semibold">Semantic Match</div>
+                          <div className="mb-1.5 text-2xs font-semibold text-accent-teal">Semantic match</div>
                           {evidence!.semanticPassage}
                         </div>
                         {isValidContext(context) && (
@@ -390,7 +395,7 @@ export function ResultCard({
                 <button
                   onClick={(e) => { e.stopPropagation(); onOpen(); }}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] rounded-md',
+                    'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md',
                     // Mode-aware colors
                     mode === 'jit' && !isAskMode && 'bg-accent-amber/10 text-accent-amber border border-accent-amber/30 hover:bg-accent-amber/20 hover:border-accent-amber/50',
                     mode === 'cache' && !isAskMode && 'bg-accent-teal/10 text-accent-teal border border-accent-teal/30 hover:bg-accent-teal/20 hover:border-accent-teal/50',
@@ -404,7 +409,7 @@ export function ResultCard({
                 <button
                   onClick={handleReveal}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] rounded-md',
+                    'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md',
                     'bg-graphite-3 text-fg-muted border border-stroke-hairline',
                     'hover:bg-graphite-2 hover:text-porcelain hover:border-border-medium',
                     'transition-all duration-150'
@@ -416,7 +421,7 @@ export function ResultCard({
                 <button
                   onClick={handleCopyPath}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] rounded-md',
+                    'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md',
                     'bg-graphite-3 text-fg-muted border border-stroke-hairline',
                     'hover:bg-graphite-2 hover:text-porcelain hover:border-border-medium',
                     'transition-all duration-150',

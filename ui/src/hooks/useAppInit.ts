@@ -10,6 +10,7 @@ import { useStatsStore } from '@/stores/statsStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useActivityStore } from '@/stores/activityStore';
 import { useTodayStore } from '@/stores/todayStore';
+import { useWorkstreamStore } from '@/stores/workstreamStore';
 import * as tauri from '@/lib/tauri';
 
 interface ModelStatus {
@@ -25,6 +26,7 @@ export function useAppInit() {
   const loadConfig = useSettingsStore(state => state.loadConfig);
   const loadConsent = useSettingsStore(state => state.loadConsent);
   const loadActivityFromStorage = useActivityStore(state => state.loadFromStorage);
+  const loadWorkstreamsStore = useWorkstreamStore(state => state.loadWorkstreams);
   const initializeToday = useTodayStore(state => state.initialize);
 
   useEffect(() => {
@@ -53,6 +55,9 @@ export function useAppInit() {
             // Expected for free users or first launch
           }
 
+          // Keep the UI store hydrated from first render.
+          await loadWorkstreamsStore();
+
           // Initialize Today Tab data (uses loaded workstreams)
           await initializeToday();
 
@@ -60,6 +65,7 @@ export function useAppInit() {
           // This preserves user's existing workstreams across restarts
           if (!hasPersistedWorkstreams) {
             await tauri.reclusterWorkstreams();
+            await loadWorkstreamsStore();
           }
         } catch {
           // Silent failure - Second Brain features are Pro only
@@ -86,7 +92,7 @@ export function useAppInit() {
     }
 
     initialize();
-  }, [loadStarred, loadStats, loadConfig, loadConsent, loadActivityFromStorage, initializeToday]);
+  }, [loadStarred, loadStats, loadConfig, loadConsent, loadActivityFromStorage, loadWorkstreamsStore, initializeToday]);
 
   return { isInitialized, error };
 }

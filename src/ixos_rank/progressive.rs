@@ -70,6 +70,9 @@ pub const DEFAULT_SEMANTIC_TIMEOUT: Duration = Duration::from_secs(5);
 /// Default maximum results
 pub const DEFAULT_MAX_RESULTS: usize = 20;
 
+/// Upper bound for Auto-mode refinement to avoid Pro-like tail latency.
+const AUTO_REFINE_TIMEOUT_CAP: Duration = Duration::from_millis(2500);
+
 /// Search quality mode
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -160,20 +163,20 @@ impl Default for ProgressiveSearchConfig {
             semantic_timeout: DEFAULT_SEMANTIC_TIMEOUT,
             max_results: DEFAULT_MAX_RESULTS,
             enable_secure_ranking: true,
-            candidate_multiplier: 10,
+            candidate_multiplier: 5,
             context_lines: 3,
             min_score_threshold: 0.1,
             lexical_batch_size: 20,
             lexical_batch_timeout_ms: 50,
-            evidence_max_results: 8,
-            evidence_max_bytes: 128 * 1024,
+            evidence_max_results: 3,
+            evidence_max_bytes: 32 * 1024,
             search_mode: SearchMode::Auto,
             auto_mode: AutoModeConfig {
                 gap_threshold: 0.05,
                 lexical_threshold: 0.15,
                 short_query_len: 2,
                 entropy_threshold: 0.9,
-                pro_top_k: 120,
+                pro_top_k: 20,
             },
             enable_fusion: true,
             fusion: FusionConfig {
@@ -199,15 +202,15 @@ impl ProgressiveSearchConfig {
             min_score_threshold: 0.1,
             lexical_batch_size: 10,
             lexical_batch_timeout_ms: 30,
-            evidence_max_results: 5,
-            evidence_max_bytes: 64 * 1024,
+            evidence_max_results: 3,
+            evidence_max_bytes: 32 * 1024,
             search_mode: SearchMode::Auto,
             auto_mode: AutoModeConfig {
                 gap_threshold: 0.08,
                 lexical_threshold: 0.2,
                 short_query_len: 2,
                 entropy_threshold: 0.95,
-                pro_top_k: 80,
+                pro_top_k: 20,
             },
             enable_fusion: true,
             fusion: FusionConfig {
@@ -602,9 +605,10 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         let flash_engine: &dyn SemanticEngine = self.semantic_engine.as_ref();
         let pro_engine = self.pro_engine.as_ref().map(|p| p.as_ref());
         let has_pro_engine = pro_engine.is_some();
-        let use_pro_primary =
-            matches!(self.config.search_mode, SearchMode::Pro | SearchMode::Auto) && has_pro_engine;
-        let used_pro = use_pro_primary;
+
+        // Auto mode is intentionally Flash-first. Pro mode is Pro-first.
+        let use_pro_primary = matches!(self.config.search_mode, SearchMode::Pro) && has_pro_engine;
+        let mut used_pro = use_pro_primary;
 
         let primary_engine: &dyn SemanticEngine = if use_pro_primary {
             pro_engine.unwrap_or(flash_engine)
@@ -682,23 +686,9 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             embedded_count = embedded_count.saturating_add(lexical_results.len());
         }
 
-        // Pro v2 cascade: potion fast pass -> flash only for top-K/uncertain region -> fusion
-        let mut run_flash_refine = false;
-        if use_pro_primary && self.config.enable_fusion && self.config.fusion.flash > 0.0 {
-            run_flash_refine = if matches!(self.config.search_mode, SearchMode::Pro) {
-                true
-            } else if matches!(self.config.search_mode, SearchMode::Auto) {
-                !lexical_results.is_empty()
-                    && should_refine(
-                        query_terms.len(),
-                        &lexical_results,
-                        &semantic_results,
-                        self.config.auto_mode,
-                    )
-            } else {
-                false
-            };
-        }
+        // Pro mode: potion/pro primary pass followed by optional Flash top-K refinement for fusion.
+        let run_flash_refine =
+            use_pro_primary && self.config.enable_fusion && self.config.fusion.flash > 0.0;
 
         if run_flash_refine {
             let _ = tx
@@ -724,7 +714,11 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                 .collect();
 
             if flash_candidates.is_empty() && !lexical_results.is_empty() {
-                flash_candidates = lexical_results.clone();
+                flash_candidates = lexical_results
+                    .iter()
+                    .take(self.config.auto_mode.pro_top_k)
+                    .cloned()
+                    .collect();
             }
 
             if !flash_candidates.is_empty() {
@@ -765,10 +759,8 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             );
         }
 
-        // Apply lexical-semantic fusion for Pro/Auto refinement
-        if self.config.enable_fusion
-            && (matches!(self.config.search_mode, SearchMode::Pro) || used_pro)
-        {
+        // Apply lexical-semantic fusion for Pro mode.
+        if self.config.enable_fusion && use_pro_primary {
             let mut fusion = self.config.fusion;
             if flash_scores.is_none() && fusion.flash > 0.0 {
                 fusion.pro += fusion.flash;
@@ -789,36 +781,148 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             return Ok(());
         }
 
-        // Apply secure ranking if enabled
-        let final_results = if self.config.enable_secure_ranking {
-            let candidates: Vec<Candidate> = semantic_results
+        let mut final_results: Vec<RankedResult> = rank_semantic_candidates(
+            &query,
+            &semantic_results,
+            self.config.enable_secure_ranking,
+            self.config.max_results,
+            &mut self.secure_ranker,
+        )
+        .into_iter()
+        .take(self.config.max_results)
+        .filter(|r| r.score >= self.config.min_score_threshold)
+        .collect();
+
+        // Flash-first Auto mode: publish immediately, then optionally refine top-K with Pro.
+        let _ = tx
+            .send(SearchEvent::SemanticResults(final_results.clone()))
+            .await;
+
+        let should_run_auto_pro_refine = matches!(self.config.search_mode, SearchMode::Auto)
+            && has_pro_engine
+            && should_refine(
+                query_terms.len(),
+                &lexical_results,
+                &semantic_results,
+                self.config.auto_mode,
+            );
+
+        tracing::debug!(
+            query = %query,
+            query_terms = query_terms.len(),
+            lexical_results = lexical_results.len(),
+            semantic_results = semantic_results.len(),
+            should_refine = should_run_auto_pro_refine,
+            "Auto-mode Pro refinement gate"
+        );
+
+        if should_run_auto_pro_refine {
+            let _ = tx
+                .send(SearchEvent::Status(
+                    "Refining top results with Pro model...".into(),
+                ))
+                .await;
+            let refine_stats = stream_stats.lock().unwrap().clone();
+            let _ = tx
+                .send(SearchEvent::StreamUpdate {
+                    stage: StreamStage::Refining,
+                    stats: refine_stats,
+                    events: Vec::new(),
+                })
+                .await;
+
+            let pro_top_k = self.config.auto_mode.pro_top_k.max(1);
+            let mut pro_candidates: Vec<LexicalMatch> = semantic_results
                 .iter()
-                .map(|m| Candidate::new(m.path.clone(), m.similarity))
+                .take(pro_top_k)
+                .map(|m| {
+                    lexical_lookup.get(&m.path).cloned().unwrap_or_else(|| {
+                        LexicalMatch::new(m.path.clone(), 0.0, String::new(), 0, 0)
+                    })
+                })
                 .collect();
 
-            self.secure_ranker.rank(&query, candidates)
-        } else {
-            // Convert SemanticMatch to RankedResult without secure ranking
-            semantic_results
-                .into_iter()
-                .take(self.config.max_results)
-                .map(|m| {
-                    RankedResult::new(
-                        m.path,
-                        m.similarity,
-                        true, // Assume integrity verified
-                        ScoreBreakdown {
-                            semantic: m.similarity,
-                            integrity: 1.0,
-                            temporal: 0.5,
-                            behavior: 1.0,
-                        },
-                    )
-                })
-                .collect()
-        };
+            if pro_candidates.is_empty() && !lexical_results.is_empty() {
+                pro_candidates = lexical_results.iter().take(pro_top_k).cloned().collect();
+            }
 
-        // Limit to max results and add evidence snippets
+            if let Some(pro_engine) = pro_engine {
+                if !pro_candidates.is_empty() {
+                    let pro_candidate_count = pro_candidates.len();
+                    let auto_refine_timeout =
+                        self.config.semantic_timeout.min(AUTO_REFINE_TIMEOUT_CAP);
+                    match tokio::time::timeout(
+                        auto_refine_timeout,
+                        pro_engine.rerank(&semantic_query, pro_candidates, pro_top_k),
+                    )
+                    .await
+                    {
+                        Ok(Ok(pro_results)) => {
+                            let pro_scores: std::collections::HashMap<_, _> = pro_results
+                                .into_iter()
+                                .map(|m| (m.path, m.similarity))
+                                .collect();
+
+                            if !pro_scores.is_empty() {
+                                const AUTO_PRO_BLEND: f32 = 0.65;
+                                let mut seen_paths: std::collections::HashSet<std::path::PathBuf> =
+                                    semantic_results.iter().map(|m| m.path.clone()).collect();
+
+                                for item in semantic_results.iter_mut() {
+                                    if let Some(pro_score) = pro_scores.get(&item.path) {
+                                        item.similarity = (AUTO_PRO_BLEND * *pro_score
+                                            + (1.0 - AUTO_PRO_BLEND) * item.similarity)
+                                            .clamp(0.0, 1.0);
+                                    }
+                                }
+
+                                for (path, pro_score) in &pro_scores {
+                                    if seen_paths.insert(path.clone()) {
+                                        semantic_results
+                                            .push(SemanticMatch::new(path.clone(), *pro_score));
+                                    }
+                                }
+
+                                semantic_results.sort_by(|a, b| {
+                                    b.similarity
+                                        .partial_cmp(&a.similarity)
+                                        .unwrap_or(std::cmp::Ordering::Equal)
+                                });
+                                embedded_count = embedded_count.saturating_add(pro_candidate_count);
+                                used_pro = true;
+
+                                final_results = rank_semantic_candidates(
+                                    &query,
+                                    &semantic_results,
+                                    self.config.enable_secure_ranking,
+                                    self.config.max_results,
+                                    &mut self.secure_ranker,
+                                )
+                                .into_iter()
+                                .take(self.config.max_results)
+                                .filter(|r| r.score >= self.config.min_score_threshold)
+                                .collect();
+
+                                let _ = tx
+                                    .send(SearchEvent::SemanticResults(final_results.clone()))
+                                    .await;
+                            }
+                        }
+                        Ok(Err(e)) => {
+                            tracing::warn!("Pro refinement failed: {}", e);
+                        }
+                        Err(_) => {
+                            tracing::warn!(
+                                "Pro refinement timed out after {:?}",
+                                auto_refine_timeout
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        // Evidence extraction is deferred until after initial semantic results are shown.
         let context_lines = self.config.context_lines;
         let evidence_limit = self
             .config
@@ -839,16 +943,99 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             None
         };
         let passage_extractor = PassageExtractor::default_config();
+        let will_enrich_results = evidence_limit > 0 || context_lines > 0;
+        if will_enrich_results {
+            let _ = tx
+                .send(SearchEvent::Status("Collecting evidence...".into()))
+                .await;
 
-        let mut final_results: Vec<RankedResult> = final_results
-            .into_iter()
-            .take(self.config.max_results)
-            .filter(|r| r.score >= self.config.min_score_threshold)
-            .collect();
+            for (index, result) in final_results.iter_mut().enumerate() {
+                if index >= evidence_limit {
+                    if context_lines > 0 {
+                        if let Some(content) = super::evidence::passage_extractor::read_file_content(
+                            &result.path,
+                            evidence_max_bytes,
+                        ) {
+                            if let Some(snippet) = super::snippet::extract_context_from_string(
+                                &content,
+                                &semantic_query,
+                                context_lines,
+                            ) {
+                                result.context_snippet = Some(snippet);
+                            }
+                        }
+                    }
+                    continue;
+                }
 
-        for (index, result) in final_results.iter_mut().enumerate() {
-            if index >= evidence_limit {
-                if context_lines > 0 {
+                let mut semantic_passage: Option<String> = None;
+                let mut ask_mode_trust: Option<TrustedSnippet> = None;
+                if let Some(query_embedding) = query_embedding.as_ref() {
+                    if should_extract_evidence(&result.path) {
+                        if let Some(content) = super::evidence::passage_extractor::read_file_content(
+                            &result.path,
+                            evidence_max_bytes,
+                        ) {
+                            if processed.mode == QueryMode::Ask
+                                && !processed.anchor_terms.is_empty()
+                            {
+                                let passages =
+                                    passage_extractor.extract(&content, query_embedding, |chunk| {
+                                        evidence_engine.embed_passage_chunk(chunk)
+                                    });
+                                if !passages.is_empty() {
+                                    let semantic_scores: Vec<(usize, f32)> = passages
+                                        .iter()
+                                        .enumerate()
+                                        .map(|(idx, passage)| (idx, passage.score))
+                                        .collect();
+                                    let selector = TrustedSnippetSelector::new(Default::default());
+                                    if let Some(trusted) = selector.select_trusted_passage(
+                                        &passages,
+                                        &processed.anchor_terms,
+                                        &semantic_scores,
+                                    ) {
+                                        let display = passage_extractor
+                                            .truncate_for_display(&trusted.passage.text);
+                                        semantic_passage = Some(display.clone());
+                                        let matched_lines: Vec<String> =
+                                            display.lines().map(|l| l.to_string()).collect();
+                                        result.context_snippet =
+                                            Some(super::snippet::ContextSnippet::new(
+                                                trusted.passage.line_number,
+                                                Vec::new(),
+                                                matched_lines,
+                                                Vec::new(),
+                                                display,
+                                            ));
+                                        ask_mode_trust = Some(trusted);
+                                    }
+                                }
+                            } else if let Some(passage) =
+                                passage_extractor.best_passage(&content, query_embedding, |chunk| {
+                                    evidence_engine.embed_passage_chunk(chunk)
+                                })
+                            {
+                                let display = passage_extractor.truncate_for_display(&passage.text);
+                                semantic_passage = Some(display.clone());
+                                let matched_lines: Vec<String> =
+                                    display.lines().map(|l| l.to_string()).collect();
+                                result.context_snippet = Some(super::snippet::ContextSnippet::new(
+                                    passage.line_number,
+                                    Vec::new(),
+                                    matched_lines,
+                                    Vec::new(),
+                                    display,
+                                ));
+                            }
+                        }
+                    }
+                }
+
+                if result.context_snippet.is_none()
+                    && context_lines > 0
+                    && (processed.mode != QueryMode::Ask || processed.anchor_terms.is_empty())
+                {
                     if let Some(content) = super::evidence::passage_extractor::read_file_content(
                         &result.path,
                         evidence_max_bytes,
@@ -862,103 +1049,22 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                         }
                     }
                 }
-                continue;
+
+                let evidence = build_evidence_summary(
+                    result,
+                    lexical_lookup.get(&result.path),
+                    &query_terms,
+                    semantic_passage,
+                    ask_mode_trust,
+                );
+                result.evidence = Some(evidence);
             }
 
-            let mut semantic_passage: Option<String> = None;
-            let mut ask_mode_trust: Option<TrustedSnippet> = None;
-            if let Some(query_embedding) = query_embedding.as_ref() {
-                if should_extract_evidence(&result.path) {
-                    if let Some(content) = super::evidence::passage_extractor::read_file_content(
-                        &result.path,
-                        evidence_max_bytes,
-                    ) {
-                        if processed.mode == QueryMode::Ask && !processed.anchor_terms.is_empty() {
-                            let passages =
-                                passage_extractor.extract(&content, query_embedding, |chunk| {
-                                    evidence_engine.embed_passage_chunk(chunk)
-                                });
-                            if !passages.is_empty() {
-                                let semantic_scores: Vec<(usize, f32)> = passages
-                                    .iter()
-                                    .enumerate()
-                                    .map(|(idx, passage)| (idx, passage.score))
-                                    .collect();
-                                let selector = TrustedSnippetSelector::new(Default::default());
-                                if let Some(trusted) = selector.select_trusted_passage(
-                                    &passages,
-                                    &processed.anchor_terms,
-                                    &semantic_scores,
-                                ) {
-                                    let display = passage_extractor
-                                        .truncate_for_display(&trusted.passage.text);
-                                    semantic_passage = Some(display.clone());
-                                    let matched_lines: Vec<String> =
-                                        display.lines().map(|l| l.to_string()).collect();
-                                    result.context_snippet =
-                                        Some(super::snippet::ContextSnippet::new(
-                                            trusted.passage.line_number,
-                                            Vec::new(),
-                                            matched_lines,
-                                            Vec::new(),
-                                            display,
-                                        ));
-                                    ask_mode_trust = Some(trusted);
-                                }
-                            }
-                        } else if let Some(passage) =
-                            passage_extractor.best_passage(&content, query_embedding, |chunk| {
-                                evidence_engine.embed_passage_chunk(chunk)
-                            })
-                        {
-                            let display = passage_extractor.truncate_for_display(&passage.text);
-                            semantic_passage = Some(display.clone());
-                            let matched_lines: Vec<String> =
-                                display.lines().map(|l| l.to_string()).collect();
-                            result.context_snippet = Some(super::snippet::ContextSnippet::new(
-                                passage.line_number,
-                                Vec::new(),
-                                matched_lines,
-                                Vec::new(),
-                                display,
-                            ));
-                        }
-                    }
-                }
-            }
-
-            if result.context_snippet.is_none()
-                && context_lines > 0
-                && (processed.mode != QueryMode::Ask || processed.anchor_terms.is_empty())
-            {
-                if let Some(content) = super::evidence::passage_extractor::read_file_content(
-                    &result.path,
-                    evidence_max_bytes,
-                ) {
-                    if let Some(snippet) = super::snippet::extract_context_from_string(
-                        &content,
-                        &semantic_query,
-                        context_lines,
-                    ) {
-                        result.context_snippet = Some(snippet);
-                    }
-                }
-            }
-
-            let evidence = build_evidence_summary(
-                result,
-                lexical_lookup.get(&result.path),
-                &query_terms,
-                semantic_passage,
-                ask_mode_trust,
-            );
-            result.evidence = Some(evidence);
+            // Push enriched snippets/evidence as an update without resetting the search lifecycle.
+            let _ = tx
+                .send(SearchEvent::SemanticResults(final_results.clone()))
+                .await;
         }
-
-        // Send final results
-        let _ = tx
-            .send(SearchEvent::SemanticResults(final_results.clone()))
-            .await;
         {
             let mut stats = stream_stats.lock().unwrap();
             stats.candidates = if has_lexical_results {
@@ -1095,6 +1201,40 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
     }
 }
 
+fn rank_semantic_candidates(
+    query: &str,
+    semantic_results: &[SemanticMatch],
+    enable_secure_ranking: bool,
+    max_results: usize,
+    secure_ranker: &mut SecureRanker,
+) -> Vec<RankedResult> {
+    if enable_secure_ranking {
+        let candidates: Vec<Candidate> = semantic_results
+            .iter()
+            .map(|m| Candidate::new(m.path.clone(), m.similarity))
+            .collect();
+        secure_ranker.rank(query, candidates)
+    } else {
+        semantic_results
+            .iter()
+            .take(max_results)
+            .map(|m| {
+                RankedResult::new(
+                    m.path.clone(),
+                    m.similarity,
+                    true, // Assume integrity verified
+                    ScoreBreakdown {
+                        semantic: m.similarity,
+                        integrity: 1.0,
+                        temporal: 0.5,
+                        behavior: 1.0,
+                    },
+                )
+            })
+            .collect()
+    }
+}
+
 fn score_entropy(scores: &[f32]) -> f32 {
     if scores.is_empty() {
         return 0.0;
@@ -1127,8 +1267,17 @@ fn should_refine(
     semantic_results: &[SemanticMatch],
     config: AutoModeConfig,
 ) -> bool {
+    if semantic_results.is_empty() {
+        return true;
+    }
+
     let mut scores: Vec<f32> = semantic_results.iter().map(|m| m.similarity).collect();
     scores.sort_by(|a, b: &f32| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal));
+
+    if scores.is_empty() {
+        return true;
+    }
+
     let gap = if scores.len() >= 2 {
         let idx = scores.len().min(5) - 1;
         scores[0] - scores[idx]
@@ -1139,11 +1288,75 @@ fn should_refine(
         .iter()
         .map(|m| m.match_ratio())
         .fold(0.0_f32, f32::max);
+    let exact_top_hits = lexical_results
+        .iter()
+        .take(5)
+        .filter(|m| m.is_exact_match())
+        .count();
+
+    if exact_top_hits >= 3 && query_terms > 1 {
+        tracing::debug!(
+            query_terms,
+            lexical_max,
+            exact_top_hits,
+            "Auto refine skipped due to strong lexical consensus"
+        );
+        return false;
+    }
     let entropy = score_entropy(&scores);
-    gap < config.gap_threshold
-        || lexical_max < config.lexical_threshold
-        || query_terms <= config.short_query_len
-        || entropy > config.entropy_threshold
+    let top_1 = scores[0];
+    let top_k = scores.len().min(5);
+    let top_k_avg = scores.iter().take(top_k).sum::<f32>() / top_k as f32;
+
+    let weak_gap = gap < config.gap_threshold;
+    let weak_lexical = lexical_max < config.lexical_threshold;
+    let high_entropy = entropy > config.entropy_threshold;
+    let low_top_1 = top_1 < 0.63;
+    let low_top_k = top_k_avg < 0.58;
+
+    let mut uncertainty_signals = 0usize;
+    if weak_gap {
+        uncertainty_signals += 1;
+    }
+    if weak_lexical {
+        uncertainty_signals += 1;
+    }
+    if high_entropy {
+        uncertainty_signals += 1;
+    }
+    if low_top_1 {
+        uncertainty_signals += 1;
+    }
+    if low_top_k {
+        uncertainty_signals += 1;
+    }
+
+    let required_signals = if query_terms <= config.short_query_len {
+        4
+    } else {
+        2
+    };
+
+    let should_refine = uncertainty_signals >= required_signals;
+    tracing::debug!(
+        query_terms,
+        gap,
+        lexical_max,
+        entropy,
+        top_1,
+        top_k_avg,
+        weak_gap,
+        weak_lexical,
+        exact_top_hits,
+        high_entropy,
+        low_top_1,
+        low_top_k,
+        uncertainty_signals,
+        required_signals,
+        should_refine,
+        "Auto refine heuristic signals"
+    );
+    should_refine
 }
 
 fn dir_prior_score(query_terms: &[String], path: &std::path::Path) -> f32 {
@@ -1537,7 +1750,7 @@ mod tests {
             .unwrap();
 
         let mut saw_lexical = false;
-        let mut saw_status = false;
+        let mut saw_understanding_status = false;
         let mut saw_complete = false;
 
         while let Some(event) = rx.recv().await {
@@ -1547,8 +1760,9 @@ mod tests {
                     saw_lexical = true;
                 }
                 SearchEvent::Status(msg) => {
-                    assert!(msg.contains("Understanding"));
-                    saw_status = true;
+                    if msg.contains("Understanding") {
+                        saw_understanding_status = true;
+                    }
                 }
                 SearchEvent::Complete => {
                     saw_complete = true;
@@ -1559,7 +1773,10 @@ mod tests {
         }
 
         assert!(saw_lexical, "Should have received lexical results");
-        assert!(saw_status, "Should have received status update");
+        assert!(
+            saw_understanding_status,
+            "Should have received semantic understanding status update"
+        );
         assert!(saw_complete, "Should have received complete");
     }
 
@@ -1611,6 +1828,102 @@ mod tests {
         let engine = create_test_engine();
         assert_eq!(engine.config().max_results, 20);
         assert_eq!(engine.secure_ranker().cache_size(), 0);
+    }
+
+    #[test]
+    fn test_should_refine_skips_high_confidence_short_query() {
+        let config = AutoModeConfig {
+            gap_threshold: 0.05,
+            lexical_threshold: 0.15,
+            short_query_len: 2,
+            entropy_threshold: 0.9,
+            pro_top_k: 20,
+        };
+
+        let lexical_results = vec![LexicalMatch::new(
+            PathBuf::from("/test/high_conf.txt"),
+            1.0,
+            String::new(),
+            2,
+            2,
+        )];
+
+        let semantic_results = vec![
+            SemanticMatch::new(PathBuf::from("/test/1.txt"), 0.86),
+            SemanticMatch::new(PathBuf::from("/test/2.txt"), 0.80),
+            SemanticMatch::new(PathBuf::from("/test/3.txt"), 0.76),
+            SemanticMatch::new(PathBuf::from("/test/4.txt"), 0.73),
+            SemanticMatch::new(PathBuf::from("/test/5.txt"), 0.69),
+        ];
+
+        assert!(
+            !should_refine(2, &lexical_results, &semantic_results, config),
+            "Auto refinement should be skipped for high-confidence short queries"
+        );
+    }
+
+    #[test]
+    fn test_should_refine_runs_on_low_confidence_short_query() {
+        let config = AutoModeConfig {
+            gap_threshold: 0.05,
+            lexical_threshold: 0.15,
+            short_query_len: 2,
+            entropy_threshold: 0.9,
+            pro_top_k: 20,
+        };
+
+        let lexical_results = vec![LexicalMatch::new(
+            PathBuf::from("/test/weak_lexical.txt"),
+            0.0,
+            String::new(),
+            0,
+            2,
+        )];
+
+        let semantic_results = vec![
+            SemanticMatch::new(PathBuf::from("/test/1.txt"), 0.54),
+            SemanticMatch::new(PathBuf::from("/test/2.txt"), 0.53),
+            SemanticMatch::new(PathBuf::from("/test/3.txt"), 0.52),
+            SemanticMatch::new(PathBuf::from("/test/4.txt"), 0.52),
+            SemanticMatch::new(PathBuf::from("/test/5.txt"), 0.51),
+        ];
+
+        assert!(
+            should_refine(2, &lexical_results, &semantic_results, config),
+            "Auto refinement should run when confidence signals are weak"
+        );
+    }
+
+    #[test]
+    fn test_should_refine_skips_with_strong_lexical_consensus() {
+        let config = AutoModeConfig {
+            gap_threshold: 0.05,
+            lexical_threshold: 0.15,
+            short_query_len: 2,
+            entropy_threshold: 0.9,
+            pro_top_k: 20,
+        };
+
+        let lexical_results = vec![
+            LexicalMatch::new(PathBuf::from("/test/1.txt"), 1.0, String::new(), 2, 2),
+            LexicalMatch::new(PathBuf::from("/test/2.txt"), 1.0, String::new(), 2, 2),
+            LexicalMatch::new(PathBuf::from("/test/3.txt"), 1.0, String::new(), 2, 2),
+            LexicalMatch::new(PathBuf::from("/test/4.txt"), 1.0, String::new(), 1, 2),
+            LexicalMatch::new(PathBuf::from("/test/5.txt"), 1.0, String::new(), 1, 2),
+        ];
+
+        let semantic_results = vec![
+            SemanticMatch::new(PathBuf::from("/test/1.txt"), 0.52),
+            SemanticMatch::new(PathBuf::from("/test/2.txt"), 0.51),
+            SemanticMatch::new(PathBuf::from("/test/3.txt"), 0.51),
+            SemanticMatch::new(PathBuf::from("/test/4.txt"), 0.50),
+            SemanticMatch::new(PathBuf::from("/test/5.txt"), 0.50),
+        ];
+
+        assert!(
+            !should_refine(2, &lexical_results, &semantic_results, config),
+            "Auto refinement should be skipped when lexical top hits strongly agree"
+        );
     }
 
     #[tokio::test]

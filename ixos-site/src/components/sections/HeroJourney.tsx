@@ -18,28 +18,28 @@ const PIPELINE_STEPS = [
     {
         id: "01",
         code: "[Q]",
-        label: "INPUT_LAYER",
+        label: "Input Layer",
         title: "Natural Language Search",
         description: "Type exactly how you think. \"Files about the merger\" or \"PDFs with budget tables\". No query syntax.",
     },
     {
         id: "02",
         code: "[M]",
-        label: "EMBEDDING_ENGINE",
+        label: "Embedding Engine",
         title: "Just-in-Time Intelligence",
         description: "Ixos computes lightweight embeddings on the fly using CPU-optimized micro-models.",
     },
     {
         id: "03",
         code: "[S]",
-        label: "SEMANTIC_RANK",
+        label: "Semantic Rank",
         title: "Ranked Locally",
         description: "Results are ranked by semantic intent, not just keyword matching. Relevant docs bubble to top.",
     },
     {
         id: "04",
         code: "[X]",
-        label: "PRIVACY_GUARD",
+        label: "Privacy Guard",
         title: "No Indexing Required",
         isScribble: true,
         description: "Embeddings are discarded immediately after search. We never build a persistent index of your drive.",
@@ -47,7 +47,7 @@ const PIPELINE_STEPS = [
     {
         id: "05",
         code: "[R]",
-        label: "IO_STREAM",
+        label: "IO Stream",
         title: "Instant Access",
         description: "Click to open, drag to drop. Integrates seamlessly with Explorer, Finder, and terminal.",
     },
@@ -261,90 +261,120 @@ export function HeroJourney() {
     );
 }
 
-// Compact Technical Pipeline Panel matches Benchmarks.tsx aesthetic
+/** Grid placement per tile for the asymmetric layout */
+const TILE_GRID: Record<number, { col: string; row: string; offset?: string }> = {
+    0: { col: "col-span-7", row: "row-span-2" },
+    1: { col: "col-span-5", row: "row-span-1", offset: "mt-2" },
+    2: { col: "col-span-5", row: "row-span-2" },
+    3: { col: "col-span-3", row: "row-span-1", offset: "mt-1" },
+    4: { col: "col-span-4", row: "row-span-1" },
+};
+
 function TechnicalPipelinePanel({ activeStep }: { activeStep: number }) {
+    const boundedStep = Math.max(0, Math.min(activeStep, PIPELINE_STEPS.length - 1));
+    const active = PIPELINE_STEPS[boundedStep];
+
     return (
-        <div className="flex flex-col h-full w-full">
-            {/* Header */}
-            <div className="h-8 border-b border-white/10 flex items-center justify-between px-4 bg-white/5">
-                <span className="text-[10px] font-mono text-accent-teal tracking-widest">REALTIME_PIPELINE</span>
-                <div className="flex gap-1">
-                    {[0, 1, 2].map(i => <div key={i} className="w-1 h-1 bg-white/20 rounded-full" />)}
+        <div className="relative flex h-full w-full flex-col overflow-hidden">
+            {/* Header bar */}
+            <div className="flex h-9 items-center justify-between border-b border-white/10 bg-white/5 px-4">
+                <div className="flex items-center gap-2">
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent-teal animate-pulse" />
+                    <span className="text-[10px] font-mono text-accent-teal tracking-wide">Realtime pipeline</span>
                 </div>
+                <span className="text-[10px] font-mono text-fg-muted">{active.id}/05 active</span>
             </div>
 
-            {/* Content Area - Vertical Flow */}
-            <div className="flex-1 p-8 flex flex-col justify-center relative">
-                {/* Background Grid */}
-                <div className="absolute inset-0 opacity-10"
-                    style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0)', backgroundSize: '24px 24px' }}
+            {/* Grid area */}
+            <div className="relative flex-1 overflow-hidden p-4 md:p-6">
+                {/* Dot-grid background */}
+                <div
+                    className="absolute inset-0 opacity-10"
+                    style={{
+                        backgroundImage:
+                            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.22) 1px, transparent 0)",
+                        backgroundSize: "22px 22px",
+                    }}
                 />
+                {/* Ambient glows */}
+                <div className="pointer-events-none absolute -right-20 top-10 h-52 w-52 rounded-full bg-accent-teal/10 blur-3xl" />
+                <div className="pointer-events-none absolute -left-14 bottom-8 h-44 w-44 rounded-full bg-accent-amber/10 blur-3xl" />
 
-                <div className="relative z-10 space-y-6 max-w-sm mx-auto w-full">
-                    {PIPELINE_STEPS.map((step, i) => (
-                        <div key={i} className="group flex items-center gap-5">
-                            {/* Mono Code Box */}
-                            <div className={cn(
-                                "w-14 h-14 flex-shrink-0 flex items-center justify-center border text-base font-mono transition-all duration-300",
-                                activeStep === i
-                                    ? "border-accent-teal bg-accent-teal/10 text-accent-teal shadow-[0_0_15px_rgba(20,184,166,0.2)]"
-                                    : activeStep > i
-                                        ? "border-white/20 bg-white/5 text-fg-muted"
-                                        : "border-white/5 text-white/10"
-                            )}>
-                                {step.code}
-                            </div>
+                {/* 12-column asymmetric grid */}
+                <div className="relative z-10 grid h-full grid-cols-12 grid-rows-[1fr_1fr] gap-2.5">
+                    {PIPELINE_STEPS.map((step, index) => {
+                        const state = index < boundedStep ? "complete" : index === boundedStep ? "processing" : "queued";
+                        const progressClass = index < boundedStep ? "w-full" : index === boundedStep ? "w-2/3" : "w-0";
+                        const grid = TILE_GRID[index];
+                        const isActive = state === "processing";
 
-                            {/* Connection Line segment (except last) */}
-                            {i < PIPELINE_STEPS.length - 1 && (
-                                <div className={cn(
-                                    "absolute left-7 w-px h-10 bg-white/10 -bottom-10 transition-colors duration-500 delay-100",
-                                    activeStep > i ? "bg-accent-teal/50" : ""
-                                )} />
-                            )}
+                        return (
+                            <article
+                                key={step.id}
+                                className={cn(
+                                    "relative rounded-sm border bg-bg-graphite-2/55 p-3 md:p-4 transition-all duration-300 flex flex-col",
+                                    grid.col,
+                                    grid.row,
+                                    grid.offset,
+                                    isActive
+                                        ? "border-accent-teal/45 shadow-[0_0_24px_rgba(20,184,166,0.18)]"
+                                        : state === "complete"
+                                            ? "border-white/15"
+                                            : "border-white/5 opacity-70"
+                                )}
+                                style={isActive ? { background: "linear-gradient(135deg, rgba(20,184,166,0.08) 0%, transparent 50%)" } : undefined}
+                            >
+                                {/* Corner accent marks on active tile */}
+                                {isActive && (
+                                    <>
+                                        <div className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-accent-teal/50" />
+                                        <div className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-accent-teal/50" />
+                                    </>
+                                )}
 
-                            {/* Label & Progress */}
-                            <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-center text-base font-mono mb-2">
-                                    <span className={cn(
-                                        "transition-colors duration-300 truncate mr-2",
-                                        activeStep === i ? "text-fg-porcelain" : "text-fg-muted/60"
-                                    )}>{step.label}</span>
-                                    <span className={cn(
-                                        "text-xs flex-shrink-0",
-                                        activeStep === i ? "text-accent-teal animate-pulse" : "text-white/10"
-                                    )}>
-                                        {activeStep === i ? "[PROCESSING]" : activeStep > i ? "[COMPLETE]" : "[WAITING]"}
-                                    </span>
+                                {/* Accent label */}
+                                <span className={cn(
+                                    "text-[10px] font-mono tracking-widest uppercase mb-1",
+                                    isActive ? "text-accent-teal" : "text-fg-muted/60"
+                                )}>
+                                    //{step.label}
+                                </span>
+
+                                {/* Title */}
+                                <h4 className="text-sm md:text-base font-semibold text-fg-porcelain leading-tight">{step.title}</h4>
+
+                                {/* Description (visible on larger tiles or when active) */}
+                                <p className="mt-1.5 line-clamp-2 text-[11px] leading-relaxed text-fg-muted flex-1">{step.description}</p>
+
+                                {/* Progress bar */}
+                                <div className="mt-auto pt-3">
+                                    <div className="h-1 overflow-hidden rounded-full bg-white/5">
+                                        <div
+                                            className={cn("h-full bg-accent-teal transition-all duration-500 ease-out", progressClass)}
+                                        />
+                                    </div>
                                 </div>
-                                {/* Bar */}
-                                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                    <div className={cn(
-                                        "h-full bg-accent-teal transition-all duration-500 ease-out",
-                                        activeStep > i ? "w-full" : activeStep === i ? "w-2/3" : "w-0"
-                                    )} />
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                            </article>
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* Footer Stats */}
-            <div className="h-8 border-t border-white/10 flex items-center justify-between px-4 text-[10px] font-mono text-fg-muted bg-bg-graphite-2/50">
-                <div className="flex gap-4">
-                    <span>LATENCY: <span className="text-fg-porcelain">~12ms</span></span>
-                    <span>MEMORY: <span className="text-fg-porcelain">FLUSHED</span></span>
+            {/* Footer bar */}
+            <div className="flex h-10 items-center justify-between border-t border-white/10 bg-bg-graphite-2/60 px-4 text-[10px] font-mono text-fg-muted">
+                <div className="truncate">
+                    Active: <span className="text-fg-porcelain">{active.title}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-accent-teal animate-pulse" />
-                    <span className="text-accent-teal">SYSTEM_ONLINE</span>
+                    <span>Latency ~12ms</span>
+                    <span className="h-1 w-1 rounded-full bg-accent-teal" />
+                    <span>No persistent index</span>
                 </div>
             </div>
 
-            {/* Corner Accents */}
-            <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20" />
-            <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20" />
+            {/* Global corner marks */}
+            <div className="absolute left-0 top-0 h-2 w-2 border-l border-t border-white/20" />
+            <div className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-white/20" />
         </div>
     );
 }

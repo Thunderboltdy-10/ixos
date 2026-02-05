@@ -137,6 +137,7 @@ pub fn run() {
             commands::shortcut::set_shortcut_config,
             // Phase 2: Activity Ledger
             commands::activity::log_activity,
+            commands::activity::log_result_shown,
             commands::activity::get_activity,
             commands::activity::get_co_occurrence,
             commands::activity::get_recently_touched,

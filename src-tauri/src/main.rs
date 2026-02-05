@@ -22,8 +22,11 @@ fn main() {
     }
 
     // Initialize tracing for logging
+    let env_filter = tracing_subscriber::EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info,winit=error"));
+
     tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
+        .with_env_filter(env_filter)
         .with_target(false)
         .init();
 

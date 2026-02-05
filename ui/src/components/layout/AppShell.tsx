@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
@@ -13,6 +13,8 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { Button } from '@/components/ui/button';
 import { TodayTab } from '@/components/today/TodayTab';
 import { WorkstreamsList } from '@/components/workstreams/WorkstreamsList';
+import { CommandPalette } from '@/components/search/CommandPalette';
+import { useWorkstreamStore } from '@/stores/workstreamStore';
 import * as tauri from '@/lib/tauri';
 
 interface AppShellProps {
@@ -20,6 +22,7 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
   const {
     showSettings, setShowSettings,
     showInfo, setShowInfo,
@@ -29,6 +32,7 @@ export function AppShell({ children }: AppShellProps) {
   } = useUIStore();
 
   const searchStore = useSearchStore();
+  const selectWorkstream = useWorkstreamStore((state) => state.selectWorkstream);
   const proStatus = useAuthStore((s) => s.proStatus);
   const entitlementToken = useAuthStore((s) => s.entitlementToken);
   const { config, updateConfig } = useSettingsStore();
@@ -52,6 +56,7 @@ export function AppShell({ children }: AppShellProps) {
       : 'Your Pro entitlement has expired. Renew to unlock Pro features. Your data remains intact.';
 
   const handleNewSearch = () => {
+    setShowCommandPalette(false);
     searchStore.reset();
     setActiveView('search');
   };
@@ -61,8 +66,8 @@ export function AppShell({ children }: AppShellProps) {
   };
 
   const handleSelectWorkstream = (id: string) => {
-    // For now, just log - could navigate to workstream detail view
-    console.log('Selected workstream:', id);
+    setActiveView('workstreams');
+    void selectWorkstream(id);
   };
 
   // Listen for global shortcut trigger to focus search
@@ -72,6 +77,7 @@ export function AppShell({ children }: AppShellProps) {
     listen('shortcut-triggered', () => {
       // Reset search state for a fresh search
       searchStore.reset();
+      setShowCommandPalette(false);
       // Close settings panel if open
       setShowSettings(false);
       // Focus the search input after a short delay to ensure render
@@ -90,9 +96,9 @@ export function AppShell({ children }: AppShellProps) {
     return () => {
       if (unlisten) unlisten();
     };
-  }, [searchStore]);
+  }, [searchStore, setShowSettings]);
 
-  // Global keyboard shortcuts: Ctrl+T (new search), Ctrl+K (focus search)
+  // Global keyboard shortcuts: Ctrl+T (new search), Ctrl+K (command palette)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isMod = e.ctrlKey || e.metaKey;
@@ -100,6 +106,7 @@ export function AppShell({ children }: AppShellProps) {
       // Ctrl+T / Cmd+T: New search tab, focus input
       if (isMod && e.key === 't') {
         e.preventDefault();
+        setShowCommandPalette(false);
         searchStore.reset();
         setShowSettings(false);
         setShowInfo(false);
@@ -123,14 +130,7 @@ export function AppShell({ children }: AppShellProps) {
           setShowInfo(false);
           setShowPricing(false);
         }
-        // Switch to search view and focus input
-        setActiveView('search');
-        setTimeout(() => {
-          const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
-          if (searchInput) {
-            searchInput.focus();
-          }
-        }, 50);
+        setShowCommandPalette((visible) => !visible);
       }
     };
 
@@ -222,6 +222,11 @@ export function AppShell({ children }: AppShellProps) {
             </div>
           </div>
         )}
+
+        <CommandPalette
+          isOpen={showCommandPalette}
+          onClose={() => setShowCommandPalette(false)}
+        />
 
         {/* Settings Panel Overlay */}
         {showSettings && (

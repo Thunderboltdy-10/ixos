@@ -265,7 +265,7 @@ export function Sidebar({
                   <div className="flex items-start gap-2">
                     <Star className="w-3.5 h-3.5 text-accent-amber mt-0.5 flex-shrink-0 fill-accent-amber" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-fg-muted truncate group-hover:text-porcelain transition-colors">
+                      <p className="text-sm text-porcelain truncate transition-colors">
                         {item.query}
                       </p>
                       <div className="flex items-center gap-1.5 text-2xs text-fg-ghost mt-0.5">
@@ -338,6 +338,9 @@ export function Sidebar({
         >
           <BookOpen className="w-3.5 h-3.5 text-accent-amber" />
           <span className="text-xs">Guide</span>
+          <span className="ml-auto rounded bg-graphite-2 px-1.5 py-0.5 text-2xs text-fg-ghost">
+            Ctrl+K
+          </span>
         </button>
       </div>
 
@@ -357,7 +360,7 @@ export function Sidebar({
             <button
               type="button"
               onClick={() => onOpenSettings?.('account')}
-              className="py-1.5 px-2 rounded-md text-2xs uppercase tracking-[0.18em] bg-graphite-2 text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors"
+              className="py-1.5 px-2 rounded-md text-2xs bg-graphite-2 text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors"
             >
               Account
             </button>
@@ -365,7 +368,7 @@ export function Sidebar({
               <button
                 type="button"
                 onClick={handleManageBilling}
-                className="py-1.5 px-2 rounded-md text-2xs uppercase tracking-[0.18em] bg-accent-teal/15 text-accent-teal hover:bg-accent-teal/25 transition-colors"
+                className="py-1.5 px-2 rounded-md text-2xs bg-accent-teal/15 text-accent-teal hover:bg-accent-teal/25 transition-colors"
               >
                 Billing
               </button>
@@ -373,7 +376,7 @@ export function Sidebar({
               <button
                 type="button"
                 onClick={handleManageBilling}
-                className="py-1.5 px-2 rounded-md text-2xs uppercase tracking-[0.18em] bg-accent-magenta/20 text-accent-magenta hover:bg-accent-magenta/30 transition-colors"
+                className="py-1.5 px-2 rounded-md text-2xs bg-accent-magenta/20 text-accent-magenta hover:bg-accent-magenta/30 transition-colors"
               >
                 Upgrade
               </button>
@@ -381,7 +384,7 @@ export function Sidebar({
             <button
               type="button"
               onClick={() => signOut()}
-              className="col-span-2 py-1.5 px-2 rounded-md text-2xs uppercase tracking-[0.18em] bg-graphite-2 text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors"
+              className="col-span-2 py-1.5 px-2 rounded-md text-2xs bg-graphite-2 text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors"
             >
               Sign Out
             </button>
@@ -391,18 +394,21 @@ export function Sidebar({
 
       {/* Stats footer - single compact line */}
       <div className="px-4 py-3 border-t border-stroke-hairline">
-        <p className="text-2xs text-fg-ghost font-mono">
-          {stats.totalSearches > 0 ? (
-            <>
-              {stats.totalSearches} searches
-              {cacheHitRate > 0 && (
-                <> - <span className="text-accent-amber">{cacheHitRate.toFixed(0)}%</span> cache</>
-              )}
-            </>
-          ) : (
-            'Ready to search'
-          )}
-        </p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-2xs text-fg-ghost font-mono">
+            {stats.totalSearches > 0 ? (
+              <>
+                {stats.totalSearches} searches
+                {cacheHitRate > 0 && (
+                  <> - <span className="text-accent-amber">{cacheHitRate.toFixed(0)}%</span> cache</>
+                )}
+              </>
+            ) : (
+              'Ready to search'
+            )}
+          </p>
+          <span className="rounded bg-graphite-2 px-1.5 py-0.5 text-2xs text-fg-ghost">Ctrl+K</span>
+        </div>
       </div>
     </aside>
   );
@@ -443,7 +449,7 @@ function RecentSearchItem({
       <div className="flex items-start gap-2">
         <FileText className="w-3.5 h-3.5 text-fg-ghost mt-0.5 flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-fg-muted truncate group-hover:text-porcelain transition-colors">
+          <p className="text-sm text-porcelain truncate transition-colors">
             {item.query}
           </p>
           <div className="flex items-center gap-1.5 text-2xs text-fg-ghost mt-0.5">
@@ -541,7 +547,7 @@ function NavItem({ icon: Icon, label, isActive, onClick, isPro, isLocked, onLock
         isLocked ? (
           <Lock className="w-3 h-3 text-fg-ghost" />
         ) : (
-          <span className="text-2xs text-accent-teal uppercase tracking-wider">Pro</span>
+          <span className="text-2xs text-accent-teal">Pro</span>
         )
       )}
     </button>

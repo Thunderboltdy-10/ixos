@@ -234,6 +234,7 @@ export type ProStatus =
  */
 export type ActivityAction =
   | 'search_query'
+  | 'result_shown'
   | 'result_clicked'
   | 'file_opened'
   | 'file_revealed'

@@ -242,7 +242,8 @@ impl DocumentEngine {
         let text = parsers::extract_text(path, self.config.max_bytes, self.config.max_chars)?;
 
         // Cache the extracted text for this session
-        self.extraction_cache.insert(path.to_path_buf(), text.clone());
+        self.extraction_cache
+            .insert(path.to_path_buf(), text.clone());
 
         Some(text)
     }
@@ -280,7 +281,8 @@ impl DocumentEngine {
         }
 
         // Calculate BM25-inspired score
-        let score = self.calculate_bm25_score(total_matches, terms_found, query_terms.len(), text.len());
+        let score =
+            self.calculate_bm25_score(total_matches, terms_found, query_terms.len(), text.len());
 
         let context = MatchContext {
             line_numbers: Vec::new(), // Documents don't have meaningful line numbers
@@ -288,7 +290,8 @@ impl DocumentEngine {
             snippet: first_match_snippet,
         };
 
-        let mut candidate = ScoredCandidate::from_ripgrep_hit(path.to_path_buf(), score, Some(context));
+        let mut candidate =
+            ScoredCandidate::from_ripgrep_hit(path.to_path_buf(), score, Some(context));
         candidate.source = CandidateSource::RipgrepHit; // Reuse ripgrep source type for documents
 
         Some(candidate)
@@ -329,8 +332,14 @@ impl DocumentEngine {
         let end = (pos + term.len() + 100).min(text.len());
 
         // Find word boundaries
-        let snippet_start = text[start..pos].rfind(char::is_whitespace).map(|i| start + i + 1).unwrap_or(start);
-        let snippet_end = text[pos..end].find(char::is_whitespace).map(|i| pos + i).unwrap_or(end);
+        let snippet_start = text[start..pos]
+            .rfind(char::is_whitespace)
+            .map(|i| start + i + 1)
+            .unwrap_or(start);
+        let snippet_end = text[pos..end]
+            .find(char::is_whitespace)
+            .map(|i| pos + i)
+            .unwrap_or(end);
 
         let snippet = text[snippet_start..snippet_end].trim();
 

@@ -204,6 +204,13 @@ export async function logActivity(
 }
 
 /**
+ * Log that a result was shown in ranked search results
+ */
+export async function logResultShown(filePath: string, query: string): Promise<void> {
+  await invoke('log_result_shown', { filePath, query });
+}
+
+/**
  * Get activity events
  */
 export async function getActivity(

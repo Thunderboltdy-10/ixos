@@ -188,4 +188,6 @@ pub use activity_ledger::{
 };
 
 // Phase 2: Second Brain - Workstreams
-pub use workstreams::{auto_cluster_sessions, Workstream, WorkstreamManager, WorkstreamStorageData};
+pub use workstreams::{
+    auto_cluster_sessions, Workstream, WorkstreamManager, WorkstreamStorageData,
+};

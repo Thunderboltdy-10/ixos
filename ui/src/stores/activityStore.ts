@@ -43,6 +43,7 @@ interface ActivityState {
   logFileOpened: (filePath: string, query?: string) => Promise<void>;
   logFileRevealed: (filePath: string, query?: string) => Promise<void>;
   logResultClicked: (filePath: string, query: string) => Promise<void>;
+  logResultShown: (filePath: string, query: string) => Promise<void>;
 
   // Reset
   reset: () => void;
@@ -182,6 +183,11 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
   // Convenience: Log result clicked
   logResultClicked: async (filePath, query) => {
     await get().logActivity(filePath, 'result_clicked', query);
+  },
+
+  // Convenience: Log result shown in ranked list
+  logResultShown: async (filePath, query) => {
+    await tauri.logResultShown(filePath, query);
   },
 
   // Reset store

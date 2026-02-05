@@ -121,3 +121,88 @@
   - synthetic_ambiguity_v1: MRR@10 0.9833, Recall@10 1.00, latency 131.83 ms/1k
 - Decision: KEEP
 - Next: Update docs + canonical results + fusion weights
+## Entry 010 - Rescue UI/perf pass + Auto startup latency fix
+- Date/Time: 2026-02-05
+- Branch/Commit: (working tree)
+- Goal: Execute rescue plan across UI + search pipeline, verify builds/tests, and remove Auto mode large-repo startup penalty.
+- Commands run:
+  - cargo test
+  - cargo build --release
+  - npm run build (ui)
+  - npm run build (ixos-site)
+  - target/release/ixos-bench.exe --dir dataset --runs 5 --cache-mode jit --model ixos-flash-v2 --out reports/v2_bench_flash_dataset_2026-02-05.md
+  - target/release/ixos-bench.exe --dir dataset --runs 5 --cache-mode jit --model potion --out reports/v2_bench_potion_dataset_2026-02-05.md
+  - target/release/ixos-bench.exe --dir dataset --runs 5 --cache-mode jit --model ixos-pro-v1 --out reports/v2_bench_prov1_dataset_2026-02-05.md
+  - target/release/ixos-profile.exe --dir . --runs 2 --cache-mode jit --model ixos-flash-v2 --out reports/v2_profile_flash_repo_2026-02-05.json --slow-threshold-ms 20000 --slow-out reports/v2_profile_flash_slow_repo_2026-02-05.json
+  - target/release/ixos-profile.exe --dir . --runs 2 --cache-mode jit --model potion --out reports/v2_profile_potion_repo_2026-02-05.json --slow-threshold-ms 20000 --slow-out reports/v2_profile_potion_slow_repo_2026-02-05.json
+  - Repo latency sweeps using `target/release/ixos.exe search ... --dir . --cache-mode jit --format json --limit 1` (flash/pro/auto; pre and post fixes)
+- Outputs saved to:
+  - reports/v2_repo_latency_summary_2026-02-05_213420.json
+  - reports/v2_repo_latency_after_auto_gate_v2_summary_2026-02-05_220605.json
+  - reports/v2_repo_latency_after_auto_index_fix_summary_2026-02-05_221919.json
+  - reports/v2_repo_latency_after_auto_index_fix_raw_2026-02-05_221919.csv
+  - reports/v2_bench_flash_dataset_2026-02-05.{md,json}
+  - reports/v2_bench_potion_dataset_2026-02-05.{md,json}
+  - reports/v2_bench_prov1_dataset_2026-02-05.{md,json}
+  - reports/v2_profile_flash_repo_2026-02-05.json
+  - reports/v2_profile_potion_repo_2026-02-05.json
+  - reports/v2_rescue_search_pass_2026-02-05.md
+- Key results:
+  - Repo-scale E2E before fix: Flash 17153.32 ms avg, Auto 33289.55 ms avg, Pro 32985.66 ms avg.
+  - Root cause found: Auto eagerly indexed pro engine in CLI startup path, paying near-Pro startup cost before search timing.
+  - Repo-scale E2E after fix: Flash 16838.65 ms avg, Auto 15754.25 ms avg.
+  - Auto improvement: -52.68% avg latency on large repo.
+  - cargo test fully green (451 passed + docs).
+- Decision: KEEP
+- Next: Run targeted quality A/B for tightened Auto refinement gate and implement non-blocking evidence completion path for CLI/UI parity.
+
+## Entry 011 - Candidate document phase gate (P1 perf regression fix)
+- Date/Time: 2026-02-05
+- Branch/Commit: (working tree)
+- Goal: Stop unconditional document extraction from candidate generation for code-only queries.
+- Commands run:
+  - cargo fmt --all
+  - cargo test candidate_generator::tests::test_document_search_gate -- --nocapture
+  - cargo test candidate_generator::tests -- --nocapture
+- Outputs saved to:
+  - reports/document_search_gate_fix_2026-02-05.md
+- Key results:
+  - Added query/path gate for document phase in both `generate` and `generate_streaming`.
+  - New gate regression tests added and passing.
+  - `candidate_generator` test module fully green (8 passed).
+- Decision: KEEP
+- Next: Run repo-scale latency/profile pass to quantify impact on large trees with mixed binary docs.
+
+## Entry 012 - Remove `.env` from hardcoded skip list
+- Date/Time: 2026-02-05
+- Branch/Commit: (working tree)
+- Goal: Ensure `.env` files are not hard-excluded by shared path/ripgrep/document walkers.
+- Commands run:
+  - cargo fmt --all
+  - cargo test path_engine::tests::test_hardcoded_skip_dirs_does_not_exclude_dot_env_file_name -- --nocapture
+- Outputs saved to:
+  - reports/dotenv_skiplist_fix_2026-02-05.md
+- Key results:
+  - Removed `.env` from `HARDCODED_SKIP_DIRS`.
+  - Added regression test to prevent reintroduction.
+  - Targeted test passed (1 passed).
+- Decision: KEEP
+- Next: Add integration test coverage that validates hidden `.env` search behavior end-to-end when hidden scanning is enabled.
+
+## Entry 013 - Streaming deck stabilization + match-classification unification
+- Date/Time: 2026-02-05
+- Branch/Commit: (working tree)
+- Goal: Fix non-moving streaming banner, align "Why this matched" with score breakdown, improve result/readability UX and shortcut discoverability.
+- Commands run:
+  - npm run build (ui)
+  - cargo check
+- Outputs saved to:
+  - reports/ui_streaming_classification_fix_2026-02-05.md
+- Key results:
+  - Streaming event pipeline hardened in UI (`streamStage`/stats normalization + per-search progress reset).
+  - Tauri Auto path no longer eagerly indexes Pro before streaming starts.
+  - Match badges and explanation now share one classifier (`ui/src/lib/matchClassification.ts`).
+  - Sidebar now surfaces `Ctrl+K`; search history query text is prominent and metadata is dimmer.
+  - `npm run build` and `cargo check` both passed.
+- Decision: KEEP
+- Next: Run manual Tauri smoke in Auto mode on large repo and capture stage-timing evidence/screenshots.

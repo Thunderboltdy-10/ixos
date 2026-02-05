@@ -200,8 +200,8 @@ export function WorkstreamCard({ workstream, onSelect, onOpenFile }: WorkstreamC
               {/* Top files */}
               {workstream.topFiles.length > 0 && (
                 <div className="mb-4">
-                  <p className="text-2xs text-fg-ghost uppercase tracking-wider mb-2">
-                    Top Files
+                  <p className="mb-2 text-2xs text-fg-ghost">
+                    Top files
                   </p>
                   <div className="space-y-1">
                     {workstream.topFiles.slice(0, 5).map(([path, fileCount]) => {

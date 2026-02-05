@@ -39,7 +39,7 @@ impl LexicalMatch {
         if self.total_terms == 0 {
             0.0
         } else {
-            self.term_matches as f32 / self.total_terms as f32
+            (self.term_matches as f32 / self.total_terms as f32).clamp(0.0, 1.0)
         }
     }
 
@@ -191,6 +191,12 @@ mod tests {
     fn test_lexical_match_ratio() {
         let m = LexicalMatch::new(PathBuf::from("/test"), 0.5, String::new(), 2, 4);
         assert_eq!(m.match_ratio(), 0.5);
+    }
+
+    #[test]
+    fn test_lexical_match_ratio_clamped_to_one() {
+        let m = LexicalMatch::new(PathBuf::from("/test"), 0.5, String::new(), 8, 2);
+        assert_eq!(m.match_ratio(), 1.0);
     }
 
     #[test]

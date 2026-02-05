@@ -325,23 +325,42 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       case 'status':
         set((state) => ({
           statusMessage: event.message,
-          phase: event.message.toLowerCase().includes('refining') ? 'refining' : state.phase,
+          phase: (() => {
+            const lowered = event.message.toLowerCase();
+            if (lowered.includes('refining')) return 'refining';
+            if (lowered.includes('understanding') || lowered.includes('collecting evidence')) {
+              return state.semanticResults.length > 0 ? state.phase : 'semantic';
+            }
+            return state.phase;
+          })(),
         }));
         break;
 
       case 'semanticResults': {
-        const currentCount = get().semanticResults.length;
+        const state = get();
+        const previousSelectedPath =
+          state.semanticResults[state.selectedIndex]?.path ??
+          state.lexicalResults[state.selectedIndex]?.path ??
+          null;
+        const currentCount = state.semanticResults.length;
         const newCount = event.results.length;
         // Queue spark targets for new results
         const newTargets = Array.from(
           { length: Math.max(0, newCount - currentCount) },
           (_, i) => currentCount + i
         );
+        const nextSelectedIndex = (() => {
+          if (previousSelectedPath) {
+            const matchedIndex = event.results.findIndex((result) => result.path === previousSelectedPath);
+            if (matchedIndex >= 0) return matchedIndex;
+          }
+          return state.selectedIndex < newCount ? state.selectedIndex : 0;
+        })();
         set((state) => ({
           semanticResults: event.results,
           phase: 'semantic',
           statusMessage: `Found ${event.count} results`,
-          selectedIndex: 0,
+          selectedIndex: nextSelectedIndex,
           pendingSparkTargets: [...state.pendingSparkTargets, ...newTargets],
         }));
         break;
@@ -353,9 +372,37 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
       case 'streamUpdate':
         set((state) => {
+          const stats = {
+            filesScanned: Number(
+              (event.stats as unknown as Record<string, number | undefined>).filesScanned ??
+              (event.stats as unknown as Record<string, number | undefined>).files_scanned ??
+              state.streamStats?.filesScanned ??
+              0
+            ),
+            candidates: Number(
+              (event.stats as unknown as Record<string, number | undefined>).candidates ??
+              state.streamStats?.candidates ??
+              0
+            ),
+            embedded: Number(
+              (event.stats as unknown as Record<string, number | undefined>).embedded ??
+              state.streamStats?.embedded ??
+              0
+            ),
+            cacheHits: Number(
+              (event.stats as unknown as Record<string, number | undefined>).cacheHits ??
+              (event.stats as unknown as Record<string, number | undefined>).cache_hits ??
+              state.streamStats?.cacheHits ??
+              0
+            ),
+          };
+
           const scanEvents = event.events
-            .filter((item) => item.kind === 'scan' && item.path)
-            .map((item) => item.path as string);
+            .map((item) => {
+              const raw = item as unknown as Record<string, unknown>;
+              return raw.path ?? raw.pathHint;
+            })
+            .filter((path): path is string => typeof path === 'string' && path.length > 0);
           const scanTrail = scanEvents.length > 0
             ? [...state.scanTrail, ...scanEvents].slice(-MAX_SCAN_TRAIL)
             : state.scanTrail;
@@ -371,14 +418,23 @@ export const useSearchStore = create<SearchState>((set, get) => ({
             statusMessage = 'Finalizing results';
           }
 
+          const phase =
+            event.stage === 'lexical'
+              ? 'lexical'
+              : event.stage === 'semantic'
+                ? 'semantic'
+                : event.stage === 'refining'
+                  ? 'refining'
+                  : state.phase;
+
           return {
             streamStage: event.stage,
-            streamStats: event.stats,
+            streamStats: stats,
             streamEvents: event.events,
             streamSequence: state.streamSequence + 1,
             scanTrail,
             statusMessage,
-            phase: event.stage === 'refining' ? 'refining' : state.phase,
+            phase,
           };
         });
         break;
@@ -408,6 +464,14 @@ export const useSearchStore = create<SearchState>((set, get) => ({
           useActivityStore.getState().logSearchQuery(threadQuery).catch(() => {
             // Silent failure - activity logging is non-critical
           });
+
+          // Log top shown result paths for workstream clustering.
+          const topResultPaths = results.slice(0, 5).map((result) => result.path);
+          for (const resultPath of topResultPaths) {
+            useActivityStore.getState().logResultShown(resultPath, threadQuery).catch(() => {
+              // Silent failure - activity logging is non-critical
+            });
+          }
 
           // Auto-recluster workstreams after search completes (Pro feature)
           // This ensures the Today Tab stays up-to-date without manual intervention

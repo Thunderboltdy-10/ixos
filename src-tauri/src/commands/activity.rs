@@ -191,6 +191,21 @@ pub fn log_activity(
     Ok(())
 }
 
+/// Log a lightweight "result shown" event for workstream clustering.
+///
+/// This is emitted when ranked results are displayed to the user.
+#[tauri::command]
+pub fn log_result_shown(
+    file_path: String,
+    query: String,
+    activity_state: State<'_, ActivityState>,
+) -> Result<(), String> {
+    let event = create_event(&file_path, ActivityAction::ResultShown, Some(&query));
+    let mut ledger = activity_state.ledger.lock();
+    ledger.log_activity(event);
+    Ok(())
+}
+
 /// Get activity events within a time range
 ///
 /// # Arguments

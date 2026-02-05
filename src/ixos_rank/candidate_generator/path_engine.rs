@@ -14,7 +14,6 @@ use std::time::SystemTime;
 pub const HARDCODED_SKIP_DIRS: &[&str] = &[
     "node_modules",
     ".next",
-    ".env",
     "vendor",
     "target",
     "dist",
@@ -619,6 +618,14 @@ mod tests {
         assert!(
             paths_no_gitignore.iter().any(|p| p.contains("secret.rs")),
             "secret.rs should be included when gitignore is disabled"
+        );
+    }
+
+    #[test]
+    fn test_hardcoded_skip_dirs_does_not_exclude_dot_env_file_name() {
+        assert!(
+            !HARDCODED_SKIP_DIRS.contains(&".env"),
+            ".env must not be hard-skipped; users often store searchable config there"
         );
     }
 }

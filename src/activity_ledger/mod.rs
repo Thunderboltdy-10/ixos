@@ -63,6 +63,8 @@ pub struct ActivityEvent {
 pub enum ActivityAction {
     /// User executed a search query
     SearchQuery,
+    /// Search result appeared in the ranked list
+    ResultShown,
     /// User clicked on a search result
     ResultClicked,
     /// User opened a file from search results
@@ -89,6 +91,7 @@ impl ActivityAction {
             ActivityAction::FileOpened
                 | ActivityAction::FileRevealed
                 | ActivityAction::FileModified
+                | ActivityAction::ResultShown
                 | ActivityAction::ResultClicked
         )
     }

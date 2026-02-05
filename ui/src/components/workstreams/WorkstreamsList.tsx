@@ -87,12 +87,17 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-stroke-hairline">
-        <div className="flex items-center gap-2">
-          <Layers className="w-5 h-5 text-accent-teal" />
-          <h2 className="text-lg font-semibold text-porcelain">Workstreams</h2>
-          <span className="text-xs text-fg-dim bg-graphite-2 px-2 py-0.5 rounded-full">
-            {workstreams.length}
-          </span>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <Layers className="w-5 h-5 text-accent-teal" />
+            <h2 className="text-lg font-semibold text-porcelain">Workstreams</h2>
+            <span className="text-xs text-fg-dim bg-graphite-2 px-2 py-0.5 rounded-full">
+              {workstreams.length}
+            </span>
+          </div>
+          <p className="text-2xs text-fg-ghost">
+            Auto-clustered sessions from your searches and file opens. Use them to jump back into a task in one click.
+          </p>
         </div>
 
         <div className="flex items-center gap-2">

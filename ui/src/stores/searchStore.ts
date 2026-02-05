@@ -372,9 +372,37 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
       case 'streamUpdate':
         set((state) => {
+          const stats = {
+            filesScanned: Number(
+              (event.stats as unknown as Record<string, number | undefined>).filesScanned ??
+              (event.stats as unknown as Record<string, number | undefined>).files_scanned ??
+              state.streamStats?.filesScanned ??
+              0
+            ),
+            candidates: Number(
+              (event.stats as unknown as Record<string, number | undefined>).candidates ??
+              state.streamStats?.candidates ??
+              0
+            ),
+            embedded: Number(
+              (event.stats as unknown as Record<string, number | undefined>).embedded ??
+              state.streamStats?.embedded ??
+              0
+            ),
+            cacheHits: Number(
+              (event.stats as unknown as Record<string, number | undefined>).cacheHits ??
+              (event.stats as unknown as Record<string, number | undefined>).cache_hits ??
+              state.streamStats?.cacheHits ??
+              0
+            ),
+          };
+
           const scanEvents = event.events
-            .filter((item) => item.kind === 'scan' && item.path)
-            .map((item) => item.path as string);
+            .map((item) => {
+              const raw = item as unknown as Record<string, unknown>;
+              return raw.path ?? raw.pathHint;
+            })
+            .filter((path): path is string => typeof path === 'string' && path.length > 0);
           const scanTrail = scanEvents.length > 0
             ? [...state.scanTrail, ...scanEvents].slice(-MAX_SCAN_TRAIL)
             : state.scanTrail;
@@ -390,14 +418,23 @@ export const useSearchStore = create<SearchState>((set, get) => ({
             statusMessage = 'Finalizing results';
           }
 
+          const phase =
+            event.stage === 'lexical'
+              ? 'lexical'
+              : event.stage === 'semantic'
+                ? 'semantic'
+                : event.stage === 'refining'
+                  ? 'refining'
+                  : state.phase;
+
           return {
             streamStage: event.stage,
-            streamStats: event.stats,
+            streamStats: stats,
             streamEvents: event.events,
             streamSequence: state.streamSequence + 1,
             scanTrail,
             statusMessage,
-            phase: event.stage === 'refining' ? 'refining' : state.phase,
+            phase,
           };
         });
         break;

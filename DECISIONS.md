@@ -104,3 +104,31 @@
 - Evidence (links to /reports or output files): src/ixos_rank/types.rs, src/ixos_rank/progressive.rs
 - Risks: Small score distribution shift in components that previously relied on over-1 ratios
 - Follow-ups: Verify fusion relevance on canonical eval suite after clamp
+
+- Decision: Gate document extraction phase behind explicit document intent or document-path signals
+- Options considered: Keep unconditional document search; disable document search globally; run document phase only when ripgrep returns zero hits
+- Why chosen: Unconditional parsing caused avoidable latency on code-only queries; intent/path gating preserves document retrieval paths while removing the default penalty
+- Evidence (links to /reports or output files): src/ixos_rank/candidate_generator/mod.rs, reports/document_search_gate_fix_2026-02-05.md
+- Risks: Some document-only queries without explicit signals may skip document phase
+- Follow-ups: Add telemetry/profile run to tune gate criteria if recall drops on document-heavy workloads
+
+- Decision: Remove `.env` from hardcoded skip list used by path/ripgrep/document walkers
+- Options considered: Keep `.env` in list; move `.env` behind config flag; remove `.env` from shared hardcoded list
+- Why chosen: `.env` is a file (not a directory) and is often a relevant search target for config keys; hard-skipping it causes silent misses
+- Evidence (links to /reports or output files): src/ixos_rank/candidate_generator/path_engine.rs, reports/dotenv_skiplist_fix_2026-02-05.md
+- Risks: Slightly more files may be traversed in hidden-enabled scans
+- Follow-ups: Add end-to-end test with hidden scanning enabled to validate `.env` retrieval path
+
+- Decision: Skip eager Pro indexing in Tauri Auto mode and start stream path from Flash immediately
+- Options considered: Keep eager Pro indexing for all modes; disable Pro refinement in Auto; lazily index only for Pro-primary mode
+- Why chosen: Eager Pro index delayed first streaming updates and made Auto feel frozen on large repos; Pro-primary still indexes explicitly
+- Evidence (links to /reports or output files): src-tauri/src/commands/search.rs, reports/ui_streaming_classification_fix_2026-02-05.md
+- Risks: If future Auto path requires full Pro index earlier, this may need conditional lazy init logic
+- Follow-ups: Add explicit instrumentation for "time-to-first-stream-event" in Tauri integration tests
+
+- Decision: Use one shared score-based classifier for result badge and "Why this matched"
+- Options considered: Keep threshold rule in results and separate proxy logic in explanation; hide classification badges entirely; centralize scoring interpretation
+- Why chosen: Removes contradictory UI signals and ensures ranking explanation mirrors score breakdown data
+- Evidence (links to /reports or output files): ui/src/lib/matchClassification.ts, ui/src/components/search/SearchResults.tsx, ui/src/components/search/WhyMatched.tsx, reports/ui_streaming_classification_fix_2026-02-05.md
+- Risks: Labels like "Integrity" may be less intuitive than a simple text/semantic dichotomy
+- Follow-ups: Validate label comprehension with a short usability pass and adjust naming if needed

@@ -10,9 +10,12 @@
 - Current repo-scale E2E perf (`--dir .`, JIT, 3 queries x2 runs): Flash avg 16,838.65 ms; Auto avg 15,754.25 ms (see reports/v2_repo_latency_after_auto_index_fix_summary_2026-02-05_221919.json)
 - Previous repo-scale E2E perf before rescue: Flash avg 17,153.32 ms; Auto avg 33,289.55 ms; Pro avg 32,985.66 ms (see reports/v2_repo_latency_summary_2026-02-05_213420.json)
 - Delta achieved in this pass: Auto -52.68% average latency on large repo (33,289.55 -> 15,754.25 ms)
+- Recent regression fix (2026-02-05): Candidate document phase is now gated by query/path document signals to avoid unconditional binary parsing on code-only queries.
+- Recent correctness fix (2026-02-05): `.env` removed from shared hardcoded skip list so env files are not silently excluded by walker entry-name filtering.
+- Recent UX/runtime fix (2026-02-05): Streaming deck now resets per-search and stage updates are normalized; Auto mode no longer eagerly indexes Pro in Tauri path, improving perceived startup responsiveness for stream events.
 - Top bottlenecks (ranked): Directory walk/candidate generation on large trees; ripgrep scan I/O; semantic embedding on cold runs; completion-path evidence extraction tail
 - Open risks / unknowns: Multilingual routing remains unevaluated (ES/FR/DE slice pending); Auto quality impact from stricter refinement gate needs focused relevance eval on long-tail queries
-- Next 3 actions: (1) Run quality A/B for new Auto gate on real queries, (2) decouple evidence extraction from blocking CLI completion path, (3) add optional startup prewarm for Flash model on desktop launch
+- Next 3 actions: (1) Run Tauri manual smoke on large repo and capture streaming stage/timing evidence in `/reports`, (2) run quality A/B for new Auto gate on real queries, (3) decouple evidence extraction from blocking CLI completion path
 
 ---
 

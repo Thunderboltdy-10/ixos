@@ -33,7 +33,9 @@ export function SearchDeck() {
   const phase = useSearchStore((state) => state.phase);
   const streamStats = useSearchStore((state) => state.streamStats);
   const streamStage = useSearchStore((state) => state.streamStage);
+  const streamSequence = useSearchStore((state) => state.streamSequence);
   const searchStartTime = useSearchStore((state) => state.searchStartTime);
+  const activeThreadId = useSearchStore((state) => state.activeThreadId);
   const cacheMode = useSearchStore((state) => state.cacheMode);
   const journalistMode = useSearchStore((state) => state.journalistMode);
   const lexicalResults = useSearchStore((state) => state.lexicalResults);
@@ -50,10 +52,12 @@ export function SearchDeck() {
   const [finalElapsedMs, setFinalElapsedMs] = useState<number | null>(null);
   const [animatedProgress, setAnimatedProgress] = useState(0);
   const [predictedProgress, setPredictedProgress] = useState(0);
+  const lastSearchStartRef = useRef<number | null>(null);
 
   const isActive = phase === 'lexical' || phase === 'semantic' || phase === 'refining';
   const isComplete = phase === 'complete';
-  const shouldShow = hasSearchIntent || isActive || isComplete;
+  const hasStartedSearch = searchStartTime !== null;
+  const shouldShow = isActive || isComplete || (hasStartedSearch && hasSearchIntent);
   const resultCount = semanticResults.length > 0 ? semanticResults.length : lexicalResults.length;
   const hasResults = resultCount > 0;
   const stats = streamStats ?? { filesScanned: 0, candidates: 0, embedded: 0, cacheHits: 0 };
@@ -71,13 +75,23 @@ export function SearchDeck() {
   }, [lexicalResults.length, semanticResults.length, stats.candidates]);
 
   const stageIndex = useMemo(() => {
+    const effectiveStage =
+      streamStage ??
+      (phase === 'refining'
+        ? 'refining'
+        : phase === 'semantic'
+          ? 'semantic'
+          : phase === 'lexical'
+            ? 'lexical'
+            : null);
+
     if (isComplete) return 3;
-    if (streamStage === 'tail' || phase === 'refining') return 2;
-    if (phase === 'semantic') {
+    if (effectiveStage === 'tail' || effectiveStage === 'refining') return 2;
+    if (effectiveStage === 'semantic') {
       if (semanticResults.length > 0) return 2;
       return 1;
     }
-    if (phase === 'lexical' || streamStage === 'lexical') return 0;
+    if (effectiveStage === 'lexical') return 0;
     return hasSearchIntent ? 0 : -1;
   }, [hasSearchIntent, isComplete, phase, semanticResults.length, streamStage]);
 
@@ -95,14 +109,19 @@ export function SearchDeck() {
 
   const statusMessage = useMemo(() => {
     if (isComplete) {
-      return `Done ${resultCount} ${resultCount === 1 ? 'result' : 'results'} in ${formatDuration(finalElapsedMs ?? elapsedMs)}`;
+      return `${resultCount} ${resultCount === 1 ? 'result' : 'results'} | ${formatDuration(finalElapsedMs ?? elapsedMs)}`;
     }
     if (!isActive && hasSearchIntent) return 'Starting search';
-    if (phase === 'lexical') return `Scanning ${stats.filesScanned} files`;
-    if (phase === 'semantic' && semanticResults.length === 0) {
+    if (streamStage === 'lexical' || phase === 'lexical') return `Scanning ${stats.filesScanned} files`;
+    if ((streamStage === 'semantic' || phase === 'semantic') && semanticResults.length === 0) {
       return `Embedding ${stats.embedded}/${embedTarget}`;
     }
-    if (phase === 'semantic' || phase === 'refining' || streamStage === 'tail') {
+    if (
+      streamStage === 'tail' ||
+      streamStage === 'refining' ||
+      phase === 'refining' ||
+      semanticResults.length > 0
+    ) {
       return `Ranking ${Math.max(resultCount, semanticResults.length)} results`;
     }
     return 'Preparing search';
@@ -110,12 +129,12 @@ export function SearchDeck() {
 
   const trailLabel = useMemo(() => {
     if (scanTrail.length === 0) return '';
-    return scanTrail.slice(-4).map(fileTail).join(' • ');
+    return scanTrail.slice(-4).map(fileTail).join(' | ');
   }, [scanTrail]);
 
   const pipelineSteps = useMemo<PipelineStep[]>(() => {
     const doneDetail = isComplete
-      ? `${resultCount} ${resultCount === 1 ? 'result' : 'results'} • ${formatDuration(finalElapsedMs ?? elapsedMs)}`
+      ? `${resultCount} ${resultCount === 1 ? 'result' : 'results'} | ${formatDuration(finalElapsedMs ?? elapsedMs)}`
       : 'Awaiting final ranking';
 
     return [
@@ -171,6 +190,21 @@ export function SearchDeck() {
   }, [toggleAskModeOverride]);
 
   useEffect(() => {
+    if (!searchStartTime) {
+      lastSearchStartRef.current = null;
+      return;
+    }
+
+    if (lastSearchStartRef.current !== searchStartTime) {
+      lastSearchStartRef.current = searchStartTime;
+      setElapsedMs(0);
+      setFinalElapsedMs(null);
+      setPredictedProgress(0);
+      setAnimatedProgress(0);
+    }
+  }, [searchStartTime]);
+
+  useEffect(() => {
     if (!shouldShow || isComplete) {
       setPredictedProgress(0);
       return;
@@ -183,7 +217,7 @@ export function SearchDeck() {
     }, 100);
 
     return () => window.clearInterval(intervalId);
-  }, [averageSearchMs, isComplete, searchStartTime, shouldShow]);
+  }, [averageSearchMs, isComplete, searchStartTime, shouldShow, activeThreadId]);
 
   useEffect(() => {
     if (isComplete) {
@@ -195,7 +229,7 @@ export function SearchDeck() {
       return;
     }
     setAnimatedProgress((previous) => Math.max(previous, progress));
-  }, [isComplete, progress, shouldShow]);
+  }, [isComplete, progress, shouldShow, activeThreadId]);
 
   useEffect(() => {
     if ((hasResults || isComplete) && finalElapsedMs === null && searchStartTime) {
@@ -281,17 +315,18 @@ export function SearchDeck() {
               'h-2.5 w-2.5 rounded-full',
               isComplete ? 'bg-success' : 'bg-accent-teal animate-pulse'
             )} />
-            <span className="flex-1 truncate text-sm font-medium text-fg-muted">{statusMessage}</span>
-            <div className="flex items-center gap-3 text-xs font-mono text-fg-dim">
+            <span className="flex-1 truncate text-sm font-medium text-porcelain">{statusMessage}</span>
+            <div className="flex items-center gap-3 text-xs font-mono text-fg-ghost">
               {resultCount > 0 && <span className="tabular-nums">{resultCount} results</span>}
               {displayElapsedMs > 0 && <span className="tabular-nums">{formatDuration(displayElapsedMs)}</span>}
-              <span className="rounded px-1.5 py-0.5 text-2xs text-fg-muted bg-graphite-2">{modeBadge}</span>
+              <span className="hidden rounded px-1.5 py-0.5 text-2xs text-fg-ghost bg-graphite-2 sm:inline-flex">Ctrl+K</span>
+              <span className="rounded px-1.5 py-0.5 text-2xs text-fg-dim bg-graphite-2">{modeBadge}</span>
             </div>
           </div>
 
           {trailLabel && (
             <motion.div
-              key={trailLabel}
+              key={`${trailLabel}-${streamSequence}`}
               initial={{ opacity: 0, y: 3 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.18 }}
@@ -352,3 +387,4 @@ export function SearchDeck() {
     </>
   );
 }
+

@@ -800,7 +800,6 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
 
         let should_run_auto_pro_refine = matches!(self.config.search_mode, SearchMode::Auto)
             && has_pro_engine
-            && !lexical_results.is_empty()
             && should_refine(
                 query_terms.len(),
                 &lexical_results,

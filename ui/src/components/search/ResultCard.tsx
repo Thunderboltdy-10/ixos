@@ -11,6 +11,7 @@ import { ContextSnippet } from './ContextSnippet';
 import { WhyMatched } from './WhyMatched';
 import { usePrefetch } from '@/hooks/usePrefetch';
 import { useResultCardLayout } from '@/hooks/useLayoutSync';
+import type { MatchSignal } from '@/lib/matchClassification';
 // useAnimatedCardOpacity import removed - animation system disabled
 import type { RankedResult, LexicalResult, ContextSnippet as ContextSnippetType } from '@/lib/types';
 
@@ -59,13 +60,32 @@ interface ResultCardProps {
   index: number;
   isSelected: boolean;
   isSemanticResult: boolean;
-  matchType?: 'text' | 'semantic';
+  matchType?: MatchSignal;
   mode?: 'jit' | 'cache' | 'journalist';
   isAskMode?: boolean;
   onSelect: () => void;
   onOpen: () => void;
   onReveal: () => void;
 }
+
+const MATCH_TYPE_META: Record<MatchSignal, { label: string; className: string }> = {
+  semantic: {
+    label: 'Semantic',
+    className: 'bg-accent-magenta/10 text-accent-magenta border-accent-magenta/30',
+  },
+  integrity: {
+    label: 'Integrity',
+    className: 'bg-success/10 text-success border-success/30',
+  },
+  temporal: {
+    label: 'Age',
+    className: 'bg-accent-amber/10 text-accent-amber border-accent-amber/30',
+  },
+  behavior: {
+    label: 'Pattern',
+    className: 'bg-accent-teal/10 text-accent-teal border-accent-teal/30',
+  },
+};
 
 export function ResultCard({
   result,
@@ -213,12 +233,10 @@ export function ResultCard({
             </p>
             {matchType && (
               <span className={cn(
-                'px-2 py-0.5 text-[10px] uppercase tracking-[0.16em] rounded-full shrink-0 border',
-                matchType === 'text'
-                  ? 'bg-accent-violet/10 text-accent-violet border-accent-violet/30'
-                  : 'bg-accent-magenta/10 text-accent-magenta border-accent-magenta/30'
+                'px-2 py-0.5 text-[10px] rounded-full shrink-0 border',
+                MATCH_TYPE_META[matchType].className
               )}>
-                {matchType === 'text' ? 'Text' : 'Semantic'}
+                {MATCH_TYPE_META[matchType].label}
               </span>
             )}
           </div>

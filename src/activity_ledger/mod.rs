@@ -339,7 +339,6 @@ impl ActivityLedger {
                 ActivityAction::FileOpened
                     | ActivityAction::FileModified
                     | ActivityAction::FileRevealed
-                    | ActivityAction::ResultShown
                     | ActivityAction::ResultClicked
             ) {
                 continue;

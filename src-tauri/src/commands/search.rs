@@ -580,8 +580,14 @@ pub async fn search_progressive(
             tracing::warn!("Failed to index directory for semantic search: {}", e);
         }
         if let Some(pro_engine) = pro_engine.as_mut() {
-            if let Err(e) = pro_engine.index_directory(&dir_path).await {
-                tracing::warn!("Failed to index directory for pro search: {}", e);
+            // Keep Auto mode flash-first and stream immediately.
+            // Pro indexing is only required for Pro-primary searches.
+            if matches!(config.search_mode, SearchMode::Pro) {
+                if let Err(e) = pro_engine.index_directory(&dir_path).await {
+                    tracing::warn!("Failed to index directory for pro search: {}", e);
+                }
+            } else {
+                tracing::debug!("Skipping eager pro index in Auto mode");
             }
         }
 

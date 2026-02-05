@@ -8,6 +8,7 @@ import { useSearchStore } from '@/stores/searchStore';
 import { useClearLayoutOnChange } from '@/hooks/useLayoutSync';
 import { cn } from '@/lib/utils';
 import { sanitizeResults } from '@/lib/searchHistory';
+import { getPrimaryMatchSignal } from '@/lib/matchClassification';
 import type { RankedResult, LexicalResult, SearchPhase } from '@/lib/types';
 
 interface SearchResultsProps {
@@ -78,6 +79,12 @@ export function SearchResults({
     !hasSemanticResults &&
     (phase === 'semantic' || phase === 'refining') &&
     displayResults.length > 0;
+
+  const getMatchType = (result: RankedResult | LexicalResult) => {
+    if (!('scoreBreakdown' in result)) return undefined;
+    return getPrimaryMatchSignal(result.scoreBreakdown).key;
+  };
+
   useClearLayoutOnChange([displayResults.length]);
 
   // Check if current search is starred
@@ -195,7 +202,7 @@ export function SearchResults({
                   index={index}
                   isSelected={index === selectedIndex}
                   isSemanticResult={isSemanticPhase && 'scoreBreakdown' in result}
-                  matchType={'scoreBreakdown' in result ? (result.scoreBreakdown.semantic > 0.4 ? 'semantic' : 'text') : undefined}
+                  matchType={getMatchType(result)}
                   mode={mode}
                   isAskMode={isAskMode}
                   onSelect={() => onSelect(index)}

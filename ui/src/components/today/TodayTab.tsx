@@ -185,6 +185,9 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
         <div>
           <h1 className="text-lg font-semibold text-porcelain">Today</h1>
           <p className="text-xs text-fg-dim">{dateStr}</p>
+          <p className="mt-1 text-2xs text-fg-ghost">
+            Resume your latest flow, reopen recent files, and pick the next best file without re-searching.
+          </p>
         </div>
       </div>
 

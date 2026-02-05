@@ -14,23 +14,23 @@ video::-moz-media-controls {
 }
 
 @theme {
-  /* GRAPHITE BACKGROUNDS (base only, sections are transparent) */
-  --color-bg-graphite-0: #050507;
-  --color-bg-graphite-1: #0A0C10;
-  --color-bg-graphite-2: #12151A;
+  /* GRAPHITE BACKGROUNDS (aligned with desktop tokens) */
+  --color-bg-graphite-0: #0E1117;
+  --color-bg-graphite-1: #161B22;
+  --color-bg-graphite-2: #1E242D;
 
-  --color-primary: #050507;
+  --color-primary: #0E1117;
   --color-secondary: #F3F5F7;
 
-  --color-bg-primary: #050507;
-  --color-bg-secondary: #0A0C10;
-  --color-bg-tertiary: #12151A;
+  --color-bg-primary: #0E1117;
+  --color-bg-secondary: #161B22;
+  --color-bg-tertiary: #1E242D;
   --color-bg-elevated: hsl(220 10% 12%);
 
   /* FOREGROUND COLORS */
   --color-fg-porcelain: #F3F5F7;
   --color-fg-muted: rgba(243, 245, 247, 0.72);
-  --color-stroke-hairline: rgba(243, 245, 247, 0.14);
+  --color-stroke-hairline: rgba(243, 245, 247, 0.08);
 
   --color-text-primary: #F3F5F7;
   --color-text-secondary: rgba(243, 245, 247, 0.72);
@@ -49,9 +49,9 @@ video::-moz-media-controls {
   --color-accent-teal-glow: hsl(175 80% 55%);
 
   /* Violet - Meeting/Benchmarks */
-  --color-accent-violet: #A78BFA;
+  --color-accent-violet: #7C5CFF;
   /* Brighter violet */
-  --color-accent-violet-glow: hsl(255 100% 75%);
+  --color-accent-violet-glow: #9F8CFF;
 
   /* Magenta - Pricing */
   --color-accent-magenta: #F472B6;
@@ -175,7 +175,7 @@ video::-moz-media-controls {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 100% 80% at 50% 0%, rgba(246, 185, 76, 0.15) 0%, transparent 60%);
+  background: radial-gradient(ellipse 100% 80% at 50% 0%, rgba(246, 185, 76, 0.12) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
@@ -189,22 +189,22 @@ video::-moz-media-controls {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 30% 20%, rgba(20, 184, 166, 0.1) 0%, transparent 50%);
+  background: radial-gradient(ellipse 80% 60% at 30% 20%, rgba(20, 184, 166, 0.08) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
 
 .section-meeting {
   position: relative;
-  /* Darker base to make violet pop */
-  background: radial-gradient(circle at 100% 50%, rgba(167, 139, 250, 0.03) 0%, transparent 50%);
+  /* Subtle violet base */
+  background: radial-gradient(circle at 100% 50%, rgba(124, 92, 255, 0.03) 0%, transparent 50%);
 }
 
 .section-meeting::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 50% at 80% 50%, rgba(167, 139, 250, 0.12) 0%, transparent 60%);
+  background: radial-gradient(ellipse 60% 50% at 80% 50%, rgba(124, 92, 255, 0.10) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
@@ -218,7 +218,7 @@ video::-moz-media-controls {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 100% 80% at 50% 100%, rgba(167, 139, 250, 0.1) 0%, transparent 60%);
+  background: radial-gradient(ellipse 100% 80% at 50% 100%, rgba(124, 92, 255, 0.08) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
@@ -392,7 +392,7 @@ video::-moz-media-controls {
   :root {
     --accent-amber-rgb: 246, 185, 76;
     --accent-teal-rgb: 20, 184, 166;
-    --accent-violet-rgb: 167, 139, 250;
+    --accent-violet-rgb: 124, 92, 255;
     --accent-magenta-rgb: 244, 114, 182;
   }
 

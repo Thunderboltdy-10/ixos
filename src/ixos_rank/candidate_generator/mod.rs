@@ -82,6 +82,30 @@ pub const BATCH_FLUSH_INTERVAL_MS: u64 = 50;
 /// Batch size threshold for streaming
 pub const BATCH_SIZE_THRESHOLD: usize = 20;
 
+/// Document formats supported by DocumentEngine.
+const DOCUMENT_EXTENSIONS: &[&str] = &["pdf", "docx", "xlsx", "xls", "pptx", "rtf"];
+
+/// Query terms that strongly indicate binary document search intent.
+const DOCUMENT_QUERY_TERMS: &[&str] = &[
+    "pdf",
+    "docx",
+    "xlsx",
+    "xls",
+    "pptx",
+    "ppt",
+    "rtf",
+    "word",
+    "excel",
+    "powerpoint",
+    "presentation",
+    "spreadsheet",
+    "slide",
+    "slides",
+];
+
+/// Number of high-rank path candidates to inspect for document signals.
+const DOCUMENT_PATH_SIGNAL_SAMPLE: usize = 64;
+
 // ============================================================================
 // CandidateGenerator
 // ============================================================================
@@ -223,6 +247,62 @@ impl CandidateGenerator {
         }
     }
 
+    /// Gate expensive document parsing so code-only queries stay fast.
+    fn should_search_documents(
+        &self,
+        lexical_query: &str,
+        path_candidates: &[ScoredCandidate],
+    ) -> bool {
+        if Self::query_has_document_intent(lexical_query) {
+            return true;
+        }
+
+        Self::path_candidates_include_document(path_candidates)
+    }
+
+    fn query_has_document_intent(query: &str) -> bool {
+        let lower = query.to_ascii_lowercase();
+        for raw in lower.split_whitespace() {
+            let token =
+                raw.trim_matches(|c: char| !c.is_ascii_alphanumeric() && c != ':' && c != '.');
+            if token.is_empty() {
+                continue;
+            }
+
+            if let Some(ext) = token.strip_prefix("ext:") {
+                let ext = ext.trim_start_matches('.');
+                if Self::is_document_extension(ext) {
+                    return true;
+                }
+            }
+
+            if DOCUMENT_QUERY_TERMS.contains(&token) {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    fn path_candidates_include_document(path_candidates: &[ScoredCandidate]) -> bool {
+        path_candidates
+            .iter()
+            .take(DOCUMENT_PATH_SIGNAL_SAMPLE)
+            .any(|candidate| {
+                candidate
+                    .path
+                    .extension()
+                    .and_then(|ext| ext.to_str())
+                    .is_some_and(Self::is_document_extension)
+            })
+    }
+
+    fn is_document_extension(ext: &str) -> bool {
+        DOCUMENT_EXTENSIONS
+            .iter()
+            .any(|document_ext| ext.eq_ignore_ascii_case(document_ext))
+    }
+
     /// Generate candidates with HARD CAP enforcement
     ///
     /// This is the core function that ensures we NEVER exceed MAX_CANDIDATES_FOR_EMBEDDING.
@@ -270,9 +350,15 @@ impl CandidateGenerator {
         stats.ripgrep_ms = ripgrep_start.elapsed().as_millis() as u64;
 
         // Phase 2.5: Document search (for binary formats ripgrep can't handle)
-        let (document_candidates, _doc_stats) = self.document_engine.search(&lexical_query);
-        // Clear document cache after search (privacy: no persistent cache)
-        self.document_engine.clear_cache();
+        let document_candidates = if self.should_search_documents(&lexical_query, &path_candidates)
+        {
+            let (document_candidates, _doc_stats) = self.document_engine.search(&lexical_query);
+            // Clear document cache after search (privacy: no persistent cache)
+            self.document_engine.clear_cache();
+            document_candidates
+        } else {
+            Vec::new()
+        };
 
         // Phase 3: Merge and deduplicate (path + ripgrep + document candidates)
         let merge_start = Instant::now();
@@ -381,9 +467,15 @@ impl CandidateGenerator {
         stats.ripgrep_ms = ripgrep_start.elapsed().as_millis() as u64;
 
         // Phase 2.5: Document search (for binary formats ripgrep can't handle)
-        let (document_candidates, _doc_stats) = self.document_engine.search(&lexical_query);
-        // Clear document cache after search (privacy: no persistent cache)
-        self.document_engine.clear_cache();
+        let document_candidates = if self.should_search_documents(&lexical_query, &path_candidates)
+        {
+            let (document_candidates, _doc_stats) = self.document_engine.search(&lexical_query);
+            // Clear document cache after search (privacy: no persistent cache)
+            self.document_engine.clear_cache();
+            document_candidates
+        } else {
+            Vec::new()
+        };
 
         // Phase 3: Merge and deduplicate (path + ripgrep + document candidates)
         let merge_start = Instant::now();
@@ -655,5 +747,31 @@ mod tests {
         assert!(lexical_matches
             .iter()
             .any(|m| m.path.to_string_lossy().contains("report")));
+    }
+
+    #[test]
+    fn test_document_search_gate_skips_code_query_without_doc_signals() {
+        let temp = setup_test_dir();
+        let generator = CandidateGenerator::with_defaults(temp.path().to_path_buf());
+        assert!(!generator.should_search_documents("fn main import module", &[]));
+    }
+
+    #[test]
+    fn test_document_search_gate_runs_for_document_query_signals() {
+        let temp = setup_test_dir();
+        let generator = CandidateGenerator::with_defaults(temp.path().to_path_buf());
+        assert!(generator.should_search_documents("ext:pdf quarterly report", &[]));
+        assert!(generator.should_search_documents("powerpoint roadmap", &[]));
+    }
+
+    #[test]
+    fn test_document_search_gate_runs_when_top_paths_include_document_files() {
+        let temp = setup_test_dir();
+        let generator = CandidateGenerator::with_defaults(temp.path().to_path_buf());
+        let path_candidates = vec![ScoredCandidate::from_path_match(
+            std::path::PathBuf::from("docs/roadmap.pdf"),
+            0.9,
+        )];
+        assert!(generator.should_search_documents("roadmap", &path_candidates));
     }
 }

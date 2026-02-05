@@ -81,6 +81,10 @@ interface SignalPulse {
 const FADE_OUT_DURATION = 500;
 
 export function SearchCorridor() {
+  // DISABLED: Animation removed per user feedback - just return null
+  return null;
+
+  // eslint-disable-next-line @typescript-eslint/no-unreachable
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<number>(0);
@@ -372,20 +376,6 @@ export function SearchCorridor() {
           return true;
         });
       }
-
-      // Update and draw sparks (with fade multiplier)
-      sparksRef.current = sparksRef.current.filter(spark => {
-        spark.progress = Math.min(1, (now - spark.startTime) / SPARK_CONFIG.travelTime);
-
-        if (spark.progress >= 1) return false;
-
-        // Apply fade multiplier to spark alpha via context globalAlpha
-        ctx.save();
-        ctx.globalAlpha = fadeMultiplier;
-        drawSpark(ctx, spark, centerX, color);
-        ctx.restore();
-        return true;
-      });
 
       // Update and draw sparks (with fade multiplier)
       sparksRef.current = sparksRef.current.filter(spark => {

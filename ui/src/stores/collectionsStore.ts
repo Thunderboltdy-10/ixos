@@ -120,8 +120,8 @@ export const useCollectionsStore = create<CollectionsState>((set, get) => ({
   },
 
   getRecentCollections: (limit = 10) => {
-    return get()
-      .collections
+    // Copy array before sorting to avoid mutating state
+    return [...get().collections]
       .sort((a, b) => b.lastRefreshed - a.lastRefreshed)
       .slice(0, limit);
   },

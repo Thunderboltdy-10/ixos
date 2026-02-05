@@ -33,14 +33,16 @@
 //! - `MAX_BYTES_READ_PER_FILE = 64KB`
 //! - `MAX_TEXT_CHARS_PER_FILE = 20,000`
 
+pub mod document_engine;
 pub mod metadata_priors;
 pub mod path_engine;
 pub mod query_preprocess;
 pub mod ripgrep_funnel;
 pub mod scorer;
 
+pub use document_engine::{DocumentEngine, DocumentEngineConfig, DocumentSearchStats};
 pub use metadata_priors::{MetadataPriors, PriorScores, PriorWeights};
-pub use path_engine::{PathIndex, PathIndexConfig, PathMetadata};
+pub use path_engine::{PathIndex, PathIndexConfig, PathMetadata, HARDCODED_SKIP_DIRS};
 pub use query_preprocess::{ProcessedQuery, QueryPreprocessConfig, QueryPreprocessor};
 pub use ripgrep_funnel::{RipgrepFunnel, RipgrepFunnelConfig, RipgrepStats, TerminationReason};
 pub use scorer::{
@@ -127,6 +129,8 @@ pub struct CandidateGenerator {
     path_index: Option<Arc<PathIndex>>,
     /// Ripgrep funnel
     ripgrep: RipgrepFunnel,
+    /// Document engine for binary files (PDF, DOCX, etc.)
+    document_engine: DocumentEngine,
     /// Query preprocessor (typos + synonyms)
     preprocessor: QueryPreprocessor,
     /// Last directory walk/index build duration
@@ -147,12 +151,14 @@ impl CandidateGenerator {
     /// Create a new candidate generator for a directory
     pub fn new(root_dir: PathBuf, config: CandidateGeneratorConfig) -> Self {
         let ripgrep = RipgrepFunnel::new(root_dir.clone(), config.ripgrep_config.clone());
+        let document_engine = DocumentEngine::with_defaults(root_dir.clone());
 
         Self {
             root_dir,
             config,
             path_index: None,
             ripgrep,
+            document_engine,
             preprocessor: QueryPreprocessor::with_defaults(),
             last_index_build_ms: 0,
         }
@@ -263,11 +269,18 @@ impl CandidateGenerator {
         stats.ripgrep_capped = ripgrep_stats.terminated_by == TerminationReason::MaxHitsReached;
         stats.ripgrep_ms = ripgrep_start.elapsed().as_millis() as u64;
 
-        // Phase 3: Merge and deduplicate
+        // Phase 2.5: Document search (for binary formats ripgrep can't handle)
+        let (document_candidates, _doc_stats) = self.document_engine.search(&lexical_query);
+        // Clear document cache after search (privacy: no persistent cache)
+        self.document_engine.clear_cache();
+
+        // Phase 3: Merge and deduplicate (path + ripgrep + document candidates)
         let merge_start = Instant::now();
         let _merge_span = candidate_merge_span(path_candidates.len(), ripgrep_candidates.len());
         let _merge_enter = _merge_span.enter();
         let mut merged = self.merge_candidates(path_candidates, ripgrep_candidates);
+        // Also merge document candidates (PDF, DOCX, XLSX, PPTX)
+        merged = self.merge_candidates(merged, document_candidates);
         stats.merged_candidates = merged.len();
 
         // Phase 4: Apply metadata priors
@@ -367,11 +380,18 @@ impl CandidateGenerator {
         stats.ripgrep_capped = ripgrep_stats.terminated_by == TerminationReason::MaxHitsReached;
         stats.ripgrep_ms = ripgrep_start.elapsed().as_millis() as u64;
 
-        // Phase 3: Merge and deduplicate
+        // Phase 2.5: Document search (for binary formats ripgrep can't handle)
+        let (document_candidates, _doc_stats) = self.document_engine.search(&lexical_query);
+        // Clear document cache after search (privacy: no persistent cache)
+        self.document_engine.clear_cache();
+
+        // Phase 3: Merge and deduplicate (path + ripgrep + document candidates)
         let merge_start = Instant::now();
         let _merge_span = candidate_merge_span(path_candidates.len(), ripgrep_candidates.len());
         let _merge_enter = _merge_span.enter();
         let mut merged = self.merge_candidates(path_candidates, ripgrep_candidates);
+        // Also merge document candidates (PDF, DOCX, XLSX, PPTX)
+        merged = self.merge_candidates(merged, document_candidates);
         stats.merged_candidates = merged.len();
 
         // Phase 4: Apply metadata priors

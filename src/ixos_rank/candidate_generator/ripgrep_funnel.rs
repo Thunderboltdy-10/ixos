@@ -3,6 +3,7 @@
 //! Streaming ripgrep search with hard caps and timeout.
 //! Produces candidates as they're found, with strict limits.
 
+use super::path_engine::HARDCODED_SKIP_DIRS;
 use super::scorer::{MatchContext, ScoredCandidate};
 use grep_regex::RegexMatcher;
 use grep_searcher::{sinks::UTF8, Searcher};
@@ -199,13 +200,33 @@ impl RipgrepFunnel {
             }
         } else {
             // Fallback: walk directory (original implementation)
-            let walker = WalkBuilder::new(&self.root_dir)
+            let mut builder = WalkBuilder::new(&self.root_dir);
+            builder
                 .hidden(!self.config.skip_hidden)
                 .git_ignore(self.config.respect_gitignore)
                 .follow_links(false)
                 .max_filesize(Some(self.config.max_file_size))
-                .threads(self.config.thread_count)
-                .build();
+                .threads(self.config.thread_count);
+
+            // Add filter to skip hardcoded directories
+            let root = self.root_dir.clone();
+            builder.filter_entry(move |entry| {
+                let path = entry.path();
+                // Allow the root directory through
+                if path == root {
+                    return true;
+                }
+                // Skip hardcoded directories
+                if let Some(name) = path.file_name() {
+                    let name_str = name.to_string_lossy();
+                    if HARDCODED_SKIP_DIRS.contains(&name_str.as_ref()) {
+                        return false;
+                    }
+                }
+                true
+            });
+
+            let walker = builder.build();
 
             for entry in walker.flatten() {
                 // Check timeout
@@ -321,13 +342,33 @@ impl RipgrepFunnel {
             *last_flush = Instant::now();
         };
 
-        let walker = WalkBuilder::new(&self.root_dir)
+        let mut builder = WalkBuilder::new(&self.root_dir);
+        builder
             .hidden(!self.config.skip_hidden)
             .git_ignore(self.config.respect_gitignore)
             .follow_links(false)
             .max_filesize(Some(self.config.max_file_size))
-            .threads(self.config.thread_count)
-            .build();
+            .threads(self.config.thread_count);
+
+        // Add filter to skip hardcoded directories
+        let root = self.root_dir.clone();
+        builder.filter_entry(move |entry| {
+            let path = entry.path();
+            // Allow the root directory through
+            if path == root {
+                return true;
+            }
+            // Skip hardcoded directories
+            if let Some(name) = path.file_name() {
+                let name_str = name.to_string_lossy();
+                if HARDCODED_SKIP_DIRS.contains(&name_str.as_ref()) {
+                    return false;
+                }
+            }
+            true
+        });
+
+        let walker = builder.build();
 
         for entry in walker.flatten() {
             if Instant::now() > deadline {

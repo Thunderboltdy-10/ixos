@@ -9,6 +9,40 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
+/// Hardcoded directories to skip regardless of .gitignore settings.
+/// These directories are commonly massive and rarely contain user-searchable content.
+pub const HARDCODED_SKIP_DIRS: &[&str] = &[
+    "node_modules",
+    ".next",
+    ".env",
+    "vendor",
+    "target",
+    "dist",
+    "build",
+    "__pycache__",
+    ".git",
+    ".svn",
+    ".hg",
+    ".idea",
+    ".vscode",
+    "venv",
+    ".venv",
+    "env",
+    ".cargo",
+    ".rustup",
+    "bower_components",
+    ".cache",
+    ".npm",
+    ".yarn",
+    ".pnpm",
+    "coverage",
+    ".nyc_output",
+    ".tox",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+];
+
 /// In-memory index of path tokens for instant scoring
 pub struct PathIndex {
     /// All indexed path entries
@@ -125,6 +159,19 @@ impl PathIndex {
         }
     }
 
+    /// Check if a path component matches any hardcoded skip directory
+    fn should_skip_path(path: &Path) -> bool {
+        for component in path.components() {
+            if let std::path::Component::Normal(name) = component {
+                let name_str = name.to_string_lossy();
+                if HARDCODED_SKIP_DIRS.contains(&name_str.as_ref()) {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
     /// Path collection with filtering using WalkBuilder (respects .gitignore)
     fn collect_paths(dir: &Path, entries: &mut Vec<PathEntry>, config: &PathIndexConfig) {
         // Use WalkBuilder for proper .gitignore support (consistent with ripgrep_funnel.rs)
@@ -142,6 +189,24 @@ impl PathIndex {
             builder.add_custom_ignore_filename(".gitignore");
         }
 
+        // Add filter to skip hardcoded directories
+        let root_dir = dir.to_path_buf();
+        builder.filter_entry(move |entry| {
+            let path = entry.path();
+            // Allow the root directory through
+            if path == root_dir {
+                return true;
+            }
+            // Skip hardcoded directories
+            if let Some(name) = path.file_name() {
+                let name_str = name.to_string_lossy();
+                if HARDCODED_SKIP_DIRS.contains(&name_str.as_ref()) {
+                    return false;
+                }
+            }
+            true
+        });
+
         let walker = builder.build();
 
         for result in walker {
@@ -154,6 +219,11 @@ impl PathIndex {
 
             // Skip directories
             if path.is_dir() {
+                continue;
+            }
+
+            // Double-check path doesn't contain skipped directories (for nested paths)
+            if Self::should_skip_path(path) {
                 continue;
             }
 

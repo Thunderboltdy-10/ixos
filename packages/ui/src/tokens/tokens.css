@@ -5,12 +5,13 @@
 
 :root {
   /* ─────────────────────────────────────────────────────────────────────────
-     BACKGROUNDS - Graphite palette (lightened for desktop)
+     BACKGROUNDS - Graphite palette (balanced for desktop)
+     Brighter main area, consistent sidebar
      ───────────────────────────────────────────────────────────────────────── */
-  --bg-graphite-0: #0A0C10;
-  --bg-graphite-1: #10131A;
-  --bg-graphite-2: #181C24;
-  --bg-graphite-3: #232830;
+  --bg-graphite-0: #0E1117;
+  --bg-graphite-1: #161B22;
+  --bg-graphite-2: #1E242D;
+  --bg-graphite-3: #282F3A;
 
   /* ─────────────────────────────────────────────────────────────────────────
      FOREGROUND - Porcelain text hierarchy

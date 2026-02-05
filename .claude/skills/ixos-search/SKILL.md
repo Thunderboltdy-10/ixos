@@ -41,6 +41,27 @@ Ixos uses embedding models to understand code **meaning**, not just keywords. Th
 | `--json` | Machine-readable output | Use for parsing/scripting |
 | `--limit N` | Max results | Default 20, use `--limit 10` for focused results |
 | `--min-score 0.5` | Filter threshold | Use for high-confidence only |
+| `--verbose` | Show loading logs | Use for debugging (quiet by default) |
+
+## Logging Behavior
+
+**Ixos is quiet by default** - only errors are shown. This keeps output clean for scripting and pipelines.
+
+Use `--verbose` to see:
+- Model loading status
+- Directory indexing progress
+- Search phase timing
+
+## Model Types
+
+Ixos supports two model tiers:
+
+| Model | Description | Use Case |
+|-------|-------------|----------|
+| **Ixos Flash v2** | Fast, lightweight (default) | Most searches |
+| **Ixos Pro v2** | Higher quality, cascade ranking | Complex semantic queries |
+
+The model type can be configured in settings or via `--search-mode flash|pro|auto`.
 
 ## Standard Search Command
 

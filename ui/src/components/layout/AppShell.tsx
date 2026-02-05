@@ -92,6 +92,52 @@ export function AppShell({ children }: AppShellProps) {
     };
   }, [searchStore]);
 
+  // Global keyboard shortcuts: Ctrl+T (new search), Ctrl+K (focus search)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMod = e.ctrlKey || e.metaKey;
+
+      // Ctrl+T / Cmd+T: New search tab, focus input
+      if (isMod && e.key === 't') {
+        e.preventDefault();
+        searchStore.reset();
+        setShowSettings(false);
+        setShowInfo(false);
+        setShowPricing(false);
+        setActiveView('search');
+        setTimeout(() => {
+          const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+          if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+          }
+        }, 50);
+      }
+
+      // Ctrl+K / Cmd+K: Toggle command palette / focus search
+      if (isMod && e.key === 'k') {
+        e.preventDefault();
+        // Close any open panels first
+        if (showSettings || showInfo || showPricing) {
+          setShowSettings(false);
+          setShowInfo(false);
+          setShowPricing(false);
+        }
+        // Switch to search view and focus input
+        setActiveView('search');
+        setTimeout(() => {
+          const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+          if (searchInput) {
+            searchInput.focus();
+          }
+        }, 50);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [searchStore, showSettings, showInfo, showPricing, setShowSettings, setShowInfo, setShowPricing, setActiveView]);
+
   return (
     <div className="h-screen flex bg-graphite-0 overflow-hidden relative" data-theme="desktop">
       {/* Background Effect */}
@@ -179,8 +225,8 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Settings Panel Overlay */}
         {showSettings && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-sm">
-            <div className="w-full max-w-5xl h-[85vh] animate-in fade-in zoom-in-95 duration-200 relative group">
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="w-[95%] max-w-[1600px] h-[94vh] animate-in fade-in zoom-in-95 duration-200 relative group">
               <button
                 type="button"
                 onClick={() => setShowSettings(false)}

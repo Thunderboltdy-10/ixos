@@ -36,12 +36,12 @@ async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     // Initialize logging based on verbosity
+    // Default to quiet (error-only) unless --verbose is specified
     let filter = if cli.verbose {
         "debug"
-    } else if cli.quiet {
-        "error"
     } else {
-        "info"
+        // Quiet by default - only show errors unless explicitly verbose
+        "error"
     };
 
     tracing_subscriber::registry()

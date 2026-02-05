@@ -61,13 +61,17 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       const config = await tauri.getConfig();
 
 
-      // Normalize legacy model settings to v2 defaults.
+      // Migrate only known legacy model values to v2 defaults.
+      // Only overwrite if the value is a known legacy model, preserving user preferences.
+      const LEGACY_FLASH_MODELS = ['ixos-flash-v1', 'flash-v1', 'flash', ''];
+      const LEGACY_PRO_MODELS = ['ixos-pro-v1', 'pro-v1', 'potion', 'pro', ''];
+
       let needsUpdate = false;
-      if (config.search.modelType !== 'ixos-flash-v2') {
+      if (LEGACY_FLASH_MODELS.includes(config.search.modelType)) {
         config.search.modelType = 'ixos-flash-v2';
         needsUpdate = true;
       }
-      if (config.search.proModelType !== 'ixos-pro-v2') {
+      if (LEGACY_PRO_MODELS.includes(config.search.proModelType)) {
         config.search.proModelType = 'ixos-pro-v2';
         needsUpdate = true;
       }

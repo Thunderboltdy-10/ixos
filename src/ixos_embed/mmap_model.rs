@@ -76,20 +76,20 @@ impl ModelType {
     /// Get human-readable display name
     pub fn display_name(&self) -> &'static str {
         match self {
-            ModelType::Potion => "Potion-8M-int8",
+            ModelType::Potion => "Ixos Pro v2",
             ModelType::Qwen => "Ixos-Embedder-v1 (Qwen)",
-            ModelType::IxosFlashV1 => "Ixos-Flash-v1 (legacy)",
-            ModelType::IxosFlashV2 => "Ixos-Flash-v2",
-            ModelType::IxosFlashV4 => "Ixos-Flash-v4 (512d)",
-            ModelType::IxosFlashV4Fast => "Ixos-Flash-v4 Fast (192d)",
-            ModelType::IxosProV1 => "Ixos-Pro-v1",
+            ModelType::IxosFlashV1 => "Ixos Flash v1 (legacy)",
+            ModelType::IxosFlashV2 => "Ixos Flash v2",
+            ModelType::IxosFlashV4 => "Ixos Flash v4 (512d)",
+            ModelType::IxosFlashV4Fast => "Ixos Flash v4 Fast (192d)",
+            ModelType::IxosProV1 => "Ixos Pro v1",
         }
     }
 
     /// Get description of the model
     pub fn description(&self) -> &'static str {
         match self {
-            ModelType::Potion => "Quantized potion-base-8M. Simple, reliable, fast.",
+            ModelType::Potion => "Ixos Pro v2 model - high quality semantic search.",
             ModelType::Qwen => "Distilled from Qwen3. Experimental, potentially better quality.",
             ModelType::IxosFlashV1 => "Ixos Flash v1 distilled embedder (legacy).",
             ModelType::IxosFlashV2 => "Ixos Flash v2 distilled embedder (default).",

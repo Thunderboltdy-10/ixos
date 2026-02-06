@@ -13,7 +13,8 @@ use ixos_protocol::security::DeviceIdentity;
 use ixos_protocol::EvidenceTag;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use tauri::{Emitter, State, Window};
+use tauri::ipc::Channel;
+use tauri::{AppHandle, Emitter, State};
 use tokio::sync::mpsc;
 
 // =============================================================================
@@ -178,6 +179,7 @@ pub struct SearchOptions {
     pub model_type: Option<String>,
     pub pro_model_type: Option<String>,
     pub search_mode: Option<String>,
+    pub is_ask_mode: Option<bool>,
     pub timeout_seconds: Option<u64>,
 }
 
@@ -255,16 +257,134 @@ fn ranked_result_to_payload(result: &RankedResult) -> RankedResultPayload {
 }
 
 // =============================================================================
+// Event Conversion
+// =============================================================================
+
+/// Convert a backend SearchEvent into a frontend-ready SearchEventPayload.
+fn convert_search_event(event: SearchEvent) -> SearchEventPayload {
+    match event {
+        SearchEvent::LexicalResults(results) => {
+            let payloads: Vec<LexicalResultPayload> = results
+                .iter()
+                .map(|r| {
+                    let (path, filename, directory) = path_to_parts(&r.path);
+                    LexicalResultPayload {
+                        path,
+                        filename,
+                        directory,
+                        score: r.score,
+                        snippet: r.content_snippet.clone(),
+                        term_matches: r.term_matches,
+                        total_terms: r.total_terms,
+                    }
+                })
+                .collect();
+            let count = payloads.len();
+            SearchEventPayload::LexicalResults {
+                results: payloads,
+                count,
+            }
+        }
+        SearchEvent::Status(message) => SearchEventPayload::Status { message },
+        SearchEvent::SemanticResults(results) => {
+            let payloads: Vec<RankedResultPayload> =
+                results.iter().map(ranked_result_to_payload).collect();
+            let count = payloads.len();
+            SearchEventPayload::SemanticResults {
+                results: payloads,
+                count,
+            }
+        }
+        SearchEvent::Complete => SearchEventPayload::Complete,
+        SearchEvent::Cancelled => SearchEventPayload::Cancelled,
+        SearchEvent::Error(msg) => SearchEventPayload::Error { message: msg },
+        SearchEvent::StreamUpdate {
+            stage,
+            stats,
+            events,
+        } => {
+            let stage_payload = match stage {
+                StreamStage::Echo => StreamStagePayload::Echo,
+                StreamStage::Lexical => StreamStagePayload::Lexical,
+                StreamStage::Semantic => StreamStagePayload::Semantic,
+                StreamStage::Refining => StreamStagePayload::Refining,
+                StreamStage::Tail => StreamStagePayload::Tail,
+            };
+            let stats_payload = StreamStatsPayload {
+                files_scanned: stats.files_scanned,
+                candidates: stats.candidates,
+                embedded: stats.embedded,
+                cache_hits: stats.cache_hits,
+            };
+            let events_payload = events
+                .into_iter()
+                .map(|event| StreamEventPayload {
+                    id: event.id,
+                    kind: match event.kind {
+                        StreamEventKind::Lexical => StreamEventKindPayload::Lexical,
+                        StreamEventKind::Semantic => StreamEventKindPayload::Semantic,
+                        StreamEventKind::Scan => StreamEventKindPayload::Scan,
+                    },
+                    score: event.score,
+                    slot_index: event.slot_index,
+                    path: event.path_hint,
+                })
+                .collect();
+            SearchEventPayload::StreamUpdate {
+                stage: stage_payload,
+                stats: stats_payload,
+                events: events_payload,
+            }
+        }
+        SearchEvent::LexicalBatch {
+            results,
+            batch_number,
+            is_final,
+        } => {
+            let payloads: Vec<LexicalResultPayload> = results
+                .iter()
+                .map(|r| {
+                    let (path, filename, directory) = path_to_parts(&r.path);
+                    LexicalResultPayload {
+                        path,
+                        filename,
+                        directory,
+                        score: r.score,
+                        snippet: r.content_snippet.clone(),
+                        term_matches: r.term_matches,
+                        total_terms: r.total_terms,
+                    }
+                })
+                .collect();
+            SearchEventPayload::LexicalBatch {
+                results: payloads,
+                count: results.len(),
+                batch_number,
+                is_final,
+            }
+        }
+        SearchEvent::LateResult {
+            result,
+            discovery_time_ms,
+        } => SearchEventPayload::LateResult {
+            result: ranked_result_to_payload(&result),
+            discovery_time_ms,
+        },
+    }
+}
+
+// =============================================================================
 // Commands
 // =============================================================================
 
 /// Start a progressive search with streaming results
 ///
-/// Results are emitted as events to the frontend window.
+/// Results are streamed to the frontend via Tauri v2 Channel API.
 #[tauri::command]
 pub async fn search_progressive(
-    window: Window,
+    app: AppHandle,
     state: State<'_, AppState>,
+    channel: Channel<SearchEventPayload>,
     query: String,
     directory: String,
     options: SearchOptions,
@@ -334,125 +454,19 @@ pub async fn search_progressive(
         _ => SearchMode::Auto,
     };
 
-    // Create channel for events
-    let (tx, mut rx) = mpsc::channel(32);
+    // Create internal channel for search engine → forwarder communication.
+    // 512 provides ample headroom for try_send() in sync batch callbacks.
+    // Typical search produces <100 stream events total.
+    let (tx, mut rx) = mpsc::channel(512);
 
-    // Clone window for event emission
-    let window_clone = window.clone();
-
-    // Spawn task to forward events to frontend
-    tokio::spawn(async move {
+    // Spawn task to forward events to frontend via Tauri v2 Channel API.
+    // The Channel is scoped to this command invocation — guaranteed ordering,
+    // no missed events, automatic cleanup when command completes.
+    let ch = channel.clone();
+    let app_for_events = app.clone();
+    let forward_handle = tokio::spawn(async move {
         while let Some(event) = rx.recv().await {
-            let payload = match event {
-                SearchEvent::LexicalResults(results) => {
-                    let payloads: Vec<LexicalResultPayload> = results
-                        .iter()
-                        .map(|r| {
-                            let (path, filename, directory) = path_to_parts(&r.path);
-                            LexicalResultPayload {
-                                path,
-                                filename,
-                                directory,
-                                score: r.score,
-                                snippet: r.content_snippet.clone(),
-                                term_matches: r.term_matches,
-                                total_terms: r.total_terms,
-                            }
-                        })
-                        .collect();
-                    let count = payloads.len();
-                    SearchEventPayload::LexicalResults {
-                        results: payloads,
-                        count,
-                    }
-                }
-                SearchEvent::Status(message) => SearchEventPayload::Status { message },
-                SearchEvent::SemanticResults(results) => {
-                    let payloads: Vec<RankedResultPayload> =
-                        results.iter().map(ranked_result_to_payload).collect();
-                    let count = payloads.len();
-                    SearchEventPayload::SemanticResults {
-                        results: payloads,
-                        count,
-                    }
-                }
-                SearchEvent::Complete => SearchEventPayload::Complete,
-                SearchEvent::Cancelled => SearchEventPayload::Cancelled,
-                SearchEvent::Error(msg) => SearchEventPayload::Error { message: msg },
-                SearchEvent::StreamUpdate {
-                    stage,
-                    stats,
-                    events,
-                } => {
-                    let stage_payload = match stage {
-                        StreamStage::Echo => StreamStagePayload::Echo,
-                        StreamStage::Lexical => StreamStagePayload::Lexical,
-                        StreamStage::Semantic => StreamStagePayload::Semantic,
-                        StreamStage::Refining => StreamStagePayload::Refining,
-                        StreamStage::Tail => StreamStagePayload::Tail,
-                    };
-                    let stats_payload = StreamStatsPayload {
-                        files_scanned: stats.files_scanned,
-                        candidates: stats.candidates,
-                        embedded: stats.embedded,
-                        cache_hits: stats.cache_hits,
-                    };
-                    let events_payload = events
-                        .into_iter()
-                        .map(|event| StreamEventPayload {
-                            id: event.id,
-                            kind: match event.kind {
-                                StreamEventKind::Lexical => StreamEventKindPayload::Lexical,
-                                StreamEventKind::Semantic => StreamEventKindPayload::Semantic,
-                                StreamEventKind::Scan => StreamEventKindPayload::Scan,
-                            },
-                            score: event.score,
-                            slot_index: event.slot_index,
-                            path: event.path_hint,
-                        })
-                        .collect();
-                    SearchEventPayload::StreamUpdate {
-                        stage: stage_payload,
-                        stats: stats_payload,
-                        events: events_payload,
-                    }
-                }
-                SearchEvent::LexicalBatch {
-                    results,
-                    batch_number,
-                    is_final,
-                } => {
-                    // P2.1 batched lexical results for streaming
-                    let payloads: Vec<LexicalResultPayload> = results
-                        .iter()
-                        .map(|r| {
-                            let (path, filename, directory) = path_to_parts(&r.path);
-                            LexicalResultPayload {
-                                path,
-                                filename,
-                                directory,
-                                score: r.score,
-                                snippet: r.content_snippet.clone(),
-                                term_matches: r.term_matches,
-                                total_terms: r.total_terms,
-                            }
-                        })
-                        .collect();
-                    SearchEventPayload::LexicalBatch {
-                        results: payloads,
-                        count: results.len(),
-                        batch_number,
-                        is_final,
-                    }
-                }
-                SearchEvent::LateResult {
-                    result,
-                    discovery_time_ms,
-                } => SearchEventPayload::LateResult {
-                    result: ranked_result_to_payload(&result),
-                    discovery_time_ms,
-                },
-            };
+            let payload = convert_search_event(event);
 
             let (batch_num, result_count) = match &payload {
                 SearchEventPayload::LexicalResults { results, .. } => (0, results.len()),
@@ -468,9 +482,27 @@ pub async fn search_progressive(
             };
             let _span = ipc_send_span(batch_num, result_count);
             let _enter = _span.enter();
-            // Emit to frontend
-            if let Err(e) = window_clone.emit("search-event", &payload) {
-                tracing::error!("Failed to emit search event: {}", e);
+
+            let mut delivered = false;
+
+            // Primary transport: typed channel.
+            match ch.send(payload.clone()) {
+                Ok(()) => delivered = true,
+                Err(e) => {
+                    tracing::warn!("Failed to send search event via channel: {}", e);
+                }
+            }
+
+            // Fallback transport: app-wide event bus.
+            match app_for_events.emit("search-event", payload) {
+                Ok(()) => delivered = true,
+                Err(e) => {
+                    tracing::warn!("Failed to emit search-event fallback: {}", e);
+                }
+            }
+
+            if !delivered {
+                tracing::error!("Search stream delivery failed on both transports");
                 break;
             }
         }
@@ -516,7 +548,7 @@ pub async fn search_progressive(
     };
 
     // Spawn search task
-    tokio::spawn(async move {
+    let search_handle = tokio::spawn(async move {
         // Load lexical engine from directory
         if !dir_path.exists() {
             let _ = tx
@@ -600,6 +632,15 @@ pub async fn search_progressive(
             tracing::error!("Search failed: {}", e);
         }
     });
+
+    if let Err(e) = search_handle.await {
+        tracing::error!("Search task join error: {}", e);
+        return Err(format!("Search task failed: {}", e));
+    }
+
+    if let Err(e) = forward_handle.await {
+        tracing::warn!("Search forwarder join error: {}", e);
+    }
 
     Ok(())
 }

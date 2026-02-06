@@ -9,6 +9,18 @@ import { useActivityStore } from '@/stores/activityStore';
 
 const MAX_LEXICAL_DISPLAY = 50;
 const MAX_SCAN_TRAIL = 6;
+const DUPLICATE_EVENT_WINDOW_MS = 40;
+
+let lastSearchEventDigest: string | null = null;
+let lastSearchEventAt = 0;
+
+function digestSearchEvent(event: SearchEvent): string {
+  try {
+    return JSON.stringify(event);
+  } catch {
+    return `${event.type}:${Date.now()}`;
+  }
+}
 
 /// Translate backend error messages to user-friendly messages
 function translateErrorMessage(error: string): string {
@@ -224,6 +236,8 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
     // Reset results and start search
     const nextThreadId = crypto.randomUUID();
+    lastSearchEventDigest = null;
+    lastSearchEventAt = 0;
     set({
       lexicalResults: [],
       semanticResults: [],
@@ -278,6 +292,9 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       const searchMode = settings?.searchMode || 'auto';
       const timeoutSeconds = settings?.timeoutSeconds || 30;
 
+      // Pass event handler via Channel API — events are scoped to this
+      // command invocation with guaranteed ordering and no missed events.
+      const handleEvent = get().handleSearchEvent;
       await tauri.searchProgressive(state.query, state.directory, {
         journalistMode: state.journalistMode,
         contextLines: 3,
@@ -287,7 +304,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
         searchMode: searchMode,
         timeoutSeconds: timeoutSeconds,
         isAskMode: isAskMode,
-      });
+      }, handleEvent);
     } catch (error) {
       set({
         phase: 'error',
@@ -306,6 +323,14 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   },
 
   handleSearchEvent: (event) => {
+    const digest = digestSearchEvent(event);
+    const now = Date.now();
+    if (digest === lastSearchEventDigest && now - lastSearchEventAt <= DUPLICATE_EVENT_WINDOW_MS) {
+      return;
+    }
+    lastSearchEventDigest = digest;
+    lastSearchEventAt = now;
+
     switch (event.type) {
       case 'lexicalResults':
         set({

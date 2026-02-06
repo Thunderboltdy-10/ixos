@@ -493,11 +493,13 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                             return;
                         }
                         batch_number += 1;
-                        let _ = tx_batches.try_send(SearchEvent::LexicalBatch {
+                        if let Err(e) = tx_batches.try_send(SearchEvent::LexicalBatch {
                             results: batch.clone(),
                             batch_number,
                             is_final,
-                        });
+                        }) {
+                            tracing::warn!("LexicalBatch event dropped (channel full): {}", e);
+                        }
 
                         // Clone stats inside a limited scope to drop the MutexGuard before blocking_send
                         let stats_clone = {
@@ -535,11 +537,13 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                         }
 
                         if !events.is_empty() {
-                            let _ = tx_batches.try_send(SearchEvent::StreamUpdate {
+                            if let Err(e) = tx_batches.try_send(SearchEvent::StreamUpdate {
                                 stage: StreamStage::Lexical,
                                 stats: stats_clone,
                                 events,
-                            });
+                            }) {
+                                tracing::warn!("StreamUpdate event dropped (channel full): {}", e);
+                            }
                         }
                     })),
                 )

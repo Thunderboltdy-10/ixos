@@ -1,7 +1,8 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke, Channel } from '@tauri-apps/api/core';
 import type {
   IxosConfig,
   SearchOptions,
+  SearchEvent,
   ConsentStatus,
   ProStatus,
   ActivityAction,
@@ -14,21 +15,55 @@ import type {
   WorkstreamsStats,
 } from './types';
 
+let activeSearchChannel: Channel<SearchEvent> | null = null;
+
+function isTerminalSearchEvent(event: SearchEvent): boolean {
+  return event.type === 'complete' || event.type === 'cancelled' || event.type === 'error';
+}
+
 /**
- * Start a progressive search
+ * Start a progressive search using Tauri v2 Channel API.
+ *
+ * The Channel provides scoped, ordered delivery tied to this specific
+ * command invocation — no missed events, no global listener lifecycle issues.
  */
 export async function searchProgressive(
   query: string,
   directory: string,
-  options: SearchOptions = {}
+  options: SearchOptions = {},
+  onEvent?: (event: SearchEvent) => void,
 ): Promise<void> {
-  await invoke('search_progressive', { query, directory, options });
+  if (activeSearchChannel) {
+    activeSearchChannel.onmessage = () => {};
+  }
+
+  const channel = new Channel<SearchEvent>();
+  activeSearchChannel = channel;
+  channel.onmessage = (event) => {
+    onEvent?.(event);
+    if (activeSearchChannel === channel && isTerminalSearchEvent(event)) {
+      activeSearchChannel = null;
+    }
+  };
+
+  try {
+    await invoke('search_progressive', { query, directory, options, channel });
+  } catch (error) {
+    if (activeSearchChannel === channel) {
+      activeSearchChannel = null;
+    }
+    throw error;
+  }
 }
 
 /**
  * Cancel the current search
  */
 export async function cancelSearch(): Promise<void> {
+  if (activeSearchChannel) {
+    activeSearchChannel.onmessage = () => {};
+    activeSearchChannel = null;
+  }
   await invoke('cancel_search');
 }
 

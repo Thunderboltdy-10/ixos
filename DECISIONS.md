@@ -132,3 +132,59 @@
 - Evidence (links to /reports or output files): ui/src/lib/matchClassification.ts, ui/src/components/search/SearchResults.tsx, ui/src/components/search/WhyMatched.tsx, reports/ui_streaming_classification_fix_2026-02-05.md
 - Risks: Labels like "Integrity" may be less intuitive than a simple text/semantic dichotomy
 - Follow-ups: Validate label comprehension with a short usability pass and adjust naming if needed
+
+- Decision: Rebuild landing hero + pipeline as one scroll-driven storyboard with progress-derived state
+- Options considered: Keep existing GSAP timeline with ad-hoc fades; split hero and pipeline into separate sections; rebuild as one pinned section with deterministic progress mapping
+- Why chosen: Progress-derived state gives smooth reverse-scroll behavior, cleaner active-step synchronization, and direct control over demo lift/reveal timing
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/HeroPipeline.tsx, reports/ui_docs_refresh_2026-02-06.md
+- Risks: Scroll choreography is more custom and may need breakpoint tuning on edge viewport sizes
+- Follow-ups: Run manual viewport sweep and capture updated visuals for QA artifacts
+
+- Decision: Enforce uppercase `//` divider labels from shared components instead of per-call-site policing
+- Options considered: Update every call site manually; leave mixed casing; normalize in shared component
+- Why chosen: One normalization point avoids regressions and keeps landing + desktop consistent automatically
+- Evidence (links to /reports or output files): ixos-site/src/components/ui/SectionDivider.tsx, ui/src/components/ui/SectionDivider.tsx, reports/ui_docs_refresh_2026-02-06.md
+- Risks: None
+- Follow-ups: Keep uppercase in any non-shared custom `//` labels where semantic casing matters
+
+- Decision: Organize markdown discoverability via docs hub + generated inventory instead of mass file moves
+- Options considered: Move all markdown files into new folders; keep current spread with no index; add centralized catalog + taxonomy docs
+- Why chosen: Avoids breaking existing references while making every markdown file discoverable and grouped
+- Evidence (links to /reports or output files): docs/MARKDOWN_INVENTORY.md, docs/README.md, docs/engineering/MARKDOWN_ORGANIZATION.md, reports/ui_docs_refresh_2026-02-06.md
+- Risks: Physical file sprawl remains; organization is index-driven rather than path-cleanup
+- Follow-ups: Optional second pass to migrate selected legacy docs into archive folders with link updates
+
+- Decision: Run pipeline demo in fully scroll-guided controlled mode (no autonomous query cycle while section is active)
+- Options considered: Keep time-based query loop and only map highlight state; disable demo state changes entirely; drive query/stage transitions from scroll step only
+- Why chosen: Removes the "off" feeling from autonomous loops and aligns visual meaning to scroll intent
+- Evidence (links to /reports or output files): ixos-site/src/components/hero/IxosDemoWindow.tsx, ixos-site/src/components/sections/HeroPipeline.tsx, reports/ui_docs_refresh_2026-02-06.md
+- Risks: Controlled flow is less varied (single guided query) unless intentionally expanded later
+- Follow-ups: Add optional set of scroll-scripted queries for future narrative variants
+
+- Decision: Replace single docs page with multi-page docs IA and move non-operational root markdown into docs archive
+- Options considered: Keep card-heavy one-page docs; split content partially but keep root markdown sprawl; full docs route segmentation + root cleanup
+- Why chosen: Significantly improves readability/discoverability and removes root clutter while preserving operational root files required by agent workflow
+- Evidence (links to /reports or output files): ixos-site/src/app/docs/layout.tsx, ixos-site/src/app/docs/getting-started/page.tsx, ixos-site/src/app/docs/desktop-app/page.tsx, ixos-site/src/app/docs/models/page.tsx, ixos-site/src/app/docs/benchmarking/page.tsx, ixos-site/src/app/docs/agents/page.tsx, docs/archive/root/, docs/MARKDOWN_INVENTORY.md, reports/ui_docs_refresh_2026-02-06.md
+- Risks: Existing external links targeting old root markdown paths may need redirect/update
+- Follow-ups: Add explicit redirect notes in docs for moved archival files if needed
+
+- Decision: Replace controlled-stage search restarts with pause-resume stage progression and remove hero pulse effect
+- Options considered: Keep restarting search on each stage step; fully freeze demo state between stages; pause-resume current search run and only restart on backward jumps
+- Why chosen: Restarting caused visible scan/embed/rank cycling jitter; pause-resume preserves narrative continuity and keeps scroll behavior deterministic, while pulse removal reduces visual noise
+- Evidence (links to /reports or output files): ixos-site/src/components/hero/fakeSearch.ts, ixos-site/src/components/hero/IxosDemoWindow.tsx, ixos-site/src/components/sections/HeroPipeline.tsx, reports/ui_docs_refresh_2026-02-06.md
+- Risks: Controlled flow now favors one guided query, so variety is reduced during the section
+- Follow-ups: Add optional curated query scripts as an explicit variant instead of autonomous looping
+
+- Decision: Move docs rendering away from minimal prose defaults to dedicated docs typography + active side navigation
+- Options considered: Keep existing prose-only styles; convert each section into separate card components; add docs-specific long-form styles with single-flow content
+- Why chosen: User requested readable documentation without fragmented heading cards; custom docs styles increase contrast, spacing, and scanability while preserving one continuous page flow per topic
+- Evidence (links to /reports or output files): ixos-site/src/app/globals.css, ixos-site/src/components/docs/DocsSideNav.tsx, ixos-site/src/app/docs/layout.tsx, ixos-site/src/app/docs/page.tsx
+- Risks: Styling now depends on global docs class names and should be kept consistent on future docs pages
+- Follow-ups: Add screenshot-based visual regression for docs pages at mobile/tablet/desktop breakpoints
+
+- Decision: Increase hero/pipeline layout scale and raise baseline stage-card contrast
+- Options considered: Keep compact layout and only tweak font size; increase only hero demo dimensions; increase full section grid dimensions plus card opacity/contrast
+- Why chosen: User feedback indicated both size and brightness issues across hero demo and surrounding how-it-works components; combined sizing + contrast changes address both simultaneously
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/HeroPipeline.tsx, RUNLOG.md (Entry 017)
+- Risks: On smaller laptop heights, larger grid may feel denser
+- Follow-ups: Validate 1366x768 and 1440x900 visual balance in manual QA

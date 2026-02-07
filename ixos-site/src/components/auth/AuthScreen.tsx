@@ -13,10 +13,10 @@ const commonAppearance = {
     variables: {
         colorPrimary: '#14B8A6', // Teal
         colorBackground: 'transparent',
-        colorInputBackground: 'rgba(255, 255, 255, 0.05)',
-        colorInputText: '#E5E5E7',
-        colorText: '#E5E5E7',
-        colorTextSecondary: '#A1A1A6',
+        colorInputBackground: '#121722',
+        colorInputText: '#F3F5F7',
+        colorText: '#F3F5F7',
+        colorTextSecondary: '#C4CFD6',
         colorDanger: '#EF4444',
         borderRadius: '0.5rem',
         fontFamily: 'var(--font-ixo-heading), sans-serif',
@@ -29,20 +29,21 @@ const commonAppearance = {
         headerSubtitle: 'hidden',
 
         // Social Buttons - Improved Contrast
-        socialButtonsBlockButton: 'bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white transition-all h-10 flex items-center justify-center font-sans text-sm font-medium rounded-lg',
-        socialButtonsBlockButtonText: 'text-zinc-100 font-medium ml-2',
+        socialButtonsBlockButton: '!bg-[#121722] !border !border-white/20 hover:!bg-[#182031] hover:!border-accent-teal/45 !text-[#F3F5F7] !opacity-100 transition-all !h-11 flex items-center justify-center font-sans !text-sm !font-semibold rounded-lg',
+        socialButtonsBlockButtonText: '!text-[#F3F5F7] !font-semibold !tracking-[0.01em] ml-2',
+        socialButtonsProviderIcon: 'opacity-100',
         socialButtonsBlockButtonArrow: 'hidden',
 
         // Divider
-        dividerLine: 'bg-white/10',
-        dividerText: 'text-white/40 text-xs uppercase tracking-wider font-medium',
+        dividerLine: 'bg-white/14',
+        dividerText: 'text-white/65 text-xs uppercase tracking-wider font-medium',
 
         // Inputs
-        formFieldLabel: 'text-white/60 text-xs font-medium mb-1.5 uppercase tracking-wide',
-        formFieldInput: 'bg-zinc-900/50 border border-white/10 text-white placeholder:text-white/30 focus:border-accent-teal focus:ring-1 focus:ring-accent-teal/30 rounded-lg h-10 px-4 transition-all font-sans text-sm',
+        formFieldLabel: 'text-white/75 text-xs font-semibold mb-1.5 uppercase tracking-wide',
+        formFieldInput: 'bg-[#121722] border border-white/15 text-[#F3F5F7] placeholder:text-white/40 focus:border-accent-teal focus:ring-2 focus:ring-accent-teal/35 rounded-lg h-11 px-4 transition-all font-sans text-sm',
 
         // Buttons
-        formButtonPrimary: 'bg-accent-teal hover:bg-accent-teal-glow text-bg-primary font-semibold h-10 rounded-lg transition-all text-sm shadow-lg shadow-accent-teal/20',
+        formButtonPrimary: 'bg-accent-teal hover:bg-accent-teal-glow text-[#041014] font-semibold h-11 rounded-lg transition-all text-sm shadow-lg shadow-accent-teal/30',
 
         // Footer Actions
         footerActionLink: 'text-accent-teal hover:text-accent-teal-glow font-medium transition-colors',
@@ -52,6 +53,10 @@ const commonAppearance = {
         alertText: 'text-white/60',
         footer: 'hidden',
         formFieldInputShowPasswordButton: 'text-white/40 hover:text-white/80 transition-colors',
+        otpCodeFieldInputs: 'flex justify-center gap-2',
+        otpCodeFieldInput: 'w-12 h-14 text-center text-2xl font-bold bg-[#121722] border-2 border-white/16 text-[#F3F5F7] focus:border-accent-teal focus:ring-2 focus:ring-accent-teal/35 rounded-lg transition-all',
+        otpCodeField: 'flex flex-col items-center gap-4',
+        form: 'flex flex-col gap-4',
         main: 'w-full flex flex-col items-center', // Ensure main content is centered
     },
 };
@@ -66,11 +71,12 @@ const signUpAppearance = {
     variables: { ...commonAppearance.variables, colorPrimary: '#D946EF' }, // Magenta for Sign Up
     elements: {
         ...commonAppearance.elements,
-        formFieldInput: 'bg-zinc-900/50 border border-white/10 text-white placeholder:text-white/30 focus:border-accent-magenta focus:ring-1 focus:ring-accent-magenta/30 rounded-lg h-10 px-4 transition-all font-sans text-sm',
-        formButtonPrimary: 'bg-accent-magenta hover:bg-accent-magenta-glow text-bg-primary font-semibold h-10 rounded-lg transition-all text-sm shadow-lg shadow-accent-magenta/20',
+        formFieldInput: 'bg-[#121722] border border-white/15 text-[#F3F5F7] placeholder:text-white/40 focus:border-accent-magenta focus:ring-2 focus:ring-accent-magenta/35 rounded-lg h-11 px-4 transition-all font-sans text-sm',
+        formButtonPrimary: 'bg-accent-magenta hover:bg-accent-magenta-glow text-[#041014] font-semibold h-11 rounded-lg transition-all text-sm shadow-lg shadow-accent-magenta/30',
         footerActionLink: 'text-accent-magenta hover:text-accent-magenta-glow font-medium transition-colors',
         identityPreviewEditButton: 'text-accent-magenta hover:text-accent-magenta-glow transition-colors',
         formFieldAction: 'text-accent-magenta hover:text-accent-magenta-glow text-xs transition-colors',
+        otpCodeFieldInput: 'w-12 h-14 text-center text-2xl font-bold bg-[#121722] border-2 border-white/16 text-[#F3F5F7] focus:border-accent-magenta focus:ring-2 focus:ring-accent-magenta/35 rounded-lg transition-all',
     },
 };
 

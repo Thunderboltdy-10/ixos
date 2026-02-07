@@ -2,108 +2,119 @@
 
 import { cn } from "@/lib/utils";
 
-const TOKENS = ["email", "denver", "trip"];
-
-// SVG line endpoints for bracket lines
-const LINES = [
-    { x1: 60, y1: 0, x2: 20, y2: 18 },
-    { x1: 60, y1: 0, x2: 60, y2: 18 },
-    { x1: 60, y1: 0, x2: 100, y2: 18 },
+const OUTPUT_NODES = [
+  { x: 20, y: 58, label: "intent" },
+  { x: 50, y: 58, label: "entity" },
+  { x: 80, y: 58, label: "scope" },
 ];
 
-function lineLength(l: typeof LINES[number]) {
-    const dx = l.x2 - l.x1;
-    const dy = l.y2 - l.y1;
-    return Math.sqrt(dx * dx + dy * dy);
-}
-
 export function QueryDecomposition({
-    isActive,
-    isComplete,
+  isActive,
+  isComplete,
 }: {
-    isActive: boolean;
-    isComplete: boolean;
+  isActive: boolean;
+  isComplete: boolean;
 }) {
-    const show = isActive || isComplete;
+  const show = isActive || isComplete;
 
-    return (
-        <div className="mt-3 flex flex-col items-center gap-2">
-            {/* Source sentence */}
-            <div
-                className={cn(
-                    "text-xs font-mono text-fg-muted/40 transition-opacity duration-500",
-                    show ? "opacity-100" : "opacity-0"
-                )}
-            >
-                &quot;that email about the denver trip&quot;
-            </div>
+  return (
+    <div className="h-full w-full">
+      <svg
+        viewBox="0 0 100 70"
+        className={cn("h-full w-full transition-opacity duration-500", show ? "opacity-100" : "opacity-38")}
+      >
+        <defs>
+          <linearGradient id="qd-line" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="rgba(246,185,76,0.96)" />
+            <stop offset="100%" stopColor="rgba(20,184,166,0.5)" />
+          </linearGradient>
+          <radialGradient id="qd-glow" cx="50%" cy="40%" r="70%">
+            <stop offset="0%" stopColor="rgba(246,185,76,0.38)" />
+            <stop offset="100%" stopColor="rgba(246,185,76,0)" />
+          </radialGradient>
+        </defs>
 
-            {/* Bracket lines with draw-in animation */}
-            <svg
-                viewBox="0 0 120 20"
-                className={cn(
-                    "w-24 h-4 transition-opacity duration-500",
-                    show ? "opacity-100" : "opacity-0"
-                )}
-            >
-                {LINES.map((l, i) => {
-                    const len = lineLength(l);
-                    return (
-                        <g key={i}>
-                            <line
-                                x1={l.x1}
-                                y1={l.y1}
-                                x2={l.x2}
-                                y2={l.y2}
-                                stroke={isActive ? "rgba(246,185,76,0.5)" : "rgba(255,255,255,0.1)"}
-                                strokeWidth="1"
-                                strokeDasharray={len}
-                                strokeDashoffset={isActive ? 0 : len}
-                                style={{
-                                    transition: `stroke-dashoffset 0.6s ease-out ${i * 150}ms, stroke 0.5s`,
-                                }}
-                            />
-                            {/* Animated pulse dot traveling along the line */}
-                            {isActive && (
-                                <circle r="1.5" fill="rgba(246,185,76,0.7)">
-                                    <animateMotion
-                                        dur="2s"
-                                        repeatCount="indefinite"
-                                        begin={`${i * 0.3}s`}
-                                        path={`M${l.x1},${l.y1} L${l.x2},${l.y2}`}
-                                    />
-                                </circle>
-                            )}
-                        </g>
-                    );
-                })}
-            </svg>
+        <rect x="10" y="10" width="80" height="8" rx="3" className="fill-white/[0.04] stroke-white/12" />
+        <rect x="12" y="12" width={show ? 62 : 0} height="4" rx="2" className="fill-accent-amber/60" style={{ transition: "width 560ms ease" }} />
 
-            {/* Token pills */}
-            <div className="flex items-center gap-1.5">
-                {TOKENS.map((token, i) => (
-                    <span
-                        key={token}
-                        className={cn(
-                            "rounded px-1.5 py-0.5 text-[11px] font-mono border transition-all duration-500",
-                            isActive
-                                ? i === 0
-                                    ? "border-accent-amber/40 bg-accent-amber/15 text-accent-amber shadow-[0_0_12px_rgba(246,185,76,0.2)]"
-                                    : "border-accent-teal/30 bg-accent-teal/10 text-accent-teal"
-                                : isComplete
-                                    ? "border-white/10 bg-white/5 text-fg-muted/50"
-                                    : "border-white/5 bg-white/[0.02] text-fg-muted/20"
-                        )}
-                        style={{
-                            transitionDelay: isActive ? `${i * 120}ms` : "0ms",
-                            opacity: show ? 1 : 0,
-                            transform: show ? "translateY(0)" : "translateY(4px)",
-                        }}
-                    >
-                        [{token}]
-                    </span>
-                ))}
-            </div>
-        </div>
-    );
+        {[0, 1, 2].map((idx) => (
+          <circle key={`token-${idx}`} r="1.2" className={cn(isActive ? "fill-accent-amber/92" : "fill-accent-amber/60")}>
+            <animateMotion
+              dur={isActive ? "1.8s" : "3s"}
+              repeatCount="indefinite"
+              begin={`${idx * 0.26}s`}
+              path="M14,14 L74,14"
+            />
+          </circle>
+        ))}
+
+        <line
+          x1="50"
+          y1="18"
+          x2="50"
+          y2="27"
+          className={cn(isActive ? "stroke-accent-amber/84" : "stroke-white/24")}
+          strokeWidth="1.1"
+          strokeDasharray="2 1.6"
+        />
+        <circle cx="50" cy="31" r="11" fill="url(#qd-glow)" />
+        <circle cx="50" cy="31" r="4.2" className={cn(isActive ? "fill-accent-amber" : "fill-fg-muted/40")} />
+
+        {OUTPUT_NODES.map((node, index) => (
+          <g key={`${node.x}-${node.y}`}>
+            <line
+              x1="50"
+              y1="35"
+              x2={node.x}
+              y2={node.y}
+              stroke="url(#qd-line)"
+              strokeWidth="1.2"
+              strokeDasharray="2 2"
+              className={cn(isActive ? "opacity-100" : "opacity-45")}
+            />
+            {isActive && (
+              <circle r="1.2" fill="rgba(246,185,76,0.95)">
+                <animateMotion
+                  dur="1.1s"
+                  repeatCount="indefinite"
+                  begin={`${index * 0.14}s`}
+                  path={`M50,35 L${node.x},${node.y}`}
+                />
+              </circle>
+            )}
+            <circle
+              cx={node.x}
+              cy={node.y}
+              r={isActive ? 2.8 : 2.3}
+              className={cn(
+                isActive
+                  ? "fill-accent-amber/95"
+                  : isComplete
+                    ? "fill-accent-amber/58"
+                    : "fill-fg-muted/44"
+              )}
+            />
+            <rect x={node.x - 8} y={node.y + 3.6} width="16" height="2.6" rx="1.3" className="fill-white/[0.06]" />
+            <rect
+              x={node.x - 8}
+              y={node.y + 3.6}
+              width={show ? 9 + index * 2.6 : 0}
+              height="2.6"
+              rx="1.3"
+              className="fill-accent-teal/62"
+              style={{ transition: "width 560ms ease", transitionDelay: `${index * 70}ms` }}
+            />
+          </g>
+        ))}
+
+        <path
+          d="M10 66 C28 62 72 62 90 66"
+          className={cn(isActive ? "stroke-accent-amber/70" : "stroke-fg-muted/34")}
+          strokeWidth="1.1"
+          fill="none"
+          strokeDasharray="2.2 1.8"
+        />
+      </svg>
+    </div>
+  );
 }

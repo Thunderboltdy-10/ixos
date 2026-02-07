@@ -1,136 +1,75 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
 
-const RESULTS = [
-    "flight_confirmation.eml",
-    "Q4_2025_Summary.pdf",
-    "team_standup_notes.md",
-    "NDA_TechCorp_2024.pdf",
-    "auth_api_reference.md",
-];
+const STREAM_ROWS = [42, 66, 58, 78, 52, 70, 61, 83];
 
 export function StreamWaterfall({
-    isActive,
-    isComplete,
+  isActive,
+  isComplete,
 }: {
-    isActive: boolean;
-    isComplete: boolean;
+  isActive: boolean;
+  isComplete: boolean;
 }) {
-    const [visibleCount, setVisibleCount] = useState(0);
-    const [timerMs, setTimerMs] = useState(0);
-    const [flashIndex, setFlashIndex] = useState<number | null>(null);
+  const show = isActive || isComplete;
 
-    useEffect(() => {
-        if (!isActive) {
-            setVisibleCount(isComplete ? RESULTS.length : 0);
-            setTimerMs(isComplete ? 180 : 0);
-            setFlashIndex(null);
-            return;
-        }
-
-        setVisibleCount(0);
-        setTimerMs(0);
-        setFlashIndex(null);
-
-        const timers: NodeJS.Timeout[] = [];
-        const startTime = Date.now();
-
-        RESULTS.forEach((_, i) => {
-            // Flash on arrival
-            timers.push(
-                setTimeout(() => {
-                    setFlashIndex(i);
-                    setVisibleCount(i + 1);
-                }, 200 + i * 120)
-            );
-            // Clear flash after brief moment
-            timers.push(
-                setTimeout(() => setFlashIndex(prev => prev === i ? null : prev), 200 + i * 120 + 200)
-            );
-        });
-
-        // Timer counter
-        const interval = setInterval(() => {
-            const elapsed = Date.now() - startTime;
-            setTimerMs(Math.min(elapsed, 180));
-            if (elapsed >= 180) clearInterval(interval);
-        }, 16);
-        timers.push(interval as unknown as NodeJS.Timeout);
-
-        return () => {
-            timers.forEach(clearTimeout);
-            clearInterval(interval);
-        };
-    }, [isActive, isComplete]);
-
-    const show = isActive || isComplete;
-    const done = visibleCount >= RESULTS.length;
-
-    return (
-        <div className="mt-3 flex flex-col gap-1">
-            {RESULTS.map((name, i) => {
-                const visible = i < visibleCount;
-                const flashing = flashIndex === i;
-                return (
-                    <div
-                        key={name}
-                        className={cn(
-                            "flex items-center gap-2 text-[11px] font-mono transition-all duration-300 rounded px-1 -mx-1",
-                            visible && show
-                                ? "opacity-100 translate-x-0"
-                                : "opacity-0 translate-x-3",
-                            flashing && "bg-accent-teal/10"
-                        )}
-                        style={{
-                            transitionDelay: visible ? `${i * 40}ms` : "0ms",
-                        }}
-                    >
-                        <span className="w-3 text-right text-fg-muted/20">{i + 1}</span>
-                        <span
-                            className={cn(
-                                "truncate transition-colors duration-200",
-                                flashing
-                                    ? "text-accent-teal"
-                                    : isActive
-                                        ? "text-accent-teal/70"
-                                        : "text-fg-muted/40"
-                            )}
-                        >
-                            {name}
-                        </span>
-                    </div>
-                );
-            })}
-
-            {/* Timer + checkmark */}
-            <div className="mt-1 flex items-center gap-2">
-                <span
-                    className={cn(
-                        "text-[10px] font-mono tabular-nums transition-all duration-300",
-                        show ? "opacity-100" : "opacity-0",
-                        !done && isActive ? "text-accent-amber/60" : done && isActive ? "text-accent-teal/60" : "text-fg-muted/25"
-                    )}
-                >
-                    {timerMs}ms
-                </span>
-                {done && show && (
-                    <span className="text-[10px] text-accent-teal/70">&#10003;</span>
-                )}
+  return (
+    <div className="relative h-full w-full overflow-hidden">
+      <div
+        className={cn(
+          "space-y-2 pr-[4.5rem]",
+          show
+            ? isActive
+              ? "animate-[streamTicker_2.6s_linear_infinite]"
+              : "animate-[streamTicker_5.8s_linear_infinite]"
+            : "opacity-38"
+        )}
+      >
+        {[...STREAM_ROWS, ...STREAM_ROWS].map((width, index) => (
+          <div key={`stream-${index}`} className="flex items-center gap-2">
+            <div className={cn("h-2 w-2 rounded-full", index % 2 === 0 ? "bg-accent-teal/78" : "bg-fg-muted/36")} />
+            <div className="h-2.5 flex-1 rounded-sm bg-white/[0.05]">
+              <div
+                className={cn("h-full rounded-sm", index % 2 === 0 ? "bg-accent-teal/64" : "bg-white/20")}
+                style={{ width: `${width}%` }}
+              />
             </div>
+          </div>
+        ))}
+      </div>
 
-            {/* OPEN_WITH indicator */}
-            {done && show && (
-                <div
-                    className={cn(
-                        "mt-0.5 text-[9px] font-mono tracking-wider transition-opacity duration-500",
-                        isActive ? "text-fg-muted/30 opacity-100" : "opacity-0"
-                    )}
-                >
-                    OPEN_WITH: Explorer
-                </div>
-            )}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-bg-graphite-2/95 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-bg-graphite-2/95 to-transparent" />
+
+      <div className="pointer-events-none absolute bottom-2 right-0 top-2 w-16 overflow-hidden">
+        <div className={cn("space-y-1 text-[8px] font-mono leading-tight", show ? "opacity-100" : "opacity-34", isActive ? "animate-[streamTextTicker_2.7s_linear_infinite]" : "animate-[streamTextTicker_5.8s_linear_infinite]")}>
+          {[
+            "q4_report.pdf",
+            "review_q1.pptx",
+            "notes_sync.md",
+            "nda_final.pdf",
+            "roadmap_v2.docx",
+            "invoice_jan.xlsx",
+            "meeting_log.txt",
+            "deck_final.pptx",
+          ].map((line, idx) => (
+            <div key={`stream-line-${idx}`} className={cn(idx % 2 === 0 ? "text-accent-teal/74" : "text-fg-muted/52")}>
+              {line}
+            </div>
+          ))}
         </div>
-    );
+      </div>
+
+      <style>{`
+        @keyframes streamTicker {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(-50%); }
+        }
+        @keyframes streamTextTicker {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(-50%); }
+        }
+      `}</style>
+    </div>
+  );
 }

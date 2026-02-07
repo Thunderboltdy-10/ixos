@@ -418,6 +418,136 @@ video::-moz-media-controls {
   }
 }
 
+/* Documentation typography */
+.docs-content {
+  color: rgba(243, 245, 247, 0.86);
+}
+
+.docs-content a {
+  color: #5eead4;
+  text-underline-offset: 3px;
+}
+
+.docs-content a:hover {
+  color: #99f6e4;
+}
+
+.docs-kicker {
+  margin-bottom: 0.5rem;
+  font-family: var(--font-ixo-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(94, 234, 212, 0.9);
+}
+
+.docs-h1 {
+  margin-bottom: 0.7rem;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: #f3f5f7;
+}
+
+.docs-lead {
+  max-width: 68ch;
+  font-size: 1.03rem;
+  line-height: 1.78;
+  color: rgba(243, 245, 247, 0.78);
+}
+
+.docs-content h2 {
+  margin-top: 2.3rem;
+  margin-bottom: 0.8rem;
+  font-size: 1.4rem;
+  line-height: 1.35;
+  color: #f3f5f7;
+}
+
+.docs-content p {
+  margin-top: 0.6rem;
+  max-width: 72ch;
+  color: rgba(243, 245, 247, 0.78);
+}
+
+.docs-content ul,
+.docs-content ol {
+  margin-top: 0.55rem;
+  padding-left: 1.3rem;
+}
+
+.docs-content li {
+  margin-bottom: 0.45rem;
+  line-height: 1.65;
+  color: rgba(243, 245, 247, 0.76);
+}
+
+.docs-content code {
+  border: 1px solid rgba(243, 245, 247, 0.1);
+  border-radius: 0.35rem;
+  background: rgba(14, 17, 23, 0.8);
+  padding: 0.08rem 0.3rem;
+  color: rgba(243, 245, 247, 0.92);
+}
+
+.docs-content pre {
+  margin-top: 0.8rem;
+  border: 1px solid rgba(243, 245, 247, 0.12);
+  border-radius: 0.6rem;
+  background: rgba(14, 17, 23, 0.9);
+  padding: 0.95rem 1rem;
+  overflow-x: auto;
+}
+
+.docs-content pre code {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: rgba(243, 245, 247, 0.82);
+}
+
+.docs-next {
+  margin-top: 2.5rem;
+  font-size: 0.98rem;
+}
+
+/* Clerk readability hardening for auth views */
+.cl-socialButtonsBlockButton {
+  background: #121722 !important;
+  border-color: rgba(243, 245, 247, 0.2) !important;
+  color: #f3f5f7 !important;
+  opacity: 1 !important;
+}
+
+.cl-socialButtonsBlockButton:hover {
+  background: #1a2131 !important;
+  border-color: rgba(20, 184, 166, 0.45) !important;
+}
+
+.cl-socialButtonsBlockButtonText {
+  color: #f3f5f7 !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+.cl-dividerText {
+  color: rgba(243, 245, 247, 0.68) !important;
+}
+
+.cl-formFieldInput::placeholder {
+  color: rgba(243, 245, 247, 0.45) !important;
+}
+
+.cl-formFieldInput:-webkit-autofill,
+.cl-formFieldInput:-webkit-autofill:hover,
+.cl-formFieldInput:-webkit-autofill:focus,
+.cl-formFieldInput:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #11151f inset !important;
+  -webkit-text-fill-color: #f3f5f7 !important;
+  caret-color: #f3f5f7 !important;
+  transition: background-color 9999s ease-in-out 0s !important;
+}
+
 /* Section transition zone: teal -> violet blend */
 .section-transition-teal-to-violet {
   position: relative;

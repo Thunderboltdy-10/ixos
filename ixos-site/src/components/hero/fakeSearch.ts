@@ -574,7 +574,7 @@ function expandTerms(terms: string[]): Set<string> {
 }
 
 /**
- * Semantic matching algorithm — replaces primitive fuzzyMatch
+ * Semantic matching algorithm - replaces primitive fuzzyMatch
  */
 function semanticMatch(query: string, file: DemoFile): number {
   const queryTerms = tokenize(query);
@@ -678,21 +678,50 @@ export function useFakeSearch() {
     setResults([]);
     setSearchStage('scan');
 
-    if (pauseRef.current === 'scan') return;
+    while (!abortRef.current && pauseRef.current === 'scan') {
+      await delay(60);
+    }
+    if (abortRef.current) {
+      setSearchStage('idle');
+      setIsSearching(false);
+      return;
+    }
 
     await delay(200);
-    if (abortRef.current) return;
+    if (abortRef.current) {
+      setSearchStage('idle');
+      setIsSearching(false);
+      return;
+    }
 
     setSearchStage('embed');
 
-    if (pauseRef.current === 'embed') return;
+    while (!abortRef.current && pauseRef.current === 'embed') {
+      await delay(60);
+    }
+    if (abortRef.current) {
+      setSearchStage('idle');
+      setIsSearching(false);
+      return;
+    }
 
     await delay(200);
-    if (abortRef.current) return;
+    if (abortRef.current) {
+      setSearchStage('idle');
+      setIsSearching(false);
+      return;
+    }
 
     setSearchStage('rank');
 
-    if (pauseRef.current === 'rank') return;
+    while (!abortRef.current && pauseRef.current === 'rank') {
+      await delay(60);
+    }
+    if (abortRef.current) {
+      setSearchStage('idle');
+      setIsSearching(false);
+      return;
+    }
 
     // Score all files with semantic matching
     const scored = DEMO_FILES
@@ -702,16 +731,31 @@ export function useFakeSearch() {
       .slice(0, 5);
 
     await delay(200);
-    if (abortRef.current) return;
+    if (abortRef.current) {
+      setSearchStage('idle');
+      setIsSearching(false);
+      return;
+    }
 
     // Stream results progressively
     for (const match of scored) {
-      if (abortRef.current) return;
+      if (abortRef.current) {
+        setSearchStage('idle');
+        setIsSearching(false);
+        return;
+      }
       await delay(80 + Math.random() * 60);
       setResults(prev => [...prev, match]);
     }
 
-    if (pauseRef.current === 'results') return;
+    while (!abortRef.current && pauseRef.current === 'results') {
+      await delay(60);
+    }
+    if (abortRef.current) {
+      setSearchStage('idle');
+      setIsSearching(false);
+      return;
+    }
 
     setSearchStage('idle');
     setIsSearching(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, createElement } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Sparkles, Zap, Shield, ChevronDown, ChevronRight, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -13,6 +13,7 @@ type DemoModel = 'Flash' | 'Pro' | 'Auto';
 const MODELS: DemoModel[] = ['Auto', 'Flash', 'Pro'];
 const QUERY_CYCLE_MS = 10_000;
 const SYNC_POLL_MS = 120;
+const SCROLL_GUIDED_QUERY = DEMO_QUERIES[0].query;
 
 const MODE_TOKENS = {
   jit: {
@@ -52,11 +53,11 @@ const PIPELINE_STAGES = ['Scan', 'Embed', 'Rank'] as const;
 export const STEP_LABELS = ['01 INPUT_LAYER', '02 EMBED_ENGINE', '03 RANK_ENGINE', '04 PRIVACY_GUARD', '05 OUTPUT_STREAM'] as const;
 
 const STEP_PAUSE_MAP: Record<number, PauseAtStage> = {
-  0: 'scan',    // Input — show typing, pause at scan
-  1: 'embed',   // Embed — pause at embed stage
-  2: 'rank',    // Rank — pause at rank stage
-  3: 'results', // Privacy — show results in secure mode
-  4: null,      // Stream — full run
+  0: 'scan',
+  1: 'embed',
+  2: 'rank',
+  3: 'results',
+  4: null,
 };
 
 interface IxosDemoWindowProps {
@@ -65,13 +66,14 @@ interface IxosDemoWindowProps {
 }
 
 /**
- * Interactive Ixos demo — desktop-faithful replica
+ * Interactive Ixos demo - desktop-faithful replica
  */
 export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWindowProps) {
   const [syncClock, setSyncClock] = useState(() => Date.now());
   const [userQuery, setUserQuery] = useState<string | null>(null);
   const [isUserMode, setIsUserMode] = useState(false);
   const [typedText, setTypedText] = useState('');
+  const previousControlledStepRef = useRef<number | null>(null);
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [activeMode, setActiveMode] = useState<DemoMode>('jit');
@@ -82,55 +84,79 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
   const { search, results, isSearching, searchStage, reset, setPauseAtStage } = useFakeSearch();
   const tokens = MODE_TOKENS[activeMode];
   const isControlled = controlledStep !== null && controlledStep !== undefined;
-  const queryIndex = Math.floor(syncClock / QUERY_CYCLE_MS) % DEMO_QUERIES.length;
+  const queryIndex = isControlled ? 0 : Math.floor(syncClock / QUERY_CYCLE_MS) % DEMO_QUERIES.length;
 
-  const currentDemoQuery = DEMO_QUERIES[queryIndex].query;
+  const currentDemoQuery = isControlled ? SCROLL_GUIDED_QUERY : DEMO_QUERIES[queryIndex].query;
   const displayQuery = isUserMode ? (userQuery || '') : typedText;
-
-  // Controlled step: override demo behavior
+  // Controlled step: lock demo progression to scroll stage without autonomous loops.
   useEffect(() => {
-    if (!isControlled) return;
-    const step = controlledStep!;
+    if (!isControlled) {
+      previousControlledStepRef.current = null;
+      return;
+    }
 
-    // Set pause stage
+    const step = Math.max(0, Math.min(4, controlledStep ?? 0));
+    const previousStep = previousControlledStepRef.current;
+    if (previousStep === step) return;
+    previousControlledStepRef.current = step;
+
     setPauseAtStage(STEP_PAUSE_MAP[step] ?? null);
+    setIsUserMode(false);
+    setUserQuery(null);
 
-    // Switch to journalist mode on privacy step
-    if (step === 3 && activeMode !== 'journalist') {
+    if (step === 3) {
       setActiveMode('journalist');
-    } else if (step !== 3 && activeMode === 'journalist' && !isUserMode) {
-      setActiveMode('jit');
+    } else {
+      setActiveMode(prev => (prev === 'journalist' ? 'jit' : prev));
     }
 
-    // Trigger search for steps 1+ (after typing is done)
-    if (step >= 1) {
-      const q = DEMO_QUERIES[queryIndex].query;
-      search(q);
-    } else {
-      // Step 0: typing animation only — reset results
+    if (step === 0) {
       reset();
+      setTypedText('');
+      return;
     }
-  }, [controlledStep, isControlled]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const isBackward = previousStep !== null && step < previousStep;
+    const shouldStartFresh = previousStep === null || previousStep === 0 || isBackward;
+
+    if (shouldStartFresh) {
+      setTypedText(currentDemoQuery);
+      void search(currentDemoQuery);
+    }
+  }, [controlledStep, currentDemoQuery, isControlled, reset, search, setPauseAtStage]);
 
   // Keep all demo instances synchronized on the same query cycle.
   useEffect(() => {
-    if (isUserMode) return;
+    if (isUserMode || isControlled) return;
     const timer = window.setInterval(() => {
       setSyncClock(Date.now());
     }, SYNC_POLL_MS);
     return () => window.clearInterval(timer);
-  }, [isUserMode]);
+  }, [isUserMode, isControlled]);
 
   // Typing animation
   useEffect(() => {
     if (isUserMode) return;
-    // In controlled mode, step 0 does typing; other steps show full text
-    if (isControlled && controlledStep !== 0) {
-      setTypedText(currentDemoQuery);
-      return;
+    if (isControlled) {
+      // Scroll-guided mode: no autonomous looping queries.
+      if (controlledStep !== 0) {
+        return;
+      }
+      setTypedText('');
+      let charIndex = 0;
+      const timer = setInterval(() => {
+        if (charIndex <= currentDemoQuery.length) {
+          setTypedText(currentDemoQuery.slice(0, charIndex));
+          charIndex++;
+        } else {
+          clearInterval(timer);
+        }
+      }, 50);
+      return () => clearInterval(timer);
     }
+
     setTypedText('');
-    if (!isControlled) reset();
+    reset();
 
     let charIndex = 0;
     const timer = setInterval(() => {
@@ -139,7 +165,7 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
         charIndex++;
       } else {
         clearInterval(timer);
-        if (!isControlled) search(currentDemoQuery);
+        search(currentDemoQuery);
       }
     }, 50);
 
@@ -184,8 +210,11 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
 
   return (
     <div
-      className="relative flex h-full w-full flex-col overflow-hidden rounded-lg border border-white/10 bg-bg-graphite-0 shadow-2xl"
-      onClick={startUserMode}
+      className={cn(
+        "relative flex h-full w-full flex-col overflow-hidden rounded-lg border border-white/10 bg-bg-graphite-0 shadow-2xl",
+        isControlled && "pointer-events-none select-none"
+      )}
+      onClick={isControlled ? undefined : startUserMode}
     >
       <div className="relative z-10 flex flex-1 flex-col items-center p-3 transition-all duration-300 md:p-4 lg:p-5">
         <div
@@ -397,7 +426,6 @@ function DemoResultCard({ result, index, activeMode }: { result: DemoFile; index
   const scorePercent = Math.round(result.score * 100);
   const isSelected = index === 0;
   const tokens = MODE_TOKENS[activeMode];
-  const FileIcon = getFileIcon(result.fileExtension);
 
   return (
     <motion.div
@@ -424,10 +452,12 @@ function DemoResultCard({ result, index, activeMode }: { result: DemoFile; index
       <span className="text-fg-muted/25 font-mono text-[11px] w-4 shrink-0 text-right">{index + 1}</span>
 
       {/* File Icon */}
-      <FileIcon className={cn(
-        "w-4 h-4 shrink-0 transition-colors",
-        isSelected ? tokens.text : "text-fg-muted/40 group-hover:text-fg-muted/60"
-      )} />
+      {createElement(getFileIcon(result.fileExtension), {
+        className: cn(
+          "w-4 h-4 shrink-0 transition-colors",
+          isSelected ? tokens.text : "text-fg-muted/40 group-hover:text-fg-muted/60"
+        )
+      })}
 
       {/* Content */}
       <div className="flex-1 min-w-0">
@@ -473,3 +503,4 @@ function DemoResultCard({ result, index, activeMode }: { result: DemoFile; index
     </motion.div>
   );
 }
+

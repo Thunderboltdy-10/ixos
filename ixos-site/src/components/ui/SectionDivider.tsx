@@ -37,6 +37,7 @@ export function SectionDivider({ className, label = "SECTION_BREAK", accent = "a
         violet: "text-accent-violet border-accent-violet bg-accent-violet",
         magenta: "text-accent-magenta border-accent-magenta bg-accent-magenta",
     }[accent];
+    const normalizedLabel = label.toUpperCase();
 
     return (
         <div className="w-full h-24 flex items-center justify-center">
@@ -64,7 +65,7 @@ export function SectionDivider({ className, label = "SECTION_BREAK", accent = "a
                 <div className="relative z-10 px-4 py-1 bg-[#050507] border border-white/10 rounded-full flex items-center gap-2">
                     <div className={cn("w-1.5 h-1.5 rounded-full", accentColor.split(" ")[2])} />
                     <span className={cn("text-[10px] font-mono tracking-widest opacity-70", accentColor.split(" ")[0])}>
-                        {`// ${label}`}
+                        {`// ${normalizedLabel}`}
                     </span>
                     <div className={cn("w-1.5 h-1.5 rounded-full", accentColor.split(" ")[2])} />
                 </div>

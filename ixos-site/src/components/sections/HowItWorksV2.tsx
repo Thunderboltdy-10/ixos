@@ -27,31 +27,31 @@ interface PhaseBox {
 const PHASES: PhaseBox[] = [
   {
     id: "01",
-    label: "Input Layer",
+    label: "INPUT_LAYER",
     title: "Natural Language Search",
     description: "Type exactly how you think. No query syntax required.",
   },
   {
     id: "02",
-    label: "Embed Engine",
+    label: "EMBED_ENGINE",
     title: "JIT Intelligence",
     description: "CPU-optimized micro-models compute embeddings on the fly.",
   },
   {
     id: "03",
-    label: "Rank Engine",
+    label: "RANK_ENGINE",
     title: "Semantic Scoring",
     description: "Multi-signal ranking with integrity verification.",
   },
   {
     id: "04",
-    label: "Privacy Guard",
+    label: "PRIVACY_GUARD",
     title: "No Index Required",
     description: "Embeddings discarded after search. Zero persistence.",
   },
   {
     id: "05",
-    label: "Output Stream",
+    label: "OUTPUT_STREAM",
     title: "Instant Access",
     description: "Click to open. Integrates with Explorer, Finder, terminal.",
   },
@@ -183,7 +183,7 @@ export function HowItWorksV2() {
                       <div className="h-1.5 w-1.5 rounded-full bg-white/30" />
                     </div>
                     <span className="text-[9px] font-mono tracking-widest text-accent-teal/65">
-                      //{STEP_LABELS[activeStep] ?? "LIVE DEMO"}
+                      {`// ${STEP_LABELS[activeStep] ?? "LIVE_DEMO"}`}
                     </span>
                   </div>
                   <div className="min-h-0 flex-1">
@@ -246,7 +246,7 @@ export function HowItWorksV2() {
                     <div className="h-1.5 w-1.5 rounded-full bg-white/30" />
                   </div>
                   <span className="text-[9px] font-mono tracking-widest text-accent-teal/65">
-                    //{STEP_LABELS[activeStep] ?? "LIVE DEMO"}
+                    {`// ${STEP_LABELS[activeStep] ?? "LIVE_DEMO"}`}
                   </span>
                 </div>
                 <div className="h-[380px]">
@@ -317,7 +317,7 @@ function PhaseTile({
             isActive ? "text-accent-teal" : "text-fg-muted/50"
           )}
         >
-          //{phase.label}
+          {`// ${phase.label.toUpperCase()}`}
         </span>
         <h4 className="mt-1.5 text-sm font-semibold leading-tight text-fg-porcelain">
           {phase.title}

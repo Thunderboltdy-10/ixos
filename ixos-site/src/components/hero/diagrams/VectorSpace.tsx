@@ -2,167 +2,120 @@
 
 import { cn } from "@/lib/utils";
 
-const DOCS = [
-    { cx: 25, cy: 20 },
-    { cx: 72, cy: 15 },
-    { cx: 45, cy: 55 },
-    { cx: 15, cy: 65 },
-    { cx: 80, cy: 50 },
-    { cx: 60, cy: 75 },
-    { cx: 35, cy: 35 },
+const POINTS = [
+  { x: 23, y: 26 },
+  { x: 72, y: 23 },
+  { x: 34, y: 58 },
+  { x: 60, y: 54 },
+  { x: 80, y: 61 },
+  { x: 18, y: 45 },
+  { x: 46, y: 30 },
+  { x: 74, y: 43 },
 ];
 
-const QUERY = { cx: 50, cy: 42 };
-const NEIGHBORS = [2, 6, 4]; // indices of closest docs
-const NEIGHBOR_SCORES = ["0.91", "0.82", "0.65"];
-
-function dist(a: { cx: number; cy: number }, b: { cx: number; cy: number }) {
-    const dx = a.cx - b.cx;
-    const dy = a.cy - b.cy;
-    return Math.sqrt(dx * dx + dy * dy);
-}
-
 export function VectorSpace({
-    isActive,
-    isComplete,
+  isActive,
+  isComplete,
 }: {
-    isActive: boolean;
-    isComplete: boolean;
+  isActive: boolean;
+  isComplete: boolean;
 }) {
-    const show = isActive || isComplete;
+  const show = isActive || isComplete;
 
-    return (
-        <div className="mt-3 flex flex-col items-center gap-1.5">
-            <svg
-                viewBox="0 0 100 90"
-                className={cn(
-                    "w-full max-w-[180px] h-auto transition-opacity duration-500",
-                    show ? "opacity-100" : "opacity-30"
-                )}
-            >
-                {/* Purple scan radius circle */}
-                {isActive && (
-                    <circle
-                        cx={QUERY.cx}
-                        cy={QUERY.cy}
-                        r="0"
-                        fill="none"
-                        stroke="rgba(124,92,255,0.15)"
-                        strokeWidth="0.8"
-                    >
-                        <animate
-                            attributeName="r"
-                            values="0;35;0"
-                            dur="3s"
-                            repeatCount="indefinite"
-                        />
-                        <animate
-                            attributeName="opacity"
-                            values="0.6;0;0.6"
-                            dur="3s"
-                            repeatCount="indefinite"
-                        />
-                    </circle>
-                )}
+  return (
+    <div className="h-full w-full">
+      <svg
+        viewBox="0 0 100 70"
+        className={cn("h-full w-full transition-opacity duration-500", show ? "opacity-100" : "opacity-38")}
+      >
+        <defs>
+          <radialGradient id="vs-core" cx="50%" cy="50%" r="65%">
+            <stop offset="0%" stopColor="rgba(20,184,166,0.42)" />
+            <stop offset="100%" stopColor="rgba(20,184,166,0)" />
+          </radialGradient>
+          <linearGradient id="vs-arrow" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="rgba(246,185,76,0.95)" />
+            <stop offset="100%" stopColor="rgba(20,184,166,0.95)" />
+          </linearGradient>
+        </defs>
 
-                {/* Dashed lines to neighbors with staggered draw-in */}
-                {NEIGHBORS.map((ni, idx) => {
-                    const d = dist(QUERY, DOCS[ni]);
-                    return (
-                        <line
-                            key={ni}
-                            x1={QUERY.cx}
-                            y1={QUERY.cy}
-                            x2={DOCS[ni].cx}
-                            y2={DOCS[ni].cy}
-                            stroke={isActive ? "rgba(20,184,166,0.4)" : "rgba(255,255,255,0.06)"}
-                            strokeWidth="0.8"
-                            strokeDasharray={d}
-                            strokeDashoffset={isActive ? 0 : d}
-                            style={{
-                                transition: `stroke-dashoffset 0.5s ease-out ${idx * 200}ms, stroke 0.5s`,
-                            }}
-                        />
-                    );
-                })}
+        <circle cx="50" cy="36" r="27" fill="url(#vs-core)" />
+        <circle cx="50" cy="36" r="23" className="fill-none stroke-white/14" />
+        <circle cx="50" cy="36" r="15" className="fill-none stroke-white/12" />
+        <circle cx="50" cy="36" r="8" className="fill-none stroke-white/12" />
 
-                {/* Document dots */}
-                {DOCS.map((d, i) => {
-                    const isNeighbor = NEIGHBORS.includes(i);
-                    return (
-                        <circle
-                            key={i}
-                            cx={d.cx}
-                            cy={d.cy}
-                            r={isNeighbor && isActive ? 3 : 2.5}
-                            fill={
-                                isNeighbor && (isActive || isComplete)
-                                    ? "rgba(20,184,166,0.6)"
-                                    : "rgba(255,255,255,0.15)"
-                            }
-                            className="transition-all duration-500"
-                        />
-                    );
-                })}
+        <line x1="14" y1="36" x2="86" y2="36" className="stroke-white/12" strokeWidth="0.9" />
+        <line x1="50" y1="10" x2="50" y2="62" className="stroke-white/12" strokeWidth="0.9" />
 
-                {/* Floating score labels near top 3 neighbors */}
-                {isActive && NEIGHBORS.map((ni, idx) => (
-                    <text
-                        key={`score-${ni}`}
-                        x={DOCS[ni].cx + 5}
-                        y={DOCS[ni].cy - 5}
-                        fill="rgba(20,184,166,0.7)"
-                        fontSize="5"
-                        fontFamily="monospace"
-                        style={{
-                            opacity: 0,
-                            animation: `fadeIn 0.3s ease-out ${300 + idx * 200}ms forwards`,
-                        }}
-                    >
-                        {NEIGHBOR_SCORES[idx]}
-                    </text>
-                ))}
+        <line
+          x1="16"
+          y1="18"
+          x2="50"
+          y2="36"
+          stroke={isActive ? "url(#vs-arrow)" : "rgba(255,255,255,0.2)"}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <polygon points="50,36 45,34 46,40" className={cn(isActive ? "fill-accent-teal" : "fill-white/26")} />
 
-                {/* Query dot with pulse */}
-                <circle
-                    cx={QUERY.cx}
-                    cy={QUERY.cy}
-                    r={isActive ? 5 : 4}
-                    fill={isActive ? "rgba(20,184,166,0.9)" : isComplete ? "rgba(20,184,166,0.6)" : "rgba(255,255,255,0.2)"}
-                    className="transition-all duration-500"
-                >
-                    {isActive && (
-                        <animate
-                            attributeName="r"
-                            values="4;6;4"
-                            dur="2s"
-                            repeatCount="indefinite"
-                        />
-                    )}
-                </circle>
+        {POINTS.map((p, index) => (
+          <g key={`${p.x}-${p.y}`}>
+            {isActive && index <= 4 && (
+              <line
+                x1="50"
+                y1="36"
+                x2={p.x}
+                y2={p.y}
+                className="stroke-accent-teal/42"
+                strokeWidth="0.9"
+                strokeDasharray="2 2"
+              />
+            )}
+            <circle
+              cx={p.x}
+              cy={p.y}
+              r={isActive && index <= 2 ? 2.7 : 2.2}
+              className={cn(
+                isActive
+                  ? index <= 2
+                    ? "fill-accent-teal"
+                    : "fill-accent-teal/62"
+                  : isComplete
+                    ? "fill-fg-muted/58"
+                    : "fill-fg-muted/34"
+              )}
+            />
+          </g>
+        ))}
 
-                {/* Inline style for fadeIn keyframe */}
-                <defs>
-                    <style>{`
-                        @keyframes fadeIn {
-                            from { opacity: 0; transform: translateY(2px); }
-                            to { opacity: 1; transform: translateY(0); }
-                        }
-                    `}</style>
-                </defs>
-            </svg>
+        <circle cx="74" cy="43" r={isActive ? 6.4 : 5.1} className="fill-none stroke-accent-teal/52" strokeWidth="1" strokeDasharray="2 2" />
 
-            {/* CPU badge */}
-            <span
-                className={cn(
-                    "rounded px-1.5 py-0.5 text-[10px] font-mono border transition-all duration-500",
-                    isActive
-                        ? "border-accent-teal/25 bg-accent-teal/10 text-accent-teal"
-                        : "border-white/5 bg-white/[0.02] text-fg-muted/25"
-                )}
-            >
-                CPU
-            </span>
-        </div>
-    );
+        {isActive && (
+          <g className="origin-center animate-[vectorSpin_5s_linear_infinite]">
+            <line x1="50" y1="36" x2="85" y2="36" className="stroke-accent-teal/42" strokeWidth="1.1" />
+            <line x1="50" y1="36" x2="15" y2="36" className="stroke-accent-teal/32" strokeWidth="1.1" />
+          </g>
+        )}
+
+        <circle
+          cx="50"
+          cy="36"
+          r={isActive ? 4.9 : 4.2}
+          className={cn(isActive ? "fill-accent-teal" : isComplete ? "fill-accent-teal/64" : "fill-white/28")}
+        />
+
+        <rect x="8" y="58" width="26" height="2.4" rx="1.2" className="fill-white/[0.08]" />
+        <rect x="8" y="58" width={show ? 17 : 0} height="2.4" rx="1.2" className="fill-accent-amber/70" style={{ transition: "width 520ms ease" }} />
+        <rect x="8" y="62.5" width="26" height="2.2" rx="1.1" className="fill-white/[0.08]" />
+        <rect x="8" y="62.5" width={show ? 22 : 0} height="2.2" rx="1.1" className="fill-accent-teal/66" style={{ transition: "width 560ms ease", transitionDelay: "90ms" }} />
+      </svg>
+
+      <style>{`
+        @keyframes vectorSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
 }

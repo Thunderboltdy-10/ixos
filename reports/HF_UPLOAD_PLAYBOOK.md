@@ -77,7 +77,7 @@ sha256sum model.safetensors > SHA256SUMS.txt
 
 ## App Integration (Post-Upload)
 - Update `src-tauri/src/commands/system.rs` if repo IDs change.
-- Ensure `MODEL_INSTALLATION_SYSTEM_REPORT.md` reflects current repo names.
+- Ensure `docs/archive/root/MODEL_INSTALLATION_SYSTEM_REPORT.md` reflects current repo names.
 - For Pro v2, ensure download flow still pulls Flash v2 + Potion.
 
 ---

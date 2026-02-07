@@ -104,4 +104,4 @@ cargo run --bin ixos-bench -- --dir dataset --runs 5 --cache-mode jit --model ix
 ```
 
 ### Canonical source
-All documents (MODELS_REPORT.md, TIERS.md, model cards) should reference `models/lab/CANONICAL_RESULTS.md` for metrics. If numbers disagree, the canonical file is authoritative.
+All documents (`docs/archive/root/MODELS_REPORT.md`, TIERS.md, model cards) should reference `models/lab/CANONICAL_RESULTS.md` for metrics. If numbers disagree, the canonical file is authoritative.

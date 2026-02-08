@@ -78,7 +78,8 @@ const sections = [
     items: [
       'Starred searches, history recall, and stats panel.',
       'Late insights badge for results found after first pass.',
-      'Global shortcut (Ctrl+Space) to open Ixos quickly.',
+      'Global shortcut (Ctrl+Space) to open Ixos from anywhere.',
+      'Ctrl+K opens the command palette for quick actions and history.',
       'Settings for search, privacy, compliance, and keyboard.',
     ],
   },
@@ -86,9 +87,10 @@ const sections = [
     title: 'Keyboard & Commands',
     icon: Keyboard,
     items: [
+      'Ctrl+K: Command palette (search history, quick actions, navigation).',
+      'Ctrl+T: New search tab. Ctrl+Shift+A: Toggle Ask Mode.',
       'Enter to search, Esc to cancel, arrows to navigate results.',
       'CLI: ixos search, ixos index, ixos config, ixos compliance.',
-      'Use --progressive and --show-scores for deeper analysis.',
     ],
   },
 ];
@@ -155,7 +157,7 @@ export function InfoPanel() {
                     className="flex items-start gap-3 group"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-accent-teal/40 mt-2 flex-shrink-0 group-hover:bg-accent-teal transition-colors duration-300" />
-                    <span className="text-sm text-fg-secondary leading-relaxed group-hover:text-porcelain group-hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all duration-300">
+                    <span className="text-sm text-fg-secondary leading-relaxed group-hover:text-porcelain transition-colors duration-300">
                       {item}
                     </span>
                   </motion.li>
@@ -201,7 +203,7 @@ export function InfoPanel() {
             "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
             currentIndex === sections.length - 1
               ? "text-fg-dim cursor-not-allowed opacity-50"
-              : "text-porcelain bg-accent-teal/10 hover:bg-accent-teal/20 hover:text-accent-teal text-shadow-glow"
+              : "text-porcelain bg-accent-teal/10 hover:bg-accent-teal/20 hover:text-accent-teal"
           )}
         >
           Next

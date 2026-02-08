@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Sparkles, Layers, ChevronDown, Check } from 'lucide-react';
+import { Zap, Sparkles, Layers, ChevronDown, Check, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { SearchMode } from '@/lib/types';
 
@@ -21,35 +21,35 @@ interface QualityOption {
   bgColor: string;
 }
 
-  const modes: QualityOption[] = [
-    {
-      id: 'flash',
-      icon: Zap,
-      label: 'Flash Mode',
-      shortLabel: 'Flash',
-      description: 'Fastest model only. Lowest latency.',
-      color: 'text-accent-amber',
-      bgColor: 'bg-accent-amber/10',
-    },
-    {
-      id: 'auto',
-      icon: Sparkles,
-      label: 'Auto Mode',
-      shortLabel: 'Auto',
-      description: 'Starts fast, refines with Pro when uncertain.',
-      color: 'text-accent-teal',
-      bgColor: 'bg-accent-teal/10',
-    },
-    {
-      id: 'pro',
-      icon: Layers,
-      label: 'Pro Mode',
-      shortLabel: 'Pro',
-      description: 'Always use Pro model. Highest quality.',
-      color: 'text-accent-violet',
-      bgColor: 'bg-accent-violet/10',
-    },
-  ];
+const modes: QualityOption[] = [
+  {
+    id: 'flash',
+    icon: Zap,
+    label: 'Flash Mode',
+    shortLabel: 'Flash',
+    description: 'Fastest model only. Lowest latency.',
+    color: 'text-accent-amber',
+    bgColor: 'bg-accent-amber/10',
+  },
+  {
+    id: 'auto',
+    icon: Sparkles,
+    label: 'Auto Mode',
+    shortLabel: 'Auto',
+    description: 'Starts fast, refines with Pro when uncertain.',
+    color: 'text-accent-teal',
+    bgColor: 'bg-accent-teal/10',
+  },
+  {
+    id: 'pro',
+    icon: Layers,
+    label: 'Pro Mode',
+    shortLabel: 'Pro',
+    description: 'Always use Pro model. Highest quality.',
+    color: 'text-accent-violet',
+    bgColor: 'bg-accent-violet/10',
+  },
+];
 
 export function QualitySwitcher({ value, onChange, className, proLocked = false }: QualitySwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -66,7 +66,7 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
     const updatePosition = () => {
       const buttonRect = buttonRef.current?.getBoundingClientRect();
       const dropdownRect = dropdownRef.current?.getBoundingClientRect();
-      
+
       if (!buttonRect || !dropdownRect) return;
 
       // Calculate space below and above the button
@@ -88,7 +88,13 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
   }, [isOpen]);
 
   const handleSelect = (mode: SearchMode) => {
-    if (mode === 'pro' && proLocked) return;
+    const lockedSelection = proLocked && mode !== 'flash';
+    if (lockedSelection) {
+      window.dispatchEvent(new CustomEvent('open-pricing'));
+      setIsOpen(false);
+      return;
+    }
+
     onChange(mode);
     setIsOpen(false);
   };
@@ -130,50 +136,43 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
               className={cn(
                 'absolute z-50 right-0',
                 dropdownPosition === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
-                'w-64',
+                'w-72',
                 'bg-graphite-2 rounded-xl border border-stroke-hairline',
                 'shadow-lift overflow-hidden'
               )}
             >
               {modes.map((mode) => {
                 const Icon = mode.icon;
+                const isLocked = proLocked && mode.id !== 'flash';
                 return (
                   <button
                     key={mode.id}
                     onClick={() => handleSelect(mode.id)}
                     className={cn(
-                      'w-full flex items-start gap-3 px-4 py-3',
+                      'w-full flex items-center gap-2 px-3 py-2',
                       'hover:bg-graphite-3 transition-colors duration-150',
                       'text-left',
                       mode.id === value && 'bg-graphite-3',
-                      mode.id === 'pro' && proLocked && 'opacity-50 cursor-not-allowed'
+                      isLocked && 'opacity-75'
                     )}
                   >
-                    <div className={cn('p-2 rounded-md mt-0.5', mode.bgColor)}>
-                      <Icon className={cn('w-4 h-4', mode.color)} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-porcelain">
-                          {mode.label}
-                        </span>
-                        {mode.id === 'pro' && proLocked && (
-                          <span className="text-2xs px-1.5 py-0.5 rounded bg-error/20 text-error">
-                            Locked
-                          </span>
-                        )}
-                        {mode.id === 'auto' && (
-                          <span className="text-2xs px-1.5 py-0.5 rounded bg-accent-teal/20 text-accent-teal">
-                            Default
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-2xs text-fg-muted mt-1 leading-relaxed">
-                        {mode.description}
-                      </div>
-                    </div>
+                    <Icon className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
+                    <span className="text-xs font-medium text-porcelain whitespace-nowrap">
+                      {mode.label}
+                    </span>
+                    <span className="text-[11px] text-fg-secondary truncate flex-1">
+                      {mode.description}
+                    </span>
+                    {isLocked && (
+                      <Lock className="w-3 h-3 shrink-0 text-fg-dim" />
+                    )}
+                    {mode.id === 'auto' && (
+                      <span className="text-[9px] px-1 py-px rounded bg-accent-teal/15 text-accent-teal shrink-0">
+                        Default
+                      </span>
+                    )}
                     {mode.id === value && (
-                      <Check className={cn('w-4 h-4 mt-1', mode.color)} />
+                      <Check className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
                     )}
                   </button>
                 );

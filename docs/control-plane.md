@@ -122,3 +122,4 @@ WHERE user_id = '<uuid>' AND status = 'active';
 - `cd ixos-site && npm run dev` to run API routes locally
 - `npx drizzle-kit push` to apply schema to Neon
 - `npm run tauri dev` from repo root to run desktop app
+- `npm run tauri:build:prod` from repo root for release packaging (fails fast if required env vars are missing)

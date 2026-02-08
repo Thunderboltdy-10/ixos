@@ -61,9 +61,9 @@ struct ComparisonResult {
 }
 
 fn main() {
-    println!("=".repeat(80));
+    println!("{}", "=".repeat(80));
     println!("Ixos vs Lexical Search - AI Agent Benchmark");
-    println!("=".repeat(80));
+    println!("{}", "=".repeat(80));
     println!();
 
     let search_dir = std::env::args()

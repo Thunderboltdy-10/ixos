@@ -11,7 +11,8 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev --no-watch",
     "tauri:dev:watch": "tauri dev",
-    "tauri:build": "tauri build",
+    "tauri:build": "node scripts/verify-desktop-build-env.js && tauri build",
+    "tauri:build:prod": "node scripts/verify-desktop-build-env.js && tauri build",
     "dev": "cd ui && npm run dev",
     "build": "cd ui && npm run build",
     "site:dev": "cd ixos-site && npm run dev"

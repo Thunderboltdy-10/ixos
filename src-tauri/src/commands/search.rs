@@ -3,6 +3,8 @@
 //! Provides progressive search with streaming results to the frontend.
 
 use crate::state::AppState;
+use ixos_protocol::capabilities::Capability;
+use ixos_protocol::entitlements::ProStatus;
 use ixos_protocol::instrumentation::ipc_send_span;
 use ixos_protocol::ixos_rank::{
     progressive::{SearchEvent, SearchMode, StreamEventKind, StreamStage},
@@ -13,8 +15,9 @@ use ixos_protocol::security::DeviceIdentity;
 use ixos_protocol::EvidenceTag;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 use tauri::ipc::Channel;
-use tauri::{AppHandle, Emitter, State};
+use tauri::State;
 use tokio::sync::mpsc;
 
 // =============================================================================
@@ -377,27 +380,66 @@ fn convert_search_event(event: SearchEvent) -> SearchEventPayload {
 // Commands
 // =============================================================================
 
+fn parse_search_mode(value: Option<&str>) -> SearchMode {
+    match value {
+        Some("flash") => SearchMode::Flash,
+        Some("pro") => SearchMode::Pro,
+        _ => SearchMode::Auto,
+    }
+}
+
+fn resolve_search_mode(requested: Option<&str>, pro_available: bool) -> Result<SearchMode, String> {
+    let mode = parse_search_mode(requested);
+    if pro_available {
+        return Ok(mode);
+    }
+
+    match mode {
+        SearchMode::Flash => Ok(SearchMode::Flash),
+        SearchMode::Auto => Ok(SearchMode::Flash),
+        SearchMode::Pro => Err("Pro plan required for Pro mode".into()),
+    }
+}
+
 /// Start a progressive search with streaming results
 ///
 /// Results are streamed to the frontend via Tauri v2 Channel API.
 #[tauri::command]
 pub async fn search_progressive(
-    app: AppHandle,
     state: State<'_, AppState>,
     channel: Channel<SearchEventPayload>,
     query: String,
     directory: String,
     options: SearchOptions,
 ) -> Result<(), String> {
-    // Verify entitlement token before allowing search
+    let requested_search_mode = options.search_mode.as_deref();
+    let mut pro_available = false;
+
+    // Verify entitlement token before allowing search.
+    // Free users can search with Flash mode, but Pro-only modes require
+    // capability + active entitlement status.
     {
-        let manager = state.entitlement_manager.lock();
+        let mut manager = state.entitlement_manager.lock();
         if manager.entitlement_token().is_some() {
-            // Start of Pro Access Check Removal
-            // Original logic checked manager.pro_status().is_enabled()
-            // Removed to allow Free users to use Pro model unrestricted.
-            let _device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
-            // End of Pro Access Check Removal
+            let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+            let status = manager.pro_status(SystemTime::now(), &device);
+            let has_pro_capability = manager.capabilities().has(Capability::AskModePlus);
+            pro_available = has_pro_capability && status.is_enabled();
+
+            if matches!(requested_search_mode, Some("pro")) && !pro_available {
+                return Err(match status {
+                    ProStatus::TimeSuspect { .. } => {
+                        "Pro temporarily locked due to local time change. Refresh entitlement and retry."
+                            .into()
+                    }
+                    ProStatus::Expired { .. } => {
+                        "Pro entitlement expired. Switch to Flash mode or renew your subscription."
+                            .into()
+                    }
+                    _ if !has_pro_capability => "Pro plan required for Pro mode".into(),
+                    _ => "Pro mode unavailable. Please refresh entitlement and retry.".into(),
+                });
+            }
         } else {
             #[cfg(debug_assertions)]
             {
@@ -448,11 +490,7 @@ pub async fn search_progressive(
         config.semantic_timeout = std::time::Duration::from_secs(secs);
     }
 
-    config.search_mode = match options.search_mode.as_deref() {
-        Some("flash") => SearchMode::Flash,
-        Some("pro") => SearchMode::Pro,
-        _ => SearchMode::Auto,
-    };
+    config.search_mode = resolve_search_mode(requested_search_mode, pro_available)?;
 
     // Create internal channel for search engine → forwarder communication.
     // 512 provides ample headroom for try_send() in sync batch callbacks.
@@ -463,7 +501,6 @@ pub async fn search_progressive(
     // The Channel is scoped to this command invocation — guaranteed ordering,
     // no missed events, automatic cleanup when command completes.
     let ch = channel.clone();
-    let app_for_events = app.clone();
     let forward_handle = tokio::spawn(async move {
         while let Some(event) = rx.recv().await {
             let payload = convert_search_event(event);
@@ -483,26 +520,9 @@ pub async fn search_progressive(
             let _span = ipc_send_span(batch_num, result_count);
             let _enter = _span.enter();
 
-            let mut delivered = false;
-
-            // Primary transport: typed channel.
-            match ch.send(payload.clone()) {
-                Ok(()) => delivered = true,
-                Err(e) => {
-                    tracing::warn!("Failed to send search event via channel: {}", e);
-                }
-            }
-
-            // Fallback transport: app-wide event bus.
-            match app_for_events.emit("search-event", payload) {
-                Ok(()) => delivered = true,
-                Err(e) => {
-                    tracing::warn!("Failed to emit search-event fallback: {}", e);
-                }
-            }
-
-            if !delivered {
-                tracing::error!("Search stream delivery failed on both transports");
+            if let Err(e) = ch.send(payload) {
+                tracing::warn!("Failed to send search event via channel: {}", e);
+                tracing::error!("Search stream delivery failed on channel transport");
                 break;
             }
         }
@@ -643,6 +663,29 @@ pub async fn search_progressive(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resolve_search_mode_downgrades_auto_without_pro() {
+        let mode = resolve_search_mode(Some("auto"), false).expect("mode");
+        assert!(matches!(mode, SearchMode::Flash));
+    }
+
+    #[test]
+    fn resolve_search_mode_rejects_pro_without_pro() {
+        let err = resolve_search_mode(Some("pro"), false).expect_err("expected error");
+        assert!(err.contains("Pro plan required"));
+    }
+
+    #[test]
+    fn resolve_search_mode_keeps_pro_when_available() {
+        let mode = resolve_search_mode(Some("pro"), true).expect("mode");
+        assert!(matches!(mode, SearchMode::Pro));
+    }
 }
 
 /// Cancel the current search

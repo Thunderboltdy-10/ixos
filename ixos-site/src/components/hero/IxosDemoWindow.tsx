@@ -184,7 +184,7 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
     inactivityTimerRef.current = setTimeout(() => {
       setIsUserMode(false);
       setUserQuery('');
-    }, 8000);
+    }, 5000);
 
     inputRef.current?.focus();
   }, [userQuery, isUserMode, onInteract]);

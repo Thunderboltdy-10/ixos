@@ -25,6 +25,7 @@ import { useActivityStore } from '@/stores/activityStore';
 import { useAuthStore } from '@/stores/authStore';
 import type { CoOccurrence, RankedResult, LexicalResult } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { hasProAccess } from '@/lib/proAccess';
 
 type RelatedTab = 'co-open' | 'co-edit' | 'similar' | 'backlinks';
 
@@ -82,8 +83,10 @@ export function RelatedFilesPanel({
   const [error, setError] = useState<string | null>(null);
 
   const { getCoOccurrence } = useActivityStore();
+  const entitlement = useAuthStore((s) => s.entitlement);
+  const entitlementToken = useAuthStore((s) => s.entitlementToken);
   const proStatus = useAuthStore((s) => s.proStatus);
-  const isPro = proStatus?.status === 'active' || proStatus?.status === 'grace';
+  const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
 
   // Load related files when expanded
   useEffect(() => {

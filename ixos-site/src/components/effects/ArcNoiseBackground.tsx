@@ -39,7 +39,13 @@ export function ArcNoiseBackground() {
     }, []);
 
     return (
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-40 mix-blend-overlay">
+        <div
+            className={
+                gecko
+                    ? "absolute inset-0 z-0 pointer-events-none opacity-40"
+                    : "absolute inset-0 z-0 pointer-events-none opacity-40 mix-blend-overlay"
+            }
+        >
             {/* SVG feTurbulence - skip on Firefox where it renders differently */}
             {!gecko && (
                 <svg
@@ -69,13 +75,18 @@ export function ArcNoiseBackground() {
             {/* Canvas-based noise tile - primary on Firefox, supplementary on others */}
             {canvasNoise && (
                 <div
-                    className="absolute inset-0"
+                    className={gecko ? "absolute inset-0 mix-blend-soft-light" : "absolute inset-0"}
                     style={{
                         backgroundImage: `url(${canvasNoise})`,
                         backgroundSize: "200px 200px",
                         backgroundRepeat: "repeat",
+                        opacity: gecko ? 0.9 : 1,
                     }}
                 />
+            )}
+
+            {gecko && (
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.035)_0%,transparent_62%)]" />
             )}
         </div>
     );

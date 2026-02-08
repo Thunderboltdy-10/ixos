@@ -11,6 +11,7 @@ import { PlanBadge } from '@/components/account/PlanBadge';
 import { UpgradeBanner } from '@/components/account/UpgradeBanner';
 import { openExternalUrl } from '@/lib/tauri';
 import { useAuth } from '@clerk/clerk-react';
+import { hasProAccess } from '@/lib/proAccess';
 // import { getVariantId } from '@/lib/checkout';
 
 // Navigation views for Phase 2 Second Brain
@@ -43,7 +44,7 @@ export function Sidebar({
   const stats = useStatsStore();
   const starred = useStarredStore();
   const searchStore = useSearchStore();
-  const { user, entitlement, fetchBillingPortal } = useAuthStore();
+  const { user, entitlement, proStatus, entitlementToken, fetchBillingPortal } = useAuthStore();
   const { signOut, getToken } = useAuth();
   const journalistMode = searchStore.journalistMode;
 
@@ -86,18 +87,20 @@ export function Sidebar({
   };
 
   const cacheHitRate = stats.getCacheHitRate() * 100;
-  const showUpgrade = !!user && entitlement?.plan !== 'pro';
+  // Pro if entitlement says pro OR if we have an active entitlement token with active/grace status
+  const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
+  const showUpgrade = !!user && !isPro;
 
   const handleManageBilling = async () => {
     if (!user?.id) return;
 
     // Free users: open internal pricing panel
-    if (entitlement?.plan !== 'pro') {
+    if (!isPro) {
       onOpenPricing?.();
       return;
     }
 
-    // Pro users: open billing portal (LemonSqueezy)
+    // Pro users: open billing portal
     const token = await getToken();
     if (!token) return;
     try {
@@ -149,7 +152,7 @@ export function Sidebar({
             isActive={activeView === 'today'}
             onClick={() => onViewChange?.('today')}
             isPro
-            isLocked={entitlement?.plan !== 'pro'}
+            isLocked={!isPro}
             onLockedClick={onOpenPricing}
           />
           <NavItem
@@ -158,7 +161,7 @@ export function Sidebar({
             isActive={activeView === 'workstreams'}
             onClick={() => onViewChange?.('workstreams')}
             isPro
-            isLocked={entitlement?.plan !== 'pro'}
+            isLocked={!isPro}
             onLockedClick={onOpenPricing}
           />
         </nav>
@@ -167,15 +170,15 @@ export function Sidebar({
       {/* Tab toggle for history (only show on search view) */}
       {activeView === 'search' && (
       <div className="px-3 pb-3">
-        <div className="flex items-center p-1 bg-graphite-2/40 border border-white/[0.04] rounded-lg">
+        <div className="flex items-center gap-1 p-1 bg-graphite-2 border border-stroke-hairline rounded-md">
           <button
             type="button"
             onClick={() => setActiveTab('recent')}
             className={cn(
-              'flex-1 py-1.5 px-2 text-xs font-medium rounded-md transition-all duration-200',
+              'flex-1 py-2 px-2.5 text-xs font-medium rounded-md border transition-all duration-200',
               activeTab === 'recent'
-                ? 'bg-graphite-3 text-porcelain shadow-sm ring-1 ring-white/[0.04]'
-                : 'text-fg-dim hover:text-fg-muted hover:bg-white/[0.02]'
+                ? 'bg-graphite-3 text-porcelain border-white/10 shadow-sm'
+                : 'text-fg-muted border-transparent hover:text-porcelain hover:bg-graphite-3 hover:border-white/10'
             )}
           >
             Recent
@@ -184,10 +187,10 @@ export function Sidebar({
             type="button"
             onClick={() => setActiveTab('starred')}
             className={cn(
-              'flex-1 py-1.5 px-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5',
+              'flex-1 py-2 px-2.5 text-xs font-medium rounded-md border transition-all duration-200 flex items-center justify-center gap-1.5',
               activeTab === 'starred'
-                ? 'bg-graphite-3 text-accent-amber shadow-sm ring-1 ring-white/[0.04]'
-                : 'text-fg-dim hover:text-fg-muted hover:bg-white/[0.02]'
+                ? 'bg-graphite-3 text-accent-amber border-accent-amber/30 shadow-sm'
+                : 'text-fg-muted border-transparent hover:text-porcelain hover:bg-graphite-3 hover:border-white/10'
             )}
           >
             <Star className={cn("w-3 h-3", activeTab === 'starred' ? "fill-accent-amber" : "")} />
@@ -338,9 +341,6 @@ export function Sidebar({
         >
           <BookOpen className="w-3.5 h-3.5 text-accent-amber" />
           <span className="text-xs">Guide</span>
-          <span className="ml-auto rounded bg-graphite-2 px-1.5 py-0.5 text-2xs text-fg-ghost">
-            Ctrl+K
-          </span>
         </button>
       </div>
 
@@ -356,19 +356,19 @@ export function Sidebar({
             </div>
             {entitlement && <PlanBadge plan={entitlement.plan} />}
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-1.5">
             <button
               type="button"
               onClick={() => onOpenSettings?.('account')}
-              className="py-1.5 px-2 rounded-md text-2xs bg-graphite-2 text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors"
+              className="py-2.5 px-2.5 rounded-md text-sm bg-graphite-2 text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors"
             >
               Account
             </button>
-            {entitlement?.plan === 'pro' ? (
+            {isPro ? (
               <button
                 type="button"
                 onClick={handleManageBilling}
-                className="py-1.5 px-2 rounded-md text-2xs bg-accent-teal/15 text-accent-teal hover:bg-accent-teal/25 transition-colors"
+                className="py-2.5 px-2.5 rounded-md text-sm bg-accent-teal/15 text-accent-teal hover:bg-accent-teal/25 transition-colors"
               >
                 Billing
               </button>
@@ -376,7 +376,7 @@ export function Sidebar({
               <button
                 type="button"
                 onClick={handleManageBilling}
-                className="py-1.5 px-2 rounded-md text-2xs bg-accent-magenta/20 text-accent-magenta hover:bg-accent-magenta/30 transition-colors"
+                className="py-2.5 px-2.5 rounded-md text-sm bg-accent-magenta/20 text-accent-magenta hover:bg-accent-magenta/30 transition-colors"
               >
                 Upgrade
               </button>
@@ -384,7 +384,7 @@ export function Sidebar({
             <button
               type="button"
               onClick={() => signOut()}
-              className="col-span-2 py-1.5 px-2 rounded-md text-2xs bg-graphite-2 text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors"
+              className="col-span-2 py-2.5 px-2.5 rounded-md text-sm bg-graphite-2 text-fg-muted hover:text-porcelain hover:bg-graphite-3 transition-colors"
             >
               Sign Out
             </button>
@@ -392,7 +392,7 @@ export function Sidebar({
         </div>
       )}
 
-      {/* Stats footer - single compact line */}
+      {/* Stats footer with command palette shortcut */}
       <div className="px-4 py-3 border-t border-stroke-hairline">
         <div className="flex items-center justify-between gap-2">
           <p className="text-2xs text-fg-ghost font-mono">
@@ -407,7 +407,7 @@ export function Sidebar({
               'Ready to search'
             )}
           </p>
-          <span className="rounded bg-graphite-2 px-1.5 py-0.5 text-2xs text-fg-ghost">Ctrl+K</span>
+          <span className="rounded bg-accent-teal/10 border border-accent-teal/20 px-2 py-0.5 text-2xs text-accent-teal font-medium" title="Open command palette">Ctrl+K</span>
         </div>
       </div>
     </aside>
@@ -530,11 +530,11 @@ function NavItem({ icon: Icon, label, isActive, onClick, isPro, isLocked, onLock
       type="button"
       onClick={handleClick}
       className={cn(
-        'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left',
+        'w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-left border',
         'transition-colors duration-150',
         isActive
-          ? 'bg-graphite-2 text-porcelain'
-          : 'text-fg-muted hover:text-porcelain hover:bg-graphite-1',
+          ? 'bg-graphite-2 text-porcelain border-white/10'
+          : 'text-fg-muted bg-graphite-2/35 border-transparent hover:text-porcelain hover:bg-graphite-2 hover:border-white/10',
         isLocked && 'opacity-60'
       )}
     >
@@ -542,7 +542,7 @@ function NavItem({ icon: Icon, label, isActive, onClick, isPro, isLocked, onLock
         'w-4 h-4',
         isActive ? 'text-accent-teal' : 'text-fg-dim'
       )} />
-      <span className="text-sm flex-1">{label}</span>
+      <span className="text-xs font-medium flex-1">{label}</span>
       {isPro && (
         isLocked ? (
           <Lock className="w-3 h-3 text-fg-ghost" />

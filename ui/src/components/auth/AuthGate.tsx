@@ -9,7 +9,6 @@ import { getProStatus } from '@/lib/tauri';
 import type { ModelStatus } from '@/lib/types';
 import { invoke } from '@tauri-apps/api/core';
 import ixosIcon from '@/assets/ixos-icon.png';
-import { SectionDivider } from "@/components/ui/SectionDivider";
 
 interface AuthGateProps {
   children: React.ReactNode;
@@ -75,45 +74,42 @@ class AuthErrorBoundary extends Component<{ children: ReactNode; onReset: () => 
 const signInAppearance: Appearance = {
   variables: {
     colorPrimary: '#14B8A6',
-    colorBackground: '#131315',
-    colorInputBackground: '#11151F',
+    colorBackground: 'transparent',
+    colorInputBackground: '#0D1117',
     colorInputText: '#F3F5F7',
     colorText: '#F3F5F7',
-    colorTextSecondary: '#C4CFD6',
+    colorTextSecondary: '#9CA3AF',
     colorDanger: '#EF4444',
-    borderRadius: '0.25rem',
-    fontFamily: '"Geist Mono", ui-monospace, monospace', // Enforce Mono
+    borderRadius: '0.75rem',
+    fontFamily: 'Inter, Segoe UI, system-ui, sans-serif',
   },
   elements: {
     rootBox: 'w-full',
     card: 'bg-transparent shadow-none border-none p-0',
     headerTitle: 'hidden',
     headerSubtitle: 'hidden',
-    // Stronger visibility for social buttons
-    socialButtonsBlockButton: '!bg-[#11151F] !border !border-white/20 hover:!bg-[#1A2131] hover:!border-accent-teal/45 !text-[#F3F5F7] !opacity-100 transition-all h-11 flex items-center justify-center shadow-none font-mono text-xs tracking-wide',
-    socialButtonsBlockButtonText: '!text-[#F3F5F7] !font-semibold ml-2 font-mono',
+    socialButtonsBlockButton: '!bg-graphite-2/90 !border !border-white/[0.12] hover:!border-white/[0.22] hover:!bg-graphite-2 !text-[#F3F5F7] !opacity-100 transition-all !h-11 !rounded-lg flex items-center justify-center shadow-none text-sm overflow-hidden',
+    socialButtonsBlockButtonText: '!text-[#F3F5F7] !font-semibold !text-sm !leading-none ml-1 tracking-normal',
     socialButtonsProviderIcon: 'opacity-100',
     socialButtonsBlockButtonArrow: 'hidden',
-    dividerLine: 'bg-[#344054]',
-    dividerText: 'text-[#A6B2C0] text-xs uppercase tracking-wider font-mono',
-    formFieldLabel: 'text-[#C4CFD6] text-xs font-semibold mb-1.5 uppercase tracking-wide font-mono',
-    formFieldInput: 'bg-[#11151F] border border-white/15 text-[#F3F5F7] placeholder:text-[#8FA0B3] focus:border-[#14B8A6] focus:ring-2 focus:ring-[#14B8A6]/35 rounded-md h-11 px-4 transition-all font-mono text-sm',
-    formButtonPrimary: 'bg-accent-teal hover:bg-accent-teal/90 text-[#031016] font-semibold h-11 rounded-md transition-all uppercase tracking-widest text-xs shadow-glow-teal-sm font-mono',
-    footerActionLink: 'text-[#14B8A6] hover:text-[#0D9488] font-medium transition-colors font-mono',
-    identityPreviewText: 'text-[#E5E5E7] font-mono',
-    identityPreviewEditButton: 'text-[#14B8A6] hover:text-[#0D9488] transition-colors font-mono',
-    formFieldAction: 'text-[#14B8A6] hover:text-[#0D9488] text-xs transition-colors font-mono',
-    alertText: 'text-[#A1A1A6] font-mono',
+    dividerLine: 'bg-white/[0.1]',
+    dividerText: 'text-fg-dim text-xs',
+    formFieldLabel: 'text-fg-muted text-xs font-medium mb-1.5 tracking-normal',
+    formFieldInput: 'bg-[#0D1117] border border-white/[0.14] text-[#F3F5F7] placeholder:text-fg-dim/50 focus:border-[#14B8A6]/60 focus:ring-1 focus:ring-[#14B8A6]/25 rounded-lg h-10 px-3.5 transition-all text-sm',
+    formButtonPrimary: 'bg-accent-teal hover:bg-accent-teal/90 text-[#031016] font-semibold h-10 rounded-lg transition-all text-sm tracking-normal',
+    footerActionLink: 'text-[#14B8A6] hover:text-[#0D9488] font-medium transition-colors text-sm',
+    identityPreviewText: 'text-[#E5E5E7]',
+    identityPreviewEditButton: 'text-[#14B8A6] hover:text-[#0D9488] transition-colors',
+    formFieldAction: 'text-[#14B8A6] hover:text-[#0D9488] text-xs transition-colors',
+    alertText: 'text-fg-muted',
     footer: 'hidden',
-    formFieldInputShowPasswordButton: 'text-[#8FA0B3] hover:text-[#F3F5F7] transition-colors',
-    // OTP / Verification code styling - centered with separate digit boxes
+    formFieldInputShowPasswordButton: 'text-fg-dim hover:text-[#F3F5F7] transition-colors',
     otpCodeFieldInputs: 'flex justify-center gap-2',
-    otpCodeFieldInput: 'w-12 h-14 text-center text-2xl font-mono font-bold bg-[#11151F] border-2 border-white/15 text-[#F3F5F7] focus:border-[#14B8A6] focus:ring-2 focus:ring-[#14B8A6]/35 rounded-lg transition-all caret-[#14B8A6]',
-    otpCodeField: 'flex flex-col items-center gap-4',
-    // Center the verification view
+    otpCodeFieldInput: 'w-11 h-13 text-center text-xl font-bold bg-[#0D1117] border border-white/[0.1] text-[#F3F5F7] focus:border-[#14B8A6]/60 focus:ring-1 focus:ring-[#14B8A6]/25 rounded-lg transition-all',
+    otpCodeField: 'flex flex-col items-center gap-3',
     formFieldRow: 'flex justify-center',
     form: 'flex flex-col items-center',
-    verificationLinkStatusBox: 'text-center mx-auto font-mono',
+    verificationLinkStatusBox: 'text-center mx-auto',
   },
 };
 
@@ -125,57 +121,57 @@ const signUpAppearance: Appearance = {
   },
   elements: {
     ...signInAppearance.elements,
-    formFieldInput: 'bg-[#11151F] border border-white/15 text-[#F3F5F7] placeholder:text-[#8FA0B3] focus:border-accent-magenta focus:ring-2 focus:ring-accent-magenta/35 rounded-md h-11 px-4 transition-all font-mono text-sm',
-    formButtonPrimary: 'bg-accent-magenta hover:bg-accent-magenta/90 text-[#031016] font-semibold h-11 rounded-md transition-all uppercase tracking-widest text-xs shadow-glow-magenta-sm font-mono',
-    footerActionLink: 'text-accent-magenta hover:text-accent-magenta/80 font-medium transition-colors font-mono',
-    identityPreviewEditButton: 'text-accent-magenta hover:text-accent-magenta/80 transition-colors font-mono',
-    formFieldAction: 'text-accent-magenta hover:text-accent-magenta/80 text-xs transition-colors font-mono',
-    otpCodeFieldInput: 'w-12 h-14 text-center text-2xl font-mono font-bold bg-[#11151F] border-2 border-white/15 text-[#F3F5F7] focus:border-accent-magenta focus:ring-2 focus:ring-accent-magenta/35 rounded-lg transition-all',
+    formFieldInput: 'bg-[#0D1117] border border-white/[0.1] text-[#F3F5F7] placeholder:text-fg-dim/50 focus:border-accent-magenta/60 focus:ring-1 focus:ring-accent-magenta/25 rounded-lg h-10 px-3.5 transition-all text-sm',
+    formButtonPrimary: 'bg-accent-magenta hover:bg-accent-magenta/90 text-[#031016] font-semibold h-10 rounded-lg transition-all text-sm tracking-wide',
+    footerActionLink: 'text-accent-magenta hover:text-accent-magenta/80 font-medium transition-colors text-sm',
+    identityPreviewEditButton: 'text-accent-magenta hover:text-accent-magenta/80 transition-colors',
+    formFieldAction: 'text-accent-magenta hover:text-accent-magenta/80 text-xs transition-colors',
+    otpCodeFieldInput: 'w-11 h-13 text-center text-xl font-bold bg-[#0D1117] border border-white/[0.1] text-[#F3F5F7] focus:border-accent-magenta/60 focus:ring-1 focus:ring-accent-magenta/25 rounded-lg transition-all',
   },
 };
 
 function AuthScreen() {
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in');
+  const glowColor = mode === 'sign-in' ? 'rgba(20,184,166,0.12)' : 'rgba(244,114,182,0.12)';
 
   return (
-    <div className="min-h-screen bg-graphite-0 flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-graphite-0 flex flex-col items-center pt-14 px-6 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div
+        className="pointer-events-none absolute inset-0 transition-all duration-700"
+        style={{
+          background: `radial-gradient(ellipse 60% 40% at 50% 0%, ${glowColor} 0%, transparent 70%)`,
+        }}
+      />
 
-      {/* Section Divider */}
-      <div className="w-full max-w-2xl mb-4">
-        <SectionDivider label="ACCOUNT_ACCESS" accent="amber" />
-      </div>
-
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-[460px] relative z-10">
         {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#1A1A1E] to-[#0A0A0B] border border-white/10 p-[1px] shadow-2xl relative group">
-            <div className="absolute inset-0 bg-accent-amber/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl duration-500 blur-xl" />
-            <div className="w-full h-full rounded-[11px] bg-[#0A0A0B] flex items-center justify-center relative overflow-hidden">
-              <img src={ixosIcon} alt="Ixos" className="w-8 h-8 object-contain opacity-90" />
-            </div>
+        <div className="flex justify-center mb-6">
+          <div className="w-11 h-11 rounded-lg bg-graphite-1 border border-white/[0.08] flex items-center justify-center shadow-lg">
+            <img src={ixosIcon} alt="Ixos" className="w-6 h-6 object-contain opacity-90" />
           </div>
         </div>
 
         {/* Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-porcelain mb-3 font-mono tracking-tight">
-            {mode === 'sign-in' ? 'Welcome back' : 'Create your account'}
+        <div className="text-center mb-6">
+          <h1 className="text-xl font-semibold text-porcelain mb-1.5 tracking-tight">
+            {mode === 'sign-in' ? 'Welcome back' : 'Create account'}
           </h1>
-          <p className="text-sm text-fg-muted font-mono">
+          <p className="text-xs text-fg-muted">
             {mode === 'sign-in'
               ? 'Sign in to access Ixos'
-              : 'Get started with local-first semantic search'}
+              : 'Get started with local-first search'}
           </p>
         </div>
 
         {/* Tab Toggle */}
-        <div className="bg-graphite-1 rounded-md p-1 flex mb-8 border border-white/5">
+        <div className="bg-graphite-1/80 rounded-lg p-1 flex mb-6 border border-white/[0.08]">
           <button
             type="button"
             onClick={() => setMode('sign-in')}
-            className={`flex-1 py-3 rounded-sm text-xs uppercase tracking-[0.15em] font-bold transition-all font-mono flex items-center justify-center ${mode === 'sign-in'
-              ? 'bg-[#1A1A1E] text-accent-teal shadow-sm border border-white/5'
-              : 'text-fg-muted hover:text-porcelain hover:bg-white/5'
+            className={`flex-1 py-2 rounded-md text-sm font-medium transition-all duration-200 ${mode === 'sign-in'
+              ? 'bg-graphite-2 text-accent-teal shadow-sm'
+              : 'text-fg-dim hover:text-fg-muted'
               }`}
           >
             Sign In
@@ -183,30 +179,27 @@ function AuthScreen() {
           <button
             type="button"
             onClick={() => setMode('sign-up')}
-            className={`flex-1 py-3 rounded-sm text-xs uppercase tracking-[0.15em] font-bold transition-all font-mono flex items-center justify-center ${mode === 'sign-up'
-              ? 'bg-[#1A1A1E] text-accent-magenta shadow-sm border border-white/5'
-              : 'text-fg-muted hover:text-porcelain hover:bg-white/5'
+            className={`flex-1 py-2 rounded-md text-sm font-medium transition-all duration-200 ${mode === 'sign-up'
+              ? 'bg-graphite-2 text-accent-magenta shadow-sm'
+              : 'text-fg-dim hover:text-fg-muted'
               }`}
           >
             Sign Up
           </button>
         </div>
 
-        {/* Auth Form Container - Subtle/No Border */}
-        <div className="bg-[#0A0A0B] border border-white/5 rounded-sm p-8 shadow-2xl relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none rounded-sm" />
-          <div className="relative z-10">
-            {mode === 'sign-in' ? (
-              <SignIn routing="virtual" appearance={signInAppearance} />
-            ) : (
-              <SignUp routing="virtual" appearance={signUpAppearance} />
-            )}
-          </div>
+        {/* Auth Form Container */}
+        <div className="bg-graphite-1/65 border border-white/[0.12] rounded-xl p-6 backdrop-blur-md shadow-lift">
+          {mode === 'sign-in' ? (
+            <SignIn routing="virtual" appearance={signInAppearance} />
+          ) : (
+            <SignUp routing="virtual" appearance={signUpAppearance} />
+          )}
         </div>
 
         {/* Privacy Notice */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-fg-dim">
+        <div className="mt-5 text-center">
+          <p className="text-[11px] text-fg-dim/60">
             Your files stay on your device. We never see your data.
           </p>
         </div>
@@ -749,6 +742,11 @@ function AuthGateInner({ children }: AuthGateProps) {
   return (
     <>
       {children}
+      {bootError && (
+        <div className="fixed bottom-5 right-5 z-[120] max-w-sm rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-xs text-error shadow-lift">
+          Auth warning: {bootError}
+        </div>
+      )}
       {showModelWarning && <ModelWarningPopup onDismiss={() => setShowModelWarning(false)} />}
     </>
   );

@@ -5,6 +5,7 @@ import { PlanBadge } from '@/components/account/PlanBadge';
 import { openExternalUrl } from '@/lib/tauri';
 import { buildCheckoutUrl, getVariantId } from '@/lib/checkout';
 import { cn } from '@/lib/utils';
+import { hasProAccess } from '@/lib/proAccess';
 
 const variantId = getVariantId();
 
@@ -12,6 +13,8 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
   const {
     user,
     entitlement,
+    entitlementToken,
+    proStatus,
     deviceLabel,
     deviceId,
     devices,
@@ -22,6 +25,7 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
     forgetDevice,
     logoutAllDevices,
   } = useAuthStore();
+  const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
   const { getToken } = useAuth();
   const [actionDeviceId, setActionDeviceId] = useState<string | null>(null);
   const [logoutAllLoading, setLogoutAllLoading] = useState(false);
@@ -80,7 +84,7 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
     if (!user?.id) return;
 
     // Free users
-    if (entitlement?.plan !== 'pro') {
+    if (!isPro) {
       // If internal upgrade handler is provided (e.g. from AppShell), use it
       if (onUpgrade) {
         onUpgrade();
@@ -186,7 +190,7 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
         </div>
         <button
           onClick={handleRefresh}
-          className="text-xs text-fg-muted hover:text-accent-teal transition-colors underline"
+          className="px-3 py-1.5 rounded-md border border-white/10 text-sm text-fg-muted hover:text-accent-teal hover:border-accent-teal/40 transition-colors"
           title="Force refresh subscription status"
         >
           Refresh Status
@@ -196,13 +200,13 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
       <div className="bg-graphite-2/60 rounded-xl p-6 border border-stroke-hairline space-y-4">
         <div className="grid grid-cols-2 gap-y-4 text-sm">
           <div className="text-fg-muted">Email</div>
-          <div className="text-porcelain font-mono">{user?.email ?? '—'}</div>
+          <div className="text-porcelain font-mono">{user?.email ?? 'N/A'}</div>
 
           <div className="text-fg-muted">Plan</div>
-          <div>{entitlement ? <PlanBadge plan={entitlement.plan} /> : '—'}</div>
+          <div>{entitlement ? <PlanBadge plan={entitlement.plan} /> : 'N/A'}</div>
 
           <div className="text-fg-muted">Device</div>
-          <div className="text-porcelain font-mono">{deviceLabel ?? '—'}</div>
+          <div className="text-porcelain font-mono">{deviceLabel ?? 'N/A'}</div>
         </div>
       </div>
 
@@ -234,7 +238,7 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
                         )}
                       </div>
                       <div className="text-xs text-fg-secondary mt-1">
-                        Last seen: {device.lastSeenAt ? new Date(device.lastSeenAt).toLocaleString() : '�'}
+                        Last seen: {device.lastSeenAt ? new Date(device.lastSeenAt).toLocaleString() : 'Unknown'}
                       </div>
                     </div>
 
@@ -244,7 +248,7 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
                         onClick={() => handleLogoutDevice(device.deviceId)}
                         disabled={actionDeviceId === device.deviceId}
                         className={cn(
-                          "px-3 py-1.5 text-xs uppercase tracking-[0.18em] rounded-md border",
+                          "px-3 py-1.5 text-sm rounded-md border",
                           "border-white/10 text-fg-muted hover:text-white hover:border-white/30 transition-colors",
                           actionDeviceId === device.deviceId && "opacity-60 cursor-not-allowed"
                         )}
@@ -256,7 +260,7 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
                         onClick={() => handleForgetDevice(device.deviceId)}
                         disabled={actionDeviceId === device.deviceId}
                         className={cn(
-                          "px-3 py-1.5 text-xs uppercase tracking-[0.18em] rounded-md border",
+                          "px-3 py-1.5 text-sm rounded-md border",
                           "border-accent-magenta/30 text-accent-magenta hover:border-accent-magenta/60 transition-colors",
                           actionDeviceId === device.deviceId && "opacity-60 cursor-not-allowed"
                         )}
@@ -277,7 +281,7 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
             onClick={handleLogoutAll}
             disabled={logoutAllLoading}
             className={cn(
-              "w-full px-4 py-2 rounded-md text-xs uppercase tracking-[0.2em] font-semibold",
+              "w-full px-4 py-2 rounded-md text-sm font-semibold",
               "bg-error/10 text-error border border-error/30 hover:bg-error/20 transition-colors",
               logoutAllLoading && "opacity-60 cursor-not-allowed"
             )}
@@ -291,16 +295,17 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
         <button
           type="button"
           onClick={handleManage}
-          disabled={entitlement?.plan !== 'pro' && !variantId}
+          disabled={!isPro && !variantId}
           className={
-            entitlement?.plan === 'pro'
-              ? "px-4 py-2 rounded-md bg-accent-teal/15 text-accent-teal text-xs uppercase tracking-[0.2em] font-semibold hover:bg-accent-teal/25 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-              : "px-4 py-2 rounded-md bg-accent-magenta/20 text-accent-magenta text-xs uppercase tracking-[0.2em] font-semibold hover:bg-accent-magenta/30 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            isPro
+              ? "px-4 py-2.5 rounded-md bg-accent-teal/15 text-accent-teal text-sm font-semibold hover:bg-accent-teal/25 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              : "px-4 py-2.5 rounded-md bg-accent-magenta/20 text-accent-magenta text-sm font-semibold hover:bg-accent-magenta/30 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           }
         >
-          {entitlement?.plan === 'pro' ? 'Manage Subscription' : 'Upgrade to Pro'}
+          {isPro ? 'Manage Subscription' : 'Upgrade to Pro'}
         </button>
       </div>
     </div>
   );
 }
+

@@ -5,8 +5,62 @@
 
 use serde::Serialize;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tauri::Manager;
+
+fn detect_cache_backend(path: &Path) -> &'static str {
+    #[cfg(windows)]
+    {
+        if ixos_protocol::storage::ads_windows::AdsCache::is_supported_static(path) {
+            return "ADS";
+        }
+    }
+
+    #[cfg(all(unix, not(windows)))]
+    {
+        if ixos_protocol::storage::xattr_unix::XattrCache::is_supported_static(path) {
+            return "xattr";
+        }
+    }
+
+    if ixos_protocol::storage::sidecar_lmdb::LmdbSidecarCache::new().is_ok() {
+        return "LMDB";
+    }
+
+    "Null"
+}
+
+fn walk_files_recursive(root: &Path) -> Vec<PathBuf> {
+    let mut files = Vec::new();
+    let mut stack = vec![root.to_path_buf()];
+
+    while let Some(dir) = stack.pop() {
+        let entries = match fs::read_dir(&dir) {
+            Ok(entries) => entries,
+            Err(_) => continue,
+        };
+
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_file() {
+                files.push(path);
+                continue;
+            }
+
+            if path.is_dir() {
+                let hidden = path
+                    .file_name()
+                    .map(|n| n.to_string_lossy().starts_with('.'))
+                    .unwrap_or(false);
+                if !hidden {
+                    stack.push(path);
+                }
+            }
+        }
+    }
+
+    files
+}
 
 /// Cache statistics returned to the frontend
 #[derive(Serialize)]
@@ -118,7 +172,6 @@ pub async fn clear_all_encrypted_files(app: tauri::AppHandle) -> Result<(), Stri
 #[tauri::command]
 pub async fn get_cache_stats(directory: String) -> Result<CacheStats, String> {
     use ixos_protocol::storage::get_cache_for_path;
-    use std::path::Path;
 
     let dir_path = Path::new(&directory);
 
@@ -126,37 +179,30 @@ pub async fn get_cache_stats(directory: String) -> Result<CacheStats, String> {
         return Err(format!("Directory not found: {}", directory));
     }
 
-    // Get the cache backend for this directory
+    let backend_type = detect_cache_backend(dir_path).to_string();
     let cache = get_cache_for_path(dir_path);
+    let available = cache.is_supported(dir_path);
 
-    // Determine the backend type
-    let backend_type = if cfg!(windows) {
-        "ADS".to_string()
-    } else {
-        "xattr".to_string()
-    };
-
-    // Count files in directory (estimate of potential cached files)
-    let mut file_count = 0usize;
-
-    if let Ok(entries) = fs::read_dir(dir_path) {
-        for entry in entries.flatten() {
-            if entry.path().is_file() {
-                file_count += 1;
-            }
+    let (cached_files, total_size_bytes) = if backend_type == "LMDB" {
+        match ixos_protocol::storage::sidecar_lmdb::LmdbSidecarCache::new()
+            .and_then(|lmdb| lmdb.stats())
+        {
+            Ok(stats) => (stats.entry_count, stats.disk_usage_bytes as u64),
+            Err(_) => (0, 0),
         }
-    }
-
-    // Estimate cache size (actual detection would require checking each file)
-    // For now, return an estimate based on file count
-    let estimated_cached = file_count / 4; // Rough estimate: ~25% of files are cached
-    let total_size_bytes = estimated_cached as u64 * 1024; // ~1KB per embedding
+    } else {
+        let files = walk_files_recursive(dir_path);
+        let cached = files.iter().filter(|path| cache.contains(path)).count();
+        // model2vec embeddings are ~225 bytes (+metadata/signature overhead)
+        let bytes = cached as u64 * 256;
+        (cached, bytes)
+    };
 
     Ok(CacheStats {
         backend_type,
-        cached_files: estimated_cached,
+        cached_files,
         total_size_bytes,
-        available: cache.is_supported(dir_path),
+        available,
         cache_mode: "cache".to_string(),
     })
 }
@@ -167,12 +213,23 @@ pub async fn get_cache_stats(directory: String) -> Result<CacheStats, String> {
 #[tauri::command]
 pub async fn clear_embedding_cache(directory: String) -> Result<usize, String> {
     use ixos_protocol::storage::get_cache_for_path;
-    use std::path::Path;
 
     let dir_path = Path::new(&directory);
 
     if !dir_path.exists() {
         return Err(format!("Directory not found: {}", directory));
+    }
+
+    if detect_cache_backend(dir_path) == "LMDB" {
+        let lmdb = ixos_protocol::storage::sidecar_lmdb::LmdbSidecarCache::new()
+            .map_err(|e| format!("Failed to open LMDB cache: {}", e))?;
+        let before = lmdb
+            .stats()
+            .map_err(|e| format!("Failed to read LMDB cache stats: {}", e))?
+            .entry_count;
+        lmdb.clear()
+            .map_err(|e| format!("Failed to clear LMDB cache: {}", e))?;
+        return Ok(before);
     }
 
     let cache = get_cache_for_path(dir_path);
@@ -211,4 +268,31 @@ pub async fn clear_embedding_cache(directory: String) -> Result<usize, String> {
         .map_err(|e| format!("Failed to clear cache: {}", e))?;
 
     Ok(cleared_count)
+}
+
+/// Clear all app-managed embedding cache state.
+///
+/// If `directory` is provided, clears metadata cache entries for files under that directory
+/// and clears the LMDB sidecar fallback cache.
+/// If omitted, clears only the LMDB sidecar fallback cache.
+#[tauri::command]
+pub async fn clear_all_embedding_cache(directory: Option<String>) -> Result<usize, String> {
+    let mut total_cleared = 0usize;
+
+    if let Some(dir) = directory {
+        total_cleared += clear_embedding_cache(dir).await?;
+    }
+
+    // Always clear global LMDB sidecar cache if available.
+    if let Ok(lmdb) = ixos_protocol::storage::sidecar_lmdb::LmdbSidecarCache::new() {
+        let before = lmdb
+            .stats()
+            .map(|s| s.entry_count)
+            .map_err(|e| format!("Failed to read LMDB cache stats: {}", e))?;
+        lmdb.clear()
+            .map_err(|e| format!("Failed to clear LMDB cache: {}", e))?;
+        total_cleared += before;
+    }
+
+    Ok(total_cleared)
 }

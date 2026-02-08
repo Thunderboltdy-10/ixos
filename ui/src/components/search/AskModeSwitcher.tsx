@@ -5,7 +5,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircleQuestion, ChevronDown, Check, Info } from 'lucide-react';
+import { MessageCircleQuestion, ChevronDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type AskMode = 'off' | 'auto' | 'always';
@@ -142,7 +142,7 @@ export function AskModeSwitcher({ value, onChange, className, disabled = false }
                 'absolute z-50',
                 dropdownPosition === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
                 'right-0',
-                'w-80',
+                'w-72',
                 'bg-graphite-2 rounded-xl border border-stroke-hairline',
                 'shadow-lift overflow-hidden'
               )}
@@ -152,38 +152,29 @@ export function AskModeSwitcher({ value, onChange, className, disabled = false }
                   key={mode.id}
                   onClick={() => handleSelect(mode.id)}
                   className={cn(
-                    'w-full flex items-start gap-3 px-4 py-3',
+                    'w-full flex items-center gap-2 px-3 py-2',
                     'hover:bg-graphite-3 transition-colors duration-150',
                     'text-left',
                     mode.id === value && 'bg-graphite-3'
                   )}
                 >
-                  <div className={cn('p-2 rounded-md mt-0.5', mode.bgColor)}>
-                    <MessageCircleQuestion className={cn('w-4 h-4', mode.color)} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-porcelain">
-                        {mode.label}
-                      </span>
-                    </div>
-                    <div className="text-2xs text-fg-muted mt-1 leading-relaxed">
-                      {mode.details}
-                    </div>
-                  </div>
+                  <MessageCircleQuestion className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
+                  <span className="text-xs font-medium text-porcelain whitespace-nowrap">
+                    {mode.label}
+                  </span>
+                  <span className="text-[11px] text-fg-secondary truncate flex-1">
+                    {mode.description}
+                  </span>
                   {mode.id === value && (
-                    <Check className={cn('w-4 h-4 mt-1', mode.color)} />
+                    <Check className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
                   )}
                 </button>
               ))}
 
-              <div className="px-4 py-3 bg-graphite-1 border-t border-stroke-hairline">
-                <div className="flex items-start gap-2 text-2xs text-fg-dim">
-                  <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                  <span>
-                    Use Ctrl+Shift+A to toggle Ask Mode for a single search.
-                  </span>
-                </div>
+              <div className="px-3 py-2 bg-graphite-1 border-t border-stroke-hairline">
+                <p className="text-[11px] text-fg-secondary">
+                  Ask Off for keyword retrieval, Auto for questions, Always for answer extraction.
+                </p>
               </div>
             </motion.div>
           </>

@@ -222,7 +222,8 @@ export function HeroPipeline() {
       }
     }
 
-    const demoStep = activeStep ?? 0;
+    // When in hero stage (before pipeline cards appear), pass null to allow autonomous loop
+    const demoStep = activeStep;
 
     return {
       entry,
@@ -426,7 +427,10 @@ export function HeroPipeline() {
             </PipelineCardWrapper>
 
             <div
-              className="pointer-events-none relative z-20 flex min-h-0 items-center justify-center"
+              className={cn(
+                "relative z-20 flex min-h-0 items-center justify-center",
+                activeStep === null ? "pointer-events-auto" : "pointer-events-none"
+              )}
               style={{ gridArea: "demo" }}
             >
               <div
@@ -454,7 +458,7 @@ export function HeroPipeline() {
                 </div>
 
                 <div className="min-h-0 flex-1">
-                  <IxosDemoWindow controlledStep={derived.demoStep} />
+                  <IxosDemoWindow controlledStep={derived.demoStep ?? null} />
                 </div>
 
                 <div className="flex items-center justify-between border-t border-white/12 bg-bg-graphite-1 px-5 py-2.5 text-[11px] font-mono text-fg-muted/72">

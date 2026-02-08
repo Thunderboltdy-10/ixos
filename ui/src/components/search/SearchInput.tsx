@@ -73,9 +73,7 @@ export function SearchInput({
   const qualityMode = (config?.search?.searchMode || 'auto') as QualityMode;
   const askMode = (config?.search?.askMode || 'auto') as AskMode;
   const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
-  const proLocked =
-    !isPro ||
-    (!!entitlementToken && (proStatus?.status === 'expired' || proStatus?.status === 'timeSuspect'));
+  const proLocked = !isPro;
 
   const modePalette = {
     jit: {
@@ -185,16 +183,6 @@ export function SearchInput({
       safeInvoke('preload_model', { modelType: target });
     });
   }, [config, modelType, proModelType, qualityMode, safeInvoke]);
-
-  useEffect(() => {
-    if (!config) return;
-    if (!proLocked) return;
-    if (qualityMode === 'flash') return;
-
-    void updateConfig({
-      search: { ...config.search, searchMode: 'flash' },
-    });
-  }, [config, proLocked, qualityMode, updateConfig]);
 
   // Fetch suggestions when value changes
   // Show suggestions when:

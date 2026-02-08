@@ -34,7 +34,7 @@ export function Nav() {
                     <Link href="/" className="flex items-center gap-3 group">
                         <div className="relative w-8 h-8 transition-transform duration-300 group-hover:scale-110">
                             <Image
-                                src="/assets/icon.png"
+                                src="/assets/logo-v3.png"
                                 alt="Ixos Logo"
                                 fill
                                 className="object-contain"

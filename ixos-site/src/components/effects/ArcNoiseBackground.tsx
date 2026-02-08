@@ -23,70 +23,55 @@ function generateCanvasNoiseDataURL(): string {
     return canvas.toDataURL("image/png");
 }
 
-function isGecko(): boolean {
-    if (typeof navigator === "undefined") return false;
-    const ua = navigator.userAgent;
-    return /Gecko\/\d/.test(ua) && !/like Gecko/.test(ua);
-}
-
 export function ArcNoiseBackground() {
     const [canvasNoise, setCanvasNoise] = useState<string | null>(null);
-    const [gecko, setGecko] = useState(false);
 
     useEffect(() => {
-        setGecko(isGecko());
         setCanvasNoise(generateCanvasNoiseDataURL());
     }, []);
 
     return (
         <div
-            className={
-                gecko
-                    ? "absolute inset-0 z-0 pointer-events-none opacity-40"
-                    : "absolute inset-0 z-0 pointer-events-none opacity-40 mix-blend-overlay"
-            }
+            className="absolute inset-0 z-[1] pointer-events-none"
+            style={{
+                opacity: 0.24,
+                mixBlendMode: "overlay",
+            }}
         >
-            {/* SVG feTurbulence - skip on Firefox where it renders differently */}
-            {!gecko && (
-                <svg
-                    className="w-full h-full opacity-100"
-                    xmlns="http://www.w3.org/2000/svg"
-                    preserveAspectRatio="none"
-                >
-                    <filter id="denseNoise" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
-                        <feTurbulence
-                            type="fractalNoise"
-                            baseFrequency="0.85"
-                            numOctaves="4"
-                            stitchTiles="stitch"
-                        />
-                        <feColorMatrix
-                            type="matrix"
-                            values="1 0 0 0 0
+            <svg
+                className="w-full h-full"
+                xmlns="http://www.w3.org/2000/svg"
+                preserveAspectRatio="none"
+            >
+                <filter id="denseNoise" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+                    <feTurbulence
+                        type="fractalNoise"
+                        baseFrequency="0.85"
+                        numOctaves="4"
+                        stitchTiles="stitch"
+                    />
+                    <feColorMatrix
+                        type="matrix"
+                        values="1 0 0 0 0
                         0 1 0 0 0
                         0 0 1 0 0
                         0 0 0 1 0"
-                        />
-                    </filter>
-                    <rect width="100%" height="100%" filter="url(#denseNoise)" />
-                </svg>
-            )}
+                    />
+                </filter>
+                <rect width="100%" height="100%" filter="url(#denseNoise)" />
+            </svg>
 
-            {/* Canvas-based noise tile - primary on Firefox, supplementary on others */}
+            {/* Canvas-based grain tile for consistent browser output (including Firefox). */}
             {canvasNoise && (
                 <div
-                    className={gecko ? "absolute inset-0 mix-blend-soft-light" : "absolute inset-0"}
+                    className="absolute inset-0"
                     style={{
                         backgroundImage: `url(${canvasNoise})`,
                         backgroundSize: "200px 200px",
                         backgroundRepeat: "repeat",
-                        opacity: gecko ? 0.9 : 1,
+                        opacity: 0.5,
                     }}
                 />
-            )}
-
-            {gecko && (
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.035)_0%,transparent_62%)]" />
             )}
         </div>
     );

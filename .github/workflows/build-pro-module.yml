@@ -18,15 +18,22 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Build ixos-pro
-        run: cargo build -p ixos-pro --release
+      - name: Build ixos CLI release binary
+        run: cargo build --release --bin ixos
 
-      - name: Package module
-        env:
-          IXOS_PRO_SIGNING_KEY: ${{ secrets.IXOS_PRO_SIGNING_KEY }}
-          IXOS_PRO_SYMMETRIC_KEY: ${{ secrets.IXOS_PRO_SYMMETRIC_KEY }}
+      - name: Package module artifacts
+        shell: pwsh
         run: |
-          node scripts/upload-pro-module.js --input target/release --out-dir dist
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $binName = if ($env:RUNNER_OS -eq "Windows") { "ixos.exe" } else { "ixos" }
+          $source = Join-Path "target/release" $binName
+          if (!(Test-Path $source)) {
+            throw "Binary not found: $source"
+          }
+          $dest = Join-Path "dist" $binName
+          Copy-Item $source $dest -Force
+          $hash = (Get-FileHash -Path $dest -Algorithm SHA256).Hash.ToLower()
+          Set-Content -Path (Join-Path "dist" "$binName.sha256") -Value "$hash  $binName"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

@@ -724,11 +724,15 @@ export function useFakeSearch() {
     }
 
     // Score all files with semantic matching
-    const scored = DEMO_FILES
+    const ranked = DEMO_FILES
       .map(f => ({ ...f, score: semanticMatch(query, f) }))
-      .filter(f => f.score > 0.15)
       .sort((a, b) => b.score - a.score)
       .slice(0, 5);
+    const scored = ranked.filter(f => f.score > 0.15);
+    const fallbackResults =
+      scored.length > 0
+        ? scored
+        : ranked.slice(0, 3).map((item) => ({ ...item, score: Math.max(item.score, 0.22) }));
 
     await delay(200);
     if (abortRef.current) {
@@ -738,7 +742,7 @@ export function useFakeSearch() {
     }
 
     // Stream results progressively
-    for (const match of scored) {
+    for (const match of fallbackResults) {
       if (abortRef.current) {
         setSearchStage('idle');
         setIsSearching(false);

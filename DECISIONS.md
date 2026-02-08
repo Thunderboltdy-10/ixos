@@ -230,3 +230,59 @@
 - Evidence (links to /reports or output files): ixos-site/src/app/api/desktop/lease/refresh/route.ts, ixos-site/src/app/api/desktop/lease/transfer/confirm/route.ts, RUNLOG.md (Entry 019)
 - Risks: Requires reliable subscription period data in control-plane DB path
 - Follow-ups: Add lifecycle integration tests for cancel->grace->free and renew->pro transitions
+
+- Decision: Add runtime entitlement public-key bootstrap path for desktop auth
+- Options considered: Require compile-time key only; allow unsigned token fallback; runtime key fetch + backend install with strict JWT verification preserved
+- Why chosen: Packaged builds missing `IXOS_JWT_PUBLIC_KEY` caused token validation failures in production; runtime bootstrap restores secure verification without weakening signature checks
+- Evidence (links to /reports or output files): src-tauri/src/commands/auth.rs, ixos-site/src/app/api/desktop/entitlement-key/route.ts, ui/src/components/auth/AuthGate.tsx, RUNLOG.md (Entry 020), reports/desktop_release_hardening_2026-02-08.md
+- Risks: If key endpoint is unavailable, token sync can still fail until env is fixed
+- Follow-ups: Keep build-time env gate as primary guardrail and treat runtime bootstrap as recovery path
+
+- Decision: Remove startup auto-downgrade writes of search mode (Auto/Pro -> Flash) when Pro status is transiently unknown
+- Options considered: Keep eager downgrade; gate downgrade behind explicit loading flag; remove auto-write and enforce locks at interaction/backend boundaries
+- Why chosen: Eager downgrade permanently reset saved preferences for legitimate Pro users during initial auth load
+- Evidence (links to /reports or output files): ui/src/components/search/SearchInput.tsx, ui/src/components/settings/SearchSettings.tsx, ui/src/lib/proAccess.ts, RUNLOG.md (Entry 020)
+- Risks: Non-Pro users may still see stored Auto/Pro preference in config until they interact
+- Follow-ups: Add explicit entitlement loading state in auth store to make lock states and persisted preferences more transparent
+
+- Decision: Skip eager semantic indexing for low-latency Flash/Auto non-Ask desktop searches
+- Options considered: Always eager index; fully remove indexing; conditional eager index (Ask/Pro only) with immediate stream bootstrap
+- Why chosen: Eager indexing on large trees delayed first visible progress, making search appear frozen before lexical streaming
+- Evidence (links to /reports or output files): src-tauri/src/commands/search.rs, RUNLOG.md (Entry 020), reports/desktop_release_hardening_2026-02-08.md
+- Risks: Pure-semantic fallback quality can be reduced when lexical phase yields nothing in non-Ask/Flash paths
+- Follow-ups: Add targeted benchmark for zero-lexical query cases and decide whether to reintroduce deferred/lazy indexing fallback
+
+- Decision: Allow Flash search fallback when backend entitlement token is missing, but keep Pro mode strictly blocked
+- Options considered: Hard-fail all searches without token; allow all modes without token; allow Flash/Auto fallback while rejecting Pro
+- Why chosen: Prevents production "authentication required" dead-ends for baseline search while preserving entitlement enforcement for Pro paths
+- Evidence (links to /reports or output files): src-tauri/src/commands/search.rs, RUNLOG.md (Entry 021), reports/release_smoke_matrix_2026-02-08.md
+- Risks: Users with broken entitlement sync may temporarily run Flash instead of intended Pro mode until refresh succeeds
+- Follow-ups: Add explicit UI prompt when backend is in Flash-fallback mode due missing token
+
+- Decision: Gate Pro status polling on token presence and clear cached token when backend validation fails
+- Options considered: Keep polling regardless of token state; only suppress UI rendering; token-aware polling + stale token purge
+- Why chosen: Prevents transient startup "expired" states and avoids lingering invalid cached tokens that break backend auth/search consistency
+- Evidence (links to /reports or output files): ui/src/components/auth/AuthGate.tsx, RUNLOG.md (Entry 021)
+- Risks: Requires successful lease/token refresh for Pro reactivation after stale token purge
+- Follow-ups: Add a dedicated auth-store loading flag for entitlement/pro-status phases
+
+- Decision: Normalize Windows extended path prefixes in golden harness before comparison
+- Options considered: Update expected fixtures to Windows absolute paths; disable golden on Windows; path normalization in test harness
+- Why chosen: Removed false negatives from `\\?\`/`//?/` path formatting without weakening retrieval correctness assertions
+- Evidence (links to /reports or output files): scripts/run_golden.py, RUNLOG.md (Entry 021), reports/release_smoke_matrix_2026-02-08.md
+- Risks: None significant; normalization is purely representational
+- Follow-ups: Address remaining true golden retrieval mismatches separately (ranking/candidate behavior)
+
+- Decision: Remove sticky JWT decoding-key cache in desktop auth verification path
+- Options considered: Keep `OnceLock` key cache; add cache invalidation; parse decoding key on each verify call
+- Why chosen: `OnceLock` can preserve stale compile-time keys in production builds and block runtime key refresh from `/api/desktop/entitlement-key`; parsing per verify ensures runtime key rotation/recovery always takes effect
+- Evidence (links to /reports or output files): src-tauri/src/commands/auth.rs, RUNLOG.md (Entry 022)
+- Risks: Slight extra CPU per token verification call
+- Follow-ups: If needed, reintroduce a refreshable cache with explicit invalidation semantics rather than immutable `OnceLock`
+
+- Decision: Use versioned filename (`logo-v3.png`) instead of query-string cache busting for landing logos
+- Options considered: Keep static filename with browser cache; append query string (`?v=...`); publish new file path and update references
+- Why chosen: Next image optimizer rejected query-string local images in current config; versioned path preserves cache busting and passes production build
+- Evidence (links to /reports or output files): ixos-site/src/components/ui/Nav.tsx, ixos-site/src/components/sections/Footer.tsx, ixos-site/src/components/auth/AuthScreen.tsx, ixos-site/src/app/layout.tsx, RUNLOG.md (Entry 022)
+- Risks: Multiple logo files may accumulate if not cleaned periodically
+- Follow-ups: Add an asset versioning note in docs and prune superseded logo files in a future housekeeping pass

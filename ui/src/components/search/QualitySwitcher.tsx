@@ -27,7 +27,7 @@ const modes: QualityOption[] = [
     icon: Zap,
     label: 'Flash Mode',
     shortLabel: 'Flash',
-    description: 'Fastest model only. Lowest latency.',
+    description: 'Fastest only, lowest latency.',
     color: 'text-accent-amber',
     bgColor: 'bg-accent-amber/10',
   },
@@ -36,7 +36,7 @@ const modes: QualityOption[] = [
     icon: Sparkles,
     label: 'Auto Mode',
     shortLabel: 'Auto',
-    description: 'Starts fast, refines with Pro when uncertain.',
+    description: 'Flash-first, refines when needed.',
     color: 'text-accent-teal',
     bgColor: 'bg-accent-teal/10',
   },
@@ -45,7 +45,7 @@ const modes: QualityOption[] = [
     icon: Layers,
     label: 'Pro Mode',
     shortLabel: 'Pro',
-    description: 'Always use Pro model. Highest quality.',
+    description: 'Always highest-quality ranking.',
     color: 'text-accent-violet',
     bgColor: 'bg-accent-violet/10',
   },
@@ -126,7 +126,7 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
       <AnimatePresence>
         {isOpen && (
           <>
-            <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+            <div className="fixed inset-0 z-[130]" onClick={() => setIsOpen(false)} />
             <motion.div
               ref={dropdownRef}
               initial={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
@@ -134,9 +134,9 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
               exit={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
               transition={{ duration: 0.15 }}
               className={cn(
-                'absolute z-50 right-0',
+                'absolute z-[140] right-0',
                 dropdownPosition === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
-                'w-72',
+                'w-52',
                 'bg-graphite-2 rounded-xl border border-stroke-hairline',
                 'shadow-lift overflow-hidden'
               )}
@@ -149,7 +149,7 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
                     key={mode.id}
                     onClick={() => handleSelect(mode.id)}
                     className={cn(
-                      'w-full flex items-center gap-2 px-3 py-2',
+                      'w-full flex items-center gap-2.5 px-3 py-2.5',
                       'hover:bg-graphite-3 transition-colors duration-150',
                       'text-left',
                       mode.id === value && 'bg-graphite-3',
@@ -157,10 +157,10 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
                     )}
                   >
                     <Icon className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
-                    <span className="text-xs font-medium text-porcelain whitespace-nowrap">
+                    <span className="text-[12px] font-medium text-porcelain whitespace-nowrap">
                       {mode.label}
                     </span>
-                    <span className="text-[11px] text-fg-secondary truncate flex-1">
+                    <span className="text-[11.5px] text-fg-secondary truncate flex-1">
                       {mode.description}
                     </span>
                     {isLocked && (

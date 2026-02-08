@@ -1,7 +1,7 @@
 # PLAN.md - Ixos Flash v2 + Pro v2 + Search vNext
 
 ## STATE SNAPSHOT (update frequently)
-- Date: 2026-02-06
+- Date: 2026-02-08
 - Current baseline models: Flash v1 (legacy), Pro fusion baseline = Flash v1 + Potion + lexical (see models/lab/results_baseline_fusion_2026-02-02.json)
 - Baseline quality (MRR@10 / Recall@10): Flash v1 0.8399 / 0.93; Potion 0.8073 / 0.90; Pro v1 0.7354 / 0.855; Pro fusion 0.9233 / 0.97 (real_corpus_v2)
 - Baseline perf (p50/p95, ms/1k, TTFR): Flash v1 JIT total 70/337, TTFR 47/73; Potion JIT total 71/202, TTFR 45/61; Pro v1 JIT total 72/401, TTFR 45/62
@@ -19,9 +19,12 @@
 - Feedback revision (2026-02-06, pass 3): Increased hero/pipeline scale after pass-2 overshrink, widened central demo and surrounding stage tiles, and raised baseline contrast/opacity for inactive and complete cards to improve readability.
 - Feedback revision (2026-02-08, release hardening): Desktop now uses channel-only progressive event delivery, Pro access checks are unified across tabs, pricing overlay events are wired globally, release env validation was added (`tauri:build:prod`), footer `/terms` routing was corrected, and hero demo interactivity is restored in hero stage while remaining frozen in scroll-guided pipeline mode.
 - Feedback revision (2026-02-08, prod entitlement hardening pass 2): Pro-mode search is now capability-gated in Rust (free users are forced to Flash for Auto and blocked from Pro), token-plan fallback no longer promotes free users to Pro in desktop UI, lease refresh/transfer confirm now issue subscription-bounded tokens, Firefox arc-noise parity fallback shipped, and release script `tauri:build` now enforces required prod env vars by default.
+- Feedback revision (2026-02-08, prod entitlement hardening pass 3): startup Pro mode preference is no longer downgraded during transient entitlement load, desktop can fetch/install JWT verification public key at runtime (`/api/desktop/entitlement-key` + `set_entitlement_public_key`) to recover release builds missing compile-time key, entitlement refresh now actively re-syncs backend token/status, and landing demo loop/result visibility and Firefox noise parity were further stabilized.
+- Feedback revision (2026-02-08, prod entitlement hardening pass 4): backend now permits Flash fallback when entitlement token sync is missing (while still blocking Pro mode), auth bootstrap now purges invalid cached tokens, Pro status polling is token-aware to avoid transient startup expiry mislabels, dropdown/sidebar/settings sizing was normalized for consistency, and golden harness path normalization removed Windows prefix false negatives.
+- Feedback revision (2026-02-08, prod entitlement hardening pass 5): desktop JWT verification now refreshes runtime keys without sticky cache, landing/desktop logos were replaced with regenerated high-coverage icon packs (including tray/favicon/bundles), Firefox arc-noise intensity was reduced to match Chromium, hero demo handoff threshold was tuned to avoid frozen loop state when returning to hero, and local release packaging now passes end-to-end with MSI + NSIS artifacts built.
 - Top bottlenecks (ranked): Directory walk/candidate generation on large trees; ripgrep scan I/O; semantic embedding on cold runs; completion-path evidence extraction tail
-- Open risks / unknowns: Multilingual routing remains unevaluated (ES/FR/DE slice pending); Auto quality impact from stricter refinement gate needs focused relevance eval on long-tail queries
-- Next 3 actions: (1) Run packaged desktop smoke with production env (`npm run tauri:build`) and verify Pro/free/transfer/refresh flows end-to-end, (2) capture updated desktop auth/dropdown/settings visuals + Firefox arc-noise parity screenshot evidence in `/reports`, (3) execute targeted security cleanup backlog from `npm audit` (Next.js/Nodemailer advisories) before release cut.
+- Open risks / unknowns: Multilingual routing remains unevaluated (ES/FR/DE slice pending); remaining golden retrieval mismatches (`q1_financial_report`, `q2_financial_report`, `privacy_policy`, `config_json`, `todo_refine`, `logs_streamed`) require ranking/candidate investigation; release packaging still blocked locally without production env credentials.
+- Next 3 actions: (1) Resolve remaining true golden retrieval regressions and regenerate canonical pass artifact, (2) run packaged desktop smoke with production env (`npm run tauri:build:prod`) and verify entitlement lifecycle flows end-to-end (free/pro/upgrade/cancel/renew/transfer), (3) capture updated desktop/landing visual evidence (dropdowns, settings centering, Firefox arc-noise, hero demo interaction) in `/reports`.
 
 ---
 

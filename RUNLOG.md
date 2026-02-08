@@ -357,3 +357,128 @@
   - `npm audit --audit-level=high --omit=dev`: reports high advisory for `next` and moderate advisory for `nodemailer` (remediation requires version bumps).
 - Decision: KEEP
 - Next: Run packaged desktop smoke with real production env values and verify full entitlement lifecycle flows (free, pro, upgrade, lease transfer, renewal, cancellation).
+
+## Entry 020 - Release pass 3: runtime key bootstrap + downgrade-race fix + demo/stream polish
+- Date/Time: 2026-02-08
+- Branch/Commit: (working tree)
+- Goal: Fix remaining production regressions (Pro expired/auth mismatch in packaged app), prevent startup mode downgrade race, harden entitlement refresh/sync, improve perceived streaming startup, and close landing demo/Firefox parity issues.
+- Commands run:
+  - cargo fmt --all
+  - cargo test -q
+  - cargo build --release
+  - npm --prefix ui run build
+  - npm --prefix ixos-site run build
+  - cargo clippy --all-targets --quiet
+  - node scripts/verify-desktop-build-env.js
+- Outputs saved to:
+  - reports/desktop_release_hardening_2026-02-08.md
+- Key results:
+  - Added runtime entitlement public-key bootstrap path for desktop:
+    - New backend command: `set_entitlement_public_key`
+    - New web API: `GET /api/desktop/entitlement-key`
+    - Auth bootstrap now fetches/syncs public key and retries `set_entitlement_token` automatically when key-missing errors occur.
+  - Removed startup Pro-preference downgrade mutation in UI (`SearchInput`/`SearchSettings`) to fix the reported transient-null entitlement race that reset saved mode to Flash.
+  - Search error mapping now distinguishes token-missing, device-transfer, and missing-public-key conditions (no more blanket “session transferred” message).
+  - Settings entitlement refresh now performs a real lease/token refresh + backend re-sync instead of reloading the page.
+  - Added proactive backend token re-sync before each search invocation.
+  - Improved perceived streaming startup in desktop search:
+    - Emit immediate pre-index stream/status events.
+    - Skip eager semantic indexing for low-latency Flash/Auto non-Ask flows.
+  - Landing/demo fixes:
+    - Controlled/uncontrolled transition now clears stale pause state.
+    - Fake demo search now has guaranteed fallback results for weak matches.
+    - Firefox arc-noise fallback strengthened for visible parity.
+  - UI polish:
+    - Dropdowns moved above suggestion layers and resized (narrower, slightly taller options).
+    - Sidebar Pro badges + account/billing/sign-out sizing normalized.
+- Validation summary:
+  - `cargo test -q`: PASS (`455 passed; 0 failed; 6 ignored`).
+  - `cargo build --release`: PASS.
+  - `npm --prefix ui run build`: PASS.
+  - `npm --prefix ixos-site run build`: PASS (includes `/api/desktop/entitlement-key` and `/terms` routes).
+  - `cargo clippy --all-targets --quiet`: PASS (warnings only, no new hard failures).
+  - `node scripts/verify-desktop-build-env.js`: FAIL in local shell due missing env vars (`VITE_API_URL`, `VITE_CLERK_PUBLISHABLE_KEY`, `IXOS_JWT_PUBLIC_KEY`) — expected safeguard behavior.
+- Decision: KEEP
+- Next: packaged desktop smoke with real env to verify full lifecycle matrix (free/pro/upgrade/cancel/renew/transfer) on release artifact.
+
+## Entry 021 - Release pass 4: entitlement fallback hardening + dropdown/readability polish + golden normalization
+- Date/Time: 2026-02-08
+- Branch/Commit: (working tree)
+- Goal: Remove remaining production auth dead-ends for Flash searches, stabilize startup Pro status handling, improve dropdown/sidebar/settings readability, and produce an updated release smoke gate summary.
+- Commands run:
+  - `cargo test -p ixos-app`
+  - `cargo test`
+  - `cargo build -p ixos-app --release`
+  - `cargo build --release`
+  - `python scripts/validate_registry.py`
+  - `python scripts/generate_capability_matrix.py`
+  - `python scripts/run_contract.py`
+  - `python scripts/run_perf_budget_stub.py`
+  - `python scripts/run_golden.py`
+  - `npm run tauri:build:prod`
+  - `cd ui; npm run build`
+  - `cd ixos-site; npm run build`
+- Outputs saved to:
+  - reports/release_smoke_matrix_2026-02-08.md
+  - docs/capability-matrix.md (regenerated)
+- Key results:
+  - Backend search now allows unauthenticated Flash-mode fallback (including Auto->Flash downgrade) while still hard-blocking Pro mode without a valid entitlement token.
+  - Auth bootstrap now clears invalid cached entitlement tokens that fail backend validation instead of leaving stale token state.
+  - Pro status refresh path is now gated on token availability to avoid transient "expired" status during startup race windows.
+  - Pro-access UI helper now trusts active server lease state while still honoring `timeSuspect` lock.
+  - Dropdown overlays were moved above suggestion layers and resized for denser, clearer one-line option rows.
+  - Sidebar/account/settings controls were normalized for consistent button sizing and visual hierarchy.
+  - Firefox landing arc-noise now uses the same overlay path as Chromium and is layered above particles.
+  - Golden runner path normalization now strips Windows `\\?\`/`//?/` prefixes; false path-format failures are removed.
+- Validation summary:
+  - `cargo test -p ixos-app`: PASS (`17 passed; 0 failed`).
+  - `cargo test`: PASS (`455 passed; 0 failed; 6 ignored`).
+  - `cargo build -p ixos-app --release`: PASS.
+  - `cd ui; npm run build`: PASS.
+  - `cd ixos-site; npm run build`: PASS (`/terms` and `/api/desktop/entitlement-key` present).
+  - `python scripts/validate_registry.py`: PASS.
+  - `python scripts/generate_capability_matrix.py`: PASS.
+  - `python scripts/run_contract.py`: PASS.
+  - `python scripts/run_perf_budget_stub.py`: PASS.
+  - `python scripts/run_golden.py`: FAIL (remaining true retrieval mismatches on `q1_financial_report`, `q2_financial_report`, `privacy_policy`, `config_json`, `todo_refine`, `logs_streamed`).
+  - `npm run tauri:build:prod`: FAIL in local shell due missing required env vars (`VITE_API_URL`, `VITE_CLERK_PUBLISHABLE_KEY`, `IXOS_JWT_PUBLIC_KEY`) - expected guardrail behavior.
+- Decision: KEEP
+- Next: Resolve remaining golden retrieval regressions and run packaged production-desktop smoke with real env credentials for full entitlement lifecycle verification.
+
+## Entry 022 - Release pass 5: logo/icon replacement + Firefox noise tuning + prod entitlement verification hardening
+- Date/Time: 2026-02-08
+- Branch/Commit: (working tree)
+- Goal: Address remaining visual/release regressions reported after pass 4 (Firefox arc-noise intensity, landing/desktop logo replacement consistency, tiny desktop icon rendering, dropdown density polish), and harden release entitlement verification behavior.
+- Commands run:
+  - cargo test
+  - cargo test -p ixos-app
+  - cargo build --release
+  - cargo fmt --all -- --check
+  - python scripts/run_golden.py
+  - npm run build
+  - cd ixos-site; npm run build
+  - npm run tauri:build (with required env vars exported in shell)
+  - npx tauri icon logo-app-master.png -o src-tauri/icons
+- Outputs saved to:
+  - target/release/bundle/msi/ixos_0.1.0_x64_en-US.msi
+  - target/release/bundle/nsis/ixos_0.1.0_x64-setup.exe
+- Key results:
+  - Rebuilt all Tauri icon bundles from the new root logo with tighter crop/scale to eliminate tiny bordered rendering in desktop shell/taskbar/tray.
+  - Propagated regenerated icon asset to desktop UI (`ui/src/assets/ixos-icon.png`) and landing assets (`ixos-site/public/assets/icon.png`, `ixos-site/public/assets/logo-v2.png`, new `ixos-site/public/assets/logo-v3.png`, `ixos-site/src/app/favicon.ico`).
+  - Updated landing logo references to versioned filename (`logo-v3.png`) and metadata icons to avoid stale-cache visuals while remaining compatible with Next local image constraints.
+  - Reduced Firefox arc-noise intensity to match Chromium visual strength more closely.
+  - Hardened desktop entitlement verification behavior for release by removing sticky decoding-key cache in Rust auth command path and expanding frontend retry logic for key-mismatch signature errors.
+  - Improved pipeline hero handoff so autonomous loop remains active until deeper scroll progression, reducing "frozen" hero interactions when scrolling back up.
+  - Compact dropdown options were tuned to be less wide while keeping one-line explanatory text.
+- Validation summary:
+  - `cargo test`: PASS (`455 passed; 0 failed; 6 ignored`).
+  - `cargo test -p ixos-app`: PASS (`17 passed; 0 failed`).
+  - `cargo build --release`: PASS.
+  - `cargo fmt --all -- --check`: PASS.
+  - `python scripts/run_golden.py`: PASS.
+  - `npm run build`: PASS (desktop UI).
+  - `cd ixos-site; npm run build`: PASS.
+  - `npm run tauri:build` (with env set): PASS; produced MSI + NSIS installers.
+  - `cd ixos-site; npm run lint`: FAIL due pre-existing lint debt outside this pass (not introduced by these changes).
+- Decision: KEEP
+- Next: Run final manual smoke on Firefox + packaged desktop to confirm icon sizing and noise intensity on target machines, then close remaining unrelated lint debt in `ixos-site` as a separate cleanup task.

@@ -32,7 +32,7 @@ const modes: AskModeOption[] = [
     id: 'off',
     label: 'Standard Search',
     shortLabel: 'Ask: Off',
-    description: 'Keyword search',
+    description: 'Keyword retrieval only',
     details: 'Traditional keyword matching. Best for exact file names or specific terms.',
     color: 'text-accent-amber',
     bgColor: 'bg-accent-amber/10',
@@ -41,7 +41,7 @@ const modes: AskModeOption[] = [
     id: 'auto',
     label: 'Auto Ask Mode',
     shortLabel: 'Ask: Auto',
-    description: 'Detects questions',
+    description: 'Turns on for question-style queries',
     details: 'Activates deep understanding when you type a question (ends with ? or starts with who/what/etc).',
     color: 'text-accent-teal',
     bgColor: 'bg-accent-teal/10',
@@ -50,7 +50,7 @@ const modes: AskModeOption[] = [
     id: 'always',
     label: 'Always On',
     shortLabel: 'Ask: On',
-    description: 'Force deep mode',
+    description: 'Always use answer-extraction path',
     details: 'Always attempts to find answers and extract facts, even for keyword queries.',
     color: 'text-accent-violet',
     bgColor: 'bg-accent-violet/10',
@@ -128,7 +128,7 @@ export function AskModeSwitcher({ value, onChange, className, disabled = false }
         {isOpen && (
           <>
             <div
-              className="fixed inset-0 z-40"
+              className="fixed inset-0 z-[130]"
               onClick={() => setIsOpen(false)}
             />
 
@@ -139,10 +139,10 @@ export function AskModeSwitcher({ value, onChange, className, disabled = false }
               exit={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
               transition={{ duration: 0.15 }}
               className={cn(
-                'absolute z-50',
+                'absolute z-[140]',
                 dropdownPosition === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
                 'right-0',
-                'w-72',
+                'w-52',
                 'bg-graphite-2 rounded-xl border border-stroke-hairline',
                 'shadow-lift overflow-hidden'
               )}
@@ -152,17 +152,17 @@ export function AskModeSwitcher({ value, onChange, className, disabled = false }
                   key={mode.id}
                   onClick={() => handleSelect(mode.id)}
                   className={cn(
-                    'w-full flex items-center gap-2 px-3 py-2',
+                    'w-full flex items-center gap-2.5 px-3 py-2.5',
                     'hover:bg-graphite-3 transition-colors duration-150',
                     'text-left',
                     mode.id === value && 'bg-graphite-3'
                   )}
                 >
                   <MessageCircleQuestion className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
-                  <span className="text-xs font-medium text-porcelain whitespace-nowrap">
+                  <span className="text-[12px] font-medium text-porcelain whitespace-nowrap">
                     {mode.label}
                   </span>
-                  <span className="text-[11px] text-fg-secondary truncate flex-1">
+                  <span className="text-[11.5px] text-fg-secondary truncate flex-1">
                     {mode.description}
                   </span>
                   {mode.id === value && (
@@ -172,7 +172,7 @@ export function AskModeSwitcher({ value, onChange, className, disabled = false }
               ))}
 
               <div className="px-3 py-2 bg-graphite-1 border-t border-stroke-hairline">
-                <p className="text-[11px] text-fg-secondary">
+                <p className="text-[10px] text-fg-secondary leading-tight">
                   Ask Off for keyword retrieval, Auto for questions, Always for answer extraction.
                 </p>
               </div>

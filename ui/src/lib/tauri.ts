@@ -182,6 +182,13 @@ export async function setEntitlementToken(token: string): Promise<void> {
 }
 
 /**
+ * Set entitlement verification public key at runtime (release fallback).
+ */
+export async function setEntitlementPublicKey(publicKey: string): Promise<void> {
+  await invoke('set_entitlement_public_key', { publicKey });
+}
+
+/**
  * Get current Pro status from the backend
  */
 export async function getProStatus(): Promise<ProStatus> {

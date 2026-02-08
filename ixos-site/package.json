@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.7.0",
-    "nodemailer": "^6.9.16",
     "@neondatabase/serverless": "^0.9.5",
     "@studio-freight/lenis": "^1.0.42",
+    "@vercel/analytics": "^1.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.36.4",
@@ -22,6 +22,7 @@
     "lenis": "^1.3.17",
     "lucide-react": "^0.469.0",
     "next": "16.1.4",
+    "nodemailer": "^6.9.16",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "svix": "^1.33.0",

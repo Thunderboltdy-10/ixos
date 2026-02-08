@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { useAuthStore } from '@/stores/authStore';
 import { PlanBadge } from '@/components/account/PlanBadge';
-import { openExternalUrl } from '@/lib/tauri';
+import { openExternalUrl, setEntitlementToken as setBackendEntitlementToken } from '@/lib/tauri';
 import { buildCheckoutUrl, getVariantId } from '@/lib/checkout';
 import { cn } from '@/lib/utils';
 import { hasProAccess } from '@/lib/proAccess';
+import { storeEntitlementToken } from '@/lib/authToken';
 
 const variantId = getVariantId();
 
@@ -21,6 +22,7 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
     fetchDevices,
     fetchBillingPortal,
     refreshLease,
+    setEntitlementToken,
     logoutDevice,
     forgetDevice,
     logoutAllDevices,
@@ -63,7 +65,12 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
       if (!token || !currentDeviceId || cancelled) return;
 
       try {
-        await refreshLease(token, currentDeviceId);
+        const refreshed = await refreshLease(token, currentDeviceId);
+        if (refreshed?.token) {
+          setEntitlementToken(refreshed.token);
+          await storeEntitlementToken(refreshed.token).catch(() => {});
+          await setBackendEntitlementToken(refreshed.token).catch(() => {});
+        }
       } catch {
         // suppress polling errors
       }
@@ -130,7 +137,12 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
       // Refresh with current device ID
       // const currentDevice = devices.find(d => d.deviceLabel === deviceLabel); // Approximation
       if (useAuthStore.getState().deviceId) {
-        await refreshLease(token, useAuthStore.getState().deviceId!);
+        const refreshed = await refreshLease(token, useAuthStore.getState().deviceId!);
+        if (refreshed?.token) {
+          setEntitlementToken(refreshed.token);
+          await storeEntitlementToken(refreshed.token).catch(() => {});
+          await setBackendEntitlementToken(refreshed.token).catch(() => {});
+        }
       }
     } catch (err) {
       console.error('Manual refresh failed:', err);
@@ -190,7 +202,7 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
         </div>
         <button
           onClick={handleRefresh}
-          className="px-3 py-1.5 rounded-md border border-white/10 text-sm text-fg-muted hover:text-accent-teal hover:border-accent-teal/40 transition-colors"
+          className="px-3 py-1.5 rounded-md border border-white/10 text-xs text-fg-muted hover:text-accent-teal hover:border-accent-teal/40 transition-colors"
           title="Force refresh subscription status"
         >
           Refresh Status
@@ -248,7 +260,7 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
                         onClick={() => handleLogoutDevice(device.deviceId)}
                         disabled={actionDeviceId === device.deviceId}
                         className={cn(
-                          "px-3 py-1.5 text-sm rounded-md border",
+                          "min-w-[74px] px-3 h-8 text-[11px] rounded-lg border text-center",
                           "border-white/10 text-fg-muted hover:text-white hover:border-white/30 transition-colors",
                           actionDeviceId === device.deviceId && "opacity-60 cursor-not-allowed"
                         )}
@@ -260,7 +272,7 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
                         onClick={() => handleForgetDevice(device.deviceId)}
                         disabled={actionDeviceId === device.deviceId}
                         className={cn(
-                          "px-3 py-1.5 text-sm rounded-md border",
+                          "min-w-[74px] px-3 h-8 text-[11px] rounded-lg border text-center",
                           "border-accent-magenta/30 text-accent-magenta hover:border-accent-magenta/60 transition-colors",
                           actionDeviceId === device.deviceId && "opacity-60 cursor-not-allowed"
                         )}
@@ -281,7 +293,7 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
             onClick={handleLogoutAll}
             disabled={logoutAllLoading}
             className={cn(
-              "w-full px-4 py-2 rounded-md text-sm font-semibold",
+              "w-full px-4 py-2.5 rounded-lg text-xs font-semibold",
               "bg-error/10 text-error border border-error/30 hover:bg-error/20 transition-colors",
               logoutAllLoading && "opacity-60 cursor-not-allowed"
             )}
@@ -298,8 +310,8 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
           disabled={!isPro && !variantId}
           className={
             isPro
-              ? "px-4 py-2.5 rounded-md bg-accent-teal/15 text-accent-teal text-sm font-semibold hover:bg-accent-teal/25 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-              : "px-4 py-2.5 rounded-md bg-accent-magenta/20 text-accent-magenta text-sm font-semibold hover:bg-accent-magenta/30 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              ? "px-4 py-2.5 rounded-md bg-accent-teal/15 text-accent-teal text-xs font-semibold hover:bg-accent-teal/25 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              : "px-4 py-2.5 rounded-md bg-accent-magenta/20 text-accent-magenta text-xs font-semibold hover:bg-accent-magenta/30 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           }
         >
           {isPro ? 'Manage Subscription' : 'Upgrade to Pro'}

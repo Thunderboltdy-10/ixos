@@ -15,6 +15,37 @@ interface PipelineStep {
   state: StepState;
 }
 
+// Mode-specific accent classes
+const MODE_ACCENTS = {
+  jit: {
+    dot: 'bg-accent-amber',
+    sonar: 'bg-accent-amber',
+    text: 'text-accent-amber',
+    activeBorder: 'border-accent-amber/40',
+    activeBg: 'bg-accent-amber/10',
+    dotBorder: 'border-accent-amber bg-accent-amber',
+    bar: 'var(--accent-amber, #F6B94C)',
+  },
+  cache: {
+    dot: 'bg-accent-teal',
+    sonar: 'bg-accent-teal',
+    text: 'text-accent-teal',
+    activeBorder: 'border-accent-teal/40',
+    activeBg: 'bg-accent-teal/10',
+    dotBorder: 'border-accent-teal bg-accent-teal',
+    bar: 'var(--accent-teal, #14B8A6)',
+  },
+  journalist: {
+    dot: 'bg-accent-violet',
+    sonar: 'bg-accent-violet',
+    text: 'text-accent-violet',
+    activeBorder: 'border-accent-violet/40',
+    activeBg: 'bg-accent-violet/10',
+    dotBorder: 'border-accent-violet bg-accent-violet',
+    bar: 'var(--accent-violet, #7C5CFF)',
+  },
+} as const;
+
 function formatDuration(ms: number) {
   const seconds = Math.max(0, ms / 1000);
   return `${seconds.toFixed(1)}s`;
@@ -53,6 +84,10 @@ export function SearchDeck() {
   const [animatedProgress, setAnimatedProgress] = useState(0);
   const [predictedProgress, setPredictedProgress] = useState(0);
   const lastSearchStartRef = useRef<number | null>(null);
+
+  // Derive mode key for accent colors
+  const modeKey: 'jit' | 'cache' | 'journalist' = journalistMode ? 'journalist' : cacheMode === 'cache' ? 'cache' : 'jit';
+  const accent = MODE_ACCENTS[modeKey];
 
   const isActive = phase === 'lexical' || phase === 'semantic' || phase === 'refining';
   const isComplete = phase === 'complete';
@@ -114,7 +149,7 @@ export function SearchDeck() {
     if (!isActive && hasSearchIntent) return 'Starting search';
     if (streamStage === 'lexical' || phase === 'lexical') return `Scanning ${stats.filesScanned} files`;
     if ((streamStage === 'semantic' || phase === 'semantic') && semanticResults.length === 0) {
-      return `Embedding ${stats.embedded}/${embedTarget}`;
+      return `Embedding ${stats.embedded} candidates`;
     }
     if (
       streamStage === 'tail' ||
@@ -125,12 +160,7 @@ export function SearchDeck() {
       return `Ranking ${Math.max(resultCount, semanticResults.length)} results`;
     }
     return 'Preparing search';
-  }, [embedTarget, elapsedMs, finalElapsedMs, hasSearchIntent, isActive, isComplete, phase, resultCount, semanticResults.length, stats.embedded, stats.filesScanned, streamStage]);
-
-  const trailLabel = useMemo(() => {
-    if (scanTrail.length === 0) return '';
-    return scanTrail.slice(-4).map(fileTail).join(' | ');
-  }, [scanTrail]);
+  }, [elapsedMs, finalElapsedMs, hasSearchIntent, isActive, isComplete, phase, resultCount, semanticResults.length, stats.embedded, stats.filesScanned, streamStage]);
 
   const pipelineSteps = useMemo<PipelineStep[]>(() => {
     const doneDetail = isComplete
@@ -147,7 +177,7 @@ export function SearchDeck() {
       {
         key: 'embed',
         label: 'Embed',
-        detail: `${stats.embedded}/${embedTarget}`,
+        detail: `${stats.embedded} embedded`,
         state: stageIndex > 1 || isComplete ? 'done' : stageIndex === 1 ? 'active' : 'pending',
       },
       {
@@ -163,7 +193,7 @@ export function SearchDeck() {
         state: isComplete ? 'done' : stageIndex === 3 ? 'active' : 'pending',
       },
     ];
-  }, [elapsedMs, embedTarget, finalElapsedMs, isComplete, resultCount, semanticResults.length, stageIndex, stats.embedded, stats.filesScanned]);
+  }, [elapsedMs, finalElapsedMs, isComplete, resultCount, semanticResults.length, stageIndex, stats.embedded, stats.filesScanned]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -311,40 +341,70 @@ export function SearchDeck() {
       >
         <div className="px-4 pb-2 pt-3">
           <div className="flex items-center gap-3">
-            <span className={cn(
-              'h-2.5 w-2.5 rounded-full',
-              isComplete ? 'bg-success' : 'bg-accent-teal animate-pulse'
-            )} />
+            {/* Sonar dot — mode-colored */}
+            <span className="relative flex h-2.5 w-2.5 items-center justify-center">
+              {!isComplete && (
+                <span className={cn('absolute inline-flex h-full w-full rounded-full animate-sonar', accent.sonar)} />
+              )}
+              <span className={cn(
+                'relative h-2.5 w-2.5 rounded-full',
+                isComplete ? 'bg-success' : accent.dot
+              )} />
+            </span>
             <span className="flex-1 truncate text-sm font-medium text-porcelain">{statusMessage}</span>
             <div className="flex items-center gap-3 text-xs font-mono text-fg-ghost">
               {resultCount > 0 && <span className="tabular-nums">{resultCount} results</span>}
               {displayElapsedMs > 0 && <span className="tabular-nums">{formatDuration(displayElapsedMs)}</span>}
               <span className="hidden rounded px-1.5 py-0.5 text-2xs text-fg-ghost bg-graphite-2 sm:inline-flex">Ctrl+K</span>
-              <span className="rounded px-1.5 py-0.5 text-2xs text-fg-dim bg-graphite-2">{modeBadge}</span>
+              <span className={cn('rounded px-1.5 py-0.5 text-2xs bg-graphite-2', accent.text)}>{modeBadge}</span>
             </div>
           </div>
 
-          {trailLabel && (
-            <motion.div
-              key={`${trailLabel}-${streamSequence}`}
-              initial={{ opacity: 0, y: 3 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.18 }}
-              className="mt-1 truncate text-xs text-fg-dim"
+          {/* Scan trail ticker */}
+          {scanTrail.length > 0 && (
+            <div
+              className="mt-1 flex items-center gap-1.5 overflow-hidden text-xs text-fg-dim"
+              style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 15%)' }}
             >
-              Scanning: {trailLabel}
-            </motion.div>
+              <span className="shrink-0 text-fg-ghost">Scanning:</span>
+              <AnimatePresence mode="popLayout">
+                {scanTrail.slice(-4).map((path, i) => (
+                  <motion.span
+                    key={`${path}-${streamSequence}-${i}`}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ duration: 0.15 }}
+                    className="shrink-0 truncate"
+                  >
+                    {fileTail(path)}{i < Math.min(scanTrail.length, 4) - 1 ? ' |' : ''}
+                  </motion.span>
+                ))}
+              </AnimatePresence>
+            </div>
           )}
         </div>
 
+        {/* Pipeline steps — mode-colored accents */}
         <div className="grid grid-cols-1 gap-2 px-4 pb-3 md:grid-cols-4">
           {pipelineSteps.map((step) => (
-            <div
+            <motion.div
               key={step.key}
-              className={cn(
-                'rounded-md border px-3 py-2 transition-colors',
+              initial={{ opacity: 0.5, y: 4 }}
+              animate={
                 step.state === 'active'
-                  ? 'border-accent-teal/40 bg-accent-teal/10'
+                  ? { opacity: 1, y: 0, scale: [1, 1.015, 1] }
+                  : { opacity: 1, y: 0, scale: 1 }
+              }
+              transition={
+                step.state === 'active'
+                  ? { scale: { repeat: Infinity, duration: 2, ease: 'easeInOut' }, opacity: { duration: 0.2 } }
+                  : { duration: 0.2 }
+              }
+              className={cn(
+                'rounded-md border px-3 py-2',
+                step.state === 'active'
+                  ? `${accent.activeBorder} ${accent.activeBg}`
                   : step.state === 'done'
                     ? 'border-white/10 bg-graphite-2/60'
                     : 'border-white/5 bg-graphite-2/35'
@@ -352,39 +412,60 @@ export function SearchDeck() {
             >
               <div className="flex items-center gap-2 text-xs">
                 {step.state === 'done' ? (
-                  <Check className="h-3.5 w-3.5 text-success" />
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                  >
+                    <Check className="h-3.5 w-3.5 text-success" />
+                  </motion.div>
                 ) : (
-                  <span className={cn(
-                    'h-2.5 w-2.5 rounded-full border',
-                    step.state === 'active'
-                      ? 'border-accent-teal bg-accent-teal animate-pulse'
-                      : 'border-fg-ghost/40 bg-transparent'
-                  )} />
+                  <span className="relative flex h-2.5 w-2.5 items-center justify-center">
+                    {step.state === 'active' && (
+                      <span className={cn('absolute inline-flex h-full w-full rounded-full animate-sonar', accent.sonar)} />
+                    )}
+                    <span className={cn(
+                      'relative h-2.5 w-2.5 rounded-full border',
+                      step.state === 'active'
+                        ? accent.dotBorder
+                        : 'border-fg-ghost/40 bg-transparent'
+                    )} />
+                  </span>
                 )}
                 <span className={cn(
                   'font-medium',
-                  step.state === 'active' ? 'text-accent-teal' : 'text-fg-muted'
+                  step.state === 'active' ? accent.text : 'text-fg-muted'
                 )}>
                   {step.label}
                 </span>
               </div>
               <div className="mt-1 truncate text-2xs text-fg-dim">{step.detail}</div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
+        {/* Progress bar — mode-colored, green when done */}
         <div ref={underlineRef} className="relative h-[3px] w-full overflow-hidden bg-graphite-3">
           <div className="absolute inset-0 bg-graphite-2" />
           <motion.div
             className="absolute left-0 top-0 h-full overflow-hidden"
-            style={{ backgroundColor: isComplete ? 'var(--accent-success)' : 'var(--accent-teal)' }}
+            style={{ backgroundColor: isComplete ? 'var(--accent-success)' : accent.bar }}
             initial={{ width: 0 }}
             animate={{ width: `${animatedProgress * 100}%` }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          />
+          >
+            {!isComplete && (
+              <div
+                className="absolute inset-0 animate-progress-shimmer"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)',
+                  width: '100%',
+                }}
+              />
+            )}
+          </motion.div>
         </div>
       </motion.div>
     </>
   );
 }
-

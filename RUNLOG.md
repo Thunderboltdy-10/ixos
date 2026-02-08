@@ -206,3 +206,96 @@
   - `npm run build` and `cargo check` both passed.
 - Decision: KEEP
 - Next: Run manual Tauri smoke in Auto mode on large repo and capture stage-timing evidence/screenshots.
+
+## Entry 014 - Landing UI narrative pass + auth readability + docs organization
+- Date/Time: 2026-02-06
+- Branch/Commit: (working tree)
+- Goal: Fix hero/pipeline UX issues, improve auth text readability in landing + desktop app, and organize/populate project docs.
+- Commands run:
+  - npm --prefix ui run build
+  - npm --prefix ixos-site run build
+  - cd ixos-site; npx eslint src/components/sections/HeroPipeline.tsx src/app/docs/page.tsx src/components/auth/AuthScreen.tsx src/components/ui/SectionDivider.tsx src/components/hero/diagrams/ScoreWaterfall.tsx src/components/hero/diagrams/MemoryWipe.tsx
+- Outputs saved to:
+  - reports/ui_docs_refresh_2026-02-06.md
+  - docs/MARKDOWN_INVENTORY.md
+  - docs/README.md
+  - docs/getting-started/INSTALLATION.md
+  - docs/product/DESKTOP_APP.md
+  - docs/models/HUGGINGFACE_AND_MODELS.md
+  - docs/engineering/BENCHMARKING.md
+  - docs/engineering/MARKDOWN_ORGANIZATION.md
+  - docs/agents/SKILLS_AND_WORKFLOWS.md
+- Key results:
+  - Hero demo starts lower and lifts into pipeline mode with radial reveal.
+  - Pipeline cards now highlight in order and drive synchronized hero demo step changes.
+  - Divider labels are globally uppercase in shared `SectionDivider` for landing + desktop.
+  - Clerk auth readability improved with stronger contrast and autofill-safe styles.
+  - Docs page replaced with structured sections and markdown inventory generated for repo-wide visibility.
+- Decision: KEEP
+- Next: Manual visual QA pass on desktop/mobile breakpoints and capture updated screenshots/GIFs for release notes.
+
+## Entry 015 - Feedback-driven pipeline + docs IA overhaul + root markdown cleanup
+- Date/Time: 2026-02-06
+- Branch/Commit: (working tree)
+- Goal: Remove looped demo behavior during pipeline scroll, improve component diagram value, keep hero demo visible/centered from initial hero state, split docs into proper pages, and move root markdown sprawl into docs hierarchy.
+- Commands run:
+  - cd ixos-site; npx eslint src/components/sections/HeroPipeline.tsx src/components/hero/IxosDemoWindow.tsx src/components/hero/diagrams/QueryDecomposition.tsx src/components/hero/diagrams/VectorSpace.tsx src/components/hero/diagrams/ScoreWaterfall.tsx src/components/hero/diagrams/MemoryWipe.tsx src/components/hero/diagrams/StreamWaterfall.tsx src/app/docs/layout.tsx src/app/docs/page.tsx src/app/docs/getting-started/page.tsx src/app/docs/desktop-app/page.tsx src/app/docs/models/page.tsx src/app/docs/benchmarking/page.tsx src/app/docs/agents/page.tsx src/components/auth/AuthScreen.tsx src/components/ui/SectionDivider.tsx
+  - npm --prefix ixos-site run build
+  - npm --prefix ui run build
+- Outputs saved to:
+  - reports/ui_docs_refresh_2026-02-06.md
+  - docs/MARKDOWN_INVENTORY.md
+  - ixos-site/src/app/docs/*
+  - docs/archive/root/*
+- Key results:
+  - Controlled pipeline demo no longer runs autonomous query loops during scroll.
+  - Hero demo remains visible from the start, centered, and acts as pulse origin for radial card activation.
+  - Diagram set replaced with higher-signal custom visuals, including looping stream ticker behavior.
+  - Docs moved to multi-page information architecture with dedicated routes and readable article layout.
+  - Root markdown cleaned to operational files only (`AGENTS.md`, `PLAN.md`, `RUNLOG.md`, `DECISIONS.md`).
+- Decision: KEEP
+- Next: Capture fresh screenshots/GIFs for hero/pipeline/docs on desktop + mobile, then run UX copy polish.
+
+## Entry 016 - Hero proportion + controlled-stage stability + docs readability polish
+- Date/Time: 2026-02-06
+- Branch/Commit: (working tree)
+- Goal: Apply user feedback on hero dimensions/centering, remove pulse effect, stop stage-cycling jitter in controlled demo, and make docs layout/text more readable.
+- Commands run:
+  - npm --prefix ixos-site run build
+  - npm --prefix ui run build
+  - npm --prefix ixos-site run lint -- src/components/sections/HeroPipeline.tsx src/components/hero/IxosDemoWindow.tsx src/components/hero/fakeSearch.ts src/app/docs/layout.tsx src/app/docs/page.tsx src/app/docs/getting-started/page.tsx src/app/docs/desktop-app/page.tsx src/app/docs/models/page.tsx src/app/docs/benchmarking/page.tsx src/app/docs/agents/page.tsx src/components/docs/DocsSideNav.tsx
+  - Get-ChildItem -Path . -File -Filter *.md | Select-Object -ExpandProperty Name
+- Outputs saved to:
+  - reports/ui_docs_refresh_2026-02-06.md (updated)
+  - ixos-site/src/components/sections/HeroPipeline.tsx
+  - ixos-site/src/components/hero/IxosDemoWindow.tsx
+  - ixos-site/src/components/hero/fakeSearch.ts
+  - ixos-site/src/app/docs/*
+  - ixos-site/src/components/docs/DocsSideNav.tsx
+  - ixos-site/src/app/globals.css
+- Key results:
+  - Hero demo proportions reduced in height and widened; layout is centered and transitions upward smoothly into pipeline state.
+  - Radiating pulse visuals were removed entirely from the hero/pipeline transition.
+  - Scroll-guided demo now uses pause-resume stage flow in fake search logic, eliminating repeated scan/embed/rank restarts.
+  - Pipeline narrative card was simplified to text-forward "Search Pipeline" messaging.
+  - Docs IA now has active side nav and long-form typography styles for readability.
+  - Root markdown verified as operational-only (`AGENTS.md`, `PLAN.md`, `RUNLOG.md`, `DECISIONS.md`).
+- Decision: KEEP
+- Next: Capture updated screenshots/GIFs for desktop/mobile and run manual scroll QA on edge viewport sizes.
+
+## Entry 017 - Hero/pipeline dimension and brightness tuning
+- Date/Time: 2026-02-06
+- Branch/Commit: (working tree)
+- Goal: Increase hero demo and how-it-works component dimensions and reduce dimness of stage cards/content.
+- Commands run:
+  - npm --prefix ixos-site run build
+  - npm --prefix ixos-site run lint -- src/components/sections/HeroPipeline.tsx
+- Outputs saved to:
+  - ixos-site/src/components/sections/HeroPipeline.tsx
+- Key results:
+  - Increased desktop pipeline canvas (`max-w`, grid columns/rows, total height) and mobile demo height.
+  - Raised baseline opacity/contrast for inactive/complete cards and status text to improve readability.
+  - Increased compact diagram slot size and brightened checkpoints/body text.
+  - Build and targeted lint passed.
+- Decision: KEEP
+- Next: Manual visual QA on desktop + tablet widths to confirm final proportions.

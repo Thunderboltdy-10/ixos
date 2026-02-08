@@ -1,7 +1,7 @@
 # PLAN.md - Ixos Flash v2 + Pro v2 + Search vNext
 
 ## STATE SNAPSHOT (update frequently)
-- Date: 2026-02-05
+- Date: 2026-02-06
 - Current baseline models: Flash v1 (legacy), Pro fusion baseline = Flash v1 + Potion + lexical (see models/lab/results_baseline_fusion_2026-02-02.json)
 - Baseline quality (MRR@10 / Recall@10): Flash v1 0.8399 / 0.93; Potion 0.8073 / 0.90; Pro v1 0.7354 / 0.855; Pro fusion 0.9233 / 0.97 (real_corpus_v2)
 - Baseline perf (p50/p95, ms/1k, TTFR): Flash v1 JIT total 70/337, TTFR 47/73; Potion JIT total 71/202, TTFR 45/61; Pro v1 JIT total 72/401, TTFR 45/62
@@ -13,9 +13,13 @@
 - Recent regression fix (2026-02-05): Candidate document phase is now gated by query/path document signals to avoid unconditional binary parsing on code-only queries.
 - Recent correctness fix (2026-02-05): `.env` removed from shared hardcoded skip list so env files are not silently excluded by walker entry-name filtering.
 - Recent UX/runtime fix (2026-02-05): Streaming deck now resets per-search and stage updates are normalized; Auto mode no longer eagerly indexes Pro in Tauri path, improving perceived startup responsiveness for stream events.
+- Recent landing/docs pass (2026-02-06): Hero + search pipeline storytelling was rebuilt with smoother scroll choreography, auth readability hardening landed for web/desktop, and docs were centralized with a full markdown inventory index.
+- Feedback revision (2026-02-06): Pipeline demo now runs in scroll-guided mode without autonomous loops, hero demo remains visible/centered from initial hero state, diagrams were upgraded with richer motion semantics, docs were split into multi-page IA, and non-operational root markdown files were moved into `docs/archive/root`.
+- Feedback revision (2026-02-06, pass 2): Removed hero radiating pulse effect, reduced hero demo height / widened layout for better proportion, stabilized controlled stage progression by pause-resume (no repeated scan/embed/rank restarts), simplified pipeline story block to text-forward copy, and upgraded docs readability with dedicated docs nav + long-form typography system.
+- Feedback revision (2026-02-06, pass 3): Increased hero/pipeline scale after pass-2 overshrink, widened central demo and surrounding stage tiles, and raised baseline contrast/opacity for inactive and complete cards to improve readability.
 - Top bottlenecks (ranked): Directory walk/candidate generation on large trees; ripgrep scan I/O; semantic embedding on cold runs; completion-path evidence extraction tail
 - Open risks / unknowns: Multilingual routing remains unevaluated (ES/FR/DE slice pending); Auto quality impact from stricter refinement gate needs focused relevance eval on long-tail queries
-- Next 3 actions: (1) Run Tauri manual smoke on large repo and capture streaming stage/timing evidence in `/reports`, (2) run quality A/B for new Auto gate on real queries, (3) decouple evidence extraction from blocking CLI completion path
+- Next 3 actions: (1) Capture updated hero/pipeline/docs screenshots and mobile recordings for release artifacts, (2) run Tauri manual smoke on large repo and capture streaming stage/timing evidence in `/reports`, (3) run quality A/B for new Auto gate on real queries
 
 ---
 

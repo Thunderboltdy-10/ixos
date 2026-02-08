@@ -4,7 +4,12 @@ import type { SearchEvent } from '@/lib/types';
 import { useSearchStore } from '@/stores/searchStore';
 
 /**
- * Hook to listen for search events from the backend
+ * Hook to listen for search events from the backend.
+ *
+ * With the Tauri v2 Channel API migration, search events are now delivered
+ * directly through the Channel callback passed to `searchProgressive()`.
+ * This hook is kept as a no-op for backwards compatibility — the actual
+ * event handling is wired in `searchStore.ts` via the `onEvent` callback.
  */
 export function useSearchEvents() {
   const handleSearchEvent = useSearchStore((state) => state.handleSearchEvent);
@@ -32,7 +37,7 @@ export function useSearchEvents() {
 }
 
 /**
- * Hook to listen for a specific Tauri event
+ * Hook to listen for a specific Tauri event (non-search events)
  */
 export function useTauriEvent<T>(eventName: string, handler: (payload: T) => void) {
   useEffect(() => {

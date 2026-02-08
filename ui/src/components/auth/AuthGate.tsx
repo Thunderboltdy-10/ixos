@@ -76,10 +76,10 @@ const signInAppearance: Appearance = {
   variables: {
     colorPrimary: '#14B8A6',
     colorBackground: '#131315',
-    colorInputBackground: '#1A1A1E',
-    colorInputText: '#E5E5E7',
-    colorText: '#E5E5E7',
-    colorTextSecondary: '#A1A1A6',
+    colorInputBackground: '#11151F',
+    colorInputText: '#F3F5F7',
+    colorText: '#F3F5F7',
+    colorTextSecondary: '#C4CFD6',
     colorDanger: '#EF4444',
     borderRadius: '0.25rem',
     fontFamily: '"Geist Mono", ui-monospace, monospace', // Enforce Mono
@@ -90,24 +90,25 @@ const signInAppearance: Appearance = {
     headerTitle: 'hidden',
     headerSubtitle: 'hidden',
     // Stronger visibility for social buttons
-    socialButtonsBlockButton: 'bg-[#27272A] border border-white/10 hover:bg-[#3F3F46] text-white transition-all h-10 flex items-center justify-center shadow-lg shadow-black/20 font-mono text-xs tracking-wide',
-    socialButtonsBlockButtonText: 'text-white font-medium ml-2 font-mono',
+    socialButtonsBlockButton: '!bg-[#11151F] !border !border-white/20 hover:!bg-[#1A2131] hover:!border-accent-teal/45 !text-[#F3F5F7] !opacity-100 transition-all h-11 flex items-center justify-center shadow-none font-mono text-xs tracking-wide',
+    socialButtonsBlockButtonText: '!text-[#F3F5F7] !font-semibold ml-2 font-mono',
+    socialButtonsProviderIcon: 'opacity-100',
     socialButtonsBlockButtonArrow: 'hidden',
-    dividerLine: 'bg-[#2A2A2E]',
-    dividerText: 'text-[#6B6B70] text-xs uppercase tracking-wider font-mono',
-    formFieldLabel: 'text-[#A1A1A6] text-xs font-medium mb-1.5 uppercase tracking-wide font-mono',
-    formFieldInput: 'bg-[#1A1A1E] border border-white/10 text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-[#14B8A6] focus:ring-1 focus:ring-[#14B8A6]/30 rounded-md h-10 px-4 transition-all font-mono text-sm',
-    formButtonPrimary: 'bg-accent-teal hover:bg-accent-teal/90 text-[#0A0A0B] font-semibold h-10 rounded-md transition-all uppercase tracking-widest text-xs shadow-glow-teal-sm font-mono',
+    dividerLine: 'bg-[#344054]',
+    dividerText: 'text-[#A6B2C0] text-xs uppercase tracking-wider font-mono',
+    formFieldLabel: 'text-[#C4CFD6] text-xs font-semibold mb-1.5 uppercase tracking-wide font-mono',
+    formFieldInput: 'bg-[#11151F] border border-white/15 text-[#F3F5F7] placeholder:text-[#8FA0B3] focus:border-[#14B8A6] focus:ring-2 focus:ring-[#14B8A6]/35 rounded-md h-11 px-4 transition-all font-mono text-sm',
+    formButtonPrimary: 'bg-accent-teal hover:bg-accent-teal/90 text-[#031016] font-semibold h-11 rounded-md transition-all uppercase tracking-widest text-xs shadow-glow-teal-sm font-mono',
     footerActionLink: 'text-[#14B8A6] hover:text-[#0D9488] font-medium transition-colors font-mono',
     identityPreviewText: 'text-[#E5E5E7] font-mono',
     identityPreviewEditButton: 'text-[#14B8A6] hover:text-[#0D9488] transition-colors font-mono',
     formFieldAction: 'text-[#14B8A6] hover:text-[#0D9488] text-xs transition-colors font-mono',
     alertText: 'text-[#A1A1A6] font-mono',
     footer: 'hidden',
-    formFieldInputShowPasswordButton: 'text-[#6B6B70] hover:text-[#A1A1A6] transition-colors',
+    formFieldInputShowPasswordButton: 'text-[#8FA0B3] hover:text-[#F3F5F7] transition-colors',
     // OTP / Verification code styling - centered with separate digit boxes
     otpCodeFieldInputs: 'flex justify-center gap-2',
-    otpCodeFieldInput: 'w-12 h-14 text-center text-2xl font-mono font-bold bg-[#1A1A1E] border-2 border-white/10 text-[#E5E5E7] focus:border-[#14B8A6] focus:ring-2 focus:ring-[#14B8A6]/30 rounded-lg transition-all caret-[#14B8A6]',
+    otpCodeFieldInput: 'w-12 h-14 text-center text-2xl font-mono font-bold bg-[#11151F] border-2 border-white/15 text-[#F3F5F7] focus:border-[#14B8A6] focus:ring-2 focus:ring-[#14B8A6]/35 rounded-lg transition-all caret-[#14B8A6]',
     otpCodeField: 'flex flex-col items-center gap-4',
     // Center the verification view
     formFieldRow: 'flex justify-center',
@@ -124,17 +125,17 @@ const signUpAppearance: Appearance = {
   },
   elements: {
     ...signInAppearance.elements,
-    formFieldInput: 'bg-[#1A1A1E] border border-white/10 text-[#E5E5E7] placeholder:text-[#6B6B70] focus:border-accent-magenta focus:ring-1 focus:ring-accent-magenta/30 rounded-md h-10 px-4 transition-all font-mono text-sm',
-    formButtonPrimary: 'bg-accent-magenta hover:bg-accent-magenta/90 text-[#0A0A0B] font-semibold h-10 rounded-md transition-all uppercase tracking-widest text-xs shadow-glow-magenta-sm font-mono',
+    formFieldInput: 'bg-[#11151F] border border-white/15 text-[#F3F5F7] placeholder:text-[#8FA0B3] focus:border-accent-magenta focus:ring-2 focus:ring-accent-magenta/35 rounded-md h-11 px-4 transition-all font-mono text-sm',
+    formButtonPrimary: 'bg-accent-magenta hover:bg-accent-magenta/90 text-[#031016] font-semibold h-11 rounded-md transition-all uppercase tracking-widest text-xs shadow-glow-magenta-sm font-mono',
     footerActionLink: 'text-accent-magenta hover:text-accent-magenta/80 font-medium transition-colors font-mono',
     identityPreviewEditButton: 'text-accent-magenta hover:text-accent-magenta/80 transition-colors font-mono',
     formFieldAction: 'text-accent-magenta hover:text-accent-magenta/80 text-xs transition-colors font-mono',
+    otpCodeFieldInput: 'w-12 h-14 text-center text-2xl font-mono font-bold bg-[#11151F] border-2 border-white/15 text-[#F3F5F7] focus:border-accent-magenta focus:ring-2 focus:ring-accent-magenta/35 rounded-lg transition-all',
   },
 };
 
 function AuthScreen() {
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in');
-  console.log('AuthScreen rendering', { mode });
 
   return (
     <div className="min-h-screen bg-graphite-0 flex flex-col items-center justify-center px-6">

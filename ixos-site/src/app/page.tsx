@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Nav } from "@/components/ui/Nav";
-import { HeroJourney } from "@/components/sections/HeroJourney";
+import { HeroPipeline } from "@/components/sections/HeroPipeline";
 import { MeetingUseCase } from "@/components/sections/MeetingUseCase";
 import { Benchmarks } from "@/components/sections/Benchmarks";
 import { Pricing } from "@/components/sections/Pricing";
@@ -13,13 +13,14 @@ export default function Home() {
     <main className="flex flex-col w-full overflow-x-hidden">
       <Nav />
 
-      {/* Hero Section (incl. How It Works) */}
-      <section className="section-hero">
-        <HeroJourney />
-      </section>
+      {/* Hero & Pipeline Combined Section */}
+      <div className="section-transition-teal-to-violet">
+        <HeroPipeline />
+      </div>
 
       {/* Meeting Use Case - Violet accent */}
-      <section className="section-meeting accent-violet">
+      <section className="section-meeting accent-violet relative">
+        <div className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-0 bg-gradient-to-b from-bg-graphite-0 to-transparent" />
         <MeetingUseCase />
       </section>
 

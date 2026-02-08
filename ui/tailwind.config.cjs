@@ -121,10 +121,20 @@ module.exports = {
                     '0%': { backgroundPosition: '200% center' },
                     '100%': { backgroundPosition: '-200% center' },
                 },
+                sonar: {
+                    '0%': { transform: 'scale(1)', opacity: '0.6' },
+                    '100%': { transform: 'scale(2.5)', opacity: '0' },
+                },
+                'progress-shimmer': {
+                    '0%': { transform: 'translateX(-100%)' },
+                    '100%': { transform: 'translateX(100%)' },
+                },
             },
             animation: {
                 shimmer: 'shimmer 2s linear infinite',
                 'shimmer-slow': 'shimmer 3s linear infinite',
+                sonar: 'sonar 1.5s ease-out infinite',
+                'progress-shimmer': 'progress-shimmer 1.5s ease-in-out infinite',
             },
         },
     },

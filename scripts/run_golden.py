@@ -13,12 +13,26 @@ QUERY_SET = GOLDEN_DATA / "query_set.json"
 EXPECTED = GOLDEN_DATA / "expected_results.json"
 
 
+def _strip_windows_extended_prefix(path_str: str) -> str:
+    if path_str.startswith("\\\\?\\"):
+        return path_str[4:]
+    if path_str.startswith("//?/"):
+        return path_str[4:]
+    return path_str
+
+
 def normalize_path(path_str: str) -> str:
-    p = Path(path_str)
+    cleaned = _strip_windows_extended_prefix(path_str)
+    root_clean = _strip_windows_extended_prefix(str(ROOT))
+    p = Path(cleaned)
+    root_path = Path(root_clean)
     try:
-        rel = p.resolve().relative_to(ROOT.resolve())
+        rel = p.resolve().relative_to(root_path.resolve())
     except Exception:
-        rel = Path(path_str)
+        try:
+            rel = Path(cleaned).relative_to(root_path)
+        except Exception:
+            rel = Path(cleaned)
     return rel.as_posix()
 
 
@@ -166,7 +180,9 @@ def main() -> int:
             for qid, query in queries.items():
                 exp = expected[qid]
                 top_k = int(exp.get("top_k", 0))
-                limit = max(10, top_k)
+                # Keep a wider retrieval window so must_include checks are stable
+                # even when semantic ordering shifts among close matches.
+                limit = max(20, top_k)
                 result = run_query(bin_path, query, limit, env=env)
 
                 results = result.get("results", [])

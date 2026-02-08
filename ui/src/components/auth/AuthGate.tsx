@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState, Component, type ReactNode, type ErrorInfo } from 'react';
+import { useCallback, useEffect, useMemo, useState, Component, type ReactNode, type ErrorInfo } from 'react';
 import { SignIn, SignUp, useAuth, useUser } from '@clerk/clerk-react';
 import type { Appearance } from '@clerk/types';
 import { useAuthStore } from '@/stores/authStore';
 import { getMachineId } from '@/lib/crypto';
 import { getDeviceLabel } from '@/lib/device';
-import { loadEntitlementToken, storeEntitlementToken } from '@/lib/authToken';
+import { clearEntitlementToken, loadEntitlementToken, storeEntitlementToken } from '@/lib/authToken';
 import { getProStatus } from '@/lib/tauri';
+import { getApiBase } from '@/lib/api';
 import type { ModelStatus } from '@/lib/types';
 import { invoke } from '@tauri-apps/api/core';
 import ixosIcon from '@/assets/ixos-icon.png';
@@ -84,17 +85,17 @@ const signInAppearance: Appearance = {
     fontFamily: 'Inter, Segoe UI, system-ui, sans-serif',
   },
   elements: {
-    rootBox: 'w-full',
+    rootBox: 'w-full font-sans',
     card: 'bg-transparent shadow-none border-none p-0',
     headerTitle: 'hidden',
     headerSubtitle: 'hidden',
-    socialButtonsBlockButton: '!bg-graphite-2/90 !border !border-white/[0.12] hover:!border-white/[0.22] hover:!bg-graphite-2 !text-[#F3F5F7] !opacity-100 transition-all !h-11 !rounded-lg flex items-center justify-center shadow-none text-sm overflow-hidden',
-    socialButtonsBlockButtonText: '!text-[#F3F5F7] !font-semibold !text-sm !leading-none ml-1 tracking-normal',
+    socialButtonsBlockButton: '!bg-graphite-2/90 !border !border-white/[0.12] hover:!border-white/[0.22] hover:!bg-graphite-2 !text-[#F3F5F7] !opacity-100 transition-all !h-10 !rounded-lg !px-4 !gap-2 !flex !items-center !justify-center shadow-none !text-sm overflow-hidden',
+    socialButtonsBlockButtonText: '!text-[#F3F5F7] !font-medium !text-[13px] !leading-none !tracking-normal !truncate !max-w-[220px]',
     socialButtonsProviderIcon: 'opacity-100',
     socialButtonsBlockButtonArrow: 'hidden',
     dividerLine: 'bg-white/[0.1]',
-    dividerText: 'text-fg-dim text-xs',
-    formFieldLabel: 'text-fg-muted text-xs font-medium mb-1.5 tracking-normal',
+    dividerText: 'text-fg-dim text-xs tracking-[0.08em]',
+    formFieldLabel: 'text-fg-muted text-xs font-medium mb-1.5 tracking-[0.06em]',
     formFieldInput: 'bg-[#0D1117] border border-white/[0.14] text-[#F3F5F7] placeholder:text-fg-dim/50 focus:border-[#14B8A6]/60 focus:ring-1 focus:ring-[#14B8A6]/25 rounded-lg h-10 px-3.5 transition-all text-sm',
     formButtonPrimary: 'bg-accent-teal hover:bg-accent-teal/90 text-[#031016] font-semibold h-10 rounded-lg transition-all text-sm tracking-normal',
     footerActionLink: 'text-[#14B8A6] hover:text-[#0D9488] font-medium transition-colors text-sm',
@@ -135,7 +136,7 @@ function AuthScreen() {
   const glowColor = mode === 'sign-in' ? 'rgba(20,184,166,0.12)' : 'rgba(244,114,182,0.12)';
 
   return (
-    <div className="min-h-screen bg-graphite-0 flex flex-col items-center pt-14 px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-graphite-0 flex items-center justify-center px-6 py-16 relative overflow-hidden">
       {/* Ambient glow */}
       <div
         className="pointer-events-none absolute inset-0 transition-all duration-700"
@@ -144,16 +145,16 @@ function AuthScreen() {
         }}
       />
 
-      <div className="w-full max-w-[460px] relative z-10">
+      <div className="w-full max-w-[470px] relative z-10 pt-10">
         {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <div className="w-11 h-11 rounded-lg bg-graphite-1 border border-white/[0.08] flex items-center justify-center shadow-lg">
+        <div className="flex justify-center mb-5">
+          <div className="w-10 h-10 rounded-lg bg-graphite-1 border border-white/[0.08] flex items-center justify-center shadow-lg">
             <img src={ixosIcon} alt="Ixos" className="w-6 h-6 object-contain opacity-90" />
           </div>
         </div>
 
         {/* Title */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-5">
           <h1 className="text-xl font-semibold text-porcelain mb-1.5 tracking-tight">
             {mode === 'sign-in' ? 'Welcome back' : 'Create account'}
           </h1>
@@ -189,7 +190,7 @@ function AuthScreen() {
         </div>
 
         {/* Auth Form Container */}
-        <div className="bg-graphite-1/65 border border-white/[0.12] rounded-xl p-6 backdrop-blur-md shadow-lift">
+        <div className="bg-graphite-1/70 border border-white/[0.12] rounded-xl p-5 sm:p-6 backdrop-blur-md shadow-lift">
           {mode === 'sign-in' ? (
             <SignIn routing="virtual" appearance={signInAppearance} />
           ) : (
@@ -421,6 +422,48 @@ function AuthGateInner({ children }: AuthGateProps) {
   const [bootstrapped, setBootstrapped] = useState(false);
   const [bootError, setBootError] = useState<string | null>(null);
   const [showModelWarning, setShowModelWarning] = useState(false);
+  const apiBase = useMemo(() => getApiBase(), []);
+
+  const syncBackendPublicKey = useCallback(async (authToken: string) => {
+    const res = await fetch(`${apiBase}/api/desktop/entitlement-key`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+    if (!res.ok) {
+      throw new Error(`Public key fetch failed (${res.status})`);
+    }
+
+    const data = await res.json();
+    const publicKey = typeof data?.publicKey === 'string' ? data.publicKey : null;
+    if (!publicKey) {
+      throw new Error('Public key response missing publicKey');
+    }
+    await invoke('set_entitlement_public_key', { publicKey });
+  }, [apiBase]);
+
+  const applyEntitlementTokenToBackend = useCallback(async (token: string, authToken: string) => {
+    try {
+      await invoke('set_entitlement_token', { token });
+      return true;
+    } catch (err) {
+      const msg = String(err).toLowerCase();
+      const likelyKeyMismatch =
+        msg.includes('ixos_jwt_public_key not set') ||
+        msg.includes('failed to parse public key') ||
+        msg.includes('invalid token') ||
+        msg.includes('invalidsignature') ||
+        msg.includes('invalid signature') ||
+        msg.includes('invalid issuer');
+      if (!likelyKeyMismatch) {
+        throw err;
+      }
+      await syncBackendPublicKey(authToken);
+      await invoke('set_entitlement_token', { token });
+      return true;
+    }
+  }, [syncBackendPublicKey]);
 
   useEffect(() => {
     async function check() {
@@ -468,16 +511,38 @@ function AuthGateInner({ children }: AuthGateProps) {
         console.log('[Auth] Device ID:', deviceId);
 
         // Load cached token first
+        let clerkToken: string | null = null;
+        try {
+          clerkToken = await getToken();
+          if (clerkToken) {
+            await syncBackendPublicKey(clerkToken).catch((err) => {
+              console.warn('[Auth] Public key sync skipped:', err);
+            });
+          }
+        } catch (err) {
+          console.warn('[Auth] Failed to get Clerk token for public key sync:', err);
+        }
+
         try {
           const cachedToken = await loadEntitlementToken();
           if (cachedToken) {
             console.log('[Auth] Loaded cached entitlement token');
             setEntitlementToken(cachedToken);
             try {
-              await invoke('set_entitlement_token', { token: cachedToken });
+              if (!clerkToken) {
+                clerkToken = await getToken();
+              }
+              if (clerkToken) {
+                await applyEntitlementTokenToBackend(cachedToken, clerkToken);
+              } else {
+                await invoke('set_entitlement_token', { token: cachedToken });
+              }
               console.log('[Auth] Cached token set in Rust backend');
             } catch (err) {
               console.warn('[Auth] Failed to set cached token in backend:', err);
+              setEntitlementToken(null);
+              await clearEntitlementToken().catch(() => { });
+              await invoke('clear_entitlement_token').catch(() => { });
             }
           } else {
             console.log('[Auth] No cached entitlement token found');
@@ -486,7 +551,7 @@ function AuthGateInner({ children }: AuthGateProps) {
           console.warn('[Auth] Error loading cached token:', err);
         }
 
-        const clerkToken = await getToken();
+        clerkToken = clerkToken ?? await getToken();
         if (!clerkToken) {
           console.log('[Auth] No Clerk token available');
           if (!cancelled) setBootstrapped(true);
@@ -515,7 +580,7 @@ function AuthGateInner({ children }: AuthGateProps) {
             setEntitlementToken(claimResult.token);
             await storeEntitlementToken(claimResult.token).catch((e) => console.warn('[Auth] Failed to store token:', e));
             try {
-              await invoke('set_entitlement_token', { token: claimResult.token });
+              await applyEntitlementTokenToBackend(claimResult.token, clerkToken);
               console.log('[Auth] Fresh token set in Rust backend');
               gotToken = true;
             } catch (err) {
@@ -547,7 +612,7 @@ function AuthGateInner({ children }: AuthGateProps) {
                 setEntitlementToken(entitlementResult.token);
                 await storeEntitlementToken(entitlementResult.token).catch((e) => console.warn('[Auth] Failed to store token:', e));
                 try {
-                  await invoke('set_entitlement_token', { token: entitlementResult.token });
+                  await applyEntitlementTokenToBackend(entitlementResult.token, clerkToken);
                   console.log('[Auth] Entitlement token set in Rust backend');
                 } catch (e) {
                   console.warn('[Auth] Failed to set entitlement token in backend:', e);
@@ -594,6 +659,8 @@ function AuthGateInner({ children }: AuthGateProps) {
     refreshLease,
     fetchEntitlement,
     setEntitlementToken,
+    syncBackendPublicKey,
+    applyEntitlementTokenToBackend,
   ]);
 
   useEffect(() => {
@@ -614,7 +681,7 @@ function AuthGateInner({ children }: AuthGateProps) {
           setEntitlementToken(refreshResult.token);
           await storeEntitlementToken(refreshResult.token).catch(() => { });
           try {
-            await invoke('set_entitlement_token', { token: refreshResult.token });
+            await applyEntitlementTokenToBackend(refreshResult.token, token);
           } catch {
             // Ignore
           }
@@ -635,7 +702,7 @@ function AuthGateInner({ children }: AuthGateProps) {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [isSignedIn, bootstrapped, getToken, refreshLease, setEntitlementToken]);
+  }, [isSignedIn, bootstrapped, getToken, refreshLease, setEntitlementToken, applyEntitlementTokenToBackend]);
 
   // Listen for window focus to check if verification completed (e.g. email link clicked)
   useEffect(() => {
@@ -659,7 +726,17 @@ function AuthGateInner({ children }: AuthGateProps) {
     let cancelled = false;
 
     const refreshStatus = async () => {
+      if (!entitlementToken) {
+        if (!cancelled) setProStatus(null);
+        return;
+      }
       try {
+        const authToken = await getToken();
+        if (authToken) {
+          await applyEntitlementTokenToBackend(entitlementToken, authToken).catch((err) => {
+            console.warn('[Auth] Failed to re-sync entitlement token before status refresh:', err);
+          });
+        }
         const status = await getProStatus();
         if (!cancelled) {
           setProStatus(status);
@@ -677,7 +754,7 @@ function AuthGateInner({ children }: AuthGateProps) {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [entitlementToken, setProStatus]);
+  }, [entitlementToken, getToken, applyEntitlementTokenToBackend, setProStatus]);
 
   if (!isLoaded) {
     return <LoadingScreen message="Loading..." />;
@@ -716,7 +793,7 @@ function AuthGateInner({ children }: AuthGateProps) {
             setEntitlementToken(result.token);
             await storeEntitlementToken(result.token).catch(() => { });
             try {
-              await invoke('set_entitlement_token', { token: result.token });
+              await applyEntitlementTokenToBackend(result.token, token);
             } catch {
               // Ignore
             }

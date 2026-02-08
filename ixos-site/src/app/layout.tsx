@@ -6,6 +6,7 @@ import { ArcNoiseBackground } from "@/components/effects/ArcNoiseBackground";
 import { ParticlesFieldV3 } from "@/components/effects/ParticlesFieldV3";
 // import { TraceLayer } from "@/components/effects/TraceLayer";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from '@vercel/analytics/next';
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-ixo-heading",
@@ -21,7 +22,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  // ...
+  title: "Ixos",
+  description: "Local-first semantic search for your files.",
+  icons: {
+    icon: [
+      { url: "/assets/logo-v3.png", type: "image/png" },
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
+    shortcut: ["/assets/logo-v3.png"],
+    apple: ["/assets/logo-v3.png"],
+  },
 };
 
 export default function RootLayout({
@@ -50,6 +60,7 @@ export default function RootLayout({
             {/* app-root: relative, z-10 */}
             <div id="app-root" className="relative z-10 min-h-screen flex flex-col">
               {children}
+              <Analytics />
             </div>
           </SmoothScrollProvider>
         </ClerkProvider>

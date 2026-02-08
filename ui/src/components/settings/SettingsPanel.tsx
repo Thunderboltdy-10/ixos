@@ -37,7 +37,7 @@ export function SettingsPanel({ initialTab, onUpgrade }: { initialTab?: Settings
   return (
     <div className="flex h-full bg-graphite-1/98 backdrop-blur-xl border border-stroke-hairline rounded-2xl overflow-hidden shadow-2xl">
       {/* Sidebar Navigation */}
-      <nav className="w-60 bg-graphite-2/55 border-r border-stroke-hairline p-4 flex flex-col gap-1">
+      <nav className="w-60 bg-graphite-2/50 border-r border-stroke-hairline p-4 flex flex-col gap-1">
         <div className="mb-6 px-3 pt-2">
           <h2 className="text-lg font-display font-semibold text-porcelain tracking-tight">Settings</h2>
           <p className="text-xs text-fg-secondary">Preferences & Controls</p>
@@ -51,10 +51,10 @@ export function SettingsPanel({ initialTab, onUpgrade }: { initialTab?: Settings
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                'w-full flex items-center gap-3 px-3 py-2.25 rounded-lg text-sm font-medium border border-transparent transition-all duration-200',
                 isActive
-                  ? 'bg-accent-teal/10 text-accent-teal shadow-glow-teal-sm'
-                  : 'text-fg-secondary hover:bg-graphite-2 hover:text-porcelain cursor-pointer'
+                  ? 'bg-accent-teal/10 border-accent-teal/20 text-accent-teal'
+                  : 'text-fg-secondary hover:bg-graphite-2/70 hover:border-white/8 hover:text-porcelain cursor-pointer'
               )}
             >
               <Icon className={cn("w-4 h-4", isActive ? "text-accent-teal" : "text-fg-muted")} />
@@ -67,7 +67,7 @@ export function SettingsPanel({ initialTab, onUpgrade }: { initialTab?: Settings
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto bg-transparent relative">
         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
-        <div className="p-8 max-w-3xl">
+        <div className="p-8 max-w-4xl mx-auto">
           {activeTab === 'search' && <SearchSettings />}
           {activeTab === 'account' && <AccountSettings onUpgrade={onUpgrade} />}
           {activeTab === 'keyboard' && <ShortcutSettings />}

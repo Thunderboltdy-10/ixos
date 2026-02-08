@@ -92,6 +92,7 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
   useEffect(() => {
     if (!isControlled) {
       previousControlledStepRef.current = null;
+      setPauseAtStage(null);
       return;
     }
 
@@ -150,6 +151,7 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
           charIndex++;
         } else {
           clearInterval(timer);
+          void search(currentDemoQuery);
         }
       }, 50);
       return () => clearInterval(timer);
@@ -177,6 +179,7 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
       setIsUserMode(true);
       onInteract?.();
       setTypedText('');
+      setShowModelMenu(false);
       if (!userQuery) setUserQuery('');
     }
 

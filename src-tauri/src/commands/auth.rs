@@ -4,7 +4,6 @@ use ixos_protocol::entitlements::ProStatus;
 use ixos_protocol::security::DeviceIdentity;
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
-use std::sync::OnceLock;
 use std::time::SystemTime;
 use tauri::{AppHandle, State};
 use tauri_plugin_opener::OpenerExt;
@@ -35,15 +34,11 @@ pub struct EntitlementClaims {
     pub server_time: Option<usize>,
 }
 
-fn decoding_key() -> Result<&'static DecodingKey, String> {
-    static KEY: OnceLock<DecodingKey> = OnceLock::new();
-    if let Some(existing) = KEY.get() {
-        return Ok(existing);
-    }
-
+fn decoding_key() -> Result<DecodingKey, String> {
     // Try compile-time environment variable first (loaded from .env during build)
-    // We use include_str! to bake the local env file content if the var isn't set,
-    // ensuring the key is available even if .env loading fails at runtime.
+    // and fall back to runtime environment (set by set_entitlement_public_key).
+    // We intentionally parse on every call so runtime key refreshes are honored
+    // even after initial failures or key rotations.
     let env_str = option_env!("IXOS_JWT_PUBLIC_KEY")
         .map(|s| s.to_string())
         .or_else(|| std::env::var("IXOS_JWT_PUBLIC_KEY").ok());
@@ -60,14 +55,10 @@ fn decoding_key() -> Result<&'static DecodingKey, String> {
         println!("[Rust] Warning: Public key does not contain 'BEGIN PUBLIC KEY'");
     }
 
-    let parsed = DecodingKey::from_ec_pem(public_key.as_bytes()).map_err(|e| {
+    DecodingKey::from_ec_pem(public_key.as_bytes()).map_err(|e| {
         println!("[Rust] Failed to parse public key: {}", e);
         format!("Failed to parse public key: {}", e)
-    })?;
-    let _ = KEY.set(parsed);
-    println!("[Rust] Decoding key initialized successfully");
-    KEY.get()
-        .ok_or_else(|| "Failed to initialize decoding key".to_string())
+    })
 }
 
 impl EntitlementClaims {
@@ -84,7 +75,7 @@ pub fn verify_entitlement_token_internal(token: &str) -> Result<EntitlementClaim
     let key = decoding_key()?;
     let mut validation = Validation::new(Algorithm::ES256);
     validation.set_issuer(&["ixos-control-plane"]);
-    let data = decode::<EntitlementClaims>(token, key, &validation)
+    let data = decode::<EntitlementClaims>(token, &key, &validation)
         .map_err(|e| format!("Invalid token: {}", e))?;
     Ok(data.claims)
 }
@@ -96,7 +87,7 @@ pub(crate) fn decode_entitlement_token_allow_expired(
     let mut validation = Validation::new(Algorithm::ES256);
     validation.set_issuer(&["ixos-control-plane"]);
     validation.validate_exp = false;
-    let data = decode::<EntitlementClaims>(token, key, &validation)
+    let data = decode::<EntitlementClaims>(token, &key, &validation)
         .map_err(|e| format!("Invalid token: {}", e))?;
     Ok(data.claims)
 }
@@ -186,6 +177,23 @@ impl EntitlementClaims {
 #[tauri::command]
 pub async fn verify_entitlement_token(token: String) -> Result<EntitlementClaims, String> {
     verify_entitlement_token_internal(&token)
+}
+
+#[tauri::command]
+pub async fn set_entitlement_public_key(public_key: String) -> Result<(), String> {
+    let key = public_key.trim().replace("\\n", "\n");
+    if !key.contains("BEGIN PUBLIC KEY") {
+        return Err("Invalid public key format".to_string());
+    }
+
+    DecodingKey::from_ec_pem(key.as_bytes()).map_err(|e| format!("Invalid public key: {}", e))?;
+
+    // Runtime fallback for production builds where IXOS_JWT_PUBLIC_KEY was not
+    // embedded at compile time. Public keys are not secrets.
+    unsafe {
+        std::env::set_var("IXOS_JWT_PUBLIC_KEY", key);
+    }
+    Ok(())
 }
 
 #[tauri::command]

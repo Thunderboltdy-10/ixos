@@ -6,6 +6,7 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { sanitizeResults } from '@/lib/searchHistory';
 import { useStarredStore } from '@/stores/starredStore';
 import { useActivityStore } from '@/stores/activityStore';
+import { useAuthStore } from '@/stores/authStore';
 
 const MAX_LEXICAL_DISPLAY = 50;
 const MAX_SCAN_TRAIL = 6;
@@ -30,17 +31,23 @@ function translateErrorMessage(error: string): string {
   if (msg.includes('session expired') || msg.includes('unauthorized')) {
     return 'Your session has expired. Please sign in again to continue.';
   }
-  if (msg.includes('authentication required') || msg.includes('no entitlement token')) {
-    return 'Authentication required. Your session may have been transferred to another device.';
+  if (msg.includes('entitlement token not issued for this device')) {
+    return 'Your license is active on another device. Please transfer it to continue.';
+  }
+  if (msg.includes('no entitlement token')) {
+    return 'Authentication required. Refresh your account status in Settings, then try again.';
+  }
+  if (msg.includes('ixos_jwt_public_key not set') || msg.includes('failed to parse public key')) {
+    return 'This desktop build is missing entitlement verification keys. Rebuild with IXOS_JWT_PUBLIC_KEY configured.';
+  }
+  if (msg.includes('authentication required')) {
+    return 'Authentication required. Please sign in again or refresh your account status.';
   }
   if (msg.includes('entitlement expired')) {
     return 'Your Pro subscription has expired. Please renew to continue searching.';
   }
   if (msg.includes('time change') || msg.includes('time suspect') || msg.includes('clock rollback')) {
     return 'We detected a device time change. Connect to the internet to refresh your Pro entitlement.';
-  }
-  if (msg.includes('entitlement token not issued for this device')) {
-    return 'Your license is active on another device. Please transfer it to continue.';
   }
 
   // Model errors
@@ -291,6 +298,16 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
       const searchMode = settings?.searchMode || 'auto';
       const timeoutSeconds = settings?.timeoutSeconds || 30;
+
+      // Keep Rust backend entitlement state synchronized before search.
+      const token = useAuthStore.getState().entitlementToken;
+      if (token) {
+        try {
+          await tauri.setEntitlementToken(token);
+        } catch (error) {
+          console.warn('Failed to sync entitlement token to backend:', error);
+        }
+      }
 
       // Pass event handler via Channel API — events are scoped to this
       // command invocation with guaranteed ordering and no missed events.

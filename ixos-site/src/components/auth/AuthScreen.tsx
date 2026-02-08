@@ -109,7 +109,7 @@ export function AuthScreen({ mode }: AuthScreenProps) {
                         <div className="flex flex-col items-center mb-8">
                             <div className="w-12 h-12 mb-6 relative">
                                 <Image
-                                    src="/assets/icon.png"
+                                    src="/assets/logo-v3.png"
                                     alt="Ixos"
                                     fill
                                     className="object-contain"

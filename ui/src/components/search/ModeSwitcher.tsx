@@ -29,7 +29,7 @@ const modes: ModeOption[] = [
     icon: Zap,
     label: 'JIT Mode',
     shortLabel: 'JIT',
-    description: 'Just-In-Time (Default)',
+    description: 'No persistence, maximum privacy',
     details: 'Computes embeddings on-the-fly. No data written to disk. Maximum privacy.',
     color: 'text-accent-amber',
     bgColor: 'bg-accent-amber/10',
@@ -39,7 +39,7 @@ const modes: ModeOption[] = [
     icon: Shield,
     label: 'Cache Mode',
     shortLabel: 'Cache',
-    description: 'Persistent Cache',
+    description: 'Persist metadata cache for speed',
     details: 'Stores embeddings in ADS (Windows) or xattr (Mac/Linux). Faster repeat searches.',
     color: 'text-accent-teal',
     bgColor: 'bg-accent-teal/10',
@@ -49,7 +49,7 @@ const modes: ModeOption[] = [
     icon: Lock,
     label: 'Journalist Mode',
     shortLabel: 'Secure',
-    description: 'Maximum Security',
+    description: 'Hardened privacy profile',
     details: 'JIT + encrypted history + emergency clear (Ctrl+Shift+X). For sensitive investigations.',
     color: 'text-accent-violet',
     bgColor: 'bg-accent-violet/10',
@@ -177,7 +177,7 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
         {isOpen && (
           <>
             <div
-              className="fixed inset-0 z-40"
+              className="fixed inset-0 z-[130]"
               onClick={() => setIsOpen(false)}
             />
 
@@ -188,10 +188,10 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
               exit={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
               transition={{ duration: 0.15 }}
               className={cn(
-                'absolute z-50',
+                'absolute z-[140]',
                 dropdownPosition === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
                 'right-0',
-                'w-72',
+                'w-52',
                 'bg-graphite-2 rounded-xl border border-stroke-hairline',
                 'shadow-lift overflow-hidden'
               )}
@@ -201,17 +201,17 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
                   key={mode.id}
                   onClick={() => handleSelect(mode.id)}
                   className={cn(
-                    'w-full flex items-center gap-2 px-3 py-2',
+                    'w-full flex items-center gap-2.5 px-3 py-2.5',
                     'hover:bg-graphite-3 transition-colors duration-150',
                     'text-left',
                     mode.id === value && 'bg-graphite-3'
                   )}
                 >
                   <mode.icon className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
-                  <span className="text-xs font-medium text-porcelain whitespace-nowrap">
+                  <span className="text-[12px] font-medium text-porcelain whitespace-nowrap">
                     {mode.label}
                   </span>
-                  <span className="text-[11px] text-fg-secondary truncate flex-1">
+                  <span className="text-[11.5px] text-fg-secondary truncate flex-1">
                     {mode.description}
                   </span>
                   {mode.id === 'jit' && (
@@ -226,8 +226,8 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
               ))}
 
               <div className="px-3 py-2 bg-graphite-1 border-t border-stroke-hairline">
-                <p className="text-[11px] text-fg-secondary">
-                  JIT maximizes privacy; Cache speeds repeat searches; Journalist enforces secure handling.
+                <p className="text-[10px] text-fg-secondary leading-tight">
+                  JIT is local-only, Cache is faster on repeat, Journalist adds strict safeguards.
                 </p>
               </div>
             </motion.div>

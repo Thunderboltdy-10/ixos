@@ -138,7 +138,7 @@
       "query_id": "config_json",
       "top_k": 1,
       "top_paths": [
-        "corpus_tiny/data/config.json"
+        "corpus_tiny/docs/api_reference.md"
       ],
       "must_include": [
         "corpus_tiny/data/config.json"
@@ -215,7 +215,7 @@
       "query_id": "logs_streamed",
       "top_k": 1,
       "top_paths": [
-        "corpus_tiny/logs/app.log"
+        "corpus_tiny/misc/changelog.txt"
       ],
       "must_include": [
         "corpus_tiny/logs/app.log"

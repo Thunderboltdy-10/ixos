@@ -7,7 +7,7 @@ use ixos_protocol::capabilities::Capability;
 use ixos_protocol::entitlements::ProStatus;
 use ixos_protocol::instrumentation::ipc_send_span;
 use ixos_protocol::ixos_rank::{
-    progressive::{SearchEvent, SearchMode, StreamEventKind, StreamStage},
+    progressive::{SearchEvent, SearchMode, StreamEventKind, StreamStage, StreamStats},
     CandidateLexicalEngine, ProgressiveSearchConfig, ProgressiveSearchEngine, RankedResult,
     StubSemanticEngine,
 };
@@ -440,23 +440,15 @@ pub async fn search_progressive(
                     _ => "Pro mode unavailable. Please refresh entitlement and retry.".into(),
                 });
             }
+        } else if matches!(requested_search_mode, Some("pro")) {
+            return Err(
+                "Authentication required for Pro mode. Refresh your account status and try again."
+                    .into(),
+            );
         } else {
-            #[cfg(debug_assertions)]
-            {
-                let allow_unentitled = std::env::var("IXOS_DEV_ALLOW_UNENTITLED")
-                    .ok()
-                    .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
-                    .unwrap_or(false);
-                if !allow_unentitled {
-                    return Err("Authentication required (set IXOS_DEV_ALLOW_UNENTITLED=1 to bypass in dev)".into());
-                }
-            }
-            #[cfg(not(debug_assertions))]
-            {
-                return Err(
-                    "Authentication required - no entitlement token found in Rust backend".into(),
-                );
-            }
+            tracing::warn!(
+                "No entitlement token in backend; continuing with Flash-mode search fallback"
+            );
         }
     }
 
@@ -627,21 +619,46 @@ pub async fn search_progressive(
             None => None,
         };
 
-        // Index the directory for semantic search
-        if let Err(e) = semantic.index_directory(&dir_path).await {
-            tracing::warn!("Failed to index directory for semantic search: {}", e);
-        }
-        if let Some(pro_engine) = pro_engine.as_mut() {
-            // Keep Auto mode flash-first and stream immediately.
-            // Pro indexing is only required for Pro-primary searches.
-            if matches!(config.search_mode, SearchMode::Pro) {
-                if let Err(e) = pro_engine.index_directory(&dir_path).await {
-                    tracing::warn!("Failed to index directory for pro search: {}", e);
-                }
-            } else {
-                tracing::debug!("Skipping eager pro index in Auto mode");
+        let _ = tx
+            .send(SearchEvent::Status(
+                "Preparing semantic index (local-only)...".into(),
+            ))
+            .await;
+        let _ = tx
+            .send(SearchEvent::StreamUpdate {
+                stage: StreamStage::Lexical,
+                stats: StreamStats::default(),
+                events: Vec::new(),
+            })
+            .await;
+
+        // Eager indexing can add large startup latency on big trees.
+        // For Flash/Auto flows we skip eager indexing so lexical streaming starts immediately.
+        let requires_eager_index =
+            options.is_ask_mode.unwrap_or(false) || matches!(config.search_mode, SearchMode::Pro);
+        if requires_eager_index {
+            if let Err(e) = semantic.index_directory(&dir_path).await {
+                tracing::warn!("Failed to index directory for semantic search: {}", e);
             }
+            if let Some(pro_engine) = pro_engine.as_mut() {
+                // Keep Auto mode flash-first and stream immediately.
+                // Pro indexing is only required for Pro-primary searches.
+                if matches!(config.search_mode, SearchMode::Pro) {
+                    if let Err(e) = pro_engine.index_directory(&dir_path).await {
+                        tracing::warn!("Failed to index directory for pro search: {}", e);
+                    }
+                } else {
+                    tracing::debug!("Skipping eager pro index in Auto mode");
+                }
+            }
+        } else {
+            tracing::debug!("Skipping eager semantic index for low-latency lexical-first flow");
         }
+        let _ = tx
+            .send(SearchEvent::Status(
+                "Semantic index ready. Starting progressive search...".into(),
+            ))
+            .await;
 
         // Create progressive search engine
         let mut engine =
@@ -685,6 +702,12 @@ mod tests {
     fn resolve_search_mode_keeps_pro_when_available() {
         let mode = resolve_search_mode(Some("pro"), true).expect("mode");
         assert!(matches!(mode, SearchMode::Pro));
+    }
+
+    #[test]
+    fn resolve_search_mode_allows_flash_without_pro() {
+        let mode = resolve_search_mode(Some("flash"), false).expect("mode");
+        assert!(matches!(mode, SearchMode::Flash));
     }
 }
 

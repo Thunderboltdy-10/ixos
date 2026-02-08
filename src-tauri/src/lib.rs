@@ -25,11 +25,6 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(
-            tauri_plugin_prevent_default::Builder::new()
-                .with_flags(tauri_plugin_prevent_default::Flags::DOWNLOADS)
-                .build(),
-        )
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(main) = app.get_webview_window("main") {
                 let _ = main.show();
@@ -104,6 +99,7 @@ pub fn run() {
             commands::storage::clear_all_encrypted_files,
             // Auth / Entitlements
             commands::auth::verify_entitlement_token,
+            commands::auth::set_entitlement_public_key,
             commands::auth::set_entitlement_token,
             commands::auth::clear_entitlement_token,
             commands::auth::check_search_allowed,

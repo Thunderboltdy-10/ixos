@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import { useAuth } from '@clerk/clerk-react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useSearchStore } from '@/stores/searchStore';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,8 @@ import { formatFileSize } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
 import { hasProAccess } from '@/lib/proAccess';
+import { storeEntitlementToken } from '@/lib/authToken';
+import type { ProStatus } from '@/lib/types';
 
 interface CacheStats {
   backendType: string;
@@ -40,16 +43,6 @@ export function SearchSettings() {
   const entitlementToken = useAuthStore((s) => s.entitlementToken);
   const proStatus = useAuthStore((s) => s.proStatus);
   const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
-
-  useEffect(() => {
-    if (!config) return;
-    if (isPro) return;
-    if (config.search.searchMode === 'flash') return;
-
-    void updateConfig({
-      search: { ...config.search, searchMode: 'flash' },
-    });
-  }, [config, isPro, updateConfig]);
 
   if (!config) {
     return <div className="text-fg-dim">Loading...</div>;
@@ -165,7 +158,7 @@ export function SearchSettings() {
               search: { ...config.search, searchMode: e.target.value as typeof config.search.searchMode },
             })
           }
-          className="w-32 bg-graphite-2 border border-stroke-hairline rounded-md px-2 py-1 text-xs text-porcelain"
+          className="w-32 h-8 bg-graphite-2/70 border border-white/10 rounded-lg px-2.5 text-xs text-porcelain"
         >
           <option value="flash">Flash</option>
             <option value="auto" disabled={!isPro}>Auto</option>
@@ -196,7 +189,7 @@ export function SearchSettings() {
               });
               useSearchStore.getState().setCacheMode(newValue as 'cache' | 'jit');
             }}
-            className="w-36 bg-graphite-2 border border-stroke-hairline rounded-md px-2 py-1 text-xs text-porcelain"
+            className="w-36 h-8 bg-graphite-2/70 border border-white/10 rounded-lg px-2.5 text-xs text-porcelain"
           >
             <option value="jit">Off (JIT only)</option>
             <option value="cache">Persistent (ADS/xattr)</option>
@@ -267,7 +260,7 @@ interface SettingRowProps {
 
 function SettingRow({ label, description, children }: SettingRowProps) {
   return (
-    <div className="flex items-center justify-between py-3 border-b border-stroke-hairline last:border-b-0">
+    <div className="flex items-center justify-between py-3 border-b border-stroke-hairline/70 last:border-b-0">
       <div>
         <p className="text-sm font-medium text-porcelain">{label}</p>
         <p className="text-xs text-fg-dim mt-0.5">{description}</p>
@@ -375,15 +368,15 @@ function CachePanel() {
         <div className="space-y-3">
           {/* Stats grid */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-graphite-2/50 rounded-md px-3 py-2">
+            <div className="bg-graphite-2/55 rounded-lg border border-white/8 px-3 py-2">
               <div className="text-2xs text-fg-dim uppercase tracking-wider">Backend</div>
               <div className="text-sm text-porcelain mt-0.5 font-mono">{stats.backendType.split(' ')[0]}</div>
             </div>
-            <div className="bg-graphite-2/50 rounded-md px-3 py-2">
+            <div className="bg-graphite-2/55 rounded-lg border border-white/8 px-3 py-2">
               <div className="text-2xs text-fg-dim uppercase tracking-wider">Cached Files</div>
               <div className="text-sm text-porcelain mt-0.5 font-mono">{stats.cachedFiles}</div>
             </div>
-            <div className="bg-graphite-2/50 rounded-md px-3 py-2 col-span-2">
+            <div className="bg-graphite-2/55 rounded-lg border border-white/8 px-3 py-2 col-span-2">
               <div className="text-2xs text-fg-dim uppercase tracking-wider">Approx. Size</div>
               <div className="flex items-center gap-2 mt-0.5">
                 <HardDrive className="w-3.5 h-3.5 text-fg-dim" />
@@ -554,7 +547,7 @@ function ModelManagementPanel() {
 
       <div className="space-y-2">
         {models.map((model) => (
-          <div key={model.id} className="flex items-center justify-between bg-graphite-2/50 rounded-md px-3 py-2">
+          <div key={model.id} className="flex items-center justify-between bg-graphite-2/55 rounded-lg border border-white/8 px-3 py-2">
             <span className="text-sm text-porcelain">{model.label}</span>
             <div className="flex items-center gap-3">
               {model.available ? (
@@ -606,6 +599,10 @@ function EntitlementPanel() {
   const proStatus = useAuthStore((s) => s.proStatus);
   const entitlementToken = useAuthStore((s) => s.entitlementToken);
   const deviceId = useAuthStore((s) => s.deviceId);
+  const refreshLease = useAuthStore((s) => s.refreshLease);
+  const setEntitlementToken = useAuthStore((s) => s.setEntitlementToken);
+  const setProStatus = useAuthStore((s) => s.setProStatus);
+  const { getToken } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [refreshSuccess, setRefreshSuccess] = useState(false);
@@ -618,16 +615,42 @@ function EntitlementPanel() {
     setIsRefreshing(true);
     setRefreshError(null);
     setRefreshSuccess(false);
-    console.log('[Settings] Refreshing entitlement - reloading page to re-run auth flow');
-    // Small delay to show loading state before reload
-    setTimeout(() => {
-      window.location.reload();
-    }, 500);
+    try {
+      const authToken = await getToken();
+      if (!authToken) {
+        throw new Error('Session expired. Please sign in again.');
+      }
+
+      const devicePublicKey = await invoke<string>('get_device_public_key').catch(() => null);
+      const result = await refreshLease(authToken, deviceId, devicePublicKey ?? undefined);
+
+      if (result?.token) {
+        setEntitlementToken(result.token);
+        await storeEntitlementToken(result.token).catch(() => {});
+        await invoke('set_entitlement_token', { token: result.token });
+      }
+
+      const status = await invoke<ProStatus>('get_pro_status');
+      setProStatus(status);
+      setRefreshSuccess(true);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('SESSION_EXPIRED')) {
+        setRefreshError('Session expired. Please sign in again.');
+      } else {
+        setRefreshError(message || 'Failed to refresh entitlement');
+      }
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const getStatusBadge = () => {
     if (!entitlementToken) {
       return <span className="text-2xs px-1.5 py-0.5 rounded bg-fg-dim/20 text-fg-dim">Not signed in</span>;
+    }
+    if (!proStatus) {
+      return <span className="text-2xs px-1.5 py-0.5 rounded bg-fg-dim/20 text-fg-dim">Checking...</span>;
     }
     switch (proStatus?.status) {
       case 'active':

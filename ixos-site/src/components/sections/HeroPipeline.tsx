@@ -214,7 +214,9 @@ export function HeroPipeline() {
     const titleMorph = mapProgress(progress, 0.24, 0.52);
 
     let activeStep: number | null = null;
-    if (entry > 0.22) {
+    // Keep autonomous hero loop active longer; switch to scroll-guided mode
+    // only once the pipeline frame has clearly taken over.
+    if (entry > 0.5) {
       if (narrative < 1) {
         activeStep = Math.min(PHASES.length - 1, Math.floor(narrative * PHASES.length));
       } else {

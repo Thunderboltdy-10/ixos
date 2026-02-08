@@ -13,7 +13,7 @@
 //! ```text
 //! final_score =
 //!     semantic_score * 0.4 +    // From hybrid engine
-//!     integrity_score * 0.3 +   // Penalizes recent modifications
+//!     integrity_score * 0.3 +   // Penalizes suspiciously recent modifications
 //!     temporal_score * 0.1 +    // Favors older, stable files
 //!     behavior_score * 0.2      // Penalizes bot-like access
 //! ```
@@ -529,7 +529,7 @@ impl SecureRanker {
     ///
     /// - Returns 1.0 for normal files
     /// - Returns 0.3 for recently modified files (<5 min)
-    /// - Returns 0.1 for suspicious timing (created == modified)
+    /// - Does not penalize `created == modified` alone (common on copied/extracted files)
     pub fn calculate_integrity_score(&self, path: &Path) -> f32 {
         let metadata = match std::fs::metadata(path) {
             Ok(m) => m,
@@ -548,16 +548,18 @@ impl SecureRanker {
             }
         }
 
-        // Check for suspicious timing (created == modified)
         if let Some(created_time) = created {
             if let (Ok(mod_duration), Ok(create_duration)) = (
                 modified.duration_since(SystemTime::UNIX_EPOCH),
                 created_time.duration_since(SystemTime::UNIX_EPOCH),
             ) {
-                // If created and modified are within 1 second, suspicious
+                // On Windows and on copied/extracted corpora, created ~= modified is normal.
+                // Treat it as informational only to avoid crushing relevance quality.
                 if mod_duration.abs_diff(create_duration) < Duration::from_secs(1) {
-                    tracing::debug!("Suspicious timing (created == modified): {:?}", path);
-                    return 0.1;
+                    tracing::trace!(
+                        "created ~= modified observed (no integrity penalty applied): {:?}",
+                        path
+                    );
                 }
             }
         }

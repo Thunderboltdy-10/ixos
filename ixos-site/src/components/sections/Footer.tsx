@@ -9,7 +9,7 @@ export function Footer() {
                     <div className="col-span-2 lg:col-span-2 space-y-4">
                         <div className="flex items-center gap-2">
                             <div className="relative w-6 h-6 opacity-80">
-                                <Image src="/assets/icon.png" alt="Ixos" fill className="object-contain" />
+                                <Image src="/assets/logo-v3.png" alt="Ixos" fill className="object-contain" />
                             </div>
                             <span className="font-bold text-lg">Ixos</span>
                         </div>
@@ -48,7 +48,7 @@ export function Footer() {
 
                 <div className="pt-8 border-t border-stroke-hairline flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-xs text-fg-muted">
-                        © {new Date().getFullYear()} Ixos Labs. All rights reserved.
+                        &copy; {new Date().getFullYear()} Ixos Labs. All rights reserved.
                     </p>
                     <div className="flex gap-4">
                         {/* Social icons could go here */}
@@ -58,3 +58,4 @@ export function Footer() {
         </footer>
     );
 }
+

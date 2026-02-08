@@ -10,6 +10,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { WorkstreamCard } from './WorkstreamCard';
 import { CreateWorkstreamModal } from './CreateWorkstreamModal';
 import { cn } from '@/lib/utils';
+import { hasProAccess } from '@/lib/proAccess';
 
 interface WorkstreamsListProps {
   onSelectWorkstream?: (id: string) => void;
@@ -26,8 +27,10 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
     createWorkstream,
   } = useWorkstreamStore();
 
+  const entitlement = useAuthStore((s) => s.entitlement);
+  const entitlementToken = useAuthStore((s) => s.entitlementToken);
   const proStatus = useAuthStore((s) => s.proStatus);
-  const isPro = proStatus?.status === 'active' || proStatus?.status === 'grace';
+  const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
 
   const [isReclustering, setIsReclustering] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);

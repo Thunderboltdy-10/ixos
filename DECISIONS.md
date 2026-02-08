@@ -188,3 +188,45 @@
 - Evidence (links to /reports or output files): ixos-site/src/components/sections/HeroPipeline.tsx, RUNLOG.md (Entry 017)
 - Risks: On smaller laptop heights, larger grid may feel denser
 - Follow-ups: Validate 1366x768 and 1440x900 visual balance in manual QA
+
+- Decision: Use Channel-only delivery for progressive search events in desktop backend
+- Options considered: Keep dual transport (Channel + global event bus); keep dual transport and widen dedupe window; channel-only for progressive path
+- Why chosen: Dual transport caused duplicate event processing when fallback bus events arrived outside dedupe window
+- Evidence (links to /reports or output files): src-tauri/src/commands/search.rs, ui/src/hooks/useTauriEvent.ts, reports/desktop_release_hardening_2026-02-08.md
+- Risks: Legacy integrations relying on `search-event` must explicitly opt-in with `VITE_LEGACY_SEARCH_EVENT_BUS=1`
+- Follow-ups: Remove legacy bus hook entirely after one release cycle if no regressions are reported
+
+- Decision: Centralize Pro-access evaluation in one helper and reuse across desktop views
+- Options considered: Keep per-component Pro checks; centralize in store selector; centralize in shared helper
+- Why chosen: Inconsistent checks caused Pro users to appear locked in Today/Workstreams/Related files while other views showed Pro
+- Evidence (links to /reports or output files): ui/src/lib/proAccess.ts, ui/src/components/today/TodayTab.tsx, ui/src/components/workstreams/WorkstreamsList.tsx, reports/desktop_release_hardening_2026-02-08.md
+- Risks: Any future entitlement model changes must update the helper
+- Follow-ups: Move helper into store-level derived selector in a later cleanup pass
+
+- Decision: Add production desktop build env gate via `tauri:build:prod`
+- Options considered: Rely on docs only; fail at runtime when env is missing; fail at build time with explicit validation script
+- Why chosen: Missing `VITE_API_URL`/`IXOS_JWT_PUBLIC_KEY` caused release-only entitlement failures; build-time validation prevents shipping broken binaries
+- Evidence (links to /reports or output files): scripts/verify-desktop-build-env.js, package.json, release/CHECKLIST.md, reports/desktop_release_hardening_2026-02-08.md
+- Risks: Developers must set env vars explicitly for production packaging
+- Follow-ups: Integrate env validation in CI release workflow as a required gate
+
+- Decision: Enforce Pro search mode in Rust backend and downgrade Auto->Flash when Pro capability/status is unavailable
+- Options considered: Keep UI-only locks; allow Auto/Pro for all users; backend capability enforcement with graceful Auto downgrade
+- Why chosen: UI-only checks are bypassable and previously allowed free users into Pro paths; backend enforcement guarantees entitlement correctness while preserving free-user search availability
+- Evidence (links to /reports or output files): src-tauri/src/commands/search.rs, RUNLOG.md (Entry 019), reports/desktop_release_hardening_2026-02-08.md
+- Risks: Users with stale/misconfigured entitlement tokens will be forced to Flash until refresh succeeds
+- Follow-ups: Add explicit in-app messaging for backend token-verify failures in packaged release QA
+
+- Decision: Make Pro fallback evaluation plan-aware in UI helper (`token.plan == pro`) instead of status-only
+- Options considered: Entitlement-only checks; status-only fallback; entitlement-or-(status+plan) fallback
+- Why chosen: Status reflects token liveness, not subscription tier, so status-only fallback can falsely unlock Pro for free users
+- Evidence (links to /reports or output files): ui/src/lib/proAccess.ts, ui/src/components/today/TodayTab.tsx, ui/src/components/workstreams/WorkstreamsList.tsx, RUNLOG.md (Entry 019)
+- Risks: If backend stops including `plan` in token payload, fallback path will deny Pro until entitlement object is present
+- Follow-ups: Keep token claim schema (`plan`) as required contract in control-plane docs
+
+- Decision: Issue subscription-bounded entitlement tokens on lease refresh and transfer-confirm endpoints
+- Options considered: Keep TTL-only tokens on refresh/transfer; force online check every search; refresh/transfer with `subscriptionEnd` bounded expiry
+- Why chosen: TTL-only refresh/transfer could allow Pro tokens beyond actual subscription lifecycle edges (renewal/cancel timing)
+- Evidence (links to /reports or output files): ixos-site/src/app/api/desktop/lease/refresh/route.ts, ixos-site/src/app/api/desktop/lease/transfer/confirm/route.ts, RUNLOG.md (Entry 019)
+- Risks: Requires reliable subscription period data in control-plane DB path
+- Follow-ups: Add lifecycle integration tests for cancel->grace->free and renew->pro transitions

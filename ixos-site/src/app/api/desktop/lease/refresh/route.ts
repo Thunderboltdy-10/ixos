@@ -2,9 +2,9 @@ import { z } from "zod";
 import { and, eq, gt } from "drizzle-orm";
 import { db, devices, leases, leaseTransfers, trustedDevices } from "@/lib/db";
 import {
-  getActivePlanForUser,
   getClerkUserIdFromRequest,
   getOrCreateUserByClerkId,
+  getSubscriptionDetailsForUser,
   issueEntitlementToken,
 } from "@/lib/controlPlane";
 import { sendEmail } from "@/lib/email/gmail";
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
   const { deviceId } = parsed.data;
   const userRecord = await getOrCreateUserByClerkId(clerkUserId);
-  const plan = await getActivePlanForUser(userRecord.id);
+  const { plan, currentPeriodEnd } = await getSubscriptionDetailsForUser(userRecord.id);
 
   const device = await db.query.devices.findFirst({
     where: and(eq(devices.userId, userRecord.id), eq(devices.deviceId, deviceId)),
@@ -80,6 +80,7 @@ export async function POST(req: Request) {
         deviceId,
         plan,
         features: [],
+        subscriptionEnd: currentPeriodEnd,
       });
 
       return Response.json({
@@ -220,6 +221,7 @@ export async function POST(req: Request) {
     deviceId,
     plan,
     features: [],
+    subscriptionEnd: currentPeriodEnd,
   });
 
   return Response.json({

@@ -11,6 +11,7 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { useActivityStore } from '@/stores/activityStore';
 import { useTodayStore } from '@/stores/todayStore';
 import { useWorkstreamStore } from '@/stores/workstreamStore';
+import { useUIStore } from '@/stores/uiStore';
 import * as tauri from '@/lib/tauri';
 
 interface ModelStatus {
@@ -28,6 +29,7 @@ export function useAppInit() {
   const loadActivityFromStorage = useActivityStore(state => state.loadFromStorage);
   const loadWorkstreamsStore = useWorkstreamStore(state => state.loadWorkstreams);
   const initializeToday = useTodayStore(state => state.initialize);
+  const setShowInfo = useUIStore(state => state.setShowInfo);
 
   useEffect(() => {
     async function initialize() {
@@ -81,6 +83,13 @@ export function useAppInit() {
         } catch (err) {
           console.warn('Failed to check model status on startup:', err);
           // Non-fatal - continue loading
+        }
+
+        // Show guide automatically on first launch
+        const hasSeenGuide = localStorage.getItem('ix_has_seen_guide');
+        if (!hasSeenGuide) {
+          localStorage.setItem('ix_has_seen_guide', 'true');
+          setTimeout(() => setShowInfo(true), 500);
         }
 
         setIsInitialized(true);

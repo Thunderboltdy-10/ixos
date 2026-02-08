@@ -22,6 +22,7 @@ import { TodayEmptyState } from './TodayEmptyState';
 import { DailyBrief } from './DailyBrief';
 import { cn } from '@/lib/utils';
 import * as tauri from '@/lib/tauri';
+import { hasProAccess } from '@/lib/proAccess';
 
 interface TodayTabProps {
   onStartSearch?: () => void;
@@ -31,8 +32,10 @@ interface TodayTabProps {
 
 export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: TodayTabProps) {
   const { data, isLoading, error, initialize, pinnedItems, shouldShowBrief, markBriefSeen } = useTodayStore();
+  const entitlement = useAuthStore((s) => s.entitlement);
+  const entitlementToken = useAuthStore((s) => s.entitlementToken);
   const proStatus = useAuthStore((s) => s.proStatus);
-  const isPro = proStatus?.status === 'active' || proStatus?.status === 'grace';
+  const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
 
   // State for Daily Brief
   const [showDailyBrief, setShowDailyBrief] = useState(false);

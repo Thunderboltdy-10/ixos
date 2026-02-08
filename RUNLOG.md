@@ -299,3 +299,61 @@
   - Build and targeted lint passed.
 - Decision: KEEP
 - Next: Manual visual QA on desktop + tablet widths to confirm final proportions.
+
+## Entry 018 - Desktop release hardening + Pro gating consistency
+- Date/Time: 2026-02-08
+- Branch/Commit: (working tree)
+- Goal: Fix production entitlement/search regressions, eliminate duplicate search event processing, unify Pro gating, improve overlay behavior, and land release guardrails.
+- Commands run:
+  - npm --prefix ui run build
+  - npm --prefix ixos-site run build
+  - cargo build
+  - cargo test -q
+- Outputs saved to:
+  - reports/desktop_release_hardening_2026-02-08.md
+- Key results:
+  - Progressive search events now use channel transport only in Tauri backend; legacy bus listener is disabled by default in UI.
+  - Desktop API base no longer silently falls back to localhost in production.
+  - Pro detection is centralized and reused by Sidebar, Pricing, Account, Today, Workstreams, and Related Files.
+  - `open-pricing` event is now handled globally by `AppShell`, fixing upgrade CTA dead-ends.
+  - Overlay panels now auto-close on clicks outside the modal panel while allowing underlying actions to continue.
+  - Cache management gained backend-aware stats and a `Clear All Cache` path (including LMDB sidecar).
+  - Footer legal link now routes to `/terms`; hero demo interactivity restored in hero stage.
+  - Validation status: UI build pass, landing build pass, Rust build pass, Rust tests pass.
+- Decision: KEEP
+- Next: Run manual packaged Tauri smoke (`tauri:build:prod`) with real production env values and capture entitlement + upgrade + search flow recordings.
+
+## Entry 019 - Production entitlement hardening + Firefox arc-noise parity + validation sweep
+- Date/Time: 2026-02-08
+- Branch/Commit: (working tree)
+- Goal: Close remaining release-critical gaps: free-vs-pro enforcement consistency, backend Pro-mode hardening, prod token expiry correctness, dropdown/sidebar/settings polish, and Firefox landing noise parity.
+- Commands run:
+  - cargo fmt
+  - cargo test -q
+  - cargo build
+  - npm --prefix ui run build
+  - npm --prefix ixos-site run build
+  - node scripts/verify-desktop-build-env.js
+  - npm audit --audit-level=high --omit=dev
+  - cargo clippy --all-targets --quiet
+- Outputs saved to:
+  - reports/desktop_release_hardening_2026-02-08.md
+- Key results:
+  - Rust search command now enforces Pro capability for Pro mode and downgrades Auto->Flash when Pro is unavailable (`src-tauri/src/commands/search.rs`).
+  - Added unit tests for search-mode resolution logic (free downgrade + pro rejection + pro allow).
+  - UI Pro fallback no longer treats active/grace token status alone as Pro; token `plan` must decode to `pro` (`ui/src/lib/proAccess.ts`).
+  - Search controls/settings now auto-downgrade non-Pro users to Flash and lock Auto/Pro selection paths.
+  - Lease refresh and transfer-confirm APIs now issue subscription-bounded entitlement tokens (`subscriptionEnd`) to avoid overlong Pro token validity (`ixos-site/src/app/api/desktop/lease/refresh/route.ts`, `ixos-site/src/app/api/desktop/lease/transfer/confirm/route.ts`).
+  - Firefox-specific arc-noise fallback improved without changing overall landing UI design (`ixos-site/src/components/effects/ArcNoiseBackground.tsx`).
+  - Settings/guide/pricing overlays now use fixed centering and sidebar/dropdown/account controls received consistency polish.
+  - Bench-target compile blocker fixed in `benches/agent_search_comparison.rs` (`println!` formatting), enabling `cargo clippy --all-targets` completion.
+- Validation summary:
+  - `cargo test -q`: PASS (455 passed, 0 failed, 6 ignored).
+  - `cargo build`: PASS.
+  - `npm --prefix ui run build`: PASS.
+  - `npm --prefix ixos-site run build`: PASS (includes `/terms` route).
+  - `cargo clippy --all-targets --quiet`: PASS with warnings only.
+  - `node scripts/verify-desktop-build-env.js`: FAIL in local shell due missing env vars (`VITE_API_URL`, `VITE_CLERK_PUBLISHABLE_KEY`, `IXOS_JWT_PUBLIC_KEY`) - expected safeguard behavior.
+  - `npm audit --audit-level=high --omit=dev`: reports high advisory for `next` and moderate advisory for `nodemailer` (remediation requires version bumps).
+- Decision: KEEP
+- Next: Run packaged desktop smoke with real production env values and verify full entitlement lifecycle flows (free, pro, upgrade, lease transfer, renewal, cancellation).

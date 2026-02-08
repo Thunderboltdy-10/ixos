@@ -51,10 +51,10 @@ function WindowControl({ icon, onClick, variant = 'default' }: WindowControlProp
 
 export function WindowControls() {
     const { isSignedIn } = useAuth();
-    const { transferRequired, entitlementToken } = useAuthStore();
+    const { transferRequired } = useAuthStore();
     const openSettings = useUIStore(state => state.openSettings);
 
-    const showSettings = isSignedIn && !transferRequired && !!entitlementToken;
+    const showSettings = isSignedIn && !transferRequired;
 
 
     const handleMinimize = async () => {

@@ -20,7 +20,13 @@
 - [ ] Rust build
   - `cargo build`
 - [ ] Tauri build
-  - `npm run tauri:build`
+  - Production (required for release): `npm run tauri:build:prod`
+  - Local/dev packaging: `npm run tauri:build`
+
+### Required env for `tauri:build:prod`
+- `VITE_API_URL`
+- `VITE_CLERK_PUBLISHABLE_KEY`
+- `IXOS_JWT_PUBLIC_KEY`
 
 ## Release artifacts
 - [ ] Tag release after all gates pass.

@@ -2,9 +2,9 @@ import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { db, devices, leases, leaseTransfers, trustedDevices } from "@/lib/db";
 import {
-  getActivePlanForUser,
   getClerkUserIdFromRequest,
   getOrCreateUserByClerkId,
+  getSubscriptionDetailsForUser,
   issueEntitlementToken,
 } from "@/lib/controlPlane";
 import { normalizeTransferCode } from "@/lib/transferCode";
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
   const { deviceId, code } = parsed.data;
   const userRecord = await getOrCreateUserByClerkId(clerkUserId);
-  const plan = await getActivePlanForUser(userRecord.id);
+  const { plan, currentPeriodEnd } = await getSubscriptionDetailsForUser(userRecord.id);
 
   if (plan !== "pro") {
     return new Response("Pro subscription required", { status: 403 });
@@ -72,6 +72,7 @@ export async function POST(req: Request) {
           deviceId,
           plan,
           features: [],
+          subscriptionEnd: currentPeriodEnd,
         });
         return Response.json({
           plan,
@@ -134,6 +135,7 @@ export async function POST(req: Request) {
     deviceId,
     plan,
     features: [],
+    subscriptionEnd: currentPeriodEnd,
   });
 
   return Response.json({

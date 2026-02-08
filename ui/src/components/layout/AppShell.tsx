@@ -40,11 +40,7 @@ export function AppShell({ children }: AppShellProps) {
   const refreshBy =
     entitlementToken && proStatus?.status === 'grace' ? proStatus.refreshBy : null;
   const refreshByLabel = refreshBy ? new Date(refreshBy * 1000).toLocaleString() : null;
-  const proLocked =
-    !!entitlementToken &&
-    (proStatus?.status === 'expired' || proStatus?.status === 'timeSuspect');
-  const shouldLock =
-    proLocked && (config?.search.searchMode === 'pro' || config?.search.searchMode === 'auto');
+  const shouldLock = false; // Inline gating in controls/panels handles Pro restrictions.
 
   const lockTitle =
     proStatus?.status === 'timeSuspect'
@@ -55,8 +51,15 @@ export function AppShell({ children }: AppShellProps) {
       ? 'Connect to the internet to refresh your entitlement. Pro features are locked until verified.'
       : 'Your Pro entitlement has expired. Renew to unlock Pro features. Your data remains intact.';
 
-  const handleNewSearch = () => {
+  const closeOverlays = () => {
+    setShowSettings(false);
+    setShowInfo(false);
+    setShowPricing(false);
     setShowCommandPalette(false);
+  };
+
+  const handleNewSearch = () => {
+    closeOverlays();
     searchStore.reset();
     setActiveView('search');
   };
@@ -98,6 +101,19 @@ export function AppShell({ children }: AppShellProps) {
     };
   }, [searchStore, setShowSettings]);
 
+  useEffect(() => {
+    const handleOpenPricing = () => {
+      setShowPricing(true);
+      setShowSettings(false);
+      setShowInfo(false);
+    };
+
+    window.addEventListener('open-pricing', handleOpenPricing as EventListener);
+    return () => {
+      window.removeEventListener('open-pricing', handleOpenPricing as EventListener);
+    };
+  }, [setShowPricing, setShowSettings, setShowInfo]);
+
   // Global keyboard shortcuts: Ctrl+T (new search), Ctrl+K (command palette)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -138,6 +154,22 @@ export function AppShell({ children }: AppShellProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [searchStore, showSettings, showInfo, showPricing, setShowSettings, setShowInfo, setShowPricing, setActiveView]);
 
+  useEffect(() => {
+    if (!showSettings && !showInfo && !showPricing) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
+      if (target.closest('[data-overlay-panel="true"]')) return;
+      closeOverlays();
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown, true);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown, true);
+    };
+  }, [showSettings, showInfo, showPricing]);
+
   return (
     <div className="h-screen flex bg-graphite-0 overflow-hidden relative" data-theme="desktop">
       {/* Background Effect */}
@@ -162,7 +194,7 @@ export function AppShell({ children }: AppShellProps) {
           setShowInfo(false);
         }}
         activeView={activeView}
-        onViewChange={setActiveView}
+        onViewChange={(view) => { closeOverlays(); setActiveView(view); }}
         className="flex-shrink-0 relative z-20 backdrop-blur-sm bg-graphite-0/80"
       />
 
@@ -230,8 +262,11 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Settings Panel Overlay */}
         {showSettings && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="w-[95%] max-w-[1600px] h-[94vh] animate-in fade-in zoom-in-95 duration-200 relative group">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm pointer-events-none">
+            <div
+              data-overlay-panel="true"
+              className="w-[min(95vw,1320px)] h-[min(90vh,860px)] animate-in fade-in zoom-in-95 duration-200 relative group pointer-events-auto"
+            >
               <button
                 type="button"
                 onClick={() => setShowSettings(false)}
@@ -253,8 +288,11 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Info Panel Overlay */}
         {showInfo && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-sm">
-            <div className="w-full max-w-4xl h-[700px] max-h-[90vh] animate-in fade-in zoom-in-95 duration-200 relative group">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-sm pointer-events-none">
+            <div
+              data-overlay-panel="true"
+              className="w-full max-w-4xl h-[min(700px,88vh)] animate-in fade-in zoom-in-95 duration-200 relative group pointer-events-auto"
+            >
               <button
                 type="button"
                 onClick={() => setShowInfo(false)}
@@ -269,8 +307,11 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Pricing Panel Overlay */}
         {showPricing && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-sm">
-            <div className="w-full max-w-5xl h-[85vh] animate-in fade-in zoom-in-95 duration-200 relative group">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-sm pointer-events-none">
+            <div
+              data-overlay-panel="true"
+              className="w-full max-w-5xl h-[min(85vh,860px)] animate-in fade-in zoom-in-95 duration-200 relative group pointer-events-auto"
+            >
               <button
                 type="button"
                 onClick={() => setShowPricing(false)}

@@ -17,6 +17,7 @@ import type { SearchMode as QualityMode } from '@/lib/types';
 import { invoke } from '@tauri-apps/api/core';
 import { SearchBar } from '@ixos/ui';
 import { useAuthStore } from '@/stores/authStore';
+import { hasProAccess } from '@/lib/proAccess';
 
 
 interface SearchInputProps {
@@ -55,6 +56,7 @@ export function SearchInput({
   const restoreFromHistory = useSearchStore((s) => s.restoreFromHistory);
   const searchPhase = useSearchStore((s) => s.phase);
   const setSearchBarBox = useLayoutStore((s) => s.setSearchBarBox);
+  const entitlement = useAuthStore((s) => s.entitlement);
   const proStatus = useAuthStore((s) => s.proStatus);
   const entitlementToken = useAuthStore((s) => s.entitlementToken);
 
@@ -70,9 +72,10 @@ export function SearchInput({
   const proModelType = (config?.search?.proModelType || 'ixos-pro-v2') as ModelType;
   const qualityMode = (config?.search?.searchMode || 'auto') as QualityMode;
   const askMode = (config?.search?.askMode || 'auto') as AskMode;
+  const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
   const proLocked =
-    !!entitlementToken &&
-    (proStatus?.status === 'expired' || proStatus?.status === 'timeSuspect');
+    !isPro ||
+    (!!entitlementToken && (proStatus?.status === 'expired' || proStatus?.status === 'timeSuspect'));
 
   const modePalette = {
     jit: {
@@ -182,6 +185,16 @@ export function SearchInput({
       safeInvoke('preload_model', { modelType: target });
     });
   }, [config, modelType, proModelType, qualityMode, safeInvoke]);
+
+  useEffect(() => {
+    if (!config) return;
+    if (!proLocked) return;
+    if (qualityMode === 'flash') return;
+
+    void updateConfig({
+      search: { ...config.search, searchMode: 'flash' },
+    });
+  }, [config, proLocked, qualityMode, updateConfig]);
 
   // Fetch suggestions when value changes
   // Show suggestions when:

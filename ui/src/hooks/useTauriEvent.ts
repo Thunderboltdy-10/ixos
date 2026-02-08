@@ -15,6 +15,11 @@ export function useSearchEvents() {
   const handleSearchEvent = useSearchStore((state) => state.handleSearchEvent);
 
   useEffect(() => {
+    const legacyBusEnabled = (import.meta as any).env?.VITE_LEGACY_SEARCH_EVENT_BUS === '1';
+    if (!legacyBusEnabled) {
+      return;
+    }
+
     let unlisten: (() => void) | undefined;
 
     async function setupListener() {

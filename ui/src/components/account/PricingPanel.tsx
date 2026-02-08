@@ -3,9 +3,10 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
 import { buildCheckoutUrl, getVariantId } from '@/lib/checkout';
 import { openExternalUrl } from '@/lib/tauri';
+import { hasProAccess } from '@/lib/proAccess';
 
 export function PricingPanel() {
-    const { user, entitlement } = useAuthStore();
+    const { user, entitlement, entitlementToken, proStatus } = useAuthStore();
     const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
     const variantId = getVariantId();
 
@@ -25,7 +26,7 @@ export function PricingPanel() {
         }
     };
 
-    const isPro = entitlement?.plan === 'pro';
+    const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
 
     return (
         <div className="flex flex-col h-full bg-graphite-1/98 backdrop-blur-xl border border-stroke-hairline rounded-2xl overflow-hidden shadow-2xl relative">

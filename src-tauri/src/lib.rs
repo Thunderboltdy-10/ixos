@@ -31,10 +31,11 @@ pub fn run() {
                 .build(),
         )
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            let _ = app
-                .get_webview_window("main")
-                .expect("no main window")
-                .set_focus();
+            if let Some(main) = app.get_webview_window("main") {
+                let _ = main.show();
+                let _ = main.unminimize();
+                let _ = main.set_focus();
+            }
         }))
         .setup(|app| {
             // Initialize application state
@@ -117,6 +118,7 @@ pub fn run() {
             // Cache Management
             commands::storage::get_cache_stats,
             commands::storage::clear_embedding_cache,
+            commands::storage::clear_all_embedding_cache,
             // P2.1: Search History (Ramp 1)
             commands::history::get_search_suggestions,
             commands::history::add_to_history,

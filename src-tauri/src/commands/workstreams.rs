@@ -9,11 +9,88 @@
 use ixos_protocol::{Workstream, WorkstreamManager, WorkstreamStorageData};
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
-use tauri::State;
+use tauri::{Manager, State};
 
 use super::activity::ActivityState;
 use crate::state::AppState;
 use ixos_protocol::capabilities::Capability;
+use ixos_protocol::security::device_identity::DeviceIdentity;
+
+use chacha20poly1305::aead::{rand_core::RngCore, Aead, KeyInit, OsRng};
+use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce};
+use std::fs;
+use std::path::PathBuf;
+
+const WORKSTREAMS_FILE_ENC: &str = "workstreams_v1.enc";
+const WORKSTREAMS_FILE_JSON_LEGACY: &str = "workstreams_v1.json";
+const WORKSTREAMS_KEY_CONTEXT: &str = "workstreams-v1";
+
+fn get_config_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    app.path()
+        .app_config_dir()
+        .map_err(|e| format!("Failed to get config directory: {}", e))
+}
+
+fn encrypt_payload(plaintext: &[u8], key_bytes: [u8; 32]) -> Result<Vec<u8>, String> {
+    let cipher = ChaCha20Poly1305::new(Key::from_slice(&key_bytes));
+    let mut nonce_bytes = [0u8; 12];
+    OsRng.fill_bytes(&mut nonce_bytes);
+    let nonce = Nonce::from_slice(&nonce_bytes);
+    let mut out = nonce_bytes.to_vec();
+    let ciphertext = cipher
+        .encrypt(nonce, plaintext)
+        .map_err(|e| format!("Encryption failed: {}", e))?;
+    out.extend_from_slice(&ciphertext);
+    Ok(out)
+}
+
+fn decrypt_payload(blob: &[u8], key_bytes: [u8; 32]) -> Result<Vec<u8>, String> {
+    if blob.len() < 12 {
+        return Err("Encrypted payload too short".to_string());
+    }
+    let (nonce_bytes, ciphertext) = blob.split_at(12);
+    let cipher = ChaCha20Poly1305::new(Key::from_slice(&key_bytes));
+    cipher
+        .decrypt(Nonce::from_slice(nonce_bytes), ciphertext)
+        .map_err(|e| format!("Decryption failed: {}", e))
+}
+
+fn persist_workstreams_to_disk(
+    app: &tauri::AppHandle,
+    workstreams_state: &WorkstreamsState,
+) -> Result<(), String> {
+    if !workstreams_state.is_persistence_enabled() {
+        return Ok(());
+    }
+
+    let ws_manager = workstreams_state.manager.lock();
+    let workstreams = ws_manager.export();
+    let storage_data = WorkstreamStorageData::new(workstreams);
+    let json = serde_json::to_vec(&storage_data).map_err(|e| e.to_string())?;
+    let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+    let key = device.derive_storage_key(WORKSTREAMS_KEY_CONTEXT);
+    let encrypted = encrypt_payload(&json, key)?;
+    let count = ws_manager.count();
+    drop(ws_manager);
+
+    let config_dir = get_config_dir(app)?;
+    fs::create_dir_all(&config_dir)
+        .map_err(|e| format!("Failed to create config directory: {}", e))?;
+    let storage_path = config_dir.join(WORKSTREAMS_FILE_ENC);
+    fs::write(&storage_path, encrypted)
+        .map_err(|e| format!("Failed to save workstreams: {}", e))?;
+
+    let mut ws_manager = workstreams_state.manager.lock();
+    ws_manager.mark_saved();
+    drop(ws_manager);
+
+    tracing::info!(
+        "Workstreams saved ({} workstreams) to {:?}",
+        count,
+        storage_path
+    );
+    Ok(())
+}
 
 /// State wrapper for workstreams
 pub struct WorkstreamsState {
@@ -144,6 +221,7 @@ pub struct CreateWorkstreamRequest {
 /// Create a new workstream manually
 #[tauri::command]
 pub fn create_workstream(
+    app: tauri::AppHandle,
     request: CreateWorkstreamRequest,
     workstreams_state: State<'_, WorkstreamsState>,
     app_state: State<'_, AppState>,
@@ -166,6 +244,11 @@ pub fn create_workstream(
 
     let mut ws_manager = workstreams_state.manager.lock();
     ws_manager.add(workstream);
+    drop(ws_manager);
+
+    if !app_state.is_journalist_mode() {
+        let _ = persist_workstreams_to_disk(&app, &workstreams_state);
+    }
 
     Ok(payload)
 }
@@ -173,6 +256,7 @@ pub fn create_workstream(
 /// Rename a workstream
 #[tauri::command]
 pub fn rename_workstream(
+    app: tauri::AppHandle,
     id: String,
     new_name: String,
     workstreams_state: State<'_, WorkstreamsState>,
@@ -185,12 +269,20 @@ pub fn rename_workstream(
     }
 
     let mut ws_manager = workstreams_state.manager.lock();
-    Ok(ws_manager.rename(&id, new_name))
+    let renamed = ws_manager.rename(&id, new_name);
+    drop(ws_manager);
+
+    if renamed && !app_state.is_journalist_mode() {
+        let _ = persist_workstreams_to_disk(&app, &workstreams_state);
+    }
+
+    Ok(renamed)
 }
 
 /// Merge multiple workstreams into one
 #[tauri::command]
 pub fn merge_workstreams(
+    app: tauri::AppHandle,
     ids: Vec<String>,
     workstreams_state: State<'_, WorkstreamsState>,
     app_state: State<'_, AppState>,
@@ -202,12 +294,20 @@ pub fn merge_workstreams(
     }
 
     let mut ws_manager = workstreams_state.manager.lock();
-    Ok(ws_manager.merge(&ids))
+    let merged = ws_manager.merge(&ids);
+    drop(ws_manager);
+
+    if merged.is_some() && !app_state.is_journalist_mode() {
+        let _ = persist_workstreams_to_disk(&app, &workstreams_state);
+    }
+
+    Ok(merged)
 }
 
 /// Delete a workstream
 #[tauri::command]
 pub fn delete_workstream(
+    app: tauri::AppHandle,
     id: String,
     workstreams_state: State<'_, WorkstreamsState>,
     app_state: State<'_, AppState>,
@@ -219,12 +319,20 @@ pub fn delete_workstream(
     }
 
     let mut ws_manager = workstreams_state.manager.lock();
-    Ok(ws_manager.delete(&id))
+    let deleted = ws_manager.delete(&id);
+    drop(ws_manager);
+
+    if deleted && !app_state.is_journalist_mode() {
+        let _ = persist_workstreams_to_disk(&app, &workstreams_state);
+    }
+
+    Ok(deleted)
 }
 
 /// Re-cluster workstreams from activity events
 #[tauri::command]
 pub fn recluster_workstreams(
+    app: tauri::AppHandle,
     gap_threshold_mins: Option<u32>,
     workstreams_state: State<'_, WorkstreamsState>,
     activity_state: State<'_, ActivityState>,
@@ -246,21 +354,13 @@ pub fn recluster_workstreams(
     let mut ws_manager = workstreams_state.manager.lock();
     ws_manager.recluster(&events, gap_threshold_mins.unwrap_or(30));
     let count = ws_manager.count();
+    drop(ws_manager);
 
     // Persist automatically after recluster when persistence is enabled.
-    if workstreams_state.is_persistence_enabled() {
-        let workstreams = ws_manager.export();
-        let storage_data = WorkstreamStorageData::new(workstreams);
-        let json = serde_json::to_string(&storage_data).map_err(|e| e.to_string())?;
-        let storage_path = app_state.app_data_dir.join("workstreams_v1.json");
-        std::fs::write(&storage_path, json)
-            .map_err(|e| format!("Failed to save workstreams: {}", e))?;
-        ws_manager.mark_saved();
-        tracing::info!(
-            "Auto-saved {} workstreams after recluster to {:?}",
-            count,
-            storage_path
-        );
+    if !app_state.is_journalist_mode() {
+        if let Err(e) = persist_workstreams_to_disk(&app, &workstreams_state) {
+            tracing::warn!("Failed to persist workstreams after recluster: {}", e);
+        }
     }
 
     Ok(count)
@@ -269,6 +369,7 @@ pub fn recluster_workstreams(
 /// Pin or unpin a workstream
 #[tauri::command]
 pub fn pin_workstream(
+    app: tauri::AppHandle,
     id: String,
     pinned: bool,
     workstreams_state: State<'_, WorkstreamsState>,
@@ -284,6 +385,10 @@ pub fn pin_workstream(
 
     if let Some(ws) = ws_manager.get_mut(&id) {
         ws.is_pinned = pinned;
+        drop(ws_manager);
+        if !app_state.is_journalist_mode() {
+            let _ = persist_workstreams_to_disk(&app, &workstreams_state);
+        }
         Ok(true)
     } else {
         Ok(false)
@@ -322,9 +427,14 @@ pub struct WorkstreamsStatsPayload {
 /// Save workstreams to encrypted storage (Pro only)
 #[tauri::command]
 pub async fn save_workstreams(
+    app: tauri::AppHandle,
     workstreams_state: State<'_, WorkstreamsState>,
     app_state: State<'_, AppState>,
 ) -> Result<(), String> {
+    if app_state.is_journalist_mode() {
+        return Ok(());
+    }
+
     // Check Pro capability
     let manager = app_state.entitlement_manager.lock();
     if !manager.capabilities().has(Capability::TodayTab) {
@@ -336,26 +446,24 @@ pub async fn save_workstreams(
         return Err("Workstream persistence not enabled".into());
     }
 
-    let ws_manager = workstreams_state.manager.lock();
-    let workstreams = ws_manager.export();
-    let storage_data = WorkstreamStorageData::new(workstreams);
+    persist_workstreams_to_disk(&app, &workstreams_state)
+}
 
-    // Serialize to JSON
-    let json = serde_json::to_string(&storage_data).map_err(|e| e.to_string())?;
+pub async fn autosave_if_dirty(app: tauri::AppHandle) -> Result<(), String> {
+    let workstreams_state = app.state::<WorkstreamsState>();
+    let app_state = app.state::<AppState>();
+    if app_state.is_journalist_mode() || !workstreams_state.is_persistence_enabled() {
+        return Ok(());
+    }
 
-    // Get app data directory
-    let app_data = app_state.app_data_dir.clone();
-    let storage_path = app_data.join("workstreams_v1.json");
+    let should_save = {
+        let ws_manager = workstreams_state.manager.lock();
+        ws_manager.is_dirty()
+    };
 
-    // Write to file (Note: In production, this should use encrypted storage)
-    std::fs::write(&storage_path, json)
-        .map_err(|e| format!("Failed to save workstreams: {}", e))?;
-
-    tracing::info!(
-        "Workstreams saved ({} workstreams) to {:?}",
-        ws_manager.count(),
-        storage_path
-    );
+    if should_save {
+        persist_workstreams_to_disk(&app, &workstreams_state)?;
+    }
 
     Ok(())
 }
@@ -363,9 +471,23 @@ pub async fn save_workstreams(
 /// Load workstreams from encrypted storage (Pro only)
 #[tauri::command]
 pub async fn load_workstreams(
+    app: tauri::AppHandle,
     workstreams_state: State<'_, WorkstreamsState>,
     app_state: State<'_, AppState>,
 ) -> Result<WorkstreamsStatsPayload, String> {
+    if app_state.is_journalist_mode() {
+        let ws_manager = workstreams_state.manager.lock();
+        let workstreams = ws_manager.list(None, None);
+        let pinned_count = workstreams.iter().filter(|w| w.is_pinned).count();
+        let auto_count = workstreams.iter().filter(|w| w.is_auto).count();
+        return Ok(WorkstreamsStatsPayload {
+            total_count: ws_manager.count(),
+            pinned_count,
+            auto_count,
+            is_dirty: ws_manager.is_dirty(),
+        });
+    }
+
     // Check Pro capability
     let manager = app_state.entitlement_manager.lock();
     if !manager.capabilities().has(Capability::TodayTab) {
@@ -376,13 +498,39 @@ pub async fn load_workstreams(
     // Enable persistence for the session
     workstreams_state.enable_persistence();
 
-    // Get app data directory
-    let app_data = app_state.app_data_dir.clone();
-    let storage_path = app_data.join("workstreams_v1.json");
+    let config_dir = get_config_dir(&app)?;
+    let storage_path = config_dir.join(WORKSTREAMS_FILE_ENC);
+    let legacy_path = config_dir.join(WORKSTREAMS_FILE_JSON_LEGACY);
 
     // Try to load existing workstreams
     if storage_path.exists() {
-        match std::fs::read_to_string(&storage_path) {
+        match std::fs::read(&storage_path) {
+            Ok(blob) => {
+                let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+                let key = device.derive_storage_key(WORKSTREAMS_KEY_CONTEXT);
+                let plaintext = decrypt_payload(&blob, key)?;
+                match serde_json::from_slice::<WorkstreamStorageData>(&plaintext) {
+                    Ok(storage_data) => {
+                        let workstreams = storage_data.into_workstreams();
+                        let count = workstreams.len();
+
+                        let mut ws_manager = workstreams_state.manager.lock();
+                        *ws_manager = WorkstreamManager::from_workstreams(workstreams);
+                        ws_manager.mark_saved();
+
+                        tracing::info!("Loaded {} workstreams from {:?}", count, storage_path);
+                    }
+                    Err(e) => {
+                        tracing::warn!("Failed to parse encrypted workstreams file: {}", e);
+                    }
+                }
+            }
+            Err(e) => {
+                tracing::warn!("Failed to read encrypted workstreams file: {}", e);
+            }
+        }
+    } else if legacy_path.exists() {
+        match std::fs::read_to_string(&legacy_path) {
             Ok(json) => match serde_json::from_str::<WorkstreamStorageData>(&json) {
                 Ok(storage_data) => {
                     let workstreams = storage_data.into_workstreams();
@@ -392,14 +540,14 @@ pub async fn load_workstreams(
                     *ws_manager = WorkstreamManager::from_workstreams(workstreams);
                     ws_manager.mark_saved();
 
-                    tracing::info!("Loaded {} workstreams from {:?}", count, storage_path);
+                    tracing::info!("Loaded {} workstreams from legacy {:?}", count, legacy_path);
                 }
                 Err(e) => {
-                    tracing::warn!("Failed to parse workstreams file: {}", e);
+                    tracing::warn!("Failed to parse legacy workstreams file: {}", e);
                 }
             },
             Err(e) => {
-                tracing::warn!("Failed to read workstreams file: {}", e);
+                tracing::warn!("Failed to read legacy workstreams file: {}", e);
             }
         }
     }

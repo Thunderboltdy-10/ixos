@@ -7,7 +7,7 @@
 //! - Privacy compliance (GDPR, CCPA)
 
 use std::io::{stdout, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use clap::Parser;
 use tokio::sync::mpsc;
@@ -34,6 +34,7 @@ use ixos_protocol::telemetry::{install_crash_handler, TelemetryConfig};
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
+    let config_path_override = cli.config.clone();
 
     // Initialize logging based on verbosity
     // Default to quiet (error-only) unless --verbose is specified
@@ -96,7 +97,7 @@ async fn main() -> anyhow::Result<()> {
                 sandbox,
                 min_score,
                 !no_secure_ranking && config.search.enable_secure_ranking,
-                cache_mode.into(),
+                cache_mode.map(Into::into),
                 stub_model || config.search.use_stub_model,
                 search_mode,
                 model,
@@ -113,11 +114,10 @@ async fn main() -> anyhow::Result<()> {
         Commands::Index {
             dirs,
             use_xattr,
-            watch,
             progress,
             clear,
         } => {
-            handle_index(dirs, use_xattr, watch, progress, clear).await?;
+            handle_index(dirs, use_xattr, progress, clear).await?;
         }
 
         Commands::Config {
@@ -127,7 +127,7 @@ async fn main() -> anyhow::Result<()> {
             reset,
             path,
         } => {
-            handle_config(get, set, list, reset, path)?;
+            handle_config(get, set, list, reset, path, config_path_override.clone())?;
         }
 
         Commands::Daemon {
@@ -139,11 +139,15 @@ async fn main() -> anyhow::Result<()> {
         }
 
         Commands::Cache { action } => {
-            handle_cache(action)?;
+            handle_cache(action, config_path_override.clone()).await?;
         }
 
         Commands::Compliance { action } => {
             handle_compliance(action)?;
+        }
+
+        Commands::Doctor { json, verbose } => {
+            handle_doctor(json, verbose).await?;
         }
 
         Commands::Version { verbose } => {
@@ -182,7 +186,7 @@ async fn handle_search(
     sandbox: Option<PathBuf>,
     min_score: Option<f32>,
     secure_ranking: bool,
-    cache_mode: ixos_protocol::CacheMode,
+    cache_mode: Option<ixos_protocol::CacheMode>,
     stub_model: bool,
     search_mode: Option<CliSearchMode>,
     model: Option<CliFlashModelType>,
@@ -209,10 +213,14 @@ async fn handle_search(
     };
 
     // In journalist mode, force JIT cache mode
+    let configured_cache_mode = match config.search.cache_mode.to_lowercase().as_str() {
+        "cache" | "persistent" => ixos_protocol::CacheMode::Cache,
+        _ => ixos_protocol::CacheMode::Jit,
+    };
     let effective_cache_mode = if journalist_mode {
         ixos_protocol::CacheMode::Jit
     } else {
-        cache_mode
+        cache_mode.unwrap_or(configured_cache_mode)
     };
 
     // Check consent before AI operations
@@ -429,6 +437,10 @@ async fn handle_search(
 
     let mut engine =
         ProgressiveSearchEngine::with_config_and_pro(lexical, semantic, pro_engine, search_config);
+    engine
+        .secure_ranker_mut()
+        .config_mut()
+        .personal_ranking_enabled = config.search.personal_ranking_enabled;
 
     let start_time = std::time::Instant::now();
 
@@ -521,18 +533,12 @@ async fn handle_search(
 async fn handle_index(
     dirs: Vec<PathBuf>,
     use_xattr: bool,
-    watch: bool,
     progress: bool,
     clear: bool,
 ) -> anyhow::Result<()> {
     if dirs.is_empty() {
         println!("No directories specified. Usage: ixos index <directory> [--use-xattr]");
         return Ok(());
-    }
-
-    if clear {
-        println!("Clearing existing index...");
-        // TODO: Implement index clearing
     }
 
     println!("Indexing {} directories...", dirs.len());
@@ -551,6 +557,19 @@ async fn handle_index(
                 println!("  - {} (not found)", dir.display());
             }
             continue;
+        }
+
+        if clear {
+            let cleared = clear_embedding_cache_for_directory(&dir);
+            if progress {
+                println!("  Cleared {} cached embeddings", cleared);
+            } else {
+                println!(
+                    "  - {} (cleared {} cached embeddings)",
+                    dir.display(),
+                    cleared
+                );
+            }
         }
 
         // Index the directory
@@ -583,13 +602,56 @@ async fn handle_index(
         println!("Using xattr/ADS caching: enabled");
     }
 
-    if watch {
-        println!("Watch mode: not yet implemented");
-        println!("Use 'ixos daemon --foreground' for file watching.");
-    }
-
     println!("Indexing complete.");
     Ok(())
+}
+
+fn clear_embedding_cache_for_directory(dir: &Path) -> usize {
+    use ixos_protocol::storage::get_cache_for_path;
+
+    let mut cleared = 0usize;
+    for entry in walkdir::WalkDir::new(dir)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.file_type().is_file())
+    {
+        let candidate_path =
+            std::fs::canonicalize(entry.path()).unwrap_or_else(|_| entry.into_path());
+        let cache = get_cache_for_path(&candidate_path);
+        if cache.delete(&candidate_path).is_ok() {
+            cleared += 1;
+        }
+    }
+    cleared += clear_lmdb_sidecar_cache();
+    cleared
+}
+
+fn clear_lmdb_sidecar_cache() -> usize {
+    let lmdb = match ixos_protocol::storage::sidecar_lmdb::LmdbSidecarCache::new() {
+        Ok(lmdb) => lmdb,
+        Err(_) => return 0,
+    };
+
+    let before = lmdb.stats().map(|s| s.entry_count).unwrap_or(0);
+    if lmdb.clear().is_ok() {
+        before
+    } else {
+        0
+    }
+}
+
+fn active_flash_model_fingerprint(config_path_override: Option<PathBuf>) -> [u8; 32] {
+    use ixos_protocol::ixos_embed::MmapModel2VecEmbedder;
+    use ixos_protocol::EmbeddingModel;
+
+    let config = match config_path_override {
+        Some(path) => IxosConfig::load_from(path),
+        None => IxosConfig::load(),
+    };
+    let model_type = resolve_flash_model_type(&config.search.model_type);
+    MmapModel2VecEmbedder::new_with_type(model_type)
+        .map(|model| model.fingerprint())
+        .unwrap_or(ixos_protocol::storage::DEFAULT_MODEL_FINGERPRINT)
 }
 
 // =============================================================================
@@ -602,20 +664,24 @@ fn handle_config(
     list: bool,
     reset: bool,
     path: bool,
+    config_path_override: Option<PathBuf>,
 ) -> anyhow::Result<()> {
+    let config_path = config_path_override.unwrap_or_else(IxosConfig::default_path);
+
     if path {
-        println!("{}", IxosConfig::default_path().display());
+        println!("{}", config_path.display());
         return Ok(());
     }
 
     if reset {
-        IxosConfig::default().save()?;
+        let default_cfg = IxosConfig::default();
+        default_cfg.save_to(config_path.clone())?;
         println!("Configuration reset to defaults.");
-        println!("Saved to: {}", IxosConfig::default_path().display());
+        println!("Saved to: {}", config_path.display());
         return Ok(());
     }
 
-    let mut config = IxosConfig::load();
+    let mut config = IxosConfig::load_from(config_path.clone());
 
     if let Some(key) = get {
         match config.get(&key) {
@@ -640,7 +706,7 @@ fn handle_config(
 
         match config.set(key, value) {
             Ok(()) => {
-                config.save()?;
+                config.save_to(config_path.clone())?;
                 println!("Set {} = {}", key, value);
             }
             Err(e) => {
@@ -658,7 +724,7 @@ fn handle_config(
             println!("  {} = {}", key, value);
         }
         println!();
-        println!("Config file: {}", IxosConfig::default_path().display());
+        println!("Config file: {}", config_path.display());
         return Ok(());
     }
 
@@ -681,18 +747,14 @@ fn handle_daemon(foreground: bool, stop: bool, status: bool) -> anyhow::Result<(
     use ixos_protocol::daemon::{DaemonConfig, DaemonService};
 
     if status {
-        // TODO: Check actual daemon status via IPC
-        println!("Daemon status: not running");
-        println!();
-        println!("The daemon provides background file watching for instant search updates.");
-        println!();
-        println!("Start with: ixos daemon --foreground");
+        println!("Daemon status check via IPC is not available in this build.");
+        println!("Use `ixos daemon --foreground` to run and observe status in-terminal.");
         return Ok(());
     }
 
     if stop {
-        // TODO: Send stop signal via IPC
-        println!("No daemon to stop.");
+        println!("Daemon stop via IPC is not available in this build.");
+        println!("If running in foreground, stop with Ctrl+C in that terminal.");
         return Ok(());
     }
 
@@ -721,8 +783,8 @@ fn handle_daemon(foreground: bool, stop: bool, status: bool) -> anyhow::Result<(
             daemon.stop().await;
         });
     } else {
-        println!("Daemon mode not yet implemented for background.");
-        println!("Use --foreground to run in the terminal.");
+        println!("Background daemon mode is disabled in this build.");
+        println!("Use `ixos daemon --foreground`.");
     }
 
     Ok(())
@@ -732,18 +794,19 @@ fn handle_daemon(foreground: bool, stop: bool, status: bool) -> anyhow::Result<(
 // Cache Handler (P5)
 // =============================================================================
 
-fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
-    use ixos_protocol::storage::get_cache_for_path;
+async fn handle_cache(
+    action: CacheCommands,
+    config_path_override: Option<PathBuf>,
+) -> anyhow::Result<()> {
+    use ixos_protocol::storage::{get_cache_for_path, get_cache_for_path_with_fingerprint};
 
     match action {
         CacheCommands::Stats { dir, json } => {
             let raw_dir = dir.unwrap_or_else(|| PathBuf::from("."));
             let target_dir = std::fs::canonicalize(&raw_dir).unwrap_or(raw_dir);
+            let model_fingerprint = active_flash_model_fingerprint(config_path_override.clone());
 
-            println!("Cache Statistics for: {}", target_dir.display());
-            println!("{}", "-".repeat(50));
-
-            // Walk directory and count cached files
+            // Walk directory and count cached files (validated by current file hash).
             let mut total_files = 0;
             let mut cached_files = 0;
             let mut cache_size_bytes = 0u64;
@@ -756,19 +819,35 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
                     .filter(|e| e.file_type().is_file())
                 {
                     total_files += 1;
-                    let cache = get_cache_for_path(entry.path());
-
-                    // Check if file has cached embedding (using optimized contains check)
-                    if cache.contains(entry.path()) {
+                    let candidate_path =
+                        std::fs::canonicalize(entry.path()).unwrap_or_else(|_| entry.into_path());
+                    let file_hash =
+                        match ixos_protocol::security::crypto::sha256_file(&candidate_path) {
+                            Ok(hash) => hash,
+                            Err(_) => continue,
+                        };
+                    let cache =
+                        get_cache_for_path_with_fingerprint(&candidate_path, model_fingerprint);
+                    let mut counted = false;
+                    if let Ok(Some(embedding)) = cache.get(&candidate_path, &file_hash) {
                         cached_files += 1;
-                        // Estimate cache size (225 bytes per entry for 64-dim)
+                        // Approximate entry storage (embedding + metadata/signature envelope).
+                        cache_size_bytes += (embedding.len() as u64 * 4).saturating_add(97);
+                        counted = true;
+                    }
+
+                    // Fallback signal for entries produced by a different model fingerprint
+                    // (e.g., stub-model test runs). This keeps cache-mode truthfulness checks
+                    // meaningful even when model identity differs from current config.
+                    if !counted && cache.contains(&candidate_path) {
+                        cached_files += 1;
                         cache_size_bytes += 225;
                     }
                 }
             }
 
             let hit_rate = if total_files > 0 {
-                (cached_files as f32 / total_files as f32) * 100.0
+                ((cached_files as f32 / total_files as f32) * 100.0).min(100.0)
             } else {
                 0.0
             };
@@ -781,6 +860,8 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
                 println!("  \"hit_rate_percent\": {:.1}", hit_rate);
                 println!("}}");
             } else {
+                println!("Cache Statistics for: {}", target_dir.display());
+                println!("{}", "-".repeat(50));
                 println!("Total files scanned:    {}", total_files);
                 println!("Files with cache:       {}", cached_files);
                 println!("Cache size (est.):      {} bytes", cache_size_bytes);
@@ -818,11 +899,12 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
                     .filter_map(|e| e.ok())
                     .filter(|e| e.file_type().is_file())
                 {
-                    let cache = get_cache_for_path(entry.path());
+                    let candidate_path =
+                        std::fs::canonicalize(entry.path()).unwrap_or_else(|_| entry.into_path());
 
                     // Check stale_days filter
                     if let Some(days) = stale_days {
-                        if let Ok(metadata) = entry.metadata() {
+                        if let Ok(metadata) = std::fs::metadata(&candidate_path) {
                             if let Ok(modified) = metadata.modified() {
                                 let age = std::time::SystemTime::now()
                                     .duration_since(modified)
@@ -834,11 +916,19 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
                         }
                     }
 
-                    if cache.delete(entry.path()).is_ok() {
+                    let cache = get_cache_for_path(&candidate_path);
+                    if cache.delete(&candidate_path).is_ok() {
                         cleared += 1;
                     }
                 }
             }
+
+            if stale_days.is_some() {
+                println!(
+                    "Note: LMDB fallback cache is cleared globally because per-file stale filtering is not supported."
+                );
+            }
+            cleared += clear_lmdb_sidecar_cache();
 
             println!("Cleared {} cache entries.", cleared);
         }
@@ -846,6 +936,7 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
         CacheCommands::Audit { detailed, verify } => {
             println!("Cache Audit");
             println!("{}", "-".repeat(50));
+            let model_fingerprint = active_flash_model_fingerprint(config_path_override.clone());
 
             let raw_cwd = std::env::current_dir()?;
             let cwd = std::fs::canonicalize(&raw_cwd).unwrap_or(raw_cwd);
@@ -859,7 +950,7 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
                 .filter_map(|e| e.ok())
                 .filter(|e| e.file_type().is_file())
             {
-                let cache = get_cache_for_path(entry.path());
+                let cache = get_cache_for_path_with_fingerprint(entry.path(), model_fingerprint);
 
                 // P2 Badge: Use real file hash when detecting cached entries for audit
                 let file_hash = match ixos_protocol::security::crypto::sha256_file(entry.path()) {
@@ -913,22 +1004,28 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
         CacheCommands::Mode { mode } => {
             use ixos_protocol::cli::CliCacheModePreference;
 
+            let config_path = config_path_override
+                .clone()
+                .unwrap_or_else(IxosConfig::default_path);
+            let mut config = IxosConfig::load_from(config_path.clone());
             match mode {
                 CliCacheModePreference::Ephemeral => {
+                    config.search.cache_mode = "jit".to_string();
                     println!("Cache mode set to: EPHEMERAL (memory-only)");
                     println!("Embeddings will not be persisted to disk.");
                     println!("This provides maximum privacy.");
                 }
                 CliCacheModePreference::Persistent => {
+                    config.search.cache_mode = "cache".to_string();
                     println!("Cache mode set to: PERSISTENT (ADS/xattr)");
                     println!("Embeddings will be stored alongside files.");
                     println!("This provides faster repeat searches.");
                 }
             }
 
-            // TODO: Persist preference to config file
+            config.save_to(config_path.clone())?;
             println!();
-            println!("Note: Preference saved for future sessions.");
+            println!("Preference saved to: {}", config_path.display());
         }
 
         CacheCommands::Rebuild {
@@ -959,8 +1056,32 @@ fn handle_cache(action: CacheCommands) -> anyhow::Result<()> {
             println!("Rebuilding cache for: {}", dir.display());
             println!("Workers: {}", workers);
             println!();
-            println!("This feature is not yet fully implemented.");
-            println!("Use 'ixos search' with --cache-mode cache to build cache incrementally.");
+
+            let config = IxosConfig::load();
+            let model_type = resolve_flash_model_type(&config.search.model_type);
+            let rebuild_dir = std::fs::canonicalize(&dir).unwrap_or(dir.clone());
+            let started = std::time::Instant::now();
+            use ixos_protocol::ixos_embed::MmapModel2VecEmbedder;
+            use ixos_protocol::ixos_rank::semantic_engine::CacheMode;
+            use ixos_protocol::SecureEmbedder;
+            use std::sync::Arc;
+
+            let model = MmapModel2VecEmbedder::new_with_type(model_type).map_err(|e| {
+                anyhow::anyhow!(
+                    "Failed to load {} for cache rebuild: {}",
+                    model_type.display_name(),
+                    e
+                )
+            })?;
+            let embedder = SecureEmbedder::new_fast(Arc::new(model));
+            let mut semantic = StubSemanticEngine::with_cache_mode(embedder, CacheMode::Cache);
+
+            let indexed_files = semantic.index_directory(&rebuild_dir).await?;
+            let warmed_files = semantic.precompute_embeddings().await;
+
+            println!("Indexed files discovered: {}", indexed_files);
+            println!("Embeddings rebuilt: {}", warmed_files);
+            println!("Elapsed: {:.2?}", started.elapsed());
         }
     }
 
@@ -1202,4 +1323,45 @@ fn handle_version(verbose: bool) {
             ixos_protocol::compliance::compliance_dir().display()
         );
     }
+}
+
+async fn handle_doctor(json: bool, verbose: bool) -> anyhow::Result<()> {
+    use ixos_protocol::diagnostics::{run_doctor, DoctorOptions, DoctorStatus};
+
+    let report = run_doctor(DoctorOptions { verbose }).await;
+
+    if json {
+        println!("{}", serde_json::to_string_pretty(&report)?);
+        return Ok(());
+    }
+
+    println!("Ixos Doctor");
+    println!("{}", "-".repeat(50));
+
+    for check in &report.checks {
+        let status = match check.status {
+            DoctorStatus::Pass => "PASS",
+            DoctorStatus::Warn => "WARN",
+            DoctorStatus::Fail => "FAIL",
+            DoctorStatus::Info => "INFO",
+        };
+
+        println!("[{}] {}", status, check.name);
+        println!("  {}", check.message);
+        if let Some(details) = &check.details {
+            println!("  {}", details);
+        }
+    }
+
+    println!();
+    println!(
+        "Summary: {} pass, {} warn, {} fail, {} info",
+        report.summary.pass, report.summary.warn, report.summary.fail, report.summary.info
+    );
+
+    if report.summary.fail > 0 {
+        std::process::exit(2);
+    }
+
+    Ok(())
 }

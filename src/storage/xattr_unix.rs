@@ -33,10 +33,12 @@ pub struct XattrCache {
 impl XattrCache {
     /// Create a new xattr cache with persistent HMAC key
     pub fn new() -> Self {
+        Self::new_with_fingerprint([0u8; 32])
+    }
+
+    /// Create a new xattr cache with an explicit model fingerprint.
+    pub fn new_with_fingerprint(model_fingerprint: [u8; 32]) -> Self {
         let key = load_or_create_key();
-        // For now, use a placeholder model fingerprint
-        // In production, this should be the SHA256 of the actual model weights
-        let model_fingerprint = [0u8; 32];
 
         Self {
             validator: MetadataValidator::new(&key, model_fingerprint),

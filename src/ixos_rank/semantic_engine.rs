@@ -17,8 +17,8 @@ use tokio::sync::Mutex;
 use crate::instrumentation::{content_extraction_span, embedding_batch_span, ranking_fusion_span};
 use crate::ixos_embed::augmented::{build_augmented_text, AugmentationConfig};
 use crate::ixos_embed::secure_embedder::SecureEmbedder;
-use crate::security::crypto::sha256;
-use crate::storage::{get_cache_for_path, EmbeddingCache};
+use crate::security::crypto::{sha256, sha256_file};
+use crate::storage::{get_cache_for_path_with_fingerprint, EmbeddingCache};
 
 use super::candidate_generator::{
     MAX_BYTES_READ_PER_FILE, MAX_CANDIDATES_FOR_EMBEDDING, MAX_TEXT_CHARS_PER_FILE,
@@ -202,7 +202,10 @@ impl StubSemanticEngine {
 
         // Initialize storage cache for Cache mode
         if self.cache_mode == CacheMode::Cache && !self.files_to_search.is_empty() {
-            self.storage_cache = Some(get_cache_for_path(dir));
+            self.storage_cache = Some(get_cache_for_path_with_fingerprint(
+                dir,
+                self.embedder.model_fingerprint(),
+            ));
         }
 
         {
@@ -247,6 +250,19 @@ impl StubSemanticEngine {
         self.files_to_search.len()
     }
 
+    /// Precompute embeddings for all indexed files.
+    ///
+    /// Useful for cache warmup/rebuild operations.
+    pub async fn precompute_embeddings(&self) -> usize {
+        let mut warmed = 0usize;
+        for path in &self.files_to_search {
+            if self.get_embedding(path).await.is_ok() {
+                warmed += 1;
+            }
+        }
+        warmed
+    }
+
     /// Drain semantic metrics for reporting
     pub async fn take_metrics(&self) -> SemanticMetrics {
         let mut metrics = self.metrics.lock().await;
@@ -276,7 +292,8 @@ impl StubSemanticEngine {
         }
 
         // 2. Read limited file content (hot path cap)
-        let (content, bytes_read, file_hash) = read_text_for_embedding(path)?;
+        let (content, bytes_read, file_hash) =
+            read_text_for_embedding(path, self.cache_mode == CacheMode::Cache)?;
         {
             let mut metrics = self.metrics.lock().await;
             metrics.io_read_bytes += bytes_read as u64;
@@ -400,9 +417,16 @@ fn read_file_limited_bytes(path: &Path) -> Result<(Vec<u8>, usize), SearchError>
     Ok((buffer, bytes_read))
 }
 
-fn read_text_for_embedding(path: &Path) -> Result<(String, usize, [u8; 32]), SearchError> {
+fn read_text_for_embedding(
+    path: &Path,
+    require_full_file_hash: bool,
+) -> Result<(String, usize, [u8; 32]), SearchError> {
     let (bytes, bytes_read) = read_file_limited_bytes(path)?;
-    let file_hash = sha256(&bytes);
+    let file_hash = if require_full_file_hash {
+        sha256_file(path).unwrap_or_else(|_| sha256(&bytes))
+    } else {
+        sha256(&bytes)
+    };
 
     let content = if is_heavy_format(path) {
         crate::parsers::extract_text(path, MAX_BYTES_READ_PER_FILE, MAX_TEXT_CHARS_PER_FILE)
@@ -507,6 +531,7 @@ impl SemanticEngine for StubSemanticEngine {
         }
 
         let augmentation_config = &self.augmentation_config;
+        let use_persistent_hash = self.cache_mode == CacheMode::Cache;
         let file_results: Vec<FileReadResult> = if uncached_indices.len() > 8 {
             // Use parallel I/O for larger batches
             uncached_indices
@@ -515,7 +540,7 @@ impl SemanticEngine for StubSemanticEngine {
                     let path = &candidate_paths[idx];
                     let _span = content_extraction_span(path);
                     let _enter = _span.enter();
-                    match read_text_for_embedding(path) {
+                    match read_text_for_embedding(path, use_persistent_hash) {
                         Ok((content, bytes_read, file_hash)) => {
                             let augmented =
                                 build_augmented_text(path, &content, augmentation_config);
@@ -539,7 +564,7 @@ impl SemanticEngine for StubSemanticEngine {
                     let path = &candidate_paths[idx];
                     let _span = content_extraction_span(path);
                     let _enter = _span.enter();
-                    match read_text_for_embedding(path) {
+                    match read_text_for_embedding(path, use_persistent_hash) {
                         Ok((content, bytes_read, file_hash)) => {
                             let augmented =
                                 build_augmented_text(path, &content, augmentation_config);

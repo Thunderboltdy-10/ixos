@@ -1,0 +1,36 @@
+name: Settings Matrix
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build ixos CLI
+        run: cargo build --bin ixos
+
+      - name: Run settings matrix
+        run: python scripts/run_settings_matrix.py
+
+      - name: Upload matrix report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: settings-matrix-report
+          path: reports/settings_matrix_*.md
+

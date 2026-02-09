@@ -6,8 +6,11 @@ This directory is the canonical starting point for product, model, and engineeri
 
 - Getting started: `docs/getting-started/INSTALLATION.md`
 - Desktop app guide: `docs/product/DESKTOP_APP.md`
+- CLI reliability quickcheck: `docs/product/CLI_RELIABILITY_QUICKCHECK.md`
+- Phases 0-2 implementation + testing guide: `docs/product/PHASES_0_2_IMPLEMENTATION_AND_TESTING.md`
 - Models and Hugging Face: `docs/models/HUGGINGFACE_AND_MODELS.md`
 - Benchmark and profiling runbook: `docs/engineering/BENCHMARKING.md`
+- Desktop search fallback behavior: `docs/engineering/SEARCH_MODE_FALLBACKS.md`
 - Agent workflow and skills: `docs/agents/SKILLS_AND_WORKFLOWS.md`
 - Markdown catalog for the full repo: `docs/MARKDOWN_INVENTORY.md`
 - Markdown governance and organization rules: `docs/engineering/MARKDOWN_ORGANIZATION.md`

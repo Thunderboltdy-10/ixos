@@ -65,6 +65,7 @@ pub mod fstd;
 pub mod history;
 pub mod hybrid_engine;
 pub mod lexical_engine;
+pub mod personal_ranker;
 pub mod progressive;
 pub mod secure_ranker;
 pub mod semantic_engine;
@@ -81,6 +82,10 @@ pub use candidate_lexical::CandidateLexicalEngine;
 pub use history::{HistoryEntry, SearchHistory};
 pub use hybrid_engine::{AdaptiveHybridEngine, AttackDetectionConfig};
 pub use lexical_engine::{LexicalEngine, RipgrepConfig, RipgrepLexicalEngine, StubLexicalEngine};
+pub use personal_ranker::{
+    normalize_open_score, now_unix_s as personal_now_unix_s, recency_factor, DECAY_TAU_SECONDS,
+    OPEN_SCORE_NORMALIZER,
+};
 pub use progressive::{ProgressiveSearchConfig, ProgressiveSearchEngine, SearchEvent};
 pub use secure_ranker::{
     Candidate, RankedResult, ScoreBreakdown, SecureRanker, SecureRankerConfig, UserBehaviorModel,

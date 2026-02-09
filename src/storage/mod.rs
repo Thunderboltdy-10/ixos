@@ -11,12 +11,17 @@ use std::path::Path;
 #[cfg(windows)]
 pub mod ads_windows;
 pub mod null;
+pub mod personal_ranking;
 pub mod sidecar_lmdb;
 pub mod validator;
 #[cfg(unix)]
 pub mod xattr_unix;
 
 pub use validator::{MetadataValidator, ValidatorError};
+
+/// Placeholder fingerprint used by generic storage callers that do not provide
+/// model identity. Semantic search paths should pass the real model fingerprint.
+pub const DEFAULT_MODEL_FINGERPRINT: [u8; 32] = [0u8; 32];
 
 /// Unified trait for embedding cache backends
 pub trait EmbeddingCache: Send + Sync {
@@ -44,22 +49,36 @@ pub trait EmbeddingCache: Send + Sync {
 /// 3. LMDB sidecar (FAT32, USB, network drives - uses temp directory)
 /// 4. NullCache (pure JIT mode, no persistence)
 pub fn get_cache_for_path(path: &Path) -> Box<dyn EmbeddingCache> {
+    get_cache_for_path_with_fingerprint(path, DEFAULT_MODEL_FINGERPRINT)
+}
+
+/// Auto-detect best cache backend for a path with an explicit model fingerprint.
+///
+/// This ensures cached embeddings are invalidated when the active model changes.
+pub fn get_cache_for_path_with_fingerprint(
+    path: &Path,
+    model_fingerprint: [u8; 32],
+) -> Box<dyn EmbeddingCache> {
     #[cfg(windows)]
     {
         if ads_windows::AdsCache::is_supported_static(path) {
-            return Box::new(ads_windows::AdsCache::new());
+            return Box::new(ads_windows::AdsCache::new_with_fingerprint(
+                model_fingerprint,
+            ));
         }
     }
 
     #[cfg(unix)]
     {
         if xattr_unix::XattrCache::is_supported_static(path) {
-            return Box::new(xattr_unix::XattrCache::new());
+            return Box::new(xattr_unix::XattrCache::new_with_fingerprint(
+                model_fingerprint,
+            ));
         }
     }
 
     // Try LMDB sidecar cache as fallback (for FAT32, USB, network drives)
-    match sidecar_lmdb::LmdbSidecarCache::new() {
+    match sidecar_lmdb::LmdbSidecarCache::new_with_fingerprint(model_fingerprint) {
         Ok(cache) => {
             tracing::info!("Using LMDB sidecar cache for {:?}", path);
             Box::new(cache)

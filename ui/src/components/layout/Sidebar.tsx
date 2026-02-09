@@ -114,13 +114,13 @@ export function Sidebar({
   };
 
   return (
-    <aside className={cn('w-60 h-full flex flex-col bg-graphite-0 border-r border-stroke-hairline', className)}>
+    <aside className={cn('w-64 h-full flex flex-col bg-graphite-0 border-r border-stroke-hairline', className)}>
       {/* Brand header with New Search button */}
-      <div className="p-4 flex items-center gap-3 pt-12 mb-2">
+      <div className="p-4 flex items-center gap-3 pt-12 mb-3">
         <div className="w-10 h-10 flex items-center justify-center shrink-0">
           <img src={ixosIcon} alt="Ixos" className="w-9 h-9 object-contain" />
         </div>
-        <span className="font-display text-sm font-semibold text-porcelain tracking-tight">Ixos</span>
+        <span className="font-display text-base font-semibold text-porcelain tracking-tight">Ixos</span>
         <button
           type="button"
           onClick={onNewSearch}
@@ -326,19 +326,19 @@ export function Sidebar({
       )}
 
       {/* Guide button */}
-      <div className="px-3 py-2 border-t border-stroke-hairline">
+      <div className="px-3 py-2.5 border-t border-stroke-hairline">
         <button
           type="button"
           onClick={() => onOpenGuide?.()}
           className={cn(
-            'w-full py-2 px-3 rounded-lg text-left border border-transparent hover:border-white/8',
+            'w-full py-2.5 px-3.5 rounded-lg text-left border border-transparent hover:border-white/8',
             'flex items-center gap-2',
             'text-fg-dim hover:text-porcelain hover:bg-graphite-2/65',
             'transition-colors duration-150 cursor-pointer'
           )}
         >
-          <BookOpen className="w-3.5 h-3.5 text-accent-amber" />
-          <span className="text-xs">Guide</span>
+          <BookOpen className="w-4 h-4 text-accent-amber" />
+          <span className="text-sm">Guide</span>
         </button>
       </div>
 
@@ -358,7 +358,7 @@ export function Sidebar({
             <button
               type="button"
               onClick={() => onOpenSettings?.('account')}
-            className="py-2 px-2.5 rounded-lg text-[10.5px] bg-graphite-2/64 border border-white/8 text-fg-muted hover:text-porcelain hover:bg-graphite-3/72 transition-colors"
+            className="py-2.5 px-3 rounded-lg text-xs bg-graphite-2/64 border border-white/8 text-fg-muted hover:text-porcelain hover:bg-graphite-3/72 transition-colors"
             >
               Account
             </button>
@@ -366,7 +366,7 @@ export function Sidebar({
               <button
                 type="button"
                 onClick={handleManageBilling}
-                className="py-2 px-2.5 rounded-lg text-[10.5px] bg-accent-teal/12 border border-accent-teal/26 text-accent-teal hover:bg-accent-teal/20 transition-colors"
+                className="py-2.5 px-3 rounded-lg text-xs bg-accent-teal/12 border border-accent-teal/26 text-accent-teal hover:bg-accent-teal/20 transition-colors"
               >
                 Billing
               </button>
@@ -374,7 +374,7 @@ export function Sidebar({
               <button
                 type="button"
                 onClick={handleManageBilling}
-                className="py-2 px-2.5 rounded-lg text-[10.5px] bg-accent-magenta/16 border border-accent-magenta/28 text-accent-magenta hover:bg-accent-magenta/24 transition-colors"
+                className="py-2.5 px-3 rounded-lg text-xs bg-accent-magenta/16 border border-accent-magenta/28 text-accent-magenta hover:bg-accent-magenta/24 transition-colors"
               >
                 Upgrade
               </button>
@@ -382,7 +382,7 @@ export function Sidebar({
             <button
               type="button"
               onClick={() => signOut()}
-              className="col-span-2 py-2 px-2.5 rounded-lg text-[10.5px] bg-graphite-2/64 border border-white/8 text-fg-muted hover:text-porcelain hover:bg-graphite-3/72 transition-colors"
+              className="col-span-2 py-2.5 px-3 rounded-lg text-xs bg-graphite-2/64 border border-white/8 text-fg-muted hover:text-porcelain hover:bg-graphite-3/72 transition-colors"
             >
               Sign Out
             </button>
@@ -390,9 +390,9 @@ export function Sidebar({
         </div>
       )}
 
-      {/* Stats footer with command palette shortcut */}
+      {/* Stats footer */}
       <div className="px-4 py-3 border-t border-stroke-hairline">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-start gap-2">
           <p className="text-2xs text-fg-ghost font-mono">
             {stats.totalSearches > 0 ? (
               <>
@@ -405,7 +405,6 @@ export function Sidebar({
               'Ready to search'
             )}
           </p>
-          <span className="rounded bg-accent-teal/10 border border-accent-teal/20 px-2 py-0.5 text-2xs text-accent-teal font-medium" title="Open command palette">Ctrl+K</span>
         </div>
       </div>
     </aside>
@@ -528,7 +527,7 @@ function NavItem({ icon: Icon, label, isActive, onClick, isPro, isLocked, onLock
       type="button"
       onClick={handleClick}
       className={cn(
-        'w-full flex items-center gap-3 px-3.5 py-2.75 rounded-md text-left border bg-transparent',
+        'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left border bg-transparent',
         'transition-colors duration-150',
         isActive
           ? 'text-porcelain border-white/10 bg-graphite-2/58'
@@ -540,7 +539,7 @@ function NavItem({ icon: Icon, label, isActive, onClick, isPro, isLocked, onLock
         'w-4.5 h-4.5',
         isActive ? 'text-accent-teal' : 'text-fg-dim'
       )} />
-      <span className="text-xs font-medium flex-1">{label}</span>
+      <span className="text-sm font-medium flex-1">{label}</span>
       {isPro && (
         isLocked ? (
           <Lock className="w-3.5 h-3.5 text-fg-ghost" />

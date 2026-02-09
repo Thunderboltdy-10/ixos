@@ -153,6 +153,8 @@ pub async fn clear_all_encrypted_files(app: tauri::AppHandle) -> Result<(), Stri
         "statistics.encrypted",
         "starred_searches.encrypted",
         "auth_token.encrypted",
+        "activity_ledger_v1.enc",
+        "workstreams_v1.enc",
     ];
 
     for filename in &encrypted_files {
@@ -182,6 +184,7 @@ pub async fn get_cache_stats(directory: String) -> Result<CacheStats, String> {
     let backend_type = detect_cache_backend(dir_path).to_string();
     let cache = get_cache_for_path(dir_path);
     let available = cache.is_supported(dir_path);
+    let configured_cache_mode = ixos_protocol::cli::IxosConfig::load().search.cache_mode;
 
     let (cached_files, total_size_bytes) = if backend_type == "LMDB" {
         match ixos_protocol::storage::sidecar_lmdb::LmdbSidecarCache::new()
@@ -203,7 +206,7 @@ pub async fn get_cache_stats(directory: String) -> Result<CacheStats, String> {
         cached_files,
         total_size_bytes,
         available,
-        cache_mode: "cache".to_string(),
+        cache_mode: configured_cache_mode,
     })
 }
 

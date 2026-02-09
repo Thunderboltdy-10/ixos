@@ -107,6 +107,10 @@ pub struct SearchConfig {
     /// Search mode: flash | pro | auto
     #[serde(default = "default_search_mode")]
     pub search_mode: String,
+
+    /// Enable local personal ranking signals (Pro feature)
+    #[serde(default)]
+    pub personal_ranking_enabled: bool,
 }
 
 /// Output format configuration
@@ -272,6 +276,7 @@ impl Default for SearchConfig {
             model_type: default_model_type(),
             pro_model_type: default_pro_model_type(),
             search_mode: default_search_mode(),
+            personal_ranking_enabled: false,
         }
     }
 }
@@ -420,6 +425,9 @@ impl IxosConfig {
             ["search", "model_type"] => Some(self.search.model_type.clone()),
             ["search", "pro_model_type"] => Some(self.search.pro_model_type.clone()),
             ["search", "search_mode"] => Some(self.search.search_mode.clone()),
+            ["search", "personal_ranking_enabled"] => {
+                Some(self.search.personal_ranking_enabled.to_string())
+            }
             ["output", "default_format"] => Some(self.output.default_format.clone()),
             ["output", "color"] => Some(self.output.color.to_string()),
             ["output", "show_scores"] => Some(self.output.show_scores.to_string()),
@@ -535,6 +543,14 @@ impl IxosConfig {
                     });
                 }
                 self.search.search_mode = value.to_string();
+            }
+            ["search", "personal_ranking_enabled"] => {
+                self.search.personal_ranking_enabled =
+                    value.parse().map_err(|_| ConfigError::InvalidValue {
+                        key: key.to_string(),
+                        value: value.to_string(),
+                        expected: "true or false".to_string(),
+                    })?;
             }
             ["output", "default_format"] => {
                 if !["human", "json", "csv", "ripgrep"].contains(&value) {
@@ -653,6 +669,10 @@ impl IxosConfig {
             (
                 "search.search_mode".to_string(),
                 self.search.search_mode.clone(),
+            ),
+            (
+                "search.personal_ranking_enabled".to_string(),
+                self.search.personal_ranking_enabled.to_string(),
             ),
             (
                 "output.default_format".to_string(),

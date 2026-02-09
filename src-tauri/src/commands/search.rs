@@ -4,12 +4,13 @@
 
 use crate::state::AppState;
 use ixos_protocol::capabilities::Capability;
+use ixos_protocol::cli::IxosConfig;
 use ixos_protocol::entitlements::ProStatus;
 use ixos_protocol::instrumentation::ipc_send_span;
 use ixos_protocol::ixos_rank::{
     progressive::{SearchEvent, SearchMode, StreamEventKind, StreamStage, StreamStats},
-    CandidateLexicalEngine, ProgressiveSearchConfig, ProgressiveSearchEngine, RankedResult,
-    StubSemanticEngine,
+    CandidateLexicalEngine, LexicalEngine, ProgressiveSearchConfig, ProgressiveSearchEngine,
+    RankedResult, StubSemanticEngine,
 };
 use ixos_protocol::security::DeviceIdentity;
 use ixos_protocol::EvidenceTag;
@@ -107,6 +108,7 @@ pub struct ScoreBreakdownPayload {
     pub integrity: f32,
     pub temporal: f32,
     pub behavior: f32,
+    pub personal: f32,
 }
 
 /// Context snippet payload
@@ -237,6 +239,7 @@ fn ranked_result_to_payload(result: &RankedResult) -> RankedResultPayload {
             integrity: result.score_breakdown.integrity,
             temporal: result.score_breakdown.temporal,
             behavior: result.score_breakdown.behavior,
+            personal: result.score_breakdown.personal,
         },
         context: result.context_snippet.as_ref().map(|ctx| ContextPayload {
             line_number: ctx.line_number,
@@ -401,6 +404,14 @@ fn resolve_search_mode(requested: Option<&str>, pro_available: bool) -> Result<S
     }
 }
 
+fn should_eager_index_semantic(
+    is_ask_mode: bool,
+    search_mode: SearchMode,
+    lexical_probe_is_empty: bool,
+) -> bool {
+    is_ask_mode || matches!(search_mode, SearchMode::Pro) || lexical_probe_is_empty
+}
+
 /// Start a progressive search with streaming results
 ///
 /// Results are streamed to the frontend via Tauri v2 Channel API.
@@ -539,7 +550,9 @@ pub async fn search_progressive(
     };
 
     let model_result = state.get_or_load_model(model_type);
-    let use_pro = matches!(config.search_mode, SearchMode::Auto | SearchMode::Pro);
+    let ask_mode_requested = options.is_ask_mode.unwrap_or(false);
+    let use_pro = matches!(config.search_mode, SearchMode::Pro)
+        || (matches!(config.search_mode, SearchMode::Auto) && !ask_mode_requested);
     let pro_model_result = if use_pro {
         Some(if pro_model_type == model_type {
             model_result.clone()
@@ -621,7 +634,7 @@ pub async fn search_progressive(
 
         let _ = tx
             .send(SearchEvent::Status(
-                "Preparing semantic index (local-only)...".into(),
+                "Preparing search context (local-only)...".into(),
             ))
             .await;
         let _ = tx
@@ -633,9 +646,26 @@ pub async fn search_progressive(
             .await;
 
         // Eager indexing can add large startup latency on big trees.
-        // For Flash/Auto flows we skip eager indexing so lexical streaming starts immediately.
+        // For Flash/Auto flows we avoid full pre-indexing unless needed.
+        // If lexical preflight yields zero matches, we index so pure-semantic fallback has files.
+        let is_ask_mode = options.is_ask_mode.unwrap_or(false);
+        let lexical_probe_is_empty = if is_ask_mode || matches!(config.search_mode, SearchMode::Pro)
+        {
+            false
+        } else {
+            match lexical.search(&query, 1).await {
+                Ok(results) => results.is_empty(),
+                Err(e) => {
+                    tracing::warn!(
+                        "Lexical preflight failed, enabling semantic eager indexing fallback: {}",
+                        e
+                    );
+                    true
+                }
+            }
+        };
         let requires_eager_index =
-            options.is_ask_mode.unwrap_or(false) || matches!(config.search_mode, SearchMode::Pro);
+            should_eager_index_semantic(is_ask_mode, config.search_mode, lexical_probe_is_empty);
         if requires_eager_index {
             if let Err(e) = semantic.index_directory(&dir_path).await {
                 tracing::warn!("Failed to index directory for semantic search: {}", e);
@@ -652,7 +682,9 @@ pub async fn search_progressive(
                 }
             }
         } else {
-            tracing::debug!("Skipping eager semantic index for low-latency lexical-first flow");
+            tracing::debug!(
+                "Skipping eager semantic index for low-latency lexical-first flow (lexical preflight had matches)"
+            );
         }
         let _ = tx
             .send(SearchEvent::Status(
@@ -663,6 +695,11 @@ pub async fn search_progressive(
         // Create progressive search engine
         let mut engine =
             ProgressiveSearchEngine::with_config_and_pro(lexical, semantic, pro_engine, config);
+        let runtime_config = IxosConfig::load();
+        engine
+            .secure_ranker_mut()
+            .config_mut()
+            .personal_ranking_enabled = runtime_config.search.personal_ranking_enabled;
 
         // Run search
         if let Err(e) = engine.search_progressive(query, tx, cancel).await {
@@ -708,6 +745,30 @@ mod tests {
     fn resolve_search_mode_allows_flash_without_pro() {
         let mode = resolve_search_mode(Some("flash"), false).expect("mode");
         assert!(matches!(mode, SearchMode::Flash));
+    }
+
+    #[test]
+    fn eager_indexing_is_forced_for_ask_mode() {
+        assert!(should_eager_index_semantic(true, SearchMode::Flash, false));
+    }
+
+    #[test]
+    fn eager_indexing_is_forced_for_pro_mode() {
+        assert!(should_eager_index_semantic(false, SearchMode::Pro, false));
+    }
+
+    #[test]
+    fn eager_indexing_runs_when_lexical_probe_is_empty() {
+        assert!(should_eager_index_semantic(false, SearchMode::Flash, true));
+    }
+
+    #[test]
+    fn eager_indexing_skips_when_lexical_probe_has_hits() {
+        assert!(!should_eager_index_semantic(
+            false,
+            SearchMode::Flash,
+            false
+        ));
     }
 }
 

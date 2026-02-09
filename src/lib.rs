@@ -31,6 +31,7 @@ pub mod capabilities;
 pub mod cli;
 pub mod compliance;
 pub mod daemon;
+pub mod diagnostics;
 pub mod entitlements;
 pub mod instrumentation;
 pub mod integrations;
@@ -171,6 +172,7 @@ pub use instrumentation::{
 
 // P5: Daemon Service
 pub use daemon::{DaemonConfig, DaemonService, IpcMessage, IpcResponse, IpcServer};
+pub use diagnostics::{run_doctor, DoctorCheck, DoctorOptions, DoctorReport, DoctorStatus};
 
 // P6: Evidence Engine
 pub use ixos_rank::evidence::{
@@ -184,7 +186,7 @@ pub use ixos_embed::augmented::{AugmentationConfig, AugmentedEmbedder};
 // Phase 2: Second Brain - Activity Ledger
 pub use activity_ledger::{
     create_event, hash_file_path, hash_query, ActivityAction, ActivityEvent, ActivityLedger,
-    CoOccurrence, CoOccurrenceAnalyzer, RecentFile, TimeRange,
+    CoOccurrence, CoOccurrenceAnalyzer, RecentFile, TimeRange, MAX_STORAGE_BYTES,
 };
 
 // Phase 2: Second Brain - Workstreams

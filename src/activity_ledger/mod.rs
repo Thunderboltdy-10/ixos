@@ -32,6 +32,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 /// Maximum number of events to store (auto-prune oldest)
 pub const MAX_EVENTS: usize = 10_000;
 
+/// Maximum serialized storage budget for persisted ledger.
+pub const MAX_STORAGE_BYTES: usize = 5 * 1024 * 1024;
+
 /// Rolling window in days
 pub const ROLLING_WINDOW_DAYS: u64 = 30;
 
@@ -286,6 +289,36 @@ impl ActivityLedger {
         }
     }
 
+    /// Enforce a serialized storage-size budget by pruning oldest entries.
+    ///
+    /// Prunes 20% of oldest events per iteration until serialized JSON fits.
+    pub fn enforce_storage_limit_bytes(
+        &mut self,
+        max_storage_bytes: usize,
+    ) -> Result<usize, serde_json::Error> {
+        let mut total_pruned = 0usize;
+
+        loop {
+            let serialized = serde_json::to_vec(&self.events)?;
+            if serialized.len() <= max_storage_bytes || self.events.is_empty() {
+                break;
+            }
+
+            let prune_count = ((self.events.len() as f32) * 0.20).ceil() as usize;
+            let prune_count = prune_count.max(1).min(self.events.len());
+            let keep = self.events.len().saturating_sub(prune_count);
+            self.events.truncate(keep);
+            total_pruned += prune_count;
+        }
+
+        if total_pruned > 0 {
+            self.rebuild_indices();
+            self.dirty = true;
+        }
+
+        Ok(total_pruned)
+    }
+
     /// Get activities within a time range, optionally filtered by action types
     pub fn get_activity(
         &self,
@@ -528,5 +561,41 @@ mod tests {
         let qh1 = hash_query(query);
         let qh2 = hash_query(query);
         assert_eq!(qh1, qh2);
+    }
+
+    #[test]
+    fn test_prunes_to_max_events() {
+        let mut ledger = ActivityLedger::new();
+        for i in 0..15_000 {
+            let mut event =
+                create_event(&format!("/file_{i}.txt"), ActivityAction::FileOpened, None);
+            event.timestamp = i as u64;
+            ledger.log_activity(event);
+        }
+        assert!(ledger.event_count() <= MAX_EVENTS);
+    }
+
+    #[test]
+    fn test_enforce_storage_limit_bytes() {
+        let mut ledger = ActivityLedger::new();
+        let now_ms = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as u64;
+        for i in 0..1_200 {
+            let mut event =
+                create_event(&format!("/large_{i}.txt"), ActivityAction::FileOpened, None);
+            event.metadata.insert("blob".to_string(), "x".repeat(8_000));
+            event.timestamp = now_ms.saturating_sub(i as u64);
+            ledger.log_activity(event);
+        }
+
+        let pruned = ledger
+            .enforce_storage_limit_bytes(300_000)
+            .expect("enforce");
+        assert!(pruned > 0);
+
+        let serialized = serde_json::to_vec(&ledger.export_events()).expect("serialize");
+        assert!(serialized.len() <= 300_000);
     }
 }

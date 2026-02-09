@@ -49,6 +49,15 @@ export function TodayEmptyState({ onStartSearch }: TodayEmptyStateProps) {
           Start searching to build your activity history. Your Today Tab will show
           your recent work, suggestions, and pinned items.
         </p>
+        <div className="mt-4 rounded-lg border border-stroke-hairline bg-graphite-1/55 px-4 py-3 text-left max-w-md mx-auto">
+          <p className="text-xs text-fg-secondary mb-2">To populate this view:</p>
+          <ol className="text-xs text-fg-dim space-y-1">
+            <li>1. Run 5-10 searches in Search.</li>
+            <li>2. Open a few results from different folders.</li>
+            <li>3. Keep Journalist mode off while testing memory features.</li>
+            <li>4. Reopen Today in a few seconds.</li>
+          </ol>
+        </div>
       </div>
 
       {/* Feature grid */}

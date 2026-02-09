@@ -262,7 +262,7 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Settings Panel Overlay */}
         {showSettings && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm pointer-events-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-graphite-0/58 backdrop-blur-md pointer-events-none">
             <div
               data-overlay-panel="true"
               className="w-[min(95vw,1320px)] h-[min(90vh,860px)] animate-in fade-in zoom-in-95 duration-200 relative group pointer-events-auto"
@@ -288,7 +288,7 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Info Panel Overlay */}
         {showInfo && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-sm pointer-events-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-graphite-0/58 backdrop-blur-md pointer-events-none">
             <div
               data-overlay-panel="true"
               className="w-full max-w-4xl h-[min(700px,88vh)] animate-in fade-in zoom-in-95 duration-200 relative group pointer-events-auto"
@@ -307,7 +307,7 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Pricing Panel Overlay */}
         {showPricing && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-sm pointer-events-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-graphite-0/58 backdrop-blur-md pointer-events-none">
             <div
               data-overlay-panel="true"
               className="w-full max-w-5xl h-[min(85vh,860px)] animate-in fade-in zoom-in-95 duration-200 relative group pointer-events-auto"

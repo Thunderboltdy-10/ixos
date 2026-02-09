@@ -44,6 +44,24 @@ pub fn run() {
             // Initialize Phase 2 Second Brain state
             app.manage(commands::activity::ActivityState::default());
             app.manage(commands::workstreams::WorkstreamsState::default());
+
+            // Periodic autosave for activity ledger (every 5 minutes when dirty).
+            let autosave_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                loop {
+                    tokio::time::sleep(std::time::Duration::from_secs(300)).await;
+                    if let Err(e) =
+                        commands::activity::autosave_if_dirty(autosave_handle.clone()).await
+                    {
+                        tracing::warn!("Activity autosave skipped: {}", e);
+                    }
+                    if let Err(e) =
+                        commands::workstreams::autosave_if_dirty(autosave_handle.clone()).await
+                    {
+                        tracing::warn!("Workstreams autosave skipped: {}", e);
+                    }
+                }
+            });
             // Setup system tray
             tray::setup_tray(app)?;
 
@@ -56,6 +74,13 @@ pub fn run() {
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 if window.label() == "main" {
+                    // Trigger a best-effort final activity save on close.
+                    let save_handle = window.app_handle().clone();
+                    tauri::async_runtime::spawn(async move {
+                        let _ = commands::activity::autosave_if_dirty(save_handle.clone()).await;
+                        let _ = commands::workstreams::autosave_if_dirty(save_handle).await;
+                    });
+
                     // Check if "Quit on Close" is enabled
                     // We load config here (synchronously) to avoid complex state management
                     // This is acceptable for a UI event handler
@@ -73,6 +98,14 @@ pub fn run() {
             // Search
             commands::search::search_progressive,
             commands::search::cancel_search,
+            // Personal ranking
+            commands::personal_ranking::pin_file,
+            commands::personal_ranking::unpin_file,
+            commands::personal_ranking::ignore_file,
+            commands::personal_ranking::unignore_file,
+            commands::personal_ranking::mark_not_relevant,
+            commands::personal_ranking::get_personal_signals,
+            commands::personal_ranking::reset_learning,
             // Config
             commands::config::get_config,
             commands::config::update_config,
@@ -80,6 +113,8 @@ pub fn run() {
             commands::config::get_consent_status,
             commands::config::grant_consent,
             commands::config::withdraw_consent,
+            // Diagnostics
+            commands::doctor::run_doctor,
             // System
             commands::system::show_overlay,
             commands::system::hide_overlay,

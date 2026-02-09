@@ -87,6 +87,10 @@ def run_query(bin_path: Path, query: str, limit: int, env: dict = None) -> dict:
         "json",
         "--limit",
         str(limit),
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "jit",
     ]
     result = subprocess.run(
         cmd,

@@ -35,6 +35,7 @@ pub struct SearchConfigPayload {
     pub model_type: String,
     pub pro_model_type: String,
     pub search_mode: String,
+    pub personal_ranking_enabled: bool,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -88,6 +89,7 @@ impl From<IxosConfig> for ConfigPayload {
                 model_type: config.search.model_type.clone(),
                 pro_model_type: config.search.pro_model_type.clone(),
                 search_mode: config.search.search_mode.clone(),
+                personal_ranking_enabled: config.search.personal_ranking_enabled,
             },
             output: OutputConfigPayload {
                 default_format: config.output.default_format.clone(),
@@ -129,6 +131,7 @@ impl From<ConfigPayload> for IxosConfig {
                 model_type: payload.search.model_type,
                 pro_model_type: payload.search.pro_model_type,
                 search_mode: payload.search.search_mode,
+                personal_ranking_enabled: payload.search.personal_ranking_enabled,
             },
             output: ixos_protocol::cli::OutputConfig {
                 default_format: payload.output.default_format,

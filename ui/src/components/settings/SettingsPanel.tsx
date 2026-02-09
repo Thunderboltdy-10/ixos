@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Settings, Shield, Scale, Info, Keyboard, User } from 'lucide-react';
+import { Settings, Shield, Scale, Info, Keyboard, User, Stethoscope } from 'lucide-react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { cn } from '@/lib/utils';
 import { SearchSettings } from './SearchSettings';
@@ -7,8 +7,16 @@ import { PrivacySettings } from './PrivacySettings';
 import { ComplianceSettings } from './ComplianceSettings';
 import { ShortcutSettings } from './ShortcutSettings';
 import { AccountSettings } from './AccountSettings';
+import { DiagnosticsSettings } from './DiagnosticsSettings';
 
-export type SettingsTabId = 'search' | 'account' | 'keyboard' | 'privacy' | 'compliance' | 'about';
+export type SettingsTabId =
+  | 'search'
+  | 'account'
+  | 'keyboard'
+  | 'privacy'
+  | 'compliance'
+  | 'diagnostics'
+  | 'about';
 
 const tabs: { id: SettingsTabId; label: string; icon: React.ElementType }[] = [
   { id: 'search', label: 'Search', icon: Settings },
@@ -16,6 +24,7 @@ const tabs: { id: SettingsTabId; label: string; icon: React.ElementType }[] = [
   { id: 'keyboard', label: 'Keyboard', icon: Keyboard },
   { id: 'privacy', label: 'Privacy', icon: Shield },
   { id: 'compliance', label: 'Compliance', icon: Scale },
+  { id: 'diagnostics', label: 'Diagnostics', icon: Stethoscope },
   { id: 'about', label: 'About', icon: Info },
 ];
 
@@ -35,12 +44,12 @@ export function SettingsPanel({ initialTab, onUpgrade }: { initialTab?: Settings
   }, [initialTab]);
 
   return (
-    <div className="flex h-full bg-graphite-1/98 backdrop-blur-xl border border-stroke-hairline rounded-2xl overflow-hidden shadow-2xl">
+    <div className="flex h-full bg-graphite-1/94 backdrop-blur-xl border border-stroke-hairline rounded-2xl overflow-hidden shadow-2xl">
       {/* Sidebar Navigation */}
-      <nav className="w-60 bg-graphite-2/50 border-r border-stroke-hairline p-4 flex flex-col gap-1">
+      <nav className="w-64 bg-graphite-2/45 border-r border-stroke-hairline p-4 flex flex-col gap-1.5">
         <div className="mb-6 px-3 pt-2">
-          <h2 className="text-lg font-display font-semibold text-porcelain tracking-tight">Settings</h2>
-          <p className="text-xs text-fg-secondary">Preferences & Controls</p>
+          <h2 className="text-xl font-display font-semibold text-porcelain tracking-tight">Settings</h2>
+          <p className="text-sm text-fg-secondary">Preferences & Controls</p>
         </div>
 
         {tabs.map((tab) => {
@@ -51,13 +60,13 @@ export function SettingsPanel({ initialTab, onUpgrade }: { initialTab?: Settings
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                'w-full flex items-center gap-3 px-3 py-2.25 rounded-lg text-sm font-medium border border-transparent transition-all duration-200',
+                'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-base font-medium border border-transparent transition-all duration-200',
                 isActive
                   ? 'bg-accent-teal/10 border-accent-teal/20 text-accent-teal'
                   : 'text-fg-secondary hover:bg-graphite-2/70 hover:border-white/8 hover:text-porcelain cursor-pointer'
               )}
             >
-              <Icon className={cn("w-4 h-4", isActive ? "text-accent-teal" : "text-fg-muted")} />
+              <Icon className={cn("w-4.5 h-4.5", isActive ? "text-accent-teal" : "text-fg-muted")} />
               {tab.label}
             </button>
           );
@@ -73,6 +82,7 @@ export function SettingsPanel({ initialTab, onUpgrade }: { initialTab?: Settings
           {activeTab === 'keyboard' && <ShortcutSettings />}
           {activeTab === 'privacy' && <PrivacySettings />}
           {activeTab === 'compliance' && <ComplianceSettings />}
+          {activeTab === 'diagnostics' && <DiagnosticsSettings />}
           {activeTab === 'about' && <AboutSection />}
         </div>
       </main>

@@ -58,6 +58,16 @@ impl DeviceIdentity {
         self.signing_key.sign(challenge)
     }
 
+    /// Derive a deterministic symmetric key from the device signing key.
+    ///
+    /// Different `context` values produce different keys.
+    pub fn derive_storage_key(&self, context: &str) -> [u8; 32] {
+        let mut material = Vec::with_capacity(32 + context.len());
+        material.extend_from_slice(&self.signing_key.to_bytes());
+        material.extend_from_slice(context.as_bytes());
+        sha256(&material)
+    }
+
     /// Decrypt an envelope-encrypted symmetric key.
     ///
     /// Envelope format: [ephemeral_pubkey(32) | nonce(12) | ciphertext+tag]

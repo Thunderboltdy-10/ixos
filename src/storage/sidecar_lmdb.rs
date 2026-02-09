@@ -46,8 +46,13 @@ impl LmdbSidecarCache {
     /// Creates the cache directory if it doesn't exist. The cache uses a persistent
     /// HMAC key loaded from the user's config directory.
     pub fn new() -> Result<Self, LmdbCacheError> {
+        Self::new_with_fingerprint([0u8; 32])
+    }
+
+    /// Create a new LMDB sidecar cache with an explicit model fingerprint.
+    pub fn new_with_fingerprint(model_fingerprint: [u8; 32]) -> Result<Self, LmdbCacheError> {
         let cache_dir = Self::get_cache_dir();
-        Self::with_cache_dir(cache_dir, true)
+        Self::with_cache_dir(cache_dir, true, model_fingerprint)
     }
 
     /// Create a new LMDB sidecar cache at a custom directory
@@ -55,7 +60,11 @@ impl LmdbSidecarCache {
     /// # Arguments
     /// * `cache_dir` - Directory where the LMDB database will be stored
     /// * `owns_cache` - If true, the cache directory will be cleaned up on drop
-    pub fn with_cache_dir(cache_dir: PathBuf, owns_cache: bool) -> Result<Self, LmdbCacheError> {
+    pub fn with_cache_dir(
+        cache_dir: PathBuf,
+        owns_cache: bool,
+        model_fingerprint: [u8; 32],
+    ) -> Result<Self, LmdbCacheError> {
         // Ensure the cache directory exists
         std::fs::create_dir_all(&cache_dir).map_err(LmdbCacheError::CreateDir)?;
 
@@ -77,8 +86,6 @@ impl LmdbSidecarCache {
 
         // Load the HMAC key for signature validation
         let key = load_or_create_key();
-        // Placeholder model fingerprint (same pattern as AdsCache)
-        let model_fingerprint = [0u8; 32];
         let validator = MetadataValidator::new(&key, model_fingerprint);
 
         tracing::info!("LMDB sidecar cache opened at {:?}", cache_dir);

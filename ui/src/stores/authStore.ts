@@ -1,5 +1,7 @@
 import { create } from 'zustand';
+import { invoke } from '@tauri-apps/api/core';
 import { getApiBase } from '@/lib/api';
+import { clearEntitlementToken } from '@/lib/authToken';
 import type { ProStatus } from '@/lib/types';
 
 export type PlanTier = 'free' | 'pro';
@@ -62,9 +64,11 @@ interface AuthState {
   confirmTransfer: (authToken: string, deviceId: string, code: string) => Promise<{ token?: string | null }>;
   logoutDevice: (authToken: string, deviceId: string) => Promise<void>;
   forgetDevice: (authToken: string, deviceId: string) => Promise<void>;
+  unregisterDevice: (authToken: string, deviceId: string) => Promise<void>;
   logoutAllDevices: (authToken: string) => Promise<void>;
   fetchDevices: (authToken: string) => Promise<DeviceInfo[]>;
   fetchBillingPortal: (authToken: string) => Promise<{ portalUrl: string | null }>;
+  clearLocalSession: () => Promise<void>;
 
   // Intent-based sync
   upgradeIntent: boolean;
@@ -331,5 +335,37 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     const data = await res.json();
     return { portalUrl: data?.portalUrl ?? null };
+  },
+
+  unregisterDevice: async (authToken, deviceId) => {
+    set({ isLoading: true, error: null });
+    const res = await apiRequest(`/api/desktop/devices/${encodeURIComponent(deviceId)}`, authToken, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      set({ isLoading: false, error: text || 'Device unregister failed' });
+      throw new Error(text || 'Device unregister failed');
+    }
+    set({ isLoading: false });
+  },
+
+  clearLocalSession: async () => {
+    set({
+      user: null,
+      deviceId: null,
+      deviceLabel: null,
+      entitlement: null,
+      entitlementToken: null,
+      proStatus: null,
+      devices: [],
+      transferRequired: false,
+      transferToken: null,
+      activeDeviceId: null,
+      isLoading: false,
+      error: null,
+    });
+    await clearEntitlementToken().catch(() => {});
+    await invoke('clear_entitlement_token').catch(() => {});
   },
 }));

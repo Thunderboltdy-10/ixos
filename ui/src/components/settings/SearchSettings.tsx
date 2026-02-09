@@ -6,7 +6,7 @@ import { useSearchStore } from '@/stores/searchStore';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Database, Trash2, RefreshCw, HardDrive, DownloadCloud, Loader2, Check } from 'lucide-react';
+import { Database, Trash2, RefreshCw, HardDrive, DownloadCloud, Loader2, Check, Lock } from 'lucide-react';
 import { formatFileSize } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
@@ -205,6 +205,9 @@ export function SearchSettings() {
 
       {/* Cache Stats Panel */}
       <CachePanel />
+
+      {/* Personal Ranking Panel */}
+      <PersonalRankingPanel isPro={isPro} />
 
       {/* Entitlement / Pro Status Panel */}
       <EntitlementPanel />
@@ -468,6 +471,69 @@ function CachePanel() {
           </Button>
         </div>
       )}
+    </div>
+  );
+}
+
+function PersonalRankingPanel({ isPro }: { isPro: boolean }) {
+  const { config, updateConfig } = useSettingsStore();
+  const { directory } = useSearchStore();
+  const [isResetting, setIsResetting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  if (!config) return null;
+
+  const enabled = !!config.search.personalRankingEnabled;
+
+  const onResetLearning = async () => {
+    if (!directory) {
+      setMessage('Run a search first so Ixos knows which directory to reset.');
+      return;
+    }
+    setIsResetting(true);
+    setMessage(null);
+    try {
+      const cleared = await invoke<number>('reset_learning', { directory });
+      setMessage(`Cleared personal signals for ${cleared} files.`);
+    } catch (error) {
+      setMessage(`Reset failed: ${String(error)}`);
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
+  return (
+    <div className="py-3 border-b border-stroke-hairline space-y-3">
+      <SettingRow
+        label="Personal ranking (local)"
+        description="Learn from file opens and pin/ignore actions to improve ranking"
+      >
+        <div className="flex items-center gap-2">
+          {!isPro && <Lock className="w-3.5 h-3.5 text-fg-dim" />}
+          <Switch
+            checked={enabled && isPro}
+            disabled={!isPro}
+            onCheckedChange={(checked) =>
+              updateConfig({
+                search: { ...config.search, personalRankingEnabled: checked },
+              })
+            }
+          />
+        </div>
+      </SettingRow>
+
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium text-porcelain">Reset learning</p>
+          <p className="text-xs text-fg-dim mt-0.5">
+            Clears pin/ignore/open-score signals for files in the active directory.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={onResetLearning} disabled={isResetting}>
+          {isResetting ? 'Resetting...' : 'Reset Learning'}
+        </Button>
+      </div>
+      {message && <p className="text-xs text-fg-dim">{message}</p>}
     </div>
   );
 }

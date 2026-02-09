@@ -24,11 +24,12 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
     refreshLease,
     setEntitlementToken,
     logoutDevice,
-    forgetDevice,
+    unregisterDevice,
     logoutAllDevices,
+    clearLocalSession,
   } = useAuthStore();
   const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
-  const { getToken } = useAuth();
+  const { getToken, signOut } = useAuth();
   const [actionDeviceId, setActionDeviceId] = useState<string | null>(null);
   const [logoutAllLoading, setLogoutAllLoading] = useState(false);
 
@@ -155,6 +156,11 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
     setActionDeviceId(targetDeviceId);
     try {
       await logoutDevice(token, targetDeviceId);
+      if (targetDeviceId === currentDeviceId) {
+        await clearLocalSession();
+        await signOut().catch(() => {});
+        return;
+      }
       await fetchDevices(token);
     } catch (error) {
       console.warn('Failed to logout device:', error);
@@ -168,7 +174,12 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
     if (!token) return;
     setActionDeviceId(targetDeviceId);
     try {
-      await forgetDevice(token, targetDeviceId);
+      await unregisterDevice(token, targetDeviceId);
+      if (targetDeviceId === currentDeviceId) {
+        await clearLocalSession();
+        await signOut().catch(() => {});
+        return;
+      }
       await fetchDevices(token);
     } catch (error) {
       console.warn('Failed to forget device:', error);
@@ -183,7 +194,8 @@ export function AccountSettings({ onUpgrade }: { onUpgrade?: () => void }) {
     setLogoutAllLoading(true);
     try {
       await logoutAllDevices(token);
-      await fetchDevices(token);
+      await clearLocalSession();
+      await signOut().catch(() => {});
     } catch (error) {
       console.warn('Failed to logout all devices:', error);
     } finally {

@@ -82,6 +82,7 @@ export interface ScoreBreakdown {
   integrity: number;
   temporal: number;
   behavior: number;
+  personal?: number;
 }
 
 /**
@@ -182,6 +183,7 @@ export interface SearchConfig {
   proModelType: ModelType;
   searchMode: SearchMode;
   askMode: AskMode;
+  personalRankingEnabled?: boolean;
   useStubModel: boolean;
   secureTiming: boolean;
   contextLines: number;
@@ -224,6 +226,36 @@ export type ProStatus =
   | { status: 'grace'; expiresAt: number; refreshBy: number }
   | { status: 'expired'; expiredAt: number }
   | { status: 'timeSuspect'; limitedUntil?: number | null };
+
+export type DoctorStatus = 'PASS' | 'WARN' | 'FAIL' | 'INFO';
+
+export interface DoctorCheck {
+  id: string;
+  name: string;
+  status: DoctorStatus;
+  message: string;
+  details?: string | null;
+}
+
+export interface DoctorSummary {
+  pass: number;
+  warn: number;
+  fail: number;
+  info: number;
+}
+
+export interface DoctorReport {
+  generatedAtUnixS: number;
+  checks: DoctorCheck[];
+  summary: DoctorSummary;
+}
+
+export interface PersonalSignals {
+  openScore: number;
+  lastOpenTs: number;
+  pinned: boolean;
+  ignored: boolean;
+}
 
 // ============================================================================
 // Phase 2: Second Brain Types

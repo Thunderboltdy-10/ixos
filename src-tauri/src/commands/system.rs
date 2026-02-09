@@ -6,6 +6,9 @@
 //! - Emergency clear for journalist mode
 
 use crate::state::AppState;
+use ixos_protocol::cli::IxosConfig;
+use ixos_protocol::ixos_rank::personal_ranker;
+use ixos_protocol::storage::personal_ranking::{get_personal_signals, set_personal_signals};
 use tauri::{AppHandle, Manager, State};
 
 /// Show the search overlay window
@@ -30,7 +33,7 @@ pub async fn hide_overlay(app: AppHandle) -> Result<(), String> {
 
 /// Open a file with the default application
 #[tauri::command]
-pub async fn open_file(path: String) -> Result<(), String> {
+pub async fn open_file(path: String, state: State<'_, AppState>) -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
         std::process::Command::new("cmd")
@@ -53,6 +56,22 @@ pub async fn open_file(path: String) -> Result<(), String> {
             .arg(&path)
             .spawn()
             .map_err(|e| e.to_string())?;
+    }
+
+    // Personal ranking learning updates are local-only and disabled in journalist mode.
+    if !state.is_journalist_mode() {
+        let cfg = IxosConfig::load();
+        if cfg.search.personal_ranking_enabled {
+            let file_path = std::path::Path::new(&path);
+            if file_path.exists() {
+                let current = get_personal_signals(file_path)
+                    .unwrap_or(None)
+                    .unwrap_or_default();
+                let updated =
+                    personal_ranker::update_on_open(current, personal_ranker::now_unix_s());
+                let _ = set_personal_signals(file_path, updated);
+            }
+        }
     }
 
     Ok(())

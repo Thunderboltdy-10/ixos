@@ -150,6 +150,9 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
             <p className="text-xs text-fg-dim">
               Start searching and opening files to create workstreams automatically
             </p>
+            <p className="mt-2 text-2xs text-fg-ghost max-w-md">
+              Tip: run several searches, open 3+ files, then click <span className="text-fg-secondary">Re-cluster</span>.
+            </p>
           </div>
         ) : (
           <div className="space-y-3">

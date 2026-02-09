@@ -22,7 +22,7 @@
 //!     let semantic = StubSemanticEngine::with_stub_model();
 //!     let mut engine = ProgressiveSearchEngine::new(lexical, semantic);
 //!
-//!     let (tx, mut rx) = mpsc::channel(10);
+//!     let (tx, mut rx) = mpsc::channel(256);
 //!     let cancel = CancellationToken::new();
 //!
 //!     tokio::spawn(async move {
@@ -49,7 +49,9 @@ use tokio_util::sync::CancellationToken;
 
 use crate::instrumentation::search_total_span;
 
-use super::ask_mode::{AnchorTerm, QueryMode, TrustedSnippet, TrustedSnippetSelector};
+use super::ask_mode::{
+    AnchorTerm, QueryMode, SnippetTrustConfig, TrustedSnippet, TrustedSnippetSelector,
+};
 use super::candidate_generator::QueryPreprocessor;
 use super::evidence::{Evidence, EvidenceChain, PassageExtractor};
 use super::lexical_engine::LexicalEngine;
@@ -455,13 +457,11 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         let processed = preprocessor.preprocess(&query);
 
         let echo_stats = stream_stats.lock().unwrap().clone();
-        let _ = tx
-            .send(SearchEvent::StreamUpdate {
-                stage: StreamStage::Echo,
-                stats: echo_stats,
-                events: Vec::new(),
-            })
-            .await;
+        let _ = tx.try_send(SearchEvent::StreamUpdate {
+            stage: StreamStage::Echo,
+            stats: echo_stats,
+            events: Vec::new(),
+        });
 
         // Phase 1: Lexical search (fast)
         let lexical_batch_size = self.config.lexical_batch_size;
@@ -604,6 +604,12 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         let _ = tx
             .send(SearchEvent::Status("Understanding meaning...".into()))
             .await;
+        let semantic_start_stats = stream_stats.lock().unwrap().clone();
+        let _ = tx.try_send(SearchEvent::StreamUpdate {
+            stage: StreamStage::Semantic,
+            stats: semantic_start_stats,
+            events: Vec::new(),
+        });
 
         // Phase 2: Semantic search (slower, more accurate)
         let flash_engine: &dyn SemanticEngine = self.semantic_engine.as_ref();
@@ -689,6 +695,20 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         } else {
             embedded_count = embedded_count.saturating_add(lexical_results.len());
         }
+        {
+            let mut stats = stream_stats.lock().unwrap();
+            stats.embedded = stats.embedded.max(embedded_count);
+            if lexical_results.is_empty() {
+                stats.candidates = stats.candidates.max(semantic_results.len());
+                stats.files_scanned = stats.files_scanned.max(semantic_results.len());
+            }
+        }
+        let semantic_progress_stats = stream_stats.lock().unwrap().clone();
+        let _ = tx.try_send(SearchEvent::StreamUpdate {
+            stage: StreamStage::Semantic,
+            stats: semantic_progress_stats,
+            events: Vec::new(),
+        });
 
         // Pro mode: potion/pro primary pass followed by optional Flash top-K refinement for fusion.
         let run_flash_refine =
@@ -699,13 +719,11 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                 .send(SearchEvent::Status("Refining with Flash model...".into()))
                 .await;
             let refine_stats = stream_stats.lock().unwrap().clone();
-            let _ = tx
-                .send(SearchEvent::StreamUpdate {
-                    stage: StreamStage::Refining,
-                    stats: refine_stats,
-                    events: Vec::new(),
-                })
-                .await;
+            let _ = tx.try_send(SearchEvent::StreamUpdate {
+                stage: StreamStage::Refining,
+                stats: refine_stats,
+                events: Vec::new(),
+            });
 
             let mut flash_candidates: Vec<LexicalMatch> = semantic_results
                 .iter()
@@ -804,6 +822,7 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
 
         let should_run_auto_pro_refine = matches!(self.config.search_mode, SearchMode::Auto)
             && has_pro_engine
+            && processed.mode != QueryMode::Ask
             && should_refine(
                 query_terms.len(),
                 &lexical_results,
@@ -827,13 +846,11 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                 ))
                 .await;
             let refine_stats = stream_stats.lock().unwrap().clone();
-            let _ = tx
-                .send(SearchEvent::StreamUpdate {
-                    stage: StreamStage::Refining,
-                    stats: refine_stats,
-                    events: Vec::new(),
-                })
-                .await;
+            let _ = tx.try_send(SearchEvent::StreamUpdate {
+                stage: StreamStage::Refining,
+                stats: refine_stats,
+                events: Vec::new(),
+            });
 
             let pro_top_k = self.config.auto_mode.pro_top_k.max(1);
             let mut pro_candidates: Vec<LexicalMatch> = semantic_results
@@ -949,9 +966,7 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         let passage_extractor = PassageExtractor::default_config();
         let will_enrich_results = evidence_limit > 0 || context_lines > 0;
         if will_enrich_results {
-            let _ = tx
-                .send(SearchEvent::Status("Collecting evidence...".into()))
-                .await;
+            let _ = tx.try_send(SearchEvent::Status("Collecting evidence...".into()));
 
             for (index, result) in final_results.iter_mut().enumerate() {
                 if index >= evidence_limit {
@@ -993,7 +1008,15 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                                         .enumerate()
                                         .map(|(idx, passage)| (idx, passage.score))
                                         .collect();
-                                    let selector = TrustedSnippetSelector::new(Default::default());
+                                    let selector =
+                                        TrustedSnippetSelector::new(SnippetTrustConfig {
+                                            min_anchor_hits: if processed.anchor_terms.len() >= 2 {
+                                                2
+                                            } else {
+                                                1
+                                            },
+                                            ..Default::default()
+                                        });
                                     if let Some(trusted) = selector.select_trusted_passage(
                                         &passages,
                                         &processed.anchor_terms,
@@ -1065,9 +1088,7 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             }
 
             // Push enriched snippets/evidence as an update without resetting the search lifecycle.
-            let _ = tx
-                .send(SearchEvent::SemanticResults(final_results.clone()))
-                .await;
+            let _ = tx.try_send(SearchEvent::SemanticResults(final_results.clone()));
         }
         {
             let mut stats = stream_stats.lock().unwrap();
@@ -1096,23 +1117,19 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
 
         if !semantic_events.is_empty() {
             let semantic_stats = stream_stats.lock().unwrap().clone();
-            let _ = tx
-                .send(SearchEvent::StreamUpdate {
-                    stage: StreamStage::Semantic,
-                    stats: semantic_stats,
-                    events: semantic_events,
-                })
-                .await;
+            let _ = tx.try_send(SearchEvent::StreamUpdate {
+                stage: StreamStage::Semantic,
+                stats: semantic_stats,
+                events: semantic_events,
+            });
         }
 
         let tail_stats = stream_stats.lock().unwrap().clone();
-        let _ = tx
-            .send(SearchEvent::StreamUpdate {
-                stage: StreamStage::Tail,
-                stats: tail_stats,
-                events: Vec::new(),
-            })
-            .await;
+        let _ = tx.try_send(SearchEvent::StreamUpdate {
+            stage: StreamStage::Tail,
+            stats: tail_stats,
+            events: Vec::new(),
+        });
         let _ = tx.send(SearchEvent::Complete).await;
 
         Ok(())
@@ -1232,6 +1249,7 @@ fn rank_semantic_candidates(
                         integrity: 1.0,
                         temporal: 0.5,
                         behavior: 1.0,
+                        personal: 0.0,
                     },
                 )
             })
@@ -1723,7 +1741,7 @@ mod tests {
     #[tokio::test]
     async fn test_progressive_search_empty_query() {
         let mut engine = create_test_engine();
-        let (tx, mut rx) = mpsc::channel(10);
+        let (tx, mut rx) = mpsc::channel(256);
         let cancel = CancellationToken::new();
 
         engine
@@ -1745,7 +1763,7 @@ mod tests {
     #[tokio::test]
     async fn test_progressive_search_with_results() {
         let mut engine = create_populated_engine();
-        let (tx, mut rx) = mpsc::channel(10);
+        let (tx, mut rx) = mpsc::channel(256);
         let cancel = CancellationToken::new();
 
         engine
@@ -1787,7 +1805,7 @@ mod tests {
     #[tokio::test]
     async fn test_cancellation() {
         let mut engine = create_populated_engine();
-        let (tx, mut rx) = mpsc::channel(10);
+        let (tx, mut rx) = mpsc::channel(256);
         let cancel = CancellationToken::new();
 
         // Cancel immediately
@@ -1955,7 +1973,7 @@ mod tests {
             config,
         );
 
-        let (tx, mut rx) = mpsc::channel(10);
+        let (tx, mut rx) = mpsc::channel(256);
         let cancel = CancellationToken::new();
 
         engine

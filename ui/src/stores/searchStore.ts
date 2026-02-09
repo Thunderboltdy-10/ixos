@@ -23,6 +23,12 @@ function digestSearchEvent(event: SearchEvent): string {
   }
 }
 
+function shouldDeduplicateEvent(event: SearchEvent): boolean {
+  // Stream and lexical batch updates can legitimately repeat frequently.
+  // Deduping these makes the UI appear frozen.
+  return event.type !== 'streamUpdate' && event.type !== 'lexicalBatch';
+}
+
 /// Translate backend error messages to user-friendly messages
 function translateErrorMessage(error: string): string {
   const msg = String(error).toLowerCase();
@@ -340,13 +346,15 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   },
 
   handleSearchEvent: (event) => {
-    const digest = digestSearchEvent(event);
-    const now = Date.now();
-    if (digest === lastSearchEventDigest && now - lastSearchEventAt <= DUPLICATE_EVENT_WINDOW_MS) {
-      return;
+    if (shouldDeduplicateEvent(event)) {
+      const digest = digestSearchEvent(event);
+      const now = Date.now();
+      if (digest === lastSearchEventDigest && now - lastSearchEventAt <= DUPLICATE_EVENT_WINDOW_MS) {
+        return;
+      }
+      lastSearchEventDigest = digest;
+      lastSearchEventAt = now;
     }
-    lastSearchEventDigest = digest;
-    lastSearchEventAt = now;
 
     switch (event.type) {
       case 'lexicalResults':
@@ -354,14 +362,39 @@ export const useSearchStore = create<SearchState>((set, get) => ({
           lexicalResults: event.results,
           phase: 'lexical',
           statusMessage: `Found ${event.count} quick results`,
+          streamStage: 'lexical',
         });
         break;
 
       case 'lexicalBatch':
-        set((state) => ({
-          lexicalResults: mergeLexicalResults(state.lexicalResults, event.results),
-          phase: 'lexical',
-        }));
+        set((state) => {
+          const mergedLexical = mergeLexicalResults(state.lexicalResults, event.results);
+          const previousStats = state.streamStats ?? {
+            filesScanned: 0,
+            candidates: 0,
+            embedded: 0,
+            cacheHits: 0,
+          };
+          const batchFiles = event.results.length;
+          const scanTrail = [
+            ...state.scanTrail,
+            ...event.results.map((result) => result.path),
+          ].slice(-MAX_SCAN_TRAIL);
+
+          return {
+            lexicalResults: mergedLexical,
+            phase: 'lexical',
+            streamStage: 'lexical',
+            scanTrail,
+            streamStats: {
+              ...previousStats,
+              filesScanned: previousStats.filesScanned + batchFiles,
+              candidates: Math.max(previousStats.candidates, mergedLexical.length),
+            },
+            streamSequence: state.streamSequence + 1,
+            statusMessage: `Scanning ${previousStats.filesScanned + batchFiles} files`,
+          };
+        });
         break;
 
       case 'status':
@@ -374,6 +407,14 @@ export const useSearchStore = create<SearchState>((set, get) => ({
               return state.semanticResults.length > 0 ? state.phase : 'semantic';
             }
             return state.phase;
+          })(),
+          streamStage: (() => {
+            const lowered = event.message.toLowerCase();
+            if (lowered.includes('refining')) return 'refining';
+            if (lowered.includes('understanding') || lowered.includes('semantic') || lowered.includes('collecting evidence')) {
+              return 'semantic';
+            }
+            return state.streamStage;
           })(),
         }));
         break;
@@ -402,6 +443,13 @@ export const useSearchStore = create<SearchState>((set, get) => ({
           semanticResults: event.results,
           phase: 'semantic',
           statusMessage: `Found ${event.count} results`,
+          streamStage: 'semantic',
+          streamStats: {
+            filesScanned: state.streamStats?.filesScanned ?? 0,
+            candidates: Math.max(state.streamStats?.candidates ?? 0, event.count),
+            embedded: Math.max(state.streamStats?.embedded ?? 0, event.count),
+            cacheHits: state.streamStats?.cacheHits ?? 0,
+          },
           selectedIndex: nextSelectedIndex,
           pendingSparkTargets: [...state.pendingSparkTargets, ...newTargets],
         }));
@@ -468,9 +516,10 @@ export const useSearchStore = create<SearchState>((set, get) => ({
                 : event.stage === 'refining'
                   ? 'refining'
                   : state.phase;
+          const nextStage = event.stage === 'echo' ? state.streamStage : event.stage;
 
           return {
-            streamStage: event.stage,
+            streamStage: nextStage,
             streamStats: stats,
             streamEvents: event.events,
             streamSequence: state.streamSequence + 1,

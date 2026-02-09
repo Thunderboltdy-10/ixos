@@ -7,15 +7,54 @@
 
 use ixos_protocol::{
     create_event, ActivityAction, ActivityEvent, ActivityLedger, CoOccurrence, RecentFile,
-    TimeRange,
+    TimeRange, MAX_STORAGE_BYTES,
 };
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
-use tauri::State;
+use tauri::{Manager, State};
 
 use crate::state::AppState;
 use ixos_protocol::capabilities::Capability;
 use ixos_protocol::security::device_identity::DeviceIdentity;
+
+use chacha20poly1305::aead::{rand_core::RngCore, Aead, KeyInit, OsRng};
+use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce};
+use std::fs;
+use std::path::PathBuf;
+
+const ACTIVITY_LEDGER_FILE_ENC: &str = "activity_ledger_v1.enc";
+const ACTIVITY_LEDGER_FILE_JSON_LEGACY: &str = "activity_ledger_v1.json";
+const ACTIVITY_LEDGER_KEY_CONTEXT: &str = "activity-ledger-v1";
+
+fn get_config_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    app.path()
+        .app_config_dir()
+        .map_err(|e| format!("Failed to get config directory: {}", e))
+}
+
+fn encrypt_payload(plaintext: &[u8], key_bytes: [u8; 32]) -> Result<Vec<u8>, String> {
+    let cipher = ChaCha20Poly1305::new(Key::from_slice(&key_bytes));
+    let mut nonce_bytes = [0u8; 12];
+    OsRng.fill_bytes(&mut nonce_bytes);
+    let nonce = Nonce::from_slice(&nonce_bytes);
+    let mut out = nonce_bytes.to_vec();
+    let ciphertext = cipher
+        .encrypt(nonce, plaintext)
+        .map_err(|e| format!("Encryption failed: {}", e))?;
+    out.extend_from_slice(&ciphertext);
+    Ok(out)
+}
+
+fn decrypt_payload(blob: &[u8], key_bytes: [u8; 32]) -> Result<Vec<u8>, String> {
+    if blob.len() < 12 {
+        return Err("Encrypted payload too short".to_string());
+    }
+    let (nonce_bytes, ciphertext) = blob.split_at(12);
+    let cipher = ChaCha20Poly1305::new(Key::from_slice(&key_bytes));
+    cipher
+        .decrypt(Nonce::from_slice(nonce_bytes), ciphertext)
+        .map_err(|e| format!("Decryption failed: {}", e))
+}
 
 /// State wrapper for activity ledger
 pub struct ActivityState {
@@ -174,7 +213,12 @@ impl From<RecentFile> for RecentFilePayload {
 pub fn log_activity(
     request: LogActivityRequest,
     activity_state: State<'_, ActivityState>,
+    app_state: State<'_, AppState>,
 ) -> Result<(), String> {
+    if app_state.is_journalist_mode() {
+        return Ok(());
+    }
+
     let mut event = create_event(
         &request.file_path,
         request.action_type,
@@ -199,7 +243,11 @@ pub fn log_result_shown(
     file_path: String,
     query: String,
     activity_state: State<'_, ActivityState>,
+    app_state: State<'_, AppState>,
 ) -> Result<(), String> {
+    if app_state.is_journalist_mode() {
+        return Ok(());
+    }
     let event = create_event(&file_path, ActivityAction::ResultShown, Some(&query));
     let mut ledger = activity_state.ledger.lock();
     ledger.log_activity(event);
@@ -276,9 +324,16 @@ pub fn get_recently_touched(
 pub fn clear_activity(
     time_range: Option<TimeRangePayload>,
     activity_state: State<'_, ActivityState>,
+    app: tauri::AppHandle,
 ) -> Result<(), String> {
     let mut ledger = activity_state.ledger.lock();
     ledger.clear_activity(time_range.map(|t| t.into()));
+    drop(ledger);
+
+    if let Ok(config_dir) = get_config_dir(&app) {
+        let _ = fs::remove_file(config_dir.join(ACTIVITY_LEDGER_FILE_ENC));
+        let _ = fs::remove_file(config_dir.join(ACTIVITY_LEDGER_FILE_JSON_LEGACY));
+    }
     Ok(())
 }
 
@@ -303,55 +358,129 @@ pub struct ActivityStatsPayload {
     pub is_dirty: bool,
 }
 
-/// Save activity ledger to encrypted storage (Pro only)
-#[tauri::command]
-pub async fn save_activity_ledger(
-    activity_state: State<'_, ActivityState>,
-    app_state: State<'_, AppState>,
+async fn save_activity_ledger_impl(
+    app: &tauri::AppHandle,
+    activity_state: &ActivityState,
+    app_state: &AppState,
 ) -> Result<(), String> {
-    // Check Pro capability
+    if app_state.is_journalist_mode() {
+        return Ok(());
+    }
+
     let manager = app_state.entitlement_manager.lock();
     if !manager.capabilities().has(Capability::MemoryGraph) {
         return Err("Pro capability required for activity persistence".into());
     }
+    drop(manager);
 
     if !activity_state.is_persistence_enabled() {
         return Err("Activity persistence not enabled".into());
     }
 
-    let ledger = activity_state.ledger.lock();
+    let mut ledger = activity_state.ledger.lock();
+    let _ = ledger
+        .enforce_storage_limit_bytes(MAX_STORAGE_BYTES)
+        .map_err(|e| e.to_string())?;
     let events = ledger.export_events();
-
-    // Serialize to JSON
-    let _json = serde_json::to_string(&events).map_err(|e| e.to_string())?;
-
-    // Save using encrypted storage (via existing storage commands)
-    // This will be integrated with the existing write_encrypted_file command
-    // For now, we'll use the storage key directly
     drop(ledger);
 
-    // Note: Actual encrypted write would go through the storage module
-    // This is a placeholder that shows the flow
-    tracing::info!("Activity ledger saved ({} events)", events.len());
+    let json = serde_json::to_vec(&events).map_err(|e| e.to_string())?;
+    let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+    let key = device.derive_storage_key(ACTIVITY_LEDGER_KEY_CONTEXT);
+    let encrypted = encrypt_payload(&json, key)?;
+
+    let config_dir = get_config_dir(app)?;
+    fs::create_dir_all(&config_dir)
+        .map_err(|e| format!("Failed to create config directory: {}", e))?;
+    let file_path = config_dir.join(ACTIVITY_LEDGER_FILE_ENC);
+    fs::write(&file_path, encrypted).map_err(|e| format!("Failed to write ledger: {}", e))?;
+
+    let mut ledger = activity_state.ledger.lock();
+    ledger.mark_saved();
+    drop(ledger);
+
+    tracing::info!(
+        "Activity ledger saved ({} events) to {:?}",
+        events.len(),
+        file_path
+    );
+    Ok(())
+}
+
+pub async fn autosave_if_dirty(app: tauri::AppHandle) -> Result<(), String> {
+    let activity_state = app.state::<ActivityState>();
+    let app_state = app.state::<AppState>();
+    let should_save = {
+        if !activity_state.is_persistence_enabled() {
+            return Ok(());
+        }
+        let ledger = activity_state.ledger.lock();
+        ledger.is_dirty()
+    };
+
+    if should_save {
+        save_activity_ledger_impl(&app, &activity_state, &app_state).await?;
+    }
 
     Ok(())
+}
+
+/// Save activity ledger to encrypted storage (Pro only)
+#[tauri::command]
+pub async fn save_activity_ledger(
+    app: tauri::AppHandle,
+    activity_state: State<'_, ActivityState>,
+    app_state: State<'_, AppState>,
+) -> Result<(), String> {
+    save_activity_ledger_impl(&app, &activity_state, &app_state).await
 }
 
 /// Load activity ledger from encrypted storage (Pro only)
 #[tauri::command]
 pub async fn load_activity_ledger(
+    app: tauri::AppHandle,
     activity_state: State<'_, ActivityState>,
     app_state: State<'_, AppState>,
 ) -> Result<ActivityStatsPayload, String> {
+    if app_state.is_journalist_mode() {
+        let ledger = activity_state.ledger.lock();
+        return Ok(ActivityStatsPayload {
+            event_count: ledger.event_count(),
+            is_dirty: ledger.is_dirty(),
+        });
+    }
+
     // Check Pro capability
     let manager = app_state.entitlement_manager.lock();
     if !manager.capabilities().has(Capability::MemoryGraph) {
         return Err("Pro capability required for activity persistence".into());
     }
+    drop(manager);
 
-    // Note: Actual encrypted read would go through the storage module
-    // This enables persistence for the session
     activity_state.enable_persistence();
+
+    let config_dir = get_config_dir(&app)?;
+    let encrypted_path = config_dir.join(ACTIVITY_LEDGER_FILE_ENC);
+    let legacy_path = config_dir.join(ACTIVITY_LEDGER_FILE_JSON_LEGACY);
+
+    let loaded_events = if encrypted_path.exists() {
+        let blob = fs::read(&encrypted_path).map_err(|e| e.to_string())?;
+        let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+        let key = device.derive_storage_key(ACTIVITY_LEDGER_KEY_CONTEXT);
+        let plaintext = decrypt_payload(&blob, key)?;
+        serde_json::from_slice::<Vec<ActivityEvent>>(&plaintext).map_err(|e| e.to_string())?
+    } else if legacy_path.exists() {
+        let json = fs::read_to_string(&legacy_path).map_err(|e| e.to_string())?;
+        serde_json::from_str::<Vec<ActivityEvent>>(&json).map_err(|e| e.to_string())?
+    } else {
+        Vec::new()
+    };
+
+    if !loaded_events.is_empty() {
+        let mut ledger = activity_state.ledger.lock();
+        *ledger = ActivityLedger::from_events(loaded_events);
+        ledger.mark_saved();
+    }
 
     let ledger = activity_state.ledger.lock();
     Ok(ActivityStatsPayload {

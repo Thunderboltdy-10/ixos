@@ -30,6 +30,7 @@ const defaultConfig: IxosConfig = {
     proModelType: 'ixos-pro-v2',
     searchMode: 'auto',
     askMode: 'auto',
+    personalRankingEnabled: false,
     useStubModel: true,
     secureTiming: false,
     contextLines: 3,

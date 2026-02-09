@@ -376,7 +376,7 @@ mod tests {
 
     #[test]
     fn test_sandbox_rejects_outside_path() {
-        let (temp_dir, sandbox) = setup_test_sandbox();
+        let (_temp_dir, sandbox) = setup_test_sandbox();
 
         // Create another temp directory outside the sandbox
         let other_dir = TempDir::new().unwrap();

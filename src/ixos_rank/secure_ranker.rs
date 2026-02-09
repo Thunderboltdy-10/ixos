@@ -45,7 +45,10 @@ use std::collections::{HashMap, VecDeque};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant, SystemTime};
 
+use crate::ixos_rank::personal_ranker::{normalize_open_score, recency_factor};
+use crate::journalist_mode::is_journalist_mode;
 use crate::security::crypto::sha256_file;
+use crate::storage::personal_ranking::get_personal_signals;
 
 use super::types::EvidenceSummary;
 
@@ -97,6 +100,15 @@ pub struct SecureRankerConfig {
 
     /// Number of accesses in window that triggers bot detection (default: 5)
     pub rapid_access_threshold: usize,
+
+    /// Enables learned personal signals (open score + recency).
+    pub personal_ranking_enabled: bool,
+
+    /// Global multiplier for personal boost.
+    pub personal_weight: f32,
+
+    /// Only apply learned personalization above this base score.
+    pub base_threshold: f32,
 }
 
 impl Default for SecureRankerConfig {
@@ -111,6 +123,9 @@ impl Default for SecureRankerConfig {
             max_age_for_temporal_score: DEFAULT_MAX_AGE_FOR_TEMPORAL,
             behavior_window: DEFAULT_BEHAVIOR_WINDOW,
             rapid_access_threshold: DEFAULT_RAPID_ACCESS_THRESHOLD,
+            personal_ranking_enabled: false,
+            personal_weight: 0.15,
+            base_threshold: 0.1,
         }
     }
 }
@@ -240,6 +255,8 @@ pub struct ScoreBreakdown {
     pub temporal: f32,
     /// Behavior score (based on access patterns)
     pub behavior: f32,
+    /// Personal score component (learned + manual pin/ignore)
+    pub personal: f32,
 }
 
 // =============================================================================
@@ -454,16 +471,43 @@ impl SecureRanker {
             self.behavior_model.record_access(&candidate.path);
 
             // Composite weighted score
-            let final_score = semantic_score * self.config.semantic_weight
+            let base_score = semantic_score * self.config.semantic_weight
                 + integrity_score * self.config.integrity_weight
                 + temporal_score * self.config.temporal_weight
                 + behavior_score * self.config.behavior_weight;
+
+            let mut personal_component = 0.0;
+            if !is_journalist_mode() && base_score >= self.config.base_threshold {
+                if let Ok(Some(signals)) = get_personal_signals(&candidate.path) {
+                    let mut boost = 0.0;
+                    if self.config.personal_ranking_enabled {
+                        let now = SystemTime::now()
+                            .duration_since(SystemTime::UNIX_EPOCH)
+                            .unwrap_or_default()
+                            .as_secs();
+                        let open = normalize_open_score(signals.open_score);
+                        let recency = recency_factor(signals.last_open_ts, now);
+                        boost += 0.45 * open + 0.35 * recency;
+                    }
+
+                    if signals.pinned {
+                        boost += 0.5;
+                    }
+                    if signals.ignored {
+                        boost -= 0.8;
+                    }
+                    personal_component = boost;
+                }
+            }
+
+            let final_score = base_score + self.config.personal_weight * personal_component;
 
             let breakdown = ScoreBreakdown {
                 semantic: semantic_score,
                 integrity: integrity_score,
                 temporal: temporal_score,
                 behavior: behavior_score,
+                personal: personal_component,
             };
 
             results.push(RankedResult::new(
@@ -601,6 +645,16 @@ impl SecureRanker {
     /// Get reference to behavior model (for testing)
     pub fn behavior_model(&self) -> &UserBehaviorModel {
         &self.behavior_model
+    }
+
+    /// Get immutable configuration.
+    pub fn config(&self) -> &SecureRankerConfig {
+        &self.config
+    }
+
+    /// Get mutable configuration.
+    pub fn config_mut(&mut self) -> &mut SecureRankerConfig {
+        &mut self.config
     }
 }
 

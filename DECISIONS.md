@@ -286,3 +286,73 @@
 - Evidence (links to /reports or output files): ixos-site/src/components/ui/Nav.tsx, ixos-site/src/components/sections/Footer.tsx, ixos-site/src/components/auth/AuthScreen.tsx, ixos-site/src/app/layout.tsx, RUNLOG.md (Entry 022)
 - Risks: Multiple logo files may accumulate if not cleaned periodically
 - Follow-ups: Add an asset versioning note in docs and prune superseded logo files in a future housekeeping pass
+
+- Decision: Use lexical preflight to conditionally restore semantic eager indexing in Flash/Auto desktop searches
+- Options considered: Keep eager index skipped always; always restore eager indexing; lazy-index inside semantic engine fallback path
+- Why chosen: Keeps low-latency lexical-first startup for common queries while guaranteeing non-empty pure-semantic fallback when lexical candidates are zero
+- Evidence (links to /reports or output files): src-tauri/src/commands/search.rs, reports/semantic_fallback_regression_fix_2026-02-08.md, RUNLOG.md (Entry 023)
+- Risks: Adds one lexical probe per non-Ask/non-Pro query; should be measured on very large trees to confirm minimal overhead
+- Follow-ups: Add settings-matrix or integration coverage for zero-lexical semantic fallback scenarios (Flash/Auto + non-Ask)
+
+- Decision: Remove dead `index --watch` exposure and hide daemon status/stop controls from CLI help until IPC paths are implemented
+- Options considered: Keep flags with TODO messaging; fully remove daemon subcommand; hide unsupported controls while preserving working foreground path
+- Why chosen: Avoids shipping misleading toggles while keeping the working foreground daemon flow available
+- Evidence (links to /reports or output files): src/cli/commands.rs, src/main.rs, reports/phase0_cli_reliability_patch_2026-02-08.md
+- Risks: Power users lose discoverability of future daemon IPC controls until reintroduced
+- Follow-ups: Implement daemon IPC status/stop and then unhide with real behavior
+
+- Decision: Implement `cache rebuild` as real index + embedding warmup using configured Flash model, and run inside the existing async runtime
+- Options considered: Keep placeholder text; stub-model rebuild; nested runtime `block_on` wrapper
+- Why chosen: Delivers functional cache warmup with real model embeddings and avoids nested Tokio runtime panics
+- Evidence (links to /reports or output files): src/main.rs, src/ixos_rank/semantic_engine.rs, reports/phase0_cli_reliability_patch_2026-02-08.md
+- Risks: Warmup is currently sequential; `workers` is not yet used for true concurrency
+- Follow-ups: Add bounded parallel embedding warmup and benchmark before/after on medium/large corpora
+
+- Decision: Bind embedding-cache validity to both file hash and active model fingerprint
+- Options considered: File-hash-only invalidation; manual cache clear on model switch; model+file coupled validity
+- Why chosen: Guarantees stale embeddings are recomputed both after file edits and after model changes, without requiring user intervention
+- Evidence (links to /reports or output files): src/storage/mod.rs, src/storage/ads_windows.rs, src/storage/xattr_unix.rs, src/storage/sidecar_lmdb.rs, src/ixos_rank/semantic_engine.rs, docs/product/PHASES_0_2_IMPLEMENTATION_AND_TESTING.md
+- Risks: Model switching can increase first-search latency because cache reuse is intentionally prevented across different model fingerprints
+- Follow-ups: Consider background warming for newly selected model to reduce first-hit latency
+
+- Decision: Persist workstreams on every mutating operation and unify encrypted storage path to app config dir
+- Options considered: Recluster-only persistence; UI-triggered explicit save only; backend mutation autosave + periodic/close autosave
+- Why chosen: Recluster-only save path lost manual operations across restarts and used a path inconsistent with load/save commands
+- Evidence (links to /reports or output files): src-tauri/src/commands/workstreams.rs, src-tauri/src/lib.rs, docs/product/PHASES_0_2_IMPLEMENTATION_AND_TESTING.md
+- Risks: More frequent writes under heavy edit operations
+- Follow-ups: Add debounce/coalescing if write amplification is observed in telemetry
+
+- Decision: Honor CLI `--config` path in `config` and `cache mode` command handlers
+- Options considered: Keep default-path-only behavior; partial path override; full path override support for read/write handlers
+- Why chosen: Previous behavior silently wrote to default config even when `--config` was provided, breaking deterministic automation
+- Evidence (links to /reports or output files): src/main.rs, RUNLOG.md (Entry 020)
+- Risks: None significant; behavior now matches user expectation for global config override
+- Follow-ups: Extend same override consistency check to any future command that writes config
+
+- Decision: Force Flash/JIT mode in golden harness query executions
+- Options considered: Keep mode implicit from default config; lock to Auto; lock to Flash baseline mode
+- Why chosen: Golden expectations are authored as baseline ranking assertions and became unstable when Auto/Pro routing varied by local model availability
+- Evidence (links to /reports or output files): scripts/run_golden.py, RUNLOG.md (Entry 021)
+- Risks: Golden no longer validates Auto/Pro ranking behavior
+- Follow-ups: Add separate mode-specific golden suites for Auto and Pro if those paths require strict regression gates
+
+- Decision: Make CLI `search` cache-mode resolution config-aware by default (`--cache-mode` overrides; otherwise persisted config applies)
+- Options considered: Keep hardcoded CLI default `jit`; require explicit `--cache-mode` every search; optional CLI override with config fallback
+- Why chosen: Hardcoded default made `cache mode persistent` appear broken and violated user expectation that settings persist across sessions
+- Evidence (links to /reports or output files): src/cli/commands.rs, src/main.rs, RUNLOG.md (Entry 025), reports/settings_matrix_2026-02-08.md
+- Risks: Existing scripts relying on implicit `jit` must explicitly pass `--cache-mode jit`
+- Follow-ups: Add a short note in CLI docs showing precedence: CLI flag > config > journalist override
+
+- Decision: Treat cache clearing as two paths: per-file metadata delete attempts + unconditional LMDB sidecar clear
+- Options considered: Per-file deletes only; LMDB-only clear; hybrid clear path
+- Why chosen: LMDB keying uses hashed `(path+hash)` and cannot be deleted per path through current trait API; hybrid guarantees actual cleanup on all filesystems
+- Evidence (links to /reports or output files): src/main.rs, src/storage/sidecar_lmdb.rs, RUNLOG.md (Entry 025), reports/phase0_2_validation_2026-02-08.md
+- Risks: LMDB clear is global (not directory-scoped) until a directory-aware key index is introduced
+- Follow-ups: Add optional LMDB namespace-by-root to support directory-scoped clear in a future pass
+
+- Decision: Cache stats should count both model-matching entries and detectable mixed-fingerprint blobs
+- Options considered: Strict model-fingerprint-only counts; blob-presence-only counts; model-match-first with fallback blob detection
+- Why chosen: Strict model-only counts broke settings-matrix cache invariants when `--stub-model` was used; fallback detection preserves truthfulness for cache-write checks while still preferring active-model validation
+- Evidence (links to /reports or output files): src/main.rs, scripts/run_settings_matrix.py, RUNLOG.md (Entry 025), reports/settings_matrix_2026-02-08.md
+- Risks: `cached_files` may include stale blobs from old fingerprints if users switch models frequently
+- Follow-ups: Add split fields (`cached_files_model_match`, `cached_files_any_blob`) in a backwards-compatible CLI JSON v2 payload

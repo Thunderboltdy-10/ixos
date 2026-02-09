@@ -8,6 +8,9 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tokio::sync::mpsc;
 
+use crate::ixos_embed::{MmapModel2VecEmbedder, ModelType, SecureEmbedder, StubModel};
+use crate::ixos_rank::{CacheMode, StubSemanticEngine};
+
 /// Background indexer for idle-time embedding
 pub struct BackgroundIndexer {
     is_running: Arc<AtomicBool>,
@@ -54,7 +57,7 @@ impl BackgroundIndexer {
     /// Note: Full implementation would integrate with EmbeddingModel
     pub async fn start(
         &mut self,
-        _directories: Vec<PathBuf>,
+        directories: Vec<PathBuf>,
         progress_tx: Option<mpsc::Sender<IndexingProgress>>,
     ) {
         if self.is_running() {
@@ -62,62 +65,12 @@ impl BackgroundIndexer {
         }
 
         self.is_running.store(true, Ordering::Relaxed);
-        let (tx, mut rx) = mpsc::channel::<()>(1);
+        let (tx, rx) = mpsc::channel::<()>(1);
         self.stop_tx = Some(tx);
 
         let is_running = self.is_running.clone();
 
-        tokio::spawn(async move {
-            tracing::info!("Background indexing started");
-
-            if let Some(ref tx) = progress_tx {
-                let progress = IndexingProgress {
-                    files_indexed: 0,
-                    files_total: 0,
-                    current_directory: None,
-                    is_complete: false,
-                };
-                let _ = tx.send(progress).await;
-            }
-
-            loop {
-                tokio::select! {
-                    _ = rx.recv() => {
-                        tracing::info!("Background indexing stopped");
-                        break;
-                    }
-                    _ = tokio::time::sleep(tokio::time::Duration::from_secs(1)) => {
-                        if !is_running.load(Ordering::Relaxed) {
-                            break;
-                        }
-                        // Placeholder: actual indexing logic would go here
-                        // For now, just send a progress update if channel exists
-                        if let Some(ref tx) = progress_tx {
-                            let progress = IndexingProgress {
-                                files_indexed: 0,
-                                files_total: 0,
-                                current_directory: None,
-                                is_complete: false,
-                            };
-                            let _ = tx.send(progress).await;
-                        }
-                    }
-                }
-            }
-
-            // Send completion if channel exists
-            if let Some(tx) = progress_tx {
-                let progress = IndexingProgress {
-                    files_indexed: 0,
-                    files_total: 0,
-                    current_directory: None,
-                    is_complete: true,
-                };
-                let _ = tx.send(progress).await;
-            }
-
-            is_running.store(false, Ordering::Relaxed);
-        });
+        tokio::spawn(run_indexing_loop(is_running, directories, rx, progress_tx));
     }
 
     /// Start background indexing without progress updates
@@ -131,7 +84,7 @@ impl BackgroundIndexer {
     /// requiring an async context.
     pub fn start_sync(
         &mut self,
-        _directories: Vec<PathBuf>,
+        directories: Vec<PathBuf>,
         progress_tx: Option<mpsc::Sender<IndexingProgress>>,
     ) {
         if self.is_running() {
@@ -139,72 +92,111 @@ impl BackgroundIndexer {
         }
 
         self.is_running.store(true, Ordering::Relaxed);
-        let (tx, mut rx) = mpsc::channel::<()>(1);
+        let (tx, rx) = mpsc::channel::<()>(1);
         self.stop_tx = Some(tx);
 
         let is_running = self.is_running.clone();
 
-        // Spawn the background task - this works even from spawn_blocking
-        // because we're just scheduling work, not awaiting it
         std::thread::spawn(move || {
-            // Create a new runtime for this thread
             let rt = tokio::runtime::Builder::new_current_thread()
                 .enable_all()
                 .build()
                 .expect("Failed to create runtime");
 
-            rt.block_on(async move {
-                tracing::info!("Background indexing started (sync)");
-
-                if let Some(ref tx) = progress_tx {
-                    let progress = IndexingProgress {
-                        files_indexed: 0,
-                        files_total: 0,
-                        current_directory: None,
-                        is_complete: false,
-                    };
-                    let _ = tx.send(progress).await;
-                }
-
-                loop {
-                    tokio::select! {
-                        _ = rx.recv() => {
-                            tracing::info!("Background indexing stopped");
-                            break;
-                        }
-                        _ = tokio::time::sleep(tokio::time::Duration::from_secs(1)) => {
-                            if !is_running.load(Ordering::Relaxed) {
-                                break;
-                            }
-                            // Placeholder: actual indexing logic would go here
-                            if let Some(ref tx) = progress_tx {
-                                let progress = IndexingProgress {
-                                    files_indexed: 0,
-                                    files_total: 0,
-                                    current_directory: None,
-                                    is_complete: false,
-                                };
-                                let _ = tx.send(progress).await;
-                            }
-                        }
-                    }
-                }
-
-                // Send completion if channel exists
-                if let Some(tx) = progress_tx {
-                    let progress = IndexingProgress {
-                        files_indexed: 0,
-                        files_total: 0,
-                        current_directory: None,
-                        is_complete: true,
-                    };
-                    let _ = tx.send(progress).await;
-                }
-
-                is_running.store(false, Ordering::Relaxed);
-            });
+            rt.block_on(run_indexing_loop(is_running, directories, rx, progress_tx));
         });
     }
+}
+
+async fn run_indexing_loop(
+    is_running: Arc<AtomicBool>,
+    directories: Vec<PathBuf>,
+    mut stop_rx: mpsc::Receiver<()>,
+    progress_tx: Option<mpsc::Sender<IndexingProgress>>,
+) {
+    tracing::info!("Background indexing started");
+
+    if let Some(ref tx) = progress_tx {
+        let _ = tx
+            .send(IndexingProgress {
+                files_indexed: 0,
+                files_total: 0,
+                current_directory: None,
+                is_complete: false,
+            })
+            .await;
+    }
+
+    // Best-effort real embedder; fallback to stub when unavailable.
+    let real_model = MmapModel2VecEmbedder::new_with_type(ModelType::IxosFlashV2)
+        .ok()
+        .map(Arc::new);
+
+    let mut total_discovered = 0usize;
+    let mut total_warmed = 0usize;
+
+    'outer: loop {
+        for directory in &directories {
+            tokio::select! {
+                _ = stop_rx.recv() => {
+                    tracing::info!("Background indexing stop requested");
+                    break 'outer;
+                }
+                else => {}
+            }
+
+            if !directory.exists() {
+                continue;
+            }
+
+            let mut semantic = if let Some(model) = &real_model {
+                let embedder = SecureEmbedder::new_fast(model.clone());
+                StubSemanticEngine::with_cache_mode(embedder, CacheMode::Cache)
+            } else {
+                let model = Arc::new(StubModel::new());
+                let embedder = SecureEmbedder::new_fast(model);
+                StubSemanticEngine::with_cache_mode(embedder, CacheMode::Cache)
+            };
+
+            let discovered = semantic.index_directory(directory).await.unwrap_or(0);
+            let warmed = semantic.precompute_embeddings().await;
+            total_discovered += discovered;
+            total_warmed += warmed;
+
+            if let Some(ref tx) = progress_tx {
+                let _ = tx
+                    .send(IndexingProgress {
+                        files_indexed: total_warmed,
+                        files_total: total_discovered,
+                        current_directory: Some(directory.clone()),
+                        is_complete: false,
+                    })
+                    .await;
+            }
+        }
+
+        // Background loop cadence: repeat periodically until explicitly stopped.
+        tokio::select! {
+            _ = stop_rx.recv() => {
+                tracing::info!("Background indexing stop requested");
+                break;
+            }
+            _ = tokio::time::sleep(tokio::time::Duration::from_secs(60)) => {}
+        }
+    }
+
+    if let Some(tx) = progress_tx {
+        let _ = tx
+            .send(IndexingProgress {
+                files_indexed: total_warmed,
+                files_total: total_discovered,
+                current_directory: None,
+                is_complete: true,
+            })
+            .await;
+    }
+
+    is_running.store(false, Ordering::Relaxed);
 }
 
 impl Default for BackgroundIndexer {

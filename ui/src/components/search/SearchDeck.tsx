@@ -303,7 +303,7 @@ export function SearchDeck() {
   if (!shouldShow) return null;
 
   const displayElapsedMs = finalElapsedMs ?? elapsedMs;
-  const modeBadge = journalistMode ? 'Secure' : cacheMode === 'cache' ? 'Cache' : 'JIT';
+  const modeBadge = journalistMode ? 'Secure' : cacheMode === 'cache' ? 'Cache (disk)' : 'JIT (memory)';
 
   return (
     <>
@@ -355,7 +355,6 @@ export function SearchDeck() {
             <div className="flex items-center gap-3 text-xs font-mono text-fg-ghost">
               {resultCount > 0 && <span className="tabular-nums">{resultCount} results</span>}
               {displayElapsedMs > 0 && <span className="tabular-nums">{formatDuration(displayElapsedMs)}</span>}
-              <span className="hidden rounded px-1.5 py-0.5 text-2xs text-fg-ghost bg-graphite-2 sm:inline-flex">Ctrl+K</span>
               <span className={cn('rounded px-1.5 py-0.5 text-2xs bg-graphite-2', accent.text)}>{modeBadge}</span>
             </div>
           </div>

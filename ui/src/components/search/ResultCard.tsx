@@ -1,19 +1,28 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText, FileCode, FileCode2, FileJson, FileCog, FileSpreadsheet, Terminal,
-  CheckCircle, AlertCircle, ChevronDown, ExternalLink, FolderOpen, Copy, Check, Clock, HardDrive
+  CheckCircle, AlertCircle, ChevronDown, ExternalLink, FolderOpen, Copy, Check, Clock, HardDrive,
+  EyeOff, ThumbsDown, Star
 } from 'lucide-react';
 import { cn, formatFileSize, formatRelativeTime, getFileTypeIcon } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { ScoreBreakdown } from './ScoreBreakdown';
 import { ContextSnippet } from './ContextSnippet';
 import { WhyMatched } from './WhyMatched';
+import { ExplainPanel } from './ExplainPanel';
 import { usePrefetch } from '@/hooks/usePrefetch';
 import { useResultCardLayout } from '@/hooks/useLayoutSync';
 import type { MatchSignal } from '@/lib/matchClassification';
+import { useSearchStore } from '@/stores/searchStore';
+import * as tauri from '@/lib/tauri';
 // useAnimatedCardOpacity import removed - animation system disabled
-import type { RankedResult, LexicalResult, ContextSnippet as ContextSnippetType } from '@/lib/types';
+import type {
+  RankedResult,
+  LexicalResult,
+  ContextSnippet as ContextSnippetType,
+  PersonalSignals,
+} from '@/lib/types';
 
 /**
  * Map icon name to Lucide component
@@ -52,6 +61,38 @@ function hasValidScoreBreakdown(result: RankedResult | LexicalResult): result is
   if (!('scoreBreakdown' in result)) return false;
   const breakdown = (result as RankedResult).scoreBreakdown;
   return breakdown != null && typeof breakdown === 'object';
+}
+
+type AskConfidence = 'High' | 'Medium' | 'Low';
+
+function inferAskAnswer(text: string | null | undefined): string | null {
+  if (!text) return null;
+  const compact = text.replace(/\s+/g, ' ').trim();
+  if (!compact) return null;
+
+  const dateMatch = compact.match(
+    /\b(?:\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{1,2},?\s+\d{4})\b/i
+  );
+  if (dateMatch) return dateMatch[0];
+
+  const amountMatch = compact.match(/\b(?:\$|usd\s*)?\d{1,3}(?:,\d{3})*(?:\.\d+)?\b/i);
+  if (amountMatch) return amountMatch[0];
+
+  const nameMatch = compact.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b/);
+  if (nameMatch) return nameMatch[0];
+
+  return compact.slice(0, 140);
+}
+
+function askConfidenceForResult(result: RankedResult): AskConfidence {
+  const semantic = result.scoreBreakdown.semantic;
+  const lexicalHits = result.evidence?.lexicalHitCount ?? 0;
+  const matchedTerms = result.evidence?.matchedTerms?.length ?? 0;
+  const lexicalAgreement = lexicalHits > 0 || matchedTerms >= 2;
+
+  if (semantic >= 0.62 && lexicalAgreement) return 'High';
+  if (semantic >= 0.45 || lexicalAgreement) return 'Medium';
+  return 'Low';
 }
 
 
@@ -101,7 +142,10 @@ export function ResultCard({
 }: ResultCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [signals, setSignals] = useState<PersonalSignals | null>(null);
   const { handleMouseEnter, handleMouseLeave } = usePrefetch();
+  const journalistMode = useSearchStore((state) => state.journalistMode);
+  const canApplyPersonalSignals = !journalistMode;
 
   // Color mapping based on mode - override for Ask Mode
   const modeColors = {
@@ -134,10 +178,22 @@ export function ResultCard({
   const fileSize = isRankedResult ? result.fileSize : undefined;
   const modifiedAt = isRankedResult ? result.modifiedAt : undefined;
   const fileExtension = isRankedResult ? result.fileExtension : undefined;
+  const isPinned = signals?.pinned ?? false;
+  const isIgnored = signals?.ignored ?? false;
+  const askAnswer = isRankedResult ? inferAskAnswer(evidence?.semanticPassage) : null;
+  const askConfidence = isRankedResult ? askConfidenceForResult(result) : null;
 
   // Get the appropriate file icon
   const iconName = getFileTypeIcon(fileExtension);
   const FileIcon = getFileIconComponent(iconName);
+
+  useEffect(() => {
+    if (!canApplyPersonalSignals) {
+      setSignals(null);
+      return;
+    }
+    tauri.getPersonalSignals(result.path).then(setSignals).catch(() => setSignals(null));
+  }, [canApplyPersonalSignals, result.path]);
 
   const handleClick = () => {
     onSelect();
@@ -150,11 +206,13 @@ export function ResultCard({
   };
 
   const handleReveal = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     onReveal();
   };
 
   const handleCopyPath = async (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     try {
       await navigator.clipboard.writeText(result.path);
@@ -165,6 +223,53 @@ export function ResultCard({
     }
   };
 
+  const handleTogglePin = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!canApplyPersonalSignals) return;
+    try {
+      if (isPinned) {
+        await tauri.unpinFile(result.path);
+      } else {
+        await tauri.pinFile(result.path);
+      }
+      const next = await tauri.getPersonalSignals(result.path);
+      setSignals(next);
+    } catch (err) {
+      console.error('Failed to toggle pin:', err);
+    }
+  };
+
+  const handleToggleIgnore = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!canApplyPersonalSignals) return;
+    try {
+      if (isIgnored) {
+        await tauri.unignoreFile(result.path);
+      } else {
+        await tauri.ignoreFile(result.path);
+      }
+      const next = await tauri.getPersonalSignals(result.path);
+      setSignals(next);
+    } catch (err) {
+      console.error('Failed to toggle ignore:', err);
+    }
+  };
+
+  const handleNotRelevant = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!canApplyPersonalSignals) return;
+    try {
+      await tauri.markNotRelevant(result.path);
+      const next = await tauri.getPersonalSignals(result.path);
+      setSignals(next);
+    } catch (err) {
+      console.error('Failed to mark not relevant:', err);
+    }
+  };
+
   // Hover classes - apply to all items
   const hoverClass = cn(
     !isAskMode && mode === 'jit' && 'hover:bg-accent-amber/8 hover:shadow-[0_0_12px_rgba(246,185,76,0.25)]',
@@ -172,6 +277,17 @@ export function ResultCard({
     !isAskMode && mode === 'journalist' && 'hover:bg-accent-violet/8 hover:shadow-[0_0_12px_rgba(167,139,250,0.25)]',
     isAskMode && 'hover:bg-accent-violet/12 hover:shadow-[0_0_15px_rgba(167,139,250,0.3)]',
   );
+  const tone = isAskMode || mode === 'journalist' ? 'violet' : mode === 'jit' ? 'amber' : 'teal';
+  const highScoreToneClass = {
+    amber: 'bg-accent-amber/15 text-accent-amber border-accent-amber/30',
+    teal: 'bg-accent-teal/15 text-accent-teal border-accent-teal/30',
+    violet: 'bg-accent-violet/15 text-accent-violet border-accent-violet/30',
+  }[tone];
+  const mediumScoreToneClass = {
+    amber: 'bg-accent-amber/10 text-accent-amber border-accent-amber/20',
+    teal: 'bg-accent-teal/10 text-accent-teal border-accent-teal/20',
+    violet: 'bg-accent-violet/10 text-accent-violet border-accent-violet/20',
+  }[tone];
 
   return (
     <div
@@ -227,7 +343,8 @@ export function ResultCard({
           <div className="flex items-center gap-2">
             <p className={cn(
               'font-semibold truncate transition-colors',
-              isSelected ? 'text-porcelain' : 'text-porcelain'
+              isSelected ? 'text-porcelain' : 'text-porcelain',
+              isIgnored && 'line-through opacity-60'
             )}>
               {result.filename}
             </p>
@@ -281,8 +398,8 @@ export function ResultCard({
             variant={integrityVerified ? 'secure' : 'warning'}
             className={cn(
               'font-mono font-semibold transition-colors duration-300 border',
-              result.score >= 0.9 ? `bg-${isAskMode ? 'accent-violet' : mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/15 text-${isAskMode ? 'accent-violet' : mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'} border-${isAskMode ? 'accent-violet' : mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/30` :
-                result.score >= 0.7 ? `bg-${isAskMode ? 'accent-violet' : mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/10 text-${isAskMode ? 'accent-violet' : mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'} border-${isAskMode ? 'accent-violet' : mode === 'jit' ? 'accent-amber' : mode === 'journalist' ? 'accent-violet' : 'accent-teal'}/20` :
+              result.score >= 0.9 ? highScoreToneClass :
+                result.score >= 0.7 ? mediumScoreToneClass :
                   'bg-fg-dim/15 text-fg-muted border-fg-dim/30'
             )}
           >
@@ -311,6 +428,27 @@ export function ResultCard({
             <div className="mt-4 pt-4 border-t border-stroke-hairline/50">
               {evidence && (
                 <div className="mb-4 flex flex-col gap-2">
+                  {isAskMode && askAnswer && askConfidence && (
+                    <div className="rounded-md border border-accent-violet/30 bg-accent-violet/10 px-3 py-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] uppercase tracking-[0.12em] text-accent-violet font-semibold">
+                          Answer Card
+                        </span>
+                        <span
+                          className={cn(
+                            "text-[10px] font-semibold px-1.5 py-0.5 rounded border",
+                            askConfidence === 'High' && "text-success border-success/40 bg-success/10",
+                            askConfidence === 'Medium' && "text-accent-amber border-accent-amber/40 bg-accent-amber/10",
+                            askConfidence === 'Low' && "text-fg-muted border-stroke-hairline bg-graphite-3/70",
+                          )}
+                        >
+                          {askConfidence}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-porcelain">{askAnswer}</p>
+                      <p className="mt-1 text-2xs text-fg-dim">Cited from this result snippet.</p>
+                    </div>
+                  )}
                   <div className="flex flex-wrap items-center gap-2">
                     {evidence.tags && evidence.tags.length > 0 && evidence.tags.map((tag, i) => {
                       const isObject = typeof tag === 'object' && tag !== null;
@@ -409,8 +547,66 @@ export function ResultCard({
                 </div>
               )}
 
+              {isRankedResult && (
+                <div className="mb-3">
+                  <ExplainPanel result={result} />
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={handleTogglePin}
+                  onDoubleClick={(e) => e.stopPropagation()}
+                  disabled={!canApplyPersonalSignals}
+                  className={cn(
+                    'flex items-center gap-1.5 px-2.5 py-1.5 text-2xs rounded-md border transition-colors',
+                    isPinned
+                      ? 'bg-accent-amber/15 text-accent-amber border-accent-amber/40'
+                      : 'bg-graphite-3 text-fg-muted border-stroke-hairline hover:text-porcelain',
+                    !canApplyPersonalSignals && 'opacity-55 cursor-not-allowed'
+                  )}
+                  title={canApplyPersonalSignals ? undefined : 'Unavailable in Journalist mode'}
+                >
+                  <Star className={cn('w-3.5 h-3.5', isPinned && 'fill-current')} />
+                  {isPinned ? 'Pinned' : 'Pin'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleToggleIgnore}
+                  onDoubleClick={(e) => e.stopPropagation()}
+                  disabled={!canApplyPersonalSignals}
+                  className={cn(
+                    'flex items-center gap-1.5 px-2.5 py-1.5 text-2xs rounded-md border transition-colors',
+                    isIgnored
+                      ? 'bg-error/15 text-error border-error/40'
+                      : 'bg-graphite-3 text-fg-muted border-stroke-hairline hover:text-porcelain',
+                    !canApplyPersonalSignals && 'opacity-55 cursor-not-allowed'
+                  )}
+                  title={canApplyPersonalSignals ? undefined : 'Unavailable in Journalist mode'}
+                >
+                  <EyeOff className="w-3.5 h-3.5" />
+                  {isIgnored ? 'Ignored' : 'Ignore'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNotRelevant}
+                  onDoubleClick={(e) => e.stopPropagation()}
+                  disabled={!canApplyPersonalSignals}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1.5 text-2xs rounded-md border bg-graphite-3 text-fg-muted border-stroke-hairline hover:text-porcelain transition-colors",
+                    !canApplyPersonalSignals && 'opacity-55 cursor-not-allowed'
+                  )}
+                  title={canApplyPersonalSignals ? undefined : 'Unavailable in Journalist mode'}
+                >
+                  <ThumbsDown className="w-3.5 h-3.5" />
+                  Not Relevant
+                </button>
+              </div>
+
               <div className="flex items-center gap-2 pt-2 border-t border-dashed border-stroke-hairline/30">
                 <button
+                  type="button"
                   onClick={(e) => { e.stopPropagation(); onOpen(); }}
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md',
@@ -425,6 +621,7 @@ export function ResultCard({
                   Open
                 </button>
                 <button
+                  type="button"
                   onClick={handleReveal}
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md',
@@ -437,6 +634,7 @@ export function ResultCard({
                   Reveal
                 </button>
                 <button
+                  type="button"
                   onClick={handleCopyPath}
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md',

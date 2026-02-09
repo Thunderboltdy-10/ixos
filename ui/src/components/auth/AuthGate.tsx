@@ -417,6 +417,7 @@ function AuthGateInner({ children }: AuthGateProps) {
     setProStatus,
     transferRequired,
     transferToken,
+    clearLocalSession,
   } = useAuthStore();
 
   const [bootstrapped, setBootstrapped] = useState(false);
@@ -639,8 +640,7 @@ function AuthGateInner({ children }: AuthGateProps) {
     } else {
       setBootstrapped(false);
       setBootError(null);
-      setEntitlementToken(null);
-      invoke('clear_entitlement_token').catch(() => { });
+      clearLocalSession().catch(() => { });
     }
 
     return () => {
@@ -661,6 +661,7 @@ function AuthGateInner({ children }: AuthGateProps) {
     setEntitlementToken,
     syncBackendPublicKey,
     applyEntitlementTokenToBackend,
+    clearLocalSession,
   ]);
 
   useEffect(() => {
@@ -801,13 +802,7 @@ function AuthGateInner({ children }: AuthGateProps) {
         }}
         onSignOut={() => {
           signOut().catch(() => { });
-          setEntitlementToken(null);
-          useAuthStore.setState({
-            transferRequired: false,
-            transferToken: null,
-            activeDeviceId: null,
-          });
-          invoke('clear_entitlement_token').catch(() => { });
+          clearLocalSession().catch(() => { });
         }}
       />
     );

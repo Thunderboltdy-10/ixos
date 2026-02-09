@@ -167,8 +167,8 @@ pub enum Commands {
         no_secure_ranking: bool,
 
         /// Cache mode: jit (memory only) or cache (persist to ADS/xattr)
-        #[arg(long, value_enum, default_value = "jit")]
-        cache_mode: CliCacheMode,
+        #[arg(long, value_enum)]
+        cache_mode: Option<CliCacheMode>,
 
         /// Use stub model for testing (fast, no semantic understanding)
         #[arg(long)]
@@ -216,10 +216,6 @@ pub enum Commands {
         #[arg(long)]
         use_xattr: bool,
 
-        /// Watch directories for changes after indexing
-        #[arg(long)]
-        watch: bool,
-
         /// Show progress during indexing
         #[arg(long)]
         progress: bool,
@@ -259,11 +255,11 @@ pub enum Commands {
         foreground: bool,
 
         /// Stop running daemon
-        #[arg(long)]
+        #[arg(long, hide = true)]
         stop: bool,
 
         /// Show daemon status
-        #[arg(long)]
+        #[arg(long, hide = true)]
         status: bool,
     },
 
@@ -279,6 +275,17 @@ pub enum Commands {
         /// Compliance action
         #[command(subcommand)]
         action: ComplianceCommands,
+    },
+
+    /// Run installation and runtime diagnostics
+    Doctor {
+        /// Output diagnostics as JSON
+        #[arg(long)]
+        json: bool,
+
+        /// Include detailed diagnostics
+        #[arg(long)]
+        verbose: bool,
     },
 
     /// Show version and diagnostics
@@ -643,7 +650,7 @@ mod tests {
                 stub_model,
                 ..
             } => {
-                assert!(matches!(cache_mode, CliCacheMode::Cache));
+                assert!(matches!(cache_mode, Some(CliCacheMode::Cache)));
                 assert!(stub_model);
             }
             _ => panic!("Expected Search command"),
@@ -660,7 +667,7 @@ mod tests {
                 stub_model,
                 ..
             } => {
-                assert!(matches!(cache_mode, CliCacheMode::Jit));
+                assert!(cache_mode.is_none());
                 assert!(!stub_model);
             }
             _ => panic!("Expected Search command"),

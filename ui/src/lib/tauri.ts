@@ -5,6 +5,9 @@ import type {
   SearchEvent,
   ConsentStatus,
   ProStatus,
+  ModelStatus,
+  DoctorReport,
+  PersonalSignals,
   ActivityAction,
   ActivityEvent,
   ActivityStats,
@@ -161,6 +164,36 @@ export async function selectDirectory(): Promise<string | null> {
 }
 
 /**
+ * Get embedding model availability and load status.
+ */
+export async function getModelStatus(): Promise<ModelStatus> {
+  return await invoke('get_model_status');
+}
+
+/**
+ * Get cache stats for a directory.
+ */
+export async function getCacheStats(
+  directory: string,
+): Promise<{ backendType: string; cachedFiles: number; totalSizeBytes: number; available: boolean; cacheMode: string }> {
+  return await invoke('get_cache_stats', { directory });
+}
+
+/**
+ * Get local device identifier.
+ */
+export async function getDeviceId(): Promise<string> {
+  return await invoke('get_device_id');
+}
+
+/**
+ * Run backend doctor checks.
+ */
+export async function runDoctor(verbose = false): Promise<DoctorReport> {
+  return await invoke('run_doctor', { verbose });
+}
+
+/**
  * Get keyboard shortcut configuration
  */
 export async function getShortcutConfig(): Promise<import('./types').ShortcutConfig> {
@@ -193,6 +226,37 @@ export async function setEntitlementPublicKey(publicKey: string): Promise<void> 
  */
 export async function getProStatus(): Promise<ProStatus> {
   return await invoke('get_pro_status');
+}
+
+/**
+ * Personal ranking controls.
+ */
+export async function pinFile(path: string): Promise<void> {
+  await invoke('pin_file', { path });
+}
+
+export async function unpinFile(path: string): Promise<void> {
+  await invoke('unpin_file', { path });
+}
+
+export async function ignoreFile(path: string): Promise<void> {
+  await invoke('ignore_file', { path });
+}
+
+export async function unignoreFile(path: string): Promise<void> {
+  await invoke('unignore_file', { path });
+}
+
+export async function markNotRelevant(path: string): Promise<void> {
+  await invoke('mark_not_relevant', { path });
+}
+
+export async function getPersonalSignals(path: string): Promise<PersonalSignals | null> {
+  return await invoke('get_personal_signals', { path });
+}
+
+export async function resetLearning(directory: string): Promise<number> {
+  return await invoke('reset_learning', { directory });
 }
 
 /**

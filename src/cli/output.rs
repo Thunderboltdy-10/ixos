@@ -817,6 +817,7 @@ mod tests {
                     integrity: 1.0,
                     temporal: 0.5,
                     behavior: 1.0,
+                    personal: 0.0,
                 },
             ),
             RankedResult::new(
@@ -828,6 +829,7 @@ mod tests {
                     integrity: 1.0,
                     temporal: 0.3,
                     behavior: 1.0,
+                    personal: 0.0,
                 },
             ),
         ]

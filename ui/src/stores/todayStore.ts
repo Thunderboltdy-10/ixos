@@ -10,6 +10,7 @@ import type {
   TodayTabData,
   RecentFile,
   SuggestedFile,
+  MoveRecommendation,
   PinnedItem,
   Workstream,
 } from '@/lib/types';
@@ -69,9 +70,10 @@ export const useTodayStore = create<TodayState>((set, get) => ({
 
     try {
       // Load data in parallel
-      const [recentlyTouched, workstreams] = await Promise.all([
+      const [recentlyTouched, workstreams, moveRecommendations] = await Promise.all([
         tauri.getRecentlyTouched(10).catch(() => [] as RecentFile[]),
         tauri.listWorkstreams(5).catch(() => [] as Workstream[]),
+        tauri.getMoveRecommendations(6, 3).catch(() => [] as MoveRecommendation[]),
       ]);
 
       // Get most recent workstream
@@ -123,6 +125,7 @@ export const useTodayStore = create<TodayState>((set, get) => ({
         },
         recentlyTouched,
         suggestedNext,
+        moveRecommendations,
         pinned: pinnedItems,
       };
 

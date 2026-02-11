@@ -330,6 +330,18 @@ export interface ActivityStats {
 }
 
 /**
+ * Pro recommendation for moving a file to a better-matching folder.
+ */
+export interface MoveRecommendation {
+  filePath: string;
+  currentFolder: string;
+  suggestedFolder: string;
+  confidence: number;
+  evidenceCount: number;
+  reason: string;
+}
+
+/**
  * Workstream (auto-clustered or manual session)
  */
 export interface Workstream {
@@ -368,6 +380,7 @@ export interface TodayTabData {
   };
   recentlyTouched: RecentFile[];
   suggestedNext: SuggestedFile[];
+  moveRecommendations: MoveRecommendation[];
   pinned: PinnedItem[];
 }
 

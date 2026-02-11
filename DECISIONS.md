@@ -356,3 +356,31 @@
 - Evidence (links to /reports or output files): src/main.rs, scripts/run_settings_matrix.py, RUNLOG.md (Entry 025), reports/settings_matrix_2026-02-08.md
 - Risks: `cached_files` may include stale blobs from old fingerprints if users switch models frequently
 - Follow-ups: Add split fields (`cached_files_model_match`, `cached_files_any_blob`) in a backwards-compatible CLI JSON v2 payload
+
+- Decision: Reject desktop/control-plane requests when bearer token is present but fails verification
+- Options considered: Always fallback to cookie/session auth; fallback only when no bearer header; strict bearer-only for API paths
+- Why chosen: Bearer-present fallback is an auth ambiguity that can mask invalid token states and create unintended privilege paths across mixed client contexts
+- Evidence (links to /reports or output files): ixos-site/src/lib/controlPlane.ts, RUNLOG.md (Entry 027)
+- Risks: Some mixed browser/API flows with stale bearer headers now fail fast (expected)
+- Follow-ups: Add route-level explicit policy docs (`desktop API: bearer-required`) and integration tests for invalid bearer cases
+
+- Decision: Enforce Pro status + capability checks inside personal-ranking Tauri commands
+- Options considered: UI-only gating; config-flag-only gating; command-level entitlement enforcement
+- Why chosen: Command-level checks prevent bypass via direct invoke/scripted calls even if UI state is manipulated
+- Evidence (links to /reports or output files): src-tauri/src/commands/personal_ranking.rs, RUNLOG.md (Entry 027)
+- Risks: Users with temporarily stale entitlement token lose personal ranking actions until refresh
+- Follow-ups: Add explicit UI error toast mapping for personal ranking entitlement failures
+
+- Decision: Implement low-end landing Strategy mode as pinned hard-lock with reduced FX (instead of disabling pin)
+- Options considered: keep full effects on all devices; disable pin on low-end; hard-lock + reduced effects
+- Why chosen: Preserves narrative/stage progression while reducing frame load and limiting scroll drift artifacts on constrained hardware
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/HeroPipeline.tsx, RUNLOG.md (Entry 027)
+- Risks: Visual richness is reduced on low-end devices by design
+- Follow-ups: Add telemetry or synthetic perf checks to tune reduced-FX thresholds over real device profiles
+
+- Decision: Ship move recommendations only after repeated evidence threshold, with low one-off weight
+- Options considered: one-click recommendation; recency-only rule; repeated-query/folder evidence with thresholding
+- Why chosen: Reduces noisy suggestions and matches product requirement that one-off interactions should not dominate
+- Evidence (links to /reports or output files): src/activity_ledger/mod.rs, src-tauri/src/commands/activity.rs, ui/src/components/today/TodayTab.tsx, RUNLOG.md (Entry 027)
+- Risks: Sparse activity histories may produce no recommendations initially
+- Follow-ups: Add accept/dismiss feedback loops to personalize confidence scoring over time

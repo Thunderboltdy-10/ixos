@@ -696,10 +696,22 @@ pub async fn search_progressive(
         let mut engine =
             ProgressiveSearchEngine::with_config_and_pro(lexical, semantic, pro_engine, config);
         let runtime_config = IxosConfig::load();
+
+        // SECURITY: Enforce Pro gating for personal ranking
+        // Only enable personal ranking if user has Pro AND config says enabled
+        let has_pro = pro_available; // This is already computed earlier in the function
+        let personal_ranking_enabled = runtime_config.search.personal_ranking_enabled && has_pro;
+
+        if runtime_config.search.personal_ranking_enabled && !has_pro {
+            tracing::debug!(
+                "Personal ranking config enabled but user lacks Pro entitlement - disabling for this search"
+            );
+        }
+
         engine
             .secure_ranker_mut()
             .config_mut()
-            .personal_ranking_enabled = runtime_config.search.personal_ranking_enabled;
+            .personal_ranking_enabled = personal_ranking_enabled;
 
         // Run search
         if let Err(e) = engine.search_progressive(query, tx, cancel).await {

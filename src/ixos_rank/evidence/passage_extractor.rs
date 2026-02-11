@@ -287,6 +287,12 @@ fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
 
 /// Read file content for passage extraction
 pub fn read_file_content(path: &Path, max_bytes: usize) -> Option<String> {
+    // SECURITY: Check if this is a cloud-only file to prevent auto-download
+    use crate::storage::cloud_detection::should_skip_cloud_file;
+    if should_skip_cloud_file(path) {
+        return None;
+    }
+
     let max_chars = crate::ixos_rank::candidate_generator::MAX_TEXT_CHARS_PER_FILE;
     crate::parsers::extract_text(path, max_bytes, max_chars)
 }

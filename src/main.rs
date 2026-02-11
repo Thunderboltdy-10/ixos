@@ -17,7 +17,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use ixos_protocol::cli::{
     create_formatter_with_options, CacheCommands, CcpaCommands, Cli, CliFlashModelType,
     CliProModelType, CliSearchMode, Commands, ComplianceCommands, GdprCommands, IxosConfig,
-    OutputFormat,
+    ModelCommands, OutputFormat,
 };
 use ixos_protocol::compliance::{ComplianceManager, DeletionScope};
 use ixos_protocol::ixos_embed::ModelType;
@@ -152,6 +152,10 @@ async fn main() -> anyhow::Result<()> {
 
         Commands::Version { verbose } => {
             handle_version(verbose);
+        }
+
+        Commands::Model { action } => {
+            handle_model(action).await?;
         }
     }
 
@@ -1363,5 +1367,71 @@ async fn handle_doctor(json: bool, verbose: bool) -> anyhow::Result<()> {
         std::process::exit(2);
     }
 
+    Ok(())
+}
+
+async fn handle_model(action: ModelCommands) -> anyhow::Result<()> {
+    use ixos_protocol::ixos_embed::MmapModel2VecEmbedder;
+
+    match action {
+        ModelCommands::List { all, json } => {
+            let models = MmapModel2VecEmbedder::available_models();
+            if json {
+                println!("[]");
+            } else {
+                println!("Available Models:");
+                for (model_type, available, _) in models {
+                    if !all && !available {
+                        continue;
+                    }
+                    println!(
+                        "  {} - {}",
+                        format!("{:?}", model_type),
+                        if available {
+                            "Available"
+                        } else {
+                            "Not installed"
+                        }
+                    );
+                }
+            }
+        }
+        ModelCommands::Download { model, .. } => {
+            println!("Downloading {}...", model);
+            println!("Model download is only available in the Ixos desktop app.");
+        }
+        ModelCommands::Preload { model } => {
+            println!("Preloading {}...", model);
+            match model.parse::<ixos_protocol::ixos_embed::ModelType>() {
+                Ok(mt) => match MmapModel2VecEmbedder::new_with_type(mt) {
+                    Ok(_) => println!("Model loaded successfully"),
+                    Err(e) => eprintln!("Failed: {}", e),
+                },
+                Err(_) => eprintln!("Unknown model type"),
+            }
+        }
+        ModelCommands::Status { .. } => {
+            let models = MmapModel2VecEmbedder::available_models();
+            for (model_type, available, _) in models {
+                println!(
+                    "{}: {}",
+                    format!("{:?}", model_type),
+                    if available {
+                        "Available"
+                    } else {
+                        "Not installed"
+                    }
+                );
+            }
+        }
+        ModelCommands::Delete { model, force } => {
+            if !force {
+                println!("Use --force to confirm deletion of {}", model);
+            } else {
+                println!("Deleting {}...", model);
+                println!("Model management is only available in the Ixos desktop app.");
+            }
+        }
+    }
     Ok(())
 }

@@ -97,6 +97,12 @@ pub fn extract_context(
     query: &str,
     context_lines: usize,
 ) -> Option<ContextSnippet> {
+    // SECURITY: Check if this is a cloud-only file to prevent auto-download
+    use crate::storage::cloud_detection::should_skip_cloud_file;
+    if should_skip_cloud_file(file_path) {
+        return None;
+    }
+
     // Read file content
     let content = match std::fs::read_to_string(file_path) {
         Ok(c) => c,

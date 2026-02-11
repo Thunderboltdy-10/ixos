@@ -27,6 +27,7 @@ pub use storage::{ActivityStorage, StorageConfig};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Maximum number of events to store (auto-prune oldest)
@@ -171,6 +172,23 @@ pub struct ActivityLedger {
     co_occurrence: CoOccurrenceAnalyzer,
     /// Whether the ledger has unsaved changes
     dirty: bool,
+}
+
+/// Suggested move/reorganization recommendation inferred from repeated user behavior.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct MoveRecommendation {
+    /// File that is repeatedly accessed in contexts associated with another folder.
+    pub file_path: String,
+    /// Current folder of the file.
+    pub current_folder: String,
+    /// Suggested destination folder.
+    pub suggested_folder: String,
+    /// Confidence score in [0, 1].
+    pub confidence: f32,
+    /// Number of repeated evidence points backing this suggestion.
+    pub evidence_count: u32,
+    /// User-facing explanation.
+    pub reason: String,
 }
 
 impl ActivityLedger {
@@ -399,6 +417,128 @@ impl ActivityLedger {
         files
     }
 
+    /// Suggest file/folder reorganization opportunities from repeated behavior.
+    ///
+    /// One-off interactions have very low influence. Recommendations require repeated
+    /// evidence (`min_evidence`) before they are surfaced.
+    pub fn get_move_recommendations(
+        &self,
+        min_evidence: u32,
+        limit: usize,
+    ) -> Vec<MoveRecommendation> {
+        #[derive(Default)]
+        struct FileSignals {
+            shown: u32,
+            clicked_or_opened: u32,
+            query_hits: HashMap<String, u32>,
+        }
+
+        let min_evidence = min_evidence.max(2);
+        let mut file_signals: HashMap<String, FileSignals> = HashMap::new();
+        let mut query_folder_counts: HashMap<String, HashMap<String, u32>> = HashMap::new();
+
+        for event in &self.events {
+            if event.file_path.is_empty() {
+                continue;
+            }
+
+            let folder = Path::new(&event.file_path)
+                .parent()
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default();
+
+            let entry = file_signals.entry(event.file_path.clone()).or_default();
+            match event.action_type {
+                ActivityAction::ResultShown => {
+                    entry.shown = entry.shown.saturating_add(1);
+                }
+                ActivityAction::ResultClicked
+                | ActivityAction::FileOpened
+                | ActivityAction::FileModified => {
+                    entry.clicked_or_opened = entry.clicked_or_opened.saturating_add(1);
+                    if let Some(query_hash) = event.query_hash.clone() {
+                        *entry.query_hits.entry(query_hash.clone()).or_default() += 1;
+                        *query_folder_counts
+                            .entry(query_hash)
+                            .or_default()
+                            .entry(folder)
+                            .or_default() += 1;
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        let mut recommendations = Vec::new();
+        for (file_path, signals) in file_signals {
+            if signals.query_hits.is_empty() {
+                continue;
+            }
+
+            let current_folder = Path::new(&file_path)
+                .parent()
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default();
+            if current_folder.is_empty() {
+                continue;
+            }
+
+            let mut candidate_folder_evidence: HashMap<String, u32> = HashMap::new();
+            for (query_hash, file_query_hits) in signals.query_hits {
+                if let Some(folder_counts) = query_folder_counts.get(&query_hash) {
+                    for (folder, count) in folder_counts {
+                        if folder == &current_folder {
+                            continue;
+                        }
+                        *candidate_folder_evidence.entry(folder.clone()).or_default() +=
+                            count.saturating_mul(file_query_hits);
+                    }
+                }
+            }
+
+            let Some((best_folder, evidence_count)) = candidate_folder_evidence
+                .into_iter()
+                .max_by_key(|(_, evidence)| *evidence)
+            else {
+                continue;
+            };
+            if evidence_count < min_evidence {
+                continue;
+            }
+
+            // Repetition dominates; CTR is a low-weight tiebreaker signal.
+            let repetition_score =
+                ((evidence_count - min_evidence + 1) as f32 / (min_evidence as f32 + 6.0))
+                    .clamp(0.0, 1.0);
+            let ctr = if signals.shown > 0 {
+                signals.clicked_or_opened as f32 / signals.shown as f32
+            } else {
+                0.0
+            };
+            let confidence = (repetition_score * 0.9 + ctr * 0.1).clamp(0.0, 0.98);
+
+            recommendations.push(MoveRecommendation {
+                file_path: file_path.clone(),
+                current_folder: current_folder.clone(),
+                suggested_folder: best_folder.clone(),
+                confidence,
+                evidence_count,
+                reason: format!(
+                    "Repeated searches and openings align more with '{}' ({} repeated signals)",
+                    best_folder, evidence_count
+                ),
+            });
+        }
+
+        recommendations.sort_by(|a, b| {
+            b.confidence
+                .total_cmp(&a.confidence)
+                .then(b.evidence_count.cmp(&a.evidence_count))
+        });
+        recommendations.truncate(limit);
+        recommendations
+    }
+
     /// Clear activities within a time range (GDPR deletion)
     pub fn clear_activity(&mut self, time_range: Option<TimeRange>) {
         match time_range {
@@ -597,5 +737,56 @@ mod tests {
 
         let serialized = serde_json::to_vec(&ledger.export_events()).expect("serialize");
         assert!(serialized.len() <= 300_000);
+    }
+
+    #[test]
+    fn move_recommendations_require_repetition() {
+        let mut ledger = ActivityLedger::new();
+        ledger.log_activity(create_event(
+            "/project/notes/tax_2025.md",
+            ActivityAction::ResultClicked,
+            Some("tax report"),
+        ));
+        ledger.log_activity(create_event(
+            "/project/finance/annual_tax.md",
+            ActivityAction::ResultClicked,
+            Some("tax report"),
+        ));
+
+        let recs = ledger.get_move_recommendations(3, 10);
+        assert!(recs.is_empty());
+    }
+
+    #[test]
+    fn move_recommendations_surface_with_repeated_evidence() {
+        let mut ledger = ActivityLedger::new();
+        ledger.log_activity(create_event(
+            "/project/notes/tax_2025.md",
+            ActivityAction::ResultShown,
+            Some("tax report"),
+        ));
+        for _ in 0..6 {
+            ledger.log_activity(create_event(
+                "/project/finance/annual_tax.md",
+                ActivityAction::ResultClicked,
+                Some("tax report"),
+            ));
+        }
+        for _ in 0..3 {
+            ledger.log_activity(create_event(
+                "/project/notes/tax_2025.md",
+                ActivityAction::ResultClicked,
+                Some("tax report"),
+            ));
+        }
+
+        let recs = ledger.get_move_recommendations(3, 10);
+        let target = recs
+            .into_iter()
+            .find(|r| r.file_path == "/project/notes/tax_2025.md")
+            .expect("expected recommendation");
+        assert_eq!(target.suggested_folder, "/project/finance");
+        assert!(target.confidence > 0.0);
+        assert!(target.evidence_count >= 3);
     }
 }

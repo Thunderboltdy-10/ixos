@@ -23,17 +23,16 @@ export function hasProAccess(
   entitlementToken: string | null | undefined,
   proStatus: ProStatus | null | undefined
 ): boolean {
+  const statusAllowsPro = proStatus?.status === 'active' || proStatus?.status === 'grace';
+
   if (entitlement?.plan === 'pro') {
-    // Server lease is authoritative for UI gating. Keep access while local status
-    // is initializing to avoid transient startup downgrades for valid Pro users.
-    if (entitlement.lease?.status === 'active') {
-      return proStatus?.status !== 'timeSuspect';
-    }
-    if (!proStatus) return true;
-    return proStatus.status === 'active' || proStatus.status === 'grace';
+    // Security-first UI gating: require both active lease and active/grace local status.
+    // Backend enforcement remains authoritative.
+    if (entitlement.lease?.status !== 'active') return false;
+    return statusAllowsPro;
   }
 
-  if (!entitlementToken || !proStatus) {
+  if (!entitlementToken || !statusAllowsPro) {
     return false;
   }
 
@@ -42,5 +41,5 @@ export function hasProAccess(
     return false;
   }
 
-  return proStatus.status === 'active' || proStatus.status === 'grace';
+  return true;
 }

@@ -294,6 +294,13 @@ pub enum Commands {
         #[arg(long)]
         verbose: bool,
     },
+
+    /// Download and manage embedding models
+    Model {
+        /// Model action
+        #[command(subcommand)]
+        action: ModelCommands,
+    },
 }
 
 // =============================================================================
@@ -392,6 +399,54 @@ pub enum CacheCommands {
         /// Number of parallel workers
         #[arg(long, default_value = "4")]
         workers: usize,
+
+        /// Skip confirmation prompt
+        #[arg(long)]
+        force: bool,
+    },
+}
+
+/// Model management subcommands
+#[derive(Subcommand, Debug)]
+pub enum ModelCommands {
+    /// List available models
+    List {
+        /// Show all models including unavailable
+        #[arg(long)]
+        all: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+
+    /// Download a model
+    Download {
+        /// Model type (ixos-flash-v2, ixos-pro-v2, etc.)
+        model: String,
+
+        /// Show progress
+        #[arg(long)]
+        progress: bool,
+    },
+
+    /// Preload a model into memory
+    Preload {
+        /// Model type (ixos-flash-v2, ixos-pro-v2, etc.)
+        model: String,
+    },
+
+    /// Show model status
+    Status {
+        /// Model type
+        #[arg(short, long)]
+        model: Option<String>,
+    },
+
+    /// Delete a downloaded model
+    Delete {
+        /// Model type
+        model: String,
 
         /// Skip confirmation prompt
         #[arg(long)]

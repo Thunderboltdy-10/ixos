@@ -1,7 +1,7 @@
 # PLAN.md - Ixos Flash v2 + Pro v2 + Search vNext
 
 ## STATE SNAPSHOT (update frequently)
-- Date: 2026-02-08
+- Date: 2026-02-09
 - Current baseline models: Flash v1 (legacy), Pro fusion baseline = Flash v1 + Potion + lexical (see models/lab/results_baseline_fusion_2026-02-02.json)
 - Baseline quality (MRR@10 / Recall@10): Flash v1 0.8399 / 0.93; Potion 0.8073 / 0.90; Pro v1 0.7354 / 0.855; Pro fusion 0.9233 / 0.97 (real_corpus_v2)
 - Baseline perf (p50/p95, ms/1k, TTFR): Flash v1 JIT total 70/337, TTFR 47/73; Potion JIT total 71/202, TTFR 45/61; Pro v1 JIT total 72/401, TTFR 45/62
@@ -10,6 +10,7 @@
 - Current repo-scale E2E perf (`--dir .`, JIT, 3 queries x2 runs): Flash avg 16,838.65 ms; Auto avg 15,754.25 ms (see reports/v2_repo_latency_after_auto_index_fix_summary_2026-02-05_221919.json)
 - Previous repo-scale E2E perf before rescue: Flash avg 17,153.32 ms; Auto avg 33,289.55 ms; Pro avg 32,985.66 ms (see reports/v2_repo_latency_summary_2026-02-05_213420.json)
 - Delta achieved in this pass: Auto -52.68% average latency on large repo (33,289.55 -> 15,754.25 ms)
+- CLI cleanup (2026-02-09): Removed Pro-gated commands (workstream, activity, ranking) from CLI; CLI now shows only core commands (search, index, config, daemon, cache, compliance, doctor, version, model)
 - Recent regression fix (2026-02-05): Candidate document phase is now gated by query/path document signals to avoid unconditional binary parsing on code-only queries.
 - Recent correctness fix (2026-02-05): `.env` removed from shared hardcoded skip list so env files are not silently excluded by walker entry-name filtering.
 - Recent UX/runtime fix (2026-02-05): Streaming deck now resets per-search and stage updates are normalized; Auto mode no longer eagerly indexes Pro in Tauri path, improving perceived startup responsiveness for stream events.
@@ -29,7 +30,7 @@
 - Cache correctness update (2026-02-08): embedding caches are now validated by both file hash and model fingerprint; edited files and model switches trigger recomputation automatically.
 - Top bottlenecks (ranked): Directory walk/candidate generation on large trees; ripgrep scan I/O; semantic embedding on cold runs; completion-path evidence extraction tail
 - Open risks / unknowns: Multilingual routing remains unevaluated (ES/FR/DE slice pending); remaining golden retrieval mismatches (`q1_financial_report`, `q2_financial_report`, `privacy_policy`, `config_json`, `todo_refine`, `logs_streamed`) require ranking/candidate investigation; lexical-preflight branch should be profiled on very large trees to quantify preflight overhead; cache rebuild still precomputes sequentially (`workers` currently informational only).
-- Next 3 actions: (1) complete manual Pro/free transition smoke pass using the new Phase 0-2 checklist doc, (2) add concurrency to `cache rebuild` warmup path and measure before/after, (3) plan and execute ES/FR/DE quality slice for multilingual decision gate.
+- Next 3 actions: (1) run multilingual ES/FR/DE quality slice for decision gate, (2) investigate remaining golden retrieval mismatches, (3) profile lexical-preflight overhead on large trees
 
 ---
 
@@ -87,3 +88,28 @@
 - [ ] Benchmarks: before/after captured
 - [ ] Docs updated, naming clean
 - [ ] HF plan written
+
+---
+
+## STATE SNAPSHOT
+- Date: 2026-02-10
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97 (real_corpus_v2)
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Candidate generation and directory walk on large trees
+  2. Ripgrep scan I/O on broad queries
+  3. Semantic embedding cold-path startup and tail extraction
+- Current pass validation (2026-02-10):
+  - `cargo test -q`: PASS (`466 passed; 0 failed; 6 ignored`)
+  - `npm --prefix ui run build`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+  - `python scripts/run_settings_matrix.py`: PASS (`reports/settings_matrix_2026-02-10.md`)
+  - `cargo run --quiet --bin ixos -- doctor --json`: PASS (`8 pass; 0 warn; 0 fail; 2 info`)
+- What is next (top 3 tasks):
+  1. Complete explicit E2E auth/billing/lease transfer matrix run and capture a dedicated report
+  2. Add deeper landing Strategy section lock tests on low-end hardware profiles
+  3. Expand move recommendation feedback loop (accept/dismiss) and add persistence-backed evaluation hooks

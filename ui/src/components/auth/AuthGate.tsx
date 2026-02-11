@@ -213,11 +213,9 @@ function LoadingScreen({ message }: { message: string }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-graphite-0">
       <div className="flex flex-col items-center gap-6">
-        {/* Logo with pulse */}
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-amber to-accent-amber/60 p-[2px] shadow-glow-amber animate-pulse">
-          <div className="w-full h-full rounded-[14px] bg-graphite-1 flex items-center justify-center">
-            <img src={ixosIcon} alt="Ixos" className="w-9 h-9" />
-          </div>
+        {/* Logo - standalone icon without border */}
+        <div className="animate-pulse">
+          <img src={ixosIcon} alt="Ixos" className="w-16 h-16" />
         </div>
 
         {/* Shimmer Text Animation */}

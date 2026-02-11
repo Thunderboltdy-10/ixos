@@ -120,6 +120,15 @@ export function HeroPipeline() {
     if (typeof window === "undefined") return false;
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   });
+  // PERFORMANCE: Detect low-powered devices to reduce animation load
+  const [isLowPowered, setIsLowPowered] = useState(() => {
+    if (typeof window === "undefined") return false;
+    // Check device memory and hardware concurrency
+    const deviceMemory = (navigator as any).deviceMemory;
+    const hardwareConcurrency = navigator.hardwareConcurrency;
+    // Consider low-powered if < 4GB RAM or < 4 cores
+    return (deviceMemory && deviceMemory < 4) || (hardwareConcurrency && hardwareConcurrency < 4);
+  });
   const [progress, setProgress] = useState(0);
   const [mobileStep, setMobileStep] = useState(0);
 
@@ -140,7 +149,7 @@ export function HeroPipeline() {
   }, []);
 
   useEffect(() => {
-    if (!sectionRef.current || !isDesktop || prefersReducedMotion) return;
+    if (!sectionRef.current || !isDesktop) return;
 
     const publishProgress = (value: number) => {
       latestProgressRef.current = value;
@@ -154,10 +163,14 @@ export function HeroPipeline() {
     const trigger = ScrollTrigger.create({
       trigger: sectionRef.current,
       start: "top top",
-      end: "+=430%",
+      // PERFORMANCE: Reduced scroll distance for smoother performance
+      end: isLowPowered ? "+=300%" : "+=430%",
       pin: true,
       pinSpacing: true,
-      scrub: 0.42,
+      pinType: "fixed",
+      pinReparent: true,
+      // PERFORMANCE: Reduce scrub smoothness on low-powered devices
+      scrub: isLowPowered ? 0.8 : 0.42,
       anticipatePin: 1.5,
       fastScrollEnd: true,
       invalidateOnRefresh: true,
@@ -176,7 +189,7 @@ export function HeroPipeline() {
         progressRafRef.current = null;
       }
     };
-  }, [isDesktop, prefersReducedMotion]);
+  }, [isDesktop, prefersReducedMotion, isLowPowered]);
 
   useEffect(() => {
     if (isDesktop || !sectionRef.current) return;
@@ -198,20 +211,21 @@ export function HeroPipeline() {
   }, [isDesktop]);
 
   const derived = useMemo(() => {
-    const intro = prefersReducedMotion ? 1 : easeOutCubic(mapProgress(progress, 0.02, 0.24));
-    const entry = prefersReducedMotion ? 1 : easeOutCubic(mapProgress(progress, 0.2, 0.46));
-    const narrative = prefersReducedMotion ? 1 : mapProgress(progress, 0.46, 0.9);
-    const exit = prefersReducedMotion ? 0 : easeOutCubic(mapProgress(progress, 0.92, 1));
+    const reducedFx = prefersReducedMotion || isLowPowered;
+    const intro = reducedFx ? 1 : easeOutCubic(mapProgress(progress, 0.02, 0.24));
+    const entry = reducedFx ? 1 : easeOutCubic(mapProgress(progress, 0.2, 0.46));
+    const narrative = reducedFx ? mapProgress(progress, 0.04, 0.98) : mapProgress(progress, 0.46, 0.9);
+    const exit = reducedFx ? 0 : easeOutCubic(mapProgress(progress, 0.92, 1));
 
-    const heroOpacity = clamp01(1 - mapProgress(progress, 0.22, 0.4));
+    const heroOpacity = reducedFx ? 0 : clamp01(1 - mapProgress(progress, 0.22, 0.4));
     const heroDrop = mapProgress(progress, 0.16, 0.46);
-    const heroShiftY = -18 + intro * 12 + heroDrop * 170 - exit * 8;
+    const heroShiftY = reducedFx ? 0 : -18 + intro * 12 + heroDrop * 170 - exit * 8;
 
-    const demoLift = 214 - entry * 176 - mapProgress(progress, 0.62, 0.9) * 34;
-    const demoScale = 0.986 + entry * 0.028;
-    const headerOpacity = clamp01(mapProgress(progress, 0.26, 0.48));
-    const heroMorph = mapProgress(progress, 0.16, 0.48);
-    const titleMorph = mapProgress(progress, 0.24, 0.52);
+    const demoLift = reducedFx ? 0 : 214 - entry * 176 - mapProgress(progress, 0.62, 0.9) * 34;
+    const demoScale = reducedFx ? 1 : 0.986 + entry * 0.028;
+    const headerOpacity = reducedFx ? 1 : clamp01(mapProgress(progress, 0.26, 0.48));
+    const heroMorph = reducedFx ? 1 : mapProgress(progress, 0.16, 0.48);
+    const titleMorph = reducedFx ? 1 : mapProgress(progress, 0.24, 0.52);
 
     let activeStep: number | null = null;
     // Keep autonomous hero loop active longer; switch to scroll-guided mode
@@ -368,9 +382,9 @@ export function HeroPipeline() {
         </div>
       </div>
 
-      <div className="absolute inset-0 z-30 flex items-center justify-center px-6">
+      <div className="absolute inset-0 z-30 flex items-center justify-center px-4 md:px-6">
         <div
-          className="relative w-full max-w-[1600px]"
+          className="relative w-full max-w-[1400px] xl:max-w-[1600px]"
           style={{
             transform: `translate3d(0, ${derived.demoLift}px, 0) scale(${derived.demoScale})`,
           }}
@@ -379,15 +393,17 @@ export function HeroPipeline() {
             className="relative"
             style={{
               display: "grid",
-              gridTemplateColumns: "350px minmax(0,1fr) 350px",
-              gridTemplateRows: "164px minmax(260px,1fr) minmax(200px,0.9fr) 188px",
+              // RESPONSIVE: Use responsive column widths instead of fixed 350px
+              gridTemplateColumns: "minmax(250px, 22%) minmax(0, 1fr) minmax(250px, 22%)",
+              // RESPONSIVE: Use clamp for row heights
+              gridTemplateRows: "clamp(120px, 15vh, 164px) minmax(200px, 1fr) minmax(160px, 0.9fr) clamp(140px, 18vh, 188px)",
               gridTemplateAreas: `
                 "title title title"
                 "p1 demo p2"
                 "p4 demo p3"
                 "p4 p5 p3"
               `,
-              gap: "20px",
+              gap: "clamp(12px, 1.5vw, 20px)",
               height: "min(90vh, 980px)",
             }}
           >

@@ -7,7 +7,7 @@
 
 use ixos_protocol::{
     create_event, ActivityAction, ActivityEvent, ActivityLedger, CoOccurrence, RecentFile,
-    TimeRange, MAX_STORAGE_BYTES,
+    TimeRange, MAX_STORAGE_BYTES, MoveRecommendation,
 };
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
@@ -205,6 +205,31 @@ impl From<RecentFile> for RecentFilePayload {
     }
 }
 
+/// Move recommendation payload for frontend.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MoveRecommendationPayload {
+    pub file_path: String,
+    pub current_folder: String,
+    pub suggested_folder: String,
+    pub confidence: f32,
+    pub evidence_count: u32,
+    pub reason: String,
+}
+
+impl From<MoveRecommendation> for MoveRecommendationPayload {
+    fn from(value: MoveRecommendation) -> Self {
+        Self {
+            file_path: value.file_path,
+            current_folder: value.current_folder,
+            suggested_folder: value.suggested_folder,
+            confidence: value.confidence,
+            evidence_count: value.evidence_count,
+            reason: value.reason,
+        }
+    }
+}
+
 /// Log an activity event
 ///
 /// This is called from the frontend whenever a user action occurs.
@@ -313,6 +338,26 @@ pub fn get_recently_touched(
     let recent = ledger.get_recently_touched(limit.unwrap_or(20));
 
     Ok(recent.into_iter().map(|r| r.into()).collect())
+}
+
+/// Get file/folder move recommendations inferred from repeated behavior.
+#[tauri::command]
+pub fn get_move_recommendations(
+    limit: Option<usize>,
+    min_evidence: Option<u32>,
+    activity_state: State<'_, ActivityState>,
+    app_state: State<'_, AppState>,
+) -> Result<Vec<MoveRecommendationPayload>, String> {
+    let manager = app_state.entitlement_manager.lock();
+    if !manager.capabilities().has(Capability::AutomationActions) {
+        return Err("Pro capability required for move recommendations".into());
+    }
+    drop(manager);
+
+    let ledger = activity_state.ledger.lock();
+    let recommendations =
+        ledger.get_move_recommendations(min_evidence.unwrap_or(3), limit.unwrap_or(8));
+    Ok(recommendations.into_iter().map(|r| r.into()).collect())
 }
 
 /// Clear activity within a time range (GDPR deletion)

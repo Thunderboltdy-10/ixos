@@ -34,6 +34,7 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
       : null;
 
   if (bearerToken) {
+    let verificationSucceeded = false;
     try {
       // Debug: Decode without verify to see what we are dealing with
       if (DEBUG) {
@@ -58,6 +59,7 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
         try {
           const verified = await verifyToken(bearerToken, { jwtKey });
           if (verified?.sub) {
+            verificationSucceeded = true;
             return verified.sub as string;
           }
         } catch {
@@ -71,6 +73,7 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
           debugLog("Attempting Secret Key verification fallback");
           const verified = await verifyToken(bearerToken, { secretKey });
           if (verified?.sub) {
+            verificationSucceeded = true;
             return verified.sub as string;
           }
         } catch (e) {
@@ -81,6 +84,13 @@ export async function getClerkUserIdFromRequest(req?: Request): Promise<string |
 
     } catch (error) {
       console.error("Fatal error in getClerkUserIdFromRequest:", error);
+    }
+
+    // Security: if a bearer token was provided but could not be verified,
+    // never fall back to cookie/session auth for this request.
+    if (!verificationSucceeded) {
+      debugLog("Bearer token present but verification failed; rejecting request");
+      return null;
     }
   }
 

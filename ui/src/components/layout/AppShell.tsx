@@ -10,6 +10,7 @@ import { PricingPanel } from '@/components/account/PricingPanel';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { hasProAccess } from '@/lib/proAccess';
 import { Button } from '@/components/ui/button';
 import { TodayTab } from '@/components/today/TodayTab';
 import { WorkstreamsList } from '@/components/workstreams/WorkstreamsList';
@@ -33,14 +34,19 @@ export function AppShell({ children }: AppShellProps) {
 
   const searchStore = useSearchStore();
   const selectWorkstream = useWorkstreamStore((state) => state.selectWorkstream);
+  const entitlement = useAuthStore((s) => s.entitlement);
   const proStatus = useAuthStore((s) => s.proStatus);
   const entitlementToken = useAuthStore((s) => s.entitlementToken);
   const { config, updateConfig } = useSettingsStore();
+  const hasPro = hasProAccess(entitlement, entitlementToken, proStatus);
 
   const refreshBy =
     entitlementToken && proStatus?.status === 'grace' ? proStatus.refreshBy : null;
   const refreshByLabel = refreshBy ? new Date(refreshBy * 1000).toLocaleString() : null;
-  const shouldLock = false; // Inline gating in controls/panels handles Pro restrictions.
+  const shouldLock =
+    entitlement?.plan === 'pro' &&
+    !hasPro &&
+    (proStatus?.status === 'timeSuspect' || proStatus?.status === 'expired');
 
   const lockTitle =
     proStatus?.status === 'timeSuspect'

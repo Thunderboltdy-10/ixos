@@ -12,6 +12,7 @@ import type {
   ActivityEvent,
   ActivityStats,
   CoOccurrence,
+  MoveRecommendation,
   RecentFile,
   TimeRange,
   Workstream,
@@ -344,6 +345,16 @@ export async function getCoOccurrence(
  */
 export async function getRecentlyTouched(limit?: number): Promise<RecentFile[]> {
   return await invoke('get_recently_touched', { limit });
+}
+
+/**
+ * Get Pro move recommendations inferred from repeated search/open behavior.
+ */
+export async function getMoveRecommendations(
+  limit?: number,
+  minEvidence?: number
+): Promise<MoveRecommendation[]> {
+  return await invoke('get_move_recommendations', { limit, minEvidence });
 }
 
 /**

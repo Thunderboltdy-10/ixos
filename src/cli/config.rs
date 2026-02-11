@@ -33,8 +33,16 @@ use std::path::PathBuf;
 // =============================================================================
 
 /// Root configuration for Ixos
+// Config file format version
+// Bump this when making breaking changes to the config structure
+const CONFIG_VERSION: u32 = 1;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IxosConfig {
+    /// Config file format version for migrations
+    #[serde(default = "default_config_version")]
+    pub version: u32,
+
     /// Search settings
     #[serde(default)]
     pub search: SearchConfig,
@@ -50,6 +58,10 @@ pub struct IxosConfig {
     /// Security settings
     #[serde(default)]
     pub security: SecurityConfig,
+}
+
+fn default_config_version() -> u32 {
+    CONFIG_VERSION
 }
 
 /// Search-related configuration
@@ -252,6 +264,7 @@ fn normalize_pro_model_type(value: &str) -> String {
 impl Default for IxosConfig {
     fn default() -> Self {
         Self {
+            version: CONFIG_VERSION,
             search: SearchConfig::default(),
             output: OutputConfig::default(),
             index: IndexConfig::default(),
@@ -341,12 +354,21 @@ impl IxosConfig {
     /// Load configuration from a specific path
     ///
     /// Returns default configuration if the file doesn't exist or can't be parsed.
+    /// Performs automatic migration if the config version is outdated.
     pub fn load_from(path: PathBuf) -> Self {
         match std::fs::read_to_string(&path) {
             Ok(content) => match toml::from_str::<Self>(&content) {
                 Ok(mut config) => {
                     tracing::debug!("Loaded config from {:?}", path);
+
+                    // Check if migration is needed
                     let mut changed = false;
+                    let original_version = config.version;
+
+                    // Run migrations
+                    config.migrate_if_needed();
+
+                    // Normalize model types
                     let normalized_model = normalize_flash_model_type(&config.search.model_type);
                     if normalized_model != config.search.model_type {
                         config.search.model_type = normalized_model;
@@ -361,9 +383,16 @@ impl IxosConfig {
                         config.search.search_mode = default_search_mode();
                         changed = true;
                     }
-                    if changed {
+
+                    // Save if migrated or normalized
+                    if config.version != original_version || changed {
+                        tracing::info!(
+                            "Config migrated from version {} to {}",
+                            original_version,
+                            config.version
+                        );
                         if let Err(e) = config.save_to(path.clone()) {
-                            tracing::warn!("Failed to persist normalized config {:?}: {}", path, e);
+                            tracing::warn!("Failed to persist migrated config {:?}: {}", path, e);
                         }
                     }
                     config
@@ -376,6 +405,29 @@ impl IxosConfig {
             Err(_) => {
                 tracing::debug!("Config file not found at {:?}, using defaults", path);
                 Self::default()
+            }
+        }
+    }
+
+    /// Migrate config to the latest version if needed
+    fn migrate_if_needed(&mut self) {
+        match self.version {
+            0 => {
+                // Migration from unversioned (v0) to v1
+                // Ensure personal_ranking_enabled defaults to false for security
+                if self.search.personal_ranking_enabled {
+                    tracing::info!("Migrating config: Resetting personal_ranking_enabled to false (requires Pro)");
+                    self.search.personal_ranking_enabled = false;
+                }
+                self.version = 1;
+            }
+            1 => {
+                // Current version - no migration needed
+            }
+            _ => {
+                // Future versions - config is newer than this code
+                tracing::warn!("Config version {} is newer than supported version {}. Some features may not work correctly.", 
+                    self.version, CONFIG_VERSION);
             }
         }
     }

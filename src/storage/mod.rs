@@ -10,6 +10,7 @@ use std::path::Path;
 
 #[cfg(windows)]
 pub mod ads_windows;
+pub mod cloud_detection;
 pub mod null;
 pub mod personal_ranking;
 pub mod sidecar_lmdb;

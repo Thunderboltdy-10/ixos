@@ -527,7 +527,8 @@ function NavItem({ icon: Icon, label, isActive, onClick, isPro, isLocked, onLock
       type="button"
       onClick={handleClick}
       className={cn(
-        'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left border bg-transparent',
+        // REDUCED SIZE: Changed px-4 py-3 to px-3.5 py-2.5, text-sm to text-[13px]
+        'w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-left border bg-transparent',
         'transition-colors duration-150',
         isActive
           ? 'text-porcelain border-white/10 bg-graphite-2/58'
@@ -536,10 +537,10 @@ function NavItem({ icon: Icon, label, isActive, onClick, isPro, isLocked, onLock
       )}
     >
       <Icon className={cn(
-        'w-4.5 h-4.5',
+        'w-4 h-4',
         isActive ? 'text-accent-teal' : 'text-fg-dim'
       )} />
-      <span className="text-sm font-medium flex-1">{label}</span>
+      <span className="text-[13px] font-medium flex-1">{label}</span>
       {isPro && (
         isLocked ? (
           <Lock className="w-3.5 h-3.5 text-fg-ghost" />

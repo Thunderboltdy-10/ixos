@@ -651,5 +651,57 @@
   - `python scripts/run_settings_matrix.py`: PASS (after cache stats/clear fixes).
   - `ixos doctor --json`: PASS (`8 pass; 0 warn; 0 fail; 2 info`).
   - `npm run tauri:build` (env set): PASS; MSI + NSIS produced.
+## Entry 026 - CLI Pro feature cleanup (remove workstream/activity/ranking from CLI)
+- Date/Time: 2026-02-09
+- Branch/Commit: (working tree)
+- Goal: Remove Pro-gated features from CLI to ensure CLI only includes core functionality (search, cache, config, compliance, model management, doctor, version)
+- Commands run:
+  - cargo check
+  - cargo build --release
+  - ./target/release/ixos --help
+  - ./target/release/ixos cache --help
+  - ./target/release/ixos model --help
+  - ./target/release/ixos version
+- Outputs saved to: (code changes only)
+- Key results:
+  - Removed WorkstreamCommands, ActivityCommands, RankingCommands from `src/cli/commands.rs`
+  - Removed exports from `src/cli/mod.rs`
+  - Updated `src/main.rs` imports and removed handler functions for removed commands
+  - Fixed malformed duplicate code in commands.rs (lines 409-417)
+  - CLI now shows only core commands: search, index, config, daemon, cache, compliance, doctor, version, model
+  - Build passes, all CLI commands tested and working
 - Decision: KEEP
-- Next: expand desktop diagnostics panel copy with an explicit JIT-vs-cache explanation and add a tiny UI badge for "cache model fingerprint mismatch" visibility.
+- Next: Run cargo test to verify no regressions, then proceed with remaining implementation items
+
+## Entry 027 - Security-first hardening + Pro move recommendations + landing lock stability
+- Date/Time: 2026-02-10
+- Branch/Commit: (working tree)
+- Goal: Implement security-first execution slice from the mega production plan: tighten auth fallback behavior, harden Pro-gated command surfaces, improve landing strategy lock behavior on low-end devices, and ship first Pro move-recommendation loop.
+- Commands run:
+  - `cargo test -q`
+  - `npm --prefix ui run build`
+  - `npm --prefix ixos-site run build`
+  - `python scripts/run_settings_matrix.py`
+  - `cargo run --quiet --bin ixos -- doctor --json`
+- Outputs saved to:
+  - `reports/settings_matrix_2026-02-10.md`
+  - `PRODUCTION_AND_STRATEGY_GAPS_2026-02-10.md`
+- Key results:
+  - Security: `getClerkUserIdFromRequest` now rejects requests when bearer token is present but verification fails, instead of falling back to cookie/session auth.
+  - Security: personal ranking Tauri commands (`pin/unpin/ignore/unignore/not-relevant/reset/get`) now enforce active Pro entitlement + capability server-side.
+  - Pro gating UX: desktop lock overlay in `AppShell` is now wired to real entitlement/pro-status conditions (expired/time-suspect) instead of a dead constant.
+  - Landing: `HeroPipeline` now keeps pinning active on low-powered devices and shifts to reduced-FX hard-lock behavior (stage progression without heavy movement), plus fixed pin mode/reparent to reduce scroll drift.
+- New Pro feature: added repeated-behavior file move recommendation engine in activity ledger, exposed through new Tauri command `get_move_recommendations`, wired into Today tab UI as "Suggested Reorganization".
+  - Types/api: added `MoveRecommendation` model in Rust and TypeScript; today data pipeline now loads recommendation set.
+  - Skill update: refreshed `.claude/skills/ixos-search/SKILL.md` to align model naming and recommended command defaults.
+- Validation summary:
+  - `cargo test -q`: PASS (`466 passed; 0 failed; 6 ignored`)
+  - `npm --prefix ui run build`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+  - `python scripts/run_settings_matrix.py`: PASS
+  - `cargo run --quiet --bin ixos -- doctor --json`: PASS (`8 pass; 0 warn; 0 fail; 2 info`)
+- Decision: KEEP
+- Next:
+  1. Add explicit recommendation feedback actions (accept/dismiss) and persistence.
+  2. Execute dedicated auth/payments/lease transfer adversarial test matrix.
+  3. Add targeted landing low-end integration test scenarios for pinned lock behavior.

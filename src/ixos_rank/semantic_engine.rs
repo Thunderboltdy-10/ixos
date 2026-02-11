@@ -410,6 +410,22 @@ impl StubSemanticEngine {
 
 /// Read file contents with hard caps for hot path safety.
 fn read_file_limited_bytes(path: &Path) -> Result<(Vec<u8>, usize), SearchError> {
+    // SECURITY: Check if this is a cloud-only file to prevent auto-download
+    use crate::storage::cloud_detection::{get_cloud_storage_status, CloudStorageStatus};
+    match get_cloud_storage_status(path) {
+        CloudStorageStatus::CloudOnly => {
+            tracing::debug!(
+                "Skipping cloud-only file to prevent download: {}",
+                path.display()
+            );
+            return Err(SearchError::Io(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "Cloud-only file skipped",
+            )));
+        }
+        _ => {}
+    }
+
     let file = std::fs::File::open(path).map_err(SearchError::Io)?;
     let mut buffer = Vec::with_capacity(MAX_BYTES_READ_PER_FILE.min(8192));
     let mut limited = file.take(MAX_BYTES_READ_PER_FILE as u64);

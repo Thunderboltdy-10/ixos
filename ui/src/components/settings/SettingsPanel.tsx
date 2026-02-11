@@ -60,13 +60,14 @@ export function SettingsPanel({ initialTab, onUpgrade }: { initialTab?: Settings
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-base font-medium border border-transparent transition-all duration-200',
+                // REDUCED SIZE: Changed text-base to text-[13px], gap-3 to gap-2.5
+                'w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-[13px] font-medium border border-transparent transition-all duration-200',
                 isActive
                   ? 'bg-accent-teal/10 border-accent-teal/20 text-accent-teal'
                   : 'text-fg-secondary hover:bg-graphite-2/70 hover:border-white/8 hover:text-porcelain cursor-pointer'
               )}
             >
-              <Icon className={cn("w-4.5 h-4.5", isActive ? "text-accent-teal" : "text-fg-muted")} />
+              <Icon className={cn("w-4 h-4", isActive ? "text-accent-teal" : "text-fg-muted")} />
               {tab.label}
             </button>
           );

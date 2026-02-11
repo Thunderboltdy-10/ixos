@@ -11,7 +11,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Sparkles } from 'lucide-react';
+import { Calendar, FolderTree, Sparkles } from 'lucide-react';
 import { useTodayStore } from '@/stores/todayStore';
 import { useAuthStore } from '@/stores/authStore';
 import { ResumeSection } from './ResumeSection';
@@ -149,6 +149,7 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
     data.resume.workstream ||
     data.recentlyTouched.length > 0 ||
     data.suggestedNext.length > 0 ||
+    data.moveRecommendations.length > 0 ||
     pinnedItems.length > 0
   );
 
@@ -229,6 +230,49 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
             suggestions={data.suggestedNext}
             onOpenFile={onOpenFile}
           />
+        )}
+
+        {/* Pro reorganization recommendations */}
+        {data?.moveRecommendations && data.moveRecommendations.length > 0 && (
+          <section className="rounded-xl border border-white/10 bg-graphite-1/60 p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <FolderTree className="h-4 w-4 text-accent-teal" />
+              <h3 className="text-sm font-semibold text-porcelain">Suggested Reorganization</h3>
+            </div>
+            <div className="space-y-2">
+              {data.moveRecommendations.slice(0, 4).map((rec) => (
+                <div
+                  key={`${rec.filePath}:${rec.suggestedFolder}`}
+                  className="rounded-lg border border-white/8 bg-graphite-2/40 p-3"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-medium text-porcelain">{rec.filePath}</p>
+                      <p className="mt-1 text-2xs text-fg-dim">
+                        {rec.currentFolder} {'->'} {rec.suggestedFolder}
+                      </p>
+                      <p className="mt-1 text-2xs text-fg-ghost">{rec.reason}</p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-2xs font-semibold text-accent-teal">
+                        {Math.round(rec.confidence * 100)}%
+                      </p>
+                      <p className="text-2xs text-fg-dim">{rec.evidenceCount} signals</p>
+                      {onOpenFile && (
+                        <button
+                          type="button"
+                          onClick={() => onOpenFile(rec.filePath)}
+                          className="mt-1 text-2xs text-accent-amber hover:text-accent-amber/80"
+                        >
+                          Open
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
       </div>
     </motion.div>

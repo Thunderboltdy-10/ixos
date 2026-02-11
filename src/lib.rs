@@ -186,7 +186,8 @@ pub use ixos_embed::augmented::{AugmentationConfig, AugmentedEmbedder};
 // Phase 2: Second Brain - Activity Ledger
 pub use activity_ledger::{
     create_event, hash_file_path, hash_query, ActivityAction, ActivityEvent, ActivityLedger,
-    CoOccurrence, CoOccurrenceAnalyzer, RecentFile, TimeRange, MAX_STORAGE_BYTES,
+    CoOccurrence, CoOccurrenceAnalyzer, MoveRecommendation, RecentFile, TimeRange,
+    MAX_STORAGE_BYTES,
 };
 
 // Phase 2: Second Brain - Workstreams

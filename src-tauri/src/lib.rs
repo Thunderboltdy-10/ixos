@@ -174,6 +174,7 @@ pub fn run() {
             commands::activity::get_activity,
             commands::activity::get_co_occurrence,
             commands::activity::get_recently_touched,
+            commands::activity::get_move_recommendations,
             commands::activity::clear_activity,
             commands::activity::get_activity_stats,
             commands::activity::save_activity_ledger,

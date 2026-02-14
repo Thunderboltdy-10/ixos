@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { useFakeSearch, DEMO_QUERIES, type DemoFile, type PauseAtStage } from './fakeSearch';
 import { getFileIcon } from './fileIcons';
 
-type DemoMode = 'jit' | 'cache' | 'journalist';
+type DemoMode = 'ephemeral' | 'native-cache' | 'journalist';
 type DemoModel = 'Flash' | 'Pro' | 'Auto';
 
 const MODELS: DemoModel[] = ['Auto', 'Flash', 'Pro'];
@@ -16,7 +16,7 @@ const SYNC_POLL_MS = 120;
 const SCROLL_GUIDED_QUERY = DEMO_QUERIES[0].query;
 
 const MODE_TOKENS = {
-  jit: {
+  ephemeral: {
     text: 'text-accent-amber',
     border: 'border-accent-amber',
     bg: 'bg-accent-amber',
@@ -26,7 +26,7 @@ const MODE_TOKENS = {
     selection: 'selection:bg-accent-amber/20',
     insetGlow: 'shadow-[inset_4px_0_12px_-4px_rgba(246,185,76,0.2)]',
   },
-  cache: {
+  'native-cache': {
     text: 'text-accent-teal',
     border: 'border-accent-teal',
     bg: 'bg-accent-teal',
@@ -76,7 +76,7 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
   const previousControlledStepRef = useRef<number | null>(null);
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [activeMode, setActiveMode] = useState<DemoMode>('jit');
+  const [activeMode, setActiveMode] = useState<DemoMode>('native-cache');
   const [activeModel, setActiveModel] = useState<DemoModel>('Auto');
   const [showModelMenu, setShowModelMenu] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -108,7 +108,7 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
     if (step === 3) {
       setActiveMode('journalist');
     } else {
-      setActiveMode(prev => (prev === 'journalist' ? 'jit' : prev));
+      setActiveMode(prev => (prev === 'journalist' ? 'native-cache' : prev));
     }
 
     if (step === 0) {
@@ -286,26 +286,26 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
                   {/* Mode Selector */}
                   <div className="flex items-center bg-white/[0.04] rounded-lg p-0.5">
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleModeChange('jit'); }}
+                      onClick={(e) => { e.stopPropagation(); handleModeChange('ephemeral'); }}
                       className={cn(
                         "px-2 py-1 rounded-md transition-all flex items-center gap-1.5",
-                        activeMode === 'jit' ? `${MODE_TOKENS.jit.bgFaint} ${MODE_TOKENS.jit.text} shadow-sm` : "hover:text-fg-muted"
+                        activeMode === 'ephemeral' ? `${MODE_TOKENS.ephemeral.bgFaint} ${MODE_TOKENS.ephemeral.text} shadow-sm` : "hover:text-fg-muted"
                       )}
-                      title="Just-In-Time"
+                      title="Ephemeral (Memory Only)"
                     >
                       <Zap className="w-3 h-3 fill-current" />
-                      <span className="hidden sm:inline font-bold tracking-wider">JIT</span>
+                      <span className="hidden sm:inline font-bold tracking-wider">EPHEMERAL</span>
                     </button>
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleModeChange('cache'); }}
+                      onClick={(e) => { e.stopPropagation(); handleModeChange('native-cache'); }}
                       className={cn(
                         "px-2 py-1 rounded-md transition-all flex items-center gap-1.5",
-                        activeMode === 'cache' ? `${MODE_TOKENS.cache.bgFaint} ${MODE_TOKENS.cache.text} shadow-sm` : "hover:text-fg-muted"
+                        activeMode === 'native-cache' ? `${MODE_TOKENS['native-cache'].bgFaint} ${MODE_TOKENS['native-cache'].text} shadow-sm` : "hover:text-fg-muted"
                       )}
-                      title="Cached Mode"
+                      title="NativeCache (Recommended)"
                     >
                       <Sparkles className="w-3 h-3" />
-                      <span className="hidden sm:inline font-bold tracking-wider">CACHE</span>
+                      <span className="hidden sm:inline font-bold tracking-wider">NATIVECACHE</span>
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); handleModeChange('journalist'); }}
@@ -382,7 +382,13 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
                 </div>
                 <div className="flex items-center gap-4 text-fg-muted/30">
                   <span>{results.length} results</span>
-                  <span className={tokens.text}>{activeMode.toUpperCase()}</span>
+                  <span className={tokens.text}>
+                    {activeMode === "ephemeral"
+                      ? "EPHEMERAL"
+                      : activeMode === "native-cache"
+                        ? "NATIVECACHE"
+                        : "JOURNALIST"}
+                  </span>
                 </div>
               </motion.div>
             )}

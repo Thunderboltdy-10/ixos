@@ -3,299 +3,227 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { SectionDivider } from "@/components/ui/SectionDivider";
+import benchmarkData from "@/data/benchmarks.json";
 
 export function Benchmarks() {
-    const [isVisible, setIsVisible] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting) {
-                    setIsVisible(true);
-                    observer.disconnect();
-                }
-            },
-            { threshold: 0.3 }
-        );
-
-        if (containerRef.current) {
-            observer.observe(containerRef.current);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
         }
-
-        return () => observer.disconnect();
-    }, []);
-
-    const useCountUp = (end: number, duration: number = 2000, isVis: boolean) => {
-        const [count, setCount] = useState(0);
-        useEffect(() => {
-            if (!isVis) return;
-            let startTimestamp: number | null = null;
-            const step = (timestamp: number) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                setCount(Math.floor(progress * end));
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                } else {
-                    setCount(end);
-                }
-            };
-            window.requestAnimationFrame(step);
-        }, [end, duration, isVis]);
-        return count;
-    };
-
-    const ttfr = useCountUp(199, 800, isVisible);
-
-    return (
-        <div ref={containerRef} className="relative">
-            <SectionDivider accent="violet" label="System metrics" />
-
-            <div className="py-24 container mx-auto px-6">
-                <div className="max-w-6xl mx-auto">
-                    {/* Asymmetric Header */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 mb-16 items-end gap-8">
-                        <div className="md:col-span-5">
-                            <h2 className="text-3xl md:text-4xl font-semibold leading-tight">
-                                Zero index tax, <br />
-                                <span className="heading-gradient text-transparent bg-clip-text">instant results.</span>
-                            </h2>
-                        </div>
-                        <div className="md:col-span-7 pb-2 border-b border-white/10 flex justify-between items-end">
-                            <span className="font-mono text-xs text-accent-violet">Benchmark v1.0</span>
-                            <span className="font-mono text-xs text-fg-muted opacity-50">1,036 files - 2.46 MB corpus</span>
-                        </div>
-                    </div>
-
-                    {/* Main Technical Panel */}
-                    <div
-                        className="relative rounded-sm border border-white/10 bg-bg-graphite-2/60 backdrop-blur-md p-0 overflow-hidden shadow-2xl hover-glow-subtle"
-                        data-trace-anchor="bench-panel"
-                        data-trace-color="violet"
-                    >
-                        {/* Status Bar */}
-                        <div className="h-6 bg-white/5 border-b border-white/10 flex items-center justify-between px-3">
-                            <span className="text-[9px] font-mono text-fg-muted uppercase">Time_To_First_Result</span>
-                            <div className="w-1.5 h-1.5 bg-accent-violet rounded-full animate-pulse" />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-white/10">
-
-                            {/* Metric Display (Left 4 cols) - Using actual benchmark data */}
-                            <div className="md:col-span-4 p-8 flex flex-col justify-between min-h-[300px] bg-gradient-to-br from-accent-violet/5 to-transparent">
-                                <div>
-                                    <div className="text-xs font-mono text-fg-muted uppercase tracking-wider mb-2">TTFR (P50)</div>
-                                    <div className="text-7xl font-mono font-medium text-fg-porcelain tracking-tighter">
-                                        <span className="text-accent-violet">{ttfr}</span>ms
-                                    </div>
-                                </div>
-                                <div className="space-y-4">
-                                    <div className="h-px w-full bg-white/10" />
-                                    <div className="flex justify-between text-xs font-mono text-fg-muted">
-                                        <span>CACHE_HIT_RATE</span>
-                                        <span className="text-accent-violet"><CountUp end={80} suffix="%" duration={800} isVisible={true} /></span>
-                                    </div>
-                                    <div className="flex justify-between text-xs font-mono text-fg-muted">
-                                        <span>PEAK_RAM</span>
-                                        <span><CountUp end={194} suffix=" MB" duration={800} isVisible={true} /></span>
-                                    </div>
-                                    <div className="flex justify-between text-xs font-mono text-fg-muted">
-                                        <span>PERSISTENT_INDEX</span>
-                                        <span className="text-fg-porcelain">0 KB</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Comparison Chart (Right 8 cols) */}
-                            <div className="md:col-span-8 p-8 space-y-8">
-                                <ChartBar
-                                    label="Ixos (Cache Mode)"
-                                    value={199}
-                                    maxValue={2000}
-                                    highlight
-                                    isVisible={isVisible}
-                                    delay={0}
-                                />
-                                <ChartBar
-                                    label="Ixos (JIT Mode)"
-                                    value={198}
-                                    maxValue={2000}
-                                    isVisible={isVisible}
-                                    delay={100}
-                                />
-                                <ChartBar
-                                    label="Windows Search"
-                                    value={1500}
-                                    maxValue={2000}
-                                    isVisible={isVisible}
-                                    delay={200}
-                                />
-                                <ChartBar
-                                    label="Manual Browsing"
-                                    value={2000}
-                                    maxValue={2000}
-                                    isVisible={isVisible}
-                                    delay={300}
-                                    isOverflow
-                                />
-                                <div className="pt-2 text-[10px] font-mono text-fg-muted text-right mt-4 opacity-50">
-                                    * Tested on 1,036 files (2.46 MB), i7 CPU, NVMe SSD
-                                    <br />
-                                    * JIT Mode: Zero persistent storage
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Additional stats - Using actual data */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                        <StatCard value="199" suffix="ms" label="FIRST_RESULT" delay={50} isVisible={isVisible} />
-                        <StatCard value="80" suffix="%" label="CACHE_HIT" delay={100} isVisible={isVisible} />
-                        <StatCard value="194" suffix="MB" label="PEAK_RAM" delay={150} isVisible={isVisible} />
-                        <StatCard value="0" suffix=" KB" label="INDEX_SIZE" delay={200} isVisible={isVisible} />
-                    </div>
-                </div>
-            </div>
-        </div>
+      },
+      { threshold: 0.3 }
     );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  const ttfr = useCountUp(benchmarkData.overview.ttfrP50Ms, 900, isVisible);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <SectionDivider accent="violet" label="System metrics" />
+
+      <div className="container mx-auto px-6 py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-16 grid grid-cols-1 items-end gap-8 md:grid-cols-12">
+            <div className="md:col-span-5">
+              <h2 className="text-3xl font-semibold leading-tight md:text-4xl">
+                Tier-gated performance, <br />
+                <span className="heading-gradient bg-clip-text text-transparent">measured continuously.</span>
+              </h2>
+            </div>
+            <div className="flex items-end justify-between border-b border-white/10 pb-2 md:col-span-7">
+              <span className="font-mono text-xs text-accent-violet">Ralph benchmark snapshot</span>
+              <span className="font-mono text-xs text-fg-muted opacity-50">
+                {benchmarkData.corpus.files.toLocaleString()} files • Tier {benchmarkData.corpus.tier}
+              </span>
+            </div>
+          </div>
+
+          <div
+            className="relative overflow-hidden rounded-sm border border-white/10 bg-bg-graphite-2/60 p-0 shadow-2xl backdrop-blur-md hover-glow-subtle"
+            data-trace-anchor="bench-panel"
+            data-trace-color="violet"
+          >
+            <div className="flex h-6 items-center justify-between border-b border-white/10 bg-white/5 px-3">
+              <span className="text-[9px] font-mono uppercase text-fg-muted">Time_To_First_Result</span>
+              <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-violet" />
+            </div>
+
+            <div className="grid grid-cols-1 divide-y divide-white/10 md:grid-cols-12 md:divide-x md:divide-y-0">
+              <div className="flex min-h-[300px] flex-col justify-between bg-gradient-to-br from-accent-violet/5 to-transparent p-8 md:col-span-4">
+                <div>
+                  <div className="mb-2 text-xs font-mono uppercase tracking-wider text-fg-muted">TTFR (P50)</div>
+                  <div className="text-7xl font-mono font-medium tracking-tighter text-fg-porcelain">
+                    <span className="text-accent-violet">{ttfr}</span>ms
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="h-px w-full bg-white/10" />
+                  <MetricRow label="CACHE_HIT_RATE" value={`${benchmarkData.overview.cacheHitRatePercent.toFixed(2)}%`} accent />
+                  <MetricRow label="PEAK_RAM" value={`${benchmarkData.overview.peakRamMb} MB`} />
+                  <MetricRow label="PERSISTENT_INDEX" value={`${benchmarkData.overview.persistentIndexKb} KB`} />
+                </div>
+              </div>
+
+              <div className="space-y-8 p-8 md:col-span-8">
+                {benchmarkData.comparison.map((bar, index) => (
+                  <ChartBar
+                    key={bar.label}
+                    label={bar.label}
+                    value={bar.valueMs}
+                    maxValue={2000}
+                    highlight={Boolean(bar.highlight)}
+                    isVisible={isVisible}
+                    delay={index * 100}
+                    isOverflow={Boolean(bar.overflow)}
+                  />
+                ))}
+
+                <div className="mt-4 border-t border-white/10 pt-4">
+                  <p className="mb-2 text-[10px] font-mono text-fg-muted opacity-60">P95 stage waterfall (ms)</p>
+                  <WaterfallRow label="walk" value={benchmarkData.waterfallP95Ms.walk} />
+                  <WaterfallRow label="ripgrep" value={benchmarkData.waterfallP95Ms.ripgrep} />
+                  <WaterfallRow label="embed" value={benchmarkData.waterfallP95Ms.embed} />
+                  <WaterfallRow label="rank" value={benchmarkData.waterfallP95Ms.rank} />
+                </div>
+
+                <div className="mt-4 border-t border-white/10 pt-4 text-[10px] font-mono text-fg-muted opacity-60">
+                  Source: {benchmarkData.source}
+                  <br />
+                  Modes shown as NativeCache and Ephemeral.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+            {benchmarkData.tierBreakdown.map((tier) => (
+              <div key={tier.tier} className="rounded-sm border border-white/10 bg-bg-graphite-1/50 p-4">
+                <div className="text-xs font-mono text-accent-violet">Tier {tier.tier}</div>
+                <div className="mt-1 text-sm text-fg-muted">{tier.target}</div>
+                {"ttfrP50Ms" in tier ? (
+                  <div className="mt-3 space-y-1 text-xs font-mono text-fg-muted">
+                    <div>Target TTFR p50: {tier.ttfrP50Ms}ms</div>
+                    <div>Target Total p95: {tier.totalP95Ms}ms</div>
+                  </div>
+                ) : (
+                  <div className="mt-3 space-y-1 text-xs font-mono text-fg-muted">
+                    <div>Cold TTFR p50: {tier.observedColdTtfrP50Ms}ms / target {tier.coldTtfrP50Ms}ms</div>
+                    <div>Cold Total p95: {tier.observedColdTotalP95Ms}ms / target {tier.coldTotalP95Ms}ms</div>
+                    <div>Warm Total p95: {tier.observedWarmTotalP95Ms}ms / target {tier.warmTotalP95Ms}ms</div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MetricRow({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="flex justify-between text-xs font-mono text-fg-muted">
+      <span>{label}</span>
+      <span className={accent ? "text-accent-violet" : "text-fg-porcelain"}>{value}</span>
+    </div>
+  );
 }
 
 function ChartBar({
-    label,
-    value,
-    maxValue,
-    highlight = false,
-    isVisible,
-    delay,
-    isOverflow = false,
+  label,
+  value,
+  maxValue,
+  highlight = false,
+  isVisible,
+  delay,
+  isOverflow = false,
 }: {
-    label: string;
-    value: number;
-    maxValue: number;
-    highlight?: boolean;
-    isVisible: boolean;
-    delay: number;
-    isOverflow?: boolean;
+  label: string;
+  value: number;
+  maxValue: number;
+  highlight?: boolean;
+  isVisible: boolean;
+  delay: number;
+  isOverflow?: boolean;
 }) {
-    const percentage = Math.min((value / maxValue) * 100, 100);
+  const percentage = Math.min((value / maxValue) * 100, 100);
 
-    return (
-        <div className="group">
-            <div className="flex justify-between text-xs font-mono text-fg-muted mb-2">
-                <span className={highlight ? "text-accent-violet font-bold" : ""}>{label}</span>
-                <span>{isOverflow ? ">5s" : `${value}ms`}</span>
-            </div>
-            {/* Terminal Style Bar */}
-            <div className="flex gap-1 h-3 overflow-hidden">
-                {Array.from({ length: 40 }).map((_, i) => {
-                    const active = (i / 40) * 100 < percentage;
-                    return (
-                        <div
-                            key={i}
-                            className={cn(
-                                "flex-1 rounded-[1px] transition-all duration-300",
-                                active
-                                    ? (highlight ? "bg-accent-violet" : "bg-fg-muted/60")
-                                    : "bg-white/5"
-                            )}
-                            style={{
-                                opacity: isVisible && active ? 1 : 0.2,
-                                transitionDelay: `${delay + (i * 5)}ms`
-                            }}
-                        />
-                    );
-                })}
-            </div>
-        </div>
-    );
+  return (
+    <div className="group">
+      <div className="mb-2 flex justify-between text-xs font-mono text-fg-muted">
+        <span className={highlight ? "font-bold text-accent-violet" : ""}>{label}</span>
+        <span>{isOverflow ? ">5s" : `${value}ms`}</span>
+      </div>
+      <div className="flex h-3 gap-1 overflow-hidden">
+        {Array.from({ length: 40 }).map((_, i) => {
+          const active = (i / 40) * 100 < percentage;
+          return (
+            <div
+              key={i}
+              className={cn(
+                "flex-1 rounded-[1px] transition-all duration-300",
+                active
+                  ? highlight
+                    ? "bg-accent-violet"
+                    : "bg-fg-muted/60"
+                  : "bg-white/5"
+              )}
+              style={{
+                opacity: isVisible && active ? 1 : 0.2,
+                transitionDelay: `${delay + i * 5}ms`,
+              }}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
-function StatCard({
-    value,
-    suffix = '',
-    label,
-    isVisible,
-    delay,
-    highlight = false,
-}: {
-    value: string;
-    suffix?: string;
-    label: string;
-    isVisible: boolean;
-    delay: number;
-    highlight?: boolean;
-}) {
-    // Basic CountUp internal hook for StatCard
-    const [count, setCount] = useState(0);
-    useEffect(() => {
-        if (!isVisible) return;
-        const end = parseInt(value, 10);
-        if (isNaN(end)) return;
-
-        const duration = 1000;
-        let startTimestamp: number | null = null;
-        const step = (timestamp: number) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            setCount(Math.floor(progress * end));
-            if (progress < 1) {
-                window.requestAnimationFrame(step);
-            } else {
-                setCount(end);
-            }
-        };
-        const timer = setTimeout(() => {
-            window.requestAnimationFrame(step);
-        }, delay);
-        return () => clearTimeout(timer);
-    }, [isVisible, value, delay]);
-
-    return (
-        <div
-            className={cn(
-                "p-4 rounded-sm border bg-bg-graphite-1/50 backdrop-blur transition-all group hover-glow-subtle",
-                highlight
-                    ? "border-accent-teal/30 hover:border-accent-teal/50"
-                    : "border-white/10 hover:border-accent-violet/30"
-            )}
-            style={{
-                opacity: isVisible ? 1 : 0,
-                transform: isVisible ? "translateY(0)" : "translateY(10px)",
-                transitionDelay: `${delay}ms`,
-                transitionProperty: "opacity, transform"
-            }}
-        >
-            <div className={cn(
-                "text-xl font-mono font-medium transition-colors",
-                highlight
-                    ? "text-accent-teal group-hover:text-accent-teal"
-                    : "text-fg-porcelain group-hover:text-accent-violet"
-            )}>
-                {count}{suffix}
-            </div>
-            <div className="text-[10px] text-fg-muted tracking-widest mt-1 opacity-60">{label}</div>
-        </div>
-    );
+function WaterfallRow({ label, value }: { label: string; value: number }) {
+  const width = Math.min(100, value * 3);
+  return (
+    <div className="mb-2 flex items-center gap-3 text-xs font-mono text-fg-muted">
+      <span className="w-16 uppercase">{label}</span>
+      <div className="h-2 flex-1 rounded bg-white/5">
+        <div className="h-2 rounded bg-accent-violet/70" style={{ width: `${Math.max(width, 2)}%` }} />
+      </div>
+      <span className="w-10 text-right">{value}ms</span>
+    </div>
+  );
 }
 
-function CountUp({ end, suffix = '', duration = 800, isVisible }: { end: number, suffix?: string, duration?: number, isVisible: boolean }) {
-    const [count, setCount] = useState(0);
-    useEffect(() => {
-        if (!isVisible) return;
-        let startTimestamp: number | null = null;
-        const step = (timestamp: number) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            setCount(Math.floor(progress * end));
-            if (progress < 1) {
-                window.requestAnimationFrame(step);
-            } else {
-                setCount(end);
-            }
-        };
+function useCountUp(end: number, duration: number, isVisible: boolean) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    let startTimestamp: number | null = null;
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      setCount(Math.floor(progress * end));
+      if (progress < 1) {
         window.requestAnimationFrame(step);
-    }, [end, duration, isVisible]);
-    return <>{count}{suffix}</>;
-}
+      } else {
+        setCount(end);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }, [end, duration, isVisible]);
 
+  return count;
+}

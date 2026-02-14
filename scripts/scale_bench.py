@@ -264,7 +264,12 @@ def build_queries(root: Path, max_files=5000, min_queries=50):
 def main():
     parser = argparse.ArgumentParser(description='Run Ixos scale bench')
     parser.add_argument('--search-mode', default='auto', choices=['flash', 'auto', 'pro'])
-    parser.add_argument('--cache-mode', default='jit', choices=['jit', 'cache'])
+    parser.add_argument(
+        '--cache-mode',
+        default='native-cache',
+        choices=['native-cache', 'ephemeral', 'cache', 'jit'],
+        help='Canonical values: native-cache, ephemeral (legacy aliases: cache, jit)',
+    )
     parser.add_argument('--model', default='ixos-flash-v2')
     parser.add_argument('--pro-model', default='ixos-pro-v2')
     parser.add_argument('--max-queries', type=int, default=50)
@@ -296,7 +301,11 @@ def main():
         '--queries-file', str(qpath),
         '--max-queries', str(args.max_queries),
         '--search-mode', args.search_mode,
-        '--cache-mode', args.cache_mode,
+        '--cache-mode', (
+            'native-cache'
+            if args.cache_mode in ('native-cache', 'cache')
+            else 'ephemeral'
+        ),
         '--model', args.model,
         '--pro-model', args.pro_model,
         '--out-json', args.out_json,

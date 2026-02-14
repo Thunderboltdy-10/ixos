@@ -25,7 +25,7 @@ const defaultConfig: IxosConfig = {
     timeoutSeconds: 30,
     enableSecureRanking: true,
     progressiveByDefault: true,
-    cacheMode: 'jit',
+    cacheMode: 'native-cache',
     modelType: 'ixos-flash-v2',
     proModelType: 'ixos-pro-v2',
     searchMode: 'auto',
@@ -80,6 +80,17 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       // Auto-increase timeout if it's too low (user report: "always exceeded")
       if (config.search.timeoutSeconds < 15) {
         config.search.timeoutSeconds = 30;
+        needsUpdate = true;
+      }
+
+      if (config.search.cacheMode === 'jit') {
+        config.search.cacheMode = 'ephemeral';
+        needsUpdate = true;
+      } else if (config.search.cacheMode === 'cache' || config.search.cacheMode === 'persistent') {
+        config.search.cacheMode = 'native-cache';
+        needsUpdate = true;
+      } else if (!['native-cache', 'ephemeral'].includes(config.search.cacheMode)) {
+        config.search.cacheMode = 'native-cache';
         needsUpdate = true;
       }
 

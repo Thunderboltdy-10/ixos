@@ -384,3 +384,87 @@
 - Evidence (links to /reports or output files): src/activity_ledger/mod.rs, src-tauri/src/commands/activity.rs, ui/src/components/today/TodayTab.tsx, RUNLOG.md (Entry 027)
 - Risks: Sparse activity histories may produce no recommendations initially
 - Follow-ups: Add accept/dismiss feedback loops to personalize confidence scoring over time
+
+- Decision: Introduce dedicated `ixos-big-bench` harness with Tier A/B/C PASS/FAIL gates and per-query stage/cache telemetry.
+- Options considered: Keep using `ixos-bench` only; add ad-hoc scripts around existing profile output; create a dedicated benchmark binary with machine-readable + markdown outputs.
+- Why chosen: Phase 1 requires large-root truth metrics, embedded gates, and reproducible artifacts that can be consumed by Ralph loop and landing refresh workflows.
+- Evidence (links to /reports or output files): src/bin/ixos-big-bench.rs, bench/big_root_queries.json, reports/ralph/big_bench_20260213_174232.json, reports/ralph/big_bench_20260213_174232.md
+- Risks: Current `evidence_ms` is placeholder zero (no direct evidence timing hook in this harness yet).
+- Follow-ups: Wire explicit evidence-stage timing once Ask CLI path is integrated in Phase 6.
+
+- Decision: Expand settings matrix contract to full 5-dimensional combinatorics (48 combos) and validate progressive JSON as NDJSON.
+- Options considered: Keep previous 11-combo matrix; expand combos but skip progressive JSON parsing; use only Rust integration tests.
+- Why chosen: The CLI emits multiple JSON envelopes in progressive mode; NDJSON validation prevents false negatives while preserving contract checks (no crash, parseable payloads, results present).
+- Evidence (links to /reports or output files): scripts/run_settings_matrix.py, reports/settings_matrix_2026-02-13.md, tests/settings_matrix.rs
+- Risks: Runtime of live matrix increases with full combinatorics.
+- Follow-ups: Add `--subset`/`--smoke` options for faster pre-commit checks while keeping full matrix in release gates.
+
+- Decision: Add `release-check` as an explicit CLI stub in Phase 1 instead of waiting for Phase 7 implementation.
+- Options considered: No command until full implementation; add hidden/internal command; add visible stub with clear guidance.
+- Why chosen: Locks CLI surface early for automation and avoids interface churn before full release-check orchestration lands.
+- Evidence (links to /reports or output files): src/cli/commands.rs, src/main.rs
+- Risks: Users may expect full functionality immediately.
+- Follow-ups: Replace stub body with full orchestrated flow in Phase 7 (matrix + golden + formatting + smoke + doctor).
+
+- Decision: Make `ixos-big-bench` return non-zero when tier gate fails.
+- Options considered: Keep informational PASS/FAIL only; emit warnings in markdown only; fail process on gate miss.
+- Why chosen: Ralph loop regression control depends on command exit codes; informational-only FAIL allowed bad checkpoints to pass.
+- Evidence (links to /reports or output files): src/bin/ixos-big-bench.rs, reports/ralph/iteration_8_20260213_174830.md, reports/ralph/iteration_9_20260213_174857.md
+- Risks: Users running quick one-pass Tier C benches (`--runs 1`) will now get intentional non-zero exits.
+- Follow-ups: Document minimum run counts per tier (`runs >= 2` for warm gate semantics, `runs >= 3` recommended).
+
+- Decision: Add `objective-profile` support to `ixos-big-bench` with a new `harsh` profile and stage p95 gate reporting.
+- Options considered: Keep only roadmap-tier defaults; externalize targets in scripts only; embed standard+harsh targets in benchmark binary.
+- Why chosen: Enables strict local/CI gating without bespoke wrapper scripts and gives comparable machine-readable outputs per iteration.
+- Evidence (links to /reports or output files): src/bin/ixos-big-bench.rs, reports/ralph/big_bench_20260213_180844.json, reports/ralph/comparison_11_20260213_180754.md
+- Risks: Bench failures become more sensitive to machine variance under strict profiles.
+- Follow-ups: Add variance-aware stability rule (e.g., median of multiple benchmark batches) for release-grade claims.
+
+- Decision: Integrate automatic before/after comparator into Ralph loop (`compare_perf` step) instead of manual ad-hoc comparison.
+- Options considered: Manual report generation only; comparator script not in loop; explicit `compare_perf` command step after each bench.
+- Why chosen: Makes regressions visible at every checkpoint and keeps iteration artifacts self-contained.
+- Evidence (links to /reports or output files): scripts/compare_performance.py, scripts/ralph_loop.py, reports/ralph/iteration_12_20260213_181349.md
+- Risks: Quality comparisons can mislead if suite scopes differ.
+- Follow-ups: Enforce same-suite quality input validation in comparator.
+
+- Decision: Harden release/build workflows for reproducibility and artifact integrity.
+- Options considered: Keep existing workflows; partial token fix only; full pass (lockfile install, token fix, matrix test expansion, packaged docs/license).
+- Why chosen: Current CI failures and release inconsistencies were caused by token/env/reproducibility gaps.
+- Evidence (links to /reports or output files): .github/workflows/release.yml, .github/workflows/settings-matrix.yml, .github/workflows/build-pro-module.yml
+- Risks: Requires required secrets/vars to be configured in GitHub repository settings.
+- Follow-ups: Add workflow-level smoke test for missing secret diagnostics.
+
+- Decision: Keep legacy internal `cache/jit` UI enums for now but update user-facing labels and compatibility mappings to `NativeCache`/`Ephemeral`.
+- Options considered: Full internal enum migration in one pass; leave all legacy naming untouched; staged migration with user-facing alignment first.
+- Why chosen: Reduces immediate user confusion while minimizing risk of wide UI regression in one iteration.
+- Evidence (links to /reports or output files): ui/src/components/search/ModeSwitcher.tsx, ui/src/components/search/SearchDeck.tsx, ui/src/components/search/CommandPalette.tsx, ixos-site/src/app/docs/*
+- Risks: Internal naming debt remains and can cause future mismatch bugs.
+- Follow-ups: Complete type-level migration to canonical names across stores/components.
+
+- Decision: Move non-operational root markdown files into `docs/archive/root` and regenerate markdown inventory.
+- Options considered: Keep root clutter; delete stale docs; archive under docs taxonomy.
+- Why chosen: Improves repository hygiene and aligns with documented markdown organization policy.
+- Evidence (links to /reports or output files): docs/archive/root/PROJECT_REVIEW_REPORT.md, docs/archive/root/PRODUCTION_AND_STRATEGY_GAPS_2026-02-10.md, docs/MARKDOWN_INVENTORY.md
+- Risks: Historical links to old root paths may break in older notes.
+- Follow-ups: Sweep docs for stale path references and add redirect notes where needed.
+
+- Decision: Complete internal desktop mode enum migration to canonical `native-cache` / `ephemeral`, keeping legacy `cache/jit` only at ingestion compatibility boundaries.
+- Options considered: Keep mixed legacy internals; full breaking rename with no aliases; canonical internals + compatibility normalization for persisted/config legacy values.
+- Why chosen: Removes the remaining mis-hook risk from mixed enum usage while preserving backwards compatibility for existing persisted data and older config values.
+- Evidence (links to /reports or output files): ui/src/stores/searchStore.ts, ui/src/stores/starredStore.ts, ui/src/components/search/ModeSwitcher.tsx, ui/src/components/search/SearchResults.tsx, ui/src/components/search/SearchInput.tsx, ui/src/components/search/ResultCard.tsx
+- Risks: Shared UI library components (`SearchBar`) still use legacy tone keys, requiring local mapping in app code.
+- Follow-ups: Migrate shared `@ixos/ui` `SearchBar` tone contract to canonical names to remove adapter mapping.
+
+- Decision: Rename `ModelType::Potion` display branding to `Potion Core` (and keep `Pro Prism` as the user-facing Pro mode/cascade label).
+- Options considered: Keep Potion labeled as Pro Prism; expose raw potion identifier only; split branding (`Potion Core` internal model, `Pro Prism` mode).
+- Why chosen: Avoids model/mode conflation and keeps branding consistent with docs and UI.
+- Evidence (links to /reports or output files): src/ixos_embed/mmap_model.rs, docs/models/BRANDING.md, ui/src/components/search/ModelSwitcher.tsx
+- Risks: Existing scripts parsing prior display text may need updates.
+- Follow-ups: Add explicit note in CLI docs that model IDs are canonical and display labels are presentation-only.
+
+- Decision: Keep harsh objective profile active in Ralph checkpoints despite mild latency regressions versus prior run, because gates remain passing and quality is unchanged.
+- Options considered: Revert to standard profile; tune code immediately for micro-regression; keep harsh profile and continue iterative measurement.
+- Why chosen: Harsh objectives are intended to expose drift early; current regression is measurable but not target-breaking.
+- Evidence (links to /reports or output files): reports/ralph/iteration_13_20260213_231055.md, reports/ralph/comparison_13_20260213_231055.md, reports/ralph/comparison_turn_20260213_231310.md, models/lab/results_prism_iter_2026-02-13_post_ui.json
+- Risks: Short-term variance noise can trigger churn if interpreted as structural regression.
+- Follow-ups: Add repeated-batch median and jitter controls to comparator/report pipeline.

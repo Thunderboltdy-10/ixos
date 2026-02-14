@@ -1,57 +1,66 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 export default function DocsDesktopAppPage() {
   return (
     <div className="docs-content max-w-4xl">
       <p className="docs-kicker">{"// DESKTOP_APP"}</p>
-      <h1 className="docs-h1">Desktop App</h1>
+      <h1 className="docs-h1">Desktop App Architecture</h1>
       <p className="docs-lead">
-        Ixos desktop combines a Rust search engine, Tauri command layer, and React interface for
-        low-latency local retrieval with zero-index privacy behavior.
+        Ixos desktop is a local-first search stack: Rust core for retrieval, Tauri command bridge,
+        and React UI for progressive result streaming. The design goal is fast retrieval with
+        explicit privacy controls.
       </p>
 
-      <h2>Pipeline behavior</h2>
+      <h2>Core architecture</h2>
+      <ul>
+        <li><strong>Engine:</strong> <code>src/ixos_rank</code> + <code>src/ixos_embed</code>.</li>
+        <li><strong>Desktop bridge:</strong> <code>src-tauri/src/commands/*</code>.</li>
+        <li><strong>UI:</strong> <code>ui/src/components/search/*</code>.</li>
+        <li><strong>Config:</strong> <code>src/cli/config.rs</code> and settings store parity.</li>
+      </ul>
+
+      <h2>Search flow</h2>
       <ol>
-        <li>Parse intent and entities from the natural query.</li>
-        <li>Generate local embeddings in JIT mode.</li>
-        <li>Blend semantic and lexical signals for ranking.</li>
-        <li>Wipe transient buffers and vectors after scoring.</li>
-        <li>Stream ranked files to the UI as soon as they are available.</li>
+        <li>Query enters progressive pipeline (lexical candidate pass first).</li>
+        <li>Semantic rerank applies selected model (Flash Quartz, Pro Prism, or Potion Core).</li>
+        <li>Evidence/snippet extraction runs for explainability.</li>
+        <li>Results stream continuously to UI, then finalize with ranking metadata.</li>
       </ol>
 
-      <h2>Core files</h2>
+      <h2>Privacy and cache modes</h2>
+      <ul>
+        <li><strong>NativeCache (default):</strong> ADS/xattr backed persistent embedding cache.</li>
+        <li><strong>Ephemeral:</strong> memory-only embeddings, no persistent cache writes.</li>
+        <li><strong>Journalist:</strong> hardened profile built on Ephemeral + strict controls.</li>
+      </ul>
+
+      <h2>Ask Mode contract</h2>
+      <ul>
+        <li>Respects user-selected model and search mode.</li>
+        <li>Never silently forces Pro for regular queries.</li>
+        <li>Keeps progressive output responsive while evidence is collected.</li>
+      </ul>
+
+      <h2>Operational checks before release</h2>
+      <ol>
+        <li>Sign-in/sign-out and entitlement refresh paths pass.</li>
+        <li>Model list and model switching works in UI and CLI JSON output.</li>
+        <li>Mode names are consistent: NativeCache/Ephemeral across UI, CLI, docs.</li>
+        <li>Search and Ask Mode behavior match expected confidence gating.</li>
+      </ol>
+
+      <h2>Useful commands</h2>
       <pre>
-        <code>{`ui/src/components/search/MainSearchView.tsx
-ui/src/components/search/ModelSwitcher.tsx
-ui/src/components/search/AskModeSwitcher.tsx
-ui/src/components/auth/AuthGate.tsx
-src-tauri/src/commands/search.rs
-src-tauri/src/commands/system.rs
-src/ixos_rank/
-src/ixos_embed/`}</code>
+        <code>{`# Desktop dev
+npm run tauri:dev
+
+# Desktop production build (requires env vars)
+npm run tauri:build
+
+# Backend validation
+cargo test
+cargo run --bin ixos -- doctor --verbose`}</code>
       </pre>
-
-      <h2>Ask mode rule</h2>
-      <ul>
-        <li>Ask mode must respect the user-selected model.</li>
-        <li>It must not silently force a slower Pro path.</li>
-        <li>Progressive updates must remain fast and readable.</li>
-      </ul>
-
-      <h2>Auth and entitlement</h2>
-      <ul>
-        <li>Identity is managed with Clerk flows.</li>
-        <li>Desktop entitlement checks call `/api/desktop/*` endpoints on the site.</li>
-        <li>Device transfer flow supports Pro entitlement portability.</li>
-      </ul>
-
-      <h2>Release checks</h2>
-      <ul>
-        <li>Clean-machine sign-in and model install tested end-to-end.</li>
-        <li>Search and Ask mode validated with explicit model selection.</li>
-        <li>Settings pages (privacy/compliance/account) verified functional.</li>
-        <li>Result streaming and ranking explanations match backend output.</li>
-      </ul>
 
       <p className="docs-next">
         Next: <Link href="/docs/models">Models + Hugging Face</Link>

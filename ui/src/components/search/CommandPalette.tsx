@@ -42,7 +42,7 @@ function formatRelativeTimestamp(timestamp: number): string {
 
 function threadSubtitle(thread: SearchThread): string {
   const resultLabel = thread.resultCount === 1 ? 'result' : 'results';
-  return `${thread.resultCount} ${resultLabel} • ${formatRelativeTimestamp(thread.timestamp)}`;
+  return `${thread.resultCount} ${resultLabel} | ${formatRelativeTimestamp(thread.timestamp)}`;
 }
 
 export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
@@ -75,7 +75,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   );
 
   const toggleCacheMode = useCallback(async () => {
-    const nextMode = cacheMode === 'jit' ? 'cache' : 'jit';
+    const nextMode = cacheMode === 'ephemeral' ? 'native-cache' : 'ephemeral';
     setCacheMode(nextMode);
     if (!config) return;
     await updateConfig({
@@ -153,10 +153,10 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'action:toggle-cache',
         section: 'Quick actions',
-        label: `Toggle ${cacheMode === 'jit' ? 'Cache' : 'JIT'} mode`,
-        subtitle: `Current mode: ${cacheMode.toUpperCase()}`,
+        label: `Toggle ${cacheMode === 'ephemeral' ? 'NativeCache' : 'Ephemeral'} mode`,
+        subtitle: `Current mode: ${cacheMode === 'ephemeral' ? 'Ephemeral' : 'NativeCache'}`,
         icon: Sparkles,
-        keywords: 'toggle jit cache mode',
+        keywords: 'toggle ephemeral nativecache mode',
         onSelect: () => toggleCacheMode(),
       },
       {

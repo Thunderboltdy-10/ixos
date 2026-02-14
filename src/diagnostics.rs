@@ -196,7 +196,7 @@ async fn check_journalist_write_prevention() -> Result<(), String> {
 
     let model = std::sync::Arc::new(StubModel::new());
     let embedder = SecureEmbedder::new_fast(model);
-    let mut semantic = StubSemanticEngine::with_cache_mode(embedder, CacheMode::Jit);
+    let mut semantic = StubSemanticEngine::with_cache_mode(embedder, CacheMode::Ephemeral);
     semantic
         .index_directory(&temp_dir)
         .await

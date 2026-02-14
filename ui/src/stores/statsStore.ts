@@ -159,8 +159,8 @@ export interface Stats {
 
   // Per-mode stats
   modeStats: {
-    cache: number;
-    jit: number;
+    nativeCache: number;
+    ephemeral: number;
     journalist: number;
   };
 }
@@ -170,7 +170,7 @@ interface StatsState extends Stats {
   newAchievements: string[]; // Recently unlocked, for notifications
 
   // Actions
-  incrementSearch: (mode: 'cache' | 'jit' | 'journalist', durationMs: number) => void;
+  incrementSearch: (mode: 'native-cache' | 'ephemeral' | 'journalist', durationMs: number) => void;
   updateFileCount: (count: number) => void;
   updateEmbeddingCount: (count: number) => void;
   recordCacheHit: () => void;
@@ -205,8 +205,8 @@ const DEFAULT_STATS: Stats = {
   unlockedAchievements: [],
   milestones: [],
   modeStats: {
-    cache: 0,
-    jit: 0,
+    nativeCache: 0,
+    ephemeral: 0,
     journalist: 0,
   },
 };
@@ -224,6 +224,7 @@ export const useStatsStore = create<StatsState>((set, get) => ({
     set(state => {
       const newTotal = state.totalSearches + 1;
       const newAverage = (state.averageSearchMs * state.totalSearches + durationMs) / newTotal;
+      const modeKey = mode === 'native-cache' ? 'nativeCache' : mode;
 
       // Update streak
       const today = new Date().toISOString().split('T')[0];
@@ -273,7 +274,7 @@ export const useStatsStore = create<StatsState>((set, get) => ({
         totalSearches: newTotal,
         modeStats: {
           ...state.modeStats,
-          [mode]: state.modeStats[mode] + 1,
+          [modeKey]: state.modeStats[modeKey] + 1,
         },
         fastestSearchMs: Math.min(state.fastestSearchMs, durationMs),
         slowestSearchMs: Math.max(state.slowestSearchMs, durationMs),
@@ -369,8 +370,14 @@ export const useStatsStore = create<StatsState>((set, get) => ({
       const loaded = await loadEncrypted<Stats>(STATS_FILE);
 
       if (loaded) {
+        const loadedModeStats = (loaded.modeStats ?? {}) as Record<string, number>;
         set({
           ...loaded,
+          modeStats: {
+            nativeCache: loadedModeStats.nativeCache ?? loadedModeStats.cache ?? 0,
+            ephemeral: loadedModeStats.ephemeral ?? loadedModeStats.jit ?? 0,
+            journalist: loadedModeStats.journalist ?? 0,
+          },
           isLoaded: true,
         });
       } else {

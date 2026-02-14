@@ -11,6 +11,13 @@ const HISTORY_FILE = 'search_history.encrypted';
 const LEGACY_STARRED_FILE = 'starred_searches.encrypted';
 const MAX_THREADS = 100;
 
+function normalizeMode(mode: string): 'native-cache' | 'ephemeral' | 'journalist' {
+  if (mode === 'journalist') return 'journalist';
+  if (mode === 'ephemeral' || mode === 'jit') return 'ephemeral';
+  if (mode === 'native-cache' || mode === 'cache' || mode === 'persistent') return 'native-cache';
+  return 'native-cache';
+}
+
 /**
  * A search thread represents one search session
  */
@@ -20,7 +27,7 @@ export interface SearchThread {
   directory: string;
   results: StoredResult[];
   timestamp: number;
-  mode: 'cache' | 'jit' | 'journalist';
+  mode: 'native-cache' | 'ephemeral' | 'journalist';
   resultCount: number;
   durationMs: number;
   starred: boolean;
@@ -32,7 +39,7 @@ export interface HistorySuggestion {
   directory: string;
   resultCount: number;
   timestamp: number;
-  mode: 'cache' | 'jit' | 'journalist';
+  mode: 'native-cache' | 'ephemeral' | 'journalist';
   starred: boolean;
 }
 
@@ -176,17 +183,24 @@ export const useStarredStore = create<StarredState>((set, get) => ({
 
       if (loaded?.threads) {
         set({
-          threads: loaded.threads.slice(0, MAX_THREADS),
+          threads: loaded.threads.slice(0, MAX_THREADS).map((thread) => ({
+            ...thread,
+            mode: normalizeMode(thread.mode),
+          })),
           isLoaded: true,
         });
       } else {
         const legacy = await loadEncrypted<{ threads: SearchThread[] }>(LEGACY_STARRED_FILE);
         if (legacy?.threads) {
+          const normalized = legacy.threads.slice(0, MAX_THREADS).map((thread) => ({
+            ...thread,
+            mode: normalizeMode(thread.mode),
+          }));
           set({
-            threads: legacy.threads.slice(0, MAX_THREADS),
+            threads: normalized,
             isLoaded: true,
           });
-          await saveEncrypted(HISTORY_FILE, { threads: legacy.threads.slice(0, MAX_THREADS) });
+          await saveEncrypted(HISTORY_FILE, { threads: normalized });
         } else {
           set({ isLoaded: true });
         }

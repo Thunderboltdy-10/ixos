@@ -19,14 +19,14 @@ python scripts/check_perf_budget.py --report bench/results/PERF_REGRESSION.json 
 ## Run end-to-end benchmark on real corpus
 
 ```powershell
-cargo run --bin ixos-bench -- --dir dataset --runs 5 --cache-mode jit --model ixos-flash-v2 --out bench/results/PERF_JIT.md
-cargo run --bin ixos-bench -- --dir dataset --runs 5 --cache-mode cache --model ixos-flash-v2 --out bench/results/PERF_CACHE.md
+cargo run --bin ixos-bench -- --dir dataset --runs 5 --cache-mode ephemeral --model ixos-flash-v2 --out bench/results/PERF_JIT.md
+cargo run --bin ixos-bench -- --dir dataset --runs 5 --cache-mode native-cache --model ixos-flash-v2 --out bench/results/PERF_CACHE.md
 ```
 
 ## Slow query profiler (opt-in, real corpus)
 
 ```powershell
-cargo run --bin ixos-profile -- --dir dataset --runs 6 --cache-mode jit --model ixos-flash-v2 --slow-threshold-ms 1500 --slow-out bench/results/slow_queries.json
+cargo run --bin ixos-profile -- --dir dataset --runs 6 --cache-mode ephemeral --model ixos-flash-v2 --slow-threshold-ms 1500 --slow-out bench/results/slow_queries.json
 ```
 
 ## Notes

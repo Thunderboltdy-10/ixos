@@ -81,8 +81,8 @@ export function StatsPanel() {
       <div className="space-y-2">
         <h3 className="text-sm font-semibold text-fg-muted">Search Modes</h3>
         <div className="space-y-2">
-          <ModeBar label="Cache" count={stats.modeStats.cache} total={stats.totalSearches} color="bg-accent-teal" />
-          <ModeBar label="JIT" count={stats.modeStats.jit} total={stats.totalSearches} color="bg-accent-teal-glow" />
+          <ModeBar label="NativeCache" count={stats.modeStats.nativeCache} total={stats.totalSearches} color="bg-accent-teal" />
+          <ModeBar label="Ephemeral" count={stats.modeStats.ephemeral} total={stats.totalSearches} color="bg-accent-teal-glow" />
           <ModeBar label="Journalist" count={stats.modeStats.journalist} total={stats.totalSearches} color="bg-accent-magenta" />
         </div>
       </div>

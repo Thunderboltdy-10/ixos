@@ -1,0 +1,96 @@
+{
+  "generated_at": "2026-02-13T17:19:31.160937+00:00",
+  "corpus": {
+    "total_files": 1036,
+    "total_size_mb": 2.4631872177124023,
+    "file_types": [
+      [
+        "txt",
+        1034
+      ],
+      [
+        "marker",
+        2
+      ]
+    ],
+    "avg_file_size_bytes": 2493
+  },
+  "summary": {
+    "ttfr": {
+      "p50_ms": 226,
+      "p95_ms": 226,
+      "p99_ms": 226
+    },
+    "ttsi": {
+      "p50_ms": 226,
+      "p95_ms": 226,
+      "p99_ms": 226
+    },
+    "total": {
+      "p50_ms": 555,
+      "p95_ms": 555,
+      "p99_ms": 555
+    },
+    "avg_cache_hit_rate": 0.07070707,
+    "avg_candidates_embedded": 184,
+    "avg_cpu_percent": 113.12513,
+    "peak_ram_mb": 112
+  },
+  "stages": {
+    "directory_walk": {
+      "p50_ms": 79,
+      "p95_ms": 79,
+      "p99_ms": 79
+    },
+    "path_scoring": {
+      "p50_ms": 0,
+      "p95_ms": 0,
+      "p99_ms": 0
+    },
+    "ripgrep_scan": {
+      "p50_ms": 211,
+      "p95_ms": 211,
+      "p99_ms": 211
+    },
+    "candidate_selection": {
+      "p50_ms": 14,
+      "p95_ms": 14,
+      "p99_ms": 14
+    },
+    "embedding": {
+      "p50_ms": 93,
+      "p95_ms": 93,
+      "p99_ms": 93
+    },
+    "ranking": {
+      "p50_ms": 208,
+      "p95_ms": 208,
+      "p99_ms": 208
+    }
+  },
+  "runs": [
+    {
+      "ttfr_ms": 226,
+      "ttsi_ms": 226,
+      "total_ms": 555,
+      "stages": {
+        "directory_walk_ms": 79,
+        "path_scoring_ms": 0,
+        "ripgrep_scan_ms": 211,
+        "candidate_selection_ms": 14,
+        "embedding_ms": 93,
+        "ranking_ms": 208,
+        "ipc_overhead_ms": 0
+      },
+      "resources": {
+        "peak_ram_mb": 112,
+        "io_read_mb": 0.8343801498413086,
+        "cpu_percent": 113.12513,
+        "cache_hit_rate": 0.07070707,
+        "files_scanned": 1034,
+        "candidates_generated": 198,
+        "candidates_embedded": 184
+      }
+    }
+  ]
+}

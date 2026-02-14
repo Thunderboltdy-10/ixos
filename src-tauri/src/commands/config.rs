@@ -6,6 +6,14 @@ use ixos_protocol::cli::IxosConfig;
 use ixos_protocol::compliance::ComplianceManager;
 use serde::{Deserialize, Serialize};
 
+fn normalize_cache_mode(value: &str) -> String {
+    match value.trim().to_lowercase().as_str() {
+        "native-cache" | "nativecache" | "cache" | "persistent" => "native-cache".to_string(),
+        "ephemeral" | "jit" | "memory" | "memory-only" => "ephemeral".to_string(),
+        _ => "native-cache".to_string(),
+    }
+}
+
 // =============================================================================
 // Payload Types
 // =============================================================================
@@ -81,7 +89,7 @@ impl From<IxosConfig> for ConfigPayload {
                 timeout_seconds: config.search.timeout_seconds,
                 enable_secure_ranking: config.search.enable_secure_ranking,
                 progressive_by_default: config.search.progressive_by_default,
-                cache_mode: config.search.cache_mode.clone(),
+                cache_mode: normalize_cache_mode(&config.search.cache_mode),
                 use_stub_model: config.search.use_stub_model,
                 secure_timing: config.search.secure_timing,
                 context_lines: config.search.context_lines,
@@ -117,13 +125,14 @@ impl From<ConfigPayload> for IxosConfig {
         use std::path::PathBuf;
 
         Self {
+            version: IxosConfig::default().version,
             search: ixos_protocol::cli::SearchConfig {
                 default_limit: payload.search.default_limit,
                 default_directory: payload.search.default_directory.map(PathBuf::from),
                 timeout_seconds: payload.search.timeout_seconds,
                 enable_secure_ranking: payload.search.enable_secure_ranking,
                 progressive_by_default: payload.search.progressive_by_default,
-                cache_mode: payload.search.cache_mode,
+                cache_mode: normalize_cache_mode(&payload.search.cache_mode),
                 use_stub_model: payload.search.use_stub_model,
                 secure_timing: payload.search.secure_timing,
                 context_lines: payload.search.context_lines,

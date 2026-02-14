@@ -325,7 +325,7 @@ export function SearchCorridor() {
       // Clear canvas
       ctx.clearRect(0, 0, rect.width, height);
 
-      const color = journalistMode ? COLORS.violet : cacheMode === 'cache' ? COLORS.teal : COLORS.amber;
+      const color = journalistMode ? COLORS.violet : cacheMode === 'native-cache' ? COLORS.teal : COLORS.amber;
 
       // Handle fade-out on complete
       if (isComplete) {

@@ -23,13 +23,13 @@ python scripts/ixos_eval.py --suite both --output models/lab/results_<stamp>.jso
 Performance benchmark:
 
 ```bash
-./target/release/ixos-bench --dir dataset --runs 10 --cache-mode jit --model <model_id>
+./target/release/ixos-bench --dir dataset --runs 10 --cache-mode native-cache --model <model_id>
 ```
 
 Profiling:
 
 ```bash
-./target/release/ixos-profile --dir dataset --model <model_id> --cache-mode jit
+./target/release/ixos-profile --dir dataset --model <model_id> --cache-mode native-cache
 ```
 
 ## ARTIFACT LOCATIONS
@@ -54,4 +54,3 @@ Each run should capture:
 - Validate both Flash v2 and Pro v2 against legacy baselines.
 - Confirm Ask mode respects selected model.
 - Confirm TTFR and warm-cache behavior.
-

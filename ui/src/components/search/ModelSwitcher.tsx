@@ -197,8 +197,8 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
     const models: ModelOption[] = [
         {
             id: 'ixos-flash-v2',
-            label: 'Ixos Flash V2',
-            description: 'Fast, efficient default model (v2 generation)',
+            label: 'Flash Quartz',
+            description: 'Fast, efficient default model',
             available: status?.ixosFlashV2Available ?? false,
             recommended: status?.recommended === 'ixos-flash-v2',
             icon: Beaker,
@@ -206,7 +206,7 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
         },
         {
             id: 'ixos-pro-v2',
-            label: 'Ixos Pro V2',
+            label: 'Pro Prism',
             description: 'Fusion + cascade for maximum precision',
             available: status?.ixosProV2Available ?? false,
             recommended: status?.recommended === 'ixos-pro-v2',

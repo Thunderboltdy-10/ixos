@@ -1,49 +1,59 @@
-export default function DocsAgentsPage() {
+﻿export default function DocsAgentsPage() {
   return (
     <div className="docs-content max-w-4xl">
       <p className="docs-kicker">{"// AGENT_WORKFLOWS"}</p>
       <h1 className="docs-h1">Agent Workflows</h1>
       <p className="docs-lead">
-        Ixos is optimized for autonomous coding loops with explicit measurement, documentation, and
-        restart-safe state tracking.
+        Ixos uses a strict autonomous loop for quality, performance, and release safety. Every
+        iteration must be measurable and restart-safe.
       </p>
 
-      <h2>Required execution loop</h2>
+      <h2>Required loop (Ralph protocol)</h2>
       <p>
-        Observe -&gt; Hypothesize -&gt; Implement -&gt; Measure -&gt; Decide -&gt; Document -&gt;
-        Repeat.
+        Observe -&gt; Hypothesize -&gt; Implement -&gt; Measure -&gt; Decide -&gt; Document -&gt; Repeat.
       </p>
 
       <h2>Persistent project memory</h2>
       <ul>
-        <li>`PLAN.md` for current goals, state snapshot, and next actions.</li>
-        <li>`RUNLOG.md` for append-only command and output history.</li>
-        <li>`DECISIONS.md` for rationale and chosen direction.</li>
-        <li>`reports/` for benchmark tables and final writeups.</li>
+        <li><code>PLAN.md</code>: active goals + state snapshot + top 3 next tasks.</li>
+        <li><code>RUNLOG.md</code>: append-only command history and artifact links.</li>
+        <li><code>DECISIONS.md</code>: keep/revert/pivot decisions with rationale.</li>
+        <li><code>reports/</code>: checkpoints, benchmark evidence, and audits.</li>
       </ul>
 
       <h2>Hard constraints</h2>
       <ul>
-        <li>No benchmark stubs. Real model artifacts must load.</li>
-        <li>No optimization without baseline and profiling.</li>
-        <li>Every claim includes commands and captured outputs.</li>
-        <li>Zero-index privacy philosophy must be preserved.</li>
-        <li>Model naming must remain canonical and consistent.</li>
+        <li>No stubs for quality/perf claims. Real model artifacts must load.</li>
+        <li>No optimization without baseline and profiler evidence.</li>
+        <li>Every claim must include command + output artifact path.</li>
+        <li>Zero-index privacy is default; optional indexing must be explicit and documented.</li>
+        <li>Model naming and cache mode naming must stay globally consistent.</li>
       </ul>
 
-      <h2>State snapshot rule</h2>
-      <p>
-        Before compaction or major pivots, append a state snapshot to `PLAN.md` with baseline
-        numbers, current best v2 metrics, bottleneck ranking, and top three next tasks.
-      </p>
-
-      <h2>Completion checklist</h2>
+      <h2>Checkpoint expectations</h2>
       <ul>
-        <li>Before/after benchmark suite executed and logged.</li>
-        <li>Docs, manifests, and UI labels updated consistently.</li>
-        <li>CLI and desktop paths verified end-to-end.</li>
-        <li>Hugging Face upload flow documented and reproducible.</li>
+        <li>R0/R1: baseline capture and benchmark harness validation.</li>
+        <li>R2-R6: performance/quality gains with no regressions in confidence or safety.</li>
+        <li>R7-R8: release checks and landing/documentation accuracy.</li>
+        <li>R10: final report comparing against baseline.</li>
       </ul>
+
+      <h2>Minimum command set per iteration</h2>
+      <pre>
+        <code>{`cargo test
+cargo test --test settings_matrix
+python scripts/run_settings_matrix.py
+python scripts/ralph_loop.py --checkpoint R1 --bench-dir . --bench-runs 3 --objective-profile harsh
+python scripts/compare_performance.py`}</code>
+      </pre>
+
+      <h2>Definition of done for an iteration</h2>
+      <ol>
+        <li>All tests and matrix checks pass.</li>
+        <li>Benchmarks produce timestamped reports and objective gate results.</li>
+        <li>Any regression is either fixed or explicitly documented with owner + next action.</li>
+        <li>PLAN/RUNLOG/DECISIONS updated before handoff.</li>
+      </ol>
     </div>
   );
 }

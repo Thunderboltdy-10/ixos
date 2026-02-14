@@ -113,3 +113,77 @@
   1. Complete explicit E2E auth/billing/lease transfer matrix run and capture a dedicated report
   2. Add deeper landing Strategy section lock tests on low-end hardware profiles
   3. Expand move recommendation feedback loop (accept/dismiss) and add persistence-backed evaluation hooks
+
+## STATE SNAPSHOT (Prism R1, 2026-02-13)
+- Date: 2026-02-13
+- Current baseline numbers:
+  - Ralph R0 baseline bench (`reports/ralph/v2_bench_1_20260213_171835.json`): TTFR p50 226ms, Total p95 555ms, cache hit rate 0.0707.
+- Current best v2 numbers:
+  - Big-root harness (`reports/ralph/big_bench_20260213_174232.json`, Tier C, 179,926 files, 40 queries x 3 runs):
+    - TTFR p50 32ms
+    - Total p95 47ms
+    - Cold TTFR p50 32ms
+    - Cold Total p95 51ms
+    - Warm Total p95 47ms
+    - Avg cache hit rate 0.99995
+    - Gate: PASS
+- Current bottleneck ranking:
+  1. Ripgrep scan (`ripgrep_ms` avg 24.44ms)
+  2. Ranking tail outliers (`rank_ms` max 96ms, avg 1.01ms)
+  3. Cold initial walk/index build (`walk_ms` max 88ms, avg 0.73ms)
+- What is next (top 3 tasks):
+  1. Implement Phase 2 frontier-first candidate traversal + background phase-2 walk.
+  2. Implement write-behind cache wrapper for NativeCache hot-path write removal.
+  3. Expose Ask Mode in CLI (`--ask`/`--ask-mode`) with evidence-gated answer card output.
+
+## STATE SNAPSHOT (Prism R1.2, 2026-02-13)
+- Date: 2026-02-13
+- Latest Ralph checkpoint: `reports/ralph/iteration_12_20260213_181349.md` (PASS)
+- Latest big-root benchmark: `reports/ralph/big_bench_20260213_181435.json` (Tier C, harsh profile)
+  - TTFR p50: 30ms
+  - TTFR p95: 45ms
+  - Total p50: 31ms
+  - Total p95: 47ms
+  - Cold TTFR p50: 30ms
+  - Cold Total p95: 47ms
+  - Warm Total p95: 47ms
+  - Ripgrep p95: 27ms
+  - Harsh gate: PASS
+- Before/after comparison (turn aggregate): `reports/ralph/comparison_turn_20260213_181435.md`
+  - Net vs 17:50 benchmark: mostly stable; cold total improved, ripgrep p95 improved, slight TTFR p50 +1ms variance.
+- Quality evidence refreshed:
+  - `models/lab/results_prism_iter_2026-02-13.json`
+  - Note: current quality delta report mixes suite scopes; use same-suite files for release signoff.
+- Current bottleneck ranking:
+  1. Ripgrep p95 variability across query classes
+  2. Query-specific spikes (`model download`, `lexical engine`, `daemon status`)
+  3. Remaining naming/enum debt in internal UI mode types (`cache/jit` internals)
+- What is next (top 3 tasks):
+  1. Implement same-suite quality comparator and enforce it in `release-check`.
+  2. Normalize internal UI mode types to `native-cache`/`ephemeral` end-to-end (remove legacy-only internals).
+  3. Extend CI with installer/blob smoke validation using generated release artifacts.
+
+## STATE SNAPSHOT (Prism R1.3, 2026-02-13)
+- Date: 2026-02-13
+- Latest Ralph checkpoint: `reports/ralph/iteration_13_20260213_231055.md` (PASS)
+- Latest harsh benchmark (5 runs): `reports/ralph/big_bench_20260213_231310.json`
+  - TTFR p50: 33ms
+  - TTFR p95: 47ms
+  - Total p50: 34ms
+  - Total p95: 50ms
+  - Cold TTFR p50: 34ms
+  - Cold Total p95: 51ms
+  - Warm Total p95: 49ms
+  - Ripgrep p95: 30ms
+  - Harsh gate: PASS
+- Latest quality refresh:
+  - `models/lab/results_prism_iter_2026-02-13_post_ui.json`
+  - Synthetic ambiguity remains stable: Flash `mrr_at_10=0.9444`, Potion `mrr_at_10=0.9611`.
+- Current bottleneck ranking:
+  1. Ripgrep stage p95 variability (+11% vs prior turn benchmark)
+  2. Minor TTFR drift under stricter repeated runs (+10% vs prior turn benchmark)
+  3. UI bundle size warning (`ui` chunk >500kB) for future split optimization
+- What is next (top 3 tasks):
+  1. Implement same-suite quality comparator gate in `release-check` to make quality deltas strict and apples-to-apples.
+  2. Add deterministic bench environment controls (CPU affinity/process priority/warmup policy) to reduce p95 jitter.
+  3. Add CI installer/blob smoke checks matching release artifact workflow outputs.

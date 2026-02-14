@@ -102,7 +102,7 @@ interface ResultCardProps {
   isSelected: boolean;
   isSemanticResult: boolean;
   matchType?: MatchSignal;
-  mode?: 'jit' | 'cache' | 'journalist';
+  mode?: 'ephemeral' | 'native-cache' | 'journalist';
   isAskMode?: boolean;
   onSelect: () => void;
   onOpen: () => void;
@@ -134,7 +134,7 @@ export function ResultCard({
   isSelected,
   isSemanticResult,
   matchType,
-  mode = 'cache',
+  mode = 'native-cache',
   isAskMode = false,
   onSelect,
   onOpen,
@@ -149,8 +149,8 @@ export function ResultCard({
 
   // Color mapping based on mode - override for Ask Mode
   const modeColors = {
-    jit: { accent: '#F6B94C', bg: 'rgba(246, 185, 76, 0.08)' },
-    cache: { accent: '#14B8A6', bg: 'rgba(20, 184, 166, 0.08)' },
+    ephemeral: { accent: '#F6B94C', bg: 'rgba(246, 185, 76, 0.08)' },
+    'native-cache': { accent: '#14B8A6', bg: 'rgba(20, 184, 166, 0.08)' },
     journalist: { accent: '#A78BFA', bg: 'rgba(167, 139, 250, 0.08)' },
     ask: { accent: '#A78BFA', bg: 'rgba(167, 139, 250, 0.12)' }, // Ask Mode uses same purple but slightly stronger bg
   };
@@ -159,7 +159,7 @@ export function ResultCard({
   const selectedClass = isSelected ? 'bg-graphite-2/80' : '';
 
   const iconColorClass = isSelected
-    ? (isAskMode ? 'text-accent-violet' : mode === 'jit' ? 'text-accent-amber' : mode === 'journalist' ? 'text-accent-violet' : 'text-accent-teal')
+    ? (isAskMode ? 'text-accent-violet' : mode === 'ephemeral' ? 'text-accent-amber' : mode === 'journalist' ? 'text-accent-violet' : 'text-accent-teal')
     : 'text-fg-dim';
 
   // Layout sync for Seamless Morph animation
@@ -272,12 +272,12 @@ export function ResultCard({
 
   // Hover classes - apply to all items
   const hoverClass = cn(
-    !isAskMode && mode === 'jit' && 'hover:bg-accent-amber/8 hover:shadow-[0_0_12px_rgba(246,185,76,0.25)]',
-    !isAskMode && mode === 'cache' && 'hover:bg-accent-teal/8 hover:shadow-[0_0_12px_rgba(20,184,166,0.25)]',
+    !isAskMode && mode === 'ephemeral' && 'hover:bg-accent-amber/8 hover:shadow-[0_0_12px_rgba(246,185,76,0.25)]',
+    !isAskMode && mode === 'native-cache' && 'hover:bg-accent-teal/8 hover:shadow-[0_0_12px_rgba(20,184,166,0.25)]',
     !isAskMode && mode === 'journalist' && 'hover:bg-accent-violet/8 hover:shadow-[0_0_12px_rgba(167,139,250,0.25)]',
     isAskMode && 'hover:bg-accent-violet/12 hover:shadow-[0_0_15px_rgba(167,139,250,0.3)]',
   );
-  const tone = isAskMode || mode === 'journalist' ? 'violet' : mode === 'jit' ? 'amber' : 'teal';
+  const tone = isAskMode || mode === 'journalist' ? 'violet' : mode === 'ephemeral' ? 'amber' : 'teal';
   const highScoreToneClass = {
     amber: 'bg-accent-amber/15 text-accent-amber border-accent-amber/30',
     teal: 'bg-accent-teal/15 text-accent-teal border-accent-teal/30',
@@ -319,11 +319,11 @@ export function ResultCard({
       onMouseLeave={handleMouseLeave}
     >
       {/* Subtle left border accent on hover (replaces dramatic swoosh) */}
-      <div
-        className={cn(
+        <div
+          className={cn(
           "absolute left-0 top-0 bottom-0 w-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none",
-          mode === 'jit' && !isAskMode && "bg-accent-amber",
-          mode === 'cache' && !isAskMode && "bg-accent-teal",
+          mode === 'ephemeral' && !isAskMode && "bg-accent-amber",
+          mode === 'native-cache' && !isAskMode && "bg-accent-teal",
           mode === 'journalist' && !isAskMode && "bg-accent-violet",
           isAskMode && "bg-accent-violet"
         )}
@@ -611,8 +611,8 @@ export function ResultCard({
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md',
                     // Mode-aware colors
-                    mode === 'jit' && !isAskMode && 'bg-accent-amber/10 text-accent-amber border border-accent-amber/30 hover:bg-accent-amber/20 hover:border-accent-amber/50',
-                    mode === 'cache' && !isAskMode && 'bg-accent-teal/10 text-accent-teal border border-accent-teal/30 hover:bg-accent-teal/20 hover:border-accent-teal/50',
+                    mode === 'ephemeral' && !isAskMode && 'bg-accent-amber/10 text-accent-amber border border-accent-amber/30 hover:bg-accent-amber/20 hover:border-accent-amber/50',
+                    mode === 'native-cache' && !isAskMode && 'bg-accent-teal/10 text-accent-teal border border-accent-teal/30 hover:bg-accent-teal/20 hover:border-accent-teal/50',
                     (mode === 'journalist' || isAskMode) && 'bg-accent-violet/10 text-accent-violet border border-accent-violet/30 hover:bg-accent-violet/20 hover:border-accent-violet/50',
                     'transition-all duration-150'
                   )}

@@ -4,10 +4,10 @@ import type { ContextSnippet as ContextSnippetType } from '@/lib/types';
 interface ContextSnippetProps {
   context: ContextSnippetType;
   className?: string;
-  mode?: 'jit' | 'cache' | 'journalist';
+  mode?: 'ephemeral' | 'native-cache' | 'journalist';
 }
 
-export function ContextSnippet({ context, className, mode = 'cache' }: ContextSnippetProps) {
+export function ContextSnippet({ context, className, mode = 'native-cache' }: ContextSnippetProps) {
   // Safety checks for malformed data
   if (!context || typeof context !== 'object') {
     return null;
@@ -22,11 +22,11 @@ export function ContextSnippet({ context, className, mode = 'cache' }: ContextSn
 
   // Colors based on mode
   const colors = {
-    jit: { bg: 'bg-accent-amber/5', border: 'border-l-accent-amber', text: 'text-accent-amber' },
-    cache: { bg: 'bg-accent-teal/5', border: 'border-l-accent-teal', text: 'text-accent-teal' },
+    ephemeral: { bg: 'bg-accent-amber/5', border: 'border-l-accent-amber', text: 'text-accent-amber' },
+    'native-cache': { bg: 'bg-accent-teal/5', border: 'border-l-accent-teal', text: 'text-accent-teal' },
     journalist: { bg: 'bg-accent-violet/5', border: 'border-l-accent-violet', text: 'text-accent-violet' },
   };
-  const activeColor = colors[mode] || colors.cache;
+  const activeColor = colors[mode] || colors['native-cache'];
 
   // If no matched lines, don't render
   if (matchedLines.length === 0) {

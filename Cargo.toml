@@ -126,6 +126,10 @@ tokio-test = "0.4"
 name = "ixos"
 path = "src/main.rs"
 
+[[bin]]
+name = "ixos-big-bench"
+path = "src/bin/ixos-big-bench.rs"
+
 [lib]
 name = "ixos_protocol"
 path = "src/lib.rs"
@@ -149,5 +153,5 @@ harness = false
 [target.'cfg(target_os = "macos")'.dependencies]
 security-framework = "2.9"
 [target.'cfg(target_os = "linux")'.dependencies]
-secret-service = "4.0"
+secret-service = { version = "4.0", default-features = false, features = ["rt-tokio-crypto-rust"] }
 zbus = { version = "4", features = ["tokio"] }

@@ -10,7 +10,7 @@ const sections = [
     items: [
       'Pick a folder, then ask a question or type keywords.',
       'Use Flash/Auto/Pro to balance speed vs accuracy.',
-      'Use JIT/Cache/Journalist to control privacy and storage.',
+      'Use Ephemeral/NativeCache/Journalist to control privacy and storage.',
       'Open results, inspect evidence, and star searches you revisit.',
     ],
   },
@@ -47,8 +47,8 @@ const sections = [
     title: 'Privacy & Security',
     icon: Shield,
     items: [
-      'JIT mode keeps embeddings only in memory.',
-      'Cache mode stores embeddings in ADS/xattr for faster repeat searches.',
+      'Ephemeral mode keeps embeddings only in memory.',
+      'NativeCache stores embeddings in ADS/xattr for faster repeat searches.',
       'Journalist mode forces maximum privacy and auto-clears.',
       'Integrity checks + secure timing protect sensitive workflows.',
     ],

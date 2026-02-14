@@ -6,8 +6,8 @@
 //! - Workstreams
 
 use ixos_protocol::{
-    create_event, ActivityAction, ActivityEvent, ActivityLedger, CoOccurrence, RecentFile,
-    TimeRange, MAX_STORAGE_BYTES, MoveRecommendation,
+    create_event, ActivityAction, ActivityEvent, ActivityLedger, CoOccurrence, MoveRecommendation,
+    RecentFile, TimeRange, MAX_STORAGE_BYTES,
 };
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
@@ -15,16 +15,36 @@ use tauri::{Manager, State};
 
 use crate::state::AppState;
 use ixos_protocol::capabilities::Capability;
+use ixos_protocol::entitlements::ProStatus;
 use ixos_protocol::security::device_identity::DeviceIdentity;
 
 use chacha20poly1305::aead::{rand_core::RngCore, Aead, KeyInit, OsRng};
 use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce};
 use std::fs;
 use std::path::PathBuf;
+use std::time::SystemTime;
 
 const ACTIVITY_LEDGER_FILE_ENC: &str = "activity_ledger_v1.enc";
 const ACTIVITY_LEDGER_FILE_JSON_LEGACY: &str = "activity_ledger_v1.json";
 const ACTIVITY_LEDGER_KEY_CONTEXT: &str = "activity-ledger-v1";
+
+fn ensure_move_recommendations_access(
+    status: &ProStatus,
+    has_automation_capability: bool,
+) -> Result<(), String> {
+    if !status.is_enabled() {
+        return Err(match status {
+            ProStatus::TimeSuspect { .. } => {
+                "Local time change detected - refresh required to re-enable Pro".to_string()
+            }
+            _ => "Entitlement expired".to_string(),
+        });
+    }
+    if !has_automation_capability {
+        return Err("Pro capability required for move recommendations".into());
+    }
+    Ok(())
+}
 
 fn get_config_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     app.path()
@@ -348,10 +368,13 @@ pub fn get_move_recommendations(
     activity_state: State<'_, ActivityState>,
     app_state: State<'_, AppState>,
 ) -> Result<Vec<MoveRecommendationPayload>, String> {
-    let manager = app_state.entitlement_manager.lock();
-    if !manager.capabilities().has(Capability::AutomationActions) {
-        return Err("Pro capability required for move recommendations".into());
-    }
+    let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
+    let mut manager = app_state.entitlement_manager.lock();
+    let status = manager.pro_status(SystemTime::now(), &device);
+    ensure_move_recommendations_access(
+        &status,
+        manager.capabilities().has(Capability::AutomationActions),
+    )?;
     drop(manager);
 
     let ledger = activity_state.ledger.lock();
@@ -562,5 +585,25 @@ mod tests {
 
         state.disable_persistence();
         assert!(!state.is_persistence_enabled());
+    }
+
+    #[test]
+    fn test_move_recommendation_access_requires_active_status() {
+        let result =
+            ensure_move_recommendations_access(&ProStatus::Expired { expired_at: 1 }, true);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_move_recommendation_access_requires_capability() {
+        let result = ensure_move_recommendations_access(
+            &ProStatus::Active {
+                expires_at: u64::MAX,
+            },
+            false,
+        );
+        assert!(result
+            .expect_err("expected capability gating error")
+            .contains("Pro capability required"));
     }
 }

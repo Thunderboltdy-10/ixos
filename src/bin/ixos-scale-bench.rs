@@ -19,8 +19,10 @@ use ixos_protocol::SecureEmbedder;
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
 enum BenchCacheMode {
-    Jit,
-    Cache,
+    #[value(alias = "cache")]
+    NativeCache,
+    #[value(alias = "jit")]
+    Ephemeral,
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -46,8 +48,8 @@ struct Args {
     #[arg(long, default_value = "50")]
     max_queries: usize,
 
-    /// Cache mode: jit or cache
-    #[arg(long, value_enum, default_value = "jit")]
+    /// Cache mode: native-cache or ephemeral (legacy aliases: cache/jit)
+    #[arg(long, value_enum, default_value = "native-cache")]
     cache_mode: BenchCacheMode,
 
     /// Search mode: flash, auto, pro
@@ -199,8 +201,8 @@ fn parse_search_mode(mode: BenchSearchMode) -> SearchMode {
 
 fn cache_mode(mode: BenchCacheMode) -> CacheMode {
     match mode {
-        BenchCacheMode::Jit => CacheMode::Jit,
-        BenchCacheMode::Cache => CacheMode::Cache,
+        BenchCacheMode::Ephemeral => CacheMode::Ephemeral,
+        BenchCacheMode::NativeCache => CacheMode::NativeCache,
     }
 }
 

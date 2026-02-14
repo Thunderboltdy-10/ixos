@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Shield, Lock, ChevronDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type SearchMode = 'jit' | 'cache' | 'journalist';
+export type SearchMode = 'ephemeral' | 'native-cache' | 'journalist';
 
 interface ModeSwitcherProps {
   value: SearchMode;
@@ -25,22 +25,22 @@ interface ModeOption {
 
 const modes: ModeOption[] = [
   {
-    id: 'jit',
+    id: 'ephemeral',
     icon: Zap,
-    label: 'JIT Mode',
-    shortLabel: 'JIT',
+    label: 'Ephemeral Mode',
+    shortLabel: 'Ephemeral',
     description: 'No persistence, maximum privacy',
     details: 'Computes embeddings on-the-fly. No data written to disk. Maximum privacy.',
     color: 'text-accent-amber',
     bgColor: 'bg-accent-amber/10',
   },
   {
-    id: 'cache',
+    id: 'native-cache',
     icon: Shield,
-    label: 'Cache Mode',
-    shortLabel: 'Cache',
+    label: 'NativeCache Mode',
+    shortLabel: 'NativeCache',
     description: 'Persist metadata cache for speed',
-    details: 'Stores embeddings in ADS (Windows) or xattr (Mac/Linux). Faster repeat searches.',
+    details: 'Stores embeddings in ADS (Windows) or xattr (Mac/Linux). Faster repeat searches. Recommended default.',
     color: 'text-accent-teal',
     bgColor: 'bg-accent-teal/10',
   },
@@ -50,7 +50,7 @@ const modes: ModeOption[] = [
     label: 'Journalist Mode',
     shortLabel: 'Secure',
     description: 'Hardened privacy profile',
-    details: 'JIT + encrypted history + emergency clear (Ctrl+Shift+X). For sensitive investigations.',
+    details: 'Ephemeral + encrypted history + emergency clear (Ctrl+Shift+X). For sensitive investigations.',
     color: 'text-accent-violet',
     bgColor: 'bg-accent-violet/10',
   }
@@ -214,7 +214,7 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
                   <span className="text-[11.5px] text-fg-secondary truncate flex-1">
                     {mode.description}
                   </span>
-                  {mode.id === 'jit' && (
+                  {mode.id === 'native-cache' && (
                     <span className="text-[9px] px-1 py-px rounded bg-accent-amber/15 text-accent-amber shrink-0">
                       Default
                     </span>
@@ -227,7 +227,7 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
 
               <div className="px-3 py-2 bg-graphite-1 border-t border-stroke-hairline">
                 <p className="text-[10px] text-fg-secondary leading-tight">
-                  JIT is local-only, Cache is faster on repeat, Journalist adds strict safeguards.
+                  Ephemeral is local-only, NativeCache is faster on repeat, Journalist adds strict safeguards.
                 </p>
               </div>
             </motion.div>

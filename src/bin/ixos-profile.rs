@@ -21,8 +21,10 @@ use serde::Serialize;
 #[derive(Clone, Copy, Debug, Default, ValueEnum)]
 enum ProfileCacheMode {
     #[default]
-    Jit,
-    Cache,
+    #[value(alias = "cache")]
+    NativeCache,
+    #[value(alias = "jit")]
+    Ephemeral,
 }
 
 #[derive(Clone, Copy, Debug, Default, ValueEnum)]
@@ -48,8 +50,8 @@ struct ProfileArgs {
     /// Number of runs
     #[arg(long, default_value = "6")]
     runs: usize,
-    /// Cache mode: jit or cache
-    #[arg(long, value_enum, default_value = "jit")]
+    /// Cache mode: native-cache or ephemeral (legacy aliases: cache/jit)
+    #[arg(long, value_enum, default_value = "native-cache")]
     cache_mode: ProfileCacheMode,
     /// Model to use
     #[arg(long, value_enum, default_value = "potion")]
@@ -170,8 +172,8 @@ async fn main() -> anyhow::Result<()> {
     generator.build_index();
 
     let cache_mode = match args.cache_mode {
-        ProfileCacheMode::Jit => CacheMode::Jit,
-        ProfileCacheMode::Cache => CacheMode::Cache,
+        ProfileCacheMode::Ephemeral => CacheMode::Ephemeral,
+        ProfileCacheMode::NativeCache => CacheMode::NativeCache,
     };
 
     if matches!(args.model, ProfileModelType::Stub) && !args.allow_stub {
@@ -284,7 +286,7 @@ async fn main() -> anyhow::Result<()> {
         }
         runs.push(finalized);
 
-        if matches!(cache_mode, CacheMode::Cache) {
+        if matches!(cache_mode, CacheMode::NativeCache) {
             semantic.clear_memory_cache().await;
         }
     }

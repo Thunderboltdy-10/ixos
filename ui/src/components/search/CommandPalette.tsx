@@ -55,7 +55,6 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const resetSearch = useSearchStore((state) => state.reset);
   const setCacheMode = useSearchStore((state) => state.setCacheMode);
   const cacheMode = useSearchStore((state) => state.cacheMode);
-  const toggleAskModeOverride = useSearchStore((state) => state.toggleAskModeOverride);
 
   const { setActiveView, openSettings } = useUIStore();
   const { config, updateConfig } = useSettingsStore();
@@ -126,7 +125,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'action:flash',
         section: 'Quick actions',
-        label: 'Switch to Flash mode',
+        label: 'Switch to Ixos Flash',
         subtitle: 'Prioritize speed',
         icon: Zap,
         keywords: 'flash mode speed',
@@ -135,7 +134,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'action:pro',
         section: 'Quick actions',
-        label: 'Switch to Pro mode',
+        label: 'Switch to Ixos Pro',
         subtitle: 'Prioritize depth',
         icon: Sparkles,
         keywords: 'pro mode quality',
@@ -153,10 +152,10 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       {
         id: 'action:toggle-cache',
         section: 'Quick actions',
-        label: `Toggle ${cacheMode === 'ephemeral' ? 'NativeCache' : 'Ephemeral'} mode`,
-        subtitle: `Current mode: ${cacheMode === 'ephemeral' ? 'Ephemeral' : 'NativeCache'}`,
+        label: `Toggle ${cacheMode === 'ephemeral' ? 'Local' : 'Memory'} mode`,
+        subtitle: `Current mode: ${cacheMode === 'ephemeral' ? 'Memory' : 'Local'}`,
         icon: Sparkles,
-        keywords: 'toggle ephemeral nativecache mode',
+        keywords: 'toggle memory local mode',
         onSelect: () => toggleCacheMode(),
       },
       {
@@ -177,18 +176,6 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         keywords: 'new search clear reset',
         onSelect: () => {
           resetSearch();
-          setActiveView('search');
-        },
-      },
-      {
-        id: 'action:ask-mode',
-        section: 'Quick actions',
-        label: 'Toggle Ask Mode',
-        subtitle: 'Ctrl+Shift+A behavior',
-        icon: Sparkles,
-        keywords: 'ask mode question answer',
-        onSelect: () => {
-          toggleAskModeOverride();
           setActiveView('search');
         },
       },
@@ -231,7 +218,6 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     restoreFromHistory,
     setActiveView,
     starredThreads,
-    toggleAskModeOverride,
     toggleCacheMode,
   ]);
 

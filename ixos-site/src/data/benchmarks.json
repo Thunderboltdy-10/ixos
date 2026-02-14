@@ -14,12 +14,12 @@
   },
   "comparison": [
     {
-      "label": "Ixos (NativeCache)",
+      "label": "Ixos (Local)",
       "valueMs": 29,
       "highlight": true
     },
     {
-      "label": "Ixos (Ephemeral)",
+      "label": "Ixos (Memory)",
       "valueMs": 31
     },
     {

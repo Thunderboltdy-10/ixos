@@ -19,9 +19,7 @@ use ixos_protocol::SecureEmbedder;
 #[derive(Clone, Copy, Debug, Default, ValueEnum)]
 enum BenchCacheMode {
     #[default]
-    #[value(alias = "cache")]
     NativeCache,
-    #[value(alias = "jit")]
     Ephemeral,
 }
 
@@ -47,7 +45,7 @@ struct BenchArgs {
     /// Number of runs
     #[arg(long, default_value = "10")]
     runs: usize,
-    /// Cache mode: native-cache or ephemeral (legacy aliases: cache/jit)
+    /// Cache mode: local or memory
     #[arg(long, value_enum, default_value = "native-cache")]
     cache_mode: BenchCacheMode,
     /// Model to use

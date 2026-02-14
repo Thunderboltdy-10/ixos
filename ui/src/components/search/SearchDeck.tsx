@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, MessageCircleQuestion } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useSearchStore } from '@/stores/searchStore';
 import { useLayoutStore } from '@/stores/layoutStore';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -17,7 +17,7 @@ interface PipelineStep {
 
 // Mode-specific accent classes
 const MODE_ACCENTS = {
-  jit: {
+  memory: {
     dot: 'bg-accent-amber',
     sonar: 'bg-accent-amber',
     text: 'text-accent-amber',
@@ -26,7 +26,7 @@ const MODE_ACCENTS = {
     dotBorder: 'border-accent-amber bg-accent-amber',
     bar: 'var(--accent-amber, #F6B94C)',
   },
-  cache: {
+  local: {
     dot: 'bg-accent-teal',
     sonar: 'bg-accent-teal',
     text: 'text-accent-teal',
@@ -35,7 +35,7 @@ const MODE_ACCENTS = {
     dotBorder: 'border-accent-teal bg-accent-teal',
     bar: 'var(--accent-teal, #14B8A6)',
   },
-  journalist: {
+  deepSearch: {
     dot: 'bg-accent-violet',
     sonar: 'bg-accent-violet',
     text: 'text-accent-violet',
@@ -68,17 +68,14 @@ export function SearchDeck() {
   const searchStartTime = useSearchStore((state) => state.searchStartTime);
   const activeThreadId = useSearchStore((state) => state.activeThreadId);
   const cacheMode = useSearchStore((state) => state.cacheMode);
-  const journalistMode = useSearchStore((state) => state.journalistMode);
+  const deepSearchMode = useSearchStore((state) => state.deepSearchMode);
   const lexicalResults = useSearchStore((state) => state.lexicalResults);
   const semanticResults = useSearchStore((state) => state.semanticResults);
   const hasSearchIntent = useSearchStore((state) => state.hasSearchIntent);
   const scanTrail = useSearchStore((state) => state.scanTrail);
-  const askModeOverride = useSearchStore((state) => state.askModeOverride);
-  const toggleAskModeOverride = useSearchStore((state) => state.toggleAskModeOverride);
+  const streamEvents = useSearchStore((state) => state.streamEvents);
   const qualityMode = useSettingsStore((state) => state.config?.search.searchMode ?? 'auto');
 
-  const [showAskModeToast, setShowAskModeToast] = useState(false);
-  const toastTimeoutRef = useRef<number | null>(null);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [finalElapsedMs, setFinalElapsedMs] = useState<number | null>(null);
   const [animatedProgress, setAnimatedProgress] = useState(0);
@@ -86,7 +83,11 @@ export function SearchDeck() {
   const lastSearchStartRef = useRef<number | null>(null);
 
   // Derive mode key for accent colors
-  const modeKey: 'jit' | 'cache' | 'journalist' = journalistMode ? 'journalist' : cacheMode === 'native-cache' ? 'cache' : 'jit';
+  const modeKey: 'memory' | 'local' | 'deepSearch' = deepSearchMode
+    ? 'deepSearch'
+    : cacheMode === 'native-cache'
+      ? 'local'
+      : 'memory';
   const accent = MODE_ACCENTS[modeKey];
 
   const isActive = phase === 'lexical' || phase === 'semantic' || phase === 'refining';
@@ -99,10 +100,10 @@ export function SearchDeck() {
 
   const averageSearchMs = useMemo(() => {
     let base = qualityMode === 'flash' ? 9_000 : qualityMode === 'pro' ? 28_000 : 18_000;
-    if (journalistMode) base += 3_000;
+    if (deepSearchMode) base += 3_000;
     if (cacheMode === 'native-cache') base = Math.max(6_000, base - 4_000);
     return base;
-  }, [cacheMode, journalistMode, qualityMode]);
+  }, [cacheMode, deepSearchMode, qualityMode]);
 
   const embedTarget = useMemo(() => {
     const baseline = Math.max(stats.candidates, lexicalResults.length, semanticResults.length, 1);
@@ -196,30 +197,6 @@ export function SearchDeck() {
   }, [elapsedMs, finalElapsedMs, isComplete, resultCount, semanticResults.length, stageIndex, stats.embedded, stats.filesScanned]);
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'a') {
-        event.preventDefault();
-        toggleAskModeOverride();
-        setShowAskModeToast(true);
-        if (toastTimeoutRef.current) {
-          window.clearTimeout(toastTimeoutRef.current);
-        }
-        toastTimeoutRef.current = window.setTimeout(() => {
-          setShowAskModeToast(false);
-        }, 2000);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      if (toastTimeoutRef.current) {
-        window.clearTimeout(toastTimeoutRef.current);
-      }
-    };
-  }, [toggleAskModeOverride]);
-
-  useEffect(() => {
     if (!searchStartTime) {
       lastSearchStartRef.current = null;
       return;
@@ -303,39 +280,23 @@ export function SearchDeck() {
   if (!shouldShow) return null;
 
   const displayElapsedMs = finalElapsedMs ?? elapsedMs;
-  const modeBadge = journalistMode
-    ? 'Secure'
+  const modeBadge = deepSearchMode
+    ? 'Deep Search'
     : cacheMode === 'native-cache'
-      ? 'NativeCache (disk)'
-      : 'Ephemeral (memory)';
+      ? 'Local'
+      : 'Memory';
+  const currentFile = (() => {
+    const latestScan = scanTrail[scanTrail.length - 1];
+    if (latestScan) return latestScan;
+    for (let i = streamEvents.length - 1; i >= 0; i -= 1) {
+      const path = streamEvents[i]?.path;
+      if (path) return path;
+    }
+    return null;
+  })();
 
   return (
     <>
-      <AnimatePresence>
-        {showAskModeToast && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="fixed left-1/2 top-4 z-50 flex -translate-x-1/2 items-center gap-3 rounded-lg border border-accent-violet/30 bg-graphite-2 px-4 py-3 shadow-xl backdrop-blur-md"
-          >
-            <MessageCircleQuestion className="h-5 w-5 text-accent-violet" />
-            <div>
-              <span className="text-sm font-medium text-porcelain">
-                Ask Mode: {askModeOverride === 'always' ? 'On' : 'Off'}
-              </span>
-              <span className="ml-2 text-xs text-fg-dim">
-                {askModeOverride === 'always' ? 'for this search' : 'using settings'}
-              </span>
-            </div>
-            <span className="rounded bg-graphite-3 px-1.5 py-0.5 text-2xs text-fg-ghost">
-              Ctrl+Shift+A
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <motion.div
         initial={{ opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
@@ -386,6 +347,21 @@ export function SearchDeck() {
               </AnimatePresence>
             </div>
           )}
+
+          <div className="mt-2 grid grid-cols-2 gap-2 text-2xs text-fg-dim md:grid-cols-4">
+            <div className="rounded border border-white/10 bg-graphite-2/55 px-2 py-1.5">
+              Files scanned: <span className="text-porcelain font-mono">{stats.filesScanned}</span>
+            </div>
+            <div className="rounded border border-white/10 bg-graphite-2/55 px-2 py-1.5">
+              Embeddings: <span className="text-porcelain font-mono">{stats.embedded}</span>
+            </div>
+            <div className="rounded border border-white/10 bg-graphite-2/55 px-2 py-1.5">
+              Cache hits: <span className="text-porcelain font-mono">{stats.cacheHits}</span>
+            </div>
+            <div className="rounded border border-white/10 bg-graphite-2/55 px-2 py-1.5 truncate">
+              Current file: <span className="text-porcelain font-mono">{currentFile ? fileTail(currentFile) : '...'}</span>
+            </div>
+          </div>
         </div>
 
         {/* Pipeline steps — mode-colored accents */}

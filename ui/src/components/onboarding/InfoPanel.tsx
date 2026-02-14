@@ -9,8 +9,8 @@ const sections = [
     icon: BookOpen,
     items: [
       'Pick a folder, then ask a question or type keywords.',
-      'Use Flash/Auto/Pro to balance speed vs accuracy.',
-      'Use Ephemeral/NativeCache/Journalist to control privacy and storage.',
+      'Use Ixos Flash/Auto/Ixos Pro to balance speed vs accuracy.',
+      'Use Memory/Local/Deep Search to control privacy, caching, and evidence depth.',
       'Open results, inspect evidence, and star searches you revisit.',
     ],
   },
@@ -38,18 +38,18 @@ const sections = [
     title: 'Quality Modes',
     icon: Zap,
     items: [
-      'Flash: fastest Model2Vec search for instant feedback.',
+      'Ixos Flash: fastest Model2Vec search for instant feedback.',
       'Auto: Flash + Pro refinement on ambiguous queries.',
-      'Pro: always runs the highest quality rerank.',
+      'Ixos Pro: always runs the highest quality rerank.',
     ],
   },
   {
     title: 'Privacy & Security',
     icon: Shield,
     items: [
-      'Ephemeral mode keeps embeddings only in memory.',
-      'NativeCache stores embeddings in ADS/xattr for faster repeat searches.',
-      'Journalist mode forces maximum privacy and auto-clears.',
+      'Memory mode keeps embeddings only in memory.',
+      'Local mode stores embeddings in ADS/xattr for faster repeat searches.',
+      'Deep Search prioritizes richer evidence extraction while staying local.',
       'Integrity checks + secure timing protect sensitive workflows.',
     ],
   },
@@ -88,7 +88,7 @@ const sections = [
     icon: Keyboard,
     items: [
       'Ctrl+K: Command palette (search history, quick actions, navigation).',
-      'Ctrl+T: New search tab. Ctrl+Shift+A: Toggle Ask Mode.',
+      'Ctrl+T: New search tab.',
       'Enter to search, Esc to cancel, arrows to navigate results.',
       'CLI: ixos search, ixos index, ixos config, ixos compliance.',
     ],

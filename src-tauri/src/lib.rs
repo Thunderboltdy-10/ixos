@@ -113,6 +113,7 @@ pub fn run() {
             commands::config::get_consent_status,
             commands::config::grant_consent,
             commands::config::withdraw_consent,
+            commands::config::cache_clear,
             // Diagnostics
             commands::doctor::run_doctor,
             // System

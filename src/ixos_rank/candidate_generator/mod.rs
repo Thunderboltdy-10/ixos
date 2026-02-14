@@ -56,6 +56,7 @@ use std::sync::{Arc, Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 use crate::ixos_rank::ask_mode::{AnchorTerm, QueryMode};
+use crate::journalist_mode::deep_search_overrides;
 
 use crate::instrumentation::{
     candidate_merge_span, directory_walk_span, metadata_priors_span, path_scoring_span,
@@ -387,7 +388,8 @@ impl CandidateGenerator {
         });
 
         // Phase 6: HARD CAP ENFORCEMENT (non-negotiable)
-        let max = self.config.max_candidates.min(MAX_CANDIDATES_FOR_EMBEDDING);
+        let deep_caps = deep_search_overrides();
+        let max = self.config.max_candidates.min(deep_caps.max_candidates);
         merged.truncate(max);
         stats.final_candidates = merged.len();
         stats.merge_ms = merge_start.elapsed().as_millis() as u64;
@@ -504,7 +506,8 @@ impl CandidateGenerator {
         });
 
         // Phase 6: HARD CAP ENFORCEMENT
-        let max = self.config.max_candidates.min(MAX_CANDIDATES_FOR_EMBEDDING);
+        let deep_caps = deep_search_overrides();
+        let max = self.config.max_candidates.min(deep_caps.max_candidates);
         merged.truncate(max);
         stats.final_candidates = merged.len();
         stats.merge_ms = merge_start.elapsed().as_millis() as u64;

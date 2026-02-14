@@ -8,9 +8,11 @@ const DOC_LINKS = [
   { href: "/docs", label: "Overview" },
   { href: "/docs/getting-started", label: "Getting Started" },
   { href: "/docs/desktop-app", label: "Desktop App" },
+  { href: "/docs/cli-reference", label: "CLI Reference" },
   { href: "/docs/models", label: "Models + Hugging Face" },
   { href: "/docs/benchmarking", label: "Benchmarking" },
-  { href: "/docs/agents", label: "Agent Workflows" },
+  { href: "/docs/agents", label: "Agent Architecture" },
+  { href: "/docs/troubleshooting", label: "Troubleshooting" },
 ];
 
 export function DocsSideNav() {

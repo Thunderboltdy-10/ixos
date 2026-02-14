@@ -49,10 +49,7 @@
       "icons/128x128@2x.png",
       "icons/icon.ico"
     ],
-    "resources": [
-      "../models/ixos-flash-v2/*",
-      "../models/potion-base-8M-int8/*"
-    ],
+    "resources": [],
     "windows": {
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",

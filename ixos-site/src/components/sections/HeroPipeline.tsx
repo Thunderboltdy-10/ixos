@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { PageGlow } from "@/components/effects/PageGlow";
 import { IxosDemoWindow, STEP_LABELS } from "@/components/hero/IxosDemoWindow";
+import { IxosLogo3D } from "@/components/hero/IxosLogo3D";
 import {
   MemoryWipe,
   QueryDecomposition,
@@ -58,7 +59,7 @@ const PHASES: PhaseBox[] = [
   {
     id: "04",
     label: "MEMORY_WIPE",
-    title: "Ephemeral Privacy",
+    title: "Memory Privacy",
     description:
       "Temporary vectors and buffers are zeroed after scoring to preserve zero-index operation.",
     checkpoint: "WORKING MEMORY SCRUBBED",
@@ -163,14 +164,13 @@ export function HeroPipeline() {
     const trigger = ScrollTrigger.create({
       trigger: sectionRef.current,
       start: "top top",
-      // PERFORMANCE: Reduced scroll distance for smoother performance
-      end: isLowPowered ? "+=300%" : "+=430%",
+      // Reduced multiplier prevents section over-pin and card clipping on shorter viewports.
+      end: isLowPowered ? "+=245%" : "+=335%",
       pin: true,
       pinSpacing: true,
       pinType: "fixed",
       pinReparent: true,
-      // PERFORMANCE: Reduce scrub smoothness on low-powered devices
-      scrub: isLowPowered ? 0.8 : 0.42,
+      scrub: isLowPowered ? 0.62 : 0.34,
       anticipatePin: 1.5,
       fastScrollEnd: true,
       invalidateOnRefresh: true,
@@ -262,32 +262,38 @@ export function HeroPipeline() {
         <PageGlow color="amber" />
         <div className="relative z-10 container mx-auto px-6 pb-20">
           <div className="mx-auto max-w-3xl text-center">
+            <div className="mb-5 flex justify-center">
+              <IxosLogo3D />
+            </div>
             <div className="mb-5 inline-flex items-center gap-3 rounded-sm border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-sm">
               <span className="h-1.5 w-1.5 animate-pulse rounded-sm bg-accent-amber" />
               <span className="text-[10px] font-mono uppercase tracking-widest text-fg-muted/80">
-                V1.0 AVAILABLE
+                ZERO-INDEX LOCAL SEARCH
               </span>
             </div>
 
             <h1 className="text-4xl font-semibold leading-[1.05] tracking-tight text-fg-porcelain sm:text-5xl">
-              Find anything
+              Ask naturally.
               <br />
-              <span className="text-fg-muted">on your computer.</span>
+              <span className="text-fg-muted">Recover exact files fast.</span>
             </h1>
 
             <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-fg-muted/80">
-              Scroll through the search story: parse, embed, rank, wipe, and stream. Local-first
-              from start to finish.
+              Ixos runs query understanding, semantic ranking, and evidence extraction on-device.
+              No cloud sync. No giant background index.
             </p>
 
-            <div className="mt-6 flex justify-center">
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button
                 size="lg"
                 hasParticleMagnet
                 className="bg-accent-amber font-medium text-bg-graphite-0 hover:bg-accent-amber/90"
                 asChild
               >
-                <Link href="/sign-up">Get Started</Link>
+                <Link href="/download">Download Desktop</Link>
+              </Button>
+              <Button size="lg" variant="secondary" asChild>
+                <Link href="/docs/cli-reference">View CLI Install</Link>
               </Button>
             </div>
           </div>
@@ -335,7 +341,7 @@ export function HeroPipeline() {
   return (
     <section
       ref={sectionRef}
-      className="section-hero relative h-screen w-full overflow-hidden"
+      className="section-hero relative h-[100dvh] w-full overflow-hidden"
       id="how-it-works"
     >
       <PageGlow color="amber" />
@@ -348,35 +354,42 @@ export function HeroPipeline() {
           opacity: derived.heroOpacity * (1 - derived.exit * 0.75),
           transform: `translate3d(0, ${derived.heroShiftY}px, 0)`,
           filter: `blur(${derived.heroMorph * 7}px)`,
+          willChange: "transform, opacity, filter",
         }}
       >
         <div className="pointer-events-auto max-w-4xl text-center">
+          <div className="mb-5 flex justify-center">
+            <IxosLogo3D />
+          </div>
           <div className="mb-5 inline-flex items-center gap-3 rounded-sm border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-sm">
             <span className="h-1.5 w-1.5 animate-pulse rounded-sm bg-accent-amber" />
             <span className="text-[10px] font-mono uppercase tracking-widest text-fg-muted/80">
-              V1.0 AVAILABLE
+              ZERO-INDEX LOCAL SEARCH
             </span>
           </div>
 
           <h1 className="text-4xl font-semibold leading-[1.05] tracking-tight text-fg-porcelain md:text-5xl lg:text-6xl">
-            Find anything
+            Ask naturally.
             <br />
-            <span className="text-fg-muted">on your computer.</span>
+            <span className="text-fg-muted">Recover exact files fast.</span>
           </h1>
 
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-fg-muted/80">
-            Type naturally. Ixos parses intent, ranks locally, and streams answers without cloud
-            indexing.
+            Ixos parses intent, ranks in-memory, and streams evidence without shipping your data to
+            any cloud service.
           </p>
 
-          <div className="mt-6">
+          <div className="mt-6 flex justify-center gap-3">
             <Button
               size="lg"
               hasParticleMagnet
               className="min-w-[164px] bg-accent-amber font-medium text-bg-graphite-0 hover:bg-accent-amber/90"
               asChild
             >
-              <Link href="/sign-up">Get Started</Link>
+              <Link href="/download">Download Desktop</Link>
+            </Button>
+            <Button size="lg" variant="secondary" asChild>
+              <Link href="/docs/cli-reference">CLI Reference</Link>
             </Button>
           </div>
         </div>
@@ -384,27 +397,27 @@ export function HeroPipeline() {
 
       <div className="absolute inset-0 z-30 flex items-center justify-center px-4 md:px-6">
         <div
-          className="relative w-full max-w-[1400px] xl:max-w-[1600px]"
+          className="relative w-full max-w-[1420px] xl:max-w-[1620px]"
           style={{
             transform: `translate3d(0, ${derived.demoLift}px, 0) scale(${derived.demoScale})`,
+            willChange: "transform",
           }}
         >
           <div
             className="relative"
             style={{
               display: "grid",
-              // RESPONSIVE: Use responsive column widths instead of fixed 350px
-              gridTemplateColumns: "minmax(250px, 22%) minmax(0, 1fr) minmax(250px, 22%)",
-              // RESPONSIVE: Use clamp for row heights
-              gridTemplateRows: "clamp(120px, 15vh, 164px) minmax(200px, 1fr) minmax(160px, 0.9fr) clamp(140px, 18vh, 188px)",
+              gridTemplateColumns: "minmax(270px, 24%) minmax(0, 1fr) minmax(270px, 24%)",
+              gridTemplateRows: "clamp(136px, 17vh, 194px) minmax(220px, 1fr) minmax(170px, 0.95fr) clamp(152px, 20vh, 226px)",
               gridTemplateAreas: `
                 "title title title"
                 "p1 demo p2"
                 "p4 demo p3"
                 "p4 p5 p3"
               `,
-              gap: "clamp(12px, 1.5vw, 20px)",
-              height: "min(90vh, 980px)",
+              gap: "clamp(14px, 1.7vw, 24px)",
+              height: "min(86vh, 1000px)",
+              contain: "layout paint",
             }}
           >
             <div
@@ -414,10 +427,11 @@ export function HeroPipeline() {
                 opacity: derived.headerOpacity,
                 transform: `translate3d(0, ${(1 - derived.entry) * 18}px, 0)`,
                 filter: `blur(${(1 - derived.titleMorph) * 6}px)`,
+                willChange: "transform, opacity, filter",
               }}
             >
               <div className="text-[10px] font-mono uppercase tracking-[0.28em] text-accent-teal/82">
-                Pipeline Experience
+                Engine Walkthrough
               </div>
               <h2 className="mt-2 text-6xl font-semibold leading-[0.94] tracking-tight text-fg-porcelain">
                 Search Pipeline
@@ -449,7 +463,7 @@ export function HeroPipeline() {
                 "relative z-20 flex min-h-0 items-center justify-center",
                 activeStep === null ? "pointer-events-auto" : "pointer-events-none"
               )}
-              style={{ gridArea: "demo" }}
+              style={{ gridArea: "demo", contain: "layout paint" }}
             >
               <div
                 className={cn(
@@ -461,6 +475,7 @@ export function HeroPipeline() {
                 style={{
                   aspectRatio: "16 / 9",
                   maxHeight: "100%",
+                  willChange: "transform, border-color, box-shadow",
                 }}
               >
                 <div className={cn("absolute -inset-16 z-[-1] blur-[90px]", demoStyles.glow)} />
@@ -585,6 +600,8 @@ function PipelineCardWrapper({
         transform: `translate3d(${(1 - reveal) * config.x}px, ${(1 - reveal) * config.y - exit * 20}px, 0) scale(${0.88 + reveal * 0.12})`,
         filter: `blur(${(1 - reveal) * 6}px)`,
         pointerEvents: reveal > 0.42 ? "auto" : "none",
+        willChange: "transform, opacity, filter",
+        contain: "layout paint",
       }}
     >
       {children}
@@ -648,7 +665,7 @@ function PhaseTile({
     <article
       className={cn(
         "relative flex min-h-0 overflow-hidden rounded-2xl border bg-bg-graphite-2/92 backdrop-blur-sm transition-all duration-500",
-        compact ? "h-full items-start gap-4 p-5" : "grid h-full grid-rows-[auto_minmax(0,1fr)] gap-3 p-5",
+        compact ? "h-full items-start gap-5 p-6" : "grid h-full grid-rows-[auto_minmax(0,1fr)] gap-4 p-6",
         isActive
           ? cn(styles.borderActive, styles.shadow, "z-10 ring-1 opacity-100 scale-[1.01]", styles.ring)
           : isComplete
@@ -679,7 +696,7 @@ function PhaseTile({
         <p
           className={cn(
             "mt-2 leading-relaxed text-fg-muted/84",
-            compact ? "text-sm" : "line-clamp-3 text-[0.9rem]"
+            compact ? "text-[0.92rem]" : "line-clamp-3 text-[0.96rem]"
           )}
         >
           {phase.description}
@@ -692,7 +709,7 @@ function PhaseTile({
       <div
         className={cn(
           "relative z-10 min-h-0",
-          compact ? "h-[112px] w-[184px] shrink-0" : "mt-1 flex h-[clamp(94px,36%,152px)] w-full items-center"
+          compact ? "h-[126px] w-[214px] shrink-0" : "mt-1 flex h-[clamp(104px,40%,170px)] w-full items-center"
         )}
       >
         {children}

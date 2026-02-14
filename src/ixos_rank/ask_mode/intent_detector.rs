@@ -1,3 +1,7 @@
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+use std::sync::OnceLock;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum QueryIntent {
     WhoQuestion,
@@ -5,6 +9,7 @@ pub enum QueryIntent {
     WhereQuestion,
     WhatQuestion,
     HowQuestion,
+    WhyQuestion,
     FindRequest,
     ShowRequest,
 }
@@ -19,6 +24,22 @@ pub enum TimeIntent {
 
 #[derive(Debug, Default)]
 pub struct IntentDetector;
+
+const TEMPLATE_EMBED_DIM: usize = 64;
+const ASK_SIMILARITY_THRESHOLD: f32 = 0.65;
+
+const ASK_TEMPLATES: &[&str] = &[
+    "what is the main config file",
+    "where is the auth token handled",
+    "who wrote the release workflow",
+    "when was this changed",
+    "how does search ranking work",
+    "why is ask mode slow",
+    "find the settings for cache mode",
+    "show me where deep search is implemented",
+    "which file defines model ids",
+    "what changed in ci",
+];
 
 impl IntentDetector {
     pub fn new() -> Self {
@@ -42,6 +63,9 @@ impl IntentDetector {
         if lower.starts_with("how ") || lower.starts_with("how to ") {
             return Some(QueryIntent::HowQuestion);
         }
+        if lower.starts_with("why ") || lower.starts_with("why is ") {
+            return Some(QueryIntent::WhyQuestion);
+        }
         if lower.starts_with("find ") || lower.starts_with("find my ") {
             return Some(QueryIntent::FindRequest);
         }
@@ -49,6 +73,31 @@ impl IntentDetector {
             return Some(QueryIntent::ShowRequest);
         }
         None
+    }
+
+    /// Determine if Ask Mode should activate for a query.
+    ///
+    /// Fast path:
+    /// - explicit question marker (`?`)
+    /// - direct question/request prefixes
+    ///
+    /// Secondary path:
+    /// - lightweight embedding similarity against question templates
+    pub fn should_activate_ask_mode(&self, query: &str) -> bool {
+        let trimmed = query.trim();
+        if trimmed.is_empty() {
+            return false;
+        }
+
+        let lower = trimmed.to_lowercase();
+        if lower.contains('?') || self.detect_intent(trimmed).is_some() {
+            return true;
+        }
+
+        let query_emb = template_embed(trimmed);
+        ask_template_embeddings()
+            .iter()
+            .any(|template| cosine_similarity(&query_emb, template) >= ASK_SIMILARITY_THRESHOLD)
     }
 
     pub fn detect_time_intent(&self, query: &str) -> Option<TimeIntent> {
@@ -91,6 +140,46 @@ impl IntentDetector {
 
         None
     }
+}
+
+fn ask_template_embeddings() -> &'static Vec<Vec<f32>> {
+    static EMBEDDINGS: OnceLock<Vec<Vec<f32>>> = OnceLock::new();
+    EMBEDDINGS.get_or_init(|| ASK_TEMPLATES.iter().map(|t| template_embed(t)).collect())
+}
+
+fn template_embed(text: &str) -> Vec<f32> {
+    let mut vector = vec![0.0_f32; TEMPLATE_EMBED_DIM];
+    for token in tokenize(text) {
+        let mut hasher = DefaultHasher::new();
+        token.hash(&mut hasher);
+        let idx = (hasher.finish() as usize) % TEMPLATE_EMBED_DIM;
+        vector[idx] += 1.0;
+    }
+    normalize_l2(&mut vector);
+    vector
+}
+
+fn tokenize(text: &str) -> impl Iterator<Item = String> + '_ {
+    text.split(|c: char| !c.is_ascii_alphanumeric())
+        .filter(|t| !t.is_empty())
+        .map(|t| t.to_lowercase())
+}
+
+fn normalize_l2(vector: &mut [f32]) {
+    let norm = vector.iter().map(|v| v * v).sum::<f32>().sqrt();
+    if norm <= f32::EPSILON {
+        return;
+    }
+    for value in vector {
+        *value /= norm;
+    }
+}
+
+fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
+    if a.len() != b.len() {
+        return 0.0;
+    }
+    a.iter().zip(b.iter()).map(|(x, y)| x * y).sum::<f32>()
 }
 
 fn extract_prefixed_value(haystack: &str, prefix: &str) -> Option<String> {

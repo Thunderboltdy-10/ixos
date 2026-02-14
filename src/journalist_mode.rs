@@ -1,348 +1,236 @@
-//! Journalist Mode - Maximum privacy search mode
+//! Deep Search mode controls and overrides.
 //!
-//! Provides a high-security search mode designed for journalists and
-//! sensitive document handling. Features:
-//!
-//! - **Memory-only operation**: Forces JIT mode, no persistent cache
-//! - **Auto-clear**: All buffers cleared after each search
-//! - **Secure wipe**: Memory zeroed on exit using zeroize
-//! - **No forensic artifacts**: No ADS/xattr, no logs
-//!
-//! ## Example
-//!
-//! ```rust,no_run
-//! use ixos_protocol::journalist_mode::JournalistMode;
-//!
-//! let mut journalist = JournalistMode::new();
-//! journalist.enable();
-//!
-//! // ... perform search ...
-//!
-//! journalist.clear_all(); // Securely wipe everything
-//! ```
-//!
-//! ## CLI Usage
-//!
-//! ```cmd
-//! .\target\release\ixos.exe search "query" --journalist-mode
-//! ```
+//! This module keeps the legacy module path (`journalist_mode`) for crate-level
+//! compatibility, but the runtime behavior is now "Deep Search":
+//! - wider candidate set
+//! - deeper per-file reads
+//! - broader text extraction caps
 
 use std::sync::atomic::{AtomicBool, Ordering};
-use zeroize::Zeroize;
 
-/// Global flag indicating journalist mode is active
-static JOURNALIST_MODE_ACTIVE: AtomicBool = AtomicBool::new(false);
-
-/// Checks if journalist mode is currently active
-pub fn is_journalist_mode() -> bool {
-    JOURNALIST_MODE_ACTIVE.load(Ordering::SeqCst)
-}
-
-/// Journalist mode manager for maximum privacy searches
+/// Legacy compatibility shim.
 ///
-/// When enabled:
-/// - Forces JIT cache mode (no persistent storage)
-/// - Wraps sensitive data in secure buffers
-/// - Clears all data after each operation
-/// - Zeroizes memory on drop
-#[derive(Debug)]
-pub struct JournalistMode {
-    /// Whether journalist mode is currently enabled
-    enabled: bool,
-    /// Tracked secure buffers for clearing
-    buffers: Vec<SecureBuffer>,
-    /// Statistics for the session
-    stats: SessionStats,
+/// Journalist mode behavior was removed in favor of Deep Search. Callers that
+/// still check this should not alter behavior.
+pub fn is_journalist_mode() -> bool {
+    false
 }
 
-/// Statistics for a journalist mode session
-#[derive(Debug, Default)]
-pub struct SessionStats {
-    /// Number of searches performed
+/// Global flag indicating deep search is active for the current search.
+static DEEP_SEARCH_ACTIVE: AtomicBool = AtomicBool::new(false);
+
+/// Check if deep search is currently active.
+pub fn is_deep_search_mode() -> bool {
+    DEEP_SEARCH_ACTIVE.load(Ordering::SeqCst)
+}
+
+/// Dynamic caps used by search pipeline code.
+#[derive(Debug, Clone, Copy)]
+pub struct DeepSearchOverrides {
+    pub max_candidates: usize,
+    pub max_bytes_per_file: usize,
+    pub max_text_chars: usize,
+}
+
+impl DeepSearchOverrides {
+    pub const fn standard() -> Self {
+        Self {
+            max_candidates: 3000,
+            max_bytes_per_file: 64 * 1024,
+            max_text_chars: 20_000,
+        }
+    }
+
+    pub const fn deep() -> Self {
+        Self {
+            max_candidates: 10_000,
+            max_bytes_per_file: 256 * 1024,
+            max_text_chars: 80_000,
+        }
+    }
+}
+
+/// Return active search caps based on deep-search mode.
+pub fn deep_search_overrides() -> DeepSearchOverrides {
+    if is_deep_search_mode() {
+        DeepSearchOverrides::deep()
+    } else {
+        DeepSearchOverrides::standard()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct DeepSearchConfig {
+    pub max_candidates: usize,
+    pub max_bytes_per_file: usize,
+    pub max_text_chars: usize,
+}
+
+impl Default for DeepSearchConfig {
+    fn default() -> Self {
+        let caps = DeepSearchOverrides::deep();
+        Self {
+            max_candidates: caps.max_candidates,
+            max_bytes_per_file: caps.max_bytes_per_file,
+            max_text_chars: caps.max_text_chars,
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct DeepSearchStats {
     pub searches_performed: usize,
-    /// Number of files accessed
-    pub files_accessed: usize,
-    /// Number of clear operations
-    pub clear_operations: usize,
+    pub files_opened: usize,
+    pub bytes_read: usize,
+    pub cross_refs: usize,
 }
 
-/// Secure buffer that zeroizes on drop
-#[derive(Debug)]
+#[derive(Debug, Clone, Default)]
 pub struct SecureBuffer {
     data: Vec<u8>,
 }
 
 impl SecureBuffer {
-    /// Create a new secure buffer from data
     pub fn new(data: Vec<u8>) -> Self {
         Self { data }
     }
 
-    /// Create an empty secure buffer
     pub fn empty() -> Self {
         Self { data: Vec::new() }
     }
 
-    /// Get a reference to the data
     pub fn as_bytes(&self) -> &[u8] {
         &self.data
     }
 
-    /// Get the data as a string (if valid UTF-8)
     pub fn as_str(&self) -> Option<&str> {
         std::str::from_utf8(&self.data).ok()
     }
 
-    /// Clear the buffer securely
     pub fn clear(&mut self) {
-        self.data.zeroize();
+        self.data.clear();
     }
 
-    /// Get the length of the buffer
     pub fn len(&self) -> usize {
         self.data.len()
     }
 
-    /// Check if the buffer is empty
     pub fn is_empty(&self) -> bool {
         self.data.is_empty()
     }
 }
 
-impl Drop for SecureBuffer {
-    fn drop(&mut self) {
-        self.data.zeroize();
-    }
+/// Deep search runtime manager.
+#[derive(Debug, Default)]
+pub struct DeepSearchMode {
+    enabled: bool,
+    pub config: DeepSearchConfig,
+    stats: DeepSearchStats,
 }
 
-impl Clone for SecureBuffer {
-    fn clone(&self) -> Self {
-        Self {
-            data: self.data.clone(),
-        }
-    }
-}
-
-impl JournalistMode {
-    /// Create a new journalist mode manager (disabled by default)
+impl DeepSearchMode {
     pub fn new() -> Self {
         Self {
             enabled: false,
-            buffers: Vec::new(),
-            stats: SessionStats::default(),
+            config: DeepSearchConfig::default(),
+            stats: DeepSearchStats::default(),
         }
     }
 
-    /// Enable journalist mode
-    ///
-    /// This sets the global flag and configures for maximum privacy:
-    /// - Forces JIT cache mode
-    /// - Disables all logging
-    /// - Enables secure memory tracking
     pub fn enable(&mut self) {
         self.enabled = true;
-        JOURNALIST_MODE_ACTIVE.store(true, Ordering::SeqCst);
-        tracing::info!("Journalist mode enabled - maximum privacy active");
+        DEEP_SEARCH_ACTIVE.store(true, Ordering::SeqCst);
+        tracing::info!("Deep Search mode enabled");
     }
 
-    /// Disable journalist mode
     pub fn disable(&mut self) {
-        self.clear_all();
         self.enabled = false;
-        JOURNALIST_MODE_ACTIVE.store(false, Ordering::SeqCst);
-        tracing::info!("Journalist mode disabled");
+        DEEP_SEARCH_ACTIVE.store(false, Ordering::SeqCst);
     }
 
-    /// Check if journalist mode is enabled
     pub fn is_enabled(&self) -> bool {
         self.enabled
     }
 
-    /// Create a secure buffer and track it for later clearing
-    pub fn create_buffer(&mut self, data: Vec<u8>) -> SecureBuffer {
-        let buffer = SecureBuffer::new(data.clone());
-        self.buffers.push(SecureBuffer::new(data));
-        buffer
-    }
-
-    /// Record a search operation
     pub fn record_search(&mut self) {
         self.stats.searches_performed += 1;
     }
 
-    /// Record file access
     pub fn record_file_access(&mut self, count: usize) {
-        self.stats.files_accessed += count;
+        self.stats.files_opened += count;
     }
 
-    /// Clear all tracked buffers securely
-    ///
-    /// This immediately zeroizes all tracked buffers.
-    pub fn clear_all(&mut self) {
-        for buffer in &mut self.buffers {
-            buffer.clear();
-        }
-        self.buffers.clear();
-        self.stats.clear_operations += 1;
-        tracing::debug!("Journalist mode: cleared {} buffers", self.buffers.len());
+    pub fn record_bytes_read(&mut self, bytes: usize) {
+        self.stats.bytes_read += bytes;
     }
 
-    /// Emergency clear - immediately wipe all data
-    ///
-    /// This is the panic button - clears everything as fast as possible.
-    pub fn emergency_clear(&mut self) {
-        self.clear_all();
-        // Force garbage collection hint
-        self.buffers = Vec::new();
-        self.buffers.shrink_to_fit();
-        tracing::warn!("Journalist mode: EMERGENCY CLEAR executed");
+    pub fn record_cross_ref(&mut self, count: usize) {
+        self.stats.cross_refs += count;
     }
 
-    /// Get session statistics
-    pub fn stats(&self) -> &SessionStats {
+    pub fn stats(&self) -> &DeepSearchStats {
         &self.stats
     }
 
-    /// Get the number of tracked buffers
+    pub fn summary_line(&self) -> String {
+        format!(
+            "Deep Search: files_opened={}, bytes_read={}, cross_refs={}",
+            self.stats.files_opened, self.stats.bytes_read, self.stats.cross_refs
+        )
+    }
+
+    // Legacy methods kept for call-site compatibility.
+    pub fn create_buffer(&mut self, data: Vec<u8>) -> SecureBuffer {
+        SecureBuffer::new(data)
+    }
+
+    pub fn clear_all(&mut self) {}
+
+    pub fn emergency_clear(&mut self) {
+        self.disable();
+    }
+
     pub fn buffer_count(&self) -> usize {
-        self.buffers.len()
+        0
     }
 
-    /// Get total bytes currently tracked
     pub fn total_tracked_bytes(&self) -> usize {
-        self.buffers.iter().map(|b| b.len()).sum()
+        0
     }
 }
 
-impl Default for JournalistMode {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl Drop for JournalistMode {
+impl Drop for DeepSearchMode {
     fn drop(&mut self) {
-        // Ensure all buffers are cleared on drop
-        self.clear_all();
-        JOURNALIST_MODE_ACTIVE.store(false, Ordering::SeqCst);
+        self.disable();
     }
 }
 
-/// Configuration for journalist mode
-#[derive(Debug, Clone)]
-pub struct JournalistModeConfig {
-    /// Whether to show any output (default: true, for results only)
-    pub show_output: bool,
-    /// Whether to show progress indicators (default: false)
-    pub show_progress: bool,
-    /// Maximum number of results (default: 20)
-    pub max_results: usize,
-}
-
-impl Default for JournalistModeConfig {
-    fn default() -> Self {
-        Self {
-            show_output: true,
-            show_progress: false,
-            max_results: 20,
-        }
-    }
-}
+/// Compatibility alias for existing imports.
+pub type JournalistMode = DeepSearchMode;
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_journalist_mode_creation() {
-        let mode = JournalistMode::new();
-        assert!(!mode.is_enabled());
-        assert_eq!(mode.buffer_count(), 0);
-    }
-
-    #[test]
-    fn test_journalist_mode_enable_disable() {
-        let mut mode = JournalistMode::new();
-
+    fn deep_search_mode_toggles_global_flag() {
+        let mut mode = DeepSearchMode::new();
+        assert!(!is_deep_search_mode());
         mode.enable();
-        assert!(mode.is_enabled());
-        assert!(is_journalist_mode());
-
+        assert!(is_deep_search_mode());
         mode.disable();
-        assert!(!mode.is_enabled());
-        assert!(!is_journalist_mode());
+        assert!(!is_deep_search_mode());
     }
 
     #[test]
-    fn test_secure_buffer_zeroize() {
-        let data = b"sensitive data".to_vec();
-        let mut buffer = SecureBuffer::new(data);
+    fn deep_search_overrides_switch_with_flag() {
+        let standard = deep_search_overrides();
+        assert_eq!(standard.max_candidates, 3000);
 
-        assert_eq!(buffer.as_bytes(), b"sensitive data");
-        buffer.clear();
-
-        // Data should be zeroed
-        assert!(buffer.as_bytes().iter().all(|&b| b == 0) || buffer.is_empty());
-    }
-
-    #[test]
-    fn test_buffer_tracking() {
-        let mut mode = JournalistMode::new();
+        let mut mode = DeepSearchMode::new();
         mode.enable();
-
-        let _buf1 = mode.create_buffer(b"data1".to_vec());
-        let _buf2 = mode.create_buffer(b"data2".to_vec());
-
-        assert_eq!(mode.buffer_count(), 2);
-        assert_eq!(mode.total_tracked_bytes(), 10);
-
-        mode.clear_all();
-        assert_eq!(mode.buffer_count(), 0);
-    }
-
-    #[test]
-    fn test_session_stats() {
-        let mut mode = JournalistMode::new();
-        mode.enable();
-
-        mode.record_search();
-        mode.record_search();
-        mode.record_file_access(10);
-
-        assert_eq!(mode.stats().searches_performed, 2);
-        assert_eq!(mode.stats().files_accessed, 10);
-    }
-
-    #[test]
-    fn test_emergency_clear() {
-        let mut mode = JournalistMode::new();
-        mode.enable();
-
-        let _buf = mode.create_buffer(b"sensitive".to_vec());
-        mode.emergency_clear();
-
-        assert_eq!(mode.buffer_count(), 0);
-        assert_eq!(mode.stats().clear_operations, 1);
-    }
-
-    #[test]
-    fn test_drop_clears_buffers() {
-        {
-            let mut mode = JournalistMode::new();
-            mode.enable();
-            let _ = mode.create_buffer(b"will be cleared".to_vec());
-            // mode drops here
-        }
-
-        // Global flag should be reset
-        assert!(!is_journalist_mode());
-    }
-
-    #[test]
-    fn test_config_defaults() {
-        let config = JournalistModeConfig::default();
-        assert!(config.show_output);
-        assert!(!config.show_progress);
-        assert_eq!(config.max_results, 20);
+        let deep = deep_search_overrides();
+        assert_eq!(deep.max_candidates, 10_000);
+        mode.disable();
     }
 }

@@ -92,7 +92,7 @@ export function PurchaseConfirmationEmail({
         <ul style={{ margin: 0, padding: "0 0 0 16px", fontSize: "13px", color: "#A1A1A6", lineHeight: "1.8" }}>
           <li>File watch &amp; instant notifications</li>
           <li>Developer file types (TS, PY, RS, GO)</li>
-          <li>Journalist Mode for maximum privacy</li>
+          <li>Deep Search Mode for maximum coverage</li>
           <li>Priority model updates</li>
           <li>Direct support access</li>
         </ul>

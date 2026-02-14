@@ -14,13 +14,13 @@ import * as tauri from '@/lib/tauri';
 export function SearchOverlay() {
   const search = useSearch();
   const searchBarRef = useSearchBarLayout();
-  const mode: SearchMode = search.journalistMode ? 'journalist' : search.cacheMode;
+  const mode: SearchMode = search.deepSearchMode ? 'journalist' : search.cacheMode;
 
   const handleModeChange = (newMode: SearchMode) => {
     if (newMode === 'journalist') {
-      search.setJournalistMode(true);
+      search.setDeepSearchMode(true);
     } else {
-      search.setJournalistMode(false);
+      search.setDeepSearchMode(false);
       search.setCacheMode(newMode);
     }
   };
@@ -55,7 +55,7 @@ export function SearchOverlay() {
         className="w-full max-w-3xl bg-graphite-1/95 rounded-2xl shadow-lift border border-stroke-hairline overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {search.journalistMode && (
+        {search.deepSearchMode && (
           <div className="flex items-center justify-end px-5 py-3 border-b border-stroke-hairline bg-graphite-1/70">
             <JournalistBadge />
           </div>

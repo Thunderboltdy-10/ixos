@@ -243,7 +243,7 @@ function HeroDeckBackContent() {
             <div className="relative flex flex-col gap-4 w-full max-w-sm">
                 {[
                     { step: "01", label: "Type naturally", desc: "No special syntax needed" },
-                    { step: "02", label: "Ephemeral Processing", desc: "On-demand AI - memory-only mode" },
+                    { step: "02", label: "Memory Processing", desc: "On-demand AI with local-first caching controls" },
                     { step: "03", label: "Local Search", desc: "100% on your machine" },
                     { step: "04", label: "Auto Cleanup", desc: "Temporary data wiped" },
                     { step: "05", label: "Stream Results", desc: "See matches as they're found" },

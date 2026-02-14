@@ -7,16 +7,17 @@ import { cn } from '@/lib/utils';
 import { useFakeSearch, DEMO_QUERIES, type DemoFile, type PauseAtStage } from './fakeSearch';
 import { getFileIcon } from './fileIcons';
 
-type DemoMode = 'ephemeral' | 'native-cache' | 'journalist';
-type DemoModel = 'Flash' | 'Pro' | 'Auto';
+type DemoMode = 'memory' | 'local' | 'deep-search';
+type DemoModel = 'Ixos Flash' | 'Ixos Pro';
 
-const MODELS: DemoModel[] = ['Auto', 'Flash', 'Pro'];
+const MODELS: DemoModel[] = ['Ixos Flash', 'Ixos Pro'];
 const QUERY_CYCLE_MS = 10_000;
 const SYNC_POLL_MS = 120;
 const SCROLL_GUIDED_QUERY = DEMO_QUERIES[0].query;
+const USER_INTERACTION_TIMEOUT_MS = 30_000;
 
 const MODE_TOKENS = {
-  ephemeral: {
+  memory: {
     text: 'text-accent-amber',
     border: 'border-accent-amber',
     bg: 'bg-accent-amber',
@@ -26,7 +27,7 @@ const MODE_TOKENS = {
     selection: 'selection:bg-accent-amber/20',
     insetGlow: 'shadow-[inset_4px_0_12px_-4px_rgba(246,185,76,0.2)]',
   },
-  'native-cache': {
+  local: {
     text: 'text-accent-teal',
     border: 'border-accent-teal',
     bg: 'bg-accent-teal',
@@ -36,7 +37,7 @@ const MODE_TOKENS = {
     selection: 'selection:bg-accent-teal/20',
     insetGlow: 'shadow-[inset_4px_0_12px_-4px_rgba(20,184,166,0.2)]',
   },
-  journalist: {
+  'deep-search': {
     text: 'text-accent-violet',
     border: 'border-accent-violet',
     bg: 'bg-accent-violet',
@@ -76,8 +77,8 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
   const previousControlledStepRef = useRef<number | null>(null);
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [activeMode, setActiveMode] = useState<DemoMode>('native-cache');
-  const [activeModel, setActiveModel] = useState<DemoModel>('Auto');
+  const [activeMode, setActiveMode] = useState<DemoMode>('local');
+  const [activeModel, setActiveModel] = useState<DemoModel>('Ixos Flash');
   const [showModelMenu, setShowModelMenu] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -106,9 +107,9 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
     setUserQuery(null);
 
     if (step === 3) {
-      setActiveMode('journalist');
+      setActiveMode('deep-search');
     } else {
-      setActiveMode(prev => (prev === 'journalist' ? 'native-cache' : prev));
+      setActiveMode(prev => (prev === 'deep-search' ? 'local' : prev));
     }
 
     if (step === 0) {
@@ -187,7 +188,7 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
     inactivityTimerRef.current = setTimeout(() => {
       setIsUserMode(false);
       setUserQuery('');
-    }, 5000);
+    }, USER_INTERACTION_TIMEOUT_MS);
 
     inputRef.current?.focus();
   }, [userQuery, isUserMode, onInteract]);
@@ -265,11 +266,11 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
                       className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-white/5 transition-colors text-fg-muted/60 hover:text-fg-muted"
                     >
                       <Sparkles className={cn("w-3 h-3", tokens.text)} />
-                      <span>{activeModel.toUpperCase()}</span>
+                      <span>{activeModel}</span>
                       <ChevronDown className="w-3 h-3 opacity-50" />
                     </button>
                     {showModelMenu && (
-                      <div className="absolute top-full right-0 mt-2 w-24 bg-bg-graphite-2 border border-white/10 rounded-md shadow-xl overflow-hidden py-1 z-50">
+                      <div className="absolute top-full right-0 mt-2 w-36 bg-bg-graphite-2 border border-white/10 rounded-md shadow-xl overflow-hidden py-1 z-50">
                         {MODELS.map(m => (
                           <button
                             key={m}
@@ -286,37 +287,37 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
                   {/* Mode Selector */}
                   <div className="flex items-center bg-white/[0.04] rounded-lg p-0.5">
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleModeChange('ephemeral'); }}
+                      onClick={(e) => { e.stopPropagation(); handleModeChange('memory'); }}
                       className={cn(
                         "px-2 py-1 rounded-md transition-all flex items-center gap-1.5",
-                        activeMode === 'ephemeral' ? `${MODE_TOKENS.ephemeral.bgFaint} ${MODE_TOKENS.ephemeral.text} shadow-sm` : "hover:text-fg-muted"
+                        activeMode === 'memory' ? `${MODE_TOKENS.memory.bgFaint} ${MODE_TOKENS.memory.text} shadow-sm` : "hover:text-fg-muted"
                       )}
-                      title="Ephemeral (Memory Only)"
+                      title="Memory Mode"
                     >
                       <Zap className="w-3 h-3 fill-current" />
-                      <span className="hidden sm:inline font-bold tracking-wider">EPHEMERAL</span>
+                      <span className="hidden sm:inline font-bold tracking-wider">MEMORY</span>
                     </button>
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleModeChange('native-cache'); }}
+                      onClick={(e) => { e.stopPropagation(); handleModeChange('local'); }}
                       className={cn(
                         "px-2 py-1 rounded-md transition-all flex items-center gap-1.5",
-                        activeMode === 'native-cache' ? `${MODE_TOKENS['native-cache'].bgFaint} ${MODE_TOKENS['native-cache'].text} shadow-sm` : "hover:text-fg-muted"
+                        activeMode === 'local' ? `${MODE_TOKENS.local.bgFaint} ${MODE_TOKENS.local.text} shadow-sm` : "hover:text-fg-muted"
                       )}
-                      title="NativeCache (Recommended)"
+                      title="Local Mode"
                     >
                       <Sparkles className="w-3 h-3" />
-                      <span className="hidden sm:inline font-bold tracking-wider">NATIVECACHE</span>
+                      <span className="hidden sm:inline font-bold tracking-wider">LOCAL</span>
                     </button>
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleModeChange('journalist'); }}
+                      onClick={(e) => { e.stopPropagation(); handleModeChange('deep-search'); }}
                       className={cn(
                         "px-2 py-1 rounded-md transition-all flex items-center gap-1.5",
-                        activeMode === 'journalist' ? `${MODE_TOKENS.journalist.bgFaint} ${MODE_TOKENS.journalist.text} shadow-sm` : "hover:text-fg-muted"
+                        activeMode === 'deep-search' ? `${MODE_TOKENS['deep-search'].bgFaint} ${MODE_TOKENS['deep-search'].text} shadow-sm` : "hover:text-fg-muted"
                       )}
-                      title="Journalist Mode"
+                      title="Deep Search Mode"
                     >
                       <Shield className="w-3 h-3" />
-                      <span className="hidden sm:inline font-bold tracking-wider">SECURE</span>
+                      <span className="hidden sm:inline font-bold tracking-wider">DEEP SEARCH</span>
                     </button>
                   </div>
                 </div>
@@ -383,11 +384,11 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
                 <div className="flex items-center gap-4 text-fg-muted/30">
                   <span>{results.length} results</span>
                   <span className={tokens.text}>
-                    {activeMode === "ephemeral"
-                      ? "EPHEMERAL"
-                      : activeMode === "native-cache"
-                        ? "NATIVECACHE"
-                        : "JOURNALIST"}
+                    {activeMode === "memory"
+                      ? "MEMORY"
+                      : activeMode === "local"
+                        ? "LOCAL"
+                        : "DEEP SEARCH"}
                   </span>
                 </div>
               </motion.div>

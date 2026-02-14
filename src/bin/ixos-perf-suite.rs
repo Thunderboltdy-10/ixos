@@ -37,7 +37,7 @@ struct PerfSuiteArgs {
     /// Seed for deterministic content
     #[arg(long, default_value = "1337")]
     seed: u64,
-    /// Cache mode: native-cache or ephemeral (legacy aliases: cache/jit)
+    /// Cache mode: local or memory
     #[arg(long, default_value = "native-cache")]
     cache_mode: String,
     /// Model to use
@@ -90,7 +90,7 @@ async fn main() -> anyhow::Result<()> {
 
     let (run_count, seed, cache_mode, model_type, queries, out_path) = if let Some(ref cfg) = config
     {
-        let cache_mode = parse_cache_mode(&cfg.run.cache_mode);
+        let cache_mode = parse_cache_mode(&cfg.run.cache_mode)?;
         let model_type = parse_model_type(&cfg.run.model)?;
         let out_dir = cfg
             .run
@@ -107,7 +107,7 @@ async fn main() -> anyhow::Result<()> {
             out_path,
         )
     } else {
-        let cache_mode = parse_cache_mode(&args.cache_mode);
+        let cache_mode = parse_cache_mode(&args.cache_mode)?;
         let model_type = parse_model_type(&args.model)?;
         (
             args.runs,
@@ -174,11 +174,13 @@ fn parse_sizes(raw: &str) -> anyhow::Result<Vec<usize>> {
     Ok(sizes)
 }
 
-fn parse_cache_mode(raw: &str) -> CacheMode {
+fn parse_cache_mode(raw: &str) -> anyhow::Result<CacheMode> {
     match raw.to_lowercase().as_str() {
-        "native-cache" | "nativecache" | "cache" | "persistent" => CacheMode::NativeCache,
-        "ephemeral" | "jit" => CacheMode::Ephemeral,
-        _ => CacheMode::NativeCache,
+        "native-cache" | "local" => Ok(CacheMode::NativeCache),
+        "ephemeral" | "memory" => Ok(CacheMode::Ephemeral),
+        other => anyhow::bail!(
+            "invalid cache mode '{other}'. valid values: local|native-cache|memory|ephemeral"
+        ),
     }
 }
 

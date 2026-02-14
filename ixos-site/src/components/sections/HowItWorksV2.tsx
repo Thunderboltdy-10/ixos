@@ -34,7 +34,7 @@ const PHASES: PhaseBox[] = [
   {
     id: "02",
     label: "EMBED_ENGINE",
-    title: "Ephemeral Intelligence",
+    title: "Local Intelligence",
     description: "CPU-optimized models compute embeddings on demand.",
   },
   {
@@ -59,7 +59,7 @@ const PHASES: PhaseBox[] = [
 
 const STATUS_MESSAGES = [
   "Active: Natural Language Input",
-  "Active: Ephemeral Embedding Engine",
+  "Active: Memory/Local Embedding Engine",
   "Active: Ranked Locally",
   "Active: Zero Persistence Mode",
   "Active: Streaming Results",
@@ -112,8 +112,8 @@ export function HowItWorksV2() {
       ScrollTrigger.create({
         trigger: sectionRef.current,
         start: "top top",
-        end: "+=340%",
-        scrub: 1,
+        end: "+=260%",
+        scrub: 0.85,
         pin: panelRef.current,
         pinSpacing: true,
         anticipatePin: 1,
@@ -128,7 +128,7 @@ export function HowItWorksV2() {
   }, [isDesktop, prefersReducedMotion]);
 
   return (
-    <section ref={sectionRef} className="section-how relative -mt-2 w-full bg-bg-graphite-0">
+    <section ref={sectionRef} className="section-how relative -mt-2 w-full bg-bg-graphite-0 [contain:layout]">
       <div
         ref={panelRef}
         className={cn(
@@ -165,7 +165,7 @@ export function HowItWorksV2() {
 
         <div className="flex min-h-0 flex-1 items-center justify-center">
           {isDesktop ? (
-            <div className={GRID_CLASS}>
+            <div className={`${GRID_CLASS} [will-change:transform]`}>
               <PhaseTile
                 className="col-start-1 row-start-1"
                 phase={PHASES[0]}

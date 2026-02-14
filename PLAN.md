@@ -187,3 +187,34 @@
   1. Implement same-suite quality comparator gate in `release-check` to make quality deltas strict and apples-to-apples.
   2. Add deterministic bench environment controls (CPU affinity/process priority/warmup policy) to reduce p95 jitter.
   3. Add CI installer/blob smoke checks matching release artifact workflow outputs.
+
+## STATE SNAPSHOT (Overhaul Integration, 2026-02-14)
+- Date: 2026-02-14
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97 (real_corpus_v2)
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Ripgrep I/O variance on large trees
+  2. Ranking tail p95 spikes on specific query classes
+  3. UI initial bundle size (desktop web assets)
+- Current pass validation (2026-02-14):
+  - `cargo test -q`: PASS (`467 passed; 0 failed; 6 ignored`)
+  - `cargo test --test settings_matrix -q`: PASS
+  - `python scripts/run_settings_matrix.py`: PASS (`reports/settings_matrix_2026-02-14.md`)
+  - `npm --prefix ui run build`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+  - `cargo build --release`: PASS
+  - CLI smoke:
+    - `target/release/ixos.exe search "test" --dir . --stub-model --format json --limit 1`: PASS
+    - `target/release/ixos.exe search "test" --deep-search --dir . --stub-model --format json --limit 1`: PASS
+    - Memory mode cache check on `corpus_tiny` (before/mid/after `cache stats`): `cached_files` stayed `0`
+    - Ask auto status check (`what is the main config?` with progressive): backend emitted `Ask Mode active: understanding your question...`
+  - Benchmark harness check:
+    - `target/release/ixos-big-bench.exe --dir corpus_tiny --queries-file reports/tmp_bench_queries.json --runs 2 ...`: warm/cold labeling and per-record `walk_ms` verified (`reports/big_bench_20260214_131205.json`)
+- What is next (top 3 tasks):
+  1. Remove remaining internal `journalist` symbol debt in Tauri/UI internals.
+  2. Add release-asset smoke checks in CI (post-upload verification).
+  3. Run full remote GitHub Actions validation on branch and capture run links in `/reports`.

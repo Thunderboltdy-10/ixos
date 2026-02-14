@@ -12,8 +12,9 @@
 //!
 //! Ixos supports multiple embedding models, selectable via CLI `--model` flag:
 //!
-//! - **Flash Quartz** (`ixos-flash-v2`): Current production flash model.
-//! - **Potion Core** (`potion-base-8m-int8`): Internal dependency used by Pro Prism.
+//! - **Ixos Flash** (`ixos-flash-v2`): Current production flash model.
+//! - **Ixos Pro** (`ixos-pro-v2`): Pro routing model.
+//! - **potion-base-8m-int8**: Internal dependency used by Ixos Pro.
 //! - **Qwen** (legacy/experimental): Distilled from Qwen3-Embedding-0.6B.
 //!
 //! # Performance
@@ -68,6 +69,8 @@ pub enum ModelType {
     IxosFlashV4,
     /// Ixos Flash v4 Fast (192d, int8, speed-leaning)
     IxosFlashV4Fast,
+    /// Ixos Pro v2 (user-facing pro model id)
+    IxosProV2,
     /// Ixos Pro v1 (distilled, higher quality)
     IxosProV1,
 }
@@ -76,12 +79,13 @@ impl ModelType {
     /// Get human-readable display name
     pub fn display_name(&self) -> &'static str {
         match self {
-            ModelType::Potion => "Potion Core",
+            ModelType::Potion => "potion-base-8m-int8 (internal)",
             ModelType::Qwen => "Ixos-Embedder-v1 (Qwen)",
             ModelType::IxosFlashV1 => "Ixos Flash v1 (legacy)",
-            ModelType::IxosFlashV2 => "Flash Quartz",
+            ModelType::IxosFlashV2 => "Ixos Flash",
             ModelType::IxosFlashV4 => "Ixos Flash v4 (512d)",
             ModelType::IxosFlashV4Fast => "Ixos Flash v4 Fast (192d)",
+            ModelType::IxosProV2 => "Ixos Pro",
             ModelType::IxosProV1 => "Ixos Pro v1",
         }
     }
@@ -89,16 +93,17 @@ impl ModelType {
     /// Get description of the model
     pub fn description(&self) -> &'static str {
         match self {
-            ModelType::Potion => "Potion Core internal embedder used in Pro Prism fusion mode.",
+            ModelType::Potion => "Internal base embedder used by Ixos Pro pipelines.",
             ModelType::Qwen => "Distilled from Qwen3. Experimental, potentially better quality.",
             ModelType::IxosFlashV1 => "Ixos Flash v1 distilled embedder (legacy).",
-            ModelType::IxosFlashV2 => "Flash Quartz distilled embedder (default).",
+            ModelType::IxosFlashV2 => "Ixos Flash distilled embedder (default).",
             ModelType::IxosFlashV4 => {
                 "Ixos Flash v4 distilled embedder (int8, 512d, near-v2 quality)."
             }
             ModelType::IxosFlashV4Fast => {
                 "Ixos Flash v4 fast distilled embedder (int8, 192d, speed-first)."
             }
+            ModelType::IxosProV2 => "Ixos Pro distilled embedder (production pro model).",
             ModelType::IxosProV1 => "Ixos Pro v1 distilled embedder (higher quality).",
         }
     }
@@ -122,9 +127,10 @@ impl FromStr for ModelType {
             | "flash-v4-fast"
             | "ixos-flash-v4-192"
             | "ixos-flash-v4-int8-192" => Ok(ModelType::IxosFlashV4Fast),
-            "ixos-pro-v1" | "pro" | "ixos-pro" => Ok(ModelType::IxosProV1),
+            "ixos-pro-v2" | "pro-v2" | "pro" => Ok(ModelType::IxosProV2),
+            "ixos-pro-v1" | "ixos-pro" => Ok(ModelType::IxosProV1),
             _ => Err(format!(
-                "Unknown model type: {}. Use: potion, qwen, ixos-flash-v2, ixos-flash-v1, ixos-flash-v4, ixos-flash-v4-fast, or ixos-pro-v1",
+                "Unknown model type: {}. Use: ixos-flash-v2, ixos-pro-v2, potion, qwen, ixos-flash-v1, ixos-flash-v4, ixos-flash-v4-fast, or ixos-pro-v1",
                 s
             )),
         }
@@ -140,6 +146,7 @@ impl std::fmt::Display for ModelType {
             ModelType::IxosFlashV2 => write!(f, "ixos-flash-v2"),
             ModelType::IxosFlashV4 => write!(f, "ixos-flash-v4-int8-512"),
             ModelType::IxosFlashV4Fast => write!(f, "ixos-flash-v4-int8-192"),
+            ModelType::IxosProV2 => write!(f, "ixos-pro-v2"),
             ModelType::IxosProV1 => write!(f, "ixos-pro-v1"),
         }
     }
@@ -186,6 +193,8 @@ impl MmapModel2VecEmbedder {
     const IXOS_FLASH_V4_SUBDIR: &'static str = "models/ixos-flash-v4-int8-512";
     /// Ixos Flash v4 fast distilled embedder path
     const IXOS_FLASH_V4_FAST_SUBDIR: &'static str = "models/ixos-flash-v4-int8-192";
+    /// Ixos Pro v2 distilled embedder path
+    const IXOS_PRO_V2_SUBDIR: &'static str = "models/ixos-pro-v2";
     /// Ixos Pro v1 distilled embedder path
     const IXOS_PRO_V1_SUBDIR: &'static str = "models/ixos-pro-v1";
 
@@ -264,6 +273,16 @@ impl MmapModel2VecEmbedder {
                     "Ixos-Flash-v4 fast model not found. Run: python scripts/distill_model2vec_lab.py --mode flash --flash-id ixos-flash-v4-int8-192".into(),
                 ))
             }
+            ModelType::IxosProV2 => {
+                if let Some(path) = Self::find_ixos_pro_v2_model().or_else(Self::find_potion_model)
+                {
+                    tracing::info!("Using Ixos-Pro-v2 model from {:?}", path);
+                    return Self::from_path(&path);
+                }
+                Err(ModelError::LoadError(
+                    "Ixos-Pro-v2 model not found. Run: python scripts/distill_model2vec_lab.py --mode pro --pro-id ixos-pro-v2".into(),
+                ))
+            }
             ModelType::IxosProV1 => {
                 if let Some(path) = Self::find_ixos_pro_v1_model() {
                     tracing::info!("Using Ixos-Pro-v1 model from {:?}", path);
@@ -316,6 +335,11 @@ impl MmapModel2VecEmbedder {
     /// Find the Ixos-Flash-v4 fast model in standard locations
     fn find_ixos_flash_v4_fast_model() -> Option<PathBuf> {
         Self::find_model_in_locations(Self::IXOS_FLASH_V4_FAST_SUBDIR, "ixos-flash-v4-int8-192")
+    }
+
+    /// Find the Ixos-Pro-v2 model in standard locations
+    fn find_ixos_pro_v2_model() -> Option<PathBuf> {
+        Self::find_model_in_locations(Self::IXOS_PRO_V2_SUBDIR, "ixos-pro-v2")
     }
 
     /// Find the Ixos-Pro-v1 model in standard locations
@@ -456,6 +480,11 @@ impl MmapModel2VecEmbedder {
                 ModelType::IxosFlashV4Fast,
                 Self::find_ixos_flash_v4_fast_model().is_some(),
                 Self::find_ixos_flash_v4_fast_model(),
+            ),
+            (
+                ModelType::IxosProV2,
+                Self::find_ixos_pro_v2_model().is_some() || Self::find_potion_model().is_some(),
+                Self::find_ixos_pro_v2_model().or_else(Self::find_potion_model),
             ),
             (
                 ModelType::IxosProV1,
@@ -907,7 +936,7 @@ mod tests {
         let models = MmapModel2VecEmbedder::available_models();
 
         // Should return info for all known model types
-        assert_eq!(models.len(), 7);
+        assert_eq!(models.len(), 8);
 
         // Order should match the advertised list
         assert_eq!(models[0].0, ModelType::Potion);
@@ -916,7 +945,8 @@ mod tests {
         assert_eq!(models[3].0, ModelType::IxosFlashV2);
         assert_eq!(models[4].0, ModelType::IxosFlashV4);
         assert_eq!(models[5].0, ModelType::IxosFlashV4Fast);
-        assert_eq!(models[6].0, ModelType::IxosProV1);
+        assert_eq!(models[6].0, ModelType::IxosProV2);
+        assert_eq!(models[7].0, ModelType::IxosProV1);
 
         // If any model exists locally, verify path is valid
         for (model_type, available, path) in models {

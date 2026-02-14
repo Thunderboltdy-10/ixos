@@ -563,7 +563,14 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             }
         };
         if processed.mode == QueryMode::Ask && !processed.anchor_terms.is_empty() {
+            let unfiltered = lexical_results.clone();
             lexical_results = filter_lexical_by_anchors(lexical_results, &processed.anchor_terms);
+            if lexical_results.is_empty() {
+                tracing::debug!(
+                    "Ask-mode anchor filtering removed all lexical candidates; keeping unfiltered lexical set"
+                );
+                lexical_results = unfiltered;
+            }
         }
         let lexical_results_len = lexical_results.len();
         let has_lexical_results = !lexical_results.is_empty();
@@ -601,9 +608,12 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         }
 
         // Send status update
-        let _ = tx
-            .send(SearchEvent::Status("Understanding meaning...".into()))
-            .await;
+        let semantic_status = if processed.mode == QueryMode::Ask {
+            "Ask Mode active: understanding your question..."
+        } else {
+            "Understanding meaning..."
+        };
+        let _ = tx.send(SearchEvent::Status(semantic_status.into())).await;
         let semantic_start_stats = stream_stats.lock().unwrap().clone();
         let _ = tx.try_send(SearchEvent::StreamUpdate {
             stage: StreamStage::Semantic,
@@ -629,29 +639,68 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         let mut embedded_count: usize = 0;
 
         let mut semantic_results = if lexical_results.is_empty() {
-            // No lexical results, try pure semantic search
-            tokio::select! {
-                biased;
+            // Ask-mode queries should avoid search_pure to prevent full-corpus scans.
+            if processed.mode == QueryMode::Ask {
+                let ask_fallback = self
+                    .lexical_engine
+                    .search(&semantic_query, lexical_limit)
+                    .await
+                    .unwrap_or_default();
+                if ask_fallback.is_empty() {
+                    Vec::new()
+                } else {
+                    tokio::select! {
+                        biased;
 
-                _ = cancel.cancelled() => {
-                    let _ = tx.send(SearchEvent::Cancelled).await;
-                    return Ok(());
-                }
-
-                result = tokio::time::timeout(
-                    self.config.semantic_timeout,
-                    primary_engine.search_pure(&semantic_query, self.config.max_results)
-                ) => {
-                    match result {
-                        Ok(Ok(results)) => results,
-                        Ok(Err(e)) => {
-                            tracing::warn!("Pure semantic search failed: {}", e);
-                            let _ = tx.send(SearchEvent::Error(format!("Semantic search failed: {}", e))).await;
-                            return Err(e);
+                        _ = cancel.cancelled() => {
+                            let _ = tx.send(SearchEvent::Cancelled).await;
+                            return Ok(());
                         }
-                        Err(_) => {
-                            let _ = tx.send(SearchEvent::Error("Semantic search timeout".into())).await;
-                            return Err(SearchError::Timeout);
+
+                        result = tokio::time::timeout(
+                            self.config.semantic_timeout,
+                            primary_engine.rerank(&semantic_query, ask_fallback, lexical_limit)
+                        ) => {
+                            match result {
+                                Ok(Ok(results)) => results,
+                                Ok(Err(e)) => {
+                                    tracing::warn!("Ask-mode semantic rerank failed: {}", e);
+                                    let _ = tx.send(SearchEvent::Error(format!("Semantic rerank failed: {}", e))).await;
+                                    return Err(e);
+                                }
+                                Err(_) => {
+                                    let _ = tx.send(SearchEvent::Error("Semantic search timeout".into())).await;
+                                    return Err(SearchError::Timeout);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // No lexical results in keyword mode: fallback to pure semantic search.
+                tokio::select! {
+                    biased;
+
+                    _ = cancel.cancelled() => {
+                        let _ = tx.send(SearchEvent::Cancelled).await;
+                        return Ok(());
+                    }
+
+                    result = tokio::time::timeout(
+                        self.config.semantic_timeout,
+                        primary_engine.search_pure(&semantic_query, self.config.max_results)
+                    ) => {
+                        match result {
+                            Ok(Ok(results)) => results,
+                            Ok(Err(e)) => {
+                                tracing::warn!("Pure semantic search failed: {}", e);
+                                let _ = tx.send(SearchEvent::Error(format!("Semantic search failed: {}", e))).await;
+                                return Err(e);
+                            }
+                            Err(_) => {
+                                let _ = tx.send(SearchEvent::Error("Semantic search timeout".into())).await;
+                                return Err(SearchError::Timeout);
+                            }
                         }
                     }
                 }

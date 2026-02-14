@@ -61,7 +61,7 @@ export function PricingPanel() {
                         desc="Full semantic search. No index tax. No cloud."
                         features={[
                             "Complete semantic search",
-                            "Zero index tax (Ephemeral mode)",
+                            "Zero index tax (Memory mode)",
                             "100% local processing",
                             "Standard file types (PDF, TXT, MD)",
                             "Community support"
@@ -83,7 +83,7 @@ export function PricingPanel() {
                             features={[
                                 "File watch & notifications",
                                 "Developer file types (TS, PY, RS, GO)",
-                                "Journalist Mode (max privacy)",
+                                "Deep Search mode",
                                 "Priority model updates",
                                 "Direct support access"
                             ]}

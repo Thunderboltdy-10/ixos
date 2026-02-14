@@ -9,8 +9,8 @@ use ixos_protocol::entitlements::ProStatus;
 use ixos_protocol::instrumentation::ipc_send_span;
 use ixos_protocol::ixos_rank::{
     progressive::{SearchEvent, SearchMode, StreamEventKind, StreamStage, StreamStats},
-    CandidateLexicalEngine, LexicalEngine, ProgressiveSearchConfig, ProgressiveSearchEngine,
-    RankedResult, StubSemanticEngine,
+    CandidateLexicalEngine, IntentDetector, LexicalEngine, ProgressiveSearchConfig,
+    ProgressiveSearchEngine, RankedResult, StubSemanticEngine,
 };
 use ixos_protocol::security::DeviceIdentity;
 use ixos_protocol::EvidenceTag;
@@ -179,12 +179,12 @@ pub struct SearchOptions {
     pub secure_ranking: Option<bool>,
     pub context_lines: Option<usize>,
     pub cache_mode: Option<String>,
-    pub journalist_mode: Option<bool>,
+    pub deep_search: Option<bool>,
     pub secure_timing: Option<bool>,
     pub model_type: Option<String>,
     pub pro_model_type: Option<String>,
     pub search_mode: Option<String>,
-    pub is_ask_mode: Option<bool>,
+    pub is_ask_mode: Option<String>,
     pub timeout_seconds: Option<u64>,
 }
 
@@ -391,6 +391,32 @@ fn parse_search_mode(value: Option<&str>) -> SearchMode {
     }
 }
 
+fn parse_cache_mode(value: Option<&str>) -> Result<ixos_protocol::CacheMode, String> {
+    let Some(raw) = value else {
+        return Ok(ixos_protocol::CacheMode::NativeCache);
+    };
+
+    match raw.trim().to_lowercase().as_str() {
+        "native-cache" | "local" => Ok(ixos_protocol::CacheMode::NativeCache),
+        "ephemeral" | "memory" => Ok(ixos_protocol::CacheMode::Ephemeral),
+        invalid => Err(format!(
+            "Invalid cache mode '{invalid}'. Use local/native-cache or memory/ephemeral."
+        )),
+    }
+}
+
+fn ask_mode_active(value: Option<&str>, query: &str) -> bool {
+    let normalized = value.map(|v| v.trim().to_lowercase());
+    match normalized.as_deref() {
+        Some("on" | "always" | "true") => true,
+        Some("off" | "disabled" | "false") => false,
+        Some("auto" | "intent" | "detect") | None => {
+            IntentDetector::new().should_activate_ask_mode(query)
+        }
+        Some(_) => IntentDetector::new().should_activate_ask_mode(query),
+    }
+}
+
 fn resolve_search_mode(requested: Option<&str>, pro_available: bool) -> Result<SearchMode, String> {
     let mode = parse_search_mode(requested);
     if pro_available {
@@ -404,12 +430,8 @@ fn resolve_search_mode(requested: Option<&str>, pro_available: bool) -> Result<S
     }
 }
 
-fn should_eager_index_semantic(
-    is_ask_mode: bool,
-    search_mode: SearchMode,
-    lexical_probe_is_empty: bool,
-) -> bool {
-    is_ask_mode || matches!(search_mode, SearchMode::Pro) || lexical_probe_is_empty
+fn should_eager_index_semantic(search_mode: SearchMode, lexical_probe_is_empty: bool) -> bool {
+    matches!(search_mode, SearchMode::Pro) || lexical_probe_is_empty
 }
 
 /// Start a progressive search with streaming results
@@ -465,11 +487,7 @@ pub async fn search_progressive(
 
     // Cancel any existing search
     state.cancel_search();
-
-    // Handle journalist mode
-    if options.journalist_mode.unwrap_or(false) {
-        state.enable_journalist_mode();
-    }
+    state.disable_deep_search_mode();
 
     // Get cancellation token
     let cancel = state.new_search_token();
@@ -481,12 +499,16 @@ pub async fn search_progressive(
     }
 
     // Build search configuration
-    let mut config = ProgressiveSearchConfig {
-        max_results: options.limit.unwrap_or(20),
-        enable_secure_ranking: options.secure_ranking.unwrap_or(true),
-        context_lines: options.context_lines.unwrap_or(3),
-        ..Default::default()
+    let mut config = if options.deep_search.unwrap_or(false) {
+        ProgressiveSearchConfig::thorough()
+    } else {
+        ProgressiveSearchConfig::default()
     };
+    config.max_results = options.limit.unwrap_or(config.max_results);
+    config.enable_secure_ranking = options
+        .secure_ranking
+        .unwrap_or(config.enable_secure_ranking);
+    config.context_lines = options.context_lines.unwrap_or(config.context_lines);
 
     // Override timeout if provided
     if let Some(secs) = options.timeout_seconds {
@@ -542,15 +564,15 @@ pub async fn search_progressive(
 
     let pro_model_type_str = options.pro_model_type.as_deref().unwrap_or("ixos-pro-v2");
     let pro_model_type = match pro_model_type_str.to_lowercase().as_str() {
-        "ixos-pro-v2" | "pro-v2" | "pro" => ModelType::Potion,
+        "ixos-pro-v2" | "pro-v2" | "pro" => ModelType::IxosProV2,
         "potion" | "potion-base-8m-int8" => ModelType::Potion,
         _ => pro_model_type_str
             .parse::<ModelType>()
-            .unwrap_or(ModelType::Potion),
+            .unwrap_or(ModelType::IxosProV2),
     };
 
     let model_result = state.get_or_load_model(model_type);
-    let ask_mode_requested = options.is_ask_mode.unwrap_or(false);
+    let ask_mode_requested = ask_mode_active(options.is_ask_mode.as_deref(), &query);
     let use_pro = matches!(config.search_mode, SearchMode::Pro)
         || (matches!(config.search_mode, SearchMode::Auto) && !ask_mode_requested);
     let pro_model_result = if use_pro {
@@ -562,18 +584,7 @@ pub async fn search_progressive(
     } else {
         None
     };
-    let cache_mode = match options.cache_mode.as_deref() {
-        Some("native-cache" | "nativecache" | "cache" | "persistent") => {
-            ixos_protocol::CacheMode::NativeCache
-        }
-        Some("ephemeral" | "jit") => ixos_protocol::CacheMode::Ephemeral,
-        _ => ixos_protocol::CacheMode::NativeCache,
-    };
-    let cache_mode = if options.journalist_mode.unwrap_or(false) {
-        ixos_protocol::CacheMode::Ephemeral
-    } else {
-        cache_mode
-    };
+    let cache_mode = parse_cache_mode(options.cache_mode.as_deref())?;
 
     // Spawn search task
     let search_handle = tokio::spawn(async move {
@@ -651,24 +662,23 @@ pub async fn search_progressive(
         // Eager indexing can add large startup latency on big trees.
         // For Flash/Auto flows we avoid full pre-indexing unless needed.
         // If lexical preflight yields zero matches, we index so pure-semantic fallback has files.
-        let is_ask_mode = options.is_ask_mode.unwrap_or(false);
-        let lexical_probe_is_empty = if is_ask_mode || matches!(config.search_mode, SearchMode::Pro)
-        {
-            false
-        } else {
-            match lexical.search(&query, 1).await {
-                Ok(results) => results.is_empty(),
-                Err(e) => {
-                    tracing::warn!(
+        let lexical_probe_is_empty =
+            if ask_mode_requested || matches!(config.search_mode, SearchMode::Pro) {
+                false
+            } else {
+                match lexical.search(&query, 1).await {
+                    Ok(results) => results.is_empty(),
+                    Err(e) => {
+                        tracing::warn!(
                         "Lexical preflight failed, enabling semantic eager indexing fallback: {}",
                         e
                     );
-                    true
+                        true
+                    }
                 }
-            }
-        };
+            };
         let requires_eager_index =
-            should_eager_index_semantic(is_ask_mode, config.search_mode, lexical_probe_is_empty);
+            should_eager_index_semantic(config.search_mode, lexical_probe_is_empty);
         if requires_eager_index {
             if let Err(e) = semantic.index_directory(&dir_path).await {
                 tracing::warn!("Failed to index directory for semantic search: {}", e);
@@ -763,27 +773,33 @@ mod tests {
     }
 
     #[test]
-    fn eager_indexing_is_forced_for_ask_mode() {
-        assert!(should_eager_index_semantic(true, SearchMode::Flash, false));
-    }
-
-    #[test]
     fn eager_indexing_is_forced_for_pro_mode() {
-        assert!(should_eager_index_semantic(false, SearchMode::Pro, false));
+        assert!(should_eager_index_semantic(SearchMode::Pro, false));
     }
 
     #[test]
     fn eager_indexing_runs_when_lexical_probe_is_empty() {
-        assert!(should_eager_index_semantic(false, SearchMode::Flash, true));
+        assert!(should_eager_index_semantic(SearchMode::Flash, true));
     }
 
     #[test]
     fn eager_indexing_skips_when_lexical_probe_has_hits() {
-        assert!(!should_eager_index_semantic(
-            false,
-            SearchMode::Flash,
-            false
-        ));
+        assert!(!should_eager_index_semantic(SearchMode::Flash, false));
+    }
+
+    #[test]
+    fn parse_cache_mode_rejects_legacy_aliases() {
+        for legacy in ["jit", "cache", "persistent", "nativecache"] {
+            let err = parse_cache_mode(Some(legacy)).expect_err("expected cache mode parse error");
+            assert!(err.contains("Invalid cache mode"), "error was: {err}");
+        }
+    }
+
+    #[test]
+    fn ask_mode_active_uses_auto_intent_detection() {
+        assert!(ask_mode_active(Some("auto"), "where is the release notes?"));
+        assert!(ask_mode_active(None, "why is search slow?"));
+        assert!(!ask_mode_active(Some("off"), "why is search slow?"));
     }
 }
 

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Shield, Lock, ChevronDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,74 +23,108 @@ interface ModeOption {
   bgColor: string;
 }
 
+interface FloatingMenuMetrics {
+  top: number;
+  left: number;
+  width: number;
+  maxHeight: number;
+}
+
 const modes: ModeOption[] = [
   {
     id: 'ephemeral',
     icon: Zap,
-    label: 'Ephemeral Mode',
-    shortLabel: 'Ephemeral',
-    description: 'No persistence, maximum privacy',
-    details: 'Computes embeddings on-the-fly. No data written to disk. Maximum privacy.',
+    label: 'Memory Search',
+    shortLabel: 'Memory',
+    description: 'JIT embeddings in RAM only',
+    details: 'JIT computes embeddings in memory and writes nothing to disk.',
     color: 'text-accent-amber',
     bgColor: 'bg-accent-amber/10',
   },
   {
     id: 'native-cache',
     icon: Shield,
-    label: 'NativeCache Mode',
-    shortLabel: 'NativeCache',
-    description: 'Persist metadata cache for speed',
-    details: 'Stores embeddings in ADS (Windows) or xattr (Mac/Linux). Faster repeat searches. Recommended default.',
+    label: 'Local Search',
+    shortLabel: 'Local',
+    description: 'Persist local cache for repeats',
+    details: 'Uses ADS (Windows) or xattr (macOS/Linux) for fast repeat searches.',
     color: 'text-accent-teal',
     bgColor: 'bg-accent-teal/10',
   },
   {
     id: 'journalist',
     icon: Lock,
-    label: 'Journalist Mode',
-    shortLabel: 'Secure',
-    description: 'Hardened privacy profile',
-    details: 'Ephemeral + encrypted history + emergency clear (Ctrl+Shift+X). For sensitive investigations.',
+    label: 'Deep Search',
+    shortLabel: 'Deep',
+    description: 'Expanded evidence path',
+    details: 'Deep Search prioritizes richer evidence extraction while staying local.',
     color: 'text-accent-violet',
     bgColor: 'bg-accent-violet/10',
-  }
+  },
 ];
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
 
 export function ModeSwitcher({ value, onChange, className, compact = false }: ModeSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [menuMetrics, setMenuMetrics] = useState<FloatingMenuMetrics | null>(null);
+  const [showTooltip, setShowTooltip] = useState<string | null>(null);
+  const [hoveredMode, setHoveredMode] = useState<SearchMode>(value);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const selectedMode = modes.find(m => m.id === value) || modes[0];
 
-  // Calculate dropdown position to avoid overflow
+  const selectedMode = modes.find((mode) => mode.id === value) ?? modes[0];
+  const hoveredDetails = useMemo(
+    () => modes.find((mode) => mode.id === hoveredMode) ?? selectedMode,
+    [hoveredMode, selectedMode]
+  );
+
   useEffect(() => {
-    if (!isOpen || !dropdownRef.current || !buttonRef.current) return;
+    if (!isOpen) {
+      setHoveredMode(value);
+      return;
+    }
 
-    const updatePosition = () => {
+    const updateMenuMetrics = () => {
       const buttonRect = buttonRef.current?.getBoundingClientRect();
-      const dropdownRect = dropdownRef.current?.getBoundingClientRect();
+      if (!buttonRect) return;
 
-      if (!buttonRect || !dropdownRect) return;
-
-      // Calculate space below and above the button
+      const margin = 12;
+      const preferredWidth = 360;
+      const rowHeight = 48;
+      const footerHeight = 72;
+      const estimatedHeight = rowHeight * modes.length + footerHeight + 16;
       const spaceBelow = window.innerHeight - buttonRect.bottom;
       const spaceAbove = buttonRect.top;
-      const dropdownHeight = dropdownRect.height;
+      const shouldOpenTop = spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
+      const availableHeight = shouldOpenTop
+        ? Math.max(180, spaceAbove - margin - 8)
+        : Math.max(180, window.innerHeight - buttonRect.bottom - margin - 8);
+      const width = Math.min(preferredWidth, window.innerWidth - margin * 2);
+      const left = clamp(buttonRect.right - width, margin, Math.max(margin, window.innerWidth - width - margin));
+      const top = shouldOpenTop
+        ? Math.max(margin, buttonRect.top - 8 - availableHeight)
+        : Math.min(window.innerHeight - margin - availableHeight, buttonRect.bottom + 8);
 
-      // If not enough space below and more space above, position dropdown above
-      if (spaceBelow < dropdownHeight + 10 && spaceAbove > dropdownHeight + 10) {
-        setDropdownPosition('top');
-      } else {
-        setDropdownPosition('bottom');
-      }
+      setDropdownPosition(shouldOpenTop ? 'top' : 'bottom');
+      setMenuMetrics({
+        top,
+        left,
+        width,
+        maxHeight: availableHeight,
+      });
     };
 
-    // Use setTimeout to ensure DOM is ready
-    const timer = setTimeout(updatePosition, 0);
-    return () => clearTimeout(timer);
-  }, [isOpen]);
+    updateMenuMetrics();
+    window.addEventListener('resize', updateMenuMetrics);
+    window.addEventListener('scroll', updateMenuMetrics, true);
+    return () => {
+      window.removeEventListener('resize', updateMenuMetrics);
+      window.removeEventListener('scroll', updateMenuMetrics, true);
+    };
+  }, [isOpen, value]);
 
   const handleSelect = (mode: SearchMode) => {
     onChange(mode);
@@ -98,7 +132,6 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
   };
 
   if (compact) {
-    // Compact inline version for search bar area
     return (
       <div className={cn('flex items-center gap-1 p-1 bg-graphite-2 rounded-md overflow-hidden border border-stroke-hairline', className)}>
         {modes.map((mode) => (
@@ -127,7 +160,7 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
                   exit={{ opacity: 0, y: 5 }}
                   className={cn(
                     'absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50',
-                    'w-48 p-2 rounded-lg',
+                    'w-52 p-2 rounded-lg',
                     'bg-graphite-2 border border-stroke-hairline shadow-lift',
                     'pointer-events-none'
                   )}
@@ -148,12 +181,11 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
     );
   }
 
-  // Full dropdown version
   return (
     <div className={cn('relative', className)}>
       <button
         ref={buttonRef}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((open) => !open)}
         className={cn(
           'flex items-center gap-2 px-2.5 py-1.5 rounded-md',
           'bg-transparent hover:bg-graphite-3/50',
@@ -174,7 +206,7 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
       </button>
 
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && menuMetrics && (
           <>
             <div
               className="fixed inset-0 z-[130]"
@@ -182,52 +214,56 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
             />
 
             <motion.div
-              ref={dropdownRef}
               initial={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
               transition={{ duration: 0.15 }}
-              className={cn(
-                'absolute z-[140]',
-                dropdownPosition === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
-                'right-0',
-                'w-52',
-                'bg-graphite-2 rounded-xl border border-stroke-hairline',
-                'shadow-lift overflow-hidden'
-              )}
+              className="fixed z-[140] rounded-xl border border-stroke-hairline bg-graphite-2 shadow-lift overflow-hidden"
+              style={{
+                top: menuMetrics.top,
+                left: menuMetrics.left,
+                width: menuMetrics.width,
+                maxHeight: menuMetrics.maxHeight,
+              }}
             >
-              {modes.map((mode) => (
-                <button
-                  key={mode.id}
-                  onClick={() => handleSelect(mode.id)}
-                  className={cn(
-                    'w-full flex items-center gap-2.5 px-3 py-2.5',
-                    'hover:bg-graphite-3 transition-colors duration-150',
-                    'text-left',
-                    mode.id === value && 'bg-graphite-3'
-                  )}
-                >
-                  <mode.icon className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
-                  <span className="text-[12px] font-medium text-porcelain whitespace-nowrap">
-                    {mode.label}
-                  </span>
-                  <span className="text-[11.5px] text-fg-secondary truncate flex-1">
-                    {mode.description}
-                  </span>
-                  {mode.id === 'native-cache' && (
-                    <span className="text-[9px] px-1 py-px rounded bg-accent-amber/15 text-accent-amber shrink-0">
-                      Default
+              <div className="max-h-[calc(100%-72px)] overflow-y-auto">
+                {modes.map((mode) => (
+                  <button
+                    key={mode.id}
+                    onClick={() => handleSelect(mode.id)}
+                    onMouseEnter={() => setHoveredMode(mode.id)}
+                    className={cn(
+                      'w-full flex items-center gap-2.5 px-3 py-2.5',
+                      'hover:bg-graphite-3 transition-colors duration-150',
+                      'text-left',
+                      mode.id === value && 'bg-graphite-3'
+                    )}
+                  >
+                    <mode.icon className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
+                    <span className="text-[12px] font-medium text-porcelain whitespace-nowrap">
+                      {mode.label}
                     </span>
-                  )}
-                  {mode.id === value && (
-                    <Check className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
-                  )}
-                </button>
-              ))}
+                    <span className="text-[11.5px] text-fg-secondary truncate flex-1">
+                      {mode.description}
+                    </span>
+                    {mode.id === 'native-cache' && (
+                      <span className="text-[9px] px-1 py-px rounded bg-accent-amber/15 text-accent-amber shrink-0">
+                        Default
+                      </span>
+                    )}
+                    {mode.id === value && (
+                      <Check className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
+                    )}
+                  </button>
+                ))}
+              </div>
 
-              <div className="px-3 py-2 bg-graphite-1 border-t border-stroke-hairline">
-                <p className="text-[10px] text-fg-secondary leading-tight">
-                  Ephemeral is local-only, NativeCache is faster on repeat, Journalist adds strict safeguards.
+              <div className="h-[72px] border-t border-stroke-hairline bg-graphite-1 px-3 py-2">
+                <p className={cn('text-[10px] font-semibold uppercase tracking-[0.12em]', hoveredDetails.color)}>
+                  {hoveredDetails.shortLabel}
+                </p>
+                <p className="mt-1 text-[10px] text-fg-secondary leading-tight">
+                  {hoveredDetails.details}
                 </p>
               </div>
             </motion.div>

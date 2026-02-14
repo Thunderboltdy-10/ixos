@@ -49,12 +49,12 @@ pub struct Cli {
 /// Cache mode for embedding storage (CLI compatible)
 #[derive(Clone, Copy, Debug, Default, ValueEnum)]
 pub enum CliCacheMode {
-    /// Native cache mode: persist embeddings to ADS/xattr (recommended)
+    /// Local mode: persist embeddings to ADS/xattr (recommended)
     #[default]
-    #[value(alias = "cache")]
+    #[value(alias = "local")]
     NativeCache,
-    /// Ephemeral mode: embeddings in memory only
-    #[value(alias = "jit")]
+    /// Memory mode: embeddings in memory only
+    #[value(alias = "memory")]
     Ephemeral,
 }
 
@@ -79,7 +79,7 @@ pub enum CliSearchMode {
 /// Flash embedding model selector (CLI compatible)
 #[derive(Clone, Copy, Debug, Default, ValueEnum)]
 pub enum CliFlashModelType {
-    /// Flash Quartz (ixos-flash-v2): Default fast model
+    /// Ixos Flash (ixos-flash-v2): Default fast model
     #[default]
     IxosFlashV2,
     /// Flash Core (ixos-flash-v1): Legacy flash model
@@ -99,9 +99,8 @@ impl From<CliFlashModelType> for crate::ixos_embed::ModelType {
 /// Pro model selector (CLI compatible)
 #[derive(Clone, Copy, Debug, Default, ValueEnum)]
 pub enum CliProModelType {
-    /// Pro Prism (ixos-pro-v2): Fusion/cascade (Flash Quartz + Potion Core + lexical)
+    /// Ixos Pro (ixos-pro-v2): Fusion/cascade search model
     #[default]
-    #[value(alias = "potion", alias = "potion-base-8m-int8", hide = true)]
     IxosProV2,
     /// Ixos-Pro-v1: Legacy Pro model
     #[value(hide = true)]
@@ -111,7 +110,7 @@ pub enum CliProModelType {
 impl From<CliProModelType> for crate::ixos_embed::ModelType {
     fn from(model: CliProModelType) -> Self {
         match model {
-            CliProModelType::IxosProV2 => crate::ixos_embed::ModelType::Potion,
+            CliProModelType::IxosProV2 => crate::ixos_embed::ModelType::IxosProV2,
             CliProModelType::IxosProV1 => crate::ixos_embed::ModelType::IxosProV1,
         }
     }
@@ -168,7 +167,7 @@ pub enum Commands {
         #[arg(long)]
         no_secure_ranking: bool,
 
-        /// Cache mode: native-cache (persist to ADS/xattr) or ephemeral (memory only)
+        /// Cache mode: local (ADS/xattr persistence) or memory (RAM only)
         #[arg(long, value_enum)]
         cache_mode: Option<CliCacheMode>,
 
@@ -180,11 +179,11 @@ pub enum Commands {
         #[arg(long, value_enum)]
         search_mode: Option<CliSearchMode>,
 
-        /// Flash model to use (default: Flash Quartz / ixos-flash-v2)
+        /// Flash model to use (default: Ixos Flash / ixos-flash-v2)
         #[arg(long, value_enum)]
         model: Option<CliFlashModelType>,
 
-        /// Pro model to use for auto/pro modes (default: Pro Prism / ixos-pro-v2)
+        /// Pro model to use for auto/pro modes (default: Ixos Pro / ixos-pro-v2)
         #[arg(long, value_enum)]
         pro_model: Option<CliProModelType>,
 
@@ -199,14 +198,9 @@ pub enum Commands {
         #[arg(short = 'C', long, default_value = "5")]
         context: usize,
 
-        /// Enable journalist mode (maximum privacy, memory-only, auto-clear)
-        ///
-        /// In journalist mode:
-        /// - Forces Ephemeral cache mode (no persistent storage)
-        /// - All data cleared after search
-        /// - No forensic artifacts
-        #[arg(long)]
-        journalist_mode: bool,
+        /// Enable Deep Search mode (thorough, slower, more comprehensive)
+        #[arg(long = "deep-search")]
+        deep_search: bool,
     },
 
     /// Index directories for faster search
@@ -396,7 +390,7 @@ pub enum CacheCommands {
 
     /// Set cache mode preference
     Mode {
-        /// Mode: ephemeral (memory-only) or persistent (ADS/xattr)
+        /// Mode: memory (RAM only) or local (ADS/xattr persistence)
         mode: CliCacheModePreference,
     },
 
@@ -466,10 +460,10 @@ pub enum ModelCommands {
 /// Cache mode preference for CLI
 #[derive(Clone, Copy, Debug, ValueEnum)]
 pub enum CliCacheModePreference {
-    /// Memory-only, no persistence (maximum privacy)
-    Ephemeral,
-    /// Persist to ADS/xattr when available
-    Persistent,
+    /// Memory-only, no persistence.
+    Memory,
+    /// Persist to ADS/xattr when available.
+    Local,
 }
 
 // =============================================================================
@@ -703,7 +697,7 @@ mod tests {
             "search",
             "test",
             "--cache-mode",
-            "cache",
+            "local",
             "--stub-model",
         ])
         .unwrap();
@@ -735,8 +729,9 @@ mod tests {
     }
 
     #[test]
-    fn test_search_cache_mode_legacy_alias_jit() {
-        let cli = Cli::try_parse_from(["ixos", "search", "test", "--cache-mode", "jit"]).unwrap();
+    fn test_search_cache_mode_memory_alias() {
+        let cli =
+            Cli::try_parse_from(["ixos", "search", "test", "--cache-mode", "memory"]).unwrap();
 
         match cli.command {
             Commands::Search { cache_mode, .. } => {
@@ -744,6 +739,20 @@ mod tests {
             }
             _ => panic!("Expected Search command"),
         }
+    }
+
+    #[test]
+    fn test_search_cache_mode_legacy_aliases_rejected() {
+        for legacy in ["jit", "cache", "persistent", "nativecache"] {
+            let parsed = Cli::try_parse_from(["ixos", "search", "test", "--cache-mode", legacy]);
+            assert!(parsed.is_err(), "legacy alias should fail: {legacy}");
+        }
+    }
+
+    #[test]
+    fn test_journalist_mode_flag_removed() {
+        let parsed = Cli::try_parse_from(["ixos", "search", "test", "--journalist-mode"]);
+        assert!(parsed.is_err(), "legacy deep-search flag alias should fail");
     }
 
     #[test]

@@ -20,14 +20,14 @@ class Combo:
     search_mode: str
     progressive: bool
     secure_timing: bool
-    journalist_mode: bool
+    deep_search: bool
 
 
 def build_combos() -> List[Combo]:
     combos: List[Combo] = []
     idx = 1
-    for cache_mode, search_mode, progressive, secure_timing, journalist_mode in itertools.product(
-        ["native-cache", "ephemeral"],
+    for cache_mode, search_mode, progressive, secure_timing, deep_search in itertools.product(
+        ["local", "memory"],
         ["flash", "auto", "pro"],
         [False, True],
         [False, True],
@@ -40,7 +40,7 @@ def build_combos() -> List[Combo]:
                 search_mode=search_mode,
                 progressive=progressive,
                 secure_timing=secure_timing,
-                journalist_mode=journalist_mode,
+                deep_search=deep_search,
             )
         )
         idx += 1
@@ -96,8 +96,8 @@ def parse_cache_stats(bin_path: Path, env: Dict[str, str]) -> Tuple[int, str]:
 def ensure_config_roundtrip(bin_path: Path, env: Dict[str, str]) -> List[str]:
     failures: List[str] = []
     checks = [
-        ("search.cache_mode", "cache", "native-cache"),
-        ("search.cache_mode", "jit", "ephemeral"),
+        ("search.cache_mode", "local", "native-cache"),
+        ("search.cache_mode", "memory", "ephemeral"),
         ("search.cache_mode", "native-cache", "native-cache"),
         ("search.cache_mode", "ephemeral", "ephemeral"),
         ("search.search_mode", "flash", "flash"),
@@ -154,8 +154,8 @@ def run_combo(combo: Combo, bin_path: Path, env: Dict[str, str]) -> Tuple[bool, 
         cmd.append("--progressive")
     if combo.secure_timing:
         cmd.append("--secure-timing")
-    if combo.journalist_mode:
-        cmd.append("--journalist-mode")
+    if combo.deep_search:
+        cmd.append("--deep-search")
 
     result = run_cmd(cmd, env=env)
     if result.returncode != 0:
@@ -205,19 +205,19 @@ def run_combo(combo: Combo, bin_path: Path, env: Dict[str, str]) -> Tuple[bool, 
     if cache_after_err:
         issues.append(cache_after_err)
 
-    if combo.journalist_mode and not cache_before_err and not cache_after_err:
+    if combo.deep_search and not cache_before_err and not cache_after_err:
         if cached_after > cached_before:
             issues.append(
-                f"journalist mode wrote cache entries ({cached_before} -> {cached_after})"
+                f"deep search wrote cache entries unexpectedly ({cached_before} -> {cached_after})"
             )
 
     if (
-        combo.cache_mode == "native-cache"
-        and not combo.journalist_mode
+        combo.cache_mode in ("local", "native-cache")
+        and not combo.deep_search
         and not cache_after_err
         and cached_after == 0
     ):
-        issues.append("native-cache mode produced zero cached files")
+        issues.append("local mode produced zero cached files")
 
     return (len(issues) == 0), issues
 
@@ -245,10 +245,10 @@ def markdown_report(rows: List[Tuple[Combo, bool, List[str]]], extra_failures: L
     lines.append(f"- Generated: {datetime.now(timezone.utc).isoformat()}")
     lines.append("- Corpus: `corpus_tiny`")
     lines.append(f"- Combinations: `{len(rows)}`")
-    lines.append("- Dimensions: cache_mode x search_mode x progressive x secure_timing x journalist_mode")
+    lines.append("- Dimensions: cache_mode x search_mode x progressive x secure_timing x deep_search")
     lines.append("")
     lines.append(
-        "| # | Cache | Search | Progressive | SecureTiming | Journalist | Status | Notes |"
+        "| # | Cache | Search | Progressive | SecureTiming | DeepSearch | Status | Notes |"
     )
     lines.append("|---|---|---|---|---|---|---|---|")
 
@@ -257,7 +257,7 @@ def markdown_report(rows: List[Tuple[Combo, bool, List[str]]], extra_failures: L
         lines.append(
             f"| {combo.id} | {combo.cache_mode} | {combo.search_mode} | "
             f"{'on' if combo.progressive else 'off'} | {'on' if combo.secure_timing else 'off'} | "
-            f"{'on' if combo.journalist_mode else 'off'} | {'PASS' if ok else 'FAIL'} | {notes} |"
+            f"{'on' if combo.deep_search else 'off'} | {'PASS' if ok else 'FAIL'} | {notes} |"
         )
 
     if extra_failures:

@@ -880,3 +880,55 @@
   1. Add suite-consistent quality delta enforcement inside release-check.
   2. Add bench jitter controls and repeated-batch median reporting.
   3. Add workflow-level installer/blob smoke verification.
+## Entry 033 - Major overhaul integration pass (naming, deep search, ask auto, CI/CLI distribution, marketing refresh)
+- Date/Time: 2026-02-14
+- Branch/Commit: (working tree)
+- Goal: Implement the cross-surface overhaul plan with backend correctness fixes, desktop/landing UX refresh, CI/workflow hardening, and validation.
+- Commands run:
+  - Backend/tests/build:
+    - `cargo test -q`
+    - `cargo test --test settings_matrix -q`
+    - `cargo build --release`
+    - `cargo fmt --all`
+  - Frontend/site:
+    - `npm --prefix ui run build`
+    - `npm --prefix ixos-site run build`
+  - CLI/runtime smoke:
+    - `target/release/ixos.exe search "test" --dir . --stub-model --format json --limit 1`
+    - `target/release/ixos.exe search "test" --deep-search --dir . --stub-model --format json --limit 1`
+    - memory-mode no-write check via:
+      - `target/release/ixos.exe cache clear --dir corpus_tiny --force`
+      - `target/release/ixos.exe cache stats --dir corpus_tiny --json` (before/mid/after two memory searches)
+    - ask auto status check:
+      - `target/release/ixos.exe search "what is the main config?" --dir . --stub-model --progressive --format json --limit 1`
+  - Benchmark correctness check:
+    - `target/release/ixos-big-bench.exe --dir corpus_tiny --queries-file reports/tmp_bench_queries.json --runs 2 --cache-mode ephemeral --model ixos-flash-v2 --output-dir reports`
+  - Script/workflow sanity:
+    - `bash -n scripts/install.sh`
+    - powershell parse check for `scripts/install.ps1`
+- Outputs saved to:
+  - `reports/big_bench_20260214_131205.json`
+  - `docs/ARCHITECTURE_AUDIT_2026-02.md`
+  - updated CI workflows and install scripts:
+    - `.github/workflows/release.yml`
+    - `.github/workflows/cli-release.yml`
+    - `scripts/install.sh`
+    - `scripts/install.ps1`
+- Key results:
+  - Overhaul landed across Rust/Tauri/UI/landing with new naming and deep-search/ask-mode behavior.
+  - `ixos-big-bench` bug fixes verified:
+    - warm flag now only cold for first query of first run
+    - walk timing populated per record
+  - Ask mode auto path confirmed by progressive status message: `Ask Mode active: understanding your question...`
+  - Memory mode cache behavior confirmed: `cached_files` stayed `0` across repeated searches.
+  - Validation all green:
+    - `cargo test -q`: PASS
+    - `cargo test --test settings_matrix -q`: PASS
+    - `npm --prefix ui run build`: PASS
+    - `npm --prefix ixos-site run build`: PASS
+- Decision: KEEP
+- Next:
+  1. Execute branch CI on GitHub and confirm 3-platform release workflow stability with links.
+  2. Finish internal symbol cleanup (`journalist` naming debt) where safe.
+  3. Add post-release artifact smoke checks for desktop + CLI packages.
+- Update (2026-02-14): python scripts/run_settings_matrix.py PASS (eports/settings_matrix_2026-02-14.md).

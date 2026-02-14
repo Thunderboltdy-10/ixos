@@ -3,7 +3,7 @@
 //! Manages shared state across the Tauri application including:
 //! - Search cancellation tokens
 //! - Configuration cache
-//! - Journalist mode state
+//! - Deep Search mode state
 //! - Cached directory for faster repeated searches
 
 use crate::commands::entitlement_manager::EntitlementManager;
@@ -52,8 +52,8 @@ impl CachedDirectory {
 pub struct AppState {
     /// Current search cancellation token
     pub cancel_token: Arc<Mutex<Option<CancellationToken>>>,
-    /// Journalist mode state
-    pub journalist_mode: Arc<Mutex<ixos_protocol::journalist_mode::JournalistMode>>,
+    /// Deep Search mode state
+    pub deep_search_mode: Arc<Mutex<ixos_protocol::journalist_mode::JournalistMode>>,
     /// Cached directory for faster repeated searches
     pub cached_directory: Arc<Mutex<Option<CachedDirectory>>>,
     /// Cached embedding models by type
@@ -79,7 +79,7 @@ impl AppState {
 
         Self {
             cancel_token: Arc::new(Mutex::new(None)),
-            journalist_mode: Arc::new(Mutex::new(
+            deep_search_mode: Arc::new(Mutex::new(
                 ixos_protocol::journalist_mode::JournalistMode::new(),
             )),
             cached_directory: Arc::new(Mutex::new(None)),
@@ -130,24 +130,39 @@ impl AppState {
         token
     }
 
-    /// Enable journalist mode
+    /// Enable Deep Search mode
+    pub fn enable_deep_search_mode(&self) {
+        self.deep_search_mode.lock().enable();
+    }
+
+    /// Disable Deep Search mode
+    pub fn disable_deep_search_mode(&self) {
+        self.deep_search_mode.lock().disable();
+    }
+
+    /// Check if Deep Search mode is enabled
+    pub fn is_deep_search_mode(&self) -> bool {
+        self.deep_search_mode.lock().is_enabled()
+    }
+
+    /// Backward-compatible alias for legacy callers.
     pub fn enable_journalist_mode(&self) {
-        self.journalist_mode.lock().enable();
+        self.enable_deep_search_mode();
     }
 
-    /// Disable journalist mode
+    /// Backward-compatible alias for legacy callers.
     pub fn disable_journalist_mode(&self) {
-        self.journalist_mode.lock().disable();
+        self.disable_deep_search_mode();
     }
 
-    /// Check if journalist mode is enabled
+    /// Backward-compatible alias for legacy callers.
     pub fn is_journalist_mode(&self) -> bool {
-        self.journalist_mode.lock().is_enabled()
+        self.is_deep_search_mode()
     }
 
     /// Emergency clear all sensitive data
     pub fn emergency_clear(&self) {
-        self.journalist_mode.lock().emergency_clear();
+        self.deep_search_mode.lock().emergency_clear();
     }
 
     pub fn get_or_load_model(

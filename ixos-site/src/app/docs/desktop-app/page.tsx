@@ -22,16 +22,16 @@ export default function DocsDesktopAppPage() {
       <h2>Search flow</h2>
       <ol>
         <li>Query enters progressive pipeline (lexical candidate pass first).</li>
-        <li>Semantic rerank applies selected model (Flash Quartz, Pro Prism, or Potion Core).</li>
+        <li>Semantic rerank applies the selected user model (Ixos Flash or Ixos Pro).</li>
         <li>Evidence/snippet extraction runs for explainability.</li>
         <li>Results stream continuously to UI, then finalize with ranking metadata.</li>
       </ol>
 
-      <h2>Privacy and cache modes</h2>
+      <h2>Privacy and search modes</h2>
       <ul>
-        <li><strong>NativeCache (default):</strong> ADS/xattr backed persistent embedding cache.</li>
-        <li><strong>Ephemeral:</strong> memory-only embeddings, no persistent cache writes.</li>
-        <li><strong>Journalist:</strong> hardened profile built on Ephemeral + strict controls.</li>
+        <li><strong>Local (default):</strong> ADS/xattr backed persistent embedding cache.</li>
+        <li><strong>Memory:</strong> memory-only embeddings, no persistent cache writes.</li>
+        <li><strong>Deep Search:</strong> expanded query understanding with stronger evidence fusion.</li>
       </ul>
 
       <h2>Ask Mode contract</h2>
@@ -45,7 +45,7 @@ export default function DocsDesktopAppPage() {
       <ol>
         <li>Sign-in/sign-out and entitlement refresh paths pass.</li>
         <li>Model list and model switching works in UI and CLI JSON output.</li>
-        <li>Mode names are consistent: NativeCache/Ephemeral across UI, CLI, docs.</li>
+        <li>Mode names are consistent: Local/Memory/Deep Search across UI, CLI, docs.</li>
         <li>Search and Ask Mode behavior match expected confidence gating.</li>
       </ol>
 

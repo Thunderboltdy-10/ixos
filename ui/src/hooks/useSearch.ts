@@ -88,7 +88,7 @@ export function useSearch() {
     statusMessage: store.statusMessage,
     errorMessage: store.errorMessage,
     selectedIndex: store.selectedIndex,
-    journalistMode: store.journalistMode,
+    deepSearchMode: store.deepSearchMode,
     cacheMode: store.cacheMode,
     streamStage: store.streamStage,
     streamStats: store.streamStats,
@@ -103,7 +103,7 @@ export function useSearch() {
     // Actions
     setQuery: handleQueryChange,
     setDirectory: handleDirectoryChange,
-    setJournalistMode: store.setJournalistMode,
+    setDeepSearchMode: store.setDeepSearchMode,
     setCacheMode: store.setCacheMode,
     startSearch: store.startSearch,
     cancelSearch: store.cancelSearch,

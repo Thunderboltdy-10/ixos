@@ -468,3 +468,37 @@
 - Evidence (links to /reports or output files): reports/ralph/iteration_13_20260213_231055.md, reports/ralph/comparison_13_20260213_231055.md, reports/ralph/comparison_turn_20260213_231310.md, models/lab/results_prism_iter_2026-02-13_post_ui.json
 - Risks: Short-term variance noise can trigger churn if interpreted as structural regression.
 - Follow-ups: Add repeated-batch median and jitter controls to comparator/report pipeline.
+- Decision: Remove legacy runtime cache aliases (`jit`, `cache`, `persistent`, `nativecache`) from CLI/Tauri parsing paths while preserving canonical `local/native-cache` and `memory/ephemeral`.
+- Options considered: keep all legacy aliases; remove aliases only in UI; remove aliases in all runtime entrypoints.
+- Why chosen: User requirement was explicit to remove JIT/Cache compatibility and keep naming coherent.
+- Evidence (links to /reports or output files): src/main.rs, src/cli/commands.rs, src/cli/config.rs, src-tauri/src/commands/search.rs, src/bin/ixos-perf-suite.rs
+- Risks: Older scripts/config snippets using removed aliases now fail fast.
+- Follow-ups: Update remaining doc examples/scripts to only use local/memory wording.
+
+- Decision: Ask mode UI override was removed and frontend now always sends `isAskMode: auto` while backend intent detection drives activation.
+- Options considered: keep UI toggle; soft-deprecate toggle; fully remove override and centralize in backend.
+- Why chosen: Fixes keyword-toggle brittleness and aligns behavior between desktop and CLI.
+- Evidence (links to /reports or output files): ui/src/stores/searchStore.ts, ui/src/lib/types.ts, src/ixos_rank/ask_mode/intent_detector.rs, src-tauri/src/commands/search.rs
+- Risks: Users lose manual forced-ask control in UI.
+- Follow-ups: If needed, reintroduce explicit advanced setting later with clear semantics.
+
+- Decision: Replace journalist privacy behavior with deep-search thoroughness behavior and preserve search history in deep-search mode.
+- Options considered: keep journalist semantics; dual-mode split; repurpose mode as deep-search.
+- Why chosen: Matches product direction (comprehensive search mode, Pro value) and removes forced memory-only side effects.
+- Evidence (links to /reports or output files): src/journalist_mode.rs, src/ixos_rank/semantic_engine.rs, src/main.rs, ui/src/stores/searchStore.ts
+- Risks: Internal `journalist` symbol debt remains in some compatibility paths.
+- Follow-ups: complete symbol cleanup pass in non-user-facing modules.
+
+- Decision: CI release workflow now treats models as runtime downloads (not bundled resources) and adds resilient UI dependency installation.
+- Options considered: keep current resource globs and strict install; create placeholder dirs only; remove bundled resources + add install fallback + Windows stubs.
+- Why chosen: Fixes cross-platform packaging failures (Rollup optional binary issue, missing model paths in Windows Tauri builds).
+- Evidence (links to /reports or output files): .github/workflows/release.yml, src-tauri/tauri.conf.json
+- Risks: Requires runtime model downloader path to remain healthy.
+- Follow-ups: add workflow smoke checks for runtime download path after release.
+
+- Decision: Add dedicated CLI release pipeline and install scripts (`install.sh`, `install.ps1`) keyed to `cli-v*` tags.
+- Options considered: keep pro-module artifact workflow only; add partial packaging scripts; full multi-platform CLI release with checksums.
+- Why chosen: Establishes explicit install/distribution story for CLI.
+- Evidence (links to /reports or output files): .github/workflows/cli-release.yml, scripts/install.sh, scripts/install.ps1
+- Risks: Tag naming and asset naming must stay aligned with installer expectations.
+- Follow-ups: publish and verify first `cli-v*` release artifacts and checksums in CI logs.

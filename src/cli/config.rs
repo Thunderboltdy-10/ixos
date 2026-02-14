@@ -216,9 +216,9 @@ fn default_cache_mode() -> String {
 
 fn normalize_cache_mode(value: &str) -> String {
     match value.trim().to_lowercase().as_str() {
-        "native-cache" | "nativecache" | "cache" | "persistent" => "native-cache".to_string(),
-        "ephemeral" | "jit" | "memory" | "memory-only" => "ephemeral".to_string(),
-        _ => default_cache_mode(),
+        "native-cache" | "local" => "native-cache".to_string(),
+        "ephemeral" | "memory" => "ephemeral".to_string(),
+        _ => value.trim().to_lowercase(),
     }
 }
 
@@ -551,13 +551,13 @@ impl IxosConfig {
             }
             ["search", "cache_mode"] => {
                 let normalized = normalize_cache_mode(value);
-                if !["native-cache", "ephemeral", "cache", "jit", "persistent"]
+                if !["native-cache", "ephemeral", "local", "memory"]
                     .contains(&value.trim().to_lowercase().as_str())
                 {
                     return Err(ConfigError::InvalidValue {
                         key: key.to_string(),
                         value: value.to_string(),
-                        expected: "native-cache or ephemeral".to_string(),
+                        expected: "native-cache/local or ephemeral/memory".to_string(),
                     });
                 }
                 self.search.cache_mode = normalized;
@@ -906,7 +906,7 @@ mod tests {
         let legacy = r#"
 [search]
 personal_ranking_enabled = true
-cache_mode = "jit"
+cache_mode = "memory"
 "#;
         std::fs::write(&config_path, legacy).unwrap();
 
@@ -919,10 +919,19 @@ cache_mode = "jit"
     #[test]
     fn test_cache_mode_aliases_are_normalized() {
         let mut config = IxosConfig::default();
-        config.set("search.cache_mode", "jit").unwrap();
+        config.set("search.cache_mode", "memory").unwrap();
         assert_eq!(config.search.cache_mode, "ephemeral");
 
-        config.set("search.cache_mode", "cache").unwrap();
+        config.set("search.cache_mode", "local").unwrap();
         assert_eq!(config.search.cache_mode, "native-cache");
+    }
+
+    #[test]
+    fn test_cache_mode_legacy_aliases_are_rejected() {
+        let mut config = IxosConfig::default();
+        for legacy in ["jit", "cache", "persistent", "nativecache", "memory-only"] {
+            let result = config.set("search.cache_mode", legacy);
+            assert!(result.is_err(), "legacy alias should fail: {legacy}");
+        }
     }
 }

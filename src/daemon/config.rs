@@ -27,8 +27,9 @@ pub struct DaemonConfig {
     /// IPC socket/pipe path
     pub ipc_path: PathBuf,
 
-    /// Enable journalistMode (no cache persistence)
-    pub journalist_mode: bool,
+    /// Enable deep search mode (no cache persistence)
+    #[serde(default, alias = "journalist_mode")]
+    pub deep_search_mode: bool,
 
     /// Maximum memory usage for indexing (bytes)
     pub max_memory_bytes: usize,
@@ -49,7 +50,7 @@ impl Default for DaemonConfig {
             batch_size: 50,
             persistent_cache: true,
             ipc_path: Self::default_ipc_path(),
-            journalist_mode: false,
+            deep_search_mode: false,
             max_memory_bytes: 256 * 1024 * 1024, // 256 MB
             index_extensions: vec![
                 "txt".into(),
@@ -89,13 +90,18 @@ impl DaemonConfig {
         }
     }
 
-    /// Create config for journalist mode (no persistence)
-    pub fn journalist() -> Self {
+    /// Create config for deep search mode (no persistence)
+    pub fn deep_search() -> Self {
         Self {
             persistent_cache: false,
-            journalist_mode: true,
+            deep_search_mode: true,
             ..Default::default()
         }
+    }
+
+    /// Backward-compatible alias for legacy callers.
+    pub fn journalist() -> Self {
+        Self::deep_search()
     }
 
     /// Get the default IPC path for the current platform
@@ -153,14 +159,14 @@ mod tests {
     fn test_default_config() {
         let config = DaemonConfig::default();
         assert!(config.validate().is_ok());
-        assert!(!config.journalist_mode);
+        assert!(!config.deep_search_mode);
         assert!(config.persistent_cache);
     }
 
     #[test]
-    fn test_journalist_config() {
-        let config = DaemonConfig::journalist();
-        assert!(config.journalist_mode);
+    fn test_deep_search_config() {
+        let config = DaemonConfig::deep_search();
+        assert!(config.deep_search_mode);
         assert!(!config.persistent_cache);
     }
 

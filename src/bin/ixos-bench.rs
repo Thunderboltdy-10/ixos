@@ -19,8 +19,10 @@ use ixos_protocol::SecureEmbedder;
 #[derive(Clone, Copy, Debug, Default, ValueEnum)]
 enum BenchCacheMode {
     #[default]
-    Jit,
-    Cache,
+    #[value(alias = "cache")]
+    NativeCache,
+    #[value(alias = "jit")]
+    Ephemeral,
 }
 
 #[derive(Clone, Copy, Debug, Default, ValueEnum)]
@@ -45,8 +47,8 @@ struct BenchArgs {
     /// Number of runs
     #[arg(long, default_value = "10")]
     runs: usize,
-    /// Cache mode: jit or cache (ADS/xattr)
-    #[arg(long, value_enum, default_value = "jit")]
+    /// Cache mode: native-cache or ephemeral (legacy aliases: cache/jit)
+    #[arg(long, value_enum, default_value = "native-cache")]
     cache_mode: BenchCacheMode,
     /// Model to use
     #[arg(long, value_enum, default_value = "potion")]
@@ -153,10 +155,10 @@ async fn main() -> anyhow::Result<()> {
         .map_err(|e| anyhow::anyhow!("Model load failed: {}", e))?;
     let embedder = SecureEmbedder::new_fast(std::sync::Arc::new(model));
     let cache_mode = match args.cache_mode {
-        BenchCacheMode::Jit => CacheMode::Jit,
-        BenchCacheMode::Cache => CacheMode::Cache,
+        BenchCacheMode::Ephemeral => CacheMode::Ephemeral,
+        BenchCacheMode::NativeCache => CacheMode::NativeCache,
     };
-    let is_cache_mode = matches!(cache_mode, CacheMode::Cache);
+    let is_cache_mode = matches!(cache_mode, CacheMode::NativeCache);
     let mut semantic = StubSemanticEngine::with_cache_mode(embedder, cache_mode);
     semantic.index_directory(&dir).await?;
 

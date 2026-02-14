@@ -12,8 +12,8 @@
 //!
 //! Ixos supports multiple embedding models, selectable via CLI `--model` flag:
 //!
-//! - **Ixos Flash v2** (default): Current production flash model.
-//! - **Potion** (internal): Quantized potion-base-8M-int8 (used for Pro v2 cascade).
+//! - **Flash Quartz** (`ixos-flash-v2`): Current production flash model.
+//! - **Potion Core** (`potion-base-8m-int8`): Internal dependency used by Pro Prism.
 //! - **Qwen** (legacy/experimental): Distilled from Qwen3-Embedding-0.6B.
 //!
 //! # Performance
@@ -25,7 +25,7 @@
 //! ```ignore
 //! use ixos_protocol::ixos_embed::{MmapModel2VecEmbedder, ModelType};
 //!
-//! // Use default (Potion) model selection
+//! // Use default model selection
 //! let model = MmapModel2VecEmbedder::new()?;
 //!
 //! // Or specify a model type
@@ -50,7 +50,7 @@ use crate::security::crypto::sha256;
 ///
 /// Ixos supports multiple embedding models optimized for different use cases:
 ///
-/// - **Potion**: Simple int8 quantization of potion-base-8M. Reliable and fast.
+/// - **Potion Core**: Simple int8 quantization of potion-base-8M. Reliable and fast.
 /// - **Qwen**: Distilled from Qwen3-Embedding-0.6B. Experimental but potentially better.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -76,10 +76,10 @@ impl ModelType {
     /// Get human-readable display name
     pub fn display_name(&self) -> &'static str {
         match self {
-            ModelType::Potion => "Ixos Pro v2",
+            ModelType::Potion => "Potion Core",
             ModelType::Qwen => "Ixos-Embedder-v1 (Qwen)",
             ModelType::IxosFlashV1 => "Ixos Flash v1 (legacy)",
-            ModelType::IxosFlashV2 => "Ixos Flash v2",
+            ModelType::IxosFlashV2 => "Flash Quartz",
             ModelType::IxosFlashV4 => "Ixos Flash v4 (512d)",
             ModelType::IxosFlashV4Fast => "Ixos Flash v4 Fast (192d)",
             ModelType::IxosProV1 => "Ixos Pro v1",
@@ -89,10 +89,10 @@ impl ModelType {
     /// Get description of the model
     pub fn description(&self) -> &'static str {
         match self {
-            ModelType::Potion => "Ixos Pro v2 model - high quality semantic search.",
+            ModelType::Potion => "Potion Core internal embedder used in Pro Prism fusion mode.",
             ModelType::Qwen => "Distilled from Qwen3. Experimental, potentially better quality.",
             ModelType::IxosFlashV1 => "Ixos Flash v1 distilled embedder (legacy).",
-            ModelType::IxosFlashV2 => "Ixos Flash v2 distilled embedder (default).",
+            ModelType::IxosFlashV2 => "Flash Quartz distilled embedder (default).",
             ModelType::IxosFlashV4 => {
                 "Ixos Flash v4 distilled embedder (int8, 512d, near-v2 quality)."
             }
@@ -109,7 +109,7 @@ impl FromStr for ModelType {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
-            "potion" | "potion-8m" | "potion-base-8m" => Ok(ModelType::Potion),
+            "potion" | "potion-core" | "potion-8m" | "potion-base-8m" => Ok(ModelType::Potion),
             "qwen" | "ixos" | "ixos-embedder" => Ok(ModelType::Qwen),
             "ixos-flash-v2" | "flash" | "flash-v2" | "ixos-flash" => Ok(ModelType::IxosFlashV2),
             "ixos-flash-v1" | "flash-v1" => Ok(ModelType::IxosFlashV1),

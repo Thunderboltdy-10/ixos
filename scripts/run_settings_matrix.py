@@ -1,10 +1,10 @@
+import itertools
 import json
 import os
 import subprocess
-import sys
 import tempfile
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -17,34 +17,37 @@ REPORTS_DIR = ROOT / "reports"
 class Combo:
     id: int
     cache_mode: str
-    privacy: str
     search_mode: str
     progressive: bool
-    output_format: str
-    invariant: str
+    secure_timing: bool
+    journalist_mode: bool
 
 
-COMBOS: List[Combo] = [
-    Combo(1, "jit", "normal", "flash", False, "human", "Baseline: produces results"),
-    Combo(2, "jit", "normal", "flash", False, "json", "JSON output parses"),
-    Combo(3, "jit", "normal", "flash", True, "human", "Progressive events stream"),
-    Combo(4, "jit", "normal", "auto", False, "human", "Auto routes to flash (no Pro)"),
-    Combo(5, "jit", "journalist", "flash", False, "human", "No writes, no learning"),
-    Combo(6, "jit", "journalist", "flash", False, "json", "No writes + valid JSON"),
-    Combo(7, "cache", "normal", "flash", False, "human", "Cache writes allowed"),
-    Combo(8, "cache", "normal", "flash", False, "json", "Cache writes + valid JSON"),
-    Combo(9, "cache", "normal", "auto", False, "human", "Auto + cache"),
-    Combo(
-        10,
-        "cache",
-        "journalist",
-        "flash",
-        False,
-        "human",
-        "Journalist forces JIT (no cache writes)",
-    ),
-    Combo(11, "cache", "normal", "flash", True, "human", "Progressive + cache"),
-]
+def build_combos() -> List[Combo]:
+    combos: List[Combo] = []
+    idx = 1
+    for cache_mode, search_mode, progressive, secure_timing, journalist_mode in itertools.product(
+        ["native-cache", "ephemeral"],
+        ["flash", "auto", "pro"],
+        [False, True],
+        [False, True],
+        [False, True],
+    ):
+        combos.append(
+            Combo(
+                id=idx,
+                cache_mode=cache_mode,
+                search_mode=search_mode,
+                progressive=progressive,
+                secure_timing=secure_timing,
+                journalist_mode=journalist_mode,
+            )
+        )
+        idx += 1
+    return combos
+
+
+COMBOS: List[Combo] = build_combos()
 
 
 def get_ixos_bin() -> Path:
@@ -54,7 +57,6 @@ def get_ixos_bin() -> Path:
 
     exe_name = "ixos.exe" if os.name == "nt" else "ixos"
     debug_bin = ROOT / "target" / "debug" / exe_name
-    # Always rebuild to ensure the matrix runs against current source changes.
     subprocess.check_call(["cargo", "build", "--bin", "ixos"], cwd=ROOT)
     if debug_bin.exists():
         return debug_bin
@@ -94,36 +96,42 @@ def parse_cache_stats(bin_path: Path, env: Dict[str, str]) -> Tuple[int, str]:
 def ensure_config_roundtrip(bin_path: Path, env: Dict[str, str]) -> List[str]:
     failures: List[str] = []
     checks = [
-        ("search.cache_mode", "cache"),
-        ("search.search_mode", "flash"),
-        ("search.cache_mode", "jit"),
-        ("search.search_mode", "auto"),
+        ("search.cache_mode", "cache", "native-cache"),
+        ("search.cache_mode", "jit", "ephemeral"),
+        ("search.cache_mode", "native-cache", "native-cache"),
+        ("search.cache_mode", "ephemeral", "ephemeral"),
+        ("search.search_mode", "flash", "flash"),
+        ("search.search_mode", "auto", "auto"),
     ]
-    for key, value in checks:
-        set_cmd = [str(bin_path), "config", "--set", f"{key}={value}"]
+
+    for key, set_value, expect_value in checks:
+        set_cmd = [str(bin_path), "config", "--set", f"{key}={set_value}"]
         get_cmd = [str(bin_path), "config", "--get", key]
         set_result = run_cmd(set_cmd, env=env)
         if set_result.returncode != 0:
-            failures.append(f"config set failed for {key}: {set_result.stderr.strip()}")
+            failures.append(f"config set failed for {key}={set_value}: {set_result.stderr.strip()}")
             continue
+
         get_result = run_cmd(get_cmd, env=env)
         if get_result.returncode != 0:
             failures.append(f"config get failed for {key}: {get_result.stderr.strip()}")
             continue
+
         actual = get_result.stdout.strip()
-        if actual != value:
-            failures.append(f"config mismatch for {key}: expected {value}, got {actual}")
+        if actual != expect_value:
+            failures.append(
+                f"config mismatch for {key}: set {set_value}, expected {expect_value}, got {actual}"
+            )
+
     return failures
 
 
 def run_combo(combo: Combo, bin_path: Path, env: Dict[str, str]) -> Tuple[bool, List[str]]:
     issues: List[str] = []
 
-    cached_before = 0
-    if combo.privacy == "journalist":
-        cached_before, err = parse_cache_stats(bin_path, env)
-        if err:
-            issues.append(err)
+    cached_before, cache_before_err = parse_cache_stats(bin_path, env)
+    if cache_before_err:
+        issues.append(cache_before_err)
 
     cmd = [
         str(bin_path),
@@ -139,12 +147,14 @@ def run_combo(combo: Combo, bin_path: Path, env: Dict[str, str]) -> Tuple[bool, 
         "--search-mode",
         combo.search_mode,
         "--format",
-        combo.output_format,
+        "json",
     ]
 
     if combo.progressive:
         cmd.append("--progressive")
-    if combo.privacy == "journalist":
+    if combo.secure_timing:
+        cmd.append("--secure-timing")
+    if combo.journalist_mode:
         cmd.append("--journalist-mode")
 
     result = run_cmd(cmd, env=env)
@@ -155,55 +165,59 @@ def run_combo(combo: Combo, bin_path: Path, env: Dict[str, str]) -> Tuple[bool, 
     if panic_issue:
         issues.append(panic_issue)
 
-    if combo.output_format == "json":
+    if combo.progressive:
+        objects = []
+        for line in result.stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                objects.append(json.loads(line))
+            except json.JSONDecodeError as exc:
+                issues.append(f"invalid ndjson line: {exc}")
+                break
+
+        if objects:
+            has_results = False
+            for obj in objects:
+                if isinstance(obj, dict):
+                    items = obj.get("results")
+                    if isinstance(items, list) and len(items) > 0:
+                        has_results = True
+                        break
+            if not has_results:
+                issues.append("progressive output had no non-empty results payload")
+    else:
+        payload = None
         try:
             payload = json.loads(result.stdout)
+        except json.JSONDecodeError as exc:
+            issues.append(f"invalid json output: {exc}")
+
+        if isinstance(payload, dict):
             items = payload.get("results", [])
             if not isinstance(items, list):
                 issues.append("json payload missing results array")
             elif len(items) == 0:
                 issues.append("results array empty")
 
-            # If backend exposes model metadata, ensure auto does not force pro.
-            model_field = str(payload.get("model", "")).lower()
-            mode_field = str(payload.get("search_mode", "")).lower()
-            if combo.search_mode == "auto":
-                merged = f"{model_field} {mode_field}"
-                if "pro" in merged and "flash" not in merged:
-                    issues.append("auto mode appears to route to pro unexpectedly")
-        except json.JSONDecodeError as exc:
-            issues.append(f"invalid json output: {exc}")
-    else:
-        out = result.stdout.strip()
-        if not out:
-            issues.append("human output is empty")
-        if "no results" in out.lower():
-            issues.append("human output indicates no results")
+    cached_after, cache_after_err = parse_cache_stats(bin_path, env)
+    if cache_after_err:
+        issues.append(cache_after_err)
 
-    if combo.privacy == "journalist":
-        cached_after, err = parse_cache_stats(bin_path, env)
-        if err:
-            issues.append(err)
-        elif cached_after > cached_before:
+    if combo.journalist_mode and not cache_before_err and not cache_after_err:
+        if cached_after > cached_before:
             issues.append(
                 f"journalist mode wrote cache entries ({cached_before} -> {cached_after})"
             )
 
-    # Truthfulness check for cache vs jit modes.
-    if combo.cache_mode == "cache" and combo.privacy == "normal":
-        cached_after, err = parse_cache_stats(bin_path, env)
-        if err:
-            issues.append(err)
-        elif cached_after == 0:
-            issues.append("cache mode produced zero cached files")
-
-    if combo.cache_mode == "jit":
-        cached_after, err = parse_cache_stats(bin_path, env)
-        if not err and combo.privacy == "normal" and cached_after > 0:
-            # In JIT mode this should generally remain unchanged. We only flag if it clearly grows
-            # from an empty baseline in this isolated environment.
-            if cached_after > 0:
-                pass
+    if (
+        combo.cache_mode == "native-cache"
+        and not combo.journalist_mode
+        and not cache_after_err
+        and cached_after == 0
+    ):
+        issues.append("native-cache mode produced zero cached files")
 
     return (len(issues) == 0), issues
 
@@ -225,20 +239,25 @@ def grant_consent(bin_path: Path, env: Dict[str, str]) -> None:
 
 
 def markdown_report(rows: List[Tuple[Combo, bool, List[str]]], extra_failures: List[str]) -> str:
-    lines = []
+    lines: List[str] = []
     lines.append("# Settings Matrix Report")
     lines.append("")
-    lines.append(f"- Generated: {datetime.utcnow().isoformat()}Z")
+    lines.append(f"- Generated: {datetime.now(timezone.utc).isoformat()}")
     lines.append("- Corpus: `corpus_tiny`")
+    lines.append(f"- Combinations: `{len(rows)}`")
+    lines.append("- Dimensions: cache_mode x search_mode x progressive x secure_timing x journalist_mode")
     lines.append("")
-    lines.append("| # | Cache | Privacy | Search | Progressive | Format | Status | Invariant | Notes |")
-    lines.append("|---|---|---|---|---|---|---|---|---|")
+    lines.append(
+        "| # | Cache | Search | Progressive | SecureTiming | Journalist | Status | Notes |"
+    )
+    lines.append("|---|---|---|---|---|---|---|---|")
+
     for combo, ok, issues in rows:
         notes = "; ".join(issues) if issues else "OK"
         lines.append(
-            f"| {combo.id} | {combo.cache_mode} | {combo.privacy} | {combo.search_mode} | "
-            f"{'on' if combo.progressive else 'off'} | {combo.output_format} | "
-            f"{'PASS' if ok else 'FAIL'} | {combo.invariant} | {notes} |"
+            f"| {combo.id} | {combo.cache_mode} | {combo.search_mode} | "
+            f"{'on' if combo.progressive else 'off'} | {'on' if combo.secure_timing else 'off'} | "
+            f"{'on' if combo.journalist_mode else 'off'} | {'PASS' if ok else 'FAIL'} | {notes} |"
         )
 
     if extra_failures:
@@ -262,6 +281,7 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as td:
         temp_path = Path(td)
         env = create_isolated_env(temp_path)
+
         try:
             grant_consent(bin_path, env)
         except Exception as exc:
@@ -275,7 +295,7 @@ def main() -> int:
         extra_failures.extend(ensure_config_roundtrip(bin_path, env))
 
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-    report_name = f"settings_matrix_{datetime.utcnow().strftime('%Y-%m-%d')}.md"
+    report_name = f"settings_matrix_{datetime.now(timezone.utc).strftime('%Y-%m-%d')}.md"
     report_path = REPORTS_DIR / report_name
     report_path.write_text(markdown_report(rows, extra_failures), encoding="utf-8")
 

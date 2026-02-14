@@ -21,7 +21,7 @@ interface SearchResultsProps {
   showStar?: boolean;
 }
 
-type SearchMode = 'jit' | 'cache' | 'journalist';
+type SearchMode = 'ephemeral' | 'native-cache' | 'journalist';
 
 function useStabilizedResults<T>(results: T[], phase: SearchPhase): T[] {
   const [displayResults, setDisplayResults] = useState(results);
@@ -97,7 +97,7 @@ export function SearchResults({
   // Determine active mode for coloring
   const mode: SearchMode = searchStore.journalistMode
     ? 'journalist'
-    : (searchStore.cacheMode === 'jit' ? 'jit' : 'cache');
+    : searchStore.cacheMode;
 
   const handleStarClick = () => {
     if (!canStar) return;

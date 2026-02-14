@@ -705,3 +705,178 @@
   1. Add explicit recommendation feedback actions (accept/dismiss) and persistence.
   2. Execute dedicated auth/payments/lease transfer adversarial test matrix.
   3. Add targeted landing low-end integration test scenarios for pinned lock behavior.
+
+## Entry 028 - Prism Phase 1 implementation batch (big bench + matrix contracts + release-check stub)
+- Date/Time: 2026-02-13
+- Branch/Commit: (working tree)
+- Goal: Execute Phase 1 deliverables after Phase 0 hardening: big-root benchmark harness, expanded settings matrix contract tests, and CLI release-check stub.
+- Commands run:
+  - `cargo fmt --all`
+  - `cargo test --test settings_matrix`
+  - `python scripts/run_settings_matrix.py`
+  - `cargo run --release --bin ixos-big-bench -- --dir corpus_tiny --runs 1 --output-dir reports/ralph`
+  - `cargo run --release --bin ixos-big-bench -- --dir . --runs 1 --output-dir reports/ralph`
+  - `cargo run --release --bin ixos-big-bench -- --dir . --runs 3 --output-dir reports/ralph`
+  - `cargo run --quiet --bin ixos -- release-check --quick`
+  - `cargo test -q`
+  - `python scripts/ralph_loop.py --checkpoint R1 --bench-dir . --bench-runs 1 --skip-landing-audit`
+- Outputs saved to:
+  - `bench/big_root_queries.json`
+  - `reports/ralph/big_bench_20260213_173220.{json,md}`
+  - `reports/ralph/big_bench_20260213_173337.{json,md}`
+  - `reports/ralph/big_bench_20260213_173426.{json,md}`
+  - `reports/ralph/big_bench_20260213_174158.{json,md}`
+  - `reports/ralph/big_bench_20260213_174232.{json,md}`
+  - `reports/settings_matrix_2026-02-13.md`
+  - `reports/ralph/iteration_5_20260213_173913.md`
+  - `reports/ralph/checkpoint_R1_20260213_173913.md`
+- Key results:
+  - Added `ixos-big-bench` binary with per-query metrics (`ttfr_ms`, `total_ms`, stage breakdown, cache stats, top-1 metadata) and embedded tier gates.
+  - Added curated big-root query suite (`bench/big_root_queries.json`, 40 queries).
+  - Expanded CLI live matrix script to 48 combinations (`cache_mode × search_mode × progressive × secure_timing × journalist_mode`), including NDJSON validation for progressive JSON streams.
+  - Added fast programmatic integration test matrix (`tests/settings_matrix.rs`).
+  - Added `release-check` command stub (`ixos release-check --quick`) for Phase 1 contract.
+  - Big bench acceptance command succeeded: `cargo run --release --bin ixos-big-bench -- --dir . --runs 3` with JSON+MD output and Tier C PASS.
+  - Full test suite remains green (`cargo test -q`: `470 passed; 0 failed; 6 ignored` + integration/bins).
+- Decision: KEEP
+- Next:
+  1. Start Phase 2 implementation: directory prioritizer + two-phase candidate generation.
+  2. Add write-behind cache wrapper and measure before/after total_ms delta with Ralph checkpoint R2.
+  3. Begin Ask Mode CLI exposure and confidence-gating pipeline.
+
+## Entry 029 - Ralph gate enforcement hardening (big-bench exit codes)
+- Date/Time: 2026-02-13
+- Branch/Commit: (working tree)
+- Goal: Ensure Ralph loop treats tier-gate failures as real regressions instead of pass-through bench success.
+- Commands run:
+  - `cargo run --release --bin ixos-big-bench -- --dir . --runs 1 --output-dir reports/ralph` (expected fail)
+  - `cargo run --release --bin ixos-big-bench -- --dir . --runs 3 --output-dir reports/ralph` (expected pass)
+  - `python scripts/ralph_loop.py --checkpoint R1 --bench-dir . --bench-runs 1 --skip-build --skip-code-audit --skip-landing-audit` (expected fail)
+  - `python scripts/ralph_loop.py --checkpoint R1 --bench-dir . --bench-runs 3 --skip-build --skip-code-audit --skip-landing-audit` (expected pass)
+  - `cargo test -q`
+- Outputs saved to:
+  - `reports/ralph/big_bench_20260213_174718.{json,md}`
+  - `reports/ralph/big_bench_20260213_174749.{json,md}`
+  - `reports/ralph/iteration_8_20260213_174830.md`
+  - `reports/ralph/checkpoint_R1_20260213_174830.md`
+  - `reports/ralph/iteration_9_20260213_174857.md`
+  - `reports/ralph/checkpoint_R1_20260213_174857.md`
+- Key results:
+  - `ixos-big-bench` now exits non-zero when tier gate fails.
+  - Ralph loop now correctly fails checkpoint runs when bench gate fails (`--bench-runs 1`, Tier C missing warm samples).
+  - Ralph loop passes with adequate run count (`--bench-runs 3`, Tier C PASS).
+  - Full Rust suite still passes after the harness behavior change.
+- Decision: KEEP
+- Next:
+  1. Start Phase 2 implementation and re-benchmark at R2 using enforced gate semantics.
+  2. Add explicit `--smoke` mode to matrix script for faster local pre-checks.
+  3. Add Ask CLI path and confidence metrics for R6 readiness.
+
+## Entry 030 - Ralph R1 full checkpoint pass with big-bench default
+- Date/Time: 2026-02-13
+- Branch/Commit: (working tree)
+- Goal: Validate end-to-end Ralph checkpoint after switching bench default to `ixos-big-bench` and enforcing non-zero gate failures.
+- Commands run:
+  - `python scripts/ralph_loop.py --checkpoint R1 --bench-dir . --bench-runs 3 --skip-landing-audit`
+- Outputs saved to:
+  - `reports/ralph/iteration_10_20260213_175006.md`
+  - `reports/ralph/checkpoint_R1_20260213_175006.md`
+  - `reports/ralph/big_bench_20260213_175055.{json,md}`
+  - `reports/ralph/code_audit_10.md`
+- Key results:
+  - Full R1 checkpoint now passes with build + code audit + big-bench.
+  - Bench stage now reports PASS only when Tier gate passes under `runs=3`.
+- Decision: KEEP
+- Next:
+  1. Move into Phase 2 frontier-first candidate generation implementation.
+  2. Add write-behind cache wrapper and re-run R2 checkpoint.
+  3. Start Ask CLI implementation for Phase 6 contract.
+
+## Entry 031 - Prism iteration: harsh-objective benching, comparison automation, docs/site expansion, CI hardening, and repo cleanup
+- Date/Time: 2026-02-13
+- Branch/Commit: (working tree)
+- Goal: Continue autonomous Ralph iterations, tighten objectives, validate before/after speed+quality evidence, harden workflows, expand docs depth, and clean root-level doc organization.
+- Commands run:
+  - `cargo check --bin ixos-big-bench`
+  - `cargo run --release --bin ixos-big-bench -- --dir . --runs 3 --cache-mode native-cache --model ixos-flash-v2 --objective-profile harsh --output-dir reports/ralph`
+  - `python scripts/compare_performance.py --before-bench reports/ralph/big_bench_20260213_175055.json --after-bench reports/ralph/big_bench_20260213_180600.json`
+  - `python scripts/ixos_eval.py --suite synthetic --only-ids ixos-flash-v2,ixos-pro-v2,potion-base-8m-int8 --output models/lab/results_prism_iter_2026-02-13.json`
+  - `python scripts/ralph_loop.py --checkpoint R1 --bench-dir . --bench-runs 3 --objective-profile harsh --skip-landing-audit` (twice)
+  - `cargo test -q`
+  - `cargo test --test settings_matrix -q`
+  - `python scripts/run_settings_matrix.py`
+  - `npm --prefix ui run build`
+  - `npm --prefix ixos-site run build`
+  - `cargo run --bin ixos -- release-check --quick`
+- Outputs saved to:
+  - `reports/ralph/big_bench_20260213_180600.{json,md}`
+  - `reports/ralph/big_bench_20260213_180844.{json,md}`
+  - `reports/ralph/big_bench_20260213_181435.{json,md}`
+  - `reports/ralph/comparison_20260213_180600.{md,json}`
+  - `reports/ralph/comparison_11_20260213_180754.{md,json}`
+  - `reports/ralph/comparison_12_20260213_181349.{md,json}`
+  - `reports/ralph/comparison_turn_20260213_181435.{md,json}`
+  - `reports/ralph/research_notes_20260213.md`
+  - `reports/ralph/iteration_11_20260213_180754.md`
+  - `reports/ralph/iteration_12_20260213_181349.md`
+  - `reports/AGENT_REALITY_AUDIT_REVIEW_2026-02-13_1818.md`
+  - `models/lab/results_prism_iter_2026-02-13.json`
+- Key results:
+  - Added harsh objective profile and stage p95 metrics to `ixos-big-bench`.
+  - Added `scripts/compare_performance.py` and integrated automatic comparison into `scripts/ralph_loop.py`.
+  - Hardened GitHub workflows:
+    - Release: `npm ci`, `GH_TOKEN` for `gh`, release env var wiring.
+    - Settings matrix: locked build + Rust integration matrix test.
+    - Pro module build: locked build and package includes `README.md` + `LICENSE`.
+  - Fixed a real UI mode propagation bug in overlay flow (`SearchOverlay` now uses actual selected mode and updates state).
+  - Expanded docs-site pages (`/docs/getting-started`, `/docs/desktop-app`, `/docs/models`, `/docs/benchmarking`, `/docs/agents`) with in-depth operational content.
+  - Benchmarks section now reads from data file: `ixos-site/src/data/benchmarks.json`.
+  - Repository cleanup: moved root markdown clutter into `docs/archive/root/` and regenerated `docs/MARKDOWN_INVENTORY.md`.
+- Validation summary:
+  - `cargo test -q`: PASS (`470 passed; 0 failed; 6 ignored` + integration bins)
+  - `cargo test --test settings_matrix -q`: PASS
+  - `python scripts/run_settings_matrix.py`: PASS
+  - `npm --prefix ui run build`: PASS
+  - `npm --prefix ixos-site run build`: PASS (non-fatal lockfile root warning remains)
+  - Ralph iterations 11 and 12: PASS
+- Decision: KEEP
+- Next:
+  1. Build same-suite quality comparator guard for release-check.
+  2. Complete internal UI mode type migration away from legacy `cache/jit` internals.
+  3. Add release artifact smoke checks for installer/blob publishing path in CI.
+
+## Entry 032 - Canonical mode migration (desktop + landing demo), branding cleanup, and Ralph R1.3 validation
+- Date/Time: 2026-02-13
+- Branch/Commit: (working tree)
+- Goal: Close remaining naming/UX gaps by migrating internal UI mode enums to canonical `native-cache`/`ephemeral`, align landing demo internals, and revalidate speed/quality/checkpoints.
+- Commands run:
+  - `rg -n "'jit'|'cache'|native-cache|ephemeral" ui/src ixos-site/src src src-tauri/src docs scripts`
+  - `npm --prefix ui run build`
+  - `npm --prefix ixos-site run build`
+  - `cargo test -q`
+  - `cargo test --test settings_matrix -q`
+  - `python scripts/run_settings_matrix.py`
+  - `cargo run --bin ixos -- release-check --quick`
+  - `python scripts/ralph_loop.py --checkpoint R1 --bench-dir . --bench-runs 3 --objective-profile harsh --skip-landing-audit`
+  - `cargo run --release --bin ixos-big-bench -- --dir . --runs 5 --cache-mode native-cache --model ixos-flash-v2 --objective-profile harsh --output-dir reports/ralph`
+  - `python scripts/compare_performance.py --before-bench reports/ralph/big_bench_20260213_181435.json --after-bench reports/ralph/big_bench_20260213_231310.json --output reports/ralph/comparison_turn_20260213_231310.md --json-output reports/ralph/comparison_turn_20260213_231310.json`
+  - `python scripts/ixos_eval.py --suite synthetic --only-ids ixos-flash-v2,ixos-pro-v2,potion-base-8m-int8 --output models/lab/results_prism_iter_2026-02-13_post_ui.json`
+- Outputs saved to:
+  - `reports/ralph/iteration_13_20260213_231055.md`
+  - `reports/ralph/checkpoint_R1_20260213_231055.md`
+  - `reports/ralph/comparison_13_20260213_231055.{md,json}`
+  - `reports/ralph/big_bench_20260213_231310.{json,md}`
+  - `reports/ralph/comparison_turn_20260213_231310.{md,json}`
+  - `models/lab/results_prism_iter_2026-02-13_post_ui.json`
+- Key results:
+  - Desktop UI now uses canonical internal cache mode types across stores/components (`native-cache`/`ephemeral`), with legacy alias compatibility only at history/config migration boundaries.
+  - Landing hero demo internal mode keys also migrated to canonical names.
+  - Rebranding consistency pass completed for remaining model/caching UI strings and `mmap_model` display naming (`Potion Core`).
+  - Validation remains green: Rust tests, settings matrix test/script, UI build, landing build, and release-check stub all pass.
+  - Harsh objective gates still PASS on latest 5-run benchmark; compared to prior turn benchmark, latency is slightly regressed but within harsh thresholds.
+  - Synthetic quality metrics unchanged for tested models (MRR/Recall stable in latest eval artifact).
+- Decision: KEEP
+- Next:
+  1. Add suite-consistent quality delta enforcement inside release-check.
+  2. Add bench jitter controls and repeated-batch median reporting.
+  3. Add workflow-level installer/blob smoke verification.

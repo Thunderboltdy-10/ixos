@@ -95,7 +95,7 @@ export function ComplianceSettings() {
           </div>
           <div className="flex justify-between">
             <dt className="text-fg-dim">Model</dt>
-            <dd className="text-porcelain font-mono text-xs">Model2Vec Potion Base 8M</dd>
+            <dd className="text-porcelain font-mono text-xs">Potion Core (Model2Vec Base 8M)</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-fg-dim">Processing</dt>

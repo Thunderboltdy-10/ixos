@@ -1,391 +1,274 @@
-# Ixos vNext Roadmap — Pro That Compounds (DB‑less, JIT‑first, “Must Work Perfectly”)
+# Ixos Master Roadmap (vNext) — Post‑Phase‑3 Plan (2026‑02‑13)
 
-> **Goal:** Make Ixos feel *indispensable* by improving **trust**, **speed**, and **daily utility**, while keeping your core philosophy:  
-> ✅ **No global DB / no mandatory indexing** (JIT remains the product story)  
-> ✅ **Pro value compounds over time** (without being slower)  
-> ✅ **Everything is testable & verifiable** (you regain confidence in production)
+This roadmap targets **Google‑like local search**: lexical accurate + semantic helpful, while staying **local‑first**, privacy‑first, and “no giant DB” by default.
 
----
-
-## North‑star metrics (pick 3 and measure every release)
-
-1) **Warm search latency**: median & p95 (local roots)  
-2) **Top‑5 success rate**: user opens one of top 5 results  
-3) **Repeat‑query improvement**: after 2–3 days, personalized ranking increases top‑3 hit rate  
-4) **Crash‑free sessions**: 99.9%+  
-5) **“No writes” integrity**: Incognito/Hardened sessions perform zero persistent writes (best effort, excluding unavoidable OS temps)
+It is grounded on:
+- the reality audit (2026‑02‑13) confirming pipeline modules, cache backends (ADS/xattr/LMDB), invalidation (SHA256 + model fingerprint), and format parsers; plus the Ask Mode CLI gap.
+- existing perf docs showing directory walk + ripgrep are major I/O costs, and ranking/embedding spikes appear in tails.
 
 ---
 
-## Core principles (non‑negotiables)
+## 0) Current reality snapshot (verified)
 
-- **DB‑less by default**: no persistent global manifest of all files.
-- **JIT remains the headline**: “Search as you go.”  
-- **Pro is structural**: features that improve outcomes, not “a slower mode.”
-- **Every feature ships with:**
-  - a spec + invariants  
-  - a smoke test  
-  - a debug/diagnostic surface  
-  - CI coverage (at least for “doesn’t break”)
+**Implemented & working**
+- CLI: `search/index/config/cache/daemon/compliance/doctor/model/version`.
+- Cache: Windows ADS → Unix xattr → LMDB fallback → Null (JIT).
+- Invalidation: SHA256 file hash + model fingerprint.
+- Pipeline modules: path engine, ripgrep funnel, semantic engine, progressive engine, evidence extractor.
+- Pro v2: Potion fast pass → Flash refine on top‑K/uncertain region → fusion.
+- Parsers: PDF/DOCX/PPTX/XLSX/RTF + text/code; heavy formats respect caps.
+- Ask Mode exists (UI) and respects selected model.
+
+**Known gaps**
+- Ask Mode not exposed via CLI.
+- Perf evidence is strong on small/medium corpora; we still need “big root” evidence for 100k–300k files.
 
 ---
 
-# Phase 0 — Reliability Lockdown (make it testable before adding anything)
+## 1) Non‑negotiable invariants
 
-### Outcome
-You can validate a production build in **minutes**, not hours. No misleading flags/features.
+These must be enforced by core + CI “release‑check”.
 
-### 0.1 Remove or implement “partial” features
-**Deliverables**
-- Either **fully implement** or **remove** (CLI + UI) anything that’s half‑wired:
-  - `index --watch`, `daemon`, `cache rebuild`, `cache mode persistence`, etc.
-- Ensure the UI never shows “success” unless the underlying operation succeeded.
+1) Incognito/Hardened ⇒ **no persistent writes** (no ADS/xattr, no ledger).
+2) User-selected model is respected (no silent override).
+3) Cache/JIT toggle is truthful (UI matches behavior).
+4) Pro gating enforced in core (not only UI).
+5) All settings persist and reload correctly (or are explicitly session-only).
+
+---
+
+## 2) North‑star metrics (what “better” means)
+
+You will optimize **per root size tier**:
+
+### Tier A (≤5k files, typical project)
+- TTFR p50 ≤ 60ms
+- Total p95 ≤ 400ms (Auto)
+
+### Tier B (≈50k files, power user)
+- TTFR p50 ≤ 120ms
+- Total p95 ≤ 2.0s (Auto)
+
+### Tier C (100k–300k files, “Google for my computer”)
+- TTFR p50 ≤ 200ms (must stream something meaningful)
+- Total p95 ≤ 8–12s *on first cold root*, then ≤ 3–5s warmed
+
+If Tier C can’t hit “fast total” on cold roots, you win by:
+- **instant TTFR + progressive completeness**
+- making the system clearly “still searching” and improving results over time
+- offering optional “Warm this folder” and/or daemon indexing
+
+---
+
+## 3) Roadmap structure
+
+Work is organized into 6 workstreams so you can ship value continuously.
+
+### Workstream A — Measurement & truth (stop guessing)
+
+**A1. Big-root bench suite (mandatory gate)**
+- Add a repeatable command/script that runs 20–50 queries on a large root.
+- Capture: TTFR, total, stage timings, cache hit rates (JIT vs Cache).
+- Output JSON + a one-page markdown summary.
 
 **Acceptance**
-- There are **no dead toggles**.
-- Every user-visible feature has an **end‑to‑end success path**.
+- Single command produces artifacts under `/reports`.
+- CI can run the small version (dataset roots); local dev runs big roots.
 
----
-
-### 0.2 Add `ixos doctor` + Desktop Diagnostics panel
-**Deliverables**
-- CLI `ixos doctor` checks:
-  - ADS/xattr capability
-  - config persistence + effective config resolution
-  - model load/warm status
-  - incognito/hardened write-prevention checks
-  - progressive output integrity
-- Desktop hidden: **Settings → Advanced → Diagnostics**
-  - show resolved config
-  - show capabilities/entitlement gates
-  - show mode resolution (JIT vs cache, incognito forcing “no writes”, etc.)
-  - run doctor checks with a copyable report
+**A2. Settings Matrix “contract tests”**
+- Use the existing minimal settings matrix idea, but automate it:
+  - C(cache/jit) × P(privacy modes) × S(search-mode) × A(ask) × T(secure timing) × Prog(progressive).
+- For each combo: assert invariants (e.g., “no writes in incognito”).
 
 **Acceptance**
-- You can run `doctor` on a user machine and instantly know what’s broken.
+- `ixos release-check` runs matrix and fails loudly.
 
 ---
 
-### 0.3 Build the “Settings × Modes” automated test matrix
-**Deliverables**
-- A runner that enumerates the *meaningful* configuration combos and runs a minimal search fixture:
-  - cache_mode: `jit | cache`
-  - privacy: `normal | incognito | hardened`
-  - progressive: `on | off`
-  - model: `flash | pro`
-  - output: `human | json`
-- Validates invariants per combo (see Appendix A).
+### Workstream B — First search doesn’t feel slow (TTFR + progressive truth)
+
+**B1. Frontier‑first progressive search (scheduling)**
+Instead of: “enumerate everything → then search”, do:
+- prioritize directories likely to contain matches (path engine scores + query anchors)
+- run ripgrep on the frontier and stream early hits
+- expand until either time budget reached or confidence is high
 
 **Acceptance**
-- All combos produce valid output, no panics, invariants hold.
-- This runs in CI on at least one OS (and locally for all).
+- On Tier C cold root, TTFR remains low and first results are non-random.
 
----
-
-# Phase 1 — Pro Memory Lite (DB‑less personalization that feels valuable)
-
-### Outcome
-Ixos “learns the user” locally, without storing big logs or a DB.
-
-## Design choice: ADS/xattr only (plus tiny fallback)
-- Primary: per-file metadata via **ADS (Windows)** and **xattr (macOS/Linux)**.
-- Fallback (only when ADS/xattr unsupported): a **bounded LRU map** (e.g., 10k entries cap).
-
----
-
-### 1.1 File‑level Personal Ranking (per‑file micro‑signals)
-**Store (per file, only on interaction)**
-- `ixos.open_score` (decayed frequency+recency; single number)
-- `ixos.last_open_ts`
-- `ixos.pinned` (bool)
-- `ixos.ignored` (bool)
-
-**Update logic (no history growth)**
-On open at `t_now`:
-- `open_score = open_score * exp(-(t_now - last_open_ts)/τ) + 1`
-- `last_open_ts = t_now`
-
-**Rerank logic (top‑K only)**
-- `final = base + w1*norm(open_score) + w2*recency(last_open_ts) + w3*pinned - w4*ignored`
-- Guardrail: only apply if `base >= base_threshold` to avoid “personalize junk.”
-
-**UX**
-- Result actions: **Pin**, **Ignore**, **Not relevant** (strong negative)
-- Settings:
-  - Personal ranking (local) toggle
-  - Reset learning (best-effort clear for Ixos-touched files)
-  - “Why this result?” panel (explain base + personalized factors)
-
-**Pro packaging**
-- Free: manual pin/ignore (no learning, minimal boosts)
-- Pro: full recency+frequency learning + explain panel
+**B2. Write‑behind caching (don’t block UI)**
+- When Cache mode is enabled: write embeddings/signatures as soon as a file is read (first-touch), but never block streaming.
+- Add a visible background status: “building local index…”
 
 **Acceptance**
-- Opening the same file a few times moves it into top 3 for related queries.
-- Incognito/Hardened: opening does **not** update xattrs.
+- Cold first query produces results while cache writes happen concurrently.
 
----
-
-### 1.2 Incognito + Hardened (Journalist Mode v2)
-**Incognito (Free)**
-- no history, no xattr updates, no cache writes
-
-**Hardened (Pro)**
-- incognito + secure timing on + visible “shield” state + panic hotkey + verified diagnostics
+**B3. “Warm this folder” (explicit UX)**
+- Add a one-click warmup in UI + CLI `ixos warmup --dir`.
+- Warmup builds: PathIndex + ripgrep file list + optional lexical signatures, with a cap/budget.
 
 **Acceptance**
-- Diagnostics prove “no persistent writes” policy is enforced.
+- User can choose to prepay cost; system explains it.
 
 ---
 
-# Phase 2 — Pro Second Brain (bounded ledger, not an index)
+### Workstream C — I/O and directory scale (your real Tier C bottleneck)
 
-### Outcome
-Opening Ixos without searching still provides value (daily habit loop).
-
-### 2.1 Bounded local activity ledger (encrypted ring buffer)
-**Design**
-- Store a small encrypted ring-buffer log (JSONL or binary)
-- Hard cap: configurable (e.g., 5–20 MB); rotates automatically
-- Stores only:
-  - `file_id`, timestamp, action type
-  - optional `query_hash` (not query text)
-
-**Pro surfaces**
-- **Today tab**:
-  - recent opens
-  - pinned files
-  - resume last workstream
-- **Workstreams v1** (manual):
-  - user names workstreams and assigns folders/files (no ML required)
+**C1. Persist only the *change cursor token* per root**
+- No global DB; just a tiny per-root token.
+- Windows: USN journal cursor (if available); else watcher + periodic sanity scan.
+- macOS/Linux: file system events (FSEvents/inotify) cursor or “last scan + sampled verify”.
 
 **Acceptance**
-- Ledger never exceeds cap.
-- Today tab loads in <1s and is useful.
+- Repeated searches do not do a full directory walk when root unchanged.
 
----
-
-# Phase 3 — Pro Ask Mode Plus (quality without “slow magic”)
-
-### Outcome
-Ask mode feels trustworthy: evidence-first, no vibes.
-
-### 3.1 Ask+ improvements (algorithmic)
-- Better anchor extraction (rare terms, phrases)
-- Snippet must contain anchors (fix random excerpts)
-- “Answer cards” for simple patterns (dates/numbers/names) **with citation snippet**
-- Confidence indicator:
-  - high if lexical anchors + semantic agree
+**C2. Daemon becomes the default for desktop**
+- `ixos daemon` maintains in-memory file list for the root(s) the user cares about.
+- Desktop app can start it on launch (user-controlled).
 
 **Acceptance**
-- Answers always cite and show the supporting snippet.
-- No silent model switching; respects user-selected model.
+- The UI never does cold enumeration if daemon is warm.
 
----
-
-# Phase 4 — JIT Accelerator (DB‑less speed you can paywall structurally)
-
-### Outcome
-Repeat searches feel instant *without* building a global DB.
-
-## What “JIT accelerator” means (in this roadmap)
-Not “index everything.”  
-It means: **stop repeating expensive discovery work when you can safely skip it**.
-
-### 4.1 Free: RAM‑only memoization (session acceleration)
-- During a single app session:
-  - Keep discovered file list per root **in RAM**
-  - Reuse across queries
-  - Invalidate safely if you detect changes
+**C3. Ripgrep policy (keep rg; control its damage)**
+- Keep ripgrep funnel for lexical truth, but:
+  - always use precomputed file list from PathIndex (already implemented)
+  - apply signature gates (Workstream D) to reduce files rg must open
+  - introduce query‑adaptive patterns (quoted phrases, case-sensitive identifiers)
 
 **Acceptance**
-- Second query in same session is significantly faster on large roots.
+- On Tier C, ripgrep scan time drops materially because it touches fewer files.
 
-### 4.2 Pro: Change‑journal cursor (tiny persistent token, not a DB)
-Persist only a small **checkpoint token** per root:
-- Windows: USN journal cursor
-- macOS: FSEvents event ID
-- Linux: best-effort strategy (inotify while running + conservative rescan on restart)
+---
 
-On next run:
-- ask OS “what changed since cursor”
-- only inspect those paths
+### Workstream D — Lexical + semantic accuracy without “3× slower”
+
+**D1. Lexical signatures (micro‑index, not a DB)**
+Store a small per-file signature (e.g., 256–1024 bytes):
+- hashed token Bloom bitset + identifier sketch
+- optional: 64-bit MinHash/SimHash for quick near‑duplicate detection
+
+Use it only on candidate pools:
+- before opening files for rg or heavy parsing
+- for Ask Mode anchor verification
 
 **Acceptance**
-- Repeat searches after restart on stable roots skip deep walks.
-- Storage on disk is tiny (config only), and does not store full file lists.
+- Signature gate reduces opened/read files per query on Tier C.
+- Storage stays small (e.g., ≤ 0.5–2KB/file).
 
----
-
-# Phase 5 — Launch Readiness (make production boring)
-
-### Outcome
-You can ship confidently and iterate quickly.
-
-### 5.1 Make release checks executable
-Add `ixos release-check` which:
-- runs `doctor`
-- runs settings matrix smoke suite
-- runs golden query suite on fixture dataset
-- validates performance thresholds
-- outputs a single report file (shareable)
+**D2. Query Mode Controller (semantic vs lexical vs hybrid)**
+Replace keyword heuristics with a feature-based controller:
+- features: quotes, punctuation, token rarity, identifier patterns, number/date density, filetype priors, query length
+- output: weights for lexical vs semantic vs path priors, and “must contain anchor” constraints
 
 **Acceptance**
-- Any release candidate can be validated with one command.
+- Fewer “misses stuff” complaints on code/projects where lexical matters.
 
-### 5.2 Golden query suite (relevance regression prevention)
-- Maintain 30–100 “hard queries” with expected top‑5 contains target files.
-- Run whenever ranking/models change.
-
-**Acceptance**
-- Ranking changes are safe; regressions are visible immediately.
-
----
-
-# Phase 6 — Full Audit & Hardening (verify *everything*, find vulnerabilities, ensure completeness)
-
-### Outcome
-A final “gate” phase that checks **all features**, **all user flows**, and identifies **security/perf correctness risks** before launch.
-
-## 6.1 Feature inventory → coverage map (completeness)
-**Deliverables**
-- Generate a **Feature Inventory** automatically:
-  - all CLI commands + flags
-  - all settings keys
-  - all UI toggles
-  - all “modes” (jit/cache/incognito/hardened/progressive)
-  - all integrations (Clerk, Lemon Squeezy, updater, etc.)
-- For each inventory item, attach:
-  - owner module/file
-  - a smoke test ID
-  - at least one invariant
+**D3. Optional incremental lexical index (strictly gated)**
+If you need true Google-like “instant exact-word” on Tier C:
+- build a bounded trigram/token postings index updated by watcher/daemon
+- store in LMDB under a hard cap; user opt-in
 
 **Acceptance**
-- 100% of inventory items are mapped to at least one test.
-- Missing coverage fails CI (or fails `release-check`).
+- When enabled, per-query lexical scan becomes <10ms on warmed roots.
+- When disabled, no index tax (default).
 
 ---
 
-## 6.2 End‑to‑end user flow regression suite (production confidence)
-**Deliverables**
-- Automated “journeys” (desktop + CLI):
-  1) First run → model status OK
-  2) Search (flash) → open result
-  3) Toggle modes → verify persistence
-  4) Pro gating on/off → verify features disappear correctly
-  5) Incognito/Hardened → verify no writes + no learning updates
-  6) Ask mode → citations & jump-to-source
-  7) Cache/JIT behavior sanity checks
-- Capture run artifacts:
-  - logs
-  - diagnostics report
-  - performance summary
+### Workstream E — Parsing reliability (make “works 100%” feel true)
+
+**E1. Extraction adapters + status caching**
+For each file, store extraction status in cache metadata:
+- ok / partial / failed + reason
+- extracted char count + cap triggered
+- extractor used (native vs sidecar)
 
 **Acceptance**
-- Journeys pass on release builds.
+- UI can explain “why this file didn’t match”.
 
----
-
-## 6.3 Security hardening checklist (local-first threats)
-**Threats to explicitly test**
-- Path traversal / unsafe path joins
-- Symlink loops / recursion bombs
-- ZIP/PDF parser bombs (huge decompression)
-- Untrusted file parsing (malformed PDFs/DOCX)
-- Privilege boundaries (don’t require admin)
-- Sensitive data leakage in logs (paths, query text, content)
-- Update mechanism integrity (signature checks, MITM)
-
-**Deliverables**
-- Add automated checks:
-  - Dependency vulnerability scan (Rust crates)
-  - Secret scanning (tokens in repo)
-  - Static analysis / linting
-  - Fuzz tests for parsers (PDF/DOCX/text extraction)
-  - Sandbox tests for untrusted docs (timeouts, size caps)
+**E2. Better PDF reality**
+- Continue with `pdf_extract`, but add optional sidecar fallback for broken PDFs (user opt‑in in Pro).
+- Treat scanned PDFs as “OCR optional”.
 
 **Acceptance**
-- No high severity vulnerabilities in dependencies at ship time.
-- Fuzzing runs nightly (or at least before release).
+- Common PDFs stop being silent failures; failures are visible with reason.
 
----
-
-## 6.4 Performance “anti-regression” gate
-**Deliverables**
-- Bench suite that measures:
-  - cold start
-  - warm query median/p95
-  - memory growth under repeated queries
-  - large-root behavior (representative fixture)
+**E3. Images**
+- Phase 1: OCR only (optional, Pro)
+- Phase 2: image embeddings (optional, Pro)
+- Always store derived data as cache (recomputable).
 
 **Acceptance**
-- Performance budgets enforced; regressions fail `release-check`.
+- Searching text inside screenshots works when OCR enabled.
 
 ---
 
-## 6.5 Privacy & “No writes” verification gate
-**Deliverables**
-- A test harness that:
-  - runs an incognito/hardened session
-  - snapshots filesystem write activity (best effort)
-  - ensures no ADS/xattr changes were written
-  - ensures no history/ledger entries were written
+### Workstream F — Ask Mode becomes a trustworthy default (without forcing Pro)
+
+**F1. Expose Ask Mode in CLI**
+- Add `--ask` / `--ask-mode` flag to `ixos search`.
+- Keep model-respect invariant.
 
 **Acceptance**
-- Incognito/Hardened produces a clean write report (with documented exceptions if any).
+- CLI and UI behavior match.
+
+**F2. Evidence‑gated answer card**
+Ask Mode outputs:
+- Answer only if: anchor coverage + snippet trust + agreement signals
+- Else: ask a clarifying question + show best results
+
+**Acceptance**
+- “Unsupported answer rate” is measurable and drops.
 
 ---
 
-# Appendix A — Invariants (must always hold)
+### Workstream G — Shipping, distribution, and “I never know what’s implemented”
 
-1) **Incognito/Hardened ⇒ no persistent writes**  
-   - no ADS/xattr changes  
-   - no ledger events  
-   - no cache writes (unless “essential” + documented)
-2) **User-selected model is respected** (no silent override)
-3) **Cache/JIT toggle is truthful** (UI matches behavior)
-4) **Pro gating is enforced in core** (not only UI)
-5) **All settings are persisted and reload correctly** (or are explicitly “session-only”)
+**G1. Release‑check command**
+- `ixos release-check` runs:
+  - settings matrix contract tests
+  - golden suite (small corpora)
+  - format matrix extraction tests
+  - smoke UI/CLI parity checks
 
----
+**Acceptance**
+- One command tells you what’s broken before you ship.
 
-# Appendix B — Minimal Settings Matrix (example)
+**G2. Diagnostics bundle**
+- `ixos debug export` produces a zip:
+  - version, config, last bench, cache stats, env snapshot
+- Must redact sensitive paths by default.
 
-| cache_mode | privacy_mode | model | progressive | expected |
-|---|---|---|---|---|
-| jit | normal | flash | off | baseline |
-| jit | incognito | flash | on | no writes, no learning |
-| cache | normal | pro | off | cache writes allowed, learning allowed |
-| cache | hardened | pro | on | no writes + secure timing |
-
-*(Expand to include every meaningful toggle, but keep it human-manageable.)*
+**G3. Distribution**
+- Desktop installer adds `ixos` to PATH.
+- Separate “CLI only” zip.
+- Add update/playbook to docs.
 
 ---
 
-# Appendix C — Commands to ship
+## 4) EE / IA track (kept feasible)
 
-- `ixos doctor`
-- `ixos release-check`
-- `ixos bench` (existing)
-- `ixos profile` (existing)
-- `ixos debug export` (exports diagnostics bundle)
+You can turn Workstreams D + F into an EE:
+
+- Independent variables:
+  - Cache mode (jit vs local index)
+  - signature gating (off vs on)
+  - search mode (flash vs auto vs pro)
+- Dependent metrics:
+  - retrieval success (Recall@k / MRR with gold chunk)
+  - supported answer accuracy (EM/F1 + citation contains gold chunk)
+  - unsupported rate
+  - compute cost (embeddings/sec, bytes written, time)
+
+Artifacts:
+- the bench outputs already produced by ixos-bench/ixos-profile/scale_bench
+- a small curated dataset (50–150 questions) is enough if it’s clean and reproducible
 
 ---
 
-## Notes on “DB-less” philosophy (this roadmap stays aligned)
+## 5) What to do next (strict order)
 
-- Personalization is **per-file micro metadata** (ADS/xattr) and does not require session logs.
-- “JIT accelerator” does **not** store a global file DB:
-  - Free: RAM-only memoization
-  - Pro: OS change cursor token only (a few bytes per root)
-
----
-
-## Suggested order (if time is tight)
-
-1) Phase 0 (Doctor + Diagnostics + matrix)  
-2) Phase 1 (Personal ranking + Incognito/Hardened)  
-3) Phase 4 (RAM memoization + change cursor)  
-4) Phase 5 (release-check + golden suite)  
-5) Phase 6 (audit gate)  
-6) Phase 2/3 (Today + Ask+ polish)
+1) Run the **V2 audit** prompt (bigroot + cache-mode + format matrix).
+2) Implement **G1 release-check** + settings matrix so you stop flying blind.
+3) Implement **C1 root change cursor token** + daemon warm roots.
+4) Implement **D1 lexical signatures** (big ROI, small storage).
+5) Wire **F1 Ask Mode CLI** + evidence-gated answer card.

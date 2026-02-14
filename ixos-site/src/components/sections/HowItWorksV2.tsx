@@ -34,8 +34,8 @@ const PHASES: PhaseBox[] = [
   {
     id: "02",
     label: "EMBED_ENGINE",
-    title: "JIT Intelligence",
-    description: "CPU-optimized micro-models compute embeddings on the fly.",
+    title: "Ephemeral Intelligence",
+    description: "CPU-optimized models compute embeddings on demand.",
   },
   {
     id: "03",
@@ -59,7 +59,7 @@ const PHASES: PhaseBox[] = [
 
 const STATUS_MESSAGES = [
   "Active: Natural Language Input",
-  "Active: JIT Embedding Engine",
+  "Active: Ephemeral Embedding Engine",
   "Active: Ranked Locally",
   "Active: Zero Persistence Mode",
   "Active: Streaming Results",

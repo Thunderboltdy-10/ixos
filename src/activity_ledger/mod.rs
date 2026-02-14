@@ -507,9 +507,9 @@ impl ActivityLedger {
             }
 
             // Repetition dominates; CTR is a low-weight tiebreaker signal.
-            let repetition_score =
-                ((evidence_count - min_evidence + 1) as f32 / (min_evidence as f32 + 6.0))
-                    .clamp(0.0, 1.0);
+            let repetition_score = ((evidence_count - min_evidence + 1) as f32
+                / (min_evidence as f32 + 6.0))
+                .clamp(0.0, 1.0);
             let ctr = if signals.shown > 0 {
                 signals.clicked_or_opened as f32 / signals.shown as f32
             } else {

@@ -154,6 +154,10 @@ async fn main() -> anyhow::Result<()> {
             handle_version(verbose);
         }
 
+        Commands::ReleaseCheck { quick } => {
+            handle_release_check(quick).await?;
+        }
+
         Commands::Model { action } => {
             handle_model(action).await?;
         }
@@ -216,13 +220,16 @@ async fn handle_search(
         None
     };
 
-    // In journalist mode, force JIT cache mode
+    // In journalist mode, force ephemeral cache mode
     let configured_cache_mode = match config.search.cache_mode.to_lowercase().as_str() {
-        "cache" | "persistent" => ixos_protocol::CacheMode::Cache,
-        _ => ixos_protocol::CacheMode::Jit,
+        "native-cache" | "nativecache" | "cache" | "persistent" => {
+            ixos_protocol::CacheMode::NativeCache
+        }
+        "ephemeral" | "jit" => ixos_protocol::CacheMode::Ephemeral,
+        _ => ixos_protocol::CacheMode::NativeCache,
     };
     let effective_cache_mode = if journalist_mode {
-        ixos_protocol::CacheMode::Jit
+        ixos_protocol::CacheMode::Ephemeral
     } else {
         cache_mode.unwrap_or(configured_cache_mode)
     };
@@ -578,9 +585,9 @@ async fn handle_index(
 
         // Index the directory
         let cache_mode = if use_xattr {
-            ixos_protocol::ixos_rank::semantic_engine::CacheMode::Cache
+            ixos_protocol::ixos_rank::semantic_engine::CacheMode::NativeCache
         } else {
-            ixos_protocol::ixos_rank::semantic_engine::CacheMode::Jit
+            ixos_protocol::ixos_rank::semantic_engine::CacheMode::Ephemeral
         };
 
         let mut semantic = StubSemanticEngine::with_stub_model_and_mode(cache_mode);
@@ -1014,13 +1021,13 @@ async fn handle_cache(
             let mut config = IxosConfig::load_from(config_path.clone());
             match mode {
                 CliCacheModePreference::Ephemeral => {
-                    config.search.cache_mode = "jit".to_string();
+                    config.search.cache_mode = "ephemeral".to_string();
                     println!("Cache mode set to: EPHEMERAL (memory-only)");
                     println!("Embeddings will not be persisted to disk.");
                     println!("This provides maximum privacy.");
                 }
                 CliCacheModePreference::Persistent => {
-                    config.search.cache_mode = "cache".to_string();
+                    config.search.cache_mode = "native-cache".to_string();
                     println!("Cache mode set to: PERSISTENT (ADS/xattr)");
                     println!("Embeddings will be stored alongside files.");
                     println!("This provides faster repeat searches.");
@@ -1078,7 +1085,8 @@ async fn handle_cache(
                 )
             })?;
             let embedder = SecureEmbedder::new_fast(Arc::new(model));
-            let mut semantic = StubSemanticEngine::with_cache_mode(embedder, CacheMode::Cache);
+            let mut semantic =
+                StubSemanticEngine::with_cache_mode(embedder, CacheMode::NativeCache);
 
             let indexed_files = semantic.index_directory(&rebuild_dir).await?;
             let warmed_files = semantic.precompute_embeddings().await;
@@ -1329,6 +1337,20 @@ fn handle_version(verbose: bool) {
     }
 }
 
+async fn handle_release_check(quick: bool) -> anyhow::Result<()> {
+    println!("Release-check stub");
+    println!("------------------");
+    if quick {
+        println!("Quick mode enabled.");
+    }
+    println!("Full release-check workflow lands in Phase 7.");
+    println!("Current recommended checks:");
+    println!("  1) cargo test --test settings_matrix");
+    println!("  2) python scripts/run_settings_matrix.py");
+    println!("  3) cargo run --release --bin ixos-big-bench -- --dir . --runs 3");
+    Ok(())
+}
+
 async fn handle_doctor(json: bool, verbose: bool) -> anyhow::Result<()> {
     use ixos_protocol::diagnostics::{run_doctor, DoctorOptions, DoctorStatus};
 
@@ -1377,7 +1399,27 @@ async fn handle_model(action: ModelCommands) -> anyhow::Result<()> {
         ModelCommands::List { all, json } => {
             let models = MmapModel2VecEmbedder::available_models();
             if json {
-                println!("[]");
+                #[derive(serde::Serialize)]
+                struct ModelListEntry {
+                    model_id: String,
+                    display_name: String,
+                    available: bool,
+                    path: Option<String>,
+                    description: String,
+                }
+
+                let payload: Vec<ModelListEntry> = models
+                    .into_iter()
+                    .filter(|(_, available, _)| all || *available)
+                    .map(|(model_type, available, path)| ModelListEntry {
+                        model_id: model_type.to_string(),
+                        display_name: model_type.display_name().to_string(),
+                        available,
+                        path: path.map(|p| p.display().to_string()),
+                        description: model_type.description().to_string(),
+                    })
+                    .collect();
+                println!("{}", serde_json::to_string_pretty(&payload)?);
             } else {
                 println!("Available Models:");
                 for (model_type, available, _) in models {
@@ -1386,7 +1428,7 @@ async fn handle_model(action: ModelCommands) -> anyhow::Result<()> {
                     }
                     println!(
                         "  {} - {}",
-                        format!("{:?}", model_type),
+                        model_type.display_name(),
                         if available {
                             "Available"
                         } else {
@@ -1415,7 +1457,7 @@ async fn handle_model(action: ModelCommands) -> anyhow::Result<()> {
             for (model_type, available, _) in models {
                 println!(
                     "{}: {}",
-                    format!("{:?}", model_type),
+                    model_type.display_name(),
                     if available {
                         "Available"
                     } else {

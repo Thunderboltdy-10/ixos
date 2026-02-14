@@ -1,0 +1,46 @@
+{
+  "generated_at": "2026-02-13T18:14:35.863520+00:00",
+  "before_bench": "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\big_bench_20260213_180844.json",
+  "after_bench": "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\big_bench_20260213_181435.json",
+  "tier": "c",
+  "before_summary": {
+    "samples": 120,
+    "ttfr_p50_ms": 30.0,
+    "ttfr_p95_ms": 43.0,
+    "total_p50_ms": 31.0,
+    "total_p95_ms": 45.0,
+    "cold_ttfr_p50_ms": 29.0,
+    "cold_total_p95_ms": 45.0,
+    "warm_total_p95_ms": 45.0,
+    "walk_p95_ms": 0.0,
+    "path_score_p95_ms": 0.0,
+    "ripgrep_p95_ms": 27.0,
+    "embed_p95_ms": 0.0,
+    "rank_p95_ms": 1.0,
+    "avg_cache_hit_rate": 0.999867374005305
+  },
+  "after_summary": {
+    "samples": 120,
+    "ttfr_p50_ms": 30.0,
+    "ttfr_p95_ms": 45.0,
+    "total_p50_ms": 31.0,
+    "total_p95_ms": 47.0,
+    "cold_ttfr_p50_ms": 30.0,
+    "cold_total_p95_ms": 47.0,
+    "warm_total_p95_ms": 47.0,
+    "walk_p95_ms": 0.0,
+    "path_score_p95_ms": 0.0,
+    "ripgrep_p95_ms": 27.0,
+    "embed_p95_ms": 0.0,
+    "rank_p95_ms": 1.0,
+    "avg_cache_hit_rate": 0.9997203377598152
+  },
+  "harsh_targets": {
+    "cold_ttfr_p50_ms": 120.0,
+    "cold_total_p95_ms": 6000.0,
+    "warm_total_p95_ms": 2500.0,
+    "ripgrep_p95_ms": 80.0,
+    "embed_p95_ms": 40.0,
+    "rank_p95_ms": 80.0
+  }
+}

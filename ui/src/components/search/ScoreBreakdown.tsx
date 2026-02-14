@@ -4,11 +4,11 @@ import { getMatchContributions } from '@/lib/matchClassification';
 
 interface ScoreBreakdownProps {
   breakdown: ScoreBreakdownType;
-  mode?: 'jit' | 'cache' | 'journalist';
+  mode?: 'ephemeral' | 'native-cache' | 'journalist';
   className?: string;
 }
 
-export function ScoreBreakdown({ breakdown, mode = 'cache', className }: ScoreBreakdownProps) {
+export function ScoreBreakdown({ breakdown, mode = 'native-cache', className }: ScoreBreakdownProps) {
   // Safety check - return nothing if breakdown is invalid
   if (!breakdown || typeof breakdown !== 'object') {
     return null;
@@ -19,9 +19,9 @@ export function ScoreBreakdown({ breakdown, mode = 'cache', className }: ScoreBr
   // Dynamic colors based on mode
   const getSemanticColor = () => {
     switch (mode) {
-      case 'jit': return 'bg-accent-amber';
+      case 'ephemeral': return 'bg-accent-amber';
       case 'journalist': return 'bg-accent-violet';
-      case 'cache':
+      case 'native-cache':
       default: return 'bg-accent-teal';
     }
   };

@@ -55,7 +55,7 @@ export function MainSearchView() {
   const mode: SearchMode = journalistMode ? 'journalist' : cacheMode;
   const modeGlow = mode === 'journalist'
     ? 'rgba(124, 92, 255, 0.12)'
-    : mode === 'cache'
+    : mode === 'native-cache'
       ? 'rgba(13, 148, 136, 0.12)'
       : 'rgba(246, 185, 76, 0.12)';
   const handleModeChange = useCallback((newMode: SearchMode) => {

@@ -36,6 +36,7 @@ use std::path::PathBuf;
 // Config file format version
 // Bump this when making breaking changes to the config structure
 const CONFIG_VERSION: u32 = 1;
+const LEGACY_CONFIG_VERSION: u32 = 0;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IxosConfig {
@@ -61,7 +62,7 @@ pub struct IxosConfig {
 }
 
 fn default_config_version() -> u32 {
-    CONFIG_VERSION
+    LEGACY_CONFIG_VERSION
 }
 
 /// Search-related configuration
@@ -87,7 +88,7 @@ pub struct SearchConfig {
     #[serde(default)]
     pub progressive_by_default: bool,
 
-    /// Default cache mode: "jit" or "cache"
+    /// Default cache mode: "native-cache" or "ephemeral"
     #[serde(default = "default_cache_mode")]
     pub cache_mode: String,
 
@@ -210,7 +211,15 @@ fn default_format() -> String {
 }
 
 fn default_cache_mode() -> String {
-    "jit".to_string()
+    "native-cache".to_string()
+}
+
+fn normalize_cache_mode(value: &str) -> String {
+    match value.trim().to_lowercase().as_str() {
+        "native-cache" | "nativecache" | "cache" | "persistent" => "native-cache".to_string(),
+        "ephemeral" | "jit" | "memory" | "memory-only" => "ephemeral".to_string(),
+        _ => default_cache_mode(),
+    }
 }
 
 fn default_extensions() -> Vec<String> {
@@ -368,6 +377,13 @@ impl IxosConfig {
                     // Run migrations
                     config.migrate_if_needed();
 
+                    // Normalize cache mode values (keeps old configs compatible)
+                    let normalized_cache_mode = normalize_cache_mode(&config.search.cache_mode);
+                    if normalized_cache_mode != config.search.cache_mode {
+                        config.search.cache_mode = normalized_cache_mode;
+                        changed = true;
+                    }
+
                     // Normalize model types
                     let normalized_model = normalize_flash_model_type(&config.search.model_type);
                     if normalized_model != config.search.model_type {
@@ -419,9 +435,10 @@ impl IxosConfig {
                     tracing::info!("Migrating config: Resetting personal_ranking_enabled to false (requires Pro)");
                     self.search.personal_ranking_enabled = false;
                 }
-                self.version = 1;
+                self.search.cache_mode = normalize_cache_mode(&self.search.cache_mode);
+                self.version = CONFIG_VERSION;
             }
-            1 => {
+            CONFIG_VERSION => {
                 // Current version - no migration needed
             }
             _ => {
@@ -533,14 +550,17 @@ impl IxosConfig {
                     })?;
             }
             ["search", "cache_mode"] => {
-                if !["jit", "cache"].contains(&value) {
+                let normalized = normalize_cache_mode(value);
+                if !["native-cache", "ephemeral", "cache", "jit", "persistent"]
+                    .contains(&value.trim().to_lowercase().as_str())
+                {
                     return Err(ConfigError::InvalidValue {
                         key: key.to_string(),
                         value: value.to_string(),
-                        expected: "jit or cache".to_string(),
+                        expected: "native-cache or ephemeral".to_string(),
                     });
                 }
-                self.search.cache_mode = value.to_string();
+                self.search.cache_mode = normalized;
             }
             ["search", "use_stub_model"] => {
                 self.search.use_stub_model =
@@ -877,5 +897,32 @@ mod tests {
         let toml = toml::to_string_pretty(&config).unwrap();
         assert!(toml.contains("[search]"));
         assert!(toml.contains("[output]"));
+    }
+
+    #[test]
+    fn test_unversioned_config_migrates_to_current_version() {
+        let temp_dir = TempDir::new().unwrap();
+        let config_path = temp_dir.path().join("legacy.toml");
+        let legacy = r#"
+[search]
+personal_ranking_enabled = true
+cache_mode = "jit"
+"#;
+        std::fs::write(&config_path, legacy).unwrap();
+
+        let loaded = IxosConfig::load_from(config_path);
+        assert_eq!(loaded.version, CONFIG_VERSION);
+        assert!(!loaded.search.personal_ranking_enabled);
+        assert_eq!(loaded.search.cache_mode, "ephemeral");
+    }
+
+    #[test]
+    fn test_cache_mode_aliases_are_normalized() {
+        let mut config = IxosConfig::default();
+        config.set("search.cache_mode", "jit").unwrap();
+        assert_eq!(config.search.cache_mode, "ephemeral");
+
+        config.set("search.cache_mode", "cache").unwrap();
+        assert_eq!(config.search.cache_mode, "native-cache");
     }
 }

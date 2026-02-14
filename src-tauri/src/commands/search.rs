@@ -563,11 +563,14 @@ pub async fn search_progressive(
         None
     };
     let cache_mode = match options.cache_mode.as_deref() {
-        Some("cache") => ixos_protocol::CacheMode::Cache,
-        _ => ixos_protocol::CacheMode::Jit,
+        Some("native-cache" | "nativecache" | "cache" | "persistent") => {
+            ixos_protocol::CacheMode::NativeCache
+        }
+        Some("ephemeral" | "jit") => ixos_protocol::CacheMode::Ephemeral,
+        _ => ixos_protocol::CacheMode::NativeCache,
     };
     let cache_mode = if options.journalist_mode.unwrap_or(false) {
-        ixos_protocol::CacheMode::Jit
+        ixos_protocol::CacheMode::Ephemeral
     } else {
         cache_mode
     };

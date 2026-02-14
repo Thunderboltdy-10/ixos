@@ -37,8 +37,8 @@ struct PerfSuiteArgs {
     /// Seed for deterministic content
     #[arg(long, default_value = "1337")]
     seed: u64,
-    /// Cache mode: jit or cache
-    #[arg(long, default_value = "jit")]
+    /// Cache mode: native-cache or ephemeral (legacy aliases: cache/jit)
+    #[arg(long, default_value = "native-cache")]
     cache_mode: String,
     /// Model to use
     #[arg(long, default_value = "ixos-flash-v2")]
@@ -176,8 +176,9 @@ fn parse_sizes(raw: &str) -> anyhow::Result<Vec<usize>> {
 
 fn parse_cache_mode(raw: &str) -> CacheMode {
     match raw.to_lowercase().as_str() {
-        "cache" => CacheMode::Cache,
-        _ => CacheMode::Jit,
+        "native-cache" | "nativecache" | "cache" | "persistent" => CacheMode::NativeCache,
+        "ephemeral" | "jit" => CacheMode::Ephemeral,
+        _ => CacheMode::NativeCache,
     }
 }
 
@@ -323,7 +324,7 @@ async fn run_baseline(
 
         metrics_runs.push(collector.finalize());
 
-        if matches!(cache_mode, CacheMode::Cache) {
+        if matches!(cache_mode, CacheMode::NativeCache) {
             semantic.clear_memory_cache().await;
         }
     }

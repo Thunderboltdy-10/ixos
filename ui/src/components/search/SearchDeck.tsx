@@ -86,7 +86,7 @@ export function SearchDeck() {
   const lastSearchStartRef = useRef<number | null>(null);
 
   // Derive mode key for accent colors
-  const modeKey: 'jit' | 'cache' | 'journalist' = journalistMode ? 'journalist' : cacheMode === 'cache' ? 'cache' : 'jit';
+  const modeKey: 'jit' | 'cache' | 'journalist' = journalistMode ? 'journalist' : cacheMode === 'native-cache' ? 'cache' : 'jit';
   const accent = MODE_ACCENTS[modeKey];
 
   const isActive = phase === 'lexical' || phase === 'semantic' || phase === 'refining';
@@ -100,7 +100,7 @@ export function SearchDeck() {
   const averageSearchMs = useMemo(() => {
     let base = qualityMode === 'flash' ? 9_000 : qualityMode === 'pro' ? 28_000 : 18_000;
     if (journalistMode) base += 3_000;
-    if (cacheMode === 'cache') base = Math.max(6_000, base - 4_000);
+    if (cacheMode === 'native-cache') base = Math.max(6_000, base - 4_000);
     return base;
   }, [cacheMode, journalistMode, qualityMode]);
 
@@ -303,7 +303,11 @@ export function SearchDeck() {
   if (!shouldShow) return null;
 
   const displayElapsedMs = finalElapsedMs ?? elapsedMs;
-  const modeBadge = journalistMode ? 'Secure' : cacheMode === 'cache' ? 'Cache (disk)' : 'JIT (memory)';
+  const modeBadge = journalistMode
+    ? 'Secure'
+    : cacheMode === 'native-cache'
+      ? 'NativeCache (disk)'
+      : 'Ephemeral (memory)';
 
   return (
     <>

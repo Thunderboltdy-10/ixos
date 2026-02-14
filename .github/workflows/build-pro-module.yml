@@ -19,7 +19,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build ixos CLI release binary
-        run: cargo build --release --bin ixos
+        run: cargo build --locked --release --bin ixos
 
       - name: Package module artifacts
         shell: pwsh
@@ -32,6 +32,12 @@ jobs:
           }
           $dest = Join-Path "dist" $binName
           Copy-Item $source $dest -Force
+          if (Test-Path "README.md") {
+            Copy-Item "README.md" (Join-Path "dist" "README.md") -Force
+          }
+          if (Test-Path "LICENSE") {
+            Copy-Item "LICENSE" (Join-Path "dist" "LICENSE") -Force
+          }
           $hash = (Get-FileHash -Path $dest -Algorithm SHA256).Hash.ToLower()
           Set-Content -Path (Join-Path "dist" "$binName.sha256") -Value "$hash  $binName"
 

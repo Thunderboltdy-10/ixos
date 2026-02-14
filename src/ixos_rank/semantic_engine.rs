@@ -2,8 +2,8 @@
 //!
 //! Provides semantic similarity search using embeddings with lazy loading.
 //! Supports two cache modes:
-//! - **JIT mode**: Embeddings computed on demand, stored in memory only (maximum privacy)
-//! - **Cache mode**: Embeddings persisted to ADS/xattr (better performance)
+//! - **Ephemeral mode**: Embeddings computed on demand, stored in memory only (maximum privacy)
+//! - **NativeCache mode**: Embeddings persisted to ADS/xattr (better performance)
 
 use std::collections::HashMap;
 use std::io::Read;
@@ -30,13 +30,13 @@ use super::types::{LexicalMatch, SearchError, SemanticMatch};
 /// Cache mode for embedding storage
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum CacheMode {
-    /// JIT mode: embeddings computed on demand, stored in memory only
-    /// Maximum privacy - no persistent traces
-    #[default]
-    Jit,
-    /// Cache mode: embeddings persisted to ADS/xattr
+    /// NativeCache mode: embeddings persisted to ADS/xattr
     /// Better performance on repeated searches
-    Cache,
+    #[default]
+    NativeCache,
+    /// Ephemeral mode: embeddings computed on demand, stored in memory only
+    /// Maximum privacy - no persistent traces
+    Ephemeral,
 }
 
 /// Trait for semantic search engines
@@ -72,16 +72,16 @@ pub trait SemanticEngine: Send + Sync {
 /// Semantic engine with lazy embedding loading
 ///
 /// Uses lazy loading to compute embeddings only when needed during search.
-/// Supports both JIT (memory-only) and Cache (persistent) modes.
+/// Supports both Ephemeral (memory-only) and NativeCache (persistent) modes.
 pub struct StubSemanticEngine {
     embedder: SecureEmbedder,
     /// Files to search (paths only, not pre-computed embeddings)
     files_to_search: Vec<PathBuf>,
-    /// In-memory embedding cache (for JIT and as fallback)
+    /// In-memory embedding cache (for Ephemeral and as fallback)
     memory_cache: Mutex<HashMap<PathBuf, Vec<f32>>>,
-    /// Cache mode (JIT = memory only, Cache = use ADS/xattr)
+    /// Cache mode (Ephemeral = memory only, NativeCache = use ADS/xattr)
     cache_mode: CacheMode,
-    /// Persistent cache backend (for Cache mode)
+    /// Persistent cache backend (for NativeCache mode)
     storage_cache: Option<Box<dyn EmbeddingCache + Send + Sync>>,
     /// Minimum similarity score threshold (0.0 to 1.0)
     min_score_threshold: f32,
@@ -107,7 +107,7 @@ pub struct SemanticMetrics {
 }
 
 impl StubSemanticEngine {
-    /// Create a new stub engine with the given embedder (JIT mode by default)
+    /// Create a new stub engine with the given embedder (NativeCache mode by default)
     pub fn new(embedder: SecureEmbedder) -> Self {
         let mut fstd_state = FstdState::new(FstdConfig::default());
         fstd_state.load_default_adapter();
@@ -115,7 +115,7 @@ impl StubSemanticEngine {
             embedder,
             files_to_search: Vec::new(),
             memory_cache: Mutex::new(HashMap::new()),
-            cache_mode: CacheMode::Jit,
+            cache_mode: CacheMode::NativeCache,
             storage_cache: None,
             min_score_threshold: 0.0,
             metrics: Mutex::new(SemanticMetrics::default()),
@@ -155,7 +155,7 @@ impl StubSemanticEngine {
         }
     }
 
-    /// Create a new stub engine with the default stub model (JIT mode)
+    /// Create a new stub engine with the default stub model (Ephemeral mode)
     pub fn with_stub_model() -> Self {
         use crate::ixos_embed::model::StubModel;
         let model = Arc::new(StubModel::new());
@@ -200,8 +200,8 @@ impl StubSemanticEngine {
         let count = files.len();
         self.files_to_search = files;
 
-        // Initialize storage cache for Cache mode
-        if self.cache_mode == CacheMode::Cache && !self.files_to_search.is_empty() {
+        // Initialize storage cache for NativeCache mode
+        if self.cache_mode == CacheMode::NativeCache && !self.files_to_search.is_empty() {
             self.storage_cache = Some(get_cache_for_path_with_fingerprint(
                 dir,
                 self.embedder.model_fingerprint(),
@@ -278,7 +278,7 @@ impl StubSemanticEngine {
     ///
     /// Checks caches in order:
     /// 1. Memory cache (fastest)
-    /// 2. Persistent storage (ADS/xattr) - only in Cache mode
+    /// 2. Persistent storage (ADS/xattr) - only in NativeCache mode
     /// 3. Compute embedding (slowest, stores in appropriate cache(s))
     async fn get_embedding(&self, path: &Path) -> Result<Vec<f32>, SearchError> {
         // 1. Check memory cache first
@@ -293,14 +293,14 @@ impl StubSemanticEngine {
 
         // 2. Read limited file content (hot path cap)
         let (content, bytes_read, file_hash) =
-            read_text_for_embedding(path, self.cache_mode == CacheMode::Cache)?;
+            read_text_for_embedding(path, self.cache_mode == CacheMode::NativeCache)?;
         {
             let mut metrics = self.metrics.lock().await;
             metrics.io_read_bytes += bytes_read as u64;
         }
 
-        // 3. If Cache mode, check persistent storage (ADS/xattr)
-        if self.cache_mode == CacheMode::Cache {
+        // 3. If NativeCache mode, check persistent storage (ADS/xattr)
+        if self.cache_mode == CacheMode::NativeCache {
             if let Some(ref storage) = self.storage_cache {
                 if let Ok(Some(embedding)) = storage.get(path, &file_hash) {
                     let mut metrics = self.metrics.lock().await;
@@ -335,8 +335,8 @@ impl StubSemanticEngine {
             cache.insert(path.to_path_buf(), embedding.clone());
         }
 
-        // Store in persistent storage if in Cache mode
-        if self.cache_mode == CacheMode::Cache {
+        // Store in persistent storage if in NativeCache mode
+        if self.cache_mode == CacheMode::NativeCache {
             if let Some(ref storage) = self.storage_cache {
                 // Best effort - don't fail if storage fails
                 let _ = storage.set(path, &file_hash, &embedding);
@@ -547,7 +547,7 @@ impl SemanticEngine for StubSemanticEngine {
         }
 
         let augmentation_config = &self.augmentation_config;
-        let use_persistent_hash = self.cache_mode == CacheMode::Cache;
+        let use_persistent_hash = self.cache_mode == CacheMode::NativeCache;
         let file_results: Vec<FileReadResult> = if uncached_indices.len() > 8 {
             // Use parallel I/O for larger batches
             uncached_indices
@@ -604,8 +604,8 @@ impl SemanticEngine for StubSemanticEngine {
         let mut to_embed: Vec<(usize, String, [u8; 32])> = Vec::new();
 
         for result in file_results {
-            // Check persistent cache (ADS/xattr) if in Cache mode
-            if self.cache_mode == CacheMode::Cache {
+            // Check persistent cache (ADS/xattr) if in NativeCache mode
+            if self.cache_mode == CacheMode::NativeCache {
                 if let Some(ref storage) = self.storage_cache {
                     let path = &candidate_paths[result.idx];
                     if let Ok(Some(embedding)) = storage.get(path, &result.file_hash) {
@@ -688,8 +688,8 @@ impl SemanticEngine for StubSemanticEngine {
                 let path = &candidate_paths[*idx];
                 cache.insert(path.clone(), embedding.clone());
 
-                // Store in persistent cache if in Cache mode
-                if self.cache_mode == CacheMode::Cache {
+                // Store in persistent cache if in NativeCache mode
+                if self.cache_mode == CacheMode::NativeCache {
                     if let Some(ref storage) = self.storage_cache {
                         let _ = storage.set(path, file_hash, embedding);
                     }

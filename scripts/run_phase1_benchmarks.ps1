@@ -8,11 +8,11 @@ try {
         New-Item -ItemType Directory -Path "bench/results" | Out-Null
     }
 
-    Write-Host "Running JIT benchmark..."
-    cargo run --bin ixos-bench -- --dir dataset --runs 5 --cache-mode jit --model ixos-flash-v2 --out bench/results/PERF_JIT.md
+    Write-Host "Running Ephemeral benchmark..."
+    cargo run --bin ixos-bench -- --dir dataset --runs 5 --cache-mode ephemeral --model ixos-flash-v2 --out bench/results/PERF_JIT.md
 
-    Write-Host "Running cache benchmark..."
-    cargo run --bin ixos-bench -- --dir dataset --runs 5 --cache-mode cache --model ixos-flash-v2 --out bench/results/PERF_CACHE.md
+    Write-Host "Running NativeCache benchmark..."
+    cargo run --bin ixos-bench -- --dir dataset --runs 5 --cache-mode native-cache --model ixos-flash-v2 --out bench/results/PERF_CACHE.md
 
     Write-Host "Running perf suite (small/medium/huge)..."
     cargo run --bin ixos-perf-suite -- --config bench/perf_suite.toml

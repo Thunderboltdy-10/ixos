@@ -187,12 +187,12 @@ export function SearchSettings() {
               updateConfig({
                 search: { ...config.search, cacheMode: newValue },
               });
-              useSearchStore.getState().setCacheMode(newValue as 'cache' | 'jit');
+              useSearchStore.getState().setCacheMode(newValue as 'native-cache' | 'ephemeral');
             }}
             className="w-36 h-8 bg-graphite-2/70 border border-white/10 rounded-lg px-2.5 text-xs text-porcelain"
           >
-            <option value="jit">Off (JIT only)</option>
-            <option value="cache">Persistent (ADS/xattr)</option>
+            <option value="native-cache">NativeCache (Recommended)</option>
+            <option value="ephemeral">Ephemeral (Memory Only)</option>
           </select>
           <span className="text-[10px] text-fg-dim/60 max-w-[220px] text-right">
             Cache uses file metadata (ADS/xattr), not separate files. Safe for git repos.
@@ -590,8 +590,8 @@ function ModelManagementPanel() {
   }
 
   const models = [
-    { id: 'ixos-flash-v2', label: 'Ixos Flash V2', available: status?.ixosFlashV2Available },
-    { id: 'ixos-pro-v2', label: 'Ixos Pro V2', available: status?.ixosProV2Available },
+    { id: 'ixos-flash-v2', label: 'Flash Quartz', available: status?.ixosFlashV2Available },
+    { id: 'ixos-pro-v2', label: 'Pro Prism', available: status?.ixosProV2Available },
   ];
 
   return (

@@ -1,0 +1,22 @@
+{
+  "captured_at": "2026-02-13T17:19:31.263715+00:00",
+  "iteration": 1,
+  "commands": {
+    "build_release": {
+      "code": 0,
+      "duration_s": 33.61
+    },
+    "code_audit": {
+      "code": 0,
+      "duration_s": 19.46
+    },
+    "bench": {
+      "code": 0,
+      "duration_s": 2.21
+    },
+    "landing_audit": {
+      "code": 0,
+      "duration_s": 0.07
+    }
+  }
+}

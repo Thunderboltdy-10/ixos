@@ -22,7 +22,10 @@ jobs:
           python-version: "3.11"
 
       - name: Build ixos CLI
-        run: cargo build --bin ixos
+        run: cargo build --locked --bin ixos
+
+      - name: Run Rust settings matrix integration test
+        run: cargo test --locked --test settings_matrix
 
       - name: Run settings matrix
         run: python scripts/run_settings_matrix.py
@@ -33,4 +36,3 @@ jobs:
         with:
           name: settings-matrix-report
           path: reports/settings_matrix_*.md
-

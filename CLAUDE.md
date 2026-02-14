@@ -40,11 +40,11 @@ cargo clippy
 # Search with real Model2Vec
 .\target\release\ixos.exe search "query" --dir .\dataset
 
-# JIT mode (maximum privacy)
-.\target\release\ixos.exe search "query" --cache-mode jit
+# Ephemeral mode (maximum privacy)
+.\target\release\ixos.exe search "query" --cache-mode ephemeral
 
-# Cache mode (better performance)
-.\target\release\ixos.exe search "query" --cache-mode cache
+# NativeCache mode (recommended)
+.\target\release\ixos.exe search "query" --cache-mode native-cache
 
 # Secure timing mode (for sensitive data)
 .\target\release\ixos.exe search "query" --secure-timing

@@ -54,17 +54,17 @@
   Evidence: `src-tauri/src/commands/search.rs:235`, `src-tauri/src/commands/search.rs:323`
 
 ## Cache modes and storage
-- IMPLEMENTED: CLI supports `--cache-mode` flag (jit/cache).
+- IMPLEMENTED: CLI supports `--cache-mode` flag with canonical names `ephemeral` / `native-cache` (legacy aliases `jit` / `cache` still accepted).
   Evidence: `src/cli/commands.rs:139`
-- IMPLEMENTED: CLI forces JIT in journalist mode and uses cache mode in search.
+- IMPLEMENTED: CLI forces Ephemeral in journalist mode and uses configured cache mode in search.
   Evidence: `src/main.rs:185`, `src/main.rs:262`
 - IMPLEMENTED: Cache backends are ADS on Windows and xattr on Unix via `get_cache_for_path`.
   Evidence: `src/storage/mod.rs:39`, `src/storage/mod.rs:43`
 
 ## Journalist mode
-- IMPLEMENTED: CLI flag exists and forces JIT, clears data after search.
+- IMPLEMENTED: CLI flag exists and forces Ephemeral, clears data after search.
   Evidence: `src/cli/commands.rs:172`, `src/main.rs:185`, `src/main.rs:371`
-- IMPLEMENTED: Desktop search honors `journalist_mode` and forces JIT.
+- IMPLEMENTED: Desktop search honors `journalist_mode` and forces Ephemeral.
   Evidence: `src-tauri/src/commands/search.rs:246`, `src-tauri/src/commands/search.rs:449`
 
 ## Secure timing

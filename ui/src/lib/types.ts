@@ -136,7 +136,7 @@ export interface SearchOptions {
   limit?: number;
   secureRanking?: boolean;
   contextLines?: number;
-  cacheMode?: 'jit' | 'cache';
+  cacheMode?: 'native-cache' | 'ephemeral' | 'cache' | 'jit';
   journalistMode?: boolean;
   secureTiming?: boolean;
   modelType?: ModelType;

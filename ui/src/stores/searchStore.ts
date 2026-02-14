@@ -117,7 +117,7 @@ interface SearchState {
 
   // Timing
   searchStartTime: number | null;
-  cacheMode: 'cache' | 'jit';
+  cacheMode: 'native-cache' | 'ephemeral';
   fileCount: number | null;
 
   // Ask Mode
@@ -128,7 +128,7 @@ interface SearchState {
   setQuery: (query: string) => void;
   setDirectory: (directory: string) => void;
   setJournalistMode: (enabled: boolean) => void;
-  setCacheMode: (mode: 'cache' | 'jit') => void;
+  setCacheMode: (mode: 'native-cache' | 'ephemeral') => void;
   setSelectedIndex: (index: number) => void;
   moveSelection: (direction: 'up' | 'down') => void;
   clearResults: () => void;
@@ -184,7 +184,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   hasSearchIntent: false,
   journalistMode: false,
   searchStartTime: null,
-  cacheMode: 'jit',
+  cacheMode: 'native-cache',
   fileCount: null,
   askModeOverride: null,
   isAskModeActive: false,
@@ -620,13 +620,18 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     set(() => {
       const hasSemantic = thread.results.length > 0 && 'scoreBreakdown' in thread.results[0];
       const isJournalist = thread.mode === 'journalist';
+      const modeValue = thread.mode as string;
       return {
         query: thread.query,
         directory: thread.directory,
         activeQuery: thread.query,
         activeThreadId: thread.id,
         journalistMode: isJournalist,
-        cacheMode: isJournalist ? 'jit' : (thread.mode as 'cache' | 'jit'),
+        cacheMode: isJournalist
+          ? 'ephemeral'
+          : (modeValue === 'native-cache' || modeValue === 'cache' || modeValue === 'persistent'
+              ? 'native-cache'
+              : 'ephemeral'),
         lexicalResults: hasSemantic ? [] : thread.results as LexicalResult[],
         semanticResults: hasSemantic ? thread.results as RankedResult[] : [],
         lateResults: [],

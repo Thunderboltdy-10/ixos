@@ -151,11 +151,11 @@ async fn run_indexing_loop(
 
             let mut semantic = if let Some(model) = &real_model {
                 let embedder = SecureEmbedder::new_fast(model.clone());
-                StubSemanticEngine::with_cache_mode(embedder, CacheMode::Cache)
+                StubSemanticEngine::with_cache_mode(embedder, CacheMode::NativeCache)
             } else {
                 let model = Arc::new(StubModel::new());
                 let embedder = SecureEmbedder::new_fast(model);
-                StubSemanticEngine::with_cache_mode(embedder, CacheMode::Cache)
+                StubSemanticEngine::with_cache_mode(embedder, CacheMode::NativeCache)
             };
 
             let discovered = semantic.index_directory(directory).await.unwrap_or(0);

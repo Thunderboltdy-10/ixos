@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 export default function DocsGettingStartedPage() {
   return (
@@ -6,57 +6,64 @@ export default function DocsGettingStartedPage() {
       <p className="docs-kicker">{"// GETTING_STARTED"}</p>
       <h1 className="docs-h1">Getting Started</h1>
       <p className="docs-lead">
-        This setup guide covers install prerequisites, local development commands, environment
-        configuration, and first-run validation for the Ixos desktop stack.
+        This guide covers install prerequisites, first-run setup, and validation commands for both
+        desktop users and local contributors.
       </p>
 
       <h2>System requirements</h2>
       <ul>
-        <li>Windows 10/11 x64 or macOS 12+.</li>
-        <li>8 GB RAM minimum, 16 GB recommended for larger directory sets.</li>
-        <li>500 MB free disk space for app binaries and model artifacts.</li>
-        <li>Modern x64 CPU with AVX2 support preferred.</li>
+        <li>Windows 10/11 x64 or macOS 12+ (Linux for CLI dev/testing).</li>
+        <li>8 GB RAM minimum, 16 GB recommended for medium/large roots.</li>
+        <li>500 MB free disk for binaries + model artifacts.</li>
+        <li>Modern x64 CPU (AVX2 preferred for best embedding throughput).</li>
       </ul>
 
-      <h2>Install desktop build</h2>
+      <h2>Desktop installation flow</h2>
       <ol>
         <li>Download the installer from the Download page.</li>
-        <li>Run installer and complete OS permission prompts.</li>
-        <li>Launch Ixos and authenticate.</li>
-        <li>Install at least one model from settings before first search.</li>
-        <li>Select a folder scope and execute a natural-language query.</li>
+        <li>Install and launch Ixos.</li>
+        <li>Authenticate with your account.</li>
+        <li>Install at least one model (Flash Quartz recommended first).</li>
+        <li>Choose search root and run a first query.</li>
       </ol>
+
+      <h2>Cache mode defaults</h2>
+      <ul>
+        <li><strong>NativeCache (default):</strong> persistent ADS/xattr cache for fast repeat queries.</li>
+        <li><strong>Ephemeral:</strong> memory-only mode for minimal persistence.</li>
+        <li>Legacy aliases <code>cache/jit</code> are still accepted in CLI for compatibility.</li>
+      </ul>
 
       <h2>Run from source</h2>
       <pre>
-        <code>{`# From repo root
+        <code>{`# Rust core + CLI
 cargo build
 cargo test
 
 # Desktop UI
 npm run dev
 
-# Desktop shell
+# Tauri shell
 npm run tauri:dev
 
-# Landing + docs site
+# Docs/landing site
 cd ixos-site
 npm run dev`}</code>
       </pre>
 
       <h2>Environment configuration</h2>
       <ul>
-        <li>Copy `ixos-site/.env.example` and set Clerk/billing variables.</li>
-        <li>Copy `src-tauri/.env.example` for desktop-specific runtime settings.</li>
-        <li>Confirm API URLs align between desktop and site before auth tests.</li>
+        <li>Copy <code>ixos-site/.env.example</code> and set Clerk + billing variables.</li>
+        <li>Copy <code>src-tauri/.env.example</code> for desktop runtime settings.</li>
+        <li>For production desktop builds, set <code>VITE_API_URL</code>, <code>VITE_CLERK_PUBLISHABLE_KEY</code>, and <code>IXOS_JWT_PUBLIC_KEY</code>.</li>
       </ul>
 
-      <h2>First-run verification</h2>
+      <h2>First-run validation checklist</h2>
       <ul>
-        <li>Sign-in and sign-up text/controls are readable on both desktop and web auth screens.</li>
-        <li>Model switcher shows install status and active selection.</li>
-        <li>Search results stream correctly and open/reveal actions work.</li>
-        <li>Ask mode respects selected model and remains responsive.</li>
+        <li>Search returns streaming lexical then semantic results.</li>
+        <li>Ask Mode toggle works and does not force wrong model path.</li>
+        <li>Model list works in CLI JSON and desktop model switcher.</li>
+        <li>Settings mode labels show NativeCache/Ephemeral consistently.</li>
       </ul>
 
       <p className="docs-next">

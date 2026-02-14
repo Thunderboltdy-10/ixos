@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 export default function DocsModelsPage() {
   return (
@@ -6,20 +6,27 @@ export default function DocsModelsPage() {
       <p className="docs-kicker">{"// MODELS_AND_HF"}</p>
       <h1 className="docs-h1">Models + Hugging Face</h1>
       <p className="docs-lead">
-        Ixos uses canonical model IDs to prevent naming drift across desktop UI, CLI flags,
-        manifests, benchmarks, and docs.
+        Ixos enforces canonical model IDs and separate user-facing branding to prevent naming drift
+        across CLI, desktop, manifests, and benchmark reports.
       </p>
 
-      <h2>Canonical model IDs</h2>
+      <h2>Canonical IDs</h2>
       <ul>
-        <li>`ixos-flash-v1` legacy Flash baseline.</li>
-        <li>`ixos-flash-v2` current Flash v2 generation.</li>
-        <li>`ixos-pro-v1` legacy hidden Pro baseline.</li>
-        <li>`ixos-pro-v2` true Pro v2 definition.</li>
-        <li>`potion-base-8m-int8` internal dependency.</li>
+        <li><code>ixos-flash-v1</code>: legacy Flash baseline.</li>
+        <li><code>ixos-flash-v2</code>: current Flash generation.</li>
+        <li><code>ixos-pro-v1</code>: legacy Pro baseline (comparison only).</li>
+        <li><code>ixos-pro-v2</code>: current Pro generation.</li>
+        <li><code>potion-base-8m-int8</code>: internal dependency model.</li>
       </ul>
 
-      <h2>Artifact structure</h2>
+      <h2>User-facing branding</h2>
+      <ul>
+        <li><strong>Flash Quartz</strong> - mapped to <code>ixos-flash-v2</code>.</li>
+        <li><strong>Pro Prism</strong> - mapped to <code>ixos-pro-v2</code>.</li>
+        <li><strong>Potion Core</strong> - mapped to <code>potion-base-8m-int8</code>.</li>
+      </ul>
+
+      <h2>Folder layout</h2>
       <pre>
         <code>{`models/
   ixos-flash-v1/
@@ -27,27 +34,28 @@ export default function DocsModelsPage() {
   ixos-pro-v1/
   ixos-pro-v2/
   potion-base-8m-int8/
+
 models/lab/
   CANONICAL_RESULTS.md
   LEADERBOARD.md
   EXPERIMENT_LOG.md`}</code>
       </pre>
 
-      <h2>Publish flow</h2>
+      <h2>Publishing checklist</h2>
       <ol>
-        <li>Prepare model files in the canonical folder.</li>
-        <li>Upload artifacts with Git LFS to Hugging Face.</li>
-        <li>Update desktop download manifests if IDs or files changed.</li>
-        <li>Update docs and canonical results references.</li>
-        <li>Validate install and selection in the desktop model switcher.</li>
+        <li>Validate model files load from safetensors on all supported platforms.</li>
+        <li>Run quality + perf evaluation and save outputs to <code>models/lab</code>.</li>
+        <li>Update model manifest and desktop downloader references.</li>
+        <li>Verify CLI model list JSON and desktop switcher display expected branded names.</li>
+        <li>Update docs references and changelog entries.</li>
       </ol>
 
-      <h2>Required references</h2>
-      <ul>
-        <li>`reports/HF_UPLOAD_PLAYBOOK.md`</li>
-        <li>`reports/MODEL_NAMING_MIGRATION.md`</li>
-        <li>`models/lab/CANONICAL_RESULTS.md`</li>
-      </ul>
+      <h2>Validation commands</h2>
+      <pre>
+        <code>{`cargo run --bin ixos -- model list --json
+python scripts/ixos_eval.py --suite both --output models/lab/results_latest.json
+cargo run --release --bin ixos-big-bench -- --dir . --runs 3 --model ixos-flash-v2 --cache-mode native-cache --output-dir reports/ralph`}</code>
+      </pre>
 
       <p className="docs-next">
         Next: <Link href="/docs/benchmarking">Benchmarking</Link>

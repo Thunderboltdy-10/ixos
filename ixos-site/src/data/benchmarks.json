@@ -1,0 +1,65 @@
+{
+  "generatedAt": "2026-02-13T17:50:55Z",
+  "source": "reports/ralph/big_bench_20260213_175055.json",
+  "corpus": {
+    "label": "Project root benchmark corpus",
+    "files": 179964,
+    "tier": "C"
+  },
+  "overview": {
+    "ttfrP50Ms": 29,
+    "cacheHitRatePercent": 99.98,
+    "peakRamMb": 194,
+    "persistentIndexKb": 0
+  },
+  "comparison": [
+    {
+      "label": "Ixos (NativeCache)",
+      "valueMs": 29,
+      "highlight": true
+    },
+    {
+      "label": "Ixos (Ephemeral)",
+      "valueMs": 31
+    },
+    {
+      "label": "Windows Search",
+      "valueMs": 1500
+    },
+    {
+      "label": "Manual Browsing",
+      "valueMs": 2000,
+      "overflow": true
+    }
+  ],
+  "tierBreakdown": [
+    {
+      "tier": "A",
+      "target": "<= 5k files",
+      "ttfrP50Ms": 60,
+      "totalP95Ms": 400
+    },
+    {
+      "tier": "B",
+      "target": "~50k files",
+      "ttfrP50Ms": 120,
+      "totalP95Ms": 2000
+    },
+    {
+      "tier": "C",
+      "target": "100k-300k files",
+      "coldTtfrP50Ms": 200,
+      "coldTotalP95Ms": 12000,
+      "warmTotalP95Ms": 5000,
+      "observedColdTtfrP50Ms": 28,
+      "observedColdTotalP95Ms": 51,
+      "observedWarmTotalP95Ms": 45
+    }
+  ],
+  "waterfallP95Ms": {
+    "walk": 0,
+    "ripgrep": 26,
+    "embed": 0,
+    "rank": 1
+  }
+}

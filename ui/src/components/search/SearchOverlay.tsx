@@ -6,6 +6,7 @@ import { SearchResults } from './SearchResults';
 import { SearchDeck } from './SearchDeck';
 import { JournalistBadge } from './JournalistBadge';
 import { KeyboardHints } from './KeyboardHints';
+import type { SearchMode } from './ModeSwitcher';
 import { SearchCorridor } from '@/components/visualization/SearchCorridor';
 import { useSearchBarLayout } from '@/hooks/useLayoutSync';
 import * as tauri from '@/lib/tauri';
@@ -13,6 +14,16 @@ import * as tauri from '@/lib/tauri';
 export function SearchOverlay() {
   const search = useSearch();
   const searchBarRef = useSearchBarLayout();
+  const mode: SearchMode = search.journalistMode ? 'journalist' : search.cacheMode;
+
+  const handleModeChange = (newMode: SearchMode) => {
+    if (newMode === 'journalist') {
+      search.setJournalistMode(true);
+    } else {
+      search.setJournalistMode(false);
+      search.setCacheMode(newMode);
+    }
+  };
 
   // Click outside to close
   const handleBackdropClick = async (e: React.MouseEvent) => {
@@ -58,8 +69,8 @@ export function SearchOverlay() {
             onDirectoryChange={search.setDirectory}
             isSearching={search.phase === 'lexical' || search.phase === 'semantic' || search.phase === 'refining'}
             onCancel={search.cancelSearch}
-            mode={search.journalistMode ? 'journalist' : 'jit'}
-            onModeChange={() => { }}
+            mode={mode}
+            onModeChange={handleModeChange}
           />
         </div>
 

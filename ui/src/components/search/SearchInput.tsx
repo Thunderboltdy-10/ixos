@@ -76,7 +76,7 @@ export function SearchInput({
   const proLocked = !isPro;
 
   const modePalette = {
-    jit: {
+    ephemeral: {
       accent: 'var(--accent-amber)',
       accentSoft: 'rgba(246, 185, 76, 0.22)',
       accentFade: 'rgba(246, 185, 76, 0.08)',
@@ -84,7 +84,7 @@ export function SearchInput({
       glow: 'rgba(246, 185, 76, 0.18)',
       glowStrong: 'rgba(246, 185, 76, 0.35)',
     },
-    cache: {
+    'native-cache': {
       accent: 'var(--accent-teal)',
       accentSoft: 'rgba(20, 184, 166, 0.22)',
       accentFade: 'rgba(13, 148, 136, 0.08)',
@@ -103,6 +103,7 @@ export function SearchInput({
   } as const;
 
   const activePalette = modePalette[mode];
+  const searchBarTone = mode === 'native-cache' ? 'cache' : mode === 'ephemeral' ? 'jit' : 'journalist';
   const safeInvoke = useCallback(async <T,>(cmd: string, args?: any): Promise<T | null> => {
     try {
       if (typeof window !== 'undefined' && '__TAURI__' in window) {
@@ -354,7 +355,7 @@ export function SearchInput({
             placeholder="Type what you remember..."
             isSearching={activeSearch}
             autoFocus={autoFocus}
-            tone={mode}
+            tone={searchBarTone}
             withFrame={false}
             showClear={false}
             className="w-full"

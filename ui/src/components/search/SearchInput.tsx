@@ -4,10 +4,8 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { FolderPicker } from './FolderPicker';
 import { ModeSwitcher, type SearchMode } from './ModeSwitcher';
-import type { ModelType } from './ModelSwitcher';
+import { ModelSwitcher, type ModelType } from './ModelSwitcher';
 import { QualitySwitcher } from './QualitySwitcher';
-import { AskModeSwitcher } from './AskModeSwitcher';
-import type { AskMode } from '@/lib/types';
 import { SearchSuggestions } from './SearchSuggestions';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useStarredStore, type HistorySuggestion } from '@/stores/starredStore';
@@ -71,7 +69,7 @@ export function SearchInput({
   const modelType = (config?.search?.modelType || 'ixos-flash-v2') as ModelType;
   const proModelType = (config?.search?.proModelType || 'ixos-pro-v2') as ModelType;
   const qualityMode = (config?.search?.searchMode || 'auto') as QualityMode;
-  const askMode = (config?.search?.askMode || 'auto') as AskMode;
+  const selectedModel = qualityMode === 'pro' ? proModelType : modelType;
   const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
   const proLocked = !isPro;
 
@@ -154,21 +152,19 @@ export function SearchInput({
     }
   };
 
-  const handleAskModeChange = async (mode: AskMode) => {
-    if (config) {
-      await updateConfig({
-        search: { ...config.search, askMode: mode },
-      });
-    }
+  const handleModelChange = async (model: ModelType) => {
+    if (!config) return;
+    const isProModel = model.startsWith('ixos-pro');
+    await updateConfig({
+      search: {
+        ...config.search,
+        ...(isProModel ? { proModelType: model } : { modelType: model }),
+      },
+    });
   };
 
-  // Determine if Ask Mode should show indicator based on settings and query
-  const shouldShowAskModeIndicator = (() => {
-    if (askMode === 'off') return false;
-    if (askMode === 'always') return value.trim().length > 0;
-    // Auto mode: detect question mark or question words
-    return value.trim().endsWith('?') || /^(who|what|when|where|how|why|whats|wheres|hows|find|show)\s/i.test(value);
-  })();
+  const shouldShowAskModeIndicator =
+    value.trim().endsWith('?') || /^(who|what|when|where|how|why|whats|wheres|hows|find|show)\s/i.test(value);
 
   useEffect(() => {
     if (!config) return;
@@ -423,9 +419,9 @@ export function SearchInput({
               </div>
 
               <div className="flex-shrink-0">
-                <AskModeSwitcher
-                  value={askMode}
-                  onChange={handleAskModeChange}
+                <ModelSwitcher
+                  value={selectedModel}
+                  onChange={handleModelChange}
                 />
               </div>
 

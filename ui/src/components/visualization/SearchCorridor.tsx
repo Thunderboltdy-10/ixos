@@ -107,7 +107,7 @@ export function SearchCorridor() {
   const consumeSparkTarget = useSearchStore((s) => s.consumeSparkTarget);
   const hasSearchIntent = useSearchStore((s) => s.hasSearchIntent);
   const cacheMode = useSearchStore((s) => s.cacheMode);
-  const journalistMode = useSearchStore((s) => s.journalistMode);
+  const deepSearchMode = useSearchStore((s) => s.deepSearchMode);
 
   const searchBarBox = useLayoutStore((s) => s.searchBarBox);
   const deckUnderlineBox = useLayoutStore((s) => s.deckUnderlineBox);
@@ -325,7 +325,7 @@ export function SearchCorridor() {
       // Clear canvas
       ctx.clearRect(0, 0, rect.width, height);
 
-      const color = journalistMode ? COLORS.violet : cacheMode === 'native-cache' ? COLORS.teal : COLORS.amber;
+      const color = deepSearchMode ? COLORS.violet : cacheMode === 'native-cache' ? COLORS.teal : COLORS.amber;
 
       // Handle fade-out on complete
       if (isComplete) {
@@ -400,7 +400,7 @@ export function SearchCorridor() {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(frameRef.current);
     };
-  }, [isActive, isComplete, hasSearchIntent, searchBarBox, deckUnderlineBox, drawArc, drawDust, drawSpark, drawSignalPulse, cacheMode, journalistMode]);
+  }, [isActive, isComplete, hasSearchIntent, searchBarBox, deckUnderlineBox, drawArc, drawDust, drawSpark, drawSignalPulse, cacheMode, deepSearchMode]);
 
   // Don't render if no search intent
   if (!hasSearchIntent && phase === 'idle') return null;

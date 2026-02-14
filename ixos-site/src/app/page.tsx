@@ -4,6 +4,8 @@ import { HeroPipeline } from "@/components/sections/HeroPipeline";
 import { MeetingUseCase } from "@/components/sections/MeetingUseCase";
 import { Benchmarks } from "@/components/sections/Benchmarks";
 import { Pricing } from "@/components/sections/Pricing";
+import { ProFeatures } from "@/components/sections/ProFeatures";
+import { DownloadActions } from "@/components/sections/DownloadActions";
 import { FAQ } from "@/components/sections/FAQ";
 import { Trust } from "@/components/sections/Trust";
 import { Footer } from "@/components/sections/Footer";
@@ -34,6 +36,14 @@ export default function Home() {
         <Suspense fallback={null}>
           <Pricing />
         </Suspense>
+      </section>
+
+      <section className="accent-magenta">
+        <ProFeatures />
+      </section>
+
+      <section className="accent-teal">
+        <DownloadActions />
       </section>
 
       {/* Trust / Privacy - Amber accent */}

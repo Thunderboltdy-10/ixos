@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { useAuth } from '@clerk/clerk-react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useSearchStore } from '@/stores/searchStore';
+import * as tauri from '@/lib/tauri';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -148,7 +149,7 @@ export function SearchSettings() {
       {/* Default search mode */}
       <SettingRow
         label="Default search mode"
-        description="Choose Flash, Auto, or Pro mode"
+        description="Choose Ixos Flash, Auto, or Ixos Pro"
       >
         <div className="flex flex-col items-end gap-1">
           <select
@@ -160,9 +161,9 @@ export function SearchSettings() {
           }
           className="w-32 h-8 bg-graphite-2/70 border border-white/10 rounded-lg px-2.5 text-xs text-porcelain"
         >
-          <option value="flash">Flash</option>
+          <option value="flash">Ixos Flash</option>
             <option value="auto" disabled={!isPro}>Auto</option>
-            <option value="pro" disabled={!isPro}>Pro</option>
+            <option value="pro" disabled={!isPro}>Ixos Pro</option>
         </select>
           {!isPro && (
             <span className="text-[10px] text-fg-dim/70">
@@ -191,8 +192,8 @@ export function SearchSettings() {
             }}
             className="w-36 h-8 bg-graphite-2/70 border border-white/10 rounded-lg px-2.5 text-xs text-porcelain"
           >
-            <option value="native-cache">NativeCache (Recommended)</option>
-            <option value="ephemeral">Ephemeral (Memory Only)</option>
+            <option value="native-cache">Local (Recommended)</option>
+            <option value="ephemeral">Memory (No Disk Cache)</option>
           </select>
           <span className="text-[10px] text-fg-dim/60 max-w-[220px] text-right">
             Cache uses file metadata (ADS/xattr), not separate files. Safe for git repos.
@@ -280,7 +281,7 @@ function CachePanel() {
   const [stats, setStats] = useState<CacheStats | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
-  const [isClearingAll, setIsClearingAll] = useState(false);
+  const [isClearingGlobal, setIsClearingGlobal] = useState(false);
   const [clearResult, setClearResult] = useState<string | null>(null);
   const { directory } = useSearchStore();
 
@@ -299,15 +300,15 @@ function CachePanel() {
     }
   };
 
-  const handleClearCache = async () => {
-    if (!directory) return;
-
+  const handleClearLocalCache = async () => {
     setIsClearing(true);
     setClearResult(null);
     try {
-      const count = await invoke<number>('clear_embedding_cache', { directory });
-      setClearResult(`Cleared ${count} cached embeddings`);
-      await loadStats();
+      const count = await tauri.cacheClear(directory || null);
+      setClearResult(`Cleared ${count} local cache entries`);
+      if (directory) {
+        await loadStats();
+      }
     } catch (error) {
       console.error('Failed to clear cache:', error);
       setClearResult('Failed to clear cache');
@@ -316,13 +317,11 @@ function CachePanel() {
     }
   };
 
-  const handleClearAllCache = async () => {
-    setIsClearingAll(true);
+  const handleClearGlobalCache = async () => {
+    setIsClearingGlobal(true);
     setClearResult(null);
     try {
-      const count = await invoke<number>('clear_all_embedding_cache', {
-        directory: directory || null,
-      });
+      const count = await tauri.cacheClear(null);
       setClearResult(`Cleared ${count} cache entries`);
       if (directory) {
         await loadStats();
@@ -331,7 +330,7 @@ function CachePanel() {
       console.error('Failed to clear all cache:', error);
       setClearResult('Failed to clear all cache');
     } finally {
-      setIsClearingAll(false);
+      setIsClearingGlobal(false);
     }
   };
 
@@ -342,7 +341,7 @@ function CachePanel() {
   }, [directory]);
 
   return (
-    <div className="py-3 border-b border-stroke-hairline">
+    <div className="rounded-xl border border-white/10 bg-graphite-2/55 backdrop-blur-md p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Database className="w-4 h-4 text-accent-teal" />
@@ -400,8 +399,8 @@ function CachePanel() {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleClearCache}
-              disabled={isClearing || stats.cachedFiles === 0}
+              onClick={handleClearLocalCache}
+              disabled={isClearing}
               className="text-xs"
             >
               {isClearing ? (
@@ -412,18 +411,18 @@ function CachePanel() {
               ) : (
                 <>
                   <Trash2 className="w-3 h-3 mr-1.5" />
-                  Clear Cache
+                  Clear Local Cache
                 </>
               )}
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={handleClearAllCache}
-              disabled={isClearingAll}
+              onClick={handleClearGlobalCache}
+              disabled={isClearingGlobal}
               className="text-xs"
             >
-              {isClearingAll ? (
+              {isClearingGlobal ? (
                 <>
                   <RefreshCw className="w-3 h-3 mr-1.5 animate-spin" />
                   Clearing All...
@@ -453,11 +452,11 @@ function CachePanel() {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleClearAllCache}
-            disabled={isClearingAll}
+            onClick={handleClearGlobalCache}
+            disabled={isClearingGlobal}
             className="text-xs"
           >
-            {isClearingAll ? (
+            {isClearingGlobal ? (
               <>
                 <RefreshCw className="w-3 h-3 mr-1.5 animate-spin" />
                 Clearing All...
@@ -465,7 +464,7 @@ function CachePanel() {
             ) : (
               <>
                 <Trash2 className="w-3 h-3 mr-1.5" />
-                Clear All Cache
+                Clear Local Cache
               </>
             )}
           </Button>
@@ -503,7 +502,7 @@ function PersonalRankingPanel({ isPro }: { isPro: boolean }) {
   };
 
   return (
-    <div className="py-3 border-b border-stroke-hairline space-y-3">
+    <div className="rounded-xl border border-white/10 bg-graphite-2/55 backdrop-blur-md p-4 space-y-3">
       <SettingRow
         label="Personal ranking (local)"
         description="Learn from file opens and pin/ignore actions to improve ranking"
@@ -583,19 +582,19 @@ function ModelManagementPanel() {
 
   if (!status && !isLoading) {
     return (
-      <div className="py-3 border-b border-stroke-hairline">
+      <div className="rounded-xl border border-white/10 bg-graphite-2/55 backdrop-blur-md p-4">
         <div className="text-xs text-fg-dim">Unable to load model status</div>
       </div>
     );
   }
 
   const models = [
-    { id: 'ixos-flash-v2', label: 'Flash Quartz', available: status?.ixosFlashV2Available },
-    { id: 'ixos-pro-v2', label: 'Pro Prism', available: status?.ixosProV2Available },
+    { id: 'ixos-flash-v2', label: 'Ixos Flash', available: status?.ixosFlashV2Available },
+    { id: 'ixos-pro-v2', label: 'Ixos Pro', available: status?.ixosProV2Available },
   ];
 
   return (
-    <div className="py-3 border-b border-stroke-hairline">
+    <div className="rounded-xl border border-white/10 bg-graphite-2/55 backdrop-blur-md p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <HardDrive className="w-4 h-4 text-accent-teal" />
@@ -733,7 +732,7 @@ function EntitlementPanel() {
   };
 
   return (
-    <div className="py-3 border-b border-stroke-hairline">
+    <div className="rounded-xl border border-white/10 bg-graphite-2/55 backdrop-blur-md p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <RefreshCw className="w-4 h-4 text-accent-magenta" />

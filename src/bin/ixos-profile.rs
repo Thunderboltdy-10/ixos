@@ -21,9 +21,7 @@ use serde::Serialize;
 #[derive(Clone, Copy, Debug, Default, ValueEnum)]
 enum ProfileCacheMode {
     #[default]
-    #[value(alias = "cache")]
     NativeCache,
-    #[value(alias = "jit")]
     Ephemeral,
 }
 
@@ -50,7 +48,7 @@ struct ProfileArgs {
     /// Number of runs
     #[arg(long, default_value = "6")]
     runs: usize,
-    /// Cache mode: native-cache or ephemeral (legacy aliases: cache/jit)
+    /// Cache mode: local or memory
     #[arg(long, value_enum, default_value = "native-cache")]
     cache_mode: ProfileCacheMode,
     /// Model to use

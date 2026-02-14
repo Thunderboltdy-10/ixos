@@ -25,7 +25,7 @@ const modes: QualityOption[] = [
   {
     id: 'flash',
     icon: Zap,
-    label: 'Flash Mode',
+    label: 'Ixos Flash',
     shortLabel: 'Flash',
     description: 'Fastest only, lowest latency.',
     color: 'text-accent-amber',
@@ -43,7 +43,7 @@ const modes: QualityOption[] = [
   {
     id: 'pro',
     icon: Layers,
-    label: 'Pro Mode',
+    label: 'Ixos Pro',
     shortLabel: 'Pro',
     description: 'Always highest-quality ranking.',
     color: 'text-accent-violet',

@@ -243,7 +243,7 @@ impl DaemonService {
                     let cpu_usage: f32 = system.global_cpu_usage();
                     let is_idle = cpu_usage < 20.0 && last_activity.elapsed() > config.idle_threshold;
 
-                    if is_idle && !config.journalist_mode {
+                    if is_idle && !config.deep_search_mode {
                         // Background indexing during idle
                         Self::do_background_indexing(
                             &watched_dirs,
@@ -330,9 +330,9 @@ impl DaemonService {
             }
 
             IpcMessage::ClearCache => {
-                if config.journalist_mode {
+                if config.deep_search_mode {
                     return IpcResponse::Ok {
-                        message: Some("No cache in journalist mode".into()),
+                        message: Some("No cache in deep search mode".into()),
                     };
                 }
                 // TODO: Actually clear the cache
@@ -346,9 +346,9 @@ impl DaemonService {
             }
 
             IpcMessage::IndexNow => {
-                if config.journalist_mode {
+                if config.deep_search_mode {
                     return IpcResponse::Error {
-                        message: "Cannot index in journalist mode".into(),
+                        message: "Cannot index in deep search mode".into(),
                     };
                 }
                 // Trigger immediate indexing

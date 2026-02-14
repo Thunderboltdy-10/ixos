@@ -100,7 +100,7 @@ impl QueryPreprocessor {
         let synonym_map = synonym_map();
         let stop_words = stop_words();
         let question_stop_words = question_stop_words();
-        let is_question = is_question_query(trimmed);
+        let is_question = self.intent_detector.should_activate_ask_mode(trimmed);
         let has_ext_operator = tokens
             .iter()
             .any(|t| t.kind == TokenKind::Operator && t.raw.to_lowercase().starts_with("ext:"));
@@ -415,37 +415,6 @@ fn question_stop_words() -> HashSet<&'static str> {
     ]
     .into_iter()
     .collect()
-}
-
-fn is_question_query(query: &str) -> bool {
-    let lower = query.trim().to_lowercase();
-    if lower.contains('?') {
-        return true;
-    }
-    let starters = [
-        "what ",
-        "where ",
-        "when ",
-        "who ",
-        "why ",
-        "how ",
-        "which ",
-        "show ",
-        "find ",
-        "locate ",
-        "open ",
-        "search ",
-        "look for ",
-        "looking for ",
-        "give me ",
-        "tell me ",
-    ];
-    starters.iter().any(|s| lower.starts_with(s))
-        || lower.starts_with("do i ")
-        || lower.starts_with("did i ")
-        || lower.starts_with("can you ")
-        || lower.starts_with("could you ")
-        || lower.starts_with("would you ")
 }
 
 fn detect_ext_hints(query: &str) -> Vec<&'static str> {

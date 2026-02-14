@@ -10,7 +10,7 @@ export default function DocsOverviewPage() {
       <p className="docs-lead">
         Ixos is a local-first desktop search system with a Rust core, Tauri bridge, React UI, and
         versioned model pipeline. This reference documents setup, runtime behavior, model
-        operations, benchmarking, and agent workflows.
+        operations, benchmarking, CLI usage, troubleshooting, and agent architecture patterns.
       </p>
 
       <div className="mt-6 flex flex-wrap gap-3">
@@ -41,6 +41,9 @@ export default function DocsOverviewPage() {
           <Link href="/docs/desktop-app">Desktop App</Link> for UI behavior and command flow.
         </li>
         <li>
+          <Link href="/docs/cli-reference">CLI Reference</Link> for automation and shell workflows.
+        </li>
+        <li>
           <Link href="/docs/models">Models + Hugging Face</Link> for canonical IDs and publish
           flow.
         </li>
@@ -49,7 +52,10 @@ export default function DocsOverviewPage() {
           evidence.
         </li>
         <li>
-          <Link href="/docs/agents">Agent Workflows</Link> for autonomous implementation rules.
+          <Link href="/docs/agents">AI Agent Architecture</Link> for multi-agent integration.
+        </li>
+        <li>
+          <Link href="/docs/troubleshooting">Troubleshooting</Link> for common runtime issues.
         </li>
       </ol>
 

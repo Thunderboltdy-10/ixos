@@ -266,9 +266,9 @@ def main():
     parser.add_argument('--search-mode', default='auto', choices=['flash', 'auto', 'pro'])
     parser.add_argument(
         '--cache-mode',
-        default='native-cache',
-        choices=['native-cache', 'ephemeral', 'cache', 'jit'],
-        help='Canonical values: native-cache, ephemeral (legacy aliases: cache, jit)',
+        default='local',
+        choices=['local', 'memory', 'native-cache', 'ephemeral'],
+        help='Cache mode: local or memory (native-cache/ephemeral accepted for config compatibility)',
     )
     parser.add_argument('--model', default='ixos-flash-v2')
     parser.add_argument('--pro-model', default='ixos-pro-v2')
@@ -301,11 +301,7 @@ def main():
         '--queries-file', str(qpath),
         '--max-queries', str(args.max_queries),
         '--search-mode', args.search_mode,
-        '--cache-mode', (
-            'native-cache'
-            if args.cache_mode in ('native-cache', 'cache')
-            else 'ephemeral'
-        ),
+        '--cache-mode', ('native-cache' if args.cache_mode in ('local', 'native-cache') else 'ephemeral'),
         '--model', args.model,
         '--pro-model', args.pro_model,
         '--out-json', args.out_json,

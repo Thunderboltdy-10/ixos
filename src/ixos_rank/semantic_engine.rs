@@ -17,12 +17,11 @@ use tokio::sync::Mutex;
 use crate::instrumentation::{content_extraction_span, embedding_batch_span, ranking_fusion_span};
 use crate::ixos_embed::augmented::{build_augmented_text, AugmentationConfig};
 use crate::ixos_embed::secure_embedder::SecureEmbedder;
+use crate::journalist_mode::deep_search_overrides;
 use crate::security::crypto::{sha256, sha256_file};
 use crate::storage::{get_cache_for_path_with_fingerprint, EmbeddingCache};
 
-use super::candidate_generator::{
-    MAX_BYTES_READ_PER_FILE, MAX_CANDIDATES_FOR_EMBEDDING, MAX_TEXT_CHARS_PER_FILE,
-};
+use super::candidate_generator::MAX_TEXT_CHARS_PER_FILE;
 use super::evidence::DirectoryCentroids;
 use super::fstd::{FstdConfig, FstdState};
 use super::types::{LexicalMatch, SearchError, SemanticMatch};
@@ -426,9 +425,10 @@ fn read_file_limited_bytes(path: &Path) -> Result<(Vec<u8>, usize), SearchError>
         _ => {}
     }
 
+    let caps = deep_search_overrides();
     let file = std::fs::File::open(path).map_err(SearchError::Io)?;
-    let mut buffer = Vec::with_capacity(MAX_BYTES_READ_PER_FILE.min(8192));
-    let mut limited = file.take(MAX_BYTES_READ_PER_FILE as u64);
+    let mut buffer = Vec::with_capacity(caps.max_bytes_per_file.min(8192));
+    let mut limited = file.take(caps.max_bytes_per_file as u64);
     let bytes_read = limited.read_to_end(&mut buffer).map_err(SearchError::Io)?;
     Ok((buffer, bytes_read))
 }
@@ -437,6 +437,7 @@ fn read_text_for_embedding(
     path: &Path,
     require_full_file_hash: bool,
 ) -> Result<(String, usize, [u8; 32]), SearchError> {
+    let caps = deep_search_overrides();
     let (bytes, bytes_read) = read_file_limited_bytes(path)?;
     let file_hash = if require_full_file_hash {
         sha256_file(path).unwrap_or_else(|_| sha256(&bytes))
@@ -445,10 +446,10 @@ fn read_text_for_embedding(
     };
 
     let content = if is_heavy_format(path) {
-        crate::parsers::extract_text(path, MAX_BYTES_READ_PER_FILE, MAX_TEXT_CHARS_PER_FILE)
+        crate::parsers::extract_text(path, caps.max_bytes_per_file, caps.max_text_chars)
             .unwrap_or_else(|| bytes_to_capped_string(&bytes))
     } else {
-        bytes_to_capped_string(&bytes)
+        bytes_to_capped_string_with_cap(&bytes, caps.max_text_chars)
     };
 
     Ok((content, bytes_read, file_hash))
@@ -456,9 +457,13 @@ fn read_text_for_embedding(
 
 /// Convert bytes to a capped UTF-8 string for embedding.
 fn bytes_to_capped_string(bytes: &[u8]) -> String {
+    bytes_to_capped_string_with_cap(bytes, MAX_TEXT_CHARS_PER_FILE)
+}
+
+fn bytes_to_capped_string_with_cap(bytes: &[u8], char_cap: usize) -> String {
     String::from_utf8_lossy(bytes)
         .chars()
-        .take(MAX_TEXT_CHARS_PER_FILE)
+        .take(char_cap)
         .collect()
 }
 
@@ -488,6 +493,9 @@ impl SemanticEngine for StubSemanticEngine {
         candidates: Vec<LexicalMatch>,
         limit: usize,
     ) -> Result<Vec<SemanticMatch>, SearchError> {
+        if self.cache_mode == CacheMode::Ephemeral {
+            self.memory_cache.lock().await.clear();
+        }
         if candidates.is_empty() {
             return Ok(Vec::new());
         }
@@ -790,21 +798,25 @@ impl SemanticEngine for StubSemanticEngine {
         query: &str,
         limit: usize,
     ) -> Result<Vec<SemanticMatch>, SearchError> {
+        if self.cache_mode == CacheMode::Ephemeral {
+            self.memory_cache.lock().await.clear();
+        }
         if self.files_to_search.is_empty() {
             return Ok(Vec::new());
         }
 
         // P2 FIX: HARD CAP to prevent scanning entire corpus
         // If there are too many files, truncate to prevent 40s+ searches
+        let caps = deep_search_overrides();
         let files_to_process: &[std::path::PathBuf] = if self.files_to_search.len()
-            > MAX_CANDIDATES_FOR_EMBEDDING
+            > caps.max_candidates
         {
             tracing::warn!(
                 total_files = self.files_to_search.len(),
-                cap = MAX_CANDIDATES_FOR_EMBEDDING,
+                cap = caps.max_candidates,
                 "search_pure capped to prevent full-corpus scan. Use CandidateGenerator for better results."
             );
-            &self.files_to_search[..MAX_CANDIDATES_FOR_EMBEDDING]
+            &self.files_to_search[..caps.max_candidates]
         } else {
             &self.files_to_search
         };

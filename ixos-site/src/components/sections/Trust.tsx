@@ -30,9 +30,9 @@ export function Trust() {
                     </FadeInView>
                     <FadeInView direction="up" delay={300} className="h-full">
                         <TrustCard
-                            title="Journalist Mode"
+                            title="Deep Search Mode"
                             code="PRIVACY: MAXIMUM"
-                            desc="Maximum privacy when you need it. No history, no traces, encrypted temporary storage that's wiped after every search."
+                            desc="Comprehensive file analysis when you need maximum coverage. Reads deeper context and cross-references evidence locally."
                         />
                     </FadeInView>
                 </div>

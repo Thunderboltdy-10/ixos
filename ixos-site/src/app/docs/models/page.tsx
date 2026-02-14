@@ -21,9 +21,9 @@ export default function DocsModelsPage() {
 
       <h2>User-facing branding</h2>
       <ul>
-        <li><strong>Flash Quartz</strong> - mapped to <code>ixos-flash-v2</code>.</li>
-        <li><strong>Pro Prism</strong> - mapped to <code>ixos-pro-v2</code>.</li>
-        <li><strong>Potion Core</strong> - mapped to <code>potion-base-8m-int8</code>.</li>
+        <li><strong>Ixos Flash</strong> - mapped to <code>ixos-flash-v2</code>.</li>
+        <li><strong>Ixos Pro</strong> - mapped to <code>ixos-pro-v2</code>.</li>
+        <li><strong>Internal dependency:</strong> <code>potion-base-8m-int8</code> (not exposed as a user-facing mode).</li>
       </ul>
 
       <h2>Folder layout</h2>
@@ -54,7 +54,7 @@ models/lab/
       <pre>
         <code>{`cargo run --bin ixos -- model list --json
 python scripts/ixos_eval.py --suite both --output models/lab/results_latest.json
-cargo run --release --bin ixos-big-bench -- --dir . --runs 3 --model ixos-flash-v2 --cache-mode native-cache --output-dir reports/ralph`}</code>
+cargo run --release --bin ixos-big-bench -- --dir . --runs 3 --model ixos-flash-v2 --cache-mode local --output-dir reports/benchmarks`}</code>
       </pre>
 
       <p className="docs-next">

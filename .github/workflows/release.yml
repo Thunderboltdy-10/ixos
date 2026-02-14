@@ -36,14 +36,29 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: package-lock.json
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: Install npm dependencies
+      - name: Install root npm dependencies
         run: npm ci --prefer-offline --no-audit
+
+      - name: Install UI dependencies
+        shell: bash
+        run: |
+          npm ci --workspace ui --prefer-offline --no-audit || (rm -rf node_modules ui/node_modules && npm install --workspace ui --no-audit)
+
+      - name: Create model stubs for Windows build
+        if: matrix.platform == 'windows-latest'
+        shell: bash
+        run: |
+          mkdir -p models/ixos-flash-v2
+          mkdir -p models/potion-base-8M-int8
+          touch models/ixos-flash-v2/.gitkeep
+          touch models/potion-base-8M-int8/.gitkeep
 
       - name: Build UI
         working-directory: ui

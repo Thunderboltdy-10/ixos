@@ -30,16 +30,16 @@ python scripts/run_settings_matrix.py`}</code>
   --dir . \
   --queries-file bench/big_root_queries.json \
   --runs 3 \
-  --cache-mode native-cache \
+  --cache-mode local \
   --model ixos-flash-v2 \
   --objective-profile harsh \
-  --output-dir reports/ralph`}</code>
+  --output-dir reports/benchmarks`}</code>
       </pre>
 
       <h2>3) Profile stage bottlenecks</h2>
       <pre>
-        <code>{`./target/release/ixos-profile --dir dataset --model ixos-flash-v2 --cache-mode native-cache
-./target/release/ixos-profile --dir dataset --model potion --cache-mode native-cache`}</code>
+        <code>{`./target/release/ixos-profile --dir dataset --model ixos-flash-v2 --cache-mode local
+./target/release/ixos-profile --dir dataset --model potion --cache-mode local`}</code>
       </pre>
 
       <h2>4) Quality evaluation</h2>
@@ -51,9 +51,9 @@ python scripts/ixos_eval.py --suite synthetic --output models/lab/results_synth_
       <h2>5) Compare before vs after</h2>
       <pre>
         <code>{`python scripts/compare_performance.py \
-  --before-bench reports/ralph/big_bench_<before>.json \
-  --after-bench reports/ralph/big_bench_<after>.json \
-  --output reports/ralph/comparison_<stamp>.md`}</code>
+  --before-bench reports/benchmarks/big_bench_<before>.json \
+  --after-bench reports/benchmarks/big_bench_<after>.json \
+  --output reports/benchmarks/comparison_<stamp>.md`}</code>
       </pre>
       <p>
         The comparison report includes: latency deltas, stage p95 deltas, harsh objective checks,
@@ -77,9 +77,9 @@ python scripts/ixos_eval.py --suite synthetic --output models/lab/results_synth_
 
       <h2>Artifact policy</h2>
       <ul>
-        <li>Ralph loop artifacts: <code>reports/ralph/iteration_*</code>.</li>
-        <li>Big-root benchmark artifacts: <code>reports/ralph/big_bench_*.json|md</code>.</li>
-        <li>Comparison reports: <code>reports/ralph/comparison_*.json|md</code>.</li>
+        <li>Iteration artifacts: <code>reports/benchmarks/iteration_*</code>.</li>
+        <li>Big-root benchmark artifacts: <code>reports/benchmarks/big_bench_*.json|md</code>.</li>
+        <li>Comparison reports: <code>reports/benchmarks/comparison_*.json|md</code>.</li>
         <li>Quality outputs: <code>models/lab/results_*.json</code>.</li>
       </ul>
 

@@ -63,7 +63,7 @@ const faqItems = [
     },
     {
         question: "Is my data safe?",
-        answer: "Absolutely. Ixos runs 100% locally. No file content, metadata, or search queries ever leave your device. In Journalist Mode, even temporary data is encrypted and wiped after each session.",
+        answer: "Absolutely. Ixos runs 100% locally. No file content, metadata, or search queries ever leave your device. Deep Search Mode is still local-only, with broader traversal for thoroughness.",
     },
     {
         question: "What file types are supported?",
@@ -78,7 +78,7 @@ const faqItems = [
         answer: "Ixos is built with Rust and highly optimized. Peak RAM usage is around 194MB during active search. In idle state, it uses minimal resources and doesn't run background processes like traditional indexers.",
     },
     {
-        question: "What is Journalist Mode?",
-        answer: "Journalist Mode provides maximum privacy for sensitive searches. It uses encrypted temporary storage, disables all history and caching, and automatically wipes all traces after your search is complete. Perfect for investigative work or handling confidential documents.",
+        question: "What is Deep Search Mode?",
+        answer: "Deep Search Mode is a Pro feature that reads more files, expands candidate limits, and cross-references more evidence for tougher questions. It is slower than standard search but much more comprehensive.",
     },
 ];

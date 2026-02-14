@@ -90,7 +90,7 @@ def run_query(bin_path: Path, query: str, limit: int, env: dict = None) -> dict:
         "--search-mode",
         "flash",
         "--cache-mode",
-        "jit",
+        "memory",
     ]
     result = subprocess.run(
         cmd,

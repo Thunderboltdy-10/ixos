@@ -181,6 +181,13 @@ export async function getCacheStats(
 }
 
 /**
+ * Clear local embedding cache for a directory, or globally when directory is omitted.
+ */
+export async function cacheClear(directory?: string | null): Promise<number> {
+  return await invoke('cache_clear', { directory: directory ?? null });
+}
+
+/**
  * Get local device identifier.
  */
 export async function getDeviceId(): Promise<string> {

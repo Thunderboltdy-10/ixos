@@ -34,8 +34,8 @@ export function MainSearchView() {
   const {
     cacheMode,
     setCacheMode,
-    journalistMode,
-    setJournalistMode,
+    deepSearchMode,
+    setDeepSearchMode,
     lateResults,
     hasLateInsights,
     revealLateResults,
@@ -52,7 +52,7 @@ export function MainSearchView() {
   const showDeck = hasSearchIntent || isSearching || searchPhase === 'complete';
 
   // Mode handling
-  const mode: SearchMode = journalistMode ? 'journalist' : cacheMode;
+  const mode: SearchMode = deepSearchMode ? 'journalist' : cacheMode;
   const modeGlow = mode === 'journalist'
     ? 'rgba(124, 92, 255, 0.12)'
     : mode === 'native-cache'
@@ -60,12 +60,12 @@ export function MainSearchView() {
       : 'rgba(246, 185, 76, 0.12)';
   const handleModeChange = useCallback((newMode: SearchMode) => {
     if (newMode === 'journalist') {
-      setJournalistMode(true);
+      setDeepSearchMode(true);
     } else {
-      setJournalistMode(false);
+      setDeepSearchMode(false);
       setCacheMode(newMode);
     }
-  }, [setJournalistMode, setCacheMode]);
+  }, [setDeepSearchMode, setCacheMode]);
 
   return (
     <div className="relative w-full h-full bg-graphite-0 text-porcelain overflow-hidden flex flex-col">

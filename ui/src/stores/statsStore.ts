@@ -81,7 +81,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'privacy_pro',
     name: 'Privacy Pro',
-    description: 'Use Journalist mode',
+    description: 'Use Deep Search mode',
     icon: '🕵️',
     threshold: 1,
     checkFn: (s) => s.modeStats.journalist >= 1,

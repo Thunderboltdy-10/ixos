@@ -23,15 +23,15 @@ export default function DocsGettingStartedPage() {
         <li>Download the installer from the Download page.</li>
         <li>Install and launch Ixos.</li>
         <li>Authenticate with your account.</li>
-        <li>Install at least one model (Flash Quartz recommended first).</li>
+        <li>Install at least one model (Ixos Flash recommended first).</li>
         <li>Choose search root and run a first query.</li>
       </ol>
 
-      <h2>Cache mode defaults</h2>
+      <h2>Search mode defaults</h2>
       <ul>
-        <li><strong>NativeCache (default):</strong> persistent ADS/xattr cache for fast repeat queries.</li>
-        <li><strong>Ephemeral:</strong> memory-only mode for minimal persistence.</li>
-        <li>Legacy aliases <code>cache/jit</code> are still accepted in CLI for compatibility.</li>
+        <li><strong>Local (default):</strong> persistent ADS/xattr cache for fast repeat queries.</li>
+        <li><strong>Memory:</strong> memory-only mode for minimal persistence.</li>
+        <li><strong>Deep Search:</strong> richer analysis path for ambiguous or complex prompts.</li>
       </ul>
 
       <h2>Run from source</h2>
@@ -63,7 +63,7 @@ npm run dev`}</code>
         <li>Search returns streaming lexical then semantic results.</li>
         <li>Ask Mode toggle works and does not force wrong model path.</li>
         <li>Model list works in CLI JSON and desktop model switcher.</li>
-        <li>Settings mode labels show NativeCache/Ephemeral consistently.</li>
+        <li>Settings mode labels show Local/Memory/Deep Search consistently.</li>
       </ul>
 
       <p className="docs-next">

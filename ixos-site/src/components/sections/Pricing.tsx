@@ -171,7 +171,7 @@ export function Pricing() {
                             desc="Full semantic search. No index tax. No cloud."
                             features={[
                                 "Complete semantic search",
-                                "Zero index tax (Ephemeral mode)",
+                                "Zero index tax (Memory mode)",
                                 "100% local processing",
                                 "Standard file types (PDF, TXT, MD)",
                                 "Community support"
@@ -218,7 +218,7 @@ export function Pricing() {
                                     features={[
                                         "File watch & notifications",
                                         "Developer file types (TS, PY, RS, GO)",
-                                        "Journalist Mode (max privacy)",
+                                        "Deep Search Mode (thorough analysis)",
                                         "Priority model updates",
                                         "Direct support access"
                                     ]}
@@ -239,7 +239,7 @@ export function Pricing() {
                                     features={[
                                         "File watch & notifications",
                                         "Developer file types (TS, PY, RS, GO)",
-                                        "Journalist Mode (max privacy)",
+                                        "Deep Search Mode (thorough analysis)",
                                         "Priority model updates",
                                         "Direct support access"
                                     ]}

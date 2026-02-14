@@ -41,9 +41,7 @@ const HARSH_STAGE_RANK_P95_MS: f64 = 80.0;
 #[derive(Clone, Copy, Debug, Default, ValueEnum)]
 enum BenchCacheMode {
     #[default]
-    #[value(alias = "cache")]
     NativeCache,
-    #[value(alias = "jit")]
     Ephemeral,
 }
 
@@ -80,7 +78,7 @@ struct BigBenchArgs {
     #[arg(long, default_value = "3")]
     runs: usize,
 
-    /// Cache mode: native-cache or ephemeral (legacy aliases: cache/jit)
+    /// Cache mode: native-cache or ephemeral
     #[arg(long, value_enum, default_value = "native-cache")]
     cache_mode: BenchCacheMode,
 
@@ -263,15 +261,11 @@ async fn main() -> anyhow::Result<()> {
             let rank_ms = semantic_elapsed_ms.saturating_sub(semantic_metrics.embedding_ms);
 
             let top1 = semantic_results.first();
-            let walk_ms = if run_idx == 0 && query_idx == 0 {
-                candidate_stats.directory_walk_ms
-            } else {
-                0
-            };
+            let walk_ms = candidate_stats.directory_walk_ms;
             records.push(QueryRunRecord {
                 query: query.clone(),
                 run_index: run_idx + 1,
-                warm: run_idx > 0,
+                warm: query_idx > 0 || run_idx > 0,
                 ttfr_ms: candidate_elapsed_ms,
                 total_ms: query_started.elapsed().as_millis() as u64,
                 stage_breakdown: StageBreakdown {
@@ -379,7 +373,7 @@ fn load_queries(path: Option<&Path>) -> anyhow::Result<Vec<String>> {
             "cache mode".to_string(),
             "semantic ranking".to_string(),
             "progressive search".to_string(),
-            "journalist mode".to_string(),
+            "deep search mode".to_string(),
             "model list".to_string(),
         ]
     } else {
@@ -431,7 +425,10 @@ fn build_summary(records: &[QueryRunRecord]) -> Summary {
         .iter()
         .map(|r| r.stage_breakdown.path_score_ms)
         .collect();
-    let ripgrep: Vec<u64> = records.iter().map(|r| r.stage_breakdown.ripgrep_ms).collect();
+    let ripgrep: Vec<u64> = records
+        .iter()
+        .map(|r| r.stage_breakdown.ripgrep_ms)
+        .collect();
     let embed: Vec<u64> = records.iter().map(|r| r.stage_breakdown.embed_ms).collect();
     let rank: Vec<u64> = records.iter().map(|r| r.stage_breakdown.rank_ms).collect();
 
@@ -699,7 +696,10 @@ fn render_markdown(report: &BigBenchReport) -> String {
     lines.push(format!("- Root: `{}`", report.root_dir));
     lines.push(format!("- Files: `{}`", report.file_count));
     lines.push(format!("- Tier: `{:?}`", report.corpus_tier));
-    lines.push(format!("- Objective profile: `{}`", report.objective_profile));
+    lines.push(format!(
+        "- Objective profile: `{}`",
+        report.objective_profile
+    ));
     lines.push(format!("- Model: `{}`", report.model));
     lines.push(format!("- Cache mode: `{}`", report.cache_mode));
     lines.push(format!("- Runs/query: `{}`", report.runs_per_query));
@@ -748,7 +748,10 @@ fn render_markdown(report: &BigBenchReport) -> String {
         "| Avg cache hit rate | {:.3} |",
         report.summary.avg_cache_hit_rate
     ));
-    lines.push(format!("| Walk p95 (ms) | {:.2} |", report.summary.walk_p95_ms));
+    lines.push(format!(
+        "| Walk p95 (ms) | {:.2} |",
+        report.summary.walk_p95_ms
+    ));
     lines.push(format!(
         "| Path score p95 (ms) | {:.2} |",
         report.summary.path_score_p95_ms
@@ -761,7 +764,10 @@ fn render_markdown(report: &BigBenchReport) -> String {
         "| Embed p95 (ms) | {:.2} |",
         report.summary.embed_p95_ms
     ));
-    lines.push(format!("| Rank p95 (ms) | {:.2} |", report.summary.rank_p95_ms));
+    lines.push(format!(
+        "| Rank p95 (ms) | {:.2} |",
+        report.summary.rank_p95_ms
+    ));
     lines.push(String::new());
 
     lines.push("## Per Query".to_string());

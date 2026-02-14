@@ -95,7 +95,7 @@ export function SearchResults({
   const canStar = phase === 'complete' && results.length > 0;
 
   // Determine active mode for coloring
-  const mode: SearchMode = searchStore.journalistMode
+  const mode: SearchMode = searchStore.deepSearchMode
     ? 'journalist'
     : searchStore.cacheMode;
 
@@ -107,7 +107,7 @@ export function SearchResults({
       starred.toggleStar(currentThread.id);
     } else {
       // Add new starred thread (addThread auto-stars now)
-      const mode = searchStore.journalistMode ? 'journalist' : searchStore.cacheMode;
+      const threadMode = searchStore.deepSearchMode ? 'deep-search' : searchStore.cacheMode;
       const threadId = searchStore.activeThreadId ?? crypto.randomUUID();
       starred.recordThread({
         id: threadId,
@@ -115,7 +115,8 @@ export function SearchResults({
         directory: searchStore.directory,
         results: sanitizeResults(results as Array<RankedResult | LexicalResult>),
         timestamp: Date.now(),
-        mode: mode,
+        mode: threadMode,
+        isAskMode: searchStore.isAskModeActive,
         resultCount: results.length,
         durationMs: searchStore.searchStartTime ? Date.now() - searchStore.searchStartTime : 0,
         starred: true,

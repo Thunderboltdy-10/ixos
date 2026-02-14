@@ -5,12 +5,29 @@
 use ixos_protocol::cli::IxosConfig;
 use ixos_protocol::compliance::ComplianceManager;
 use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
 
 fn normalize_cache_mode(value: &str) -> String {
     match value.trim().to_lowercase().as_str() {
-        "native-cache" | "nativecache" | "cache" | "persistent" => "native-cache".to_string(),
-        "ephemeral" | "jit" | "memory" | "memory-only" => "ephemeral".to_string(),
-        _ => "native-cache".to_string(),
+        "native-cache" | "local" => "native-cache".to_string(),
+        "ephemeral" | "memory" => "ephemeral".to_string(),
+        _ => value.trim().to_lowercase(),
+    }
+}
+
+fn normalize_flash_model_name(value: &str) -> String {
+    match value.trim().to_lowercase().as_str() {
+        "ixos-flash-v2" | "flash" | "flash-v2" => "ixos-flash-v2".to_string(),
+        _ => "ixos-flash-v2".to_string(),
+    }
+}
+
+fn normalize_pro_model_name(value: &str) -> String {
+    match value.trim().to_lowercase().as_str() {
+        "ixos-pro-v2" | "pro-v2" | "pro" | "potion" | "potion-base-8m-int8" => {
+            "ixos-pro-v2".to_string()
+        }
+        _ => "ixos-pro-v2".to_string(),
     }
 }
 
@@ -94,8 +111,8 @@ impl From<IxosConfig> for ConfigPayload {
                 secure_timing: config.search.secure_timing,
                 context_lines: config.search.context_lines,
                 min_score_threshold: config.search.min_score_threshold,
-                model_type: config.search.model_type.clone(),
-                pro_model_type: config.search.pro_model_type.clone(),
+                model_type: normalize_flash_model_name(&config.search.model_type),
+                pro_model_type: normalize_pro_model_name(&config.search.pro_model_type),
                 search_mode: config.search.search_mode.clone(),
                 personal_ranking_enabled: config.search.personal_ranking_enabled,
             },
@@ -137,8 +154,8 @@ impl From<ConfigPayload> for IxosConfig {
                 secure_timing: payload.search.secure_timing,
                 context_lines: payload.search.context_lines,
                 min_score_threshold: payload.search.min_score_threshold,
-                model_type: payload.search.model_type,
-                pro_model_type: payload.search.pro_model_type,
+                model_type: normalize_flash_model_name(&payload.search.model_type),
+                pro_model_type: normalize_pro_model_name(&payload.search.pro_model_type),
                 search_mode: payload.search.search_mode,
                 personal_ranking_enabled: payload.search.personal_ranking_enabled,
             },
@@ -215,4 +232,69 @@ pub async fn withdraw_consent() -> Result<(), String> {
     let manager = ComplianceManager::new().map_err(|e| e.to_string())?;
     manager.withdraw_consent().map_err(|e| e.to_string())?;
     Ok(())
+}
+
+fn clear_cache_entries_recursive(dir: &Path) -> usize {
+    use ixos_protocol::storage::get_cache_for_path;
+
+    let mut cleared = 0usize;
+    let entries = match std::fs::read_dir(dir) {
+        Ok(entries) => entries,
+        Err(_) => return 0,
+    };
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            cleared += clear_cache_entries_recursive(&path);
+            continue;
+        }
+        if !path.is_file() {
+            continue;
+        }
+        let candidate_path = std::fs::canonicalize(&path).unwrap_or(path);
+        let cache = get_cache_for_path(&candidate_path);
+        if cache.delete(&candidate_path).is_ok() {
+            cleared += 1;
+        }
+    }
+
+    cleared
+}
+
+fn clear_lmdb_sidecar_cache() -> usize {
+    let lmdb = match ixos_protocol::storage::sidecar_lmdb::LmdbSidecarCache::new() {
+        Ok(cache) => cache,
+        Err(_) => return 0,
+    };
+    let before = lmdb.stats().map(|stats| stats.entry_count).unwrap_or(0);
+    if lmdb.clear().is_ok() {
+        before
+    } else {
+        0
+    }
+}
+
+/// Clear ADS/xattr/sidecar embedding cache for a directory.
+///
+/// If no directory is provided, this uses configured `search.default_directory`,
+/// then falls back to current working directory.
+#[tauri::command]
+pub async fn cache_clear(directory: Option<String>) -> Result<usize, String> {
+    let config = IxosConfig::load();
+    let target_dir = directory
+        .map(PathBuf::from)
+        .or(config.search.default_directory)
+        .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+
+    if !target_dir.exists() || !target_dir.is_dir() {
+        return Err(format!(
+            "Directory not found or not a directory: {}",
+            target_dir.display()
+        ));
+    }
+
+    let mut cleared = clear_cache_entries_recursive(&target_dir);
+    cleared += clear_lmdb_sidecar_cache();
+    Ok(cleared)
 }

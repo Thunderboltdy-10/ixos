@@ -1,0 +1,71 @@
+name: CLI Release
+
+on:
+  push:
+    tags:
+      - "cli-v*"
+
+jobs:
+  build-cli:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            target_os: linux
+            target_arch: x86_64
+          - runner: macos-14
+            target_os: macos
+            target_arch: arm64
+          - runner: windows-latest
+            target_os: windows
+            target_arch: x86_64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build ixos CLI
+        run: cargo build --locked --release --bin ixos
+
+      - name: Derive version
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#cli-v}"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Package Unix artifact
+        if: matrix.target_os != 'windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/pkg
+          cp target/release/ixos dist/pkg/ixos
+          [ -f README.md ] && cp README.md dist/pkg/README.md || true
+          [ -f LICENSE ] && cp LICENSE dist/pkg/LICENSE || true
+          ARCHIVE="ixos-${VERSION}-${{ matrix.target_os }}-${{ matrix.target_arch }}.tar.gz"
+          tar -czf "dist/$ARCHIVE" -C dist/pkg .
+          shasum -a 256 "dist/$ARCHIVE" > "dist/$ARCHIVE.sha256"
+
+      - name: Package Windows artifact
+        if: matrix.target_os == 'windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path dist -Force | Out-Null
+          $archive = "ixos-$env:VERSION-${{ matrix.target_os }}-${{ matrix.target_arch }}.zip"
+          $files = @("target/release/ixos.exe")
+          if (Test-Path "README.md") { $files += "README.md" }
+          if (Test-Path "LICENSE") { $files += "LICENSE" }
+          Compress-Archive -Path $files -DestinationPath (Join-Path "dist" $archive) -Force
+          $hash = (Get-FileHash -Path (Join-Path "dist" $archive) -Algorithm SHA256).Hash.ToLower()
+          Set-Content -Path (Join-Path "dist" "$archive.sha256") -Value "$hash  $archive"
+
+      - name: Upload assets to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: dist/*

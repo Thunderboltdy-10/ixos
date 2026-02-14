@@ -15,7 +15,7 @@ export function ComplianceSettings() {
         </p>
       </div>
 
-      <div className="bg-graphite-2 rounded-lg border border-stroke-hairline p-4">
+      <div className="bg-graphite-2/55 backdrop-blur-md rounded-xl border border-white/10 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {consent?.hasConsent ? (
@@ -60,7 +60,7 @@ export function ComplianceSettings() {
         </div>
       </div>
 
-      <div className="bg-graphite-2 rounded-lg border border-stroke-hairline p-4">
+      <div className="bg-graphite-2/55 backdrop-blur-md rounded-xl border border-white/10 p-4">
         <h3 className="text-sm font-medium text-porcelain mb-3 flex items-center gap-2">
           <FileText className="w-4 h-4" />
           Your Data Rights (GDPR)
@@ -83,7 +83,7 @@ export function ComplianceSettings() {
         </div>
       </div>
 
-      <div className="bg-graphite-2 rounded-lg border border-stroke-hairline p-4">
+      <div className="bg-graphite-2/55 backdrop-blur-md rounded-xl border border-white/10 p-4">
         <h3 className="text-sm font-medium text-porcelain mb-3">
           AI Transparency (EU AI Act)
         </h3>
@@ -95,7 +95,7 @@ export function ComplianceSettings() {
           </div>
           <div className="flex justify-between">
             <dt className="text-fg-dim">Model</dt>
-            <dd className="text-porcelain font-mono text-xs">Potion Core (Model2Vec Base 8M)</dd>
+            <dd className="text-porcelain font-mono text-xs">Ixos Flash / Ixos Pro (local embeddings)</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-fg-dim">Processing</dt>

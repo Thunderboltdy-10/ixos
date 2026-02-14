@@ -46,7 +46,7 @@ export function Sidebar({
   const searchStore = useSearchStore();
   const { user, entitlement, proStatus, entitlementToken, fetchBillingPortal } = useAuthStore();
   const { signOut, getToken } = useAuth();
-  const journalistMode = searchStore.journalistMode;
+  const deepSearchMode = searchStore.deepSearchMode;
 
   // Get starred threads
   const starredThreads = starred.getStarredThreads();
@@ -198,14 +198,14 @@ export function Sidebar({
       </div>
       )}
 
-      {/* Journalist mode notice - Only show when in Recent tab and search view */}
-      {journalistMode && activeTab === 'recent' && activeView === 'search' && (
+      {/* Deep Search notice - Only show when in Recent tab and search view */}
+      {deepSearchMode && activeTab === 'recent' && activeView === 'search' && (
         <div className="mx-3 mt-3 px-3 py-2 bg-accent-violet/5 border border-accent-violet/10 rounded-md">
           <div className="flex items-start gap-2">
             <EyeOff className="w-3.5 h-3.5 text-accent-violet flex-shrink-0 mt-0.5" />
             <div className="space-y-0.5">
-              <p className="text-xs font-medium text-accent-violet">Journalist Mode Active</p>
-              <p className="text-2xs text-fg-muted leading-tight">Searches are encrypted locally and can be cleared instantly.</p>
+              <p className="text-xs font-medium text-accent-violet">Deep Search Active</p>
+              <p className="text-2xs text-fg-muted leading-tight">Searches use the strict local privacy profile with deeper evidence extraction.</p>
             </div>
           </div>
         </div>

@@ -22,8 +22,8 @@ use ixos_protocol::cli::{
 use ixos_protocol::compliance::{ComplianceManager, DeletionScope};
 use ixos_protocol::ixos_embed::ModelType;
 use ixos_protocol::ixos_rank::{
-    CandidateLexicalEngine, ProgressiveSearchConfig, ProgressiveSearchEngine, SearchEvent,
-    StubSemanticEngine,
+    CandidateLexicalEngine, IntentDetector, ProgressiveSearchConfig, ProgressiveSearchEngine,
+    SearchEvent, StubSemanticEngine,
 };
 use ixos_protocol::telemetry::{install_crash_handler, TelemetryConfig};
 
@@ -83,7 +83,7 @@ async fn main() -> anyhow::Result<()> {
             pro_model,
             secure_timing,
             context,
-            journalist_mode,
+            deep_search,
             evidence,
         } => {
             handle_search(
@@ -104,7 +104,7 @@ async fn main() -> anyhow::Result<()> {
                 pro_model,
                 secure_timing || config.search.secure_timing,
                 context,
-                journalist_mode,
+                deep_search,
                 evidence,
                 &config,
             )
@@ -177,9 +177,19 @@ fn resolve_flash_model_type(raw: &str) -> ModelType {
 fn resolve_pro_model_type(raw: &str) -> ModelType {
     let normalized = raw.trim().to_lowercase();
     match normalized.as_str() {
-        "ixos-pro-v2" | "pro-v2" | "pro" => ModelType::Potion,
+        "ixos-pro-v2" | "pro-v2" | "pro" => ModelType::IxosProV2,
         "potion" | "potion-base-8m-int8" => ModelType::Potion,
-        _ => raw.parse::<ModelType>().unwrap_or(ModelType::Potion),
+        _ => raw.parse::<ModelType>().unwrap_or(ModelType::IxosProV2),
+    }
+}
+
+fn parse_runtime_cache_mode(raw: &str) -> anyhow::Result<ixos_protocol::CacheMode> {
+    match raw.trim().to_lowercase().as_str() {
+        "native-cache" | "local" => Ok(ixos_protocol::CacheMode::NativeCache),
+        "ephemeral" | "memory" => Ok(ixos_protocol::CacheMode::Ephemeral),
+        invalid => Err(anyhow::anyhow!(
+            "Invalid cache mode '{invalid}'. Use local/native-cache or memory/ephemeral."
+        )),
     }
 }
 
@@ -201,38 +211,28 @@ async fn handle_search(
     pro_model: Option<CliProModelType>,
     secure_timing: bool,
     context_lines: usize,
-    journalist_mode: bool,
+    deep_search: bool,
     include_evidence: bool,
     config: &IxosConfig,
 ) -> anyhow::Result<()> {
-    // Initialize journalist mode if enabled
-    let mut journalist = if journalist_mode {
-        let mut jm = ixos_protocol::journalist_mode::JournalistMode::new();
-        jm.enable();
+    // Initialize deep search mode if enabled.
+    let mut deep_search_tracker = if deep_search {
+        let mut tracker = ixos_protocol::journalist_mode::JournalistMode::new();
+        tracker.enable();
         if format == OutputFormat::Human && !json {
-            println!("\x1b[1;33m⚠ Journalist Mode Active - Maximum Privacy\x1b[0m");
-            println!("\x1b[90m  • Memory-only operation (no persistent cache)\x1b[0m");
-            println!("\x1b[90m  • All data will be cleared after search\x1b[0m");
+            println!("\x1b[1;33mDeep Search Mode Active\x1b[0m");
+            println!("\x1b[90m  - More files, deeper reads, and cross-reference extraction\x1b[0m");
+            println!("\x1b[90m  - Slower but more comprehensive coverage\x1b[0m");
             println!();
         }
-        Some(jm)
+        Some(tracker)
     } else {
         None
     };
 
-    // In journalist mode, force ephemeral cache mode
-    let configured_cache_mode = match config.search.cache_mode.to_lowercase().as_str() {
-        "native-cache" | "nativecache" | "cache" | "persistent" => {
-            ixos_protocol::CacheMode::NativeCache
-        }
-        "ephemeral" | "jit" => ixos_protocol::CacheMode::Ephemeral,
-        _ => ixos_protocol::CacheMode::NativeCache,
-    };
-    let effective_cache_mode = if journalist_mode {
-        ixos_protocol::CacheMode::Ephemeral
-    } else {
-        cache_mode.unwrap_or(configured_cache_mode)
-    };
+    // Cache mode remains independent from Deep Search.
+    let configured_cache_mode = parse_runtime_cache_mode(&config.search.cache_mode)?;
+    let effective_cache_mode = cache_mode.unwrap_or(configured_cache_mode);
 
     // Check consent before AI operations
     let compliance = ComplianceManager::new()?;
@@ -313,6 +313,7 @@ async fn handle_search(
     let pro_model_type = pro_model
         .map(ModelType::from)
         .unwrap_or_else(|| resolve_pro_model_type(&config.search.pro_model_type));
+    let ask_mode_auto_intent = IntentDetector::new().should_activate_ask_mode(query);
 
     // Create search engines
     // P2: Use CandidateLexicalEngine to enforce hard caps and fast funneling
@@ -365,11 +366,14 @@ async fn handle_search(
     };
 
     let mut pro_engine: Option<StubSemanticEngine> = None;
-    if matches!(
+    let should_load_pro_engine = matches!(
+        resolved_search_mode,
+        ixos_protocol::ixos_rank::progressive::SearchMode::Pro
+    ) || (matches!(
         resolved_search_mode,
         ixos_protocol::ixos_rank::progressive::SearchMode::Auto
-            | ixos_protocol::ixos_rank::progressive::SearchMode::Pro
-    ) {
+    ) && !ask_mode_auto_intent);
+    if should_load_pro_engine {
         pro_engine = if stub_model {
             Some(StubSemanticEngine::with_stub_model_and_mode(
                 effective_cache_mode,
@@ -525,12 +529,11 @@ async fn handle_search(
         ixos_protocol::SearchMode::Hybrid,
     );
 
-    // Clear journalist mode data if enabled
-    if let Some(ref mut jm) = journalist {
-        jm.record_search();
-        jm.clear_all();
+    // Emit deep-search summary if enabled.
+    if let Some(ref mut tracker) = deep_search_tracker {
+        tracker.record_search();
         if format == OutputFormat::Human && !json {
-            println!("\x1b[90m✓ All search data securely cleared\x1b[0m");
+            println!("\x1b[90m{}\x1b[0m", tracker.summary_line());
         }
     }
 
@@ -1020,15 +1023,15 @@ async fn handle_cache(
                 .unwrap_or_else(IxosConfig::default_path);
             let mut config = IxosConfig::load_from(config_path.clone());
             match mode {
-                CliCacheModePreference::Ephemeral => {
+                CliCacheModePreference::Memory => {
                     config.search.cache_mode = "ephemeral".to_string();
-                    println!("Cache mode set to: EPHEMERAL (memory-only)");
+                    println!("Cache mode set to: MEMORY (RAM only)");
                     println!("Embeddings will not be persisted to disk.");
                     println!("This provides maximum privacy.");
                 }
-                CliCacheModePreference::Persistent => {
+                CliCacheModePreference::Local => {
                     config.search.cache_mode = "native-cache".to_string();
-                    println!("Cache mode set to: PERSISTENT (ADS/xattr)");
+                    println!("Cache mode set to: LOCAL (ADS/xattr)");
                     println!("Embeddings will be stored alongside files.");
                     println!("This provides faster repeat searches.");
                 }

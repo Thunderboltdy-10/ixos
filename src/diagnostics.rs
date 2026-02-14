@@ -186,13 +186,13 @@ async fn check_progressive_order() -> Result<(), String> {
     }
 }
 
-async fn check_journalist_write_prevention() -> Result<(), String> {
-    let temp_dir = create_temp_doctor_dir("journalist")?;
-    let test_file = temp_dir.join("doctor_journalist.txt");
+async fn check_deep_search_write_prevention() -> Result<(), String> {
+    let temp_dir = create_temp_doctor_dir("deep-search")?;
+    let test_file = temp_dir.join("doctor_deep_search.txt");
     std::fs::write(&test_file, "sensitive draft").map_err(|e| e.to_string())?;
 
-    let mut jm = JournalistMode::new();
-    jm.enable();
+    let mut deep_search = JournalistMode::new();
+    deep_search.enable();
 
     let model = std::sync::Arc::new(StubModel::new());
     let embedder = SecureEmbedder::new_fast(model);
@@ -207,12 +207,12 @@ async fn check_journalist_write_prevention() -> Result<(), String> {
         .map_err(|e| e.to_string())?;
 
     let leaked = get_cache_for_path(&test_file).contains(&test_file);
-    jm.disable();
+    deep_search.disable();
 
     let _ = std::fs::remove_dir_all(&temp_dir);
 
     if leaked {
-        Err("cache write detected while journalist mode check was active".to_string())
+        Err("cache write detected while deep search mode check was active".to_string())
     } else {
         Ok(())
     }
@@ -342,17 +342,17 @@ pub async fn run_doctor(options: DoctorOptions) -> DoctorReport {
         details: None,
     });
 
-    let journalist_check = check_journalist_write_prevention().await;
+    let deep_search_check = check_deep_search_write_prevention().await;
     checks.push(DoctorCheck {
-        id: "journalist_write_prevention".to_string(),
-        name: "Incognito/hardened write prevention".to_string(),
-        status: match &journalist_check {
+        id: "deep_search_write_prevention".to_string(),
+        name: "Deep Search write prevention".to_string(),
+        status: match &deep_search_check {
             Ok(()) => DoctorStatus::Pass,
             Err(_) => DoctorStatus::Fail,
         },
-        message: match journalist_check {
-            Ok(()) => "No persistent cache writes detected in journalist mode check".to_string(),
-            Err(e) => format!("Journalist write prevention check failed: {e}"),
+        message: match deep_search_check {
+            Ok(()) => "No persistent cache writes detected in deep search mode check".to_string(),
+            Err(e) => format!("Deep search write prevention check failed: {e}"),
         },
         details: None,
     });

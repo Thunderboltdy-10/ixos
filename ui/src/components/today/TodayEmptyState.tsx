@@ -54,7 +54,7 @@ export function TodayEmptyState({ onStartSearch }: TodayEmptyStateProps) {
           <ol className="text-xs text-fg-dim space-y-1">
             <li>1. Run 5-10 searches in Search.</li>
             <li>2. Open a few results from different folders.</li>
-            <li>3. Keep Journalist mode off while testing memory features.</li>
+            <li>3. Keep Deep Search off while testing memory features.</li>
             <li>4. Reopen Today in a few seconds.</li>
           </ol>
         </div>

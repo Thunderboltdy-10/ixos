@@ -11,8 +11,8 @@ const HISTORY_FILE = 'search_history.encrypted';
 const LEGACY_STARRED_FILE = 'starred_searches.encrypted';
 const MAX_THREADS = 100;
 
-function normalizeMode(mode: string): 'native-cache' | 'ephemeral' | 'journalist' {
-  if (mode === 'journalist') return 'journalist';
+function normalizeMode(mode: string): 'native-cache' | 'ephemeral' | 'deep-search' {
+  if (mode === 'deep-search' || mode === 'journalist') return 'deep-search';
   if (mode === 'ephemeral' || mode === 'jit') return 'ephemeral';
   if (mode === 'native-cache' || mode === 'cache' || mode === 'persistent') return 'native-cache';
   return 'native-cache';
@@ -27,7 +27,8 @@ export interface SearchThread {
   directory: string;
   results: StoredResult[];
   timestamp: number;
-  mode: 'native-cache' | 'ephemeral' | 'journalist';
+  mode: 'native-cache' | 'ephemeral' | 'deep-search';
+  isAskMode?: boolean;
   resultCount: number;
   durationMs: number;
   starred: boolean;
@@ -39,7 +40,8 @@ export interface HistorySuggestion {
   directory: string;
   resultCount: number;
   timestamp: number;
-  mode: 'native-cache' | 'ephemeral' | 'journalist';
+  mode: 'native-cache' | 'ephemeral' | 'deep-search';
+  isAskMode?: boolean;
   starred: boolean;
 }
 
@@ -81,6 +83,7 @@ export const useStarredStore = create<StarredState>((set, get) => ({
       ...threadData,
       id: nextId,
       timestamp: nextTimestamp,
+      isAskMode: threadData.isAskMode ?? false,
       starred: threadData.starred ?? false,
     };
 
@@ -160,6 +163,7 @@ export const useStarredStore = create<StarredState>((set, get) => ({
         resultCount: thread.resultCount,
         timestamp: thread.timestamp,
         mode: thread.mode,
+        isAskMode: thread.isAskMode ?? false,
         starred: thread.starred,
       });
       if (suggestions.length >= limit) break;
@@ -186,6 +190,7 @@ export const useStarredStore = create<StarredState>((set, get) => ({
           threads: loaded.threads.slice(0, MAX_THREADS).map((thread) => ({
             ...thread,
             mode: normalizeMode(thread.mode),
+            isAskMode: thread.isAskMode ?? false,
           })),
           isLoaded: true,
         });
@@ -195,6 +200,7 @@ export const useStarredStore = create<StarredState>((set, get) => ({
           const normalized = legacy.threads.slice(0, MAX_THREADS).map((thread) => ({
             ...thread,
             mode: normalizeMode(thread.mode),
+            isAskMode: thread.isAskMode ?? false,
           }));
           set({
             threads: normalized,

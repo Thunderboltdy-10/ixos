@@ -113,7 +113,7 @@ interface SearchState {
   hasSearchIntent: boolean;       // True when query.length >= 2
 
   // Privacy
-  journalistMode: boolean;
+  deepSearchMode: boolean;
 
   // Timing
   searchStartTime: number | null;
@@ -121,13 +121,12 @@ interface SearchState {
   fileCount: number | null;
 
   // Ask Mode
-  askModeOverride: 'off' | 'auto' | 'always' | null;  // Per-search override (Ctrl+Shift+A)
-  isAskModeActive: boolean;  // Computed: whether Ask Mode is currently active
+  isAskModeActive: boolean;  // Computed from query-level auto hinting
 
   // Actions
   setQuery: (query: string) => void;
   setDirectory: (directory: string) => void;
-  setJournalistMode: (enabled: boolean) => void;
+  setDeepSearchMode: (enabled: boolean) => void;
   setCacheMode: (mode: 'native-cache' | 'ephemeral') => void;
   setSelectedIndex: (index: number) => void;
   moveSelection: (direction: 'up' | 'down') => void;
@@ -156,9 +155,6 @@ interface SearchState {
   consumeSparkTarget: () => number | null;
   clearSparkTargets: () => void;
 
-  // Ask Mode actions
-  setAskModeOverride: (mode: 'off' | 'auto' | 'always' | null) => void;
-  toggleAskModeOverride: () => void;
 }
 
 export const useSearchStore = create<SearchState>((set, get) => ({
@@ -182,17 +178,16 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   scanTrail: [],
   pendingSparkTargets: [],
   hasSearchIntent: false,
-  journalistMode: false,
+  deepSearchMode: false,
   searchStartTime: null,
   cacheMode: 'native-cache',
   fileCount: null,
-  askModeOverride: null,
   isAskModeActive: false,
 
   // Setters
   setQuery: (query) => set({ query, hasSearchIntent: query.trim().length >= 2 }),
   setDirectory: (directory) => set({ directory }),
-  setJournalistMode: (enabled) => set({ journalistMode: enabled }),
+  setDeepSearchMode: (enabled) => set({ deepSearchMode: enabled }),
   setCacheMode: (mode) => set({ cacheMode: mode }),
   setSelectedIndex: (index) => set({ selectedIndex: index }),
   clearResults: () =>
@@ -214,7 +209,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       pendingSparkTargets: [],
       searchStartTime: null,
       activeThreadId: null,
-      askModeOverride: null,
+      isAskModeActive: false,
     }),
 
   moveSelection: (direction) => {
@@ -279,28 +274,8 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       const modelType = settings?.modelType || 'ixos-flash-v2';
       const proModelType = settings?.proModelType || 'ixos-pro-v2';
 
-      // Ask Mode detection
-      const askModeSetting = settings?.askMode || 'auto';
-      const askModeOverride = state.askModeOverride;
-
-      let isAskMode = false;
-      if (askModeOverride) {
-        isAskMode = askModeOverride === 'always'; // 'off' -> false
-        if (askModeOverride === 'auto') {
-          isAskMode = normalizedQuery.endsWith('?') ||
-            /^(who|what|when|where|how|why|find|show|whats|wheres|hows)\s/i.test(normalizedQuery);
-        }
-      } else {
-        if (askModeSetting === 'always') isAskMode = true;
-        else if (askModeSetting === 'off') isAskMode = false;
-        else {
-          // Auto
-          isAskMode = normalizedQuery.endsWith('?') ||
-            /^(who|what|when|where|how|why|find|show|whats|wheres|hows)\s/i.test(normalizedQuery);
-        }
-      }
-
-      set({ isAskModeActive: isAskMode });
+      // Ask mode is backend-detected; UI sends only an automatic hint.
+      set({ isAskModeActive: false });
 
       const searchMode = settings?.searchMode || 'auto';
       const timeoutSeconds = settings?.timeoutSeconds || 30;
@@ -319,14 +294,14 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       // command invocation with guaranteed ordering and no missed events.
       const handleEvent = get().handleSearchEvent;
       await tauri.searchProgressive(state.query, state.directory, {
-        journalistMode: state.journalistMode,
+        deepSearch: state.deepSearchMode,
         contextLines: 3,
         cacheMode: state.cacheMode,
         modelType: modelType,
         proModelType: proModelType,
         searchMode: searchMode,
         timeoutSeconds: timeoutSeconds,
-        isAskMode: isAskMode,
+        isAskMode: 'auto',
       }, handleEvent);
     } catch (error) {
       set({
@@ -400,6 +375,10 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       case 'status':
         set((state) => ({
           statusMessage: event.message,
+          isAskModeActive:
+            state.isAskModeActive ||
+            event.message.toLowerCase().includes('ask mode') ||
+            event.message.toLowerCase().includes('understanding your question'),
           phase: (() => {
             const lowered = event.message.toLowerCase();
             if (lowered.includes('refining')) return 'refining';
@@ -538,14 +517,15 @@ export const useSearchStore = create<SearchState>((set, get) => ({
         const threadQuery = state.activeQuery ?? state.query;
         const existing = useStarredStore.getState().getThreadById(threadId);
 
-        if (threadQuery && state.directory && !state.journalistMode) {
+        if (threadQuery && state.directory) {
           useStarredStore.getState().recordThread({
             id: threadId,
             query: threadQuery,
             directory: state.directory,
             results: sanitized,
             timestamp: Date.now(),
-            mode: state.journalistMode ? 'journalist' : state.cacheMode,
+            mode: state.deepSearchMode ? 'deep-search' : state.cacheMode,
+            isAskMode: state.isAskModeActive,
             resultCount: results.length,
             durationMs: state.searchStartTime ? Date.now() - state.searchStartTime : 0,
             starred: existing?.starred ?? false,
@@ -613,25 +593,26 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       scanTrail: [],
       pendingSparkTargets: [],
       hasSearchIntent: false,
-      askModeOverride: null,
+      isAskModeActive: false,
     }),
 
   restoreFromHistory: (thread) =>
     set(() => {
       const hasSemantic = thread.results.length > 0 && 'scoreBreakdown' in thread.results[0];
-      const isJournalist = thread.mode === 'journalist';
-      const modeValue = thread.mode as string;
+      const modeValue = String(thread.mode);
+      const isDeepSearch = modeValue === 'deep-search' || modeValue === 'journalist';
+      const restoredCacheMode =
+        modeValue === 'native-cache' || modeValue === 'cache' || modeValue === 'persistent' || modeValue === 'local'
+          ? 'native-cache'
+          : 'ephemeral';
       return {
         query: thread.query,
         directory: thread.directory,
         activeQuery: thread.query,
         activeThreadId: thread.id,
-        journalistMode: isJournalist,
-        cacheMode: isJournalist
-          ? 'ephemeral'
-          : (modeValue === 'native-cache' || modeValue === 'cache' || modeValue === 'persistent'
-              ? 'native-cache'
-              : 'ephemeral'),
+        deepSearchMode: isDeepSearch,
+        cacheMode: restoredCacheMode,
+        isAskModeActive: thread.isAskMode ?? false,
         lexicalResults: hasSemantic ? [] : thread.results as LexicalResult[],
         semanticResults: hasSemantic ? thread.results as RankedResult[] : [],
         lateResults: [],
@@ -741,16 +722,4 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   },
 
   clearSparkTargets: () => set({ pendingSparkTargets: [] }),
-
-  // Ask Mode actions
-  setAskModeOverride: (mode) => set({ askModeOverride: mode }),
-  toggleAskModeOverride: () => {
-    const state = get();
-    // Cycle through: null -> 'always' -> null (toggle on/off)
-    if (state.askModeOverride === 'always') {
-      set({ askModeOverride: null });
-    } else {
-      set({ askModeOverride: 'always' });
-    }
-  },
 }));

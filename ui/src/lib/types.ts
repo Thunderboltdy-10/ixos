@@ -136,13 +136,13 @@ export interface SearchOptions {
   limit?: number;
   secureRanking?: boolean;
   contextLines?: number;
-  cacheMode?: 'native-cache' | 'ephemeral' | 'cache' | 'jit';
-  journalistMode?: boolean;
+  cacheMode?: 'native-cache' | 'ephemeral' | 'local' | 'memory';
+  deepSearch?: boolean;
   secureTiming?: boolean;
   modelType?: ModelType;
   proModelType?: ModelType;
   searchMode?: SearchMode;
-  isAskMode?: boolean;
+  isAskMode?: 'off' | 'auto' | 'on';
   timeoutSeconds?: number;
 }
 

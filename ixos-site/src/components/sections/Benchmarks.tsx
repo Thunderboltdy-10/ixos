@@ -101,7 +101,7 @@ export function Benchmarks() {
                 <div className="mt-4 border-t border-white/10 pt-4 text-[10px] font-mono text-fg-muted opacity-60">
                   Source: {benchmarkData.source}
                   <br />
-                  Modes shown as NativeCache and Ephemeral.
+                  Modes shown as Local and Memory.
                 </div>
               </div>
             </div>

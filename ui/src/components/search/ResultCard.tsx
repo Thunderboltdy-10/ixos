@@ -144,8 +144,8 @@ export function ResultCard({
   const [copied, setCopied] = useState(false);
   const [signals, setSignals] = useState<PersonalSignals | null>(null);
   const { handleMouseEnter, handleMouseLeave } = usePrefetch();
-  const journalistMode = useSearchStore((state) => state.journalistMode);
-  const canApplyPersonalSignals = !journalistMode;
+  const deepSearchMode = useSearchStore((state) => state.deepSearchMode);
+  const canApplyPersonalSignals = !deepSearchMode;
 
   // Color mapping based on mode - override for Ask Mode
   const modeColors = {
@@ -566,7 +566,7 @@ export function ResultCard({
                       : 'bg-graphite-3 text-fg-muted border-stroke-hairline hover:text-porcelain',
                     !canApplyPersonalSignals && 'opacity-55 cursor-not-allowed'
                   )}
-                  title={canApplyPersonalSignals ? undefined : 'Unavailable in Journalist mode'}
+                  title={canApplyPersonalSignals ? undefined : 'Unavailable in Deep Search mode'}
                 >
                   <Star className={cn('w-3.5 h-3.5', isPinned && 'fill-current')} />
                   {isPinned ? 'Pinned' : 'Pin'}
@@ -583,7 +583,7 @@ export function ResultCard({
                       : 'bg-graphite-3 text-fg-muted border-stroke-hairline hover:text-porcelain',
                     !canApplyPersonalSignals && 'opacity-55 cursor-not-allowed'
                   )}
-                  title={canApplyPersonalSignals ? undefined : 'Unavailable in Journalist mode'}
+                  title={canApplyPersonalSignals ? undefined : 'Unavailable in Deep Search mode'}
                 >
                   <EyeOff className="w-3.5 h-3.5" />
                   {isIgnored ? 'Ignored' : 'Ignore'}
@@ -597,7 +597,7 @@ export function ResultCard({
                     "flex items-center gap-1.5 px-2.5 py-1.5 text-2xs rounded-md border bg-graphite-3 text-fg-muted border-stroke-hairline hover:text-porcelain transition-colors",
                     !canApplyPersonalSignals && 'opacity-55 cursor-not-allowed'
                   )}
-                  title={canApplyPersonalSignals ? undefined : 'Unavailable in Journalist mode'}
+                  title={canApplyPersonalSignals ? undefined : 'Unavailable in Deep Search mode'}
                 >
                   <ThumbsDown className="w-3.5 h-3.5" />
                   Not Relevant

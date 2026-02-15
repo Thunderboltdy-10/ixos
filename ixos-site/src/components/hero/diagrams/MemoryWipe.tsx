@@ -18,7 +18,7 @@ export function MemoryWipe({
         <text
           x="8"
           y="8"
-          className={cn("text-[4px] font-mono uppercase tracking-[0.08em]", isComplete ? "fill-accent-violet/88" : "fill-fg-muted/58")}
+          className={cn("text-[4px] font-mono uppercase tracking-[0.08em]", isComplete ? "fill-accent-amber/88" : "fill-fg-muted/58")}
         >
           {isComplete ? "Scrubbed" : "Scanning memory"}
         </text>
@@ -40,7 +40,7 @@ export function MemoryWipe({
                   className={cn(
                     "transition-all duration-500",
                     isComplete
-                      ? "fill-accent-violet/32 stroke-accent-violet/62"
+                      ? "fill-accent-amber/32 stroke-accent-amber/62"
                       : activeCell
                         ? "fill-white/[0.08] stroke-white/24"
                         : "fill-white/[0.03] stroke-white/12"
@@ -52,10 +52,10 @@ export function MemoryWipe({
           </g>
         ))}
 
-        <path d="M8 64 C28 60 72 60 92 64" className={cn(isComplete ? "stroke-accent-violet/85" : "stroke-white/22")} strokeWidth="1.1" fill="none" />
+        <path d="M8 64 C28 60 72 60 92 64" className={cn(isComplete ? "stroke-accent-amber/85" : "stroke-white/22")} strokeWidth="1.1" fill="none" />
 
         {isActive && !isComplete && (
-          <text x="-24" y="67" className="fill-accent-violet/72 text-[3.8px] font-mono uppercase tracking-[0.14em]">
+          <text x="-24" y="67" className="fill-accent-amber/72 text-[3.8px] font-mono uppercase tracking-[0.14em]">
             scan scan scan
             <animate attributeName="x" from="-24" to="92" dur="2.2s" repeatCount="indefinite" />
           </text>

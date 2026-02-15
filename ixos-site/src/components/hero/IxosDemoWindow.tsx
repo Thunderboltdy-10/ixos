@@ -2,15 +2,75 @@
 
 import { useState, useEffect, useCallback, useRef, createElement } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Sparkles, Zap, Shield, ChevronDown, ChevronRight, X } from 'lucide-react';
+import { Search, Sparkles, Zap, Shield, ChevronDown, ChevronUp, X, Folder } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFakeSearch, DEMO_QUERIES, type DemoFile, type PauseAtStage } from './fakeSearch';
 import { getFileIcon } from './fileIcons';
 
-type DemoMode = 'memory' | 'local' | 'deep-search';
-type DemoModel = 'Ixos Flash' | 'Ixos Pro';
+export type DemoMode = 'memory' | 'local' | 'deep-search';
+type DemoQuality = 'flash' | 'auto' | 'pro';
 
-const MODELS: DemoModel[] = ['Ixos Flash', 'Ixos Pro'];
+const MODE_META: Record<DemoMode, { icon: typeof Zap; label: string; shortLabel: string; description: string; detail: string }> = {
+  memory: {
+    icon: Zap,
+    label: 'Memory Search',
+    shortLabel: 'MEMORY',
+    description: 'JIT embeddings in RAM, nothing to disk',
+    detail: 'Fastest mode. Embeddings computed on-the-fly and kept only in working memory. Perfect for quick lookups on sensitive data.',
+  },
+  local: {
+    icon: Sparkles,
+    label: 'Local Search',
+    shortLabel: 'LOCAL',
+    description: 'Cached via ADS/xattr for fast repeats',
+    detail: 'Recommended mode. Embeddings cached alongside files using native OS metadata. Instant re-search with zero cloud sync.',
+  },
+  'deep-search': {
+    icon: Shield,
+    label: 'Deep Search',
+    shortLabel: 'DEEP',
+    description: 'Expanded evidence extraction, thorough scan',
+    detail: 'Maximum coverage. Scans more files, reads deeper into content, and extracts cross-references. Slower but comprehensive.',
+  },
+};
+
+const QUALITY_META: Record<
+  DemoQuality,
+  { label: string; shortLabel: string; description: string; detail: string; color: string; bgFaint: string; borderFaint: string; icon: typeof Sparkles }
+> = {
+  flash: {
+    label: 'Ixos Flash',
+    shortLabel: 'FLASH',
+    description: 'Fastest, lowest latency',
+    detail: 'Runs Flash directly for the quickest recall when context is already clear.',
+    color: 'text-accent-amber',
+    bgFaint: 'bg-accent-amber/10',
+    borderFaint: 'border-accent-amber/20',
+    icon: Zap,
+  },
+  auto: {
+    label: 'Auto Mode',
+    shortLabel: 'AUTO',
+    description: 'Adapts to your query',
+    detail: 'Starts in Flash and refines only when confidence is weak or intent is ambiguous.',
+    color: 'text-accent-teal',
+    bgFaint: 'bg-accent-teal/10',
+    borderFaint: 'border-accent-teal/20',
+    icon: Sparkles,
+  },
+  pro: {
+    label: 'Ixos Pro',
+    shortLabel: 'PRO',
+    description: 'Highest quality ranking',
+    detail: 'Prioritizes depth and richer evidence extraction for harder queries.',
+    color: 'text-accent-violet',
+    bgFaint: 'bg-accent-violet/10',
+    borderFaint: 'border-accent-violet/20',
+    icon: Shield,
+  },
+};
+
+const QUALITY_ORDER: DemoQuality[] = ['flash', 'auto', 'pro'];
 const QUERY_CYCLE_MS = 10_000;
 const SYNC_POLL_MS = 120;
 const SCROLL_GUIDED_QUERY = DEMO_QUERIES[0].query;
@@ -49,6 +109,24 @@ const MODE_TOKENS = {
   },
 } as const;
 
+const QUALITY_TOKENS = {
+  flash: {
+    text: 'text-accent-amber',
+    bgFaint: 'bg-accent-amber/10',
+    borderFaint: 'border-accent-amber/20',
+  },
+  auto: {
+    text: 'text-accent-teal',
+    bgFaint: 'bg-accent-teal/10',
+    borderFaint: 'border-accent-teal/20',
+  },
+  pro: {
+    text: 'text-accent-violet',
+    bgFaint: 'bg-accent-violet/10',
+    borderFaint: 'border-accent-violet/20',
+  },
+} as const;
+
 const PIPELINE_STAGES = ['Scan', 'Embed', 'Rank'] as const;
 
 export const STEP_LABELS = ['01 INPUT_LAYER', '02 EMBED_ENGINE', '03 RANK_ENGINE', '04 PRIVACY_GUARD', '05 OUTPUT_STREAM'] as const;
@@ -64,12 +142,10 @@ const STEP_PAUSE_MAP: Record<number, PauseAtStage> = {
 interface IxosDemoWindowProps {
   onInteract?: () => void;
   controlledStep?: number | null;
+  onModeChange?: (mode: DemoMode) => void;
 }
 
-/**
- * Interactive Ixos demo - desktop-faithful replica
- */
-export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWindowProps) {
+export function IxosDemoWindow({ onInteract, controlledStep = null, onModeChange }: IxosDemoWindowProps) {
   const [syncClock, setSyncClock] = useState(() => Date.now());
   const [userQuery, setUserQuery] = useState<string | null>(null);
   const [isUserMode, setIsUserMode] = useState(false);
@@ -78,18 +154,40 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [activeMode, setActiveMode] = useState<DemoMode>('local');
-  const [activeModel, setActiveModel] = useState<DemoModel>('Ixos Flash');
-  const [showModelMenu, setShowModelMenu] = useState(false);
+  const [activeQuality, setActiveQuality] = useState<DemoQuality>('auto');
+  const [showModeMenu, setShowModeMenu] = useState(false);
+  const [showQualityMenu, setShowQualityMenu] = useState(false);
+  const [hoveredMode, setHoveredMode] = useState<DemoMode>('local');
+  const [hoveredQuality, setHoveredQuality] = useState<DemoQuality>('auto');
+  const [expandedResult, setExpandedResult] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const modeMenuRef = useRef<HTMLDivElement>(null);
+  const qualityMenuRef = useRef<HTMLDivElement>(null);
 
   const { search, results, isSearching, searchStage, reset, setPauseAtStage } = useFakeSearch();
   const tokens = MODE_TOKENS[activeMode];
   const isControlled = controlledStep !== null && controlledStep !== undefined;
+  const interactionLocked = false;
   const queryIndex = isControlled ? 0 : Math.floor(syncClock / QUERY_CYCLE_MS) % DEMO_QUERIES.length;
 
   const currentDemoQuery = isControlled ? SCROLL_GUIDED_QUERY : DEMO_QUERIES[queryIndex].query;
   const displayQuery = isUserMode ? (userQuery || '') : typedText;
-  // Controlled step: lock demo progression to scroll stage without autonomous loops.
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (modeMenuRef.current && !modeMenuRef.current.contains(e.target as Node)) {
+        setShowModeMenu(false);
+      }
+      if (qualityMenuRef.current && !qualityMenuRef.current.contains(e.target as Node)) {
+        setShowQualityMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Controlled step: lock demo progression to scroll stage
   useEffect(() => {
     if (!isControlled) {
       previousControlledStepRef.current = null;
@@ -105,12 +203,8 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
     setPauseAtStage(STEP_PAUSE_MAP[step] ?? null);
     setIsUserMode(false);
     setUserQuery(null);
-
-    if (step === 3) {
-      setActiveMode('deep-search');
-    } else {
-      setActiveMode(prev => (prev === 'deep-search' ? 'local' : prev));
-    }
+    setShowModeMenu(false);
+    setShowQualityMenu(false);
 
     if (step === 0) {
       reset();
@@ -127,7 +221,7 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
     }
   }, [controlledStep, currentDemoQuery, isControlled, reset, search, setPauseAtStage]);
 
-  // Keep all demo instances synchronized on the same query cycle.
+  // Sync clock for autonomous demo
   useEffect(() => {
     if (isUserMode || isControlled) return;
     const timer = window.setInterval(() => {
@@ -140,10 +234,7 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
   useEffect(() => {
     if (isUserMode) return;
     if (isControlled) {
-      // Scroll-guided mode: no autonomous looping queries.
-      if (controlledStep !== 0) {
-        return;
-      }
+      if (controlledStep !== 0) return;
       setTypedText('');
       let charIndex = 0;
       const timer = setInterval(() => {
@@ -180,7 +271,8 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
       setIsUserMode(true);
       onInteract?.();
       setTypedText('');
-      setShowModelMenu(false);
+      setShowModeMenu(false);
+      setShowQualityMenu(false);
       if (!userQuery) setUserQuery('');
     }
 
@@ -203,22 +295,49 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
     startUserMode();
     const value = e.target.value;
     setUserQuery(value);
+    setExpandedResult(null);
     if (value.length >= 2) search(value);
     else reset();
   }, [search, reset, startUserMode]);
 
   const handleModeChange = (mode: DemoMode) => {
     setActiveMode(mode);
+    setShowModeMenu(false);
     startUserMode();
   };
+
+  const handleQualityChange = (quality: DemoQuality) => {
+    setActiveQuality(quality);
+    setShowQualityMenu(false);
+    startUserMode();
+  };
+
+  const modeMeta = MODE_META[activeMode];
+  const hoveredModeMeta = MODE_META[hoveredMode];
+  const qualityMeta = QUALITY_META[activeQuality];
+  const hoveredQualityMeta = QUALITY_META[hoveredQuality];
+  const ModeIcon = modeMeta.icon;
+  const QualityIcon = qualityMeta.icon;
+
+  useEffect(() => {
+    onModeChange?.(activeMode);
+  }, [activeMode, onModeChange]);
+
+  useEffect(() => {
+    if (!showModeMenu) setHoveredMode(activeMode);
+  }, [activeMode, showModeMenu]);
+
+  useEffect(() => {
+    if (!showQualityMenu) setHoveredQuality(activeQuality);
+  }, [activeQuality, showQualityMenu]);
 
   return (
     <div
       className={cn(
         "relative flex h-full w-full flex-col overflow-hidden rounded-lg border border-white/10 bg-bg-graphite-0 shadow-2xl",
-        isControlled && "pointer-events-none select-none"
+        interactionLocked && "pointer-events-none select-none"
       )}
-      onClick={isControlled ? undefined : startUserMode}
+      onClick={interactionLocked ? undefined : () => { setShowModeMenu(false); setShowQualityMenu(false); }}
     >
       <div className="relative z-10 flex flex-1 flex-col items-center p-3 transition-all duration-300 md:p-4 lg:p-5">
         <div
@@ -237,6 +356,7 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
             )}
           >
             <div className="flex flex-col">
+              {/* Main search row */}
               <div className="flex items-center px-4 py-3.5 gap-3">
                 <Search className={cn(
                   "w-4.5 h-4.5 transition-colors shrink-0",
@@ -248,83 +368,18 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
                   type="text"
                   value={displayQuery}
                   onChange={handleChange}
-                  onClick={startUserMode}
+                  onClick={(e) => { e.stopPropagation(); startUserMode(); }}
                   placeholder="Search your files..."
                   className={cn(
                     "flex-1 bg-transparent text-fg-porcelain text-base font-medium placeholder:text-fg-muted/30 focus:outline-none",
                     tokens.selection
                   )}
-                  readOnly={!isUserMode}
+                  readOnly={interactionLocked}
                 />
-
-                {/* Controls */}
-                <div className="flex items-center gap-2 md:gap-3 text-[11px] font-mono text-fg-muted/40">
-                  {/* Model Selector */}
-                  <div className="relative hidden md:block">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setShowModelMenu(!showModelMenu); startUserMode(); }}
-                      className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-white/5 transition-colors text-fg-muted/60 hover:text-fg-muted"
-                    >
-                      <Sparkles className={cn("w-3 h-3", tokens.text)} />
-                      <span>{activeModel}</span>
-                      <ChevronDown className="w-3 h-3 opacity-50" />
-                    </button>
-                    {showModelMenu && (
-                      <div className="absolute top-full right-0 mt-2 w-36 bg-bg-graphite-2 border border-white/10 rounded-md shadow-xl overflow-hidden py-1 z-50">
-                        {MODELS.map(m => (
-                          <button
-                            key={m}
-                            onClick={() => { setActiveModel(m); setShowModelMenu(false); }}
-                            className="w-full text-left px-3 py-1.5 hover:bg-white/5 text-fg-muted hover:text-fg-porcelain transition-colors"
-                          >
-                            {m}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Mode Selector */}
-                  <div className="flex items-center bg-white/[0.04] rounded-lg p-0.5">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleModeChange('memory'); }}
-                      className={cn(
-                        "px-2 py-1 rounded-md transition-all flex items-center gap-1.5",
-                        activeMode === 'memory' ? `${MODE_TOKENS.memory.bgFaint} ${MODE_TOKENS.memory.text} shadow-sm` : "hover:text-fg-muted"
-                      )}
-                      title="Memory Mode"
-                    >
-                      <Zap className="w-3 h-3 fill-current" />
-                      <span className="hidden sm:inline font-bold tracking-wider">MEMORY</span>
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleModeChange('local'); }}
-                      className={cn(
-                        "px-2 py-1 rounded-md transition-all flex items-center gap-1.5",
-                        activeMode === 'local' ? `${MODE_TOKENS.local.bgFaint} ${MODE_TOKENS.local.text} shadow-sm` : "hover:text-fg-muted"
-                      )}
-                      title="Local Mode"
-                    >
-                      <Sparkles className="w-3 h-3" />
-                      <span className="hidden sm:inline font-bold tracking-wider">LOCAL</span>
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleModeChange('deep-search'); }}
-                      className={cn(
-                        "px-2 py-1 rounded-md transition-all flex items-center gap-1.5",
-                        activeMode === 'deep-search' ? `${MODE_TOKENS['deep-search'].bgFaint} ${MODE_TOKENS['deep-search'].text} shadow-sm` : "hover:text-fg-muted"
-                      )}
-                      title="Deep Search Mode"
-                    >
-                      <Shield className="w-3 h-3" />
-                      <span className="hidden sm:inline font-bold tracking-wider">DEEP SEARCH</span>
-                    </button>
-                  </div>
-                </div>
 
                 {displayQuery.length > 0 && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); setUserQuery(''); setTypedText(''); reset(); inputRef.current?.focus(); }}
+                    onClick={(e) => { e.stopPropagation(); setUserQuery(''); setTypedText(''); reset(); setExpandedResult(null); inputRef.current?.focus(); }}
                     className="text-fg-muted/40 hover:text-fg-porcelain transition-colors"
                   >
                     <X className="w-4 h-4" />
@@ -332,8 +387,169 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
                 )}
               </div>
 
-              <div className="px-12 pb-2.5 flex items-center text-[10px] font-mono text-fg-muted/25 tracking-wide">
-                <span>~/Documents</span>
+              {/* Controls row: folder path + dropdowns */}
+              <div className="px-4 pb-3 flex items-center justify-between gap-3">
+                {/* Folder path - takes up available space */}
+                <div className="flex items-center gap-2 text-[10px] font-mono text-fg-muted/30 tracking-wide min-w-0 flex-[2.2]">
+                  <Folder className="w-3 h-3 shrink-0 text-fg-muted/25" />
+                  <span className="truncate">~/Documents</span>
+                </div>
+
+                {/* Dropdowns pushed to the right */}
+                <div className="flex items-center gap-2.5 shrink-0">
+                  {/* Mode Dropdown */}
+                  <div className="relative" ref={modeMenuRef}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowModeMenu(!showModeMenu);
+                        setShowQualityMenu(false);
+                        if (!interactionLocked) startUserMode();
+                      }}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-md transition-all text-[11px] font-mono font-bold tracking-wider border min-w-[176px]",
+                        showModeMenu
+                          ? `${tokens.bgFaint} ${tokens.text} ${tokens.borderFaint}`
+                          : `border-white/8 text-fg-muted/55 hover:text-fg-muted hover:border-white/15 hover:bg-white/[0.03]`
+                      )}
+                    >
+                      <ModeIcon className={cn("w-3.5 h-3.5", showModeMenu ? tokens.text : "")} />
+                      <span className="hidden sm:inline">{modeMeta.shortLabel}</span>
+                      {showModeMenu ? <ChevronUp className="w-3 h-3 opacity-60" /> : <ChevronDown className="w-3 h-3 opacity-60" />}
+                    </button>
+
+                    <AnimatePresence>
+                      {showModeMenu && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -4, scale: 0.96 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -4, scale: 0.96 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute top-full right-0 mt-2 w-72 bg-bg-graphite-2 border border-white/12 rounded-lg shadow-2xl overflow-hidden z-50"
+                        >
+                          {(Object.entries(MODE_META) as [DemoMode, typeof MODE_META['memory']][]).map(([key, meta]) => {
+                            const Icon = meta.icon;
+                            const isActive = activeMode === key;
+                            const modeTokens = MODE_TOKENS[key];
+                            return (
+                              <button
+                                key={key}
+                                onClick={(e) => { e.stopPropagation(); handleModeChange(key); }}
+                                onMouseEnter={() => setHoveredMode(key)}
+                                className={cn(
+                                  "w-full text-left px-4 py-3 transition-all group",
+                                  isActive
+                                    ? `${modeTokens.bgFaint} border-l-2 ${modeTokens.border}`
+                                    : "hover:bg-white/[0.04] border-l-2 border-transparent"
+                                )}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <Icon className={cn("w-4 h-4 shrink-0", isActive ? modeTokens.text : "text-fg-muted/50 group-hover:text-fg-muted/70")} />
+                                  <div className="min-w-0 flex-1">
+                                    <div className={cn("text-sm font-semibold leading-tight", isActive ? "text-fg-porcelain" : "text-fg-muted group-hover:text-fg-porcelain")}>
+                                      {meta.label}
+                                    </div>
+                                    <p className="mt-0.5 text-[11px] text-fg-muted/55 leading-relaxed group-hover:text-fg-muted/70">
+                                      {meta.description}
+                                    </p>
+                                  </div>
+                                  {isActive && <span className={cn("ml-auto text-[9px] font-mono tracking-wider", modeTokens.text)}>ACTIVE</span>}
+                                </div>
+                              </button>
+                            );
+                          })}
+                          <div className="min-h-[72px] px-4 py-3 border-t border-white/6 bg-bg-graphite-1">
+                            <p className={cn("text-[10px] font-mono tracking-[0.12em] uppercase", tokens.text)}>
+                              {hoveredModeMeta.shortLabel}
+                            </p>
+                            <p className="mt-1 text-[11px] text-fg-muted/65 leading-relaxed">
+                              {hoveredModeMeta.detail}
+                            </p>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Quality Dropdown */}
+                  <div className="relative" ref={qualityMenuRef}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowQualityMenu(!showQualityMenu);
+                        setShowModeMenu(false);
+                        if (!interactionLocked) startUserMode();
+                      }}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-md transition-all text-[11px] font-mono font-bold tracking-wider border min-w-[176px]",
+                        showQualityMenu
+                          ? `${qualityMeta.bgFaint} ${qualityMeta.color} ${qualityMeta.borderFaint}`
+                          : `border-white/8 text-fg-muted/55 hover:text-fg-muted hover:border-white/15 hover:bg-white/[0.03]`
+                      )}
+                    >
+                      <QualityIcon className={cn("w-3.5 h-3.5", showQualityMenu ? qualityMeta.color : "")} />
+                      <span>{qualityMeta.shortLabel}</span>
+                      {showQualityMenu ? <ChevronUp className="w-3 h-3 opacity-60" /> : <ChevronDown className="w-3 h-3 opacity-60" />}
+                    </button>
+
+                    <AnimatePresence>
+                      {showQualityMenu && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -4, scale: 0.96 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -4, scale: 0.96 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute top-full right-0 mt-2 w-72 bg-bg-graphite-2 border border-white/12 rounded-lg shadow-2xl overflow-hidden z-50"
+                        >
+                          {QUALITY_ORDER.map((quality) => {
+                            const meta = QUALITY_META[quality];
+                            const QualityIcon = meta.icon;
+                            const isActive = activeQuality === quality;
+                            return (
+                              <button
+                                key={quality}
+                                onClick={(e) => { e.stopPropagation(); handleQualityChange(quality); }}
+                                onMouseEnter={() => setHoveredQuality(quality)}
+                                className={cn(
+                                  "w-full text-left px-4 py-3 transition-all group",
+                                  isActive
+                                    ? `${meta.bgFaint} border-l-2 ${meta.borderFaint.replace('20', '40')}`
+                                    : "hover:bg-white/[0.04] border-l-2 border-transparent"
+                                )}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <QualityIcon className={cn("w-4 h-4 shrink-0", isActive ? meta.color : "text-fg-muted/50 group-hover:text-fg-muted/70")} />
+                                  <div className="min-w-0 flex-1">
+                                    <div className={cn("text-sm font-semibold leading-tight", isActive ? "text-fg-porcelain" : "text-fg-muted group-hover:text-fg-porcelain")}>
+                                      {meta.label}
+                                    </div>
+                                    <p className="mt-0.5 text-[11px] text-fg-muted/55 leading-relaxed group-hover:text-fg-muted/70">
+                                      {meta.description}
+                                    </p>
+                                  </div>
+                                  {quality === 'auto' && (
+                                    <span className="text-[9px] px-1 py-px rounded bg-accent-teal/15 text-accent-teal shrink-0">
+                                      Default
+                                    </span>
+                                  )}
+                                  {isActive && <span className={cn("ml-auto text-[9px] font-mono tracking-wider", meta.color)}>ACTIVE</span>}
+                                </div>
+                              </button>
+                            );
+                          })}
+                          <div className="min-h-[72px] px-4 py-3 border-t border-white/6 bg-bg-graphite-1">
+                            <p className={cn("text-[10px] font-mono tracking-[0.12em] uppercase", hoveredQualityMeta.color)}>
+                              {hoveredQualityMeta.shortLabel}
+                            </p>
+                            <p className="mt-1 text-[11px] text-fg-muted/65 leading-relaxed">
+                              {hoveredQualityMeta.detail}
+                            </p>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -349,7 +565,6 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
                 className="mt-3 bg-bg-graphite-2 rounded-lg border border-white/[0.06] px-3.5 py-2.5 flex items-center justify-between text-[11px] font-mono"
               >
                 <div className="flex items-center gap-4">
-                  {/* Mini pipeline stages */}
                   {isSearching ? (
                     <div className="flex items-center gap-1">
                       {PIPELINE_STAGES.map((stage, i) => {
@@ -384,11 +599,10 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
                 <div className="flex items-center gap-4 text-fg-muted/30">
                   <span>{results.length} results</span>
                   <span className={tokens.text}>
-                    {activeMode === "memory"
-                      ? "MEMORY"
-                      : activeMode === "local"
-                        ? "LOCAL"
-                        : "DEEP SEARCH"}
+                    {modeMeta.shortLabel}
+                  </span>
+                  <span className={qualityMeta.color}>
+                    {qualityMeta.shortLabel}
                   </span>
                 </div>
               </motion.div>
@@ -418,24 +632,43 @@ export function IxosDemoWindow({ onInteract, controlledStep = null }: IxosDemoWi
                   result={result}
                   index={i}
                   activeMode={activeMode}
+                  activeQuality={activeQuality}
+                  isExpanded={expandedResult === i}
+                  onToggleExpand={() => {
+                    if (!interactionLocked) {
+                      startUserMode();
+                      setExpandedResult(expandedResult === i ? null : i);
+                    }
+                  }}
                 />
               ))}
             </AnimatePresence>
           </div>
-
         </div>
       </div>
     </div>
   );
 }
 
-/**
- * Desktop-faithful result card
- */
-function DemoResultCard({ result, index, activeMode }: { result: DemoFile; index: number; activeMode: DemoMode }) {
+function DemoResultCard({
+  result,
+  index,
+  activeMode,
+  activeQuality,
+  isExpanded,
+  onToggleExpand,
+}: {
+  result: DemoFile;
+  index: number;
+  activeMode: DemoMode;
+  activeQuality: DemoQuality;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+}) {
   const scorePercent = Math.round(result.score * 100);
   const isSelected = index === 0;
   const tokens = MODE_TOKENS[activeMode];
+  const qualityTokens = QUALITY_TOKENS[activeQuality];
 
   return (
     <motion.div
@@ -444,11 +677,12 @@ function DemoResultCard({ result, index, activeMode }: { result: DemoFile; index
       exit={{ opacity: 0, x: -8 }}
       transition={{ duration: 0.2, delay: index * 0.05 }}
       className={cn(
-        "group relative flex items-center gap-3.5 px-4 py-3 mb-1 rounded-lg border transition-all duration-200 cursor-default overflow-hidden",
+        "group relative mb-1 rounded-lg border transition-all duration-200 cursor-pointer overflow-hidden",
         isSelected
           ? `bg-bg-graphite-2/80 border-l-[3px] ${tokens.border} border-y-white/[0.04] border-r-white/[0.04] ${tokens.insetGlow}`
           : "bg-bg-graphite-1/40 border-white/[0.06] hover:bg-bg-graphite-2/50 hover:border-white/10"
       )}
+      onClick={(e) => { e.stopPropagation(); onToggleExpand(); }}
     >
       {/* Left accent on hover for non-selected */}
       {!isSelected && (
@@ -458,59 +692,95 @@ function DemoResultCard({ result, index, activeMode }: { result: DemoFile; index
         )} />
       )}
 
-      {/* Index */}
-      <span className="text-fg-muted/25 font-mono text-[11px] w-4 shrink-0 text-right">{index + 1}</span>
+      <div className="flex items-center gap-3.5 px-4 py-3">
+        {/* Index */}
+        <span className="text-fg-muted/25 font-mono text-[11px] w-4 shrink-0 text-right">{index + 1}</span>
 
-      {/* File Icon */}
-      {createElement(getFileIcon(result.fileExtension), {
-        className: cn(
-          "w-4 h-4 shrink-0 transition-colors",
-          isSelected ? tokens.text : "text-fg-muted/40 group-hover:text-fg-muted/60"
-        )
-      })}
+        {/* File Icon */}
+        {createElement(getFileIcon(result.fileExtension), {
+          className: cn(
+            "w-4 h-4 shrink-0 transition-colors",
+            isSelected ? tokens.text : "text-fg-muted/40 group-hover:text-fg-muted/60"
+          )
+        })}
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className={cn(
-            "text-sm font-semibold truncate",
-            isSelected ? "text-fg-porcelain" : "text-fg-muted"
-          )}>
-            {result.filename}
-          </span>
-          {isSelected && (
-            <span className="shrink-0 px-1.5 py-0.5 text-[9px] rounded-full bg-accent-teal/10 text-accent-teal border border-accent-teal/25 font-mono tracking-wider">
-              Semantic
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className={cn(
+              "text-sm font-semibold truncate",
+              isSelected ? "text-fg-porcelain" : "text-fg-muted"
+            )}>
+              {result.filename}
             </span>
-          )}
+            {isSelected && (
+              <span className={cn("shrink-0 px-1.5 py-0.5 text-[9px] rounded-full border font-mono tracking-wider",
+                `${tokens.bgFaint} ${tokens.text} ${tokens.borderFaint}`
+              )}>
+                Best Match
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 text-[10px] text-fg-muted/25 font-mono mt-0.5">
+            <span className="truncate">{result.directory}</span>
+            <span className="shrink-0">&middot;</span>
+            <span className="shrink-0">{result.fileSize}</span>
+            <span className="shrink-0">&middot;</span>
+            <span className="shrink-0">{result.modifiedAt}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5 text-[10px] text-fg-muted/25 font-mono mt-0.5">
-          <span className="truncate">{result.directory}</span>
-          <span className="shrink-0">&middot;</span>
-          <span className="shrink-0">{result.fileSize}</span>
-          <span className="shrink-0">&middot;</span>
-          <span className="shrink-0">{result.modifiedAt}</span>
-        </div>
-      </div>
 
-      {/* Score Badge */}
-      <div className={cn(
-        "px-2 py-0.5 rounded text-[11px] font-mono font-bold border shrink-0 tabular-nums",
-        isSelected
-          ? `${tokens.bgFaint} ${tokens.text} ${tokens.borderFaint}`
+        {/* Score Badge */}
+        <div className={cn(
+          "px-2 py-0.5 rounded text-[11px] font-mono font-bold border shrink-0 tabular-nums",
+          isSelected
+            ? `${tokens.bgFaint} ${tokens.text} ${tokens.borderFaint}`
           : scorePercent >= 70
-            ? `bg-white/[0.04] text-fg-muted/50 border-white/[0.06]`
-            : "bg-white/[0.02] text-fg-muted/30 border-white/[0.04]"
-      )}>
-        {scorePercent}%
+              ? `${qualityTokens.bgFaint} ${qualityTokens.text} ${qualityTokens.borderFaint}`
+              : "bg-white/[0.02] text-fg-muted/30 border-white/[0.04]"
+        )}>
+          {scorePercent}%
+        </div>
+
+        {/* Expand chevron */}
+        <ChevronDown className={cn(
+          "w-3.5 h-3.5 shrink-0 transition-all",
+          isExpanded ? "rotate-180" : "",
+          isSelected ? "text-fg-muted/40" : "text-fg-muted/15 group-hover:text-fg-muted/30"
+        )} />
       </div>
 
-      {/* Chevron */}
-      <ChevronRight className={cn(
-        "w-3.5 h-3.5 shrink-0 transition-colors",
-        isSelected ? "text-fg-muted/40" : "text-fg-muted/15 group-hover:text-fg-muted/30"
-      )} />
+      {/* Expanded content */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-3 pt-1 ml-[52px] border-t border-white/[0.04]">
+              <p className="text-[11px] text-fg-muted/55 leading-relaxed font-mono">
+                {result.snippet}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {result.tags.map(tag => (
+                  <span
+                    key={tag}
+                    className={cn(
+                      "px-1.5 py-0.5 text-[9px] font-mono rounded border tracking-wider",
+                      `${qualityTokens.bgFaint} ${qualityTokens.text} ${qualityTokens.borderFaint}`
+                    )}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
-

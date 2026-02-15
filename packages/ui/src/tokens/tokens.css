@@ -8,10 +8,10 @@
      BACKGROUNDS - Graphite palette (balanced for desktop)
      Brighter main area, consistent sidebar
      ───────────────────────────────────────────────────────────────────────── */
-  --bg-graphite-0: #0E1117;
-  --bg-graphite-1: #161B22;
-  --bg-graphite-2: #1E242D;
-  --bg-graphite-3: #282F3A;
+  --bg-graphite-0: #15171B;
+  --bg-graphite-1: #1B1E23;
+  --bg-graphite-2: #23272E;
+  --bg-graphite-3: #2D323B;
 
   /* ─────────────────────────────────────────────────────────────────────────
      FOREGROUND - Porcelain text hierarchy
@@ -41,6 +41,10 @@
   /* Magenta - Pricing, special modes */
   --accent-magenta: #F472B6;
   --accent-magenta-glow: #FBCFE8;
+
+  /* Secondary quality accent (set by app state) */
+  --quality-color: var(--accent-teal);
+  --quality-glow-rgb: 20, 184, 166;
 
   /* Success/Warning/Error states */
   --accent-success: #10B981;

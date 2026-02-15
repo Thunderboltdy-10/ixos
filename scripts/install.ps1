@@ -1,19 +1,20 @@
 Param(
     [string]$Repo = $env:IXOS_REPO,
-    [string]$Tag = $env:IXOS_TAG
+    [string]$Tag = $env:IXOS_TAG,
+    [string]$AssetUrl = $env:IXOS_ASSET_URL,
+    [switch]$SkipPathPersist
 )
 
 $ErrorActionPreference = "Stop"
 
 if ([string]::IsNullOrWhiteSpace($Repo)) {
-    $Repo = "Thunderboltdy-10/Ixos"
+    $Repo = "Thunderboltdy10/Ixos"
 }
 
 function Resolve-Arch {
     switch ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()) {
         "X64" { return "x86_64" }
-        "Arm64" { return "arm64" }
-        default { throw "Unsupported architecture: $($_)" }
+        default { throw "Unsupported architecture for Windows: $([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture). Supported: X64." }
     }
 }
 
@@ -30,8 +31,7 @@ function Resolve-Tag {
         return $cli.tag_name
     }
 
-    $latest = Invoke-RestMethod -Uri "https://api.github.com/repos/$RepoName/releases/latest" -Headers @{ "User-Agent" = "ixos-install-script" }
-    return $latest.tag_name
+    throw "No cli-v* release tags found for $RepoName. Set IXOS_TAG=cli-vX.Y.Z explicitly."
 }
 
 $arch = Resolve-Arch
@@ -39,7 +39,7 @@ $os = "windows"
 $resolvedTag = Resolve-Tag -RepoName $Repo -ExplicitTag $Tag
 $version = $resolvedTag -replace "^cli-v", ""
 $asset = "ixos-$version-$os-$arch.zip"
-$url = "https://github.com/$Repo/releases/download/$resolvedTag/$asset"
+$url = if (-not [string]::IsNullOrWhiteSpace($AssetUrl)) { $AssetUrl } else { "https://github.com/$Repo/releases/download/$resolvedTag/$asset" }
 
 $installRoot = Join-Path $env:LOCALAPPDATA "Ixos"
 $binDir = Join-Path $installRoot "bin"
@@ -62,13 +62,18 @@ Copy-Item $exePath (Join-Path $binDir "ixos.exe") -Force
 
 $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
 if ($null -eq $userPath) { $userPath = "" }
-if (-not ($userPath -split ';' | Where-Object { $_ -eq $binDir })) {
-    $newPath = ($userPath.TrimEnd(';') + ";" + $binDir).Trim(';')
-    [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
-    Write-Host "Updated user PATH with $binDir"
+if (-not $SkipPathPersist -and $env:IXOS_SKIP_PATH_PERSIST -ne "1") {
+    if (-not ($userPath -split ';' | Where-Object { $_ -eq $binDir })) {
+        $newPath = ($userPath.TrimEnd(';') + ";" + $binDir).Trim(';')
+        [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
+        Write-Host "Updated user PATH with $binDir"
+    }
 }
 
 Remove-Item -Path $tmpDir -Recurse -Force
 
 Write-Host "Installed Ixos CLI to $binDir\ixos.exe"
+if (-not ($env:Path -split ';' | Where-Object { $_ -eq $binDir })) {
+    $env:Path = "$binDir;$env:Path"
+}
 & (Join-Path $binDir "ixos.exe") --version

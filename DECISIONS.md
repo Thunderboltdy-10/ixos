@@ -502,3 +502,73 @@
 - Evidence (links to /reports or output files): .github/workflows/cli-release.yml, scripts/install.sh, scripts/install.ps1
 - Risks: Tag naming and asset naming must stay aligned with installer expectations.
 - Follow-ups: publish and verify first `cli-v*` release artifacts and checksums in CI logs.
+
+- Decision: Keep legacy-cache alias migration strict but non-silent for unknown values (`load_from` normalizes known legacy aliases only; unknown values remain explicit and fail later runtime validation as designed).
+- Options considered: map unknown values to `native-cache`; preserve unknown values while normalizing only known legacy aliases.
+- Why chosen: avoids silently masking user/config mistakes while still migrating real legacy values (`jit`, `cache`, `persistent`, `nativecache`, `memory-only`).
+- Evidence (links to /reports or output files): src/cli/config.rs, reports/ui_ci_followup_2026-02-14.md
+- Risks: Existing corrupted configs with unknown values still require user correction.
+- Follow-ups: consider adding explicit warning in `IxosConfig::load_from` when unknown cache mode is detected.
+
+- Decision: Scope desktop UI ambient TypeScript types in `ui/tsconfig.json` (`types: ["vite/client", "node"]`) to prevent workspace-wide implicit `@types/*` pickup from unrelated workspaces.
+- Options considered: keep implicit ambient types; add missing `@types/*` packages for every transitive workspace type; explicitly scope types per workspace.
+- Why chosen: deterministic and low-risk; restores `ui` build reliability without coupling it to every dependency type package present in monorepo root.
+- Evidence (links to /reports or output files): ui/tsconfig.json, reports/ui_ci_followup_2026-02-14.md
+- Risks: if future UI code needs additional global ambient libs, they must be added intentionally.
+- Follow-ups: document per-workspace TypeScript type scoping policy in frontend dev docs.
+
+- Decision: Remove hero 3D mark from active landing flow and promote larger selectable typography with elevated z-index.
+- Options considered: keep 3D and adjust pointer events only; replace with static image; remove component entirely from rendered hero.
+- Why chosen: 3D interaction surface was blocking/selectability and causing visual overlap risk; removal directly restores clarity and interaction reliability.
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/HeroPipeline.tsx, reports/landing_hero_followup_2026-02-14.md
+- Risks: reduced visual flourish in hero.
+- Follow-ups: consider non-interactive decorative mark later if it cannot intercept input layers.
+
+- Decision: Bind hero demo chrome accents to actual selected mode via callback from `IxosDemoWindow`.
+- Options considered: keep phase-driven accent mapping; infer mode from phase heuristics; wire explicit mode state.
+- Why chosen: removes mismatch where Local mode was teal internally but frame/latency remained amber.
+- Evidence (links to /reports or output files): ixos-site/src/components/hero/IxosDemoWindow.tsx, ixos-site/src/components/sections/HeroPipeline.tsx, reports/landing_hero_followup_2026-02-14.md
+- Risks: none material; mode callback introduces minor state churn.
+- Follow-ups: extend to model-based secondary glow modulation if product decides to surface model tinting.
+
+- Decision: Keep a single quality selector path (Flash/Auto/Pro) and remove duplicate model-selection behavior from active desktop and landing-demo search controls.
+- Options considered: keep dual dropdowns; hide one dropdown conditionally; unify to one selector with richer option descriptions.
+- Why chosen: Removes user confusion, matches requested interaction model, and aligns Ask Mode/Pro gating to one canonical selection path.
+- Evidence (links to /reports or output files): ui/src/components/search/SearchInput.tsx, ixos-site/src/components/hero/IxosDemoWindow.tsx, reports/ui_pro_features_overhaul_2026-02-15.md
+- Risks: Demo and app dropdowns are still implemented separately (possible future drift).
+- Follow-ups: Extract shared dropdown UX primitive for full cross-surface parity.
+
+- Decision: Make first-run onboarding mandatory with a two-search cold/warm cache demonstration before normal usage.
+- Options considered: optional onboarding; static tutorial only; mandatory measured walkthrough.
+- Why chosen: Directly addresses user confusion about core behavior and demonstrates practical speed/value in-product with measurable evidence.
+- Evidence (links to /reports or output files): ui/src/components/layout/AppShell.tsx, ui/src/components/onboarding/FirstRunOnboarding.tsx, reports/ui_pro_features_overhaul_2026-02-15.md
+- Risks: Slight onboarding friction for returning power users on fresh installs.
+- Follow-ups: Add skip option controlled by enterprise policy/config if needed.
+
+- Decision: Improve Ask Mode detection via deterministic typo-tolerant multi-token intent heuristics (no LLM dependency).
+- Options considered: keep first-token heuristics only; model-embedding detector overhaul immediately; deterministic heuristic expansion now.
+- Why chosen: Delivers immediate robustness gains with low risk and no model-serving complexity.
+- Evidence (links to /reports or output files): src/ixos_rank/ask_mode/intent_detector.rs, src-tauri/src/commands/search.rs, reports/ui_pro_features_overhaul_2026-02-15.md
+- Risks: Heuristic false positives/negatives still possible on highly unusual phrasing.
+- Follow-ups: Add trigger-reason telemetry and calibration loop from real usage.
+
+- Decision: Treat Today + Workstreams + Ask Mode as the primary Pro value triangle across both desktop UX and landing pricing copy.
+- Options considered: keep Ask Mode as primary differentiator only; market only deep-search/model benefits; balanced Pro messaging with workflow continuity value.
+- Why chosen: user feedback indicated weak perceived value of Workstreams/Today unless tied to concrete productivity outcomes (resume flow, recommendations, reorganization).
+- Evidence (links to /reports or output files): ui/src/components/workstreams/WorkstreamsList.tsx, ixos-site/src/components/sections/Pricing.tsx, ixos-site/src/components/sections/ProFeatures.tsx, ixos-site/src/components/sections/WorkstreamsSection.tsx, reports/pro_features_release_hardening_2026-02-15.md
+- Risks: messaging can overpromise if recommendation precision is not continuously validated with real usage telemetry.
+- Follow-ups: add accept/dismiss feedback loop for move recommendations and report precision/utility metrics.
+
+- Decision: Fix CLI installer default repository slug to `Thunderboltdy10/Ixos` in both shell and PowerShell scripts.
+- Options considered: require explicit `IXOS_REPO` always; leave default as-is; correct default + preserve override.
+- Why chosen: default path must work out-of-the-box for first-time users and CI smoke paths.
+- Evidence (links to /reports or output files): scripts/install.sh, scripts/install.ps1, reports/pro_features_release_hardening_2026-02-15.md
+- Risks: if upstream repo ownership changes, defaults must be updated again.
+- Follow-ups: add a lightweight CI check that validates installer default repo returns release metadata.
+
+- Decision: Prioritize deterministic visual layering and interaction correctness in hero/pipeline over aggressive decorative effects.
+- Options considered: preserve existing z/animation layering with minor tweaks; full static fallback; targeted z-index + timing + interaction-lock adjustments.
+- Why chosen: user reported concrete regressions (text over demo, non-interactive demo, clipping/flicker); targeted fixes address root causes with low blast radius.
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/HeroPipeline.tsx, ixos-site/src/components/hero/IxosDemoWindow.tsx, reports/landing_pipeline_polish_2026-02-15.md
+- Risks: scroll choreography remains sensitive to device/browser variance.
+- Follow-ups: collect visual QA clips across common viewport sizes and adjust trigger thresholds if needed.

@@ -37,7 +37,9 @@ export function ContextSnippet({ context, className, mode = 'native-cache' }: Co
 
   return (
     <div
-      className={cn('bg-graphite-2/80 overflow-hidden', className)}
+      data-selectable="true"
+      data-allow-context-menu="true"
+      className={cn('bg-graphite-2/80 overflow-hidden context-snippet select-text', className)}
       style={{ borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)' }}
     >
       <div

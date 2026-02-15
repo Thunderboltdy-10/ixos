@@ -76,27 +76,27 @@ const signInAppearance: Appearance = {
   variables: {
     colorPrimary: '#14B8A6',
     colorBackground: 'transparent',
-    colorInputBackground: '#0D1117',
+    colorInputBackground: '#1B1E23',
     colorInputText: '#F3F5F7',
     colorText: '#F3F5F7',
-    colorTextSecondary: '#9CA3AF',
+    colorTextSecondary: '#BDC5CF',
     colorDanger: '#EF4444',
     borderRadius: '0.75rem',
-    fontFamily: 'Inter, Segoe UI, system-ui, sans-serif',
+    fontFamily: 'Space Grotesk, Segoe UI, system-ui, sans-serif',
   },
   elements: {
     rootBox: 'w-full font-sans',
     card: 'bg-transparent shadow-none border-none p-0',
     headerTitle: 'hidden',
     headerSubtitle: 'hidden',
-    socialButtonsBlockButton: '!bg-graphite-2/90 !border !border-white/[0.12] hover:!border-white/[0.22] hover:!bg-graphite-2 !text-[#F3F5F7] !opacity-100 transition-all !h-10 !rounded-lg !px-4 !gap-2 !flex !items-center !justify-center shadow-none !text-sm overflow-hidden',
-    socialButtonsBlockButtonText: '!text-[#F3F5F7] !font-medium !text-[13px] !leading-none !tracking-normal !truncate !max-w-[220px]',
+    socialButtonsBlockButton: '!bg-transparent !border !border-white/[0.14] hover:!border-white/[0.24] hover:!bg-white/[0.03] !text-[#F3F5F7] !opacity-100 transition-all !h-10 !rounded-lg !px-4 !gap-2 !flex !items-center !justify-center shadow-none !text-sm overflow-hidden',
+    socialButtonsBlockButtonText: '!text-[#F3F5F7] !font-semibold !text-[13px] !leading-none !tracking-normal !truncate !max-w-[220px]',
     socialButtonsProviderIcon: 'opacity-100',
     socialButtonsBlockButtonArrow: 'hidden',
     dividerLine: 'bg-white/[0.1]',
     dividerText: 'text-fg-dim text-xs tracking-[0.08em]',
     formFieldLabel: 'text-fg-muted text-xs font-medium mb-1.5 tracking-[0.06em]',
-    formFieldInput: 'bg-[#0D1117] border border-white/[0.14] text-[#F3F5F7] placeholder:text-fg-dim/50 focus:border-[#14B8A6]/60 focus:ring-1 focus:ring-[#14B8A6]/25 rounded-lg h-10 px-3.5 transition-all text-sm',
+    formFieldInput: 'bg-[#1B1E23] border border-white/[0.18] text-[#F3F5F7] placeholder:text-fg-dim/50 focus:border-[#14B8A6]/60 focus:ring-2 focus:ring-[#14B8A6]/25 rounded-lg h-10 px-3.5 transition-all text-sm',
     formButtonPrimary: 'bg-accent-teal hover:bg-accent-teal/90 text-[#031016] font-semibold h-10 rounded-lg transition-all text-sm tracking-normal',
     footerActionLink: 'text-[#14B8A6] hover:text-[#0D9488] font-medium transition-colors text-sm',
     identityPreviewText: 'text-[#E5E5E7]',
@@ -106,7 +106,7 @@ const signInAppearance: Appearance = {
     footer: 'hidden',
     formFieldInputShowPasswordButton: 'text-fg-dim hover:text-[#F3F5F7] transition-colors',
     otpCodeFieldInputs: 'flex justify-center gap-2',
-    otpCodeFieldInput: 'w-11 h-13 text-center text-xl font-bold bg-[#0D1117] border border-white/[0.1] text-[#F3F5F7] focus:border-[#14B8A6]/60 focus:ring-1 focus:ring-[#14B8A6]/25 rounded-lg transition-all',
+    otpCodeFieldInput: 'w-11 h-13 text-center text-xl font-bold bg-[#1B1E23] border border-white/[0.16] text-[#F3F5F7] focus:border-[#14B8A6]/60 focus:ring-2 focus:ring-[#14B8A6]/25 rounded-lg transition-all',
     otpCodeField: 'flex flex-col items-center gap-3',
     formFieldRow: 'flex justify-center',
     form: 'flex flex-col items-center',
@@ -122,12 +122,12 @@ const signUpAppearance: Appearance = {
   },
   elements: {
     ...signInAppearance.elements,
-    formFieldInput: 'bg-[#0D1117] border border-white/[0.1] text-[#F3F5F7] placeholder:text-fg-dim/50 focus:border-accent-magenta/60 focus:ring-1 focus:ring-accent-magenta/25 rounded-lg h-10 px-3.5 transition-all text-sm',
+    formFieldInput: 'bg-[#1B1E23] border border-white/[0.18] text-[#F3F5F7] placeholder:text-fg-dim/50 focus:border-accent-magenta/60 focus:ring-2 focus:ring-accent-magenta/25 rounded-lg h-10 px-3.5 transition-all text-sm',
     formButtonPrimary: 'bg-accent-magenta hover:bg-accent-magenta/90 text-[#031016] font-semibold h-10 rounded-lg transition-all text-sm tracking-wide',
     footerActionLink: 'text-accent-magenta hover:text-accent-magenta/80 font-medium transition-colors text-sm',
     identityPreviewEditButton: 'text-accent-magenta hover:text-accent-magenta/80 transition-colors',
     formFieldAction: 'text-accent-magenta hover:text-accent-magenta/80 text-xs transition-colors',
-    otpCodeFieldInput: 'w-11 h-13 text-center text-xl font-bold bg-[#0D1117] border border-white/[0.1] text-[#F3F5F7] focus:border-accent-magenta/60 focus:ring-1 focus:ring-accent-magenta/25 rounded-lg transition-all',
+    otpCodeFieldInput: 'w-11 h-13 text-center text-xl font-bold bg-[#1B1E23] border border-white/[0.16] text-[#F3F5F7] focus:border-accent-magenta/60 focus:ring-2 focus:ring-accent-magenta/25 rounded-lg transition-all',
   },
 };
 
@@ -190,7 +190,7 @@ function AuthScreen() {
         </div>
 
         {/* Auth Form Container */}
-        <div className="bg-graphite-1/70 border border-white/[0.12] rounded-xl p-5 sm:p-6 backdrop-blur-md shadow-lift">
+        <div className="ixos-auth-shell bg-graphite-1/70 border border-white/[0.12] rounded-xl p-5 sm:p-6 backdrop-blur-md shadow-lift">
           {mode === 'sign-in' ? (
             <SignIn routing="virtual" appearance={signInAppearance} />
           ) : (

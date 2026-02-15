@@ -405,7 +405,7 @@ fn parse_cache_mode(value: Option<&str>) -> Result<ixos_protocol::CacheMode, Str
     }
 }
 
-fn ask_mode_active(value: Option<&str>, query: &str) -> bool {
+fn ask_mode_requested(value: Option<&str>, query: &str) -> bool {
     let normalized = value.map(|v| v.trim().to_lowercase());
     match normalized.as_deref() {
         Some("on" | "always" | "true") => true,
@@ -415,6 +415,10 @@ fn ask_mode_active(value: Option<&str>, query: &str) -> bool {
         }
         Some(_) => IntentDetector::new().should_activate_ask_mode(query),
     }
+}
+
+fn ask_mode_active(value: Option<&str>, query: &str, pro_available: bool) -> bool {
+    pro_available && ask_mode_requested(value, query)
 }
 
 fn resolve_search_mode(requested: Option<&str>, pro_available: bool) -> Result<SearchMode, String> {
@@ -489,6 +493,11 @@ pub async fn search_progressive(
     state.cancel_search();
     state.disable_deep_search_mode();
 
+    // Re-enable deep search mode when requested
+    if options.deep_search.unwrap_or(false) {
+        state.enable_deep_search_mode();
+    }
+
     // Get cancellation token
     let cancel = state.new_search_token();
 
@@ -499,7 +508,8 @@ pub async fn search_progressive(
     }
 
     // Build search configuration
-    let mut config = if options.deep_search.unwrap_or(false) {
+    let deep_search_enabled = options.deep_search.unwrap_or(false);
+    let mut config = if deep_search_enabled {
         ProgressiveSearchConfig::thorough()
     } else {
         ProgressiveSearchConfig::default()
@@ -509,6 +519,16 @@ pub async fn search_progressive(
         .secure_ranking
         .unwrap_or(config.enable_secure_ranking);
     config.context_lines = options.context_lines.unwrap_or(config.context_lines);
+    if deep_search_enabled {
+        config.context_lines = options.context_lines.unwrap_or(6);
+        config.candidate_multiplier = config.candidate_multiplier.saturating_mul(2);
+        config.min_score_threshold *= 0.85;
+        config.evidence_max_results = config
+            .evidence_max_results
+            .saturating_mul(2)
+            .max(6)
+            .min(config.max_results.max(1));
+    }
 
     // Override timeout if provided
     if let Some(secs) = options.timeout_seconds {
@@ -572,9 +592,10 @@ pub async fn search_progressive(
     };
 
     let model_result = state.get_or_load_model(model_type);
-    let ask_mode_requested = ask_mode_active(options.is_ask_mode.as_deref(), &query);
+    let ask_mode_requested = ask_mode_requested(options.is_ask_mode.as_deref(), &query);
+    let ask_mode_enabled = ask_mode_active(options.is_ask_mode.as_deref(), &query, pro_available);
     let use_pro = matches!(config.search_mode, SearchMode::Pro)
-        || (matches!(config.search_mode, SearchMode::Auto) && !ask_mode_requested);
+        || (matches!(config.search_mode, SearchMode::Auto) && !ask_mode_enabled);
     let pro_model_result = if use_pro {
         Some(if pro_model_type == model_type {
             model_result.clone()
@@ -646,6 +667,20 @@ pub async fn search_progressive(
             None => None,
         };
 
+        if ask_mode_requested && !pro_available {
+            let _ = tx
+                .send(SearchEvent::Status(
+                    "Ask Mode requires Pro; running standard semantic search.".into(),
+                ))
+                .await;
+        } else if ask_mode_enabled {
+            let _ = tx
+                .send(SearchEvent::Status(
+                    "Ask Mode active: understanding your question.".into(),
+                ))
+                .await;
+        }
+
         let _ = tx
             .send(SearchEvent::Status(
                 "Preparing search context (local-only)...".into(),
@@ -663,7 +698,7 @@ pub async fn search_progressive(
         // For Flash/Auto flows we avoid full pre-indexing unless needed.
         // If lexical preflight yields zero matches, we index so pure-semantic fallback has files.
         let lexical_probe_is_empty =
-            if ask_mode_requested || matches!(config.search_mode, SearchMode::Pro) {
+            if ask_mode_enabled || matches!(config.search_mode, SearchMode::Pro) {
                 false
             } else {
                 match lexical.search(&query, 1).await {
@@ -797,9 +832,14 @@ mod tests {
 
     #[test]
     fn ask_mode_active_uses_auto_intent_detection() {
-        assert!(ask_mode_active(Some("auto"), "where is the release notes?"));
-        assert!(ask_mode_active(None, "why is search slow?"));
-        assert!(!ask_mode_active(Some("off"), "why is search slow?"));
+        assert!(ask_mode_active(
+            Some("auto"),
+            "where is the release notes?",
+            true
+        ));
+        assert!(ask_mode_active(None, "why is search slow?", true));
+        assert!(!ask_mode_active(Some("off"), "why is search slow?", true));
+        assert!(!ask_mode_active(Some("auto"), "why is search slow?", false));
     }
 }
 

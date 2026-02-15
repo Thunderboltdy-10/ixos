@@ -3,12 +3,15 @@ import { Nav } from "@/components/ui/Nav";
 import { HeroPipeline } from "@/components/sections/HeroPipeline";
 import { MeetingUseCase } from "@/components/sections/MeetingUseCase";
 import { Benchmarks } from "@/components/sections/Benchmarks";
+import { TodaySection } from "@/components/sections/TodaySection";
+import { WorkstreamsSection } from "@/components/sections/WorkstreamsSection";
 import { Pricing } from "@/components/sections/Pricing";
 import { ProFeatures } from "@/components/sections/ProFeatures";
 import { DownloadActions } from "@/components/sections/DownloadActions";
 import { FAQ } from "@/components/sections/FAQ";
 import { Trust } from "@/components/sections/Trust";
 import { Footer } from "@/components/sections/Footer";
+import { SectionDivider } from "@/components/ui/SectionDivider";
 
 export default function Home() {
   return (
@@ -31,6 +34,18 @@ export default function Home() {
         <Benchmarks />
       </section>
 
+      {/* Today - Teal accent (NEW) */}
+      <section className="section-today accent-teal">
+        <TodaySection />
+      </section>
+
+      {/* Workstreams - Amber accent (NEW) */}
+      <section className="section-workstreams accent-amber">
+        <WorkstreamsSection />
+      </section>
+
+      <SectionDivider accent="magenta" label="PRICING" />
+
       {/* Pricing - Magenta accent */}
       <section className="section-pricing accent-magenta">
         <Suspense fallback={null}>
@@ -38,7 +53,7 @@ export default function Home() {
         </Suspense>
       </section>
 
-      <section className="accent-magenta">
+      <section className="accent-teal">
         <ProFeatures />
       </section>
 

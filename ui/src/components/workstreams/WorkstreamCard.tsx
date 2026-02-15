@@ -24,9 +24,10 @@ interface WorkstreamCardProps {
   workstream: Workstream;
   onSelect?: () => void;
   onOpenFile?: (path: string) => void;
+  isActive?: boolean;
 }
 
-export function WorkstreamCard({ workstream, onSelect, onOpenFile }: WorkstreamCardProps) {
+export function WorkstreamCard({ workstream, onSelect, onOpenFile, isActive = false }: WorkstreamCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(workstream.name);
@@ -86,7 +87,8 @@ export function WorkstreamCard({ workstream, onSelect, onOpenFile }: WorkstreamC
       className={cn(
         'rounded-lg overflow-hidden',
         'bg-graphite-1 border border-stroke-hairline',
-        'hover:border-accent-teal/30 transition-colors'
+        'hover:border-accent-teal/30 transition-colors',
+        isActive && 'border-accent-teal/45 shadow-[0_0_18px_rgba(20,184,166,0.18)]'
       )}
     >
       {/* Header */}
@@ -106,6 +108,7 @@ export function WorkstreamCard({ workstream, onSelect, onOpenFile }: WorkstreamC
                     if (e.key === 'Enter') handleSaveRename();
                     if (e.key === 'Escape') handleCancelRename();
                   }}
+                  onBlur={handleSaveRename}
                   className={cn(
                     'flex-1 px-2 py-1 rounded bg-graphite-2 border border-stroke-hairline',
                     'text-porcelain text-sm focus:outline-none focus:border-accent-teal'
@@ -113,12 +116,14 @@ export function WorkstreamCard({ workstream, onSelect, onOpenFile }: WorkstreamC
                   autoFocus
                 />
                 <button
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={handleSaveRename}
                   className="p-1 text-success hover:bg-success/10 rounded"
                 >
                   <Check className="w-4 h-4" />
                 </button>
                 <button
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={handleCancelRename}
                   className="p-1 text-fg-dim hover:bg-graphite-2 rounded"
                 >
@@ -233,14 +238,20 @@ export function WorkstreamCard({ workstream, onSelect, onOpenFile }: WorkstreamC
               {/* Actions */}
               <div className="flex items-center gap-2 pt-3 border-t border-stroke-hairline/50">
                 <button
-                  onClick={onSelect}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (isActive) return;
+                    onSelect?.();
+                  }}
+                  disabled={!onSelect || isActive}
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium',
                     'bg-accent-teal/10 text-accent-teal border border-accent-teal/30',
-                    'hover:bg-accent-teal/20 transition-colors'
+                    'hover:bg-accent-teal/20 transition-colors',
+                    (!onSelect || isActive) && 'opacity-60 cursor-not-allowed'
                   )}
                 >
-                  Open Workstream
+                  {isActive ? 'Viewing' : 'Open Workstream'}
                 </button>
 
                 <button

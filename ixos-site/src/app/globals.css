@@ -105,6 +105,13 @@ video::-moz-media-controls {
   color: transparent;
 }
 
+@utility heading-gradient-violet {
+  background: linear-gradient(180deg, #FFFFFF 0%, #B4A0FF 60%, #7C5CFF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 @utility heading-gradient-amber {
   background: linear-gradient(180deg, #FFFFFF 0%, #FCD34D 60%, #F59E0B 100%);
   -webkit-background-clip: text;
@@ -123,7 +130,7 @@ video::-moz-media-controls {
 /* Base Styles */
 @layer base {
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
     background-color: var(--color-bg-graphite-0);
   }
 
@@ -242,6 +249,34 @@ video::-moz-media-controls {
   z-index: 0;
 }
 
+.section-today {
+  position: relative;
+  background: transparent;
+}
+
+.section-today::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 30% 50%, rgba(20, 184, 166, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.section-workstreams {
+  position: relative;
+  background: transparent;
+}
+
+.section-workstreams::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 70% 50%, rgba(246, 185, 76, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
 .section-trust {
   position: relative;
   background: transparent;
@@ -303,6 +338,22 @@ video::-moz-media-controls {
   50% {
     opacity: 1;
     transform: scale(1.2);
+  }
+}
+
+@keyframes divider-sweep {
+  0% {
+    transform: translateX(-120%);
+    opacity: 0.15;
+  }
+
+  25% {
+    opacity: 0.85;
+  }
+
+  100% {
+    transform: translateX(560%);
+    opacity: 0.1;
   }
 }
 

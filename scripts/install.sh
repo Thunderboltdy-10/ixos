@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="${IXOS_REPO:-Thunderboltdy-10/Ixos}"
+REPO="${IXOS_REPO:-Thunderboltdy10/Ixos}"
 INSTALL_ROOT="${IXOS_INSTALL_DIR:-$HOME/.ixos}"
 BIN_DIR="$INSTALL_ROOT/bin"
+ASSET_URL_OVERRIDE="${IXOS_ASSET_URL:-}"
+SKIP_PATH_PERSIST="${IXOS_SKIP_PATH_PERSIST:-}"
 
 detect_os() {
   case "$(uname -s)" in
@@ -17,9 +19,17 @@ detect_os() {
 }
 
 detect_arch() {
+  local os="$1"
   case "$(uname -m)" in
     x86_64|amd64) echo "x86_64" ;;
-    arm64|aarch64) echo "arm64" ;;
+    arm64|aarch64)
+      if [[ "$os" == "macos" ]]; then
+        echo "arm64"
+      else
+        echo "Unsupported architecture for $os: $(uname -m). Supported: x86_64." >&2
+        exit 1
+      fi
+      ;;
     *)
       echo "Unsupported architecture: $(uname -m)" >&2
       exit 1
@@ -34,7 +44,7 @@ resolve_tag() {
   fi
 
   local releases_json
-  releases_json="$(curl -fsSL "https://api.github.com/repos/$REPO/releases?per_page=30")"
+  releases_json="$(curl -fsSL -H "User-Agent: ixos-install-script" "https://api.github.com/repos/$REPO/releases?per_page=30")"
   local cli_tag
   cli_tag="$(printf '%s' "$releases_json" \
     | grep -oE '"tag_name":[[:space:]]*"cli-v[^"]+"' \
@@ -46,13 +56,14 @@ resolve_tag() {
     return
   fi
 
-  curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" \
-    | grep -oE '"tag_name":[[:space:]]*"[^"]+"' \
-    | head -n1 \
-    | sed -E 's/.*"([^"]+)"/\1/'
+  echo "No cli-v* release tags found for $REPO. Set IXOS_TAG=cli-vX.Y.Z explicitly." >&2
+  exit 1
 }
 
 ensure_path() {
+  if [[ "$SKIP_PATH_PERSIST" == "1" ]]; then
+    return
+  fi
   local shell_name rc_file path_line
   shell_name="$(basename "${SHELL:-}")"
   case "$shell_name" in
@@ -61,7 +72,7 @@ ensure_path() {
     *) rc_file="$HOME/.profile" ;;
   esac
 
-  path_line='export PATH="$HOME/.ixos/bin:$PATH"'
+  path_line="export PATH=\"$BIN_DIR:\$PATH\""
   touch "$rc_file"
   if ! grep -Fq "$path_line" "$rc_file"; then
     printf '\n%s\n' "$path_line" >> "$rc_file"
@@ -72,13 +83,17 @@ ensure_path() {
 main() {
   local os arch tag version artifact url tmp_dir
   os="$(detect_os)"
-  arch="$(detect_arch)"
+  arch="$(detect_arch "$os")"
   tag="$(resolve_tag)"
   version="${tag#cli-v}"
   artifact="ixos-${version}-${os}-${arch}.tar.gz"
-  url="https://github.com/$REPO/releases/download/$tag/$artifact"
+  if [[ -n "$ASSET_URL_OVERRIDE" ]]; then
+    url="$ASSET_URL_OVERRIDE"
+  else
+    url="https://github.com/$REPO/releases/download/$tag/$artifact"
+  fi
 
-  echo "Installing Ixos CLI from $url"
+  echo "Installing Ixos CLI ($tag) from $url"
   tmp_dir="$(mktemp -d)"
   trap 'rm -rf "$tmp_dir"' EXIT
 
@@ -92,6 +107,10 @@ main() {
   fi
 
   install -m 755 "$tmp_dir/ixos" "$BIN_DIR/ixos"
+  if [[ ! -x "$BIN_DIR/ixos" ]]; then
+    echo "Installed binary is not executable: $BIN_DIR/ixos" >&2
+    exit 1
+  fi
   ensure_path
   export PATH="$BIN_DIR:$PATH"
 

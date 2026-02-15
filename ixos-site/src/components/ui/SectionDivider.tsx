@@ -50,13 +50,12 @@ export function SectionDivider({ className, label = "SECTION_BREAK", accent = "a
                     {/* Animated Trace Line */}
                     <div
                         className={cn(
-                            "absolute top-0 left-0 h-full w-[20%] opacity-50 blur-[2px] transition-all duration-1000 ease-linear",
+                            "absolute top-0 left-0 h-full w-[24%] opacity-70 blur-[2px]",
                             accentColor.split(" ")[2] // bg-accent
                         )}
                         style={{
-                            transform: isVisible ? "translateX(400%)" : "translateX(-100%)",
-                            opacity: isVisible ? 0 : 1, // Fade out as it zips by? Or just zip across
-                            transitionDuration: "1.5s"
+                            transform: "translateX(-120%)",
+                            animation: isVisible ? "divider-sweep 3.2s linear infinite" : "none",
                         }}
                     />
                 </div>

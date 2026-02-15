@@ -216,8 +216,10 @@ fn default_cache_mode() -> String {
 
 fn normalize_cache_mode(value: &str) -> String {
     match value.trim().to_lowercase().as_str() {
-        "native-cache" | "local" => "native-cache".to_string(),
-        "ephemeral" | "memory" => "ephemeral".to_string(),
+        "native-cache" | "local" | "cache" | "jit" | "persistent" | "nativecache" => {
+            "native-cache".to_string()
+        }
+        "ephemeral" | "memory" | "memory-only" => "ephemeral".to_string(),
         _ => value.trim().to_lowercase(),
     }
 }
@@ -933,5 +935,19 @@ cache_mode = "memory"
             let result = config.set("search.cache_mode", legacy);
             assert!(result.is_err(), "legacy alias should fail: {legacy}");
         }
+    }
+
+    #[test]
+    fn test_unknown_cache_mode_is_preserved_on_load() {
+        let temp_dir = TempDir::new().unwrap();
+        let config_path = temp_dir.path().join("unknown-cache.toml");
+        let legacy = r#"
+[search]
+cache_mode = "mystery-mode"
+"#;
+        std::fs::write(&config_path, legacy).unwrap();
+
+        let loaded = IxosConfig::load_from(config_path);
+        assert_eq!(loaded.search.cache_mode, "mystery-mode");
     }
 }

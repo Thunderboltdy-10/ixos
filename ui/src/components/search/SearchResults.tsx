@@ -9,6 +9,8 @@ import { useClearLayoutOnChange } from '@/hooks/useLayoutSync';
 import { cn } from '@/lib/utils';
 import { sanitizeResults } from '@/lib/searchHistory';
 import { getPrimaryMatchSignal } from '@/lib/matchClassification';
+import { useAuthStore } from '@/stores/authStore';
+import { hasProAccess } from '@/lib/proAccess';
 import type { RankedResult, LexicalResult, SearchPhase } from '@/lib/types';
 
 interface SearchResultsProps {
@@ -71,6 +73,10 @@ export function SearchResults({
 }: SearchResultsProps) {
   const starred = useStarredStore();
   const searchStore = useSearchStore();
+  const entitlement = useAuthStore((s) => s.entitlement);
+  const entitlementToken = useAuthStore((s) => s.entitlementToken);
+  const proStatus = useAuthStore((s) => s.proStatus);
+  const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
   const displayResults = useStabilizedResults(results, phase);
   const firstResult = displayResults[0] as RankedResult | LexicalResult | undefined;
   const hasSemanticResults = !!firstResult && 'scoreBreakdown' in firstResult;
@@ -125,7 +131,7 @@ export function SearchResults({
   };
 
   // Use Ask Mode state from store
-  const isAskMode = searchStore.isAskModeActive;
+  const isAskMode = searchStore.isAskModeActive && isPro;
 
   return (
     <div>

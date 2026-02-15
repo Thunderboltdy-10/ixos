@@ -91,6 +91,9 @@ export function SuggestedNext({ suggestions, onOpenFile }: SuggestedNextProps) {
           </motion.button>
         ))}
       </div>
+      <p className="text-2xs text-fg-ghost">
+        Suggestions improve as Ixos observes repeated file-open patterns in your workflow.
+      </p>
     </motion.section>
   );
 }

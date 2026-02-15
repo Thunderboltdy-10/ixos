@@ -182,24 +182,24 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
   }
 
   return (
-    <div className={cn('relative', className)}>
+    <div className={cn('relative w-[126px]', className)}>
       <button
         ref={buttonRef}
         onClick={() => setIsOpen((open) => !open)}
         className={cn(
-          'flex items-center gap-2 px-2.5 py-1.5 rounded-md',
-          'bg-transparent hover:bg-graphite-3/50',
+          'flex w-full items-center gap-2 px-2.5 py-1.5 rounded-md',
+          'bg-transparent hover:bg-graphite-3/55',
           'transition-all duration-200',
-          'text-xs uppercase tracking-[0.14em]'
+          'text-[11px] uppercase tracking-[0.1em] border border-transparent hover:border-white/8'
         )}
       >
         <selectedMode.icon className={cn('w-3.5 h-3.5', selectedMode.color)} />
-        <span className="text-porcelain flex-1 text-left">
+        <span className="text-porcelain text-left truncate">
           {selectedMode.shortLabel}
         </span>
         <ChevronDown
           className={cn(
-            'w-3 h-3 text-fg-dim transition-transform duration-200',
+            'ml-auto w-3 h-3 text-fg-dim transition-transform duration-200',
             isOpen && 'rotate-180'
           )}
         />
@@ -233,19 +233,17 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
                     onClick={() => handleSelect(mode.id)}
                     onMouseEnter={() => setHoveredMode(mode.id)}
                     className={cn(
-                      'w-full flex items-center gap-2.5 px-3 py-2.5',
+                      'w-full flex items-start gap-3 px-3 py-3 border-l-2',
                       'hover:bg-graphite-3 transition-colors duration-150',
                       'text-left',
-                      mode.id === value && 'bg-graphite-3'
+                      mode.id === value ? `bg-graphite-3 ${mode.color} border-l-current` : 'border-l-transparent'
                     )}
                   >
-                    <mode.icon className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
-                    <span className="text-[12px] font-medium text-porcelain whitespace-nowrap">
-                      {mode.label}
-                    </span>
-                    <span className="text-[11.5px] text-fg-secondary truncate flex-1">
-                      {mode.description}
-                    </span>
+                    <mode.icon className={cn('mt-0.5 w-3.5 h-3.5 shrink-0', mode.color)} />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold text-porcelain leading-tight">{mode.label}</div>
+                      <div className="mt-0.5 text-xs text-fg-secondary">{mode.description}</div>
+                    </div>
                     {mode.id === 'native-cache' && (
                       <span className="text-[9px] px-1 py-px rounded bg-accent-amber/15 text-accent-amber shrink-0">
                         Default
@@ -259,10 +257,10 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
               </div>
 
               <div className="h-[72px] border-t border-stroke-hairline bg-graphite-1 px-3 py-2">
-                <p className={cn('text-[10px] font-semibold uppercase tracking-[0.12em]', hoveredDetails.color)}>
+                <p className={cn('text-xs font-semibold uppercase tracking-[0.12em]', hoveredDetails.color)}>
                   {hoveredDetails.shortLabel}
                 </p>
-                <p className="mt-1 text-[10px] text-fg-secondary leading-tight">
+                <p className="mt-1 text-[11px] text-fg-secondary leading-relaxed">
                   {hoveredDetails.details}
                 </p>
               </div>

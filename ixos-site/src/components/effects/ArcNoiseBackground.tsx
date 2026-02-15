@@ -17,7 +17,7 @@ function generateCanvasNoiseDataURL(): string {
         data[i] = v;
         data[i + 1] = v;
         data[i + 2] = v;
-        data[i + 3] = 18; // low alpha for subtle grain
+        data[i + 3] = 16; // low alpha for subtle grain
     }
     ctx.putImageData(imageData, 0, 0);
     return canvas.toDataURL("image/png");
@@ -34,7 +34,7 @@ export function ArcNoiseBackground() {
         <div
             className="absolute inset-0 z-[1] pointer-events-none"
             style={{
-                opacity: 0.24,
+                opacity: 0.22,
                 mixBlendMode: "overlay",
             }}
         >
@@ -69,7 +69,7 @@ export function ArcNoiseBackground() {
                         backgroundImage: `url(${canvasNoise})`,
                         backgroundSize: "200px 200px",
                         backgroundRepeat: "repeat",
-                        opacity: 0.5,
+                        opacity: 0.46,
                     }}
                 />
             )}

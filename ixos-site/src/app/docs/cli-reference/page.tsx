@@ -10,10 +10,25 @@ export default function DocsCliReferencePage() {
         model management, search execution, and diagnostics.
       </p>
 
-      <h2>Install</h2>
+      <h2 id="install">Install</h2>
+      <p>
+        The commands below install the <strong>CLI binary</strong> (not the desktop app).
+        For desktop installers, use <Link href="/download">/download</Link>.
+      </p>
       <pre>
-        <code>{`curl -fsSL https://ixos.dev/install.sh | sh`}</code>
+        <code>{`# macOS / Linux / WSL
+curl -fsSL https://ixos.dev/install.sh | sh
+
+# Windows PowerShell
+irm https://ixos.dev/install.ps1 | iex
+
+# Verify
+ixos --version`}</code>
       </pre>
+      <p>
+        The installer is intended to be zero-touch: it downloads the right binary, places it on PATH,
+        and runs a version check. After install, use <code>ixos ...</code> directly (no <code>.exe</code> suffix needed in normal shells).
+      </p>
 
       <h2>Core commands</h2>
       <pre>
@@ -23,8 +38,8 @@ ixos search "release notes around api auth"
 # Search specific directory
 ixos search "quarterly forecast" --dir ~/Documents/Finance
 
-# Ask mode with explicit model + mode
-ixos ask "summarize all NDA renewal deadlines" --model ixos-pro-v2 --cache-mode deep-search`}</code>
+# Ask-style query (Ask intent is detected automatically)
+ixos search "summarize all NDA renewal deadlines" --model ixos-pro-v2 --deep-search`}</code>
       </pre>
 
       <h2>Model management</h2>
@@ -58,8 +73,24 @@ ixos model pull ixos-pro-v2`}</code>
 ixos doctor --verbose
 
 # Capture profiling data
-./target/release/ixos-profile --dir dataset --model ixos-flash-v2 --cache-mode local`}</code>
+./target/release/ixos-profile --dir dataset --model ixos-flash-v2 --cache-mode native-cache`}</code>
       </pre>
+
+      <h2>GitHub Actions releases</h2>
+      <pre>
+        <code>{`# Desktop release workflow (tag starts with v)
+git tag v1.2.3
+git push origin v1.2.3
+
+# CLI release workflow (tag starts with cli-v)
+git tag cli-v1.2.3
+git push origin cli-v1.2.3`}</code>
+      </pre>
+      <ul>
+        <li><strong>Desktop workflow:</strong> <code>.github/workflows/release.yml</code> (Windows/macOS/Linux app assets).</li>
+        <li><strong>CLI workflow:</strong> <code>.github/workflows/cli-release.yml</code> (tar/zip CLI artifacts + sha256 files).</li>
+        <li>Check run status in the repository <strong>Actions</strong> tab after pushing a tag.</li>
+      </ul>
 
       <h2>Automation tips</h2>
       <ul>

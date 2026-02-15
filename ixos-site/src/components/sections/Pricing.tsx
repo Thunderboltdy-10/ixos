@@ -200,7 +200,7 @@ export function Pricing() {
                                     title="PRO"
                                     price={billing === "monthly" ? "$7.99" : "$6.35"}
                                     period="/ month"
-                                    desc="Watch & Notify. Saved searches. Priority support."
+                                    desc="Ask Mode evidence answers. Saved searches. Priority support."
                                     highlighted
                                     onAction={() => {
                                         if (subscription?.isActive) {
@@ -216,6 +216,10 @@ export function Pricing() {
                                         }
                                     }}
                                     features={[
+                                        "Ask Mode answer cards + citations",
+                                        "Today view: daily brief + suggested next files",
+                                        "Workstreams: auto/manual context clusters",
+                                        "Connection map + folder move recommendations",
                                         "File watch & notifications",
                                         "Developer file types (TS, PY, RS, GO)",
                                         "Deep Search Mode (thorough analysis)",
@@ -234,9 +238,13 @@ export function Pricing() {
                                     title="PRO"
                                     price={billing === "monthly" ? "$7.99" : "$6.35"}
                                     period="/ month"
-                                    desc="Watch & Notify. Saved searches. Priority support."
+                                    desc="Ask Mode evidence answers. Saved searches. Priority support."
                                     highlighted
                                     features={[
+                                        "Ask Mode answer cards + citations",
+                                        "Today view: daily brief + suggested next files",
+                                        "Workstreams: auto/manual context clusters",
+                                        "Connection map + folder move recommendations",
                                         "File watch & notifications",
                                         "Developer file types (TS, PY, RS, GO)",
                                         "Deep Search Mode (thorough analysis)",

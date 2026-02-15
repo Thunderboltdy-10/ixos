@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
 import { useSearchStore } from '@/stores/searchStore';
 import { listen } from '@tauri-apps/api/event';
 import { InfoPanel } from '@/components/onboarding/InfoPanel';
+import { FirstRunOnboarding } from '@/components/onboarding/FirstRunOnboarding';
 import { ArcNoiseBackground } from '@/components/effects/ArcNoiseBackground';
 import { PricingPanel } from '@/components/account/PricingPanel';
 import { useUIStore } from '@/stores/uiStore';
@@ -14,6 +15,7 @@ import { hasProAccess } from '@/lib/proAccess';
 import { Button } from '@/components/ui/button';
 import { TodayTab } from '@/components/today/TodayTab';
 import { WorkstreamsList } from '@/components/workstreams/WorkstreamsList';
+import { WorkstreamDetail } from '@/components/workstreams/WorkstreamDetail';
 import { CommandPalette } from '@/components/search/CommandPalette';
 import { useWorkstreamStore } from '@/stores/workstreamStore';
 import * as tauri from '@/lib/tauri';
@@ -23,7 +25,25 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
+  const ONBOARDING_DONE_KEY = 'ixos_first_run_onboarding_v2_done';
   const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [firstRunOnboarding, setFirstRunOnboarding] = useState<{
+    open: boolean;
+    step: 1 | 2 | 3;
+    firstQuery: string | null;
+    firstDurationMs: number | null;
+    secondDurationMs: number | null;
+    firstCacheHits: number;
+    secondCacheHits: number;
+  }>({
+    open: false,
+    step: 1,
+    firstQuery: null,
+    firstDurationMs: null,
+    secondDurationMs: null,
+    firstCacheHits: 0,
+    secondCacheHits: 0,
+  });
   const {
     showSettings, setShowSettings,
     showInfo, setShowInfo,
@@ -33,7 +53,10 @@ export function AppShell({ children }: AppShellProps) {
   } = useUIStore();
 
   const searchStore = useSearchStore();
+  const previousPhaseRef = useRef(searchStore.phase);
   const selectWorkstream = useWorkstreamStore((state) => state.selectWorkstream);
+  const currentWorkstream = useWorkstreamStore((state) => state.currentWorkstream);
+  const setCurrentWorkstream = useWorkstreamStore((state) => state.setCurrentWorkstream);
   const entitlement = useAuthStore((s) => s.entitlement);
   const proStatus = useAuthStore((s) => s.proStatus);
   const entitlementToken = useAuthStore((s) => s.entitlementToken);
@@ -78,6 +101,68 @@ export function AppShell({ children }: AppShellProps) {
     setActiveView('workstreams');
     void selectWorkstream(id);
   };
+
+  const focusSearchForOnboarding = () => {
+    setActiveView('search');
+    setFirstRunOnboarding((prev) => ({ ...prev, open: false }));
+    setTimeout(() => {
+      const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement | null;
+      searchInput?.focus();
+      searchInput?.select();
+    }, 60);
+  };
+
+  useEffect(() => {
+    const done = localStorage.getItem(ONBOARDING_DONE_KEY) === '1';
+    if (!done) {
+      setFirstRunOnboarding((prev) => ({ ...prev, open: true }));
+      setActiveView('search');
+    }
+  }, [setActiveView]);
+
+  useEffect(() => {
+    if (firstRunOnboarding.step === 3) return;
+
+    const wasComplete = previousPhaseRef.current === 'complete';
+    const isComplete = searchStore.phase === 'complete';
+    previousPhaseRef.current = searchStore.phase;
+
+    if (!isComplete || wasComplete) return;
+
+    const durationMs = searchStore.searchStartTime ? Date.now() - searchStore.searchStartTime : null;
+    const cacheHits = searchStore.streamStats?.cacheHits ?? 0;
+    const resolvedQuery = searchStore.activeQuery || searchStore.query || null;
+
+    setFirstRunOnboarding((prev) => {
+      if (prev.step === 1) {
+        return {
+          ...prev,
+          open: true,
+          step: 2,
+          firstDurationMs: durationMs,
+          firstCacheHits: cacheHits,
+          firstQuery: resolvedQuery,
+        };
+      }
+      if (prev.step === 2) {
+        return {
+          ...prev,
+          open: true,
+          step: 3,
+          secondDurationMs: durationMs,
+          secondCacheHits: cacheHits,
+        };
+      }
+      return prev;
+    });
+  }, [
+    firstRunOnboarding.step,
+    searchStore.activeQuery,
+    searchStore.phase,
+    searchStore.query,
+    searchStore.searchStartTime,
+    searchStore.streamStats?.cacheHits,
+  ]);
 
   // Listen for global shortcut trigger to focus search
   useEffect(() => {
@@ -223,10 +308,18 @@ export function AppShell({ children }: AppShellProps) {
             />
           )}
           {activeView === 'workstreams' && (
-            <WorkstreamsList
-              onSelectWorkstream={handleSelectWorkstream}
-              onOpenFile={handleOpenFile}
-            />
+            currentWorkstream ? (
+              <WorkstreamDetail
+                workstreamId={currentWorkstream.id}
+                onBack={() => setCurrentWorkstream(null)}
+                onOpenFile={handleOpenFile}
+              />
+            ) : (
+              <WorkstreamsList
+                onSelectWorkstream={handleSelectWorkstream}
+                onOpenFile={handleOpenFile}
+              />
+            )
           )}
         </div>
 
@@ -329,6 +422,21 @@ export function AppShell({ children }: AppShellProps) {
             </div>
           </div>
         )}
+
+        <FirstRunOnboarding
+          isOpen={firstRunOnboarding.open}
+          step={firstRunOnboarding.step}
+          firstQuery={firstRunOnboarding.firstQuery}
+          firstDurationMs={firstRunOnboarding.firstDurationMs}
+          secondDurationMs={firstRunOnboarding.secondDurationMs}
+          firstCacheHits={firstRunOnboarding.firstCacheHits}
+          secondCacheHits={firstRunOnboarding.secondCacheHits}
+          onFocusSearch={focusSearchForOnboarding}
+          onComplete={() => {
+            localStorage.setItem(ONBOARDING_DONE_KEY, '1');
+            setFirstRunOnboarding((prev) => ({ ...prev, open: false }));
+          }}
+        />
       </main>
     </div>
   );

@@ -46,6 +46,12 @@ const MODE_ACCENTS = {
   },
 } as const;
 
+const QUALITY_ACCENTS = {
+  flash: 'var(--accent-amber, #F6B94C)',
+  auto: 'var(--accent-teal, #14B8A6)',
+  pro: 'var(--accent-violet, #7C5CFF)',
+} as const;
+
 function formatDuration(ms: number) {
   const seconds = Math.max(0, ms / 1000);
   return `${seconds.toFixed(1)}s`;
@@ -73,7 +79,6 @@ export function SearchDeck() {
   const semanticResults = useSearchStore((state) => state.semanticResults);
   const hasSearchIntent = useSearchStore((state) => state.hasSearchIntent);
   const scanTrail = useSearchStore((state) => state.scanTrail);
-  const streamEvents = useSearchStore((state) => state.streamEvents);
   const qualityMode = useSettingsStore((state) => state.config?.search.searchMode ?? 'auto');
 
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -145,7 +150,7 @@ export function SearchDeck() {
 
   const statusMessage = useMemo(() => {
     if (isComplete) {
-      return `${resultCount} ${resultCount === 1 ? 'result' : 'results'} | ${formatDuration(finalElapsedMs ?? elapsedMs)}`;
+      return `${resultCount} ${resultCount === 1 ? 'result' : 'results'}`;
     }
     if (!isActive && hasSearchIntent) return 'Starting search';
     if (streamStage === 'lexical' || phase === 'lexical') return `Scanning ${stats.filesScanned} files`;
@@ -165,7 +170,7 @@ export function SearchDeck() {
 
   const pipelineSteps = useMemo<PipelineStep[]>(() => {
     const doneDetail = isComplete
-      ? `${resultCount} ${resultCount === 1 ? 'result' : 'results'} | ${formatDuration(finalElapsedMs ?? elapsedMs)}`
+      ? `${resultCount} ${resultCount === 1 ? 'result' : 'results'}`
       : 'Awaiting final ranking';
 
     return [
@@ -285,15 +290,7 @@ export function SearchDeck() {
     : cacheMode === 'native-cache'
       ? 'Local'
       : 'Memory';
-  const currentFile = (() => {
-    const latestScan = scanTrail[scanTrail.length - 1];
-    if (latestScan) return latestScan;
-    for (let i = streamEvents.length - 1; i >= 0; i -= 1) {
-      const path = streamEvents[i]?.path;
-      if (path) return path;
-    }
-    return null;
-  })();
+  const qualityBar = QUALITY_ACCENTS[qualityMode as keyof typeof QUALITY_ACCENTS] ?? QUALITY_ACCENTS.auto;
 
   return (
     <>
@@ -348,20 +345,6 @@ export function SearchDeck() {
             </div>
           )}
 
-          <div className="mt-2 grid grid-cols-2 gap-2 text-2xs text-fg-dim md:grid-cols-4">
-            <div className="rounded border border-white/10 bg-graphite-2/55 px-2 py-1.5">
-              Files scanned: <span className="text-porcelain font-mono">{stats.filesScanned}</span>
-            </div>
-            <div className="rounded border border-white/10 bg-graphite-2/55 px-2 py-1.5">
-              Embeddings: <span className="text-porcelain font-mono">{stats.embedded}</span>
-            </div>
-            <div className="rounded border border-white/10 bg-graphite-2/55 px-2 py-1.5">
-              Cache hits: <span className="text-porcelain font-mono">{stats.cacheHits}</span>
-            </div>
-            <div className="rounded border border-white/10 bg-graphite-2/55 px-2 py-1.5 truncate">
-              Current file: <span className="text-porcelain font-mono">{currentFile ? fileTail(currentFile) : '...'}</span>
-            </div>
-          </div>
         </div>
 
         {/* Pipeline steps — mode-colored accents */}
@@ -428,7 +411,11 @@ export function SearchDeck() {
           <div className="absolute inset-0 bg-graphite-2" />
           <motion.div
             className="absolute left-0 top-0 h-full overflow-hidden"
-            style={{ backgroundColor: isComplete ? 'var(--accent-success)' : accent.bar }}
+            style={{
+              background: isComplete
+                ? 'var(--accent-success)'
+                : `linear-gradient(90deg, ${accent.bar} 0%, ${accent.bar} 65%, ${qualityBar} 100%)`,
+            }}
             initial={{ width: 0 }}
             animate={{ width: `${animatedProgress * 100}%` }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}

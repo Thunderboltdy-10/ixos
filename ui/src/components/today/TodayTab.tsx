@@ -11,12 +11,13 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, FolderTree, Sparkles } from 'lucide-react';
+import { Calendar, FolderTree, Sparkles, MessageCircleQuestion } from 'lucide-react';
 import { useTodayStore } from '@/stores/todayStore';
 import { useAuthStore } from '@/stores/authStore';
 import { ResumeSection } from './ResumeSection';
 import { RecentlyTouched } from './RecentlyTouched';
 import { SuggestedNext } from './SuggestedNext';
+import { ConnectionMap } from './ConnectionMap';
 import { PinnedSection } from './PinnedSection';
 import { TodayEmptyState } from './TodayEmptyState';
 import { DailyBrief } from './DailyBrief';
@@ -192,11 +193,42 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
           <p className="mt-1 text-2xs text-fg-ghost">
             Resume your latest flow, reopen recent files, and pick the next best file without re-searching.
           </p>
+          <p className="mt-1 text-2xs text-fg-ghost">
+            Workstreams are generated from your search and file-open activity. Open files while working to strengthen suggestions.
+          </p>
         </div>
       </div>
 
       {/* Content sections */}
       <div className="space-y-6 flex-1">
+        <section className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-lg border border-white/10 bg-graphite-1/55 p-3">
+            <p className="text-2xs text-fg-ghost uppercase tracking-[0.12em]">Signals Today</p>
+            <p className="mt-1 text-lg font-semibold text-porcelain">{data?.recentlyTouched.length ?? 0}</p>
+            <p className="text-2xs text-fg-dim">Recently touched files</p>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-graphite-1/55 p-3">
+            <p className="text-2xs text-fg-ghost uppercase tracking-[0.12em]">Suggested Next</p>
+            <p className="mt-1 text-lg font-semibold text-porcelain">{data?.suggestedNext.length ?? 0}</p>
+            <p className="text-2xs text-fg-dim">Predicted follow-up files</p>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-graphite-1/55 p-3">
+            <p className="text-2xs text-fg-ghost uppercase tracking-[0.12em]">Move Hints</p>
+            <p className="mt-1 text-lg font-semibold text-porcelain">{data?.moveRecommendations.length ?? 0}</p>
+            <p className="text-2xs text-fg-dim">Folder reorganization opportunities</p>
+          </div>
+        </section>
+
+        <section className="rounded-lg border border-accent-violet/25 bg-accent-violet/8 p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <MessageCircleQuestion className="h-4 w-4 text-accent-violet" />
+            <h3 className="text-sm font-semibold text-porcelain">Ask Mode (Pro)</h3>
+          </div>
+          <p className="text-2xs text-fg-dim">
+            Ask Mode converts question intent into evidence-backed snippets. Trigger it with natural questions in Search.
+          </p>
+        </section>
+
         {/* Resume section - most important */}
         {data?.resume.workstream && (
           <ResumeSection
@@ -232,6 +264,14 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
           />
         )}
 
+        {data?.suggestedNext && data.suggestedNext.length > 0 && data?.recentlyTouched?.[0] && (
+          <ConnectionMap
+            sourcePath={data.recentlyTouched[0].path}
+            suggestions={data.suggestedNext}
+            onOpenFile={onOpenFile}
+          />
+        )}
+
         {/* Pro reorganization recommendations */}
         {data?.moveRecommendations && data.moveRecommendations.length > 0 && (
           <section className="rounded-xl border border-white/10 bg-graphite-1/60 p-4">
@@ -239,6 +279,9 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
               <FolderTree className="h-4 w-4 text-accent-teal" />
               <h3 className="text-sm font-semibold text-porcelain">Suggested Reorganization</h3>
             </div>
+            <p className="mb-3 text-2xs text-fg-ghost">
+              Based on repeated opens, Ixos detects files that might belong in a different folder structure.
+            </p>
             <div className="space-y-2">
               {data.moveRecommendations.slice(0, 4).map((rec) => (
                 <div
@@ -272,6 +315,18 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
                 </div>
               ))}
             </div>
+          </section>
+        )}
+
+        {data?.moveRecommendations && data.moveRecommendations.length === 0 && (
+          <section className="rounded-xl border border-white/8 bg-graphite-1/45 p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <FolderTree className="h-4 w-4 text-fg-muted" />
+              <h3 className="text-sm font-semibold text-fg-secondary">Suggested Reorganization</h3>
+            </div>
+            <p className="text-2xs text-fg-dim">
+              No folder recommendations yet. Keep searching and opening related files from different folders to generate Pro automation signals.
+            </p>
           </section>
         )}
       </div>

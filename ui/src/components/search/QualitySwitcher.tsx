@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Sparkles, Layers, ChevronDown, Check, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -17,6 +17,7 @@ interface QualityOption {
   label: string;
   shortLabel: string;
   description: string;
+  details: string;
   color: string;
   bgColor: string;
 }
@@ -27,7 +28,8 @@ const modes: QualityOption[] = [
     icon: Zap,
     label: 'Ixos Flash',
     shortLabel: 'Flash',
-    description: 'Fastest only, lowest latency.',
+    description: 'Fastest, lowest latency',
+    details: 'Runs Flash directly for the quickest recall when you already know the context.',
     color: 'text-accent-amber',
     bgColor: 'bg-accent-amber/10',
   },
@@ -36,7 +38,8 @@ const modes: QualityOption[] = [
     icon: Sparkles,
     label: 'Auto Mode',
     shortLabel: 'Auto',
-    description: 'Flash-first, refines when needed.',
+    description: 'Adapts to your query',
+    details: 'Starts in Flash, then refines only when confidence is weak or query intent is ambiguous.',
     color: 'text-accent-teal',
     bgColor: 'bg-accent-teal/10',
   },
@@ -45,7 +48,8 @@ const modes: QualityOption[] = [
     icon: Layers,
     label: 'Ixos Pro',
     shortLabel: 'Pro',
-    description: 'Always highest-quality ranking.',
+    description: 'Highest quality ranking',
+    details: 'Prioritizes depth and ranking quality with richer evidence extraction for hard queries.',
     color: 'text-accent-violet',
     bgColor: 'bg-accent-violet/10',
   },
@@ -54,10 +58,15 @@ const modes: QualityOption[] = [
 export function QualitySwitcher({ value, onChange, className, proLocked = false }: QualitySwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
+  const [hoveredMode, setHoveredMode] = useState<SearchMode>(value);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const selectedMode = modes.find((m) => m.id === value) || modes[1];
   const SelectedIcon = selectedMode.icon;
+  const hoveredDetails = useMemo(
+    () => modes.find((mode) => mode.id === hoveredMode) ?? selectedMode,
+    [hoveredMode, selectedMode]
+  );
 
   // Calculate dropdown position to avoid overflow
   useEffect(() => {
@@ -87,8 +96,14 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
     return () => clearTimeout(timer);
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setHoveredMode(value);
+    }
+  }, [isOpen, value]);
+
   const handleSelect = (mode: SearchMode) => {
-    const lockedSelection = proLocked && mode !== 'flash';
+    const lockedSelection = proLocked && mode === 'pro';
     if (lockedSelection) {
       window.dispatchEvent(new CustomEvent('open-pricing'));
       setIsOpen(false);
@@ -100,24 +115,24 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
   };
 
   return (
-    <div className={cn('relative', className)}>
+    <div className={cn('relative w-[132px]', className)}>
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'flex items-center gap-2 px-2.5 py-1.5 rounded-md',
-          'bg-transparent hover:bg-graphite-3/50',
+          'flex w-full items-center gap-2 px-2.5 py-1.5 rounded-md',
+          'bg-transparent hover:bg-graphite-3/55',
           'transition-all duration-200',
-          'text-xs uppercase tracking-[0.14em]'
+          'text-[11px] uppercase tracking-[0.1em] border border-transparent hover:border-white/8'
         )}
       >
         <SelectedIcon className={cn('w-3.5 h-3.5', selectedMode.color)} />
-        <span className="text-porcelain flex-1 text-left">
+        <span className="text-porcelain text-left truncate">
           {selectedMode.shortLabel}
         </span>
         <ChevronDown
           className={cn(
-            'w-3 h-3 text-fg-dim transition-transform duration-200',
+            'ml-auto w-3 h-3 text-fg-dim transition-transform duration-200',
             isOpen && 'rotate-180'
           )}
         />
@@ -136,47 +151,56 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
               className={cn(
                 'absolute z-[140] right-0',
                 dropdownPosition === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
-                'w-52',
+                'w-72',
                 'bg-graphite-2 rounded-xl border border-stroke-hairline',
                 'shadow-lift overflow-hidden'
               )}
             >
-              {modes.map((mode) => {
-                const Icon = mode.icon;
-                const isLocked = proLocked && mode.id !== 'flash';
-                return (
-                  <button
-                    key={mode.id}
-                    onClick={() => handleSelect(mode.id)}
-                    className={cn(
-                      'w-full flex items-center gap-2.5 px-3 py-2.5',
-                      'hover:bg-graphite-3 transition-colors duration-150',
-                      'text-left',
-                      mode.id === value && 'bg-graphite-3',
-                      isLocked && 'opacity-75'
-                    )}
-                  >
-                    <Icon className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
-                    <span className="text-[12px] font-medium text-porcelain whitespace-nowrap">
-                      {mode.label}
-                    </span>
-                    <span className="text-[11.5px] text-fg-secondary truncate flex-1">
-                      {mode.description}
-                    </span>
-                    {isLocked && (
-                      <Lock className="w-3 h-3 shrink-0 text-fg-dim" />
-                    )}
-                    {mode.id === 'auto' && (
-                      <span className="text-[9px] px-1 py-px rounded bg-accent-teal/15 text-accent-teal shrink-0">
-                        Default
-                      </span>
-                    )}
-                    {mode.id === value && (
-                      <Check className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
-                    )}
-                  </button>
-                );
-              })}
+              <div className="max-h-[calc(100%-72px)] overflow-y-auto">
+                {modes.map((mode) => {
+                  const Icon = mode.icon;
+                  const isLocked = proLocked && mode.id === 'pro';
+                  return (
+                    <button
+                      key={mode.id}
+                      onClick={() => handleSelect(mode.id)}
+                      onMouseEnter={() => setHoveredMode(mode.id)}
+                      className={cn(
+                        'w-full flex items-start gap-3 px-3 py-3',
+                        'hover:bg-graphite-3 transition-colors duration-150',
+                        'text-left border-l-2',
+                        mode.id === value ? `bg-graphite-3 ${mode.color} border-l-current` : 'border-l-transparent',
+                        isLocked && 'opacity-78'
+                      )}
+                    >
+                      <Icon className={cn('mt-0.5 w-3.5 h-3.5 shrink-0', mode.color)} />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-semibold text-porcelain leading-tight">{mode.label}</div>
+                        <div className="mt-0.5 text-xs text-fg-muted">{mode.description}</div>
+                      </div>
+                      {isLocked && (
+                        <Lock className="mt-0.5 w-3 h-3 shrink-0 text-fg-dim" />
+                      )}
+                      {mode.id === 'auto' && (
+                        <span className="mt-0.5 text-[9px] px-1 py-px rounded bg-accent-teal/15 text-accent-teal shrink-0">
+                          Default
+                        </span>
+                      )}
+                      {mode.id === value && (
+                        <Check className={cn('mt-0.5 w-3.5 h-3.5 shrink-0', mode.color)} />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="min-h-[72px] border-t border-stroke-hairline bg-graphite-1 px-4 py-3">
+                <p className={cn('text-xs font-semibold uppercase tracking-[0.12em]', hoveredDetails.color)}>
+                  {hoveredDetails.shortLabel}
+                </p>
+                <p className="mt-1 text-[11px] text-fg-secondary leading-relaxed">
+                  {hoveredDetails.details}
+                </p>
+              </div>
             </motion.div>
           </>
         )}

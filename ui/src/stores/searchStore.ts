@@ -7,6 +7,7 @@ import { sanitizeResults } from '@/lib/searchHistory';
 import { useStarredStore } from '@/stores/starredStore';
 import { useActivityStore } from '@/stores/activityStore';
 import { useAuthStore } from '@/stores/authStore';
+import { hasProAccess } from '@/lib/proAccess';
 
 const MAX_LEXICAL_DISPLAY = 50;
 const MAX_SCAN_TRAIL = 6;
@@ -273,6 +274,8 @@ export const useSearchStore = create<SearchState>((set, get) => ({
       const settings = useSettingsStore.getState().config?.search;
       const modelType = settings?.modelType || 'ixos-flash-v2';
       const proModelType = settings?.proModelType || 'ixos-pro-v2';
+      const auth = useAuthStore.getState();
+      const canUseAskMode = hasProAccess(auth.entitlement, auth.entitlementToken, auth.proStatus);
 
       // Ask mode is backend-detected; UI sends only an automatic hint.
       set({ isAskModeActive: false });
@@ -301,7 +304,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
         proModelType: proModelType,
         searchMode: searchMode,
         timeoutSeconds: timeoutSeconds,
-        isAskMode: 'auto',
+        isAskMode: canUseAskMode ? 'auto' : 'off',
       }, handleEvent);
     } catch (error) {
       set({
@@ -374,11 +377,19 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
       case 'status':
         set((state) => ({
+          ...(() => {
+            const lowered = event.message.toLowerCase();
+            const askModeActivated =
+              lowered.includes('ask mode active') ||
+              lowered.includes('understanding your question');
+            const askModeLocked = lowered.includes('ask mode requires pro');
+            return {
+              isAskModeActive: askModeLocked
+                ? false
+                : state.isAskModeActive || askModeActivated,
+            };
+          })(),
           statusMessage: event.message,
-          isAskModeActive:
-            state.isAskModeActive ||
-            event.message.toLowerCase().includes('ask mode') ||
-            event.message.toLowerCase().includes('understanding your question'),
           phase: (() => {
             const lowered = event.message.toLowerCase();
             if (lowered.includes('refining')) return 'refining';
@@ -416,6 +427,8 @@ export const useSearchStore = create<SearchState>((set, get) => ({
             const matchedIndex = event.results.findIndex((result) => result.path === previousSelectedPath);
             if (matchedIndex >= 0) return matchedIndex;
           }
+          // Reset to first result when semantic results first arrive (no previous semantic selection)
+          if (currentCount === 0) return 0;
           return state.selectedIndex < newCount ? state.selectedIndex : 0;
         })();
         set((state) => ({

@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { SectionDivider } from "@/components/ui/SectionDivider";
 import { FadeInView } from "@/components/effects/FadeInView";
@@ -20,7 +21,7 @@ export function MeetingUseCase() {
                                     <span className="text-xs font-mono text-accent-violet tracking-widest">USE_CASE_01</span>
                                 </div>
                                 <h2 className="text-3xl md:text-4xl font-semibold leading-tight text-fg-porcelain">
-                                    &quot;Find the budget from <span className="heading-gradient">last Tuesday&apos;s</span> meeting.&quot;
+                                    &quot;Find the budget from <span className="heading-gradient-violet text-[1.07em]">last Tuesday&apos;s</span> meeting.&quot;
                                 </h2>
                             </div>
                         </FadeInView>
@@ -48,7 +49,10 @@ export function MeetingUseCase() {
                             {/* Glow underlay - Enhanced */}
                             <div className="absolute -inset-1 bg-gradient-to-r from-accent-violet/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-2xl" />
 
-                            <div className="relative rounded-sm border border-white/10 bg-bg-graphite-1/80 backdrop-blur-md overflow-hidden shadow-2xl hover-glow-subtle">
+                            <div
+                                className="relative rounded-sm border border-white/10 bg-bg-graphite-1/80 backdrop-blur-md overflow-hidden shadow-2xl hover-glow-subtle"
+                                style={{ "--accent-rgb": "124,92,255" } as CSSProperties}
+                            >
                                 {/* Technical Header */}
                                 <div className="h-10 border-b border-white/10 flex items-center justify-between px-6 bg-bg-graphite-2/50">
                                     <div className="flex gap-2">

@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
-  // Turbopack project root configuration
-  // See: https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory
-  experimental: {
+  turbopack: {
+    root: path.resolve(__dirname, ".."),
   },
   typescript: {
     ignoreBuildErrors: true,

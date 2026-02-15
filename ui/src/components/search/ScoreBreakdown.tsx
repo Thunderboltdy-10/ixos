@@ -5,10 +5,16 @@ import { getMatchContributions } from '@/lib/matchClassification';
 interface ScoreBreakdownProps {
   breakdown: ScoreBreakdownType;
   mode?: 'ephemeral' | 'native-cache' | 'journalist';
+  qualityMode?: 'flash' | 'auto' | 'pro';
   className?: string;
 }
 
-export function ScoreBreakdown({ breakdown, mode = 'native-cache', className }: ScoreBreakdownProps) {
+export function ScoreBreakdown({
+  breakdown,
+  mode = 'native-cache',
+  qualityMode = 'auto',
+  className,
+}: ScoreBreakdownProps) {
   // Safety check - return nothing if breakdown is invalid
   if (!breakdown || typeof breakdown !== 'object') {
     return null;
@@ -18,6 +24,8 @@ export function ScoreBreakdown({ breakdown, mode = 'native-cache', className }: 
 
   // Dynamic colors based on mode
   const getSemanticColor = () => {
+    if (qualityMode === 'flash') return 'bg-accent-amber';
+    if (qualityMode === 'pro') return 'bg-accent-violet';
     switch (mode) {
       case 'ephemeral': return 'bg-accent-amber';
       case 'journalist': return 'bg-accent-violet';

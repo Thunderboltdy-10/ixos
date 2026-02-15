@@ -162,7 +162,7 @@ export function ShortcutSettings() {
         </p>
       </div>
 
-      <div className="bg-graphite-2 rounded-lg p-4 border border-stroke-hairline space-y-4">
+      <div className="rounded-xl border border-white/10 bg-graphite-2/55 backdrop-blur-md p-4 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-md bg-accent-teal/10">
@@ -255,7 +255,7 @@ export function ShortcutSettings() {
         </button>
       </div>
 
-      <div className="text-xs text-fg-dim bg-graphite-2/60 px-3 py-2 rounded-md border border-stroke-hairline">
+      <div className="text-xs text-fg-dim bg-graphite-2/60 px-3 py-2 rounded-md border border-white/10">
         <strong>Tip:</strong> The shortcut works globally - you can press it from any application
         to instantly access Ixos search.
       </div>

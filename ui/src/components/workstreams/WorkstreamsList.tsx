@@ -2,15 +2,16 @@
  * WorkstreamsList - Display all workstreams
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Layers, RefreshCw, Lock, Plus } from 'lucide-react';
 import { useWorkstreamStore } from '@/stores/workstreamStore';
 import { useAuthStore } from '@/stores/authStore';
 import { WorkstreamCard } from './WorkstreamCard';
 import { CreateWorkstreamModal } from './CreateWorkstreamModal';
-import { cn } from '@/lib/utils';
+import { cn, formatRelativeTime } from '@/lib/utils';
 import { hasProAccess } from '@/lib/proAccess';
+import * as tauri from '@/lib/tauri';
 
 interface WorkstreamsListProps {
   onSelectWorkstream?: (id: string) => void;
@@ -20,6 +21,7 @@ interface WorkstreamsListProps {
 export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsListProps) {
   const {
     workstreams,
+    currentWorkstream,
     isLoading,
     error,
     loadWorkstreams,
@@ -34,6 +36,31 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
 
   const [isReclustering, setIsReclustering] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [recentFiles, setRecentFiles] = useState<Array<{ path: string; name: string; lastTouchedLabel: string }>>([]);
+  const workstreamMetrics = useMemo(() => {
+    let actionCount = 0;
+    let autoCount = 0;
+    let activeLast24h = 0;
+    const uniqueFiles = new Set<string>();
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+
+    for (const ws of workstreams) {
+      actionCount += ws.eventCount;
+      if (ws.isAuto) autoCount += 1;
+      if (ws.lastActive >= cutoff) activeLast24h += 1;
+      for (const [path] of ws.topFiles) {
+        uniqueFiles.add(path);
+      }
+    }
+
+    return {
+      actionCount,
+      autoCount,
+      manualCount: Math.max(0, workstreams.length - autoCount),
+      activeLast24h,
+      uniqueFiles: uniqueFiles.size,
+    };
+  }, [workstreams]);
 
   // Load workstreams on mount
   useEffect(() => {
@@ -41,6 +68,22 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
       loadWorkstreams();
     }
   }, [isPro, loadWorkstreams]);
+
+  useEffect(() => {
+    if (!showCreateModal || !isPro) return;
+    tauri
+      .getRecentlyTouched(16)
+      .then((files) => {
+        setRecentFiles(
+          files.map((file) => ({
+            path: file.path,
+            name: file.path.split(/[/\\]/).pop() || file.path,
+            lastTouchedLabel: formatRelativeTime(Math.floor(file.lastTouched / 1000)),
+          }))
+        );
+      })
+      .catch(() => setRecentFiles([]));
+  }, [showCreateModal, isPro]);
 
   const handleRecluster = async () => {
     setIsReclustering(true);
@@ -51,11 +94,30 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
     }
   };
 
-  const handleCreateWorkstream = async (name: string, description?: string) => {
-    const result = await createWorkstream(name, description);
+  const handleCreateWorkstream = async (name: string, description?: string, selectedFilePaths: string[] = []) => {
+    let eventIds: string[] | undefined;
+    if (selectedFilePaths.length > 0) {
+      const events = await tauri.getActivity(
+        { start: Date.now() - 7 * 24 * 60 * 60 * 1000 },
+        ['file_opened', 'result_clicked', 'result_shown', 'file_revealed'],
+        2000
+      );
+      const pathToEventId = new Map<string, string>();
+      for (const event of events) {
+        if (!pathToEventId.has(event.filePath)) {
+          pathToEventId.set(event.filePath, event.id);
+        }
+      }
+      eventIds = selectedFilePaths
+        .map((path) => pathToEventId.get(path))
+        .filter((id): id is string => Boolean(id));
+    }
+
+    const result = await createWorkstream(name, description, eventIds);
     if (!result) {
       throw new Error('Failed to create workstream');
     }
+    onSelectWorkstream?.(result.id);
   };
 
   // Non-Pro users see locked state
@@ -101,6 +163,11 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
           <p className="text-2xs text-fg-ghost">
             Auto-clustered sessions from your searches and file opens. Use them to jump back into a task in one click.
           </p>
+          {currentWorkstream && (
+            <p className="text-2xs text-accent-teal">
+              Viewing: {currentWorkstream.name}
+            </p>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -127,13 +194,51 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
             )}
           >
             <Plus className="w-3.5 h-3.5" />
-            New
+            New from Recent
           </button>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-auto p-4">
+        <div className="mb-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-lg border border-white/8 bg-graphite-1/45 p-3">
+            <p className="text-2xs text-fg-ghost uppercase tracking-[0.12em]">Workstreams</p>
+            <p className="mt-1 text-lg font-semibold text-porcelain">{workstreams.length}</p>
+            <p className="text-2xs text-fg-dim">{workstreamMetrics.autoCount} auto, {workstreamMetrics.manualCount} manual</p>
+          </div>
+          <div className="rounded-lg border border-white/8 bg-graphite-1/45 p-3">
+            <p className="text-2xs text-fg-ghost uppercase tracking-[0.12em]">Activity Signals</p>
+            <p className="mt-1 text-lg font-semibold text-porcelain">{workstreamMetrics.actionCount}</p>
+            <p className="text-2xs text-fg-dim">Search + open actions grouped</p>
+          </div>
+          <div className="rounded-lg border border-white/8 bg-graphite-1/45 p-3">
+            <p className="text-2xs text-fg-ghost uppercase tracking-[0.12em]">Files Linked</p>
+            <p className="mt-1 text-lg font-semibold text-porcelain">{workstreamMetrics.uniqueFiles}</p>
+            <p className="text-2xs text-fg-dim">Unique files across clusters</p>
+          </div>
+          <div className="rounded-lg border border-white/8 bg-graphite-1/45 p-3">
+            <p className="text-2xs text-fg-ghost uppercase tracking-[0.12em]">Active (24h)</p>
+            <p className="mt-1 text-lg font-semibold text-porcelain">{workstreamMetrics.activeLast24h}</p>
+            <p className="text-2xs text-fg-dim">Recently active workstreams</p>
+          </div>
+        </div>
+
+        <div className="mb-4 grid gap-2 md:grid-cols-2">
+          <div className="rounded-lg border border-white/8 bg-graphite-1/45 p-3">
+            <p className="text-xs font-semibold text-fg-secondary mb-1">How Files Get Added</p>
+            <p className="text-2xs text-fg-dim">
+              Every opened result and file action is tracked locally. Re-cluster regenerates sessions, while New from Recent lets you seed your own stream.
+            </p>
+          </div>
+          <div className="rounded-lg border border-white/8 bg-graphite-1/45 p-3">
+            <p className="text-xs font-semibold text-fg-secondary mb-1">Connections + Recommendations</p>
+            <p className="text-2xs text-fg-dim">
+              Today view shows connection maps, suggested next files, and folder-move recommendations inferred from repeated behavior.
+            </p>
+          </div>
+        </div>
+
         {isLoading && workstreams.length === 0 ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-pulse text-fg-dim">Loading workstreams...</div>
@@ -151,7 +256,7 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
               Start searching and opening files to create workstreams automatically
             </p>
             <p className="mt-2 text-2xs text-fg-ghost max-w-md">
-              Tip: run several searches, open 3+ files, then click <span className="text-fg-secondary">Re-cluster</span>.
+              Tip: run several searches, open 3+ files, then click <span className="text-fg-secondary">Re-cluster</span> or create one from recent files.
             </p>
           </div>
         ) : (
@@ -169,6 +274,7 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
                     workstream={workstream}
                     onSelect={() => onSelectWorkstream?.(workstream.id)}
                     onOpenFile={onOpenFile}
+                    isActive={currentWorkstream?.id === workstream.id}
                   />
                 </motion.div>
               ))}
@@ -182,6 +288,7 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSubmit={handleCreateWorkstream}
+        recentFiles={recentFiles}
       />
     </div>
   );

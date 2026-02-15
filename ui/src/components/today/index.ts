@@ -8,3 +8,4 @@ export { RecentlyTouched } from './RecentlyTouched';
 export { SuggestedNext } from './SuggestedNext';
 export { PinnedSection } from './PinnedSection';
 export { TodayEmptyState } from './TodayEmptyState';
+export { ConnectionMap } from './ConnectionMap';

@@ -7,8 +7,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { PageGlow } from "@/components/effects/PageGlow";
-import { IxosDemoWindow, STEP_LABELS } from "@/components/hero/IxosDemoWindow";
-import { IxosLogo3D } from "@/components/hero/IxosLogo3D";
+import { IxosDemoWindow, STEP_LABELS, type DemoMode } from "@/components/hero/IxosDemoWindow";
 import {
   MemoryWipe,
   QueryDecomposition,
@@ -82,7 +81,7 @@ const STATUS_MESSAGES = [
   "Streaming ranked files to the interface",
 ];
 
-const PHASE_ACCENTS: AccentColor[] = ["amber", "teal", "teal", "violet", "teal"];
+const PHASE_ACCENTS: AccentColor[] = ["amber", "teal", "teal", "amber", "teal"];
 
 const CARD_ENTRY_CONFIG = [
   { delay: 0.04, x: 56, y: 28 }, // left-top
@@ -112,9 +111,16 @@ function easeOutCubic(value: number) {
   return 1 - Math.pow(1 - value, 3);
 }
 
+function modeToAccent(mode: DemoMode): AccentColor {
+  if (mode === "memory") return "amber";
+  if (mode === "deep-search") return "violet";
+  return "teal";
+}
+
 export function HeroPipeline() {
   const sectionRef = useRef<HTMLElement>(null);
   const progressRafRef = useRef<number | null>(null);
+  const activeStepRef = useRef<number | null>(null);
   const latestProgressRef = useRef(0);
   const [isDesktop, setIsDesktop] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
@@ -132,6 +138,7 @@ export function HeroPipeline() {
   });
   const [progress, setProgress] = useState(0);
   const [mobileStep, setMobileStep] = useState(0);
+  const [demoMode, setDemoMode] = useState<DemoMode>("local");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -165,14 +172,13 @@ export function HeroPipeline() {
       trigger: sectionRef.current,
       start: "top top",
       // Reduced multiplier prevents section over-pin and card clipping on shorter viewports.
-      end: isLowPowered ? "+=245%" : "+=335%",
+      end: isLowPowered ? "+=175%" : "+=200%",
       pin: true,
       pinSpacing: true,
       pinType: "fixed",
-      pinReparent: true,
-      scrub: isLowPowered ? 0.62 : 0.34,
-      anticipatePin: 1.5,
-      fastScrollEnd: true,
+      pinReparent: false,
+      scrub: isLowPowered ? 0.9 : 0.72,
+      anticipatePin: 1,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
         publishProgress(self.progress);
@@ -217,29 +223,42 @@ export function HeroPipeline() {
     const narrative = reducedFx ? mapProgress(progress, 0.04, 0.98) : mapProgress(progress, 0.46, 0.9);
     const exit = reducedFx ? 0 : easeOutCubic(mapProgress(progress, 0.92, 1));
 
-    const heroOpacity = reducedFx ? 0 : clamp01(1 - mapProgress(progress, 0.22, 0.4));
+    const heroOpacity = reducedFx ? 0 : clamp01(1 - mapProgress(progress, 0.5, 0.78));
     const heroDrop = mapProgress(progress, 0.16, 0.46);
-    const heroShiftY = reducedFx ? 0 : -18 + intro * 12 + heroDrop * 170 - exit * 8;
+    const heroShiftY = reducedFx ? 0 : -36 + intro * 10 + heroDrop * 170 - exit * 8;
 
     const demoLift = reducedFx ? 0 : 214 - entry * 176 - mapProgress(progress, 0.62, 0.9) * 34;
     const demoScale = reducedFx ? 1 : 0.986 + entry * 0.028;
     const headerOpacity = reducedFx ? 1 : clamp01(mapProgress(progress, 0.26, 0.48));
-    const heroMorph = reducedFx ? 1 : mapProgress(progress, 0.16, 0.48);
-    const titleMorph = reducedFx ? 1 : mapProgress(progress, 0.24, 0.52);
+    const heroMorph = reducedFx ? 1 : mapProgress(progress, 0.28, 0.56);
+    const titleMorph = reducedFx ? 1 : mapProgress(progress, 0.34, 0.58);
 
     let activeStep: number | null = null;
     // Keep autonomous hero loop active longer; switch to scroll-guided mode
     // only once the pipeline frame has clearly taken over.
-    if (entry > 0.5) {
-      if (narrative < 1) {
-        activeStep = Math.min(PHASES.length - 1, Math.floor(narrative * PHASES.length));
+    if (entry > 0.66) {
+      const rawStep =
+        narrative < 1 ? Math.min(PHASES.length - 1, Math.floor(narrative * PHASES.length)) : PHASES.length - 1;
+      const normalizedPosition = narrative * PHASES.length;
+      const previousStep = activeStepRef.current;
+      if (previousStep === null) {
+        activeStep = rawStep;
       } else {
-        activeStep = PHASES.length - 1;
+        const hysteresis = 0.22;
+        if (rawStep > previousStep && normalizedPosition >= (previousStep + 1) + hysteresis) {
+          activeStep = rawStep;
+        } else if (rawStep < previousStep && normalizedPosition <= previousStep - hysteresis) {
+          activeStep = rawStep;
+        } else {
+          activeStep = previousStep;
+        }
       }
     }
 
+    activeStepRef.current = activeStep;
+
     // When in hero stage (before pipeline cards appear), pass null to allow autonomous loop
-    const demoStep = activeStep;
+    const demoStep = entry > 0.66 ? activeStep : null;
 
     return {
       entry,
@@ -258,13 +277,10 @@ export function HeroPipeline() {
 
   if (!isDesktop) {
     return (
-      <section ref={sectionRef} className="section-hero relative w-full overflow-hidden pt-28">
-        <PageGlow color="amber" />
+      <section ref={sectionRef} className="section-hero relative w-full overflow-hidden pt-[14vh]">
+        <PageGlow color={modeToAccent(demoMode) === "violet" ? "purple" : modeToAccent(demoMode)} />
         <div className="relative z-10 container mx-auto px-6 pb-20">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="mb-5 flex justify-center">
-              <IxosLogo3D />
-            </div>
+          <div className="mx-auto max-w-3xl text-center select-text">
             <div className="mb-5 inline-flex items-center gap-3 rounded-sm border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-sm">
               <span className="h-1.5 w-1.5 animate-pulse rounded-sm bg-accent-amber" />
               <span className="text-[10px] font-mono uppercase tracking-widest text-fg-muted/80">
@@ -272,15 +288,21 @@ export function HeroPipeline() {
               </span>
             </div>
 
-            <h1 className="text-4xl font-semibold leading-[1.05] tracking-tight text-fg-porcelain sm:text-5xl">
-              Ask naturally.
+            <h1 className="text-4xl font-semibold leading-[1.02] tracking-tight text-fg-porcelain sm:text-5xl">
+              The{" "}
+              <span className="relative inline-block">
+                <span className="relative z-10 text-[1.08em] font-semibold text-accent-amber">Google Search</span>
+                <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-accent-amber/50 rounded-full" />
+              </span>
               <br />
-              <span className="text-fg-muted">Recover exact files fast.</span>
+              <span className="text-fg-muted">of your computer.</span>
             </h1>
 
             <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-fg-muted/80">
-              Ixos runs query understanding, semantic ranking, and evidence extraction on-device.
-              No cloud sync. No giant background index.
+              Ask naturally, find instantly. Ixos understands{" "}
+              <span className="text-accent-teal font-medium">what you mean</span>, not just what you type &mdash;
+              all running{" "}
+              <span className="text-accent-amber font-medium">100% locally</span> on your machine.
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -293,8 +315,11 @@ export function HeroPipeline() {
                 <Link href="/download">Download Desktop</Link>
               </Button>
               <Button size="lg" variant="secondary" asChild>
-                <Link href="/docs/cli-reference">View CLI Install</Link>
+                <Link href="/docs/cli-reference#install">View CLI Install</Link>
               </Button>
+            </div>
+            <div className="mt-4 text-[11px] font-mono text-fg-muted/70">
+              curl -fsSL https://ixos.dev/install.sh | sh
             </div>
           </div>
 
@@ -309,7 +334,7 @@ export function HeroPipeline() {
               </span>
             </div>
             <div className="aspect-[16/9]">
-              <IxosDemoWindow controlledStep={mobileStep} />
+              <IxosDemoWindow controlledStep={mobileStep} onModeChange={setDemoMode} />
             </div>
           </div>
 
@@ -335,8 +360,13 @@ export function HeroPipeline() {
   const activeStep = derived.activeStep;
   const statusText =
     activeStep === null ? "Priming the local search pipeline" : STATUS_MESSAGES[activeStep];
-  const activeAccent: AccentColor = activeStep === null ? "amber" : PHASE_ACCENTS[activeStep];
-  const demoStyles = ACCENT_STYLES[activeAccent];
+  const demoStyles = ACCENT_STYLES[modeToAccent(demoMode)];
+  const latencyLabel =
+    demoMode === "deep-search"
+      ? "LATENCY < 12MS"
+      : demoMode === "memory"
+        ? "LATENCY < 3MS"
+        : "LATENCY < 2MS";
 
   return (
     <section
@@ -344,12 +374,12 @@ export function HeroPipeline() {
       className="section-hero relative h-[100dvh] w-full overflow-hidden"
       id="how-it-works"
     >
-      <PageGlow color="amber" />
+      <PageGlow color={modeToAccent(demoMode) === "violet" ? "purple" : modeToAccent(demoMode)} />
 
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-30 h-44 bg-gradient-to-b from-transparent to-bg-graphite-0" />
 
       <div
-        className="absolute inset-x-0 top-0 z-10 flex justify-center px-6 pt-[12vh]"
+        className="absolute inset-x-0 top-0 z-10 flex justify-center px-6 pt-[14vh]"
         style={{
           opacity: derived.heroOpacity * (1 - derived.exit * 0.75),
           transform: `translate3d(0, ${derived.heroShiftY}px, 0)`,
@@ -357,10 +387,7 @@ export function HeroPipeline() {
           willChange: "transform, opacity, filter",
         }}
       >
-        <div className="pointer-events-auto max-w-4xl text-center">
-          <div className="mb-5 flex justify-center">
-            <IxosLogo3D />
-          </div>
+        <div className="pointer-events-auto max-w-4xl text-center select-text">
           <div className="mb-5 inline-flex items-center gap-3 rounded-sm border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-sm">
             <span className="h-1.5 w-1.5 animate-pulse rounded-sm bg-accent-amber" />
             <span className="text-[10px] font-mono uppercase tracking-widest text-fg-muted/80">
@@ -368,15 +395,21 @@ export function HeroPipeline() {
             </span>
           </div>
 
-          <h1 className="text-4xl font-semibold leading-[1.05] tracking-tight text-fg-porcelain md:text-5xl lg:text-6xl">
-            Ask naturally.
+          <h1 className="text-4xl font-semibold leading-[0.98] tracking-tight text-fg-porcelain md:text-5xl lg:text-6xl">
+            The{" "}
+            <span className="relative inline-block">
+              <span className="relative z-10 text-[1.08em] font-semibold text-accent-amber">Google Search</span>
+              <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-accent-amber/50 rounded-full" />
+            </span>
             <br />
-            <span className="text-fg-muted">Recover exact files fast.</span>
+            <span className="text-fg-muted">of your computer.</span>
           </h1>
 
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-fg-muted/80">
-            Ixos parses intent, ranks in-memory, and streams evidence without shipping your data to
-            any cloud service.
+            Ask naturally, find instantly. Ixos understands{" "}
+            <span className="text-accent-teal font-medium">what you mean</span>, not just what you type &mdash;
+            all running{" "}
+            <span className="text-accent-amber font-medium">100% locally</span> on your machine.
           </p>
 
           <div className="mt-6 flex justify-center gap-3">
@@ -389,8 +422,11 @@ export function HeroPipeline() {
               <Link href="/download">Download Desktop</Link>
             </Button>
             <Button size="lg" variant="secondary" asChild>
-              <Link href="/docs/cli-reference">CLI Reference</Link>
+              <Link href="/docs/cli-reference#install">CLI Install</Link>
             </Button>
+          </div>
+          <div className="mt-4 text-[11px] font-mono text-fg-muted/70">
+            curl -fsSL https://ixos.dev/install.sh | sh
           </div>
         </div>
       </div>
@@ -408,7 +444,7 @@ export function HeroPipeline() {
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(270px, 24%) minmax(0, 1fr) minmax(270px, 24%)",
-              gridTemplateRows: "clamp(136px, 17vh, 194px) minmax(220px, 1fr) minmax(170px, 0.95fr) clamp(152px, 20vh, 226px)",
+              gridTemplateRows: "clamp(132px, 14vh, 190px) minmax(260px, 1.25fr) minmax(180px, 0.75fr) clamp(108px, 12vh, 156px)",
               gridTemplateAreas: `
                 "title title title"
                 "p1 demo p2"
@@ -416,12 +452,12 @@ export function HeroPipeline() {
                 "p4 p5 p3"
               `,
               gap: "clamp(14px, 1.7vw, 24px)",
-              height: "min(86vh, 1000px)",
+              height: "min(88vh, 1020px)",
               contain: "layout paint",
             }}
           >
             <div
-              className="flex flex-col items-center justify-end px-1 pb-8 text-center"
+              className="flex flex-col items-center justify-center px-1 pb-2 text-center"
               style={{
                 gridArea: "title",
                 opacity: derived.headerOpacity,
@@ -433,7 +469,7 @@ export function HeroPipeline() {
               <div className="text-[10px] font-mono uppercase tracking-[0.28em] text-accent-teal/82">
                 Engine Walkthrough
               </div>
-              <h2 className="mt-2 text-6xl font-semibold leading-[0.94] tracking-tight text-fg-porcelain">
+              <h2 className="mt-2 text-4xl md:text-5xl font-semibold leading-[0.94] tracking-tight text-fg-porcelain">
                 Search Pipeline
               </h2>
               <div className="mt-3 max-w-3xl text-sm text-fg-muted/75">
@@ -461,13 +497,13 @@ export function HeroPipeline() {
             <div
               className={cn(
                 "relative z-20 flex min-h-0 items-center justify-center",
-                activeStep === null ? "pointer-events-auto" : "pointer-events-none"
+                "pointer-events-auto"
               )}
               style={{ gridArea: "demo", contain: "layout paint" }}
             >
               <div
                 className={cn(
-                  "relative flex h-full w-full max-w-[920px] flex-col overflow-hidden rounded-xl border bg-bg-graphite-0/95 shadow-2xl",
+                  "relative flex h-full w-full max-w-[920px] flex-col overflow-hidden rounded-xl border bg-bg-graphite-0 shadow-2xl",
                   "transition-[border-color,box-shadow] duration-500",
                   demoStyles.borderActive,
                   demoStyles.shadow
@@ -491,13 +527,13 @@ export function HeroPipeline() {
                 </div>
 
                 <div className="min-h-0 flex-1">
-                  <IxosDemoWindow controlledStep={derived.demoStep ?? null} />
+                  <IxosDemoWindow controlledStep={derived.demoStep ?? null} onModeChange={setDemoMode} />
                 </div>
 
                 <div className="flex items-center justify-between border-t border-white/12 bg-bg-graphite-1 px-5 py-2.5 text-[11px] font-mono text-fg-muted/72">
                   <span>{statusText}</span>
                   <span className={cn("text-[10px] uppercase tracking-[0.18em]", demoStyles.label)}>
-                    LATENCY &lt; 2MS
+                    {latencyLabel}
                   </span>
                 </div>
               </div>
@@ -597,7 +633,7 @@ function PipelineCardWrapper({
         gridArea: area,
         zIndex: 35,
         opacity: reveal,
-        transform: `translate3d(${(1 - reveal) * config.x}px, ${(1 - reveal) * config.y - exit * 20}px, 0) scale(${0.88 + reveal * 0.12})`,
+        transform: `translate3d(${(1 - reveal) * config.x}px, ${(1 - reveal) * config.y - exit * 6}px, 0)`,
         filter: `blur(${(1 - reveal) * 6}px)`,
         pointerEvents: reveal > 0.42 ? "auto" : "none",
         willChange: "transform, opacity, filter",
@@ -664,10 +700,10 @@ function PhaseTile({
   return (
     <article
       className={cn(
-        "relative flex min-h-0 overflow-hidden rounded-2xl border bg-bg-graphite-2/92 backdrop-blur-sm transition-all duration-500",
+        "relative flex min-h-0 overflow-hidden rounded-2xl border-2 bg-bg-graphite-2/92 backdrop-blur-sm transition-all duration-500",
         compact ? "h-full items-start gap-5 p-6" : "grid h-full grid-rows-[auto_minmax(0,1fr)] gap-4 p-6",
         isActive
-          ? cn(styles.borderActive, styles.shadow, "z-10 ring-1 opacity-100 scale-[1.01]", styles.ring)
+          ? cn(styles.borderActive, styles.shadow, "z-10 ring-2 opacity-100", styles.ring)
           : isComplete
             ? "border-white/22 opacity-95"
             : "border-white/16 opacity-86",
@@ -676,6 +712,7 @@ function PhaseTile({
     >
       {isActive && (
         <>
+          <div className={cn("absolute inset-0 rounded-2xl border-2", styles.borderActive)} />
           <div className={cn("absolute inset-0 blur-2xl", styles.glow)} />
           <div className="absolute left-4 top-4 h-2.5 w-2.5 rounded-full bg-white/70 shadow-[0_0_16px_rgba(255,255,255,0.55)]" />
         </>
@@ -709,7 +746,7 @@ function PhaseTile({
       <div
         className={cn(
           "relative z-10 min-h-0",
-          compact ? "h-[126px] w-[214px] shrink-0" : "mt-1 flex h-[clamp(104px,40%,170px)] w-full items-center"
+          compact ? "h-[126px] w-[214px] shrink-0" : "mt-1 flex h-[clamp(120px,45%,200px)] w-full items-center"
         )}
       >
         {children}

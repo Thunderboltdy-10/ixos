@@ -1,5 +1,3 @@
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
 use std::sync::OnceLock;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -25,8 +23,8 @@ pub enum TimeIntent {
 #[derive(Debug, Default)]
 pub struct IntentDetector;
 
-const TEMPLATE_EMBED_DIM: usize = 64;
-const ASK_SIMILARITY_THRESHOLD: f32 = 0.65;
+const TEMPLATE_EMBED_DIM: usize = 128;
+const ASK_SIMILARITY_THRESHOLD: f32 = 0.52;
 
 const ASK_TEMPLATES: &[&str] = &[
     "what is the main config file",
@@ -39,6 +37,13 @@ const ASK_TEMPLATES: &[&str] = &[
     "show me where deep search is implemented",
     "which file defines model ids",
     "what changed in ci",
+    "where can i find meeting notes",
+    "how do i install this",
+    "why are search results different",
+    "compare these two reports",
+    "summarize this folder activity",
+    "explain how this works",
+    "list files related to onboarding",
 ];
 
 impl IntentDetector {
@@ -47,31 +52,44 @@ impl IntentDetector {
     }
 
     pub fn detect_intent(&self, query: &str) -> Option<QueryIntent> {
-        let lower = query.trim().to_lowercase();
-        if lower.starts_with("who ") || lower.starts_with("who's ") {
+        let normalized = normalize_text(query);
+        let tokens: Vec<&str> = normalized.split_whitespace().collect();
+        if tokens.is_empty() {
+            return None;
+        }
+
+        let prefix = &tokens[..tokens.len().min(3)];
+        let matches = |candidates: &[&str], max_distance: usize| {
+            prefix
+                .iter()
+                .any(|token| fuzzy_equals_any(token, candidates, max_distance))
+        };
+
+        if matches(&["who", "whos"], 1) {
             return Some(QueryIntent::WhoQuestion);
         }
-        if lower.starts_with("when ") || lower.starts_with("when was ") {
+        if matches(&["when"], 1) {
             return Some(QueryIntent::WhenQuestion);
         }
-        if lower.starts_with("where ") || lower.starts_with("where is ") {
+        if matches(&["where", "wheres"], 1) {
             return Some(QueryIntent::WhereQuestion);
         }
-        if lower.starts_with("what ") || lower.starts_with("what is ") {
+        if matches(&["what", "whats", "which"], 1) {
             return Some(QueryIntent::WhatQuestion);
         }
-        if lower.starts_with("how ") || lower.starts_with("how to ") {
+        if matches(&["how", "hows"], 1) {
             return Some(QueryIntent::HowQuestion);
         }
-        if lower.starts_with("why ") || lower.starts_with("why is ") {
+        if matches(&["why", "whys"], 1) {
             return Some(QueryIntent::WhyQuestion);
         }
-        if lower.starts_with("find ") || lower.starts_with("find my ") {
+        if matches(&["find", "locate", "list", "compare"], 1) {
             return Some(QueryIntent::FindRequest);
         }
-        if lower.starts_with("show ") || lower.starts_with("show me ") {
+        if matches(&["show", "summarize", "explain"], 1) {
             return Some(QueryIntent::ShowRequest);
         }
+
         None
     }
 
@@ -79,10 +97,10 @@ impl IntentDetector {
     ///
     /// Fast path:
     /// - explicit question marker (`?`)
-    /// - direct question/request prefixes
+    /// - direct question/request prefixes with typo tolerance
     ///
     /// Secondary path:
-    /// - lightweight embedding similarity against question templates
+    /// - character n-gram embedding similarity against question templates
     pub fn should_activate_ask_mode(&self, query: &str) -> bool {
         let trimmed = query.trim();
         if trimmed.is_empty() {
@@ -91,6 +109,15 @@ impl IntentDetector {
 
         let lower = trimmed.to_lowercase();
         if lower.contains('?') || self.detect_intent(trimmed).is_some() {
+            return true;
+        }
+
+        if lower.starts_with("can you ")
+            || lower.starts_with("could you ")
+            || lower.starts_with("please ")
+            || lower.starts_with("i need to know ")
+            || lower.starts_with("help me find ")
+        {
             return true;
         }
 
@@ -148,21 +175,69 @@ fn ask_template_embeddings() -> &'static Vec<Vec<f32>> {
 }
 
 fn template_embed(text: &str) -> Vec<f32> {
+    let normalized = normalize_text(text);
     let mut vector = vec![0.0_f32; TEMPLATE_EMBED_DIM];
-    for token in tokenize(text) {
-        let mut hasher = DefaultHasher::new();
-        token.hash(&mut hasher);
-        let idx = (hasher.finish() as usize) % TEMPLATE_EMBED_DIM;
+
+    for trigram in char_ngrams(&normalized, 3) {
+        let idx = stable_hash(&trigram) % TEMPLATE_EMBED_DIM;
         vector[idx] += 1.0;
     }
+
+    for token in normalized.split_whitespace() {
+        let idx = stable_hash(token) % TEMPLATE_EMBED_DIM;
+        vector[idx] += 0.5;
+    }
+
     normalize_l2(&mut vector);
     vector
 }
 
-fn tokenize(text: &str) -> impl Iterator<Item = String> + '_ {
-    text.split(|c: char| !c.is_ascii_alphanumeric())
-        .filter(|t| !t.is_empty())
-        .map(|t| t.to_lowercase())
+fn char_ngrams(input: &str, n: usize) -> Vec<String> {
+    if input.is_empty() || n == 0 {
+        return Vec::new();
+    }
+
+    let padded = format!(" {} ", input);
+    let chars: Vec<char> = padded.chars().collect();
+    if chars.len() < n {
+        return vec![padded];
+    }
+
+    (0..=chars.len() - n)
+        .map(|idx| chars[idx..idx + n].iter().collect())
+        .collect()
+}
+
+fn normalize_text(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut prev_space = false;
+    for ch in text.chars() {
+        let normalized = if ch.is_ascii_alphanumeric() {
+            ch.to_ascii_lowercase()
+        } else {
+            ' '
+        };
+        if normalized == ' ' {
+            if prev_space {
+                continue;
+            }
+            prev_space = true;
+            out.push(' ');
+        } else {
+            prev_space = false;
+            out.push(normalized);
+        }
+    }
+    out.trim().to_string()
+}
+
+fn stable_hash(text: &str) -> usize {
+    let mut hash: usize = 2166136261;
+    for b in text.as_bytes() {
+        hash ^= *b as usize;
+        hash = hash.wrapping_mul(16777619);
+    }
+    hash
 }
 
 fn normalize_l2(vector: &mut [f32]) {
@@ -180,6 +255,39 @@ fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
         return 0.0;
     }
     a.iter().zip(b.iter()).map(|(x, y)| x * y).sum::<f32>()
+}
+
+fn fuzzy_equals_any(token: &str, candidates: &[&str], max_distance: usize) -> bool {
+    candidates
+        .iter()
+        .any(|candidate| levenshtein_distance(token, candidate) <= max_distance)
+}
+
+fn levenshtein_distance(a: &str, b: &str) -> usize {
+    if a == b {
+        return 0;
+    }
+    if a.is_empty() {
+        return b.chars().count();
+    }
+    if b.is_empty() {
+        return a.chars().count();
+    }
+
+    let b_chars: Vec<char> = b.chars().collect();
+    let mut prev: Vec<usize> = (0..=b_chars.len()).collect();
+    let mut curr = vec![0_usize; b_chars.len() + 1];
+
+    for (i, a_ch) in a.chars().enumerate() {
+        curr[0] = i + 1;
+        for (j, b_ch) in b_chars.iter().enumerate() {
+            let cost = if a_ch == *b_ch { 0 } else { 1 };
+            curr[j + 1] = (prev[j + 1] + 1).min(curr[j] + 1).min(prev[j] + cost);
+        }
+        std::mem::swap(&mut prev, &mut curr);
+    }
+
+    prev[b_chars.len()]
 }
 
 fn extract_prefixed_value(haystack: &str, prefix: &str) -> Option<String> {

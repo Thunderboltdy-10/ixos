@@ -55,7 +55,7 @@ export function ResumeSection({
             'hover:bg-accent-teal/20 transition-colors'
           )}
         >
-          Open Workstream
+          View Workstream Context
         </button>
       </div>
 

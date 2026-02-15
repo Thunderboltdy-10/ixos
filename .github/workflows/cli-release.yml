@@ -19,6 +19,9 @@ jobs:
           - runner: macos-14
             target_os: macos
             target_arch: arm64
+          - runner: macos-13
+            target_os: macos
+            target_arch: x86_64
           - runner: windows-latest
             target_os: windows
             target_arch: x86_64
@@ -51,6 +54,17 @@ jobs:
           tar -czf "dist/$ARCHIVE" -C dist/pkg .
           shasum -a 256 "dist/$ARCHIVE" > "dist/$ARCHIVE.sha256"
 
+      - name: Smoke test packaged Unix artifact
+        if: matrix.target_os != 'windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARCHIVE="dist/ixos-${VERSION}-${{ matrix.target_os }}-${{ matrix.target_arch }}.tar.gz"
+          mkdir -p dist/smoke
+          tar -xzf "$ARCHIVE" -C dist/smoke
+          test -x dist/smoke/ixos
+          dist/smoke/ixos --version
+
       - name: Package Windows artifact
         if: matrix.target_os == 'windows'
         shell: pwsh
@@ -63,6 +77,21 @@ jobs:
           Compress-Archive -Path $files -DestinationPath (Join-Path "dist" $archive) -Force
           $hash = (Get-FileHash -Path (Join-Path "dist" $archive) -Algorithm SHA256).Hash.ToLower()
           Set-Content -Path (Join-Path "dist" "$archive.sha256") -Value "$hash  $archive"
+
+      - name: Smoke test packaged Windows artifact
+        if: matrix.target_os == 'windows'
+        shell: pwsh
+        run: |
+          $archive = Join-Path "dist" "ixos-$env:VERSION-${{ matrix.target_os }}-${{ matrix.target_arch }}.zip"
+          $smokeDir = Join-Path "dist" "smoke"
+          New-Item -ItemType Directory -Path $smokeDir -Force | Out-Null
+          Expand-Archive -Path $archive -DestinationPath $smokeDir -Force
+          & (Join-Path $smokeDir "ixos.exe") --version
+
+      - name: Validate installer scripts syntax
+        shell: bash
+        run: |
+          bash -n scripts/install.sh
 
       - name: Upload assets to GitHub Release
         uses: softprops/action-gh-release@v2

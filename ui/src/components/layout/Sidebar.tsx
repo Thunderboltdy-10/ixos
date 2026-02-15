@@ -326,12 +326,12 @@ export function Sidebar({
       )}
 
       {/* Guide button */}
-      <div className="px-3 py-2.5 border-t border-stroke-hairline">
+      <div className="px-3 py-1.5 border-t border-stroke-hairline">
         <button
           type="button"
           onClick={() => onOpenGuide?.()}
           className={cn(
-            'w-full py-2.5 px-3.5 rounded-lg text-left border border-transparent hover:border-white/8',
+            'w-full py-1.5 px-3 rounded-lg text-left border border-transparent hover:border-white/8',
             'flex items-center gap-2',
             'text-fg-dim hover:text-porcelain hover:bg-graphite-2/65',
             'transition-colors duration-150 cursor-pointer'

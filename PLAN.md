@@ -218,3 +218,119 @@
   1. Remove remaining internal `journalist` symbol debt in Tauri/UI internals.
   2. Add release-asset smoke checks in CI (post-upload verification).
   3. Run full remote GitHub Actions validation on branch and capture run links in `/reports`.
+
+## STATE SNAPSHOT (Landing/Desktop follow-up completion, 2026-02-14)
+- Date: 2026-02-14
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Ripgrep I/O variance on large trees
+  2. Ranking tail p95 spikes on specific query classes
+  3. Desktop web bundle size (`ui` chunk >500kB)
+- Current pass validation (2026-02-14 follow-up):
+  - `cargo test test_unknown_cache_mode_is_preserved_on_load -- --nocapture`: PASS
+  - `cargo test test_cache_mode_aliases_are_normalized -- --nocapture`: PASS
+  - `cargo test -p ixos-app parse_cache_mode_rejects_legacy_aliases -- --nocapture`: PASS
+  - `npm ci --prefer-offline --no-audit`: PASS
+  - `npm run --workspace ui build`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+- What is next (top 3 tasks):
+  1. Run GitHub-hosted CI workflows and capture links/artifacts in `/reports`.
+  2. Decide on single-lockfile vs multi-lockfile strategy for monorepo to remove Next root warning.
+  3. Continue visual QA on landing + desktop for final branding parity against the desktop app.
+
+## STATE SNAPSHOT (Landing hero correction pass, 2026-02-14)
+- Date: 2026-02-14
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Ripgrep I/O variance on large trees
+  2. Ranking tail p95 spikes on specific query classes
+  3. Desktop web bundle size (`ui` chunk >500kB)
+- Current pass validation (2026-02-14 hero follow-up):
+  - `npm run --workspace ixos-site build`: PASS
+  - `npm run --workspace ui build`: PASS
+- What is next (top 3 tasks):
+  1. Execute tagged remote workflow smoke (`v*` and `cli-v*`) and capture run URLs in `/reports`.
+  2. If needed, add sticky-layout fallback for hero on low-power devices.
+  3. Continue landing/desktop visual parity QA and remaining interaction polish.
+
+## STATE SNAPSHOT (UI/Pro Experience Completion, 2026-02-15)
+- Date: 2026-02-15
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Ripgrep I/O variance on large trees
+  2. Ranking tail p95 spikes on specific query classes
+  3. Desktop/landing asset size + lockfile-root warnings
+- Current pass validation (2026-02-15):
+  - `npm --prefix ui run build`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+  - `cargo test`: PASS
+  - `cargo clippy -q`: PASS with warnings
+  - `cargo test -q ixos_rank::progressive::tests::test_ask_mode_respects_selected_model`: PASS
+  - `cargo check -q`: PASS
+- Artifact:
+  - `reports/ui_pro_features_overhaul_2026-02-15.md`
+- What is next (top 3 tasks):
+  1. Run live manual QA on desktop auth/search/today/workstreams with real file trees and capture UX evidence screenshots/GIFs.
+  2. Add Ask Mode trigger-reason telemetry and threshold tuning loop from real user queries.
+  3. Extract shared dropdown/design primitives between desktop UI and landing demo for guaranteed parity.
+
+## STATE SNAPSHOT (Pro UX + release hardening, 2026-02-15)
+- Date: 2026-02-15
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Ripgrep I/O variance on large trees
+  2. Ranking tail p95 spikes on specific query classes
+  3. Workspace-wide clippy lint debt under strict `-D warnings`
+- Current pass validation (2026-02-15):
+  - `npm --prefix ui run build`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+  - `cargo test -q`: PASS (`468 passed; 0 failed; 6 ignored`)
+  - `bash -n scripts/install.sh`: PASS
+  - PowerShell parser check for `scripts/install.ps1`: PASS
+  - `./scripts/install.ps1 -Tag cli-v0.0.0 -AssetUrl <local zip> -SkipPathPersist`: PASS
+  - PATH smoke: `ixos --version` + `ixos search ...`: PASS
+- What is next (top 3 tasks):
+  1. Run hosted GitHub Actions for `cli-v*` and `v*` tags to validate release publishing with real secrets/signing.
+  2. Add installer default-repo metadata smoke in CI to prevent slug regressions.
+  3. Start dedicated clippy cleanup pass if strict warning-free Rust gate is required for release policy.
+
+## STATE SNAPSHOT (Landing interaction correction pass, 2026-02-15)
+- Date: 2026-02-15
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Landing scroll choreography tuning under diverse viewport/device profiles
+  2. Ripgrep I/O variance on large trees
+  3. Workspace-wide strict clippy lint debt (`-D warnings`)
+- Current pass validation (2026-02-15):
+  - `npm --prefix ixos-site run build`: PASS
+  - `npm --prefix ui run build`: PASS
+  - `cargo test -q`: PASS (`468 passed; 0 failed; 6 ignored`)
+- What is next (top 3 tasks):
+  1. Manual visual QA pass on hero/pipeline layering + demo interaction at desktop breakpoints.
+  2. Fine-tune ScrollTrigger thresholds only if residual flicker remains in QA recordings.
+  3. Continue Pro feature clarity iteration using user feedback from Today/Workstreams adoption.

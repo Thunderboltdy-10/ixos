@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Zap, Shield, Cpu, Database, FileSearch, Layers, Gauge, Keyboard, ChevronRight, ChevronLeft } from 'lucide-react';
+import { BookOpen, Zap, Shield, Cpu, Database, FileSearch, Layers, Gauge, Keyboard, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -41,6 +41,26 @@ const sections = [
       'Ixos Flash: fastest Model2Vec search for instant feedback.',
       'Auto: Flash + Pro refinement on ambiguous queries.',
       'Ixos Pro: always runs the highest quality rerank.',
+    ],
+  },
+  {
+    title: 'Ask Mode (Pro)',
+    icon: Sparkles,
+    items: [
+      'Ask Mode is activated by question intent (not only question marks).',
+      'Typo-tolerant intent detection catches imperfect prompts.',
+      'Results emphasize evidence passages and answer cards with confidence.',
+      'If Pro is unavailable, Ixos falls back to standard semantic search.',
+    ],
+  },
+  {
+    title: 'Today + Workstreams (Pro)',
+    icon: Layers,
+    items: [
+      'Today summarizes recent file activity and suggested next files.',
+      'Workstreams are built from local search/open events and can be seeded manually.',
+      'Connection maps visualize how files relate across folders.',
+      'Move recommendations appear when repeat behavior suggests a better folder structure.',
     ],
   },
   {

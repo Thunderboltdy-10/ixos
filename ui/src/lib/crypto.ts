@@ -2,6 +2,7 @@
  * Cryptographic utilities for encrypting local data
  * Uses Web Crypto API with AES-256-GCM for authenticated encryption
  */
+import { invoke } from '@tauri-apps/api/core';
 
 const SALT = 'ixos-v1-salt-2026';
 const ITERATIONS = 100000;
@@ -107,7 +108,6 @@ async function getLegacyMachineId(): Promise<string> {
 export async function getMachineId(): Promise<string> {
   if (typeof window !== 'undefined' && '__TAURI__' in window) {
     try {
-      const { invoke } = await import('@tauri-apps/api/core');
       const deviceId = await invoke<string>('get_device_id');
       if (deviceId) return deviceId;
     } catch {

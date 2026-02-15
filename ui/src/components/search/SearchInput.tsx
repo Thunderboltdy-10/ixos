@@ -4,14 +4,13 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { FolderPicker } from './FolderPicker';
 import { ModeSwitcher, type SearchMode } from './ModeSwitcher';
-import { ModelSwitcher, type ModelType } from './ModelSwitcher';
 import { QualitySwitcher } from './QualitySwitcher';
 import { SearchSuggestions } from './SearchSuggestions';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useStarredStore, type HistorySuggestion } from '@/stores/starredStore';
 import { useSearchStore } from '@/stores/searchStore';
 import { useLayoutStore } from '@/stores/layoutStore';
-import type { SearchMode as QualityMode } from '@/lib/types';
+import type { SearchMode as QualityMode, ModelType } from '@/lib/types';
 import { invoke } from '@tauri-apps/api/core';
 import { SearchBar } from '@ixos/ui';
 import { useAuthStore } from '@/stores/authStore';
@@ -53,6 +52,7 @@ export function SearchInput({
   const hasSearchIntent = useSearchStore((s) => s.hasSearchIntent);
   const restoreFromHistory = useSearchStore((s) => s.restoreFromHistory);
   const searchPhase = useSearchStore((s) => s.phase);
+  const isAskModeActive = useSearchStore((s) => s.isAskModeActive);
   const setSearchBarBox = useLayoutStore((s) => s.setSearchBarBox);
   const entitlement = useAuthStore((s) => s.entitlement);
   const proStatus = useAuthStore((s) => s.proStatus);
@@ -64,12 +64,11 @@ export function SearchInput({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchBarRef = useRef<HTMLDivElement>(null);
-  const preloadedModels = useRef(new Set<ModelType>());
+  const preloadedModels = useRef(new Set<string>());
 
   const modelType = (config?.search?.modelType || 'ixos-flash-v2') as ModelType;
   const proModelType = (config?.search?.proModelType || 'ixos-pro-v2') as ModelType;
   const qualityMode = (config?.search?.searchMode || 'auto') as QualityMode;
-  const selectedModel = qualityMode === 'pro' ? proModelType : modelType;
   const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
   const proLocked = !isPro;
 
@@ -100,7 +99,29 @@ export function SearchInput({
     },
   } as const;
 
+  const qualityPalette = {
+    flash: {
+      accent: 'var(--accent-amber)',
+      glow: 'rgba(246, 185, 76, 0.18)',
+      glowStrong: 'rgba(246, 185, 76, 0.36)',
+      rgb: '246, 185, 76',
+    },
+    auto: {
+      accent: 'var(--accent-teal)',
+      glow: 'rgba(20, 184, 166, 0.18)',
+      glowStrong: 'rgba(20, 184, 166, 0.36)',
+      rgb: '20, 184, 166',
+    },
+    pro: {
+      accent: 'var(--accent-violet)',
+      glow: 'rgba(124, 92, 255, 0.2)',
+      glowStrong: 'rgba(124, 92, 255, 0.38)',
+      rgb: '124, 92, 255',
+    },
+  } as const;
+
   const activePalette = modePalette[mode];
+  const activeQuality = qualityPalette[qualityMode];
   const searchBarTone = mode === 'native-cache' ? 'cache' : mode === 'ephemeral' ? 'jit' : 'journalist';
   const safeInvoke = useCallback(async <T,>(cmd: string, args?: any): Promise<T | null> => {
     try {
@@ -152,19 +173,10 @@ export function SearchInput({
     }
   };
 
-  const handleModelChange = async (model: ModelType) => {
-    if (!config) return;
-    const isProModel = model.startsWith('ixos-pro');
-    await updateConfig({
-      search: {
-        ...config.search,
-        ...(isProModel ? { proModelType: model } : { modelType: model }),
-      },
-    });
-  };
-
-  const shouldShowAskModeIndicator =
+  const heuristicAskIntent =
     value.trim().endsWith('?') || /^(who|what|when|where|how|why|whats|wheres|hows|find|show)\s/i.test(value);
+  const shouldShowAskModeIndicator = isPro && (isAskModeActive || heuristicAskIntent);
+  const shouldShowAskModeLocked = !isPro && heuristicAskIntent;
 
   useEffect(() => {
     if (!config) return;
@@ -180,6 +192,12 @@ export function SearchInput({
       safeInvoke('preload_model', { modelType: target });
     });
   }, [config, modelType, proModelType, qualityMode, safeInvoke]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    document.documentElement.style.setProperty('--quality-color', activeQuality.accent);
+    document.documentElement.style.setProperty('--quality-glow-rgb', activeQuality.rgb);
+  }, [activeQuality.accent, activeQuality.rgb]);
 
   // Fetch suggestions when value changes
   // Show suggestions when:
@@ -290,7 +308,7 @@ export function SearchInput({
         <motion.div
           className="absolute -inset-10 rounded-[28px] pointer-events-none blur-3xl"
           style={{
-            background: `radial-gradient(circle at 50% 45%, ${activePalette.glow} 0%, transparent 70%)`,
+            background: `radial-gradient(circle at 38% 44%, ${activePalette.glowStrong} 0%, transparent 58%), radial-gradient(circle at 66% 62%, ${activeQuality.glow} 0%, transparent 64%)`,
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: hasSearchIntent || activeSearch ? 0.9 : 0 }}
@@ -300,7 +318,7 @@ export function SearchInput({
         <motion.div
           className="absolute -inset-[2px] rounded-2xl pointer-events-none"
           style={{
-            background: `linear-gradient(135deg, ${activePalette.accentSoft} 0%, ${activePalette.accentFade} 100%)`,
+            background: `linear-gradient(135deg, ${activePalette.accentSoft} 0%, ${activePalette.accentFade} 62%, ${activeQuality.glow} 100%)`,
           }}
           initial={{ opacity: 0 }}
           animate={{
@@ -318,9 +336,9 @@ export function SearchInput({
             animate={{
               opacity: [0.6, 0.3, 0.6],
               boxShadow: [
-                `0 0 40px ${activePalette.glowStrong}, 0 0 80px ${activePalette.glow}`,
-                `0 0 20px ${activePalette.glow}, 0 0 40px ${activePalette.accentFade}`,
-                `0 0 40px ${activePalette.glowStrong}, 0 0 80px ${activePalette.glow}`
+                `0 0 40px ${activePalette.glowStrong}, 0 0 72px ${activePalette.glow}, 0 0 32px ${activeQuality.glowStrong}`,
+                `0 0 20px ${activePalette.glow}, 0 0 40px ${activePalette.accentFade}, 0 0 22px ${activeQuality.glow}`,
+                `0 0 40px ${activePalette.glowStrong}, 0 0 72px ${activePalette.glow}, 0 0 32px ${activeQuality.glowStrong}`,
               ]
             }}
             transition={{
@@ -363,6 +381,7 @@ export function SearchInput({
                     <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-accent-violet/10 border border-accent-violet/20 cursor-help">
                       <span className="w-1.5 h-1.5 rounded-full bg-accent-violet animate-pulse" />
                       <span className="text-xs font-medium text-accent-violet">Ask Mode</span>
+                      <span className="text-[9px] px-1 py-px rounded bg-accent-violet/20 text-accent-violet font-semibold tracking-[0.08em]">PRO</span>
                     </div>
 
                     {/* Tooltip */}
@@ -373,6 +392,18 @@ export function SearchInput({
                       </div>
                     </div>
                   </div>
+                )}
+                {shouldShowAskModeLocked && (
+                  <button
+                    type="button"
+                    onClick={() => window.dispatchEvent(new CustomEvent('open-pricing'))}
+                    className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-accent-violet/6 border border-accent-violet/20 hover:bg-accent-violet/12 transition-colors"
+                    title="Ask Mode is available on Pro"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent-violet/75" />
+                    <span className="text-xs font-medium text-accent-violet/80">Ask Mode</span>
+                    <span className="text-[9px] px-1 py-px rounded bg-accent-violet/18 text-accent-violet font-semibold tracking-[0.08em]">PRO</span>
+                  </button>
                 )}
 
                 {(value || activeSearch) ? (
@@ -401,8 +432,8 @@ export function SearchInput({
 
           {/* Controls row - no separator, seamless */}
           {showControls && (
-            <div className="px-4 pb-3 flex items-center gap-3 flex-wrap">
-              <div className="flex-1 min-w-[160px]">
+            <div className="px-3.5 pb-3 flex items-center justify-start gap-1.5">
+              <div className="flex-1 min-w-0">
                 <FolderPicker
                   value={directory}
                   onChange={onDirectoryChange}
@@ -412,6 +443,7 @@ export function SearchInput({
 
               <div className="flex-shrink-0">
                 <QualitySwitcher
+                  className="w-[132px]"
                   value={qualityMode}
                   onChange={handleQualityChange}
                   proLocked={proLocked}
@@ -419,14 +451,8 @@ export function SearchInput({
               </div>
 
               <div className="flex-shrink-0">
-                <ModelSwitcher
-                  value={selectedModel}
-                  onChange={handleModelChange}
-                />
-              </div>
-
-              <div className="flex-shrink-0">
                 <ModeSwitcher
+                  className="w-[126px]"
                   value={mode}
                   onChange={onModeChange}
                 />

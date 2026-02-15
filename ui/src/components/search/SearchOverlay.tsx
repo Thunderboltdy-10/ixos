@@ -4,7 +4,6 @@ import { useSearch } from '@/hooks/useSearch';
 import { SearchInput } from './SearchInput';
 import { SearchResults } from './SearchResults';
 import { SearchDeck } from './SearchDeck';
-import { JournalistBadge } from './JournalistBadge';
 import { KeyboardHints } from './KeyboardHints';
 import type { SearchMode } from './ModeSwitcher';
 import { SearchCorridor } from '@/components/visualization/SearchCorridor';
@@ -55,12 +54,6 @@ export function SearchOverlay() {
         className="w-full max-w-3xl bg-graphite-1/95 rounded-2xl shadow-lift border border-stroke-hairline overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {search.deepSearchMode && (
-          <div className="flex items-center justify-end px-5 py-3 border-b border-stroke-hairline bg-graphite-1/70">
-            <JournalistBadge />
-          </div>
-        )}
-
         <div ref={searchBarRef} className="w-full">
           <SearchInput
             value={search.query}

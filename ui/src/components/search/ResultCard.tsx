@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText, FileCode, FileCode2, FileJson, FileCog, FileSpreadsheet, Terminal,
@@ -15,6 +15,7 @@ import { usePrefetch } from '@/hooks/usePrefetch';
 import { useResultCardLayout } from '@/hooks/useLayoutSync';
 import type { MatchSignal } from '@/lib/matchClassification';
 import { useSearchStore } from '@/stores/searchStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import * as tauri from '@/lib/tauri';
 // useAnimatedCardOpacity import removed - animation system disabled
 import type {
@@ -143,8 +144,11 @@ export function ResultCard({
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const [signals, setSignals] = useState<PersonalSignals | null>(null);
+  const pointerDownRef = useRef<{ x: number; y: number } | null>(null);
+  const suppressClickRef = useRef(false);
   const { handleMouseEnter, handleMouseLeave } = usePrefetch();
   const deepSearchMode = useSearchStore((state) => state.deepSearchMode);
+  const qualityMode = useSettingsStore((state) => state.config?.search.searchMode ?? 'auto');
   const canApplyPersonalSignals = !deepSearchMode;
 
   // Color mapping based on mode - override for Ask Mode
@@ -154,8 +158,29 @@ export function ResultCard({
     journalist: { accent: '#A78BFA', bg: 'rgba(167, 139, 250, 0.08)' },
     ask: { accent: '#A78BFA', bg: 'rgba(167, 139, 250, 0.12)' }, // Ask Mode uses same purple but slightly stronger bg
   };
+  const qualityColors = {
+    flash: {
+      accent: '#F6B94C',
+      glow: 'rgba(246, 185, 76, 0.24)',
+      bg: 'rgba(246, 185, 76, 0.06)',
+      border: 'rgba(246, 185, 76, 0.18)',
+    },
+    auto: {
+      accent: '#14B8A6',
+      glow: 'rgba(20, 184, 166, 0.24)',
+      bg: 'rgba(20, 184, 166, 0.06)',
+      border: 'rgba(20, 184, 166, 0.18)',
+    },
+    pro: {
+      accent: '#A78BFA',
+      glow: 'rgba(167, 139, 250, 0.26)',
+      bg: 'rgba(167, 139, 250, 0.07)',
+      border: 'rgba(167, 139, 250, 0.2)',
+    },
+  } as const;
 
   const currentModeKey = isAskMode ? 'ask' : mode;
+  const qualityTone = qualityColors[qualityMode];
   const selectedClass = isSelected ? 'bg-graphite-2/80' : '';
 
   const iconColorClass = isSelected
@@ -196,13 +221,43 @@ export function ResultCard({
   }, [canApplyPersonalSignals, result.path]);
 
   const handleClick = () => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
+    const selection = typeof window !== 'undefined' ? window.getSelection() : null;
+    if (selection && selection.toString().trim().length > 0) {
+      return;
+    }
     onSelect();
     setExpanded(!expanded);
   };
 
   const handleDoubleClick = (e: React.MouseEvent) => {
+    const selection = typeof window !== 'undefined' ? window.getSelection() : null;
+    if (selection && selection.toString().trim().length > 0) {
+      return;
+    }
     e.preventDefault();
     onOpen();
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    pointerDownRef.current = { x: e.clientX, y: e.clientY };
+    suppressClickRef.current = false;
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    const start = pointerDownRef.current;
+    if (!start) return;
+    const dx = Math.abs(e.clientX - start.x);
+    const dy = Math.abs(e.clientY - start.y);
+    if (dx > 5 || dy > 5) {
+      suppressClickRef.current = true;
+    }
+  };
+  const preventCardToggle = (e: React.SyntheticEvent) => {
+    e.stopPropagation();
   };
 
   const handleReveal = (e: React.MouseEvent) => {
@@ -271,10 +326,14 @@ export function ResultCard({
   };
 
   // Hover classes - apply to all items
+  const qualityHoverClass =
+    qualityMode === 'flash'
+      ? 'hover:bg-accent-amber/8 hover:shadow-[0_0_12px_rgba(246,185,76,0.25)]'
+      : qualityMode === 'pro'
+        ? 'hover:bg-accent-violet/8 hover:shadow-[0_0_12px_rgba(167,139,250,0.28)]'
+        : 'hover:bg-accent-teal/8 hover:shadow-[0_0_12px_rgba(20,184,166,0.25)]';
   const hoverClass = cn(
-    !isAskMode && mode === 'ephemeral' && 'hover:bg-accent-amber/8 hover:shadow-[0_0_12px_rgba(246,185,76,0.25)]',
-    !isAskMode && mode === 'native-cache' && 'hover:bg-accent-teal/8 hover:shadow-[0_0_12px_rgba(20,184,166,0.25)]',
-    !isAskMode && mode === 'journalist' && 'hover:bg-accent-violet/8 hover:shadow-[0_0_12px_rgba(167,139,250,0.25)]',
+    !isAskMode && qualityHoverClass,
     isAskMode && 'hover:bg-accent-violet/12 hover:shadow-[0_0_15px_rgba(167,139,250,0.3)]',
   );
   const tone = isAskMode || mode === 'journalist' ? 'violet' : mode === 'ephemeral' ? 'amber' : 'teal';
@@ -306,15 +365,21 @@ export function ResultCard({
           ? `3px solid ${modeColors[currentModeKey].accent}`
           : '1px solid rgba(255, 255, 255, 0.08)',
         boxShadow: isSelected
-          ? `inset 4px 0 12px -4px ${modeColors[currentModeKey].accent}33`
+          ? `inset 4px 0 12px -4px ${modeColors[currentModeKey].accent}33, 0 0 0 1px ${qualityTone.border}, 0 0 14px ${qualityTone.glow}`
           : 'none',
+        background: isSelected
+          ? `linear-gradient(120deg, ${modeColors[currentModeKey].bg} 0%, ${qualityTone.bg} 100%)`
+          : undefined,
         opacity: animatedOpacity,
         visibility: animatedOpacity > 0 ? 'visible' : 'hidden',
         // @ts-ignore - Custom CSS variable for highlight color
         '--highlight-color': modeColors[currentModeKey].accent,
       }}
+      data-allow-context-menu="true"
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
       onMouseEnter={() => handleMouseEnter(result.path)}
       onMouseLeave={handleMouseLeave}
     >
@@ -490,8 +555,13 @@ export function ResultCard({
                     return (
                       <div className="space-y-2">
                         <div
-                          className="text-sm text-fg-muted bg-graphite-2/30 px-3 py-2 font-mono whitespace-pre-wrap leading-relaxed"
+                          data-selectable="true"
+                          className="text-sm text-fg-muted bg-graphite-2/30 px-3 py-2 font-mono whitespace-pre-wrap leading-relaxed context-snippet"
                           style={{ borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+                          onMouseDown={preventCardToggle}
+                          onClick={preventCardToggle}
+                          onDoubleClick={preventCardToggle}
+                          onContextMenu={preventCardToggle}
                         >
                           <div className="mb-1.5 text-2xs font-semibold text-accent-teal">Semantic match</div>
                           {evidence!.semanticPassage}
@@ -501,7 +571,14 @@ export function ResultCard({
                             <summary className="text-fg-dim cursor-pointer hover:text-fg-muted transition-colors">
                               Show lexical context (line {context.lineNumber})
                             </summary>
-                            <div className="mt-2">
+                            <div
+                              className="mt-2"
+                              data-selectable="true"
+                              onMouseDown={preventCardToggle}
+                              onClick={preventCardToggle}
+                              onDoubleClick={preventCardToggle}
+                              onContextMenu={preventCardToggle}
+                            >
                               <ContextSnippet context={context} mode={mode} />
                             </div>
                           </details>
@@ -511,14 +588,29 @@ export function ResultCard({
                   }
 
                   if (isValidContext(context)) {
-                    return <ContextSnippet context={context} />;
+                    return (
+                      <div
+                        data-selectable="true"
+                        onMouseDown={preventCardToggle}
+                        onClick={preventCardToggle}
+                        onDoubleClick={preventCardToggle}
+                        onContextMenu={preventCardToggle}
+                      >
+                        <ContextSnippet context={context} />
+                      </div>
+                    );
                   }
 
                   if (evidence?.semanticPassage) {
                     return (
                       <div
-                        className="text-sm text-fg-muted bg-graphite-2/30 px-3 py-2 font-mono whitespace-pre-wrap leading-relaxed"
+                        data-selectable="true"
+                        className="text-sm text-fg-muted bg-graphite-2/30 px-3 py-2 font-mono whitespace-pre-wrap leading-relaxed context-snippet"
                         style={{ borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+                        onMouseDown={preventCardToggle}
+                        onClick={preventCardToggle}
+                        onDoubleClick={preventCardToggle}
+                        onContextMenu={preventCardToggle}
                       >
                         {evidence.semanticPassage}
                       </div>
@@ -531,16 +623,21 @@ export function ResultCard({
 
               {!isRankedResult && 'snippet' in result && result.snippet && (
                 <div
+                  data-selectable="true"
                   className="p-3 bg-graphite-0 mb-4"
                   style={{ borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+                  onMouseDown={preventCardToggle}
+                  onClick={preventCardToggle}
+                  onDoubleClick={preventCardToggle}
+                  onContextMenu={preventCardToggle}
                 >
-                  <p className="text-sm text-fg-muted font-mono">{result.snippet}</p>
+                  <p className="text-sm text-fg-muted font-mono context-snippet">{result.snippet}</p>
                 </div>
               )}
 
               {isRankedResult && (
                 <div className="mb-4">
-                  <ScoreBreakdown breakdown={result.scoreBreakdown} mode={mode} />
+                  <ScoreBreakdown breakdown={result.scoreBreakdown} mode={mode} qualityMode={qualityMode} />
                   {evidence && (
                     <WhyMatched evidence={evidence} scoreBreakdown={result.scoreBreakdown} />
                   )}

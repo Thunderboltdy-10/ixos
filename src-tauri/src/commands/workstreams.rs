@@ -18,6 +18,7 @@ use ixos_protocol::security::device_identity::DeviceIdentity;
 
 use chacha20poly1305::aead::{rand_core::RngCore, Aead, KeyInit, OsRng};
 use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce};
+use std::collections::HashSet;
 use std::fs;
 use std::path::PathBuf;
 
@@ -224,6 +225,7 @@ pub fn create_workstream(
     app: tauri::AppHandle,
     request: CreateWorkstreamRequest,
     workstreams_state: State<'_, WorkstreamsState>,
+    activity_state: State<'_, ActivityState>,
     app_state: State<'_, AppState>,
 ) -> Result<WorkstreamPayload, String> {
     // Check Pro capability
@@ -232,13 +234,31 @@ pub fn create_workstream(
         return Err("Pro capability required for workstreams".into());
     }
 
-    let mut workstream = Workstream::new(request.name);
+    let mut workstream = if let Some(event_ids) = request.event_ids.clone() {
+        let event_id_set: HashSet<String> = event_ids.into_iter().collect();
+        let ledger = activity_state.ledger.lock();
+        let all_events = ledger.get_activity(None, None, Some(10_000));
+        let selected_events: Vec<&ixos_protocol::ActivityEvent> = all_events
+            .into_iter()
+            .filter(|event| event_id_set.contains(&event.id))
+            .collect();
+
+        if selected_events.is_empty() {
+            let mut ws = Workstream::new(request.name.clone());
+            ws.event_ids = event_id_set.into_iter().collect();
+            ws
+        } else {
+            let mut ws = Workstream::from_events(&selected_events, false);
+            ws.name = request.name.clone();
+            ws.is_auto = false;
+            ws
+        }
+    } else {
+        Workstream::new(request.name.clone())
+    };
+
     workstream.description = request.description;
     workstream.is_auto = false;
-
-    if let Some(event_ids) = request.event_ids {
-        workstream.event_ids = event_ids;
-    }
 
     let payload: WorkstreamPayload = (&workstream).into();
 

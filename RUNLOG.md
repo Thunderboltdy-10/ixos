@@ -932,3 +932,143 @@
   2. Finish internal symbol cleanup (`journalist` naming debt) where safe.
   3. Add post-release artifact smoke checks for desktop + CLI packages.
 - Update (2026-02-14): python scripts/run_settings_matrix.py PASS (eports/settings_matrix_2026-02-14.md).
+
+## Entry 034 - Landing/Desktop QA follow-up and CI recovery completion
+- Date/Time: 2026-02-14
+- Branch/Commit: (working tree)
+- Goal: Audit prior agent's broad landing/desktop changes, close remaining regressions, and confirm CI/build stability.
+- Commands run:
+  - `git diff -- src-tauri/src/commands/search.rs src/cli/config.rs .github/workflows/release.yml ixos-site/package.json package-lock.json`
+  - `cargo test test_unknown_cache_mode_is_preserved_on_load -- --nocapture`
+  - `cargo test test_cache_mode_aliases_are_normalized -- --nocapture`
+  - `cargo test -p ixos-app parse_cache_mode_rejects_legacy_aliases -- --nocapture`
+  - `npm ci --prefer-offline --no-audit`
+  - `npm run --workspace ui build`
+  - `cd ixos-site && npm run build`
+- Outputs saved to:
+  - `reports/ui_ci_followup_2026-02-14.md`
+- Key results:
+  - Verified deep-search mode re-enable fix in desktop progressive search path.
+  - Verified and tightened cache-mode migration behavior (legacy aliases normalized, unknown values preserved).
+  - Confirmed release workflow Node upgrade to 22 and lockfile sync issue resolved for root `npm ci`.
+  - Finished pending desktop settings/workstreams polish and fixed UI TypeScript build reliability (`ui/tsconfig.json` types scoping).
+  - Validation now green for targeted Rust tests, root install, desktop UI build, and landing build.
+- Decision: KEEP
+- Next:
+  1. Run remote GitHub Actions to confirm end-to-end workflow health on hosted runners.
+  2. If desired, remove multi-lockfile Next.js warning by standardizing lockfile strategy.
+  3. Continue remaining branding/interaction refinement based on visual QA in app and landing.
+
+## Entry 035 - Landing hero UX correction pass (3D removal, mode-synced demo accent, scroll stabilization)
+- Date/Time: 2026-02-14
+- Branch/Commit: (working tree)
+- Goal: Resolve user-reported hero regressions on landing (3D interference, accent mismatch, scroll bounce, text overlap/selectability) and clarify CLI install + CI release workflow usage.
+- Commands run:
+  - `npm run --workspace ixos-site build`
+  - `npm run --workspace ui build`
+- Outputs saved to:
+  - `reports/landing_hero_followup_2026-02-14.md`
+- Key results:
+  - 3D model removed from active landing hero flow (desktop and mobile hero).
+  - Demo accent (outline/glow/latency badge) now tracks selected mode via callback from `IxosDemoWindow`.
+  - Hero pin settings tuned to reduce up/down jitter and flicker during scroll.
+  - Hero text moved up, enlarged, and made reliably selectable by preventing demo overlay interception.
+  - CLI install docs expanded with Windows command and explicit GitHub Actions tag/release trigger guidance.
+- Decision: KEEP
+- Next:
+  1. Run remote GitHub Actions tag smoke to validate desktop + CLI publish pipelines in hosted runners.
+  2. If jitter reports persist, replace pin timeline with sticky layout fallback for low-power devices.
+  3. Continue visual parity pass against desktop app for remaining micro-spacing and color behavior.
+
+## Entry 036 - Desktop/Landing Pro-feature completion pass (Today/Workstreams/Ask Mode)
+- Date/Time: 2026-02-15
+- Branch/Commit: (working tree)
+- Goal: Complete remaining UX/functionality gaps from the large overhaul request, with priority on Ask Mode, Today, and Workstreams.
+- Commands run:
+  - `npm --prefix ui run build`
+  - `npm --prefix ixos-site run build`
+  - `cargo test`
+  - `cargo clippy -q`
+  - `cargo test -q ixos_rank::progressive::tests::test_ask_mode_respects_selected_model`
+  - `cargo check -q`
+- Outputs saved to:
+  - `reports/ui_pro_features_overhaul_2026-02-15.md`
+- Key results:
+  - Landing demo now mirrors desktop control structure (Mode + Quality, no extra model dropdown), with hover-detail dropdown footers.
+  - Today/Workstreams improved with actionable explanations, connection map, file seeding for new workstreams, and active-state action behavior.
+  - First-run mandatory onboarding now enforces two-search cold/warm walkthrough and presents measured cache delta.
+  - Ask Mode detection improved with typo-tolerant multi-token detection and broader question/imperative coverage while staying non-LLM.
+  - Ask Mode remains Pro-gated in backend + UI messaging and is explicitly represented in landing Pro sections.
+- Validation summary:
+  - `npm --prefix ui run build`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+  - `cargo test`: PASS
+  - `cargo clippy -q`: PASS with existing warnings
+  - `cargo test -q ixos_rank::progressive::tests::test_ask_mode_respects_selected_model`: PASS
+  - `cargo check -q`: PASS
+- Decision: KEEP
+- Next:
+  1. Run visual QA on desktop auth/search/workstream flows with real interaction.
+  2. Consider extracting shared dropdown primitives between desktop app and landing demo for exact UI parity.
+  3. Decide whether to tackle existing clippy warnings and UI bundle chunk warning as a dedicated stabilization pass.
+
+## Entry 037 - Pro UX completion + CLI installer hardening
+- Date/Time: 2026-02-15
+- Branch/Commit: (working tree)
+- Goal: Finish remaining Pro-value UX improvements (Today/Workstreams/Ask Mode messaging), tighten search control ergonomics, and harden CLI installer defaults for tag-release reliability.
+- Commands run:
+  - `npm --prefix ui run build`
+  - `npm --prefix ixos-site run build`
+  - `cargo test -q`
+  - `bash -n scripts/install.sh`
+  - PowerShell parser check for `scripts/install.ps1`
+  - `./scripts/install.ps1 -Tag cli-v0.0.0 -AssetUrl <local zip> -SkipPathPersist`
+  - PATH smoke: `ixos --version`, `ixos search "readme" --dir . --stub-model --format json --limit 1`
+- Outputs saved to:
+  - `reports/pro_features_release_hardening_2026-02-15.md`
+- Key results:
+  - Workstreams list now exposes KPI/value metrics and clearer manual seeding action (`New from Recent`).
+  - Search controls adjusted for comfort: longer folder field and wider quality/mode triggers.
+  - Landing pricing/pro messaging now explicitly includes Today, Workstreams, connection maps, and move recommendations.
+  - Fixed installer default repo slug in both install scripts (removed 404 failure path).
+  - Local installer + PATH smoke confirmed `ixos` command usage works (no explicit `.exe` required in command invocation).
+- Validation summary:
+  - `npm --prefix ui run build`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+  - `cargo test -q`: PASS (`468 passed; 0 failed; 6 ignored`)
+  - installer syntax/parse checks: PASS
+  - install.ps1 local smoke install: PASS
+  - CLI PATH smoke (`ixos search ...`): PASS
+- Decision: KEEP
+- Next:
+  1. Run hosted GitHub Actions on `cli-v*` and `v*` tags to validate signing/secrets-dependent release publishing.
+  2. Address global clippy lint debt in a dedicated stabilization pass if strict `-D warnings` gate is required.
+
+## Entry 038 - Landing hero/pipeline interaction and section clarity polish
+- Date/Time: 2026-02-15
+- Branch/Commit: (working tree)
+- Goal: Address direct UX regressions reported on hero/pipeline layering, live demo interactivity, card highlight visibility, divider placement, and Pro section clarity.
+- Commands run:
+  - `npm --prefix ixos-site run build`
+  - `npm --prefix ui run build`
+  - `cargo test -q`
+- Outputs saved to:
+  - `reports/landing_pipeline_polish_2026-02-15.md`
+- Key results:
+  - Hero headline now visually emphasizes accent phrase and remains visible longer through morph.
+  - Hero text layer now sits behind demo during transition as requested.
+  - Pipeline active cards now show explicit border/ring highlights.
+  - Multi-Signal Ranking returned to text-above/diagram-below layout.
+  - Memory Privacy stage accent stabilized to amber (including diagram accents).
+  - Added explicit Workstreams -> Pricing section divider and continuous divider sweep animation.
+  - Reworked Pro capabilities layout away from uniform cards, with animated fall-in Pro card.
+  - Improved Today/Workstreams card clarity with explicit single-outcome labels.
+- Validation summary:
+  - `npm --prefix ixos-site run build`: PASS
+  - `npm --prefix ui run build`: PASS
+  - `cargo test -q`: PASS (`468 passed; 0 failed; 6 ignored`)
+- Decision: KEEP
+- Next:
+  1. Run manual visual QA in browser for scroll layering and demo interaction feel.
+  2. If any residual jitter appears, tune `ScrollTrigger` thresholds with viewport recordings.
+- Follow-up (same pass): disabled demo interaction lock in `IxosDemoWindow` so live demo remains interactive at all stages.

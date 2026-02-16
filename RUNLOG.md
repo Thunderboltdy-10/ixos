@@ -1152,3 +1152,27 @@
 - Next:
   1. Run real `cli-v*` and `v*` tags to confirm publish succeeds with live secrets/runners.
   2. Record short desktop/mobile QA clips for hero pipeline and Pro-card handoff timing.
+## Entry 042 - Publish-to-releases reliability + marketing-density redesign pass
+- Date/Time: 2026-02-16
+- Branch/Commit: roadmap (working tree)
+- Goal: Resolve remaining CLI/desktop publish failures and tighten Today/Workstreams + adjacent section branding/copy density based on screenshot feedback.
+- Commands run:
+  - `python -c "import pathlib,yaml; [yaml.safe_load(...)]"`
+  - `npm --prefix ixos-site run lint -- src/components/sections/TodaySection.tsx src/components/sections/WorkstreamsSection.tsx src/components/sections/MeetingUseCase.tsx src/components/sections/Benchmarks.tsx src/components/sections/Pricing.tsx src/components/sections/ProFeatures.tsx src/components/sections/ProCard.tsx src/components/sections/PricingProFlow.tsx src/components/sections/HeroPipeline.tsx`
+  - `npm --prefix ixos-site run build`
+- Outputs saved to:
+  - Workflow updates: `.github/workflows/cli-release.yml`, `.github/workflows/release.yml`
+  - Landing updates: `ixos-site/src/components/sections/TodaySection.tsx`, `WorkstreamsSection.tsx`, `MeetingUseCase.tsx`, `Benchmarks.tsx`, `ProFeatures.tsx`, `ProCard.tsx`, `Pricing.tsx`
+- Key results:
+  - CLI publish now resolves target repo default branch before first release create, preventing empty-repo ambiguity.
+  - Desktop copy job now explicitly waits for source draft-release assets with retries before download, reducing race-based `release not found` failures.
+  - Today and Workstreams rebalanced to tighter 2-column geometry and key-message-first cards (less generic/verbose).
+  - Reduced explanatory copy density across related sections (Meeting Use Case, Benchmarks, Pricing, Pro capabilities, Pro card bullets).
+- Validation summary:
+  - workflow YAML parse: PASS
+  - targeted eslint: PASS
+  - `npm --prefix ixos-site run build`: PASS
+- Decision: KEEP
+- Next:
+  1. Execute one live `cli-v*` Actions run (expected fix for prior `422 Repository is empty` after repo bootstrap).
+  2. Execute one live `v*` Actions run (expected fix for prior draft-release download timing failure).

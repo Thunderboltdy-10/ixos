@@ -11,10 +11,10 @@ type Stream = {
   id: string;
   name: string;
   files: number;
-  summary: string;
+  cue: string;
   mainPoint: string;
-  evidence: string[];
   askPrompt: string;
+  evidence: string[];
 };
 
 const STREAMS: Stream[] = [
@@ -22,47 +22,35 @@ const STREAMS: Stream[] = [
     id: "finance",
     name: "Q4 Financial Review",
     files: 12,
-    summary: "Clustered from repeated edits between board packet drafts, forecasts, and standup notes.",
-    mainPoint: "Use one prompt to close the variance narrative before sharing the board summary.",
-    evidence: ["forecast_v3.xlsx", "board_packet_v2.md", "q4_summary.pdf"],
+    cue: "Repeated edits in board packet and forecast files.",
+    mainPoint: "Close the variance narrative before sharing the board summary.",
     askPrompt: "Ask for variance explanation against last quarter.",
+    evidence: ["forecast_v3.xlsx", "board_packet_v2.md", "q4_summary.pdf"],
   },
   {
     id: "migration",
     name: "API v3 Migration",
     files: 24,
-    summary: "Built from endpoint diffs, auth docs, and migration checklists touched in sequence.",
-    mainPoint: "Resume from auth-breaking changes and resolve downstream onboarding blockers.",
-    evidence: ["migration_plan.md", "auth_breaking_changes.md", "openapi_v3.yaml"],
+    cue: "Clustered from auth, endpoint, and migration checklist updates.",
+    mainPoint: "Resume from auth changes and clear downstream onboarding blockers.",
     askPrompt: "List unresolved auth migration tasks and impacted files.",
+    evidence: ["migration_plan.md", "auth_breaking_changes.md", "openapi_v3.yaml"],
   },
   {
     id: "client",
     name: "Client Onboarding - Acme",
     files: 8,
-    summary: "Grouped from contracts, kickoff notes, and legal follow-ups worked in the same loop.",
-    mainPoint: "Unblock signature and approval tasks first to move onboarding forward.",
-    evidence: ["acme_nda.pdf", "kickoff_notes.md", "onboarding_checklist.md"],
+    cue: "Grouped from contracts, kickoff notes, and legal follow-ups.",
+    mainPoint: "Unblock signature and approval tasks first.",
     askPrompt: "Show missing signatures and next legal follow-up actions.",
+    evidence: ["acme_nda.pdf", "kickoff_notes.md", "onboarding_checklist.md"],
   },
 ];
 
 const VALUE_POINTS = [
-  {
-    title: "One stream, one thread",
-    detail: "Each stream keeps a single executable objective front and center.",
-    icon: Target,
-  },
-  {
-    title: "Built from behavior",
-    detail: "Clusters are inferred from repeated open, edit, and resume patterns.",
-    icon: FolderTree,
-  },
-  {
-    title: "Connected evidence",
-    detail: "File links make Ask Mode prompts grounded and immediately actionable.",
-    icon: Link2,
-  },
+  { title: "One stream", detail: "One executable thread", icon: Target },
+  { title: "Behavior-based", detail: "Built from edit patterns", icon: FolderTree },
+  { title: "Evidence-linked", detail: "Ask prompts stay grounded", icon: Link2 },
 ];
 
 export function WorkstreamsSection() {
@@ -83,17 +71,16 @@ export function WorkstreamsSection() {
               Project Context Graph
             </p>
             <h2 className="mt-3 text-3xl font-semibold md:text-4xl">
-              Continue work as one executable stream
+              One stream. One executable thread.
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-fg-muted/78">
-              Workstreams prevent context drift by keeping one thread, one prompt, and one evidence
-              set aligned in the same surface.
+            <p className="mx-auto mt-4 max-w-2xl text-fg-muted/75">
+              Start anywhere and continue with the exact files and prompt that matter next.
             </p>
           </div>
         </FadeInView>
 
         <FadeInView direction="up" delay={120}>
-          <div className="mx-auto mt-10 grid max-w-6xl gap-3 md:grid-cols-3">
+          <div className="mx-auto mt-9 grid max-w-5xl gap-2 md:grid-cols-3">
             {VALUE_POINTS.map((point) => {
               const Icon = point.icon;
               return (
@@ -102,14 +89,14 @@ export function WorkstreamsSection() {
                     <Icon className="h-4 w-4" />
                     <p className="text-[11px] font-mono uppercase tracking-[0.14em]">{point.title}</p>
                   </div>
-                  <p className="mt-2 text-xs text-fg-muted/70">{point.detail}</p>
+                  <p className="mt-1 text-xs text-fg-muted/68">{point.detail}</p>
                 </article>
               );
             })}
           </div>
         </FadeInView>
 
-        <div className="mx-auto mt-6 grid max-w-6xl gap-6 lg:grid-cols-[0.85fr_1.15fr]">
+        <div className="mx-auto mt-6 grid max-w-5xl gap-5 lg:grid-cols-2">
           <FadeInView direction="up" delay={180}>
             <article className="rounded-sm border border-accent-teal/28 bg-bg-graphite-1/72 p-4">
               <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-accent-teal/76">
@@ -143,10 +130,10 @@ export function WorkstreamsSection() {
                 <span className="text-[10px] font-mono text-fg-muted/45">stream://{active?.id}</span>
               </div>
 
-              <p className="mt-3 text-sm text-fg-muted/78">{active?.summary}</p>
+              <p className="mt-3 text-sm text-fg-muted/78">{active?.cue}</p>
 
               <div className="mt-4 rounded-sm border border-accent-teal/24 bg-accent-teal/9 px-4 py-3">
-                <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-accent-teal/82">Main Point</p>
+                <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-accent-teal/82">Main action</p>
                 <p className="mt-2 text-sm text-fg-muted/84">{active?.mainPoint}</p>
               </div>
 
@@ -162,11 +149,6 @@ export function WorkstreamsSection() {
                     <ArrowUpRight className="h-3.5 w-3.5 text-fg-muted/45" />
                   </div>
                 ))}
-              </div>
-
-              <div className="mt-4 flex items-center gap-2 rounded-sm border border-accent-teal/18 bg-accent-teal/7 px-3 py-2">
-                <Target className="h-3.5 w-3.5 text-accent-teal/75" />
-                <p className="text-[11px] text-fg-muted/72">Recommendations are derived from repeated open and edit behavior.</p>
               </div>
 
               <Link

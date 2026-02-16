@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Clock3, FileText, Layers3, Sparkles } from "lucide-react";
+import { ArrowRight, FileText, Sparkles } from "lucide-react";
 import { FadeInView } from "@/components/effects/FadeInView";
 import { SectionDivider } from "@/components/ui/SectionDivider";
 import { cn } from "@/lib/utils";
@@ -12,9 +12,8 @@ type BriefItem = {
   file: string;
   touched: string;
   signal: string;
-  focus: string;
   nextAction: string;
-  stack: string[];
+  why: string[];
 };
 
 const BRIEF_ITEMS: BriefItem[] = [
@@ -22,35 +21,32 @@ const BRIEF_ITEMS: BriefItem[] = [
     id: "q4",
     file: "Q4_2025_Summary.pdf",
     touched: "12 min ago",
-    signal: "Opened 4 times this week and linked in standup notes.",
-    focus: "Finance stream has unresolved variance and board-ready summary gaps.",
-    nextAction: "Compare with `forecast_v3.xlsx` and generate a one-paragraph executive summary.",
-    stack: ["forecast_v3.xlsx", "board_packet_v2.md", "pricing_notes_2026.md"],
+    signal: "Opened 4 times this week.",
+    nextAction: "Compare with forecast_v3.xlsx and draft a one-paragraph summary.",
+    why: ["Recent edits", "Cross-file links", "High open frequency"],
   },
   {
     id: "auth",
     file: "auth_api_reference.md",
     touched: "1 hr ago",
-    signal: "Touched after release-note edits and onboarding blocker review.",
-    focus: "Auth migration workstream has open tasks tied to endpoint changes.",
-    nextAction: "Ask Mode: show auth changes across the last two release notes.",
-    stack: ["release_notes_v3.md", "auth_breaking_changes.md", "onboarding_checklist.md"],
+    signal: "Touched after release-note updates.",
+    nextAction: "Ask Mode: list auth changes across the last two releases.",
+    why: ["Release proximity", "Onboarding blockers", "Thread priority"],
   },
   {
     id: "standup",
     file: "team_standup_notes.md",
     touched: "3 hr ago",
-    signal: "Contains unresolved CI failures and deployment follow-ups.",
-    focus: "Deployment thread has stale TODOs and missing owners.",
-    nextAction: "Resume deployment stream and open the latest CI failure logs.",
-    stack: ["deployment_playbook.md", "ci_failures_2026_02_16.md", "release_checklist.md"],
+    signal: "Contains open CI follow-ups.",
+    nextAction: "Resume deployment thread and open the latest CI failure logs.",
+    why: ["Open blockers", "Unfinished thread", "Team impact"],
   },
 ];
 
-const TODAY_METRICS = [
-  { label: "Main point", value: "One next move", detail: "No dashboard wandering" },
-  { label: "Source", value: "Local activity graph", detail: "Built from your edits" },
-  { label: "Resume", value: "Thread-ready stack", detail: "Jump back in instantly" },
+const TODAY_TAKEAWAYS = [
+  "One ranked next action",
+  "Picked from local activity",
+  "Ready to resume in one click",
 ];
 
 export function TodaySection() {
@@ -71,18 +67,17 @@ export function TodaySection() {
               Pro Workflow Memory
             </p>
             <h2 className="mt-3 text-3xl font-semibold md:text-4xl">
-              Start from one clear next move
+              One screen. One next move.
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-fg-muted/78">
-              Today is not a generic dashboard. It collapses your latest edits into one ranked
-              action so you can continue work without re-triaging context.
+            <p className="mx-auto mt-4 max-w-2xl text-fg-muted/75">
+              Today compresses your recent work into a single action worth doing now.
             </p>
           </div>
         </FadeInView>
 
-        <div className="mx-auto mt-12 grid max-w-6xl gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="mx-auto mt-12 grid max-w-5xl gap-5 lg:grid-cols-2">
           <FadeInView direction="up" delay={120}>
-            <article className="rounded-sm border border-accent-teal/28 bg-bg-graphite-1/70">
+            <article className="rounded-sm border border-accent-teal/28 bg-bg-graphite-1/72">
               <div className="flex items-center justify-between border-b border-accent-teal/18 px-5 py-3">
                 <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.16em] text-accent-teal/78">
                   <Sparkles className="h-3.5 w-3.5" />
@@ -126,31 +121,18 @@ export function TodaySection() {
               <h3 className="mt-3 text-lg font-semibold text-fg-porcelain">
                 Resume the highest-value thread first
               </h3>
+
               <div className="mt-4 rounded-sm border border-accent-teal/24 bg-accent-teal/9 px-4 py-3">
                 <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-accent-teal/80">Suggested Next</p>
                 <p className="mt-2 text-sm text-fg-muted/84">{active?.nextAction}</p>
               </div>
 
-              <div className="mt-4 rounded-sm border border-white/10 bg-bg-graphite-0/55 px-4 py-3">
-                <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-fg-muted/62">Why now</p>
-                <p className="mt-2 text-xs text-fg-muted/74">{active?.focus}</p>
-              </div>
-
-              <div className="mt-4 flex items-center gap-2 text-[11px] text-fg-muted/55">
-                <Clock3 className="h-3.5 w-3.5 text-accent-teal/75" />
-                Derived from local activity graph
-              </div>
-
-              <div className="mt-5 rounded-sm border border-white/10 bg-bg-graphite-0/55 px-4 py-3">
-                <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.12em] text-fg-muted/58">
-                  <Layers3 className="h-3.5 w-3.5 text-accent-teal/75" />
-                  Resume stack
-                </div>
-                <div className="mt-2 space-y-1">
-                  {active?.stack.map((item) => (
-                    <p key={item} className="text-xs text-fg-muted/72">{item}</p>
-                  ))}
-                </div>
+              <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {active?.why.map((reason) => (
+                  <div key={reason} className="rounded-sm border border-white/10 bg-bg-graphite-0/55 px-3 py-2 text-center">
+                    <p className="text-[10px] font-mono uppercase tracking-[0.12em] text-fg-muted/62">{reason}</p>
+                  </div>
+                ))}
               </div>
 
               <Link
@@ -165,12 +147,10 @@ export function TodaySection() {
         </div>
 
         <FadeInView direction="up" delay={240}>
-          <div className="mx-auto mt-6 grid max-w-6xl gap-3 md:grid-cols-3">
-            {TODAY_METRICS.map((metric) => (
-              <article key={metric.label} className="rounded-sm border border-white/10 bg-bg-graphite-1/48 px-4 py-3">
-                <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-fg-muted/48">{metric.label}</p>
-                <p className="mt-1 text-sm font-semibold text-fg-porcelain">{metric.value}</p>
-                <p className="mt-1 text-xs text-fg-muted/65">{metric.detail}</p>
+          <div className="mx-auto mt-5 grid max-w-5xl gap-2 md:grid-cols-3">
+            {TODAY_TAKEAWAYS.map((takeaway) => (
+              <article key={takeaway} className="rounded-sm border border-white/10 bg-bg-graphite-1/50 px-4 py-3">
+                <p className="text-[11px] font-mono text-fg-muted/68">{takeaway}</p>
               </article>
             ))}
           </div>

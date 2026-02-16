@@ -38,8 +38,8 @@ export function Benchmarks() {
           <div className="mb-16 grid grid-cols-1 items-end gap-8 md:grid-cols-12">
             <div className="md:col-span-5">
               <h2 className="text-3xl font-semibold leading-tight md:text-4xl">
-                Tier-gated performance, <br />
-                <span className="heading-gradient bg-clip-text text-transparent">measured continuously.</span>
+                Fast first answer, <br />
+                <span className="heading-gradient bg-clip-text text-transparent">measured in real runs.</span>
               </h2>
             </div>
             <div className="flex items-end justify-between border-b border-white/10 pb-2 md:col-span-7">
@@ -100,8 +100,6 @@ export function Benchmarks() {
 
                 <div className="mt-4 border-t border-white/10 pt-4 text-[10px] font-mono text-fg-muted opacity-60">
                   Source: {benchmarkData.source}
-                  <br />
-                  Modes shown as Local and Memory.
                 </div>
               </div>
             </div>

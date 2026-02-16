@@ -397,3 +397,23 @@
   1. Trigger real `cli-v*` and `v*` workflows and confirm publish succeeds on macOS/Linux.
   2. Capture short desktop/mobile recordings for the pipeline and Pro-card handoff.
   3. Do a final text/copy micro-polish on Today/Workstreams after visual review.
+## STATE SNAPSHOT (Publish reliability + marketing density pass, 2026-02-16)
+- Date: 2026-02-16
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Live Actions validation for `cli-v*` and `v*` publish jobs
+  2. Final visual QA calibration for section copy density and spacing
+  3. Cross-device scroll choreography tuning edge cases
+- Current pass validation (2026-02-16):
+  - `python -c "...yaml.safe_load..."` over workflows: PASS
+  - `npm --prefix ixos-site run lint -- <updated sections>`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+- What is next (top 3 tasks):
+  1. Trigger one `cli-v*` run and verify `publish-to-releases` completes.
+  2. Trigger one `v*` run and verify draft-download/copy/upload path completes.
+  3. Capture final screenshots and trim any remaining verbose copy.

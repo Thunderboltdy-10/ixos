@@ -136,14 +136,39 @@ jobs:
   copy-to-releases:
     needs: publish-tauri
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
       - name: Download release artifacts from private draft
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release download ${{ github.ref_name }} --dir artifacts
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          SOURCE_REPO="${{ github.repository }}"
+
+          for attempt in $(seq 1 18); do
+            asset_count="$(gh release view "$TAG" --repo "$SOURCE_REPO" --json assets --jq '.assets | length' 2>/dev/null || echo 0)"
+            if [[ "$asset_count" -gt 0 ]]; then
+              echo "Found draft release $TAG in $SOURCE_REPO with $asset_count assets"
+              break
+            fi
+            if [[ "$attempt" -eq 18 ]]; then
+              echo "Release $TAG with assets was not found in $SOURCE_REPO after waiting." >&2
+              gh release list --repo "$SOURCE_REPO" --limit 10 || true
+              exit 1
+            fi
+            echo "Waiting for draft release assets (attempt $attempt/18)..."
+            sleep 10
+          done
+
+          gh release download "$TAG" \
+            --repo "$SOURCE_REPO" \
+            --dir artifacts \
+            --clobber
 
       - name: Prepare fixed-name artifacts
         shell: bash
@@ -193,10 +218,15 @@ jobs:
           node-version: '22'
 
       - name: Download release artifacts
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release download ${{ github.ref_name }} --dir artifacts
+          set -euo pipefail
+          gh release download "${{ github.ref_name }}" \
+            --repo "${{ github.repository }}" \
+            --dir artifacts \
+            --clobber
 
       - name: Generate and upload latest.json
         env:

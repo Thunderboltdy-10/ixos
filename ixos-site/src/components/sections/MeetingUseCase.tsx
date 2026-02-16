@@ -28,14 +28,14 @@ export function MeetingUseCase() {
 
                         <FadeInView direction="right" delay={200}>
                             <p className="text-lg text-fg-muted leading-relaxed">
-                                Ixos understands subjective time and partial context. Stop searching for filenames; start finding ideas.
+                                Ixos resolves fuzzy time and partial context into exact files.
                             </p>
                         </FadeInView>
 
                         <div className="space-y-4 pt-8 border-t border-white/5">
                             <FadeInView direction="up" delay={300}><FeatureRow text="Semantic entity extraction" /></FadeInView>
-                            <FadeInView direction="up" delay={400}><FeatureRow text="Calendar-aware time filtering" /></FadeInView>
-                            <FadeInView direction="up" delay={500}><FeatureRow text="OCR for images & screenshots" /></FadeInView>
+                            <FadeInView direction="up" delay={400}><FeatureRow text="Time-aware filtering" /></FadeInView>
+                            <FadeInView direction="up" delay={500}><FeatureRow text="OCR over screenshots" /></FadeInView>
                         </div>
                     </div>
 

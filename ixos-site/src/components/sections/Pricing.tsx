@@ -75,12 +75,11 @@ export function Pricing({
                             title="COMMUNITY"
                             price="$0"
                             period="/ forever"
-                            desc="Full semantic search. No index tax. No cloud."
+                            desc="Core search, fully local."
                             features={[
-                                "Complete semantic search",
+                                "Semantic file search",
                                 "Zero index tax (Memory mode)",
                                 "100% local processing",
-                                "Standard file types (PDF, TXT, MD)",
                                 "Community support"
                             ]}
                             actionNode={(

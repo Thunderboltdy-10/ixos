@@ -642,3 +642,23 @@
 - Evidence (links to /reports or output files): ixos-site/src/components/sections/ProUpgradeAction.tsx, ixos-site/src/components/sections/Pricing.tsx, ixos-site/src/components/sections/ProFeatures.tsx
 - Risks: duplicate subscription fetches are possible if both cards mount in future layouts.
 - Follow-ups: move subscription state to shared context if both cards are ever rendered concurrently.
+- Decision: Gate desktop artifact copy on draft-release asset availability with explicit source repo targeting and retries.
+- Options considered: immediate one-shot download; switch to workflow artifacts; source-release polling and explicit repo download.
+- Why chosen: fixes intermittent `release not found` in copy step caused by timing/visibility gaps after matrix publishing.
+- Evidence (links to /reports or output files): .github/workflows/release.yml
+- Risks: if `tauri-action` fails to publish assets entirely, job still fails (expected).
+- Follow-ups: optionally move to direct workflow artifact fan-in for complete decoupling from draft releases.
+
+- Decision: Require default branch resolution before first CLI release create in `ixos-releases`.
+- Options considered: blind `gh release create`; hard fail with repository-empty guidance; resolve default branch and create against it.
+- Why chosen: removes hidden assumption and gives deterministic behavior for newly initialized release repos.
+- Evidence (links to /reports or output files): .github/workflows/cli-release.yml
+- Risks: repo must still have at least one commit/default branch.
+- Follow-ups: keep README/bootstrap step in `ixos-releases` permanently.
+
+- Decision: Shift Today/Workstreams and adjacent sections toward key-message-first marketing density.
+- Options considered: keep detailed explanatory copy; small spacing tweaks only; concise copy + balanced card geometry + focused cues.
+- Why chosen: aligns with user feedback that sections felt generic, text-heavy, and visually unbalanced.
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/TodaySection.tsx, ixos-site/src/components/sections/WorkstreamsSection.tsx, ixos-site/src/components/sections/MeetingUseCase.tsx, ixos-site/src/components/sections/Benchmarks.tsx, ixos-site/src/components/sections/ProFeatures.tsx, ixos-site/src/components/sections/ProCard.tsx, ixos-site/src/components/sections/Pricing.tsx
+- Risks: copy may need one final tone pass after stakeholder review.
+- Follow-ups: capture screenshot/video QA and iterate micro-copy.

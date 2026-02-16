@@ -85,6 +85,18 @@ jobs:
       - name: Install npm dependencies
         run: npm ci --no-audit
 
+      - name: Ensure Rollup native package is present
+        shell: bash
+        run: |
+          set -euo pipefail
+          if node -e "require('./ui/node_modules/rollup/dist/native.js')"; then
+            echo "Rollup native package is already available."
+          else
+            echo "Missing Rollup native package after npm ci; installing workspace rollup fallback."
+            npm --workspace ui install --no-save --no-audit --include=optional rollup
+            node -e "require('./ui/node_modules/rollup/dist/native.js')"
+          fi
+
       - name: Create model stubs for desktop build
         shell: bash
         run: |
@@ -148,15 +160,27 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RELEASES_PAT }}
         run: |
-          gh release create "${{ github.ref_name }}" \
-            --repo IxosProtocol/ixos-releases \
-            --title "Ixos ${{ github.ref_name }}" \
-            --notes "Desktop release ${{ github.ref_name }}" \
-            artifacts/* \
-            || gh release upload "${{ github.ref_name }}" \
-              --repo IxosProtocol/ixos-releases \
-              --clobber \
-              artifacts/*
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          REPO="IxosProtocol/ixos-releases"
+
+          if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --repo "$REPO" \
+              --title "Ixos $TAG" \
+              --notes "Desktop release $TAG"
+          fi
+
+          mapfile -t files < <(find artifacts -type f | sort)
+          if [[ "${#files[@]}" -eq 0 ]]; then
+            echo "No file artifacts were found to publish." >&2
+            exit 1
+          fi
+
+          gh release upload "$TAG" \
+            --repo "$REPO" \
+            --clobber \
+            "${files[@]}"
 
   generate-latest-json:
     needs: copy-to-releases

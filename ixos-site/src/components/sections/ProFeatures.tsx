@@ -2,10 +2,10 @@
 
 import type { CSSProperties, RefObject } from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
 import { FadeInView } from "@/components/effects/FadeInView";
 import { SectionDivider } from "@/components/ui/SectionDivider";
 import { ProCard } from "@/components/sections/ProCard";
+import { ProUpgradeAction } from "@/components/sections/ProUpgradeAction";
 import type { BillingCycle } from "@/components/sections/Pricing";
 
 const FEATURES = [
@@ -86,10 +86,10 @@ export function ProFeatures({
   } as const;
 
   return (
-    <div className="relative">
+    <div className="relative" id="pro-capabilities">
       <SectionDivider accent="magenta" label="PRO_CAPABILITIES" />
 
-      <div className="container mx-auto px-6 py-24" ref={cardAnchorRef}>
+      <div className="container mx-auto px-6 py-24">
         <FadeInView direction="up">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-semibold md:text-4xl">
@@ -128,34 +128,30 @@ export function ProFeatures({
             })}
           </div>
 
-          {showProCard ? (
-            <motion.aside
-              layoutId={proCardLayoutId}
-              transition={{ type: "spring", stiffness: 220, damping: 26 }}
-              className="relative group h-full"
-            >
-              <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />
-              <ProCard
-                price={billing === "monthly" ? "$7.99" : "$6.35"}
-                period="/ month"
-                desc="Pro combines Ask Mode answers, Today context memory, and Workstream clustering so teams spend less time searching and more time shipping."
-                actionNode={(
-                  <Link
-                    href="/pricing"
-                    className="w-full font-mono text-xs uppercase tracking-widest h-12 rounded-md inline-flex items-center justify-center bg-accent-magenta hover:bg-accent-magenta-glow text-bg-graphite-0 font-bold shadow-glow-magenta hover:scale-[1.02] transition-all"
-                  >
-                    VIEW_PRICING
-                  </Link>
-                )}
-              />
-            </motion.aside>
-          ) : (
-            <aside className="relative h-full rounded-sm border border-accent-magenta/30 bg-bg-graphite-1/50 p-6 flex items-center justify-center text-center">
-              <p className="text-sm text-fg-muted/80">
-                Scroll a bit more to dock the shared Pro card into this capability panel.
-              </p>
-            </aside>
-          )}
+          <div ref={cardAnchorRef} className="h-full">
+            {showProCard ? (
+              <motion.aside
+                layoutId={proCardLayoutId}
+                transition={{ type: "spring", stiffness: 74, damping: 26, mass: 1.2 }}
+                className="relative group h-full"
+              >
+                <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />
+                <ProCard
+                  price={billing === "monthly" ? "$7.99" : "$6.35"}
+                  period="/ month"
+                  desc="Ask Mode evidence answers. Saved searches. Priority support."
+                  actionNode={<ProUpgradeAction />}
+                />
+              </motion.aside>
+            ) : (
+              <aside
+                aria-hidden="true"
+                className="relative h-full min-h-[640px] rounded-sm border border-transparent opacity-0 pointer-events-none"
+              >
+                <div className="h-full" />
+              </aside>
+            )}
+          </div>
         </div>
       </div>
     </div>

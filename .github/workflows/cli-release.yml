@@ -119,13 +119,19 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cli-${{ matrix.target_os }}-${{ matrix.target_arch }}
-          path: dist/*
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*.sha256
 
       - name: Upload assets to private GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          files: dist/*
+          files: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*.sha256
 
   publish-to-releases:
     needs: build-cli
@@ -147,24 +153,45 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      - name: Aggregate SHA256SUMS
+      - name: Prepare release assets
         shell: bash
         run: |
-          cd artifacts
-          cat *.sha256 > SHA256SUMS
+          set -euo pipefail
+          mkdir -p release-assets
+
+          while IFS= read -r -d '' file; do
+            cp "$file" "release-assets/$(basename "$file")"
+          done < <(find artifacts -type f -print0)
+
+          if compgen -G "release-assets/*.sha256" > /dev/null; then
+            cat release-assets/*.sha256 > release-assets/SHA256SUMS
+          fi
+
+          if ! find release-assets -maxdepth 1 -type f | grep -q .; then
+            echo "No file artifacts were found to publish." >&2
+            exit 1
+          fi
+
+          ls -la release-assets
 
       - name: Upload to ixos-releases
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.RELEASES_PAT }}
         run: |
-          # Create or update release on ixos-releases
-          gh release create "${{ github.ref_name }}" \
-            --repo IxosProtocol/ixos-releases \
-            --title "Ixos CLI ${{ github.ref_name }}" \
-            --notes "CLI release ${{ github.ref_name }}" \
-            artifacts/* \
-            || gh release upload "${{ github.ref_name }}" \
-              --repo IxosProtocol/ixos-releases \
-              --clobber \
-              artifacts/*
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          REPO="IxosProtocol/ixos-releases"
+
+          if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --repo "$REPO" \
+              --title "Ixos CLI $TAG" \
+              --notes "CLI release $TAG"
+          fi
+
+          mapfile -t files < <(find release-assets -maxdepth 1 -type f | sort)
+          gh release upload "$TAG" \
+            --repo "$REPO" \
+            --clobber \
+            "${files[@]}"

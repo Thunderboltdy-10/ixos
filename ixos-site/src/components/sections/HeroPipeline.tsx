@@ -120,22 +120,20 @@ function modeToAccent(mode: DemoMode): AccentColor {
 export function HeroPipeline() {
   const sectionRef = useRef<HTMLElement>(null);
   const progressRafRef = useRef<number | null>(null);
-  const activeStepRef = useRef<number | null>(null);
   const latestProgressRef = useRef(0);
   const [isDesktop, setIsDesktop] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   });
-  // PERFORMANCE: Detect low-powered devices to reduce animation load
-  const [isLowPowered, setIsLowPowered] = useState(() => {
+  // PERFORMANCE: Detect low-powered devices to reduce animation load.
+  const isLowPowered = useMemo(() => {
     if (typeof window === "undefined") return false;
-    // Check device memory and hardware concurrency
-    const deviceMemory = (navigator as any).deviceMemory;
-    const hardwareConcurrency = navigator.hardwareConcurrency;
-    // Consider low-powered if < 4GB RAM or < 4 cores
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const deviceMemory = nav.deviceMemory;
+    const hardwareConcurrency = nav.hardwareConcurrency;
     return (deviceMemory && deviceMemory < 4) || (hardwareConcurrency && hardwareConcurrency < 4);
-  });
+  }, []);
   const [progress, setProgress] = useState(0);
   const [mobileStep, setMobileStep] = useState(0);
   const [demoMode, setDemoMode] = useState<DemoMode>("memory");
@@ -175,9 +173,7 @@ export function HeroPipeline() {
       end: isLowPowered ? "+=175%" : "+=200%",
       pin: true,
       pinSpacing: true,
-      pinType: "fixed",
-      pinReparent: false,
-      scrub: isLowPowered ? 1.5 : 1.2,
+      scrub: true,
       anticipatePin: 1,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
@@ -234,32 +230,12 @@ export function HeroPipeline() {
     const heroMorph = reducedFx ? 1 : mapProgress(progress, 0.10, 0.22);
     const titleMorph = reducedFx ? 1 : mapProgress(progress, 0.34, 0.58);
 
-    let activeStep: number | null = null;
-    // Keep autonomous hero loop active longer; switch to scroll-guided mode
-    // only once the pipeline frame has clearly taken over.
-    if (entry > 0.66) {
-      const rawStep =
-        narrative < 1 ? Math.min(PHASES.length - 1, Math.floor(narrative * PHASES.length)) : PHASES.length - 1;
-      const normalizedPosition = narrative * PHASES.length;
-      const previousStep = activeStepRef.current;
-      if (previousStep === null) {
-        activeStep = rawStep;
-      } else {
-        const hysteresis = 0.45;
-        if (rawStep > previousStep && normalizedPosition >= (previousStep + 1) + hysteresis) {
-          activeStep = rawStep;
-        } else if (rawStep < previousStep && normalizedPosition <= previousStep - hysteresis) {
-          activeStep = rawStep;
-        } else {
-          activeStep = previousStep;
-        }
-      }
-    }
+    // A floor-based quantization avoids highlight bouncing at phase boundaries.
+    const activeStep = entry > 0.64
+      ? Math.min(PHASES.length - 1, Math.max(0, Math.floor(narrative * PHASES.length)))
+      : null;
 
-    activeStepRef.current = activeStep;
-
-    // When in hero stage (before pipeline cards appear), pass null to allow autonomous loop
-    const demoStep = entry > 0.66 ? activeStep : null;
+    const demoStep = entry > 0.64 ? activeStep : null;
 
     return {
       entry,
@@ -274,7 +250,7 @@ export function HeroPipeline() {
       activeStep,
       demoStep,
     };
-  }, [prefersReducedMotion, progress]);
+  }, [isLowPowered, prefersReducedMotion, progress]);
 
   if (!isDesktop) {
     return (
@@ -319,13 +295,10 @@ export function HeroPipeline() {
               >
                 <Link href="/download">Download Desktop</Link>
               </Button>
-              <Button size="lg" variant="secondary" asChild>
-                <Link href="/docs/cli-reference#install">View CLI Install</Link>
-              </Button>
-            </div>
-            <div className="mt-4 text-[11px] font-mono text-fg-muted/70">
-              curl -fsSL https://raw.githubusercontent.com/IxosProtocol/ixos-cli/main/scripts/install.sh | bash
-            </div>
+            <Button size="lg" variant="secondary" asChild>
+              <Link href="/docs/cli-reference#install">View CLI Install</Link>
+            </Button>
+          </div>
           </div>
 
           <div className="mx-auto mt-10 w-full max-w-[860px] overflow-hidden rounded-xl border border-white/12 bg-bg-graphite-0/95 shadow-2xl">
@@ -430,9 +403,6 @@ export function HeroPipeline() {
             <Button size="lg" variant="secondary" asChild>
               <Link href="/docs/cli-reference#install">CLI Install</Link>
             </Button>
-          </div>
-          <div className="mt-4 text-[11px] font-mono text-fg-muted/70">
-            curl -fsSL https://raw.githubusercontent.com/IxosProtocol/ixos-cli/main/scripts/install.sh | bash
           </div>
         </div>
       </div>
@@ -640,10 +610,8 @@ function PipelineCardWrapper({
         zIndex: 35,
         opacity: reveal,
         transform: `translate3d(${(1 - reveal) * config.x}px, ${(1 - reveal) * config.y - exit * 6}px, 0)`,
-        filter: `blur(${(1 - reveal) * 6}px)`,
         pointerEvents: reveal > 0.42 ? "auto" : "none",
-        transition: "opacity 0.15s linear, filter 0.15s linear",
-        willChange: "transform, opacity, filter",
+        willChange: "transform, opacity",
         contain: "layout paint",
       }}
     >
@@ -707,7 +675,7 @@ function PhaseTile({
   return (
     <article
       className={cn(
-        "relative flex min-h-0 overflow-hidden rounded-2xl border-2 bg-bg-graphite-2/92 backdrop-blur-sm transition-all duration-700 ease-out",
+        "relative flex min-h-0 overflow-hidden rounded-2xl border-2 bg-bg-graphite-2/92 backdrop-blur-sm transition-[border-color,box-shadow,opacity] duration-280 ease-out",
         compact ? "h-full items-start gap-5 p-6" : "grid h-full grid-rows-[auto_minmax(0,1fr)] gap-4 p-6",
         isActive
           ? cn(styles.borderActive, styles.shadow, "z-10 ring-2 opacity-100", styles.ring)

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 
@@ -44,8 +45,8 @@ export function ProCard({
       <div className="mb-8">
         <div className="text-xs font-mono tracking-wider mb-4 opacity-80 text-accent-magenta">PRO</div>
         <div className="flex items-baseline gap-1 h-12">
-          <span className="text-5xl font-mono font-medium text-fg-porcelain tracking-tighter tabular-nums">
-            {price}
+          <span className="text-5xl font-mono font-medium text-fg-porcelain tracking-tighter tabular-nums" aria-label={price}>
+            <FlipPrice value={price} />
           </span>
           <span className="text-sm text-fg-muted font-mono">{period}</span>
         </div>
@@ -67,5 +68,40 @@ export function ProCard({
         </Button>
       )}
     </div>
+  );
+}
+
+function charWidthClass(char: string) {
+  if (char >= "0" && char <= "9") return "w-[0.62em]";
+  if (char === ".") return "w-[0.26em]";
+  if (char === "$") return "w-[0.5em]";
+  return "w-[0.42em]";
+}
+
+function FlipPrice({ value }: { value: string }) {
+  return (
+    <span className="inline-flex items-end">
+      {value.split("").map((char, index) => (
+        <span key={`slot-${index}`} className={cn("relative inline-flex h-[1.05em] overflow-hidden align-bottom", charWidthClass(char))}>
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={`${index}-${char}`}
+              initial={{ rotateX: -95, y: -8, opacity: 0 }}
+              animate={{ rotateX: 0, y: 0, opacity: 1 }}
+              exit={{ rotateX: 95, y: 8, opacity: 0 }}
+              transition={{
+                duration: 0.34,
+                delay: index * 0.035,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              className="absolute inset-0 flex items-center justify-center origin-center"
+              style={{ backfaceVisibility: "hidden", transformStyle: "preserve-3d" }}
+            >
+              {char}
+            </motion.span>
+          </AnimatePresence>
+        </span>
+      ))}
+    </span>
   );
 }

@@ -3,22 +3,13 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, type ReactNode, type RefObject } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { SignedIn, SignedOut, useAuth, useUser } from "@clerk/nextjs";
 import { ProCard } from "@/components/sections/ProCard";
+import { ProUpgradeAction } from "@/components/sections/ProUpgradeAction";
 
 import { FadeInView } from "@/components/effects/FadeInView";
-
-type SubscriptionState = {
-    plan: string;
-    status: string;
-    isActive: boolean;
-    currentPeriodEnd: string | null;
-    portalUrl: string | null;
-};
 
 export type BillingCycle = "monthly" | "annual";
 
@@ -27,41 +18,15 @@ export function Pricing({
     onBillingChange,
     showProCard = true,
     proCardLayoutId = "pro-card",
+    proCardSlotRef,
 }: {
     billing?: BillingCycle;
     onBillingChange?: (next: BillingCycle) => void;
     showProCard?: boolean;
     proCardLayoutId?: string;
+    proCardSlotRef?: RefObject<HTMLDivElement | null>;
 }) {
     const [internalBilling, setInternalBilling] = useState<BillingCycle>("monthly");
-    const [subscription, setSubscription] = useState<SubscriptionState | null>(null);
-    const [isLoadingSubscription, setIsLoadingSubscription] = useState(false);
-    const searchParams = useSearchParams();
-    const { isSignedIn, isLoaded, userId } = useAuth();
-    const { user } = useUser();
-    const clerkUserId = searchParams.get("clerk_user_id") || undefined;
-    const email = searchParams.get("email") || undefined;
-    const variantId =
-        searchParams.get("variant_id") ||
-        process.env.NEXT_PUBLIC_LEMONSQUEEZY_PRO_VARIANT_ID ||
-        undefined;
-    const successUrlParam = searchParams.get("success_url") || undefined;
-    const cancelUrlParam = searchParams.get("cancel_url") || undefined;
-    const currentUrl =
-        typeof window !== "undefined" ? window.location.href.split("#")[0] : null;
-    const buildReturnUrl = (state: "success" | "cancelled") => {
-        if (!currentUrl) return null;
-        try {
-            const url = new URL(currentUrl);
-            url.searchParams.set("checkout", state);
-            return url.toString();
-        } catch {
-            return null;
-        }
-    };
-    const successUrl = successUrlParam || buildReturnUrl("success");
-    const cancelUrl = cancelUrlParam || buildReturnUrl("cancelled");
-    const hasDesktopContext = Boolean(clerkUserId || email);
     const effectiveBilling = billing ?? internalBilling;
     const setEffectiveBilling = (next: BillingCycle) => {
         if (onBillingChange) {
@@ -70,87 +35,6 @@ export function Pricing({
         }
         setInternalBilling(next);
     };
-
-    useEffect(() => {
-        let cancelled = false;
-
-        async function loadSubscription() {
-            if (!isLoaded || !isSignedIn || hasDesktopContext) {
-                setSubscription(null);
-                return;
-            }
-            if (!cancelled) setIsLoadingSubscription(true);
-            try {
-                const res = await fetch("/api/account/subscription", {
-                    method: "GET",
-                });
-                if (!res.ok) {
-                    setSubscription(null);
-                    return;
-                }
-                const data = (await res.json()) as SubscriptionState;
-                if (!cancelled) {
-                    setSubscription(data);
-                }
-            } catch (error) {
-                console.error("Failed to load subscription:", error);
-            } finally {
-                if (!cancelled) setIsLoadingSubscription(false);
-            }
-        }
-
-        loadSubscription();
-
-        // Use visibility-based refresh instead of polling (reduces API load significantly)
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible' && isSignedIn && !hasDesktopContext) {
-                loadSubscription();
-            }
-        };
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('focus', handleVisibilityChange);
-
-        return () => {
-            cancelled = true;
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('focus', handleVisibilityChange);
-        };
-    }, [isLoaded, isSignedIn, hasDesktopContext]);
-
-    const checkoutUrl = useMemo(() => {
-        const template = process.env.NEXT_PUBLIC_LEMON_CHECKOUT_URL_TEMPLATE;
-        if (!template || !variantId) return null;
-        const effectiveClerkUserId = clerkUserId || userId || undefined;
-        const effectiveEmail =
-            email ||
-            user?.primaryEmailAddress?.emailAddress ||
-            user?.emailAddresses?.[0]?.emailAddress ||
-            undefined;
-        const base = template.replace("{variantId}", variantId);
-        const params = new URLSearchParams();
-        if (effectiveClerkUserId) {
-            params.append("checkout[custom][clerk_user_id]", effectiveClerkUserId);
-        }
-
-        if (successUrl) {
-            params.append("checkout[success_url]", successUrl);
-        }
-        if (cancelUrl) {
-            params.append("checkout[cancel_url]", cancelUrl);
-        }
-
-        // Autofill user details
-        if (effectiveEmail) {
-            params.append("checkout[email]", effectiveEmail);
-        }
-        if (user?.fullName) {
-            params.append("checkout[name]", user.fullName);
-        }
-
-        const paramString = params.toString();
-        return paramString ? `${base}${base.includes("?") ? "&" : "?"}${paramString}` : base;
-    }, [clerkUserId, email, variantId, successUrl, cancelUrl, userId, user]);
 
     return (
         <div className="relative">
@@ -219,95 +103,34 @@ export function Pricing({
 
                     {/* Pro Tier */}
                     <FadeInView direction="up" delay={300} className="h-full">
+                        <div ref={proCardSlotRef} className="h-full">
                         {showProCard ? (
                             <motion.div
                                 layoutId={proCardLayoutId}
-                                transition={{ type: "spring", stiffness: 220, damping: 26 }}
+                                transition={{ type: "spring", stiffness: 74, damping: 26, mass: 1.2 }}
                                 className="relative group h-full lg:sticky lg:top-20"
                                 data-trace-anchor="pricing-pro"
                                 data-trace-color="magenta"
                             >
                                 <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />
-                                <SignedIn>
-                                    <ProCard
-                                        price={effectiveBilling === "monthly" ? "$7.99" : "$6.35"}
-                                        period="/ month"
-                                        desc="Ask Mode evidence answers. Saved searches. Priority support."
-                                        actionNode={(
-                                            <Button
-                                                onClick={() => {
-                                                    if (subscription?.isActive) {
-                                                        if (subscription.portalUrl) {
-                                                            window.location.href = subscription.portalUrl;
-                                                        } else {
-                                                            window.location.href = "/account";
-                                                        }
-                                                        return;
-                                                    }
-                                                    if (checkoutUrl) {
-                                                        window.open(checkoutUrl, "_blank");
-                                                    }
-                                                }}
-                                                className="w-full font-mono text-xs uppercase tracking-widest h-12 bg-accent-magenta hover:bg-accent-magenta-glow text-bg-graphite-0 font-bold shadow-glow-magenta hover:scale-[1.02] transition-all"
-                                            >
-                                                {subscription?.isActive
-                                                    ? (subscription.portalUrl ? "MANAGE_SUBSCRIPTION" : "VIEW_ACCOUNT")
-                                                    : "INITIALIZE_LICENSE"}
-                                            </Button>
-                                        )}
-                                    />
-                                </SignedIn>
-                                <SignedOut>
-                                    <ProCard
-                                        price={effectiveBilling === "monthly" ? "$7.99" : "$6.35"}
-                                        period="/ month"
-                                        desc="Ask Mode evidence answers. Saved searches. Priority support."
-                                        actionNode={
-                                            hasDesktopContext && checkoutUrl ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        window.open(checkoutUrl, "_blank");
-                                                    }}
-                                                    className={cn(
-                                                        "w-full font-mono text-xs uppercase tracking-widest h-12 rounded-md",
-                                                        "bg-accent-magenta hover:bg-accent-magenta-glow text-bg-graphite-0 font-bold shadow-glow-magenta hover:scale-[1.02] transition-all"
-                                                    )}
-                                                >
-                                                    INITIALIZE_LICENSE
-                                                </button>
-                                            ) : (
-                                                <Link
-                                                    href="/sign-in?redirect_url=/pricing"
-                                                    className={cn(
-                                                        "w-full font-mono text-xs uppercase tracking-widest h-12 rounded-md inline-flex items-center justify-center",
-                                                        "bg-accent-magenta hover:bg-accent-magenta-glow text-bg-graphite-0 font-bold shadow-glow-magenta hover:scale-[1.02] transition-all"
-                                                    )}
-                                                >
-                                                    SIGN_IN_TO_UPGRADE
-                                                </Link>
-                                            )
-                                        }
-                                    />
-                                </SignedOut>
+                                <ProCard
+                                    price={effectiveBilling === "monthly" ? "$7.99" : "$6.35"}
+                                    period="/ month"
+                                    desc="Ask Mode evidence answers. Saved searches. Priority support."
+                                    actionNode={<ProUpgradeAction />}
+                                />
                             </motion.div>
                         ) : (
-                            <div className="h-full rounded-sm border border-accent-magenta/30 bg-bg-graphite-1/50 p-6 flex flex-col justify-center text-center">
-                                <p className="text-[10px] font-mono tracking-[0.14em] text-accent-magenta/70">PRO_CARD_TRANSFER</p>
-                                <p className="mt-3 text-sm text-fg-muted/80">
-                                    Pro card is now pinned to the capabilities section below.
-                                </p>
+                            <div
+                                aria-hidden="true"
+                                className="h-full min-h-[640px] rounded-sm border border-transparent opacity-0 pointer-events-none"
+                            >
+                                <div className="h-full" />
                             </div>
                         )}
+                        </div>
                     </FadeInView>
                 </div>
-                {
-                    isSignedIn && isLoadingSubscription && (
-                        <div className="mt-6 text-center text-xs text-fg-muted">
-                            Checking subscription status...
-                        </div>
-                    )
-                }
             </div >
         </div >
     );

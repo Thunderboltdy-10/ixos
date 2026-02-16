@@ -167,6 +167,10 @@ jobs:
             cat release-assets/*.sha256 > release-assets/SHA256SUMS
           fi
 
+          # Publish stable installer script entrypoints from release assets.
+          cp scripts/install.sh release-assets/install.sh
+          cp scripts/install.ps1 release-assets/install.ps1
+
           if ! find release-assets -maxdepth 1 -type f | grep -q .; then
             echo "No file artifacts were found to publish." >&2
             exit 1
@@ -182,10 +186,17 @@ jobs:
           set -euo pipefail
           TAG="${{ github.ref_name }}"
           REPO="IxosProtocol/ixos-releases"
+          DEFAULT_BRANCH="$(gh api "repos/$REPO" --jq '.default_branch' || true)"
+
+          if [[ -z "$DEFAULT_BRANCH" || "$DEFAULT_BRANCH" == "null" ]]; then
+            echo "Unable to resolve default branch for $REPO. Ensure the repository has at least one commit." >&2
+            exit 1
+          fi
 
           if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
             gh release create "$TAG" \
               --repo "$REPO" \
+              --target "$DEFAULT_BRANCH" \
               --title "Ixos CLI $TAG" \
               --notes "CLI release $TAG"
           fi

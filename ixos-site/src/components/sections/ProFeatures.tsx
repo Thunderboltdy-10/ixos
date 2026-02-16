@@ -13,7 +13,7 @@ const FEATURES = [
     title: "Ask Mode Evidence Answers",
     code: "PRO_DEEP_SEARCH",
     description:
-      "Question intent resolves into trusted snippets, answer cards, and citations instead of plain keyword matching.",
+      "Get grounded answers with cited snippets, not keyword dumps.",
     accent: "violet",
     size: "large",
   },
@@ -21,7 +21,7 @@ const FEATURES = [
     title: "Today + Workstreams",
     code: "MODEL_FASTLANE",
     description:
-      "Daily brief, suggested-next files, and activity-based workstreams keep context hot across folders.",
+      "Carry context from one action to the next without tab hunting.",
     accent: "teal",
     size: "normal",
   },
@@ -29,7 +29,7 @@ const FEATURES = [
     title: "Deep Search Analysis",
     code: "ASK_MODE_PLUS",
     description:
-      "Decompose broad requests, collect evidence, and return ranked files with grounded snippets.",
+      "Break broad questions into evidence-backed ranked results.",
     accent: "amber",
     size: "normal",
   },
@@ -37,14 +37,14 @@ const FEATURES = [
     title: "Priority Model Channel",
     code: "SECOND_BRAIN",
     description:
-      "Pro seats receive early model updates and tuned defaults for faster recall on large mixed roots.",
+      "Get faster tuned defaults and early model improvements.",
     accent: "magenta",
     size: "normal",
   },
 ];
 
 export function ProFeatures({
-  billing = "monthly",
+  billing = "annual",
   showProCard = true,
   proCardLayoutId = "pro-card",
   cardAnchorRef,
@@ -96,8 +96,7 @@ export function ProFeatures({
               What You Unlock With <span className="heading-gradient-magenta">Ixos Pro</span>
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-fg-muted/80">
-              Pro is built for heavier research and developer workflows where Ask Mode,
-              Today, and Workstreams compound into a practical productivity loop.
+              Pro is for heavier workflows where Ask Mode, Today, and Workstreams stay in one loop.
             </p>
           </div>
         </FadeInView>
@@ -132,7 +131,7 @@ export function ProFeatures({
             {showProCard ? (
               <motion.aside
                 layoutId={proCardLayoutId}
-                transition={{ type: "spring", stiffness: 74, damping: 26, mass: 1.2 }}
+                transition={{ type: "spring", stiffness: 56, damping: 29, mass: 1.34 }}
                 className="relative group h-full"
               >
                 <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />

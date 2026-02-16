@@ -26,7 +26,7 @@ export function Pricing({
     proCardLayoutId?: string;
     proCardSlotRef?: RefObject<HTMLDivElement | null>;
 }) {
-    const [internalBilling, setInternalBilling] = useState<BillingCycle>("monthly");
+    const [internalBilling, setInternalBilling] = useState<BillingCycle>("annual");
     const effectiveBilling = billing ?? internalBilling;
     const setEffectiveBilling = (next: BillingCycle) => {
         if (onBillingChange) {
@@ -75,12 +75,11 @@ export function Pricing({
                             title="COMMUNITY"
                             price="$0"
                             period="/ forever"
-                            desc="Full semantic search. No index tax. No cloud."
+                            desc="Core search, fully local."
                             features={[
-                                "Complete semantic search",
+                                "Semantic file search",
                                 "Zero index tax (Memory mode)",
                                 "100% local processing",
-                                "Standard file types (PDF, TXT, MD)",
                                 "Community support"
                             ]}
                             actionNode={(
@@ -107,7 +106,7 @@ export function Pricing({
                         {showProCard ? (
                             <motion.div
                                 layoutId={proCardLayoutId}
-                                transition={{ type: "spring", stiffness: 74, damping: 26, mass: 1.2 }}
+                                transition={{ type: "spring", stiffness: 56, damping: 29, mass: 1.34 }}
                                 className="relative group h-full lg:sticky lg:top-20"
                                 data-trace-anchor="pricing-pro"
                                 data-trace-color="magenta"

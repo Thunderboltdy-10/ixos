@@ -366,17 +366,17 @@ pub async fn download_model(app: AppHandle, model_type: String) -> Result<String
     let (subdir, repo_id, files) = match model_type_enum {
         ModelType::IxosFlashV2 => (
             "ixos-flash-v2",
-            "Thunderboltdy10/Ixos-Flash-v2",
+            "Thunderbolty10/Ixos-Flash",
             vec!["config.json", "model.safetensors", "tokenizer.json"],
         ),
         ModelType::IxosFlashV1 => (
             "ixos-flash-v1",
-            "Thunderboltdy10/Ixos-Flash",
+            "Thunderbolty10/Ixos-Flash",
             vec!["config.json", "model.safetensors", "tokenizer.json"],
         ),
         ModelType::IxosProV1 => (
             "ixos-pro-v1",
-            "Thunderboltdy10/Ixos-Pro",
+            "Thunderbolty10/Ixos-Pro",
             vec!["config.json", "model.safetensors", "tokenizer.json"],
         ),
         ModelType::Potion => (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { Download, Terminal, Copy, Check } from "lucide-react";
 import { FadeInView } from "@/components/effects/FadeInView";
@@ -31,11 +31,19 @@ export const DESKTOP_PLATFORMS: DesktopPlatform[] = [
 ];
 
 export function DownloadActions() {
-  const [selectedPlatform, setSelectedPlatform] = useState<DownloadPlatform>(() => detectDesktopPlatform());
-  const [installOs, setInstallOs] = useState<InstallOs>(() => detectInstallOs());
+  const [selectedPlatform, setSelectedPlatform] = useState<DownloadPlatform>("windows-x64");
+  const [installOs, setInstallOs] = useState<InstallOs>("windows");
   const [copied, setCopied] = useState(false);
   const [copiedTest, setCopiedTest] = useState(false);
   const quickTestCommand = 'ixos search "release notes around auth" --dir .';
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setSelectedPlatform(detectDesktopPlatform());
+      setInstallOs(detectInstallOs());
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const handleDesktopDownload = () => {
     window.location.assign(getDownloadUrl(selectedPlatform));

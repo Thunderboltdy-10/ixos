@@ -6,15 +6,11 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 
 export const PRO_FEATURE_LIST = [
-  "Ask Mode answer cards + citations",
-  "Today view: daily brief + suggested next files",
-  "Workstreams: auto/manual context clusters",
-  "Connection map + folder move recommendations",
-  "File watch & notifications",
-  "Developer file types (TS, PY, RS, GO)",
-  "Deep Search Mode (thorough analysis)",
-  "Priority model updates",
-  "Direct support access",
+  "Ask Mode answers with citations",
+  "Today brief with one ranked next step",
+  "Workstreams with connected evidence",
+  "Deep search for complex requests",
+  "Priority model updates and support",
 ];
 
 export function ProCard({

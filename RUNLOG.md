@@ -1152,3 +1152,160 @@
 - Next:
   1. Run real `cli-v*` and `v*` tags to confirm publish succeeds with live secrets/runners.
   2. Record short desktop/mobile QA clips for hero pipeline and Pro-card handoff timing.
+## Entry 042 - Publish-to-releases reliability + marketing-density redesign pass
+- Date/Time: 2026-02-16
+- Branch/Commit: roadmap (working tree)
+- Goal: Resolve remaining CLI/desktop publish failures and tighten Today/Workstreams + adjacent section branding/copy density based on screenshot feedback.
+- Commands run:
+  - `python -c "import pathlib,yaml; [yaml.safe_load(...)]"`
+  - `npm --prefix ixos-site run lint -- src/components/sections/TodaySection.tsx src/components/sections/WorkstreamsSection.tsx src/components/sections/MeetingUseCase.tsx src/components/sections/Benchmarks.tsx src/components/sections/Pricing.tsx src/components/sections/ProFeatures.tsx src/components/sections/ProCard.tsx src/components/sections/PricingProFlow.tsx src/components/sections/HeroPipeline.tsx`
+  - `npm --prefix ixos-site run build`
+- Outputs saved to:
+  - Workflow updates: `.github/workflows/cli-release.yml`, `.github/workflows/release.yml`
+  - Landing updates: `ixos-site/src/components/sections/TodaySection.tsx`, `WorkstreamsSection.tsx`, `MeetingUseCase.tsx`, `Benchmarks.tsx`, `ProFeatures.tsx`, `ProCard.tsx`, `Pricing.tsx`
+- Key results:
+  - CLI publish now resolves target repo default branch before first release create, preventing empty-repo ambiguity.
+  - Desktop copy job now explicitly waits for source draft-release assets with retries before download, reducing race-based `release not found` failures.
+  - Today and Workstreams rebalanced to tighter 2-column geometry and key-message-first cards (less generic/verbose).
+  - Reduced explanatory copy density across related sections (Meeting Use Case, Benchmarks, Pricing, Pro capabilities, Pro card bullets).
+- Validation summary:
+  - workflow YAML parse: PASS
+  - targeted eslint: PASS
+  - `npm --prefix ixos-site run build`: PASS
+- Decision: KEEP
+- Next:
+  1. Execute one live `cli-v*` Actions run (expected fix for prior `422 Repository is empty` after repo bootstrap).
+  2. Execute one live `v*` Actions run (expected fix for prior draft-release download timing failure).
+## Entry 043 - Pro-card smoothness + annual default + hydration-safe detection + Workstreams redesign
+- Date/Time: 2026-02-16
+- Branch/Commit: roadmap (working tree)
+- Goal: Improve Pro-card movement quality, set annual as default, eliminate SSR/client platform detection churn, and redesign Workstreams to be visually distinct from Today.
+- Commands run:
+  - `npm --prefix ixos-site run lint -- src/components/sections/PricingProFlow.tsx src/components/sections/Pricing.tsx src/components/sections/ProFeatures.tsx src/components/sections/DownloadActions.tsx src/app/download/page.tsx src/components/sections/WorkstreamsSection.tsx src/components/sections/TodaySection.tsx`
+  - `npm --prefix ixos-site run build`
+- Outputs saved to:
+  - `ixos-site/src/components/sections/PricingProFlow.tsx`
+  - `ixos-site/src/components/sections/Pricing.tsx`
+  - `ixos-site/src/components/sections/ProFeatures.tsx`
+  - `ixos-site/src/components/sections/DownloadActions.tsx`
+  - `ixos-site/src/app/download/page.tsx`
+  - `ixos-site/src/components/sections/WorkstreamsSection.tsx`
+- Key results:
+  - Pro-card handoff now uses hysteresis + rAF-throttled host switching and a hidden offscreen stage to reduce jank.
+  - Annual billing is now default on both home and /pricing via shared flow + fallback state.
+  - Platform auto-detection moved to post-hydration scheduling to avoid SSR/client mismatch churn.
+  - Workstreams replaced with an asymmetric "operations board" layout (stream rail + execution deck + evidence path), clearly different from Today.
+- Validation summary:
+  - targeted eslint: PASS
+  - `npm --prefix ixos-site run build`: PASS
+- Decision: KEEP
+- Next:
+  1. Run one `cli-v*` and one `v*` Actions pipeline for live publish verification.
+  2. Perform a final browser visual QA pass for Pro-card transition thresholds.## Entry 044 - Desktop release publish-chain hardening + UI stability pass
+- Date/Time: 2026-02-16
+- Branch/Commit: roadmap (working tree)
+- Goal: Fix desktop release failures in `generate-latest-json`/`publish-draft`, smooth recurring hero flicker, and continue Today/Workstreams differentiation.
+- Commands run:
+  - `python -c "import yaml, pathlib; [yaml.safe_load(p.read_text()) for p in pathlib.Path('.github/workflows').glob('*.yml')]; print('workflow-yaml-ok')"`
+  - `node --check scripts/generate-latest-json.js`
+  - `npm --prefix ixos-site run lint -- src/components/sections/HeroPipeline.tsx src/components/sections/TodaySection.tsx src/components/sections/WorkstreamsSection.tsx src/components/sections/PricingProFlow.tsx src/components/sections/Pricing.tsx src/components/sections/ProFeatures.tsx src/app/page.tsx`
+  - `npm --prefix ixos-site run build`
+- Outputs saved to:
+  - `.github/workflows/release.yml`
+  - `scripts/generate-latest-json.js`
+  - `ixos-site/src/components/sections/HeroPipeline.tsx`
+  - `ixos-site/src/components/sections/PricingProFlow.tsx`
+  - `ixos-site/src/components/sections/TodaySection.tsx`
+  - `ixos-site/src/components/sections/WorkstreamsSection.tsx`
+  - `ixos-site/src/app/page.tsx`
+- Key results:
+  - `generate-latest-json` now downloads from `IxosProtocol/ixos-releases` with retry/wait and PAT token, instead of private source release lookup.
+  - `publish-draft` now gracefully skips when the private draft release does not exist, preventing hard pipeline failure.
+  - `generate-latest-json.js` now scans artifacts recursively, supports broader cross-platform filename patterns, and prints scanned assets when no updater payload is matched.
+  - Hero pipeline motion was softened (`scrub: 0.42`), expensive blur filters removed, and mobile-step state updates de-duplicated to reduce flicker.
+  - Today and Workstreams were reworked into different interaction models and Workstreams shifted to amber section theming.
+- Validation summary:
+  - workflow YAML parse: PASS
+  - script syntax check: PASS
+  - targeted eslint on changed files: PASS
+  - `npm --prefix ixos-site run build`: PASS
+- Decision: KEEP
+- Next:
+  1. Run one live desktop `v*` tag workflow to verify `generate-latest-json` and `publish-draft` end-to-end.
+  2. Fine-tune pro-card thresholds after visual QA recording.
+## Entry 045 - Desktop release postprocess + installer/update hardening + bundled models
+- Date/Time: 2026-02-16
+- Branch/Commit: roadmap (working tree)
+- Goal: Resolve desktop post-tag failures (`generate-latest-json`, `publish-draft`), fix installer/update reliability issues, and ensure desktop installer bundles real models.
+- Commands run:
+  - `python -c "import yaml, pathlib; [yaml.safe_load(p.read_text()) for p in pathlib.Path('.github/workflows').glob('*.yml')]; print('workflow-yaml-ok')"`
+  - `bash -n scripts/install.sh`
+  - `Parser::ParseFile('scripts/install.ps1', ...)`
+  - `cargo test test_parse_semver --package ixos-protocol --lib`
+  - `cargo test test_is_newer --package ixos-protocol --lib`
+  - `npm --prefix ixos-site run lint -- src/lib/downloads.ts src/app/docs/cli-reference/page.tsx`
+  - `npm --prefix ixos-site run build`
+- Outputs saved to:
+  - `.github/workflows/release.yml`
+  - `.github/workflows/release-postprocess.yml`
+  - `.github/workflows/cli-release.yml`
+  - `scripts/install.ps1`
+  - `scripts/install.sh`
+  - `scripts/generate-latest-json.js`
+  - `src/cli/self_update.rs`
+  - `src-tauri/tauri.conf.json`
+  - `src/ixos_embed/mmap_model.rs`
+  - `ixos-site/src/lib/downloads.ts`
+  - `ixos-site/src/app/docs/cli-reference/page.tsx`
+- Key results:
+  - Added manual `Release Postprocess` workflow to repair existing tags (e.g., `v0.1.6`) without full rebuild.
+  - Desktop workflow now checks out LFS and hard-fails if real bundled model files are missing/suspiciously small.
+  - Tauri config now bundles Flash v2 + Potion model directories into installer resources.
+  - Model path resolution now also supports flattened `resources/<model-name>` layout.
+  - PowerShell installer now has null-safe checksum parsing and semver-based latest `cli-v*` selection.
+  - Bash installer now resolves latest `cli-v*` by semver, not API ordering artifacts.
+  - CLI self-update now stages+renames on Unix to avoid `Text file busy`.
+  - CLI release workflow now publishes `install.sh` + `install.ps1` as stable release assets.
+  - Website/docs install commands now point to `ixos-releases/releases/latest/download/install.*`.
+- Validation summary:
+  - workflow YAML parse: PASS
+  - installer syntax checks: PASS
+  - targeted self-update tests: PASS
+  - site lint/build for touched files: PASS
+- Decision: KEEP
+- Next:
+  1. Run `Release Postprocess` for `v0.1.6`.
+  2. Trigger next `cli-v*` release once to publish stable install script assets.
+  3. Trigger next desktop `v*` release to validate bundled-model installers end-to-end.
+## Entry 046 - Pre-v0.1.7 release safety fixes (model sourcing, portable installer sort, stable script assets)
+- Date/Time: 2026-02-16
+- Branch/Commit: roadmap (working tree)
+- Goal: Address blocker findings before cutting `v0.1.7`.
+- Commands run:
+  - `python -c "import yaml, pathlib; ..."`
+  - `bash -n scripts/install.sh`
+  - PowerShell parser check for `scripts/install.ps1`
+  - `cargo test test_parse_semver --package ixos-protocol --lib`
+  - `cargo check --manifest-path src-tauri/Cargo.toml`
+- Outputs saved to:
+  - `.github/workflows/release.yml`
+  - `.github/workflows/release-postprocess.yml`
+  - `.github/workflows/cli-release.yml`
+  - `scripts/install.sh`
+  - `src-tauri/tauri.conf.json`
+  - `src/ixos_embed/mmap_model.rs`
+  - `src-tauri/src/commands/system.rs`
+- Key results:
+  - Replaced strict local-model gate with auto-fetch + verify flow (Flash v2 + Potion), so releases no longer fail solely due missing tracked model files.
+  - Desktop copy-to-releases now also uploads `install.sh` and `install.ps1`, guaranteeing CLI install script assets on desktop tags.
+  - Added postprocess script upload to retrofit existing tags (e.g., `v0.1.6`).
+  - Removed GNU-only `sort -V` dependency in `install.sh` with portable semver ordering.
+  - Updated flash model download repo mapping in Tauri command path to `Thunderbolty10/Ixos-Flash` and retained Pro-v2 dependency flow through Potion.
+- Validation summary:
+  - workflow YAML parse: PASS
+  - install scripts syntax/parse: PASS
+  - targeted tests/checks: PASS
+- Decision: KEEP
+- Next:
+  1. Run `Release Postprocess` for `v0.1.6` (adds scripts + latest.json without full rebuild).
+  2. Cut `cli-v0.1.7` then `v0.1.7`.

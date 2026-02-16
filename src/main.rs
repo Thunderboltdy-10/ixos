@@ -1403,7 +1403,50 @@ async fn handle_model(action: ModelCommands) -> anyhow::Result<()> {
     use ixos_protocol::ixos_embed::MmapModel2VecEmbedder;
 
     match action {
-        ModelCommands::List { all, json } => {
+        ModelCommands::List { all, json, remote } => {
+            if remote {
+                let models = ixos_protocol::ixos_embed::MmapModel2VecEmbedder::remote_models();
+                if json {
+                    #[derive(serde::Serialize)]
+                    struct RemoteModelJson {
+                        model_id: String,
+                        display_name: String,
+                        description: String,
+                        hf_id: Option<String>,
+                        tier: String,
+                        size_mb: Option<f32>,
+                    }
+                    let payload: Vec<RemoteModelJson> = models
+                        .into_iter()
+                        .map(|m| RemoteModelJson {
+                            model_id: m.model_id,
+                            display_name: m.display_name,
+                            description: m.description,
+                            hf_id: m.hf_id,
+                            tier: m.tier,
+                            size_mb: m.size_mb,
+                        })
+                        .collect();
+                    println!("{}", serde_json::to_string_pretty(&payload)?);
+                } else {
+                    println!("Available Remote Models (downloadable from HuggingFace):");
+                    println!("");
+                    for m in models {
+                        let download_status = if m.hf_id.is_some() { "Downloadable" } else { "Local only" };
+                        println!("  {} ({})", m.model_id, download_status);
+                        println!("    Description: {}", m.description);
+                        if let Some(size) = m.size_mb {
+                            println!("    Size: ~{:.0} MB", size);
+                        }
+                        if let Some(hf) = &m.hf_id {
+                            println!("    HF ID: {}", hf);
+                        }
+                        println!("");
+                    }
+                }
+                return Ok(());
+            }
+
             let models = MmapModel2VecEmbedder::available_models();
             if json {
                 #[derive(serde::Serialize)]
@@ -1445,9 +1488,99 @@ async fn handle_model(action: ModelCommands) -> anyhow::Result<()> {
                 }
             }
         }
-        ModelCommands::Download { model, .. } => {
-            println!("Downloading {}...", model);
-            println!("Model download is only available in the Ixos desktop app.");
+        ModelCommands::Download { model, all, progress } => {
+            use ixos_protocol::ixos_embed::MmapModel2VecEmbedder;
+            
+            let remote_catalog = MmapModel2VecEmbedder::remote_models();
+            
+            let models_to_download: Vec<_> = if all {
+                remote_catalog.into_iter().filter(|m| m.hf_id.is_some()).collect()
+            } else if let Some(model_name) = model {
+                let name_lower = model_name.to_lowercase();
+                remote_catalog
+                    .into_iter()
+                    .filter(|m| {
+                        m.model_id.to_lowercase() == name_lower 
+                        || m.display_name.to_lowercase().contains(&name_lower)
+                    })
+                    .collect()
+            } else {
+                // Default: only download potion (the only model2vec-compatible model)
+                remote_catalog
+                    .into_iter()
+                    .filter(|m| m.model_id == "potion")
+                    .collect()
+            };
+            
+            if models_to_download.is_empty() {
+                println!("No downloadable models found.");
+                println!("Use 'ixos model list --remote' to see available models.");
+                println!("Note: ixos-flash-v2, ixos-pro-v2 are local models that must be built using Python scripts:");
+                println!("  python scripts/distill_model2vec_lab.py --mode flash --flash-id ixos-flash-v2");
+                println!("  python scripts/distill_model2vec_lab.py --mode pro --pro-id ixos-pro-v2");
+                return Ok(());
+            }
+            
+            println!("Downloading {} model(s)...", models_to_download.len());
+            
+            for entry in models_to_download {
+                if let Some(hf_id) = entry.hf_id {
+                    println!("\nDownloading {} from HuggingFace...", entry.model_id);
+                    println!("  HF ID: {}", hf_id);
+                    
+                    // Get the models directory
+                    let models_dir = dirs::data_local_dir()
+                        .unwrap_or_else(|| std::path::PathBuf::from("."))
+                        .join("Ixos")
+                        .join("models")
+                        .join(entry.model_id.clone());
+                    
+                    // Convert to forward slashes for Python compatibility on Windows
+                    let models_dir_str = models_dir.display().to_string().replace('\\', "/");
+                    
+                    println!("  Target: {}", models_dir_str);
+                    
+                    // Use Python directly with -c and proper escaping
+                    let python_script = format!(
+                        "import sys; from model2vec import StaticModel; m = StaticModel.from_pretrained('{}'); m.save_pretrained('{}')",
+                        hf_id,
+                        models_dir_str
+                    );
+                    
+                    if progress {
+                        println!("  Running: python -c '...' ");
+                    }
+                    
+                    match std::process::Command::new("python")
+                        .args(["-c", &python_script])
+                        .output()
+                    {
+                        Ok(output) => {
+                            if output.status.success() {
+                                println!("  [OK] Downloaded successfully to {:?}", models_dir);
+                            } else {
+                                let stderr = String::from_utf8_lossy(&output.stderr);
+                                println!("  [ERROR] Download failed: {}", stderr.lines().last().unwrap_or("Unknown error"));
+                                println!("  Note: Some models require the fetch_models.py script:");
+                                println!("    python scripts/fetch_models.py --manifest models/lab/manifest.json");
+                            }
+                        }
+                        Err(e) => {
+                            println!("  [ERROR] Failed to run Python: {}. Make sure Python and model2vec are installed.", e);
+                            println!("  Install with: pip install model2vec");
+                        }
+                    }
+                } else {
+                    println!("\n{}: Local-only model, cannot download from HuggingFace", entry.model_id);
+                    println!("  To build this model, run:");
+                    if entry.model_id.contains("flash") {
+                        println!("    python scripts/distill_model2vec_lab.py --mode flash --flash-id {}", entry.model_id);
+                    } else if entry.model_id.contains("pro") {
+                        println!("    python scripts/distill_model2vec_lab.py --mode pro --pro-id {}", entry.model_id);
+                    }
+                }
+            }
+            println!("\nDone!");
         }
         ModelCommands::Preload { model } => {
             println!("Preloading {}...", model);

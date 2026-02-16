@@ -15,17 +15,17 @@ export const CLI_INSTALL_COMMANDS: Record<InstallOs, { label: string; shell: str
   windows: {
     label: "Windows",
     shell: "PowerShell",
-    command: "irm https://raw.githubusercontent.com/IxosProtocol/ixos-cli/main/scripts/install.ps1 | iex",
+    command: "irm https://github.com/IxosProtocol/ixos-releases/releases/latest/download/install.ps1 | iex",
   },
   macos: {
     label: "macOS / Linux",
     shell: "bash / zsh",
-    command: "curl -fsSL https://raw.githubusercontent.com/IxosProtocol/ixos-cli/main/scripts/install.sh | bash",
+    command: "curl -fsSL https://github.com/IxosProtocol/ixos-releases/releases/latest/download/install.sh | bash",
   },
   linux: {
     label: "macOS / Linux",
     shell: "bash / zsh / fish",
-    command: "curl -fsSL https://raw.githubusercontent.com/IxosProtocol/ixos-cli/main/scripts/install.sh | bash",
+    command: "curl -fsSL https://github.com/IxosProtocol/ixos-releases/releases/latest/download/install.sh | bash",
   },
 };
 

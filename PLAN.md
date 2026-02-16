@@ -397,3 +397,50 @@
   1. Trigger real `cli-v*` and `v*` workflows and confirm publish succeeds on macOS/Linux.
   2. Capture short desktop/mobile recordings for the pipeline and Pro-card handoff.
   3. Do a final text/copy micro-polish on Today/Workstreams after visual review.
+## STATE SNAPSHOT (Publish reliability + marketing density pass, 2026-02-16)
+- Date: 2026-02-16
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Live Actions validation for `cli-v*` and `v*` publish jobs
+  2. Final visual QA calibration for section copy density and spacing
+  3. Cross-device scroll choreography tuning edge cases
+- Current pass validation (2026-02-16):
+  - `python -c "...yaml.safe_load..."` over workflows: PASS
+  - `npm --prefix ixos-site run lint -- <updated sections>`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+- What is next (top 3 tasks):
+  1. Trigger one `cli-v*` run and verify `publish-to-releases` completes.
+  2. Trigger one `v*` run and verify draft-download/copy/upload path completes.
+  3. Capture final screenshots and trim any remaining verbose copy.
+## STATE SNAPSHOT (Motion smoothing + hydration-safe detection + Workstreams redesign, 2026-02-16)
+- Date: 2026-02-16
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Live Actions proof for publish-to-releases on both tag flows
+  2. Final subjective motion tuning for Pro-card handoff thresholds
+  3. Final cross-section brand polish after screenshot QA
+- Current pass validation (2026-02-16):
+  - `npm --prefix ixos-site run lint -- <changed files>`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+- What is next (top 3 tasks):
+  1. Run `cli-v*` and `v*` workflows to confirm live publish behavior.
+  2. Review Pro-card motion feel in browser and adjust threshold constants if needed.
+  3. Finalize one more copy/spacing polish pass if any section still feels template-like.## STATE NOTE (2026-02-16, release reliability patch)
+- Desktop release postprocess path added for existing tags (`.github/workflows/release-postprocess.yml`).
+- Desktop release now bundles real Flash v2 + Potion model assets in installer resources and fails CI if model weights are missing/suspiciously small.
+- CLI update/install reliability patched (PowerShell null-safe checksum parse + semver tag resolution, Unix staged rename for ETXTBSY).
+- CLI install commands now target release assets (`install.sh`, `install.ps1`) published by CLI release workflow.
+## STATE NOTE (2026-02-16, pre-v0.1.7 blockers resolved)
+- Desktop release no longer requires pre-checked-in model files; it now fetches missing Flash/Potion assets and validates before packaging.
+- Desktop and CLI releases both publish installer scripts to `ixos-releases` so `latest/download/install.*` remains available.
+- `install.sh` semver selection is now portable on macOS (no GNU `sort -V` dependency).

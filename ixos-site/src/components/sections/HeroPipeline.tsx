@@ -173,7 +173,7 @@ export function HeroPipeline() {
       end: isLowPowered ? "+=175%" : "+=200%",
       pin: true,
       pinSpacing: true,
-      scrub: true,
+      scrub: 0.42,
       anticipatePin: 1,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
@@ -201,7 +201,7 @@ export function HeroPipeline() {
       const viewportHeight = window.innerHeight || 1;
       const visible = clamp01((viewportHeight - rect.top) / Math.max(rect.height, 1));
       const nextStep = Math.min(PHASES.length - 1, Math.floor(visible * PHASES.length));
-      setMobileStep(nextStep);
+      setMobileStep((prev) => (prev === nextStep ? prev : nextStep));
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -227,12 +227,11 @@ export function HeroPipeline() {
     const demoLift = reducedFx ? 0 : 214 - entry * 176 - mapProgress(progress, 0.62, 0.9) * 34;
     const demoScale = reducedFx ? 1 : 0.986 + entry * 0.028;
     const headerOpacity = reducedFx ? 1 : clamp01(mapProgress(progress, 0.26, 0.48));
-    const heroMorph = reducedFx ? 1 : mapProgress(progress, 0.10, 0.22);
-    const titleMorph = reducedFx ? 1 : mapProgress(progress, 0.34, 0.58);
-
-    // A floor-based quantization avoids highlight bouncing at phase boundaries.
     const activeStep = entry > 0.64
-      ? Math.min(PHASES.length - 1, Math.max(0, Math.floor(narrative * PHASES.length)))
+      ? Math.min(
+          PHASES.length - 1,
+          Math.max(0, Math.floor((narrative + 0.08 / PHASES.length) * PHASES.length))
+        )
       : null;
 
     const demoStep = entry > 0.64 ? activeStep : null;
@@ -245,8 +244,6 @@ export function HeroPipeline() {
       demoLift,
       demoScale,
       headerOpacity,
-      heroMorph,
-      titleMorph,
       activeStep,
       demoStep,
     };
@@ -361,8 +358,7 @@ export function HeroPipeline() {
         style={{
           opacity: derived.heroOpacity * (1 - derived.exit * 0.2),
           transform: `translate3d(0, ${derived.heroShiftY}px, 0)`,
-          filter: `blur(${derived.heroMorph * 7}px)`,
-          willChange: "transform, opacity, filter",
+          willChange: "transform, opacity",
         }}
       >
         <div className="pointer-events-auto max-w-4xl text-center select-text">
@@ -438,8 +434,7 @@ export function HeroPipeline() {
                 gridArea: "title",
                 opacity: derived.headerOpacity,
                 transform: `translate3d(0, ${(1 - derived.entry) * 18}px, 0)`,
-                filter: `blur(${(1 - derived.titleMorph) * 6}px)`,
-                willChange: "transform, opacity, filter",
+                willChange: "transform, opacity",
               }}
             >
               <div className="text-[10px] font-mono uppercase tracking-[0.28em] text-accent-amber/82">

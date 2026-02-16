@@ -433,15 +433,24 @@ pub enum ModelCommands {
         #[arg(long)]
         all: bool,
 
+        /// Show downloadable remote model catalog from Hugging Face
+        #[arg(long)]
+        remote: bool,
+
         /// Output as JSON
         #[arg(long)]
         json: bool,
     },
 
-    /// Download a model
+    /// Download models from Hugging Face
     Download {
-        /// Model type (ixos-flash-v2, ixos-pro-v2, etc.)
-        model: String,
+        /// Model type (ixos-flash-v2, ixos-pro-v2, potion, etc.)
+        /// If omitted, downloads all supported models.
+        model: Option<String>,
+
+        /// Download all supported models
+        #[arg(long, conflicts_with = "model")]
+        all: bool,
 
         /// Show progress
         #[arg(long)]

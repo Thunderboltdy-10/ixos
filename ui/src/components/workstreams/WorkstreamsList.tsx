@@ -99,7 +99,7 @@ export function WorkstreamsList({ onSelectWorkstream, onOpenFile }: WorkstreamsL
     if (selectedFilePaths.length > 0) {
       const events = await tauri.getActivity(
         { start: Date.now() - 7 * 24 * 60 * 60 * 1000 },
-        ['file_opened', 'result_clicked', 'result_shown', 'file_revealed'],
+        ['file_opened', 'result_clicked', 'result_shown', 'file_revealed', 'file_modified'],
         2000
       );
       const pathToEventId = new Map<string, string>();

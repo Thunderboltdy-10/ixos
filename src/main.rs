@@ -161,6 +161,10 @@ async fn main() -> anyhow::Result<()> {
         Commands::Model { action } => {
             handle_model(action).await?;
         }
+
+        Commands::Update { check, yes, version } => {
+            ixos_protocol::cli::self_update::run_update(check, yes, version)?;
+        }
     }
 
     Ok(())

@@ -119,6 +119,20 @@ video::-moz-media-controls {
   color: transparent;
 }
 
+@utility heading-gradient-teal {
+  background: linear-gradient(180deg, #FFFFFF 0%, #5EEAD4 60%, #14B8A6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility heading-gradient-magenta {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F472B6 60%, #DB2777 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 @utility shadow-lift {
   box-shadow: var(--shadow-lift);
 }
@@ -272,14 +286,9 @@ video::-moz-media-controls {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 70% 50%, rgba(246, 185, 76, 0.08) 0%, transparent 60%);
+  background: radial-gradient(ellipse 80% 60% at 70% 50%, rgba(20, 184, 166, 0.08) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
-}
-
-.section-trust {
-  position: relative;
-  background: transparent;
 }
 
 .section-trust::before {
@@ -621,6 +630,7 @@ video::-moz-media-controls {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -628,11 +638,9 @@ video::-moz-media-controls {
 
 .animate-shimmer {
   background-size: 200% 100%;
-  background-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(20, 184, 166, 0.3) 50%,
-    transparent 100%
-  );
+  background-image: linear-gradient(90deg,
+      transparent 0%,
+      rgba(20, 184, 166, 0.3) 50%,
+      transparent 100%);
   animation: shimmer-sweep 2s ease-in-out infinite;
 }

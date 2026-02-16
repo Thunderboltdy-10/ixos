@@ -153,7 +153,7 @@ export function IxosDemoWindow({ onInteract, controlledStep = null, onModeChange
   const previousControlledStepRef = useRef<number | null>(null);
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [activeMode, setActiveMode] = useState<DemoMode>('local');
+  const [activeMode, setActiveMode] = useState<DemoMode>('memory');
   const [activeQuality, setActiveQuality] = useState<DemoQuality>('auto');
   const [showModeMenu, setShowModeMenu] = useState(false);
   const [showQualityMenu, setShowQualityMenu] = useState(false);

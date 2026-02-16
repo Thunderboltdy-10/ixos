@@ -304,6 +304,21 @@ pub enum Commands {
         #[command(subcommand)]
         action: ModelCommands,
     },
+
+    /// Check for and install CLI updates
+    Update {
+        /// Only check for updates without installing
+        #[arg(long)]
+        check: bool,
+
+        /// Skip confirmation prompt
+        #[arg(long)]
+        yes: bool,
+
+        /// Install a specific version (e.g., 0.2.0)
+        #[arg(long)]
+        version: Option<String>,
+    },
 }
 
 // =============================================================================
@@ -738,6 +753,32 @@ mod tests {
                 assert!(matches!(cache_mode, Some(CliCacheMode::Ephemeral)));
             }
             _ => panic!("Expected Search command"),
+        }
+    }
+
+    #[test]
+    fn test_update_command() {
+        let cli = Cli::try_parse_from(["ixos", "update", "--check"]).unwrap();
+        match cli.command {
+            Commands::Update { check, yes, version } => {
+                assert!(check);
+                assert!(!yes);
+                assert!(version.is_none());
+            }
+            _ => panic!("Expected Update command"),
+        }
+    }
+
+    #[test]
+    fn test_update_command_with_version() {
+        let cli = Cli::try_parse_from(["ixos", "update", "--yes", "--version", "0.2.0"]).unwrap();
+        match cli.command {
+            Commands::Update { check, yes, version } => {
+                assert!(!check);
+                assert!(yes);
+                assert_eq!(version, Some("0.2.0".to_string()));
+            }
+            _ => panic!("Expected Update command"),
         }
     }
 

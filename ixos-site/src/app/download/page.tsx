@@ -11,6 +11,8 @@ import { DownloadThankYou } from "@/components/ui/DownloadThankYou";
 import { cn } from "@/lib/utils";
 import { getDownloadUrl, type DownloadPlatform } from "@/lib/downloads";
 import { PageGlow } from "@/components/effects/PageGlow";
+import { Check, Copy, Terminal } from "lucide-react";
+import { CLI_INSTALL_COMMANDS, type InstallOs } from "@/components/sections/DownloadActions";
 
 type PlatformId = "windows" | "macos" | "linux";
 type MacChip = "apple" | "intel";
@@ -83,6 +85,18 @@ export default function DownloadPage() {
   const [macChip, setMacChip] = useState<MacChip>("apple");
   const [showThankYou, setShowThankYou] = useState(false);
   const [downloadingPlatform, setDownloadingPlatform] = useState("");
+  const [installOs, setInstallOs] = useState<InstallOs>("windows");
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(CLI_INSTALL_COMMANDS[installOs].command);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   const getDownloadKey = (platformId: PlatformId): DownloadPlatform => {
     switch (platformId) {

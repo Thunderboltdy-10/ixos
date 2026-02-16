@@ -138,7 +138,7 @@ export function HeroPipeline() {
   });
   const [progress, setProgress] = useState(0);
   const [mobileStep, setMobileStep] = useState(0);
-  const [demoMode, setDemoMode] = useState<DemoMode>("local");
+  const [demoMode, setDemoMode] = useState<DemoMode>("memory");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -223,7 +223,7 @@ export function HeroPipeline() {
     const narrative = reducedFx ? mapProgress(progress, 0.04, 0.98) : mapProgress(progress, 0.46, 0.9);
     const exit = reducedFx ? 0 : easeOutCubic(mapProgress(progress, 0.92, 1));
 
-    const heroOpacity = reducedFx ? 0 : clamp01(1 - mapProgress(progress, 0.5, 0.78));
+    const heroOpacity = reducedFx ? 0 : clamp01(1 - mapProgress(progress, 0.65, 0.95));
     const heroDrop = mapProgress(progress, 0.16, 0.46);
     const heroShiftY = reducedFx ? 0 : -36 + intro * 10 + heroDrop * 170 - exit * 8;
 
@@ -246,6 +246,8 @@ export function HeroPipeline() {
       } else {
         const hysteresis = 0.22;
         if (rawStep > previousStep && normalizedPosition >= (previousStep + 1) + hysteresis) {
+          activeStep = rawStep;
+        } else if (rawStep < previousStep && normalizedPosition <= previousStep - hysteresis) {
           activeStep = rawStep;
         } else if (rawStep < previousStep && normalizedPosition <= previousStep - hysteresis) {
           activeStep = rawStep;
@@ -291,8 +293,8 @@ export function HeroPipeline() {
             <h1 className="text-4xl font-semibold leading-[1.02] tracking-tight text-fg-porcelain sm:text-5xl">
               The{" "}
               <span className="relative inline-block">
-                <span className="relative z-10 text-[1.08em] font-semibold text-accent-amber">Google Search</span>
-                <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-accent-amber/50 rounded-full" />
+                <span className="relative z-10 text-[1.08em] font-semibold heading-gradient-amber">Google Search</span>
+                <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-accent-amber/40 rounded-full blur-[1px]" />
               </span>
               <br />
               <span className="text-fg-muted">of your computer.</span>
@@ -309,7 +311,7 @@ export function HeroPipeline() {
               <Button
                 size="lg"
                 hasParticleMagnet
-                className="bg-accent-amber font-medium text-bg-graphite-0 hover:bg-accent-amber/90"
+                className="bg-accent-amber font-medium text-bg-graphite-0 hover:bg-accent-amber/80 hover:scale-[1.02] transition-transform"
                 asChild
               >
                 <Link href="/download">Download Desktop</Link>
@@ -398,8 +400,8 @@ export function HeroPipeline() {
           <h1 className="text-4xl font-semibold leading-[0.98] tracking-tight text-fg-porcelain md:text-5xl lg:text-6xl">
             The{" "}
             <span className="relative inline-block">
-              <span className="relative z-10 text-[1.08em] font-semibold text-accent-amber">Google Search</span>
-              <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-accent-amber/50 rounded-full" />
+              <span className="relative z-10 text-[1.08em] font-semibold heading-gradient-amber selection:text-accent-amber selection:bg-accent-amber/20 hover:opacity-90 transition-opacity cursor-text">Google Search</span>
+              <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-accent-amber/40 rounded-full blur-[1px]" />
             </span>
             <br />
             <span className="text-fg-muted">of your computer.</span>
@@ -416,7 +418,7 @@ export function HeroPipeline() {
             <Button
               size="lg"
               hasParticleMagnet
-              className="min-w-[164px] bg-accent-amber font-medium text-bg-graphite-0 hover:bg-accent-amber/90"
+              className="min-w-[164px] bg-accent-amber font-medium text-bg-graphite-0 hover:bg-accent-amber/80 hover:scale-[1.02] transition-transform"
               asChild
             >
               <Link href="/download">Download Desktop</Link>
@@ -466,7 +468,7 @@ export function HeroPipeline() {
                 willChange: "transform, opacity, filter",
               }}
             >
-              <div className="text-[10px] font-mono uppercase tracking-[0.28em] text-accent-teal/82">
+              <div className="text-[10px] font-mono uppercase tracking-[0.28em] text-accent-amber/82">
                 Engine Walkthrough
               </div>
               <h2 className="mt-2 text-4xl md:text-5xl font-semibold leading-[0.94] tracking-tight text-fg-porcelain">
@@ -700,7 +702,7 @@ function PhaseTile({
   return (
     <article
       className={cn(
-        "relative flex min-h-0 overflow-hidden rounded-2xl border-2 bg-bg-graphite-2/92 backdrop-blur-sm transition-all duration-500",
+        "relative flex min-h-0 overflow-hidden rounded-2xl border-2 bg-bg-graphite-2/92 backdrop-blur-sm transition-all duration-700 ease-out",
         compact ? "h-full items-start gap-5 p-6" : "grid h-full grid-rows-[auto_minmax(0,1fr)] gap-4 p-6",
         isActive
           ? cn(styles.borderActive, styles.shadow, "z-10 ring-2 opacity-100", styles.ring)

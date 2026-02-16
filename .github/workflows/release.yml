@@ -59,13 +59,8 @@ jobs:
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: Install root npm dependencies
+      - name: Install npm dependencies
         run: npm ci --prefer-offline --no-audit
-
-      - name: Install UI dependencies
-        shell: bash
-        run: |
-          npm ci --workspace ui --prefer-offline --no-audit || (rm -rf node_modules ui/node_modules && npm install --workspace ui --no-audit)
 
       - name: Create model stubs for Windows build
         if: matrix.platform == 'windows-latest'
@@ -98,12 +93,49 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: 'Ixos ${{ github.ref_name }}'
           releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: false
+          releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
 
-  upload-to-blob:
+  copy-to-releases:
     needs: publish-tauri
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download release artifacts from private draft
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download ${{ github.ref_name }} --dir artifacts
+
+      - name: Prepare fixed-name artifacts
+        shell: bash
+        run: |
+          cd artifacts
+          # Create fixed-name copies for stable "latest" URLs
+          find . -name "*_x64-setup.exe" -exec cp {} ixos-setup.exe \;
+          find . -name "*_aarch64.dmg" -exec cp {} ixos-aarch64.dmg \;
+          find . -name "*_x64.dmg" -exec cp {} ixos-x64.dmg \;
+          find . -name "*.AppImage" -exec cp {} ixos.AppImage \;
+          cd ..
+
+      - name: Upload desktop installers to ixos-releases
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_PAT }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --repo IxosProtocol/ixos-releases \
+            --title "Ixos ${{ github.ref_name }}" \
+            --notes "Desktop release ${{ github.ref_name }}" \
+            artifacts/* \
+            || gh release upload "${{ github.ref_name }}" \
+              --repo IxosProtocol/ixos-releases \
+              --clobber \
+              artifacts/*
+
+  generate-latest-json:
+    needs: copy-to-releases
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -111,10 +143,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit
 
       - name: Download release artifacts
         env:
@@ -122,9 +150,19 @@ jobs:
         run: |
           gh release download ${{ github.ref_name }} --dir artifacts
 
-      - name: Upload to Vercel Blob
+      - name: Generate and upload latest.json
         env:
-          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASES_PAT }}
           ARTIFACTS_DIR: artifacts
           VERSION: ${{ github.ref_name }}
-        run: node scripts/upload-release.js
+        run: node scripts/generate-latest-json.js
+
+  publish-draft:
+    needs: copy-to-releases
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish private draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release edit "${{ github.ref_name }}" --draft=false --repo "${{ github.repository }}"

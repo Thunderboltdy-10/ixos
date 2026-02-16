@@ -93,8 +93,56 @@ jobs:
         run: |
           bash -n scripts/install.sh
 
-      - name: Upload assets to GitHub Release
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-${{ matrix.target_os }}-${{ matrix.target_arch }}
+          path: dist/*
+
+      - name: Upload assets to private GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           files: dist/*
+
+  publish-to-releases:
+    needs: build-cli
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Derive version
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#cli-v}"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Aggregate SHA256SUMS
+        shell: bash
+        run: |
+          cd artifacts
+          cat *.sha256 > SHA256SUMS
+
+      - name: Upload to ixos-releases
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_PAT }}
+        run: |
+          # Create or update release on ixos-releases
+          gh release create "${{ github.ref_name }}" \
+            --repo IxosProtocol/ixos-releases \
+            --title "Ixos CLI ${{ github.ref_name }}" \
+            --notes "CLI release ${{ github.ref_name }}" \
+            artifacts/* \
+            || gh release upload "${{ github.ref_name }}" \
+              --repo IxosProtocol/ixos-releases \
+              --clobber \
+              artifacts/*

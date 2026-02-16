@@ -1,0 +1,72 @@
+name: Mirror CLI to Public Repo
+
+on:
+  push:
+    tags:
+      - "cli-v*"
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare mirror content
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          MIRROR_DIR="$(mktemp -d)"
+          echo "MIRROR_DIR=$MIRROR_DIR" >> "$GITHUB_ENV"
+
+          # Copy only public-safe files
+          mkdir -p "$MIRROR_DIR/src" "$MIRROR_DIR/scripts"
+          cp -r src/ "$MIRROR_DIR/src/"
+          cp Cargo.toml "$MIRROR_DIR/Cargo.toml"
+          cp Cargo.lock "$MIRROR_DIR/Cargo.lock"
+          cp LICENSE "$MIRROR_DIR/LICENSE"
+          [ -f README.md ] && cp README.md "$MIRROR_DIR/README.md" || true
+          [ -f scripts/install.sh ] && cp scripts/install.sh "$MIRROR_DIR/scripts/install.sh" || true
+          [ -f scripts/install.ps1 ] && cp scripts/install.ps1 "$MIRROR_DIR/scripts/install.ps1" || true
+
+          # Patch Cargo.toml: remove workspace members (no src-tauri), update metadata
+          cd "$MIRROR_DIR"
+          # Remove workspace section (the mirror is a single crate)
+          python3 -c "
+          import re, pathlib
+          cargo = pathlib.Path('Cargo.toml').read_text()
+          # Remove [workspace] block
+          cargo = re.sub(r'\[workspace\].*?(?=\n\[)', '', cargo, flags=re.DOTALL)
+          # Update repository URL
+          cargo = cargo.replace('IxosProtocol/Ixos', 'IxosProtocol/ixos-cli')
+          # Set license to MIT only
+          cargo = re.sub(r'license\s*=\s*\"[^\"]+\"', 'license = \"MIT\"', cargo)
+          pathlib.Path('Cargo.toml').write_text(cargo)
+          "
+
+      - name: Push to ixos-cli
+        shell: bash
+        env:
+          SSH_KEY: ${{ secrets.CLI_MIRROR_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+
+          # Configure SSH
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
+
+          cd "$MIRROR_DIR"
+          git init
+          git checkout -b main
+          git add -A
+          git commit -m "Mirror from ${{ github.ref_name }}"
+          git remote add origin git@github.com:IxosProtocol/ixos-cli.git
+          git push --force origin main
+
+          # Cleanup SSH key
+          rm -f ~/.ssh/deploy_key

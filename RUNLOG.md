@@ -1277,3 +1277,35 @@
   1. Run `Release Postprocess` for `v0.1.6`.
   2. Trigger next `cli-v*` release once to publish stable install script assets.
   3. Trigger next desktop `v*` release to validate bundled-model installers end-to-end.
+## Entry 046 - Pre-v0.1.7 release safety fixes (model sourcing, portable installer sort, stable script assets)
+- Date/Time: 2026-02-16
+- Branch/Commit: roadmap (working tree)
+- Goal: Address blocker findings before cutting `v0.1.7`.
+- Commands run:
+  - `python -c "import yaml, pathlib; ..."`
+  - `bash -n scripts/install.sh`
+  - PowerShell parser check for `scripts/install.ps1`
+  - `cargo test test_parse_semver --package ixos-protocol --lib`
+  - `cargo check --manifest-path src-tauri/Cargo.toml`
+- Outputs saved to:
+  - `.github/workflows/release.yml`
+  - `.github/workflows/release-postprocess.yml`
+  - `.github/workflows/cli-release.yml`
+  - `scripts/install.sh`
+  - `src-tauri/tauri.conf.json`
+  - `src/ixos_embed/mmap_model.rs`
+  - `src-tauri/src/commands/system.rs`
+- Key results:
+  - Replaced strict local-model gate with auto-fetch + verify flow (Flash v2 + Potion), so releases no longer fail solely due missing tracked model files.
+  - Desktop copy-to-releases now also uploads `install.sh` and `install.ps1`, guaranteeing CLI install script assets on desktop tags.
+  - Added postprocess script upload to retrofit existing tags (e.g., `v0.1.6`).
+  - Removed GNU-only `sort -V` dependency in `install.sh` with portable semver ordering.
+  - Updated flash model download repo mapping in Tauri command path to `Thunderbolty10/Ixos-Flash` and retained Pro-v2 dependency flow through Potion.
+- Validation summary:
+  - workflow YAML parse: PASS
+  - install scripts syntax/parse: PASS
+  - targeted tests/checks: PASS
+- Decision: KEEP
+- Next:
+  1. Run `Release Postprocess` for `v0.1.6` (adds scripts + latest.json without full rebuild).
+  2. Cut `cli-v0.1.7` then `v0.1.7`.

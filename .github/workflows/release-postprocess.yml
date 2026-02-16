@@ -32,18 +32,27 @@ jobs:
           TAG="${{ inputs.release_tag }}"
           REPO="IxosProtocol/ixos-releases"
 
-          for attempt in $(seq 1 12); do
+          # Check if release exists at all
+          if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            echo "ERROR: Release $TAG not found in $REPO" >&2
+            echo "Make sure the release workflow has completed successfully first." >&2
+            echo "Available releases:" >&2
+            gh release list --repo "$REPO" --limit 5 || true
+            exit 1
+          fi
+
+          # Wait for assets with extended timeout
+          for attempt in $(seq 1 18); do
             asset_count="$(gh release view "$TAG" --repo "$REPO" --json assets --jq '.assets | length' 2>/dev/null || echo 0)"
             if [[ "$asset_count" -gt 0 ]]; then
               echo "Found release $TAG in $REPO with $asset_count assets"
               break
             fi
-            if [[ "$attempt" -eq 12 ]]; then
-              echo "Release $TAG with assets was not found in $REPO after waiting." >&2
-              gh release list --repo "$REPO" --limit 10 || true
+            if [[ "$attempt" -eq 18 ]]; then
+              echo "Release $TAG exists but has no assets in $REPO after waiting." >&2
               exit 1
             fi
-            echo "Waiting for $REPO release assets (attempt $attempt/12)..."
+            echo "Waiting for $REPO release assets (attempt $attempt/18)..."
             sleep 10
           done
 
@@ -51,6 +60,20 @@ jobs:
             --repo "$REPO" \
             --dir artifacts \
             --clobber
+
+      - name: Upload installer scripts to release tag
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_PAT }}
+        run: |
+          set -euo pipefail
+          TAG="${{ inputs.release_tag }}"
+          REPO="IxosProtocol/ixos-releases"
+          gh release upload "$TAG" \
+            --repo "$REPO" \
+            --clobber \
+            scripts/install.sh \
+            scripts/install.ps1
 
       - name: Generate and upload latest.json
         env:

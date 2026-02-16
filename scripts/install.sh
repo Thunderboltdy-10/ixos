@@ -49,8 +49,20 @@ resolve_tag() {
   cli_tag="$(printf '%s' "$releases_json" \
     | grep -oE '"tag_name":[[:space:]]*"cli-v[0-9]+\.[0-9]+\.[0-9]+"' \
     | sed -E 's/.*"([^"]+)"/\1/' \
-    | sort -u -V \
+    | awk '
+        {
+          tag=$0
+          ver=tag
+          sub(/^cli-v/, "", ver)
+          n=split(ver, a, ".")
+          if (n == 3) {
+            printf "%09d.%09d.%09d %s\n", a[1], a[2], a[3], tag
+          }
+        }
+      ' \
+    | sort \
     | tail -n1)"
+  cli_tag="${cli_tag##* }"
 
   if [[ -n "$cli_tag" ]]; then
     echo "$cli_tag"

@@ -440,3 +440,7 @@
 - Desktop release now bundles real Flash v2 + Potion model assets in installer resources and fails CI if model weights are missing/suspiciously small.
 - CLI update/install reliability patched (PowerShell null-safe checksum parse + semver tag resolution, Unix staged rename for ETXTBSY).
 - CLI install commands now target release assets (`install.sh`, `install.ps1`) published by CLI release workflow.
+## STATE NOTE (2026-02-16, pre-v0.1.7 blockers resolved)
+- Desktop release no longer requires pre-checked-in model files; it now fetches missing Flash/Potion assets and validates before packaging.
+- Desktop and CLI releases both publish installer scripts to `ixos-releases` so `latest/download/install.*` remains available.
+- `install.sh` semver selection is now portable on macOS (no GNU `sort -V` dependency).

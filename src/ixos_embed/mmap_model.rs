@@ -176,6 +176,16 @@ pub struct MmapModel2VecEmbedder {
     dims: AtomicUsize,
 }
 
+/// Remote model entry for CLI display
+pub struct RemoteModelEntry {
+    pub model_id: String,
+    pub display_name: String,
+    pub description: String,
+    pub hf_id: Option<String>,
+    pub tier: String,
+    pub size_mb: Option<f32>,
+}
+
 impl MmapModel2VecEmbedder {
     /// Default model ID for HuggingFace Hub
     pub const DEFAULT_MODEL: &'static str = Model2VecEmbedder::DEFAULT_MODEL;
@@ -495,6 +505,66 @@ impl MmapModel2VecEmbedder {
                 Self::find_ixos_pro_v1_model().is_some(),
                 Self::find_ixos_pro_v1_model(),
             ),
+        ]
+    }
+
+    /// Get list of available remote models that can be downloaded from HuggingFace
+    pub fn remote_models() -> Vec<RemoteModelEntry> {
+        vec![
+            RemoteModelEntry {
+                model_id: "potion".to_string(),
+                display_name: "Potion".to_string(),
+                description: "Fast, lightweight embedder (~8MB) - direct download supported"
+                    .to_string(),
+                hf_id: Some("minishlab/potion-base-8M".to_string()),
+                tier: "flash".to_string(),
+                size_mb: Some(7.64),
+            },
+            RemoteModelEntry {
+                model_id: "ixos-flash-v2".to_string(),
+                display_name: "Ixos Flash v2".to_string(),
+                description: "Ixos production flash model (local only - run scripts to build)"
+                    .to_string(),
+                hf_id: None,
+                tier: "flash".to_string(),
+                size_mb: Some(10.0),
+            },
+            RemoteModelEntry {
+                model_id: "ixos-pro-v2".to_string(),
+                display_name: "Ixos Pro v2".to_string(),
+                description: "Ixos production pro model (local only - run scripts to build)"
+                    .to_string(),
+                hf_id: None,
+                tier: "pro".to_string(),
+                size_mb: Some(15.0),
+            },
+            RemoteModelEntry {
+                model_id: "bge-small-en-v1.5".to_string(),
+                display_name: "BGE Small".to_string(),
+                description: "BAAI BGE small English model (~130MB) - use Python fetch script"
+                    .to_string(),
+                hf_id: Some("BAAI/bge-small-en-v1.5".to_string()),
+                tier: "flash".to_string(),
+                size_mb: Some(130.0),
+            },
+            RemoteModelEntry {
+                model_id: "bge-base-en-v1.5".to_string(),
+                display_name: "BGE Base".to_string(),
+                description: "BAAI BGE base English model (~430MB) - use Python fetch script"
+                    .to_string(),
+                hf_id: Some("BAAI/bge-base-en-v1.5".to_string()),
+                tier: "pro".to_string(),
+                size_mb: Some(430.0),
+            },
+            RemoteModelEntry {
+                model_id: "e5-small-v2".to_string(),
+                display_name: "E5 Small".to_string(),
+                description: "intfloat E5 small v2 model (~130MB) - use Python fetch script"
+                    .to_string(),
+                hf_id: Some("intfloat/e5-small-v2".to_string()),
+                tier: "flash".to_string(),
+                size_mb: Some(130.0),
+            },
         ]
     }
 

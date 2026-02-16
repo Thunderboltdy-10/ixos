@@ -735,3 +735,23 @@
 - Evidence (links to /reports or output files): src/cli/self_update.rs
 - Risks: staged file cleanup if rename fails mid-flight.
 - Follow-ups: add integration test coverage for replace path behavior when test harness is available.
+- Decision: Replace strict local-model presence gate with auto-fetch + validate in desktop release workflow.
+- Options considered: keep strict gate; remove gate entirely; fetch missing models and then enforce validation.
+- Why chosen: avoids guaranteed release failures on repos that do not track model weights while still ensuring installers include real model assets.
+- Evidence (links to /reports or output files): .github/workflows/release.yml
+- Risks: release job now depends on upstream model hosts availability.
+- Follow-ups: set `FLASH_MODEL_REPO/REF/SUBDIR` repository variables for deterministic source pinning.
+
+- Decision: Ensure CLI install scripts are uploaded by desktop releases too.
+- Options considered: rely on latest CLI release only; make install command dynamic; upload scripts from both desktop and CLI release pipelines.
+- Why chosen: prevents `latest/download/install.*` 404 when newest release is desktop-tagged.
+- Evidence (links to /reports or output files): .github/workflows/release.yml, .github/workflows/cli-release.yml, .github/workflows/release-postprocess.yml
+- Risks: duplicated script assets across release types.
+- Follow-ups: keep script versions in sync via shared repo files (already sourced from checkout).
+
+- Decision: Replace `sort -V` in installer with portable semver ordering.
+- Options considered: keep `sort -V`; require GNU coreutils on macOS; implement POSIX-compatible ordering.
+- Why chosen: macOS/BSD `sort` compatibility for advertised Darwin one-liner install path.
+- Evidence (links to /reports or output files): scripts/install.sh
+- Risks: none material for x.y.z tag format.
+- Follow-ups: keep tags strictly in `cli-vMAJOR.MINOR.PATCH` format.

@@ -36,6 +36,7 @@
 pub mod commands;
 pub mod config;
 pub mod output;
+pub mod self_update;
 
 // Re-exports for convenience
 pub use commands::{

@@ -34,15 +34,15 @@ export default function Home() {
         <Benchmarks />
       </section>
 
+
       {/* Today - Teal accent (NEW) */}
       <section className="section-today accent-teal">
         <TodaySection />
       </section>
 
       {/* Workstreams - Amber accent (NEW) */}
-      <section className="section-workstreams accent-amber">
-        <WorkstreamsSection />
-      </section>
+      <div className="section-workstreams accent-teal relative z-10 -mt-24 pb-24 md:pb-32">    <WorkstreamsSection />
+      </div>
 
       <SectionDivider accent="magenta" label="PRICING" />
 
@@ -75,3 +75,4 @@ export default function Home() {
     </main>
   );
 }
+

@@ -121,6 +121,7 @@ export function AppShell({ children }: AppShellProps) {
   }, [setActiveView]);
 
   useEffect(() => {
+    if (localStorage.getItem(ONBOARDING_DONE_KEY) === '1') return;
     if (firstRunOnboarding.step === 3) return;
 
     const wasComplete = previousPhaseRef.current === 'complete';

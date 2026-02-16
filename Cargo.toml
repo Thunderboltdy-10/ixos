@@ -10,7 +10,7 @@ edition = "2021"
 authors = ["Ixos Team"]
 description = "Privacy-first semantic file search with cross-platform caching"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/ixos/ixos-protocol"
+repository = "https://github.com/IxosProtocol/Ixos"
 keywords = ["search", "semantic", "privacy", "embeddings"]
 categories = ["command-line-utilities", "filesystem"]
 
@@ -87,6 +87,13 @@ regex = "1.10"
 
 # SIMD accelerated vector similarity
 simsimd = "5"
+
+# Self-update: lightweight HTTP client, checksum verification, archive extraction
+ureq = { version = "2", features = ["tls"] }
+sha2 = "0.10"
+hex = "0.4"
+flate2 = "1.0"
+tar = "0.4"
 
 # Document parsing (evidence extraction)
 pdf-extract = "0.7"

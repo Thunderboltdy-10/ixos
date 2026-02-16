@@ -116,26 +116,47 @@ export function ProFeatures() {
           </div>
 
           <motion.aside
-            initial={{ opacity: 0, y: -240, x: -120, rotate: -6, scale: 0.94 }}
-            whileInView={{ opacity: 1, y: 0, x: 0, rotate: 0, scale: 1 }}
-            viewport={{ once: true, amount: 0.35 }}
-            transition={{ type: "spring", stiffness: 130, damping: 16, mass: 0.9 }}
-            className="relative rounded-xl border border-accent-magenta/40 bg-bg-graphite-1/78 p-7 shadow-[0_0_34px_rgba(244,114,182,0.2)]"
+            initial={{ opacity: 0, y: -300, scale: 0.85, rotateX: 60 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            style={{ transformPerspective: 1200 }}
+            transition={{ type: "spring", stiffness: 120, damping: 18, mass: 1.1 }}
+            className="relative rounded-sm border border-accent-magenta/40 bg-bg-graphite-1/90 p-8 shadow-glow-magenta/20 backdrop-blur-md"
           >
-            <div className="absolute -top-5 left-1/2 -translate-x-1/2 rounded-full border border-accent-magenta/35 bg-bg-graphite-0/95 px-3 py-1 text-[10px] font-mono tracking-[0.18em] text-accent-magenta/85">
+            {/* Corner Accents matching Pricing */}
+            <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-magenta" />
+            <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-accent-magenta/50" />
+
+            <div className="absolute -top-5 left-1/2 -translate-x-1/2 rounded-full border border-accent-magenta/35 bg-bg-graphite-0/95 px-3 py-1 text-[10px] font-mono tracking-[0.18em] text-accent-magenta/85 shadow-lg">
               DROP-IN PRO CARD
             </div>
-            <p className="text-[10px] font-mono tracking-[0.2em] text-accent-magenta/80">IXOS_PRO</p>
-            <h3 className="mt-3 text-3xl font-semibold text-fg-porcelain">One upgrade, full context loop</h3>
-            <p className="mt-3 text-sm leading-relaxed text-fg-muted/80">
+            <div className="text-xs font-mono tracking-wider mb-4 opacity-80 text-accent-magenta">
+              IXOS_PRO
+            </div>
+            {/* Height matched title area */}
+            <div className="flex items-baseline gap-1 min-h-[48px] mb-2">
+              <h3 className="text-3xl font-semibold text-fg-porcelain leading-tight">One upgrade, full loop</h3>
+            </div>
+
+            <p className="mt-6 text-sm text-fg-muted leading-relaxed border-t border-stroke-hairline pt-6">
               Pro combines Ask Mode answers, Today context memory, and Workstream clustering so users
               spend less time navigating and more time executing.
             </p>
-            <div className="mt-5 space-y-2 text-xs text-fg-muted/80">
-              <div className="rounded-md border border-white/8 bg-bg-graphite-0/45 px-3 py-2">Ask with evidence, not guesses.</div>
-              <div className="rounded-md border border-white/8 bg-bg-graphite-0/45 px-3 py-2">Resume projects from the right file immediately.</div>
-              <div className="rounded-md border border-white/8 bg-bg-graphite-0/45 px-3 py-2">Fix folder structure from repeated behavior signals.</div>
-            </div>
+
+            <ul className="space-y-4 mt-6">
+              <li className="flex items-center gap-3 text-sm group/li">
+                <div className="bg-accent-magenta w-1 h-1 rounded-full group-hover/li:shadow-glow-magenta transition-colors" />
+                <span className="text-fg-porcelain opacity-90">Ask with evidence, not guesses</span>
+              </li>
+              <li className="flex items-center gap-3 text-sm group/li">
+                <div className="bg-accent-magenta w-1 h-1 rounded-full group-hover/li:shadow-glow-magenta transition-colors" />
+                <span className="text-fg-porcelain opacity-90">Resume projects from the right file immediately</span>
+              </li>
+              <li className="flex items-center gap-3 text-sm group/li">
+                <div className="bg-accent-magenta w-1 h-1 rounded-full group-hover/li:shadow-glow-magenta transition-colors" />
+                <span className="text-fg-porcelain opacity-90">Fix folder structure from behavior signals</span>
+              </li>
+            </ul>
           </motion.aside>
         </div>
       </div>

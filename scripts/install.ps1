@@ -8,7 +8,7 @@ Param(
 $ErrorActionPreference = "Stop"
 
 if ([string]::IsNullOrWhiteSpace($Repo)) {
-    $Repo = "Thunderboltdy10/Ixos"
+    $Repo = "IxosProtocol/ixos-releases"
 }
 
 function Resolve-Arch {
@@ -34,6 +34,25 @@ function Resolve-Tag {
     throw "No cli-v* release tags found for $RepoName. Set IXOS_TAG=cli-vX.Y.Z explicitly."
 }
 
+function Verify-Checksum {
+    param([string]$ArchivePath, [string]$ChecksumUrl)
+
+    try {
+        $checksumContent = Invoke-RestMethod -Uri $ChecksumUrl -Headers @{ "User-Agent" = "ixos-install-script" }
+        $expected = ($checksumContent -split '\s+')[0].ToLower()
+        $actual = (Get-FileHash -Path $ArchivePath -Algorithm SHA256).Hash.ToLower()
+
+        if ($expected -ne $actual) {
+            throw "Checksum verification FAILED`n  Expected: $expected`n  Got:      $actual"
+        }
+
+        Write-Host "Checksum verified OK"
+    }
+    catch [System.Net.WebException] {
+        Write-Host "Warning: SHA256 checksum file not available, skipping verification" -ForegroundColor Yellow
+    }
+}
+
 $arch = Resolve-Arch
 $os = "windows"
 $resolvedTag = Resolve-Tag -RepoName $Repo -ExplicitTag $Tag
@@ -51,6 +70,11 @@ New-Item -ItemType Directory -Path $tmpDir -Force | Out-Null
 $archivePath = Join-Path $tmpDir $asset
 Write-Host "Downloading $url"
 Invoke-WebRequest -Uri $url -OutFile $archivePath
+
+# Verify SHA256 checksum
+$checksumUrl = "https://github.com/$Repo/releases/download/$resolvedTag/$asset.sha256"
+Verify-Checksum -ArchivePath $archivePath -ChecksumUrl $checksumUrl
+
 Expand-Archive -Path $archivePath -DestinationPath $tmpDir -Force
 
 $exePath = Join-Path $tmpDir "ixos.exe"

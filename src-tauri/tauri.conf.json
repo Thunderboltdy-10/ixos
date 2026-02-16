@@ -35,7 +35,7 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://efuuegbvyq6yzst0.public.blob.vercel-storage.com/installers/latest/latest.json"
+        "https://github.com/IxosProtocol/ixos-releases/releases/latest/download/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZCNzJENzMzNzRCMEU4ODcKUldTSDZMQjBNOWR5K3p4ZUVrd2NLNmk5UDVaTHl6Mkw0VWhydkpSSElSZkkzUHJlUVV1UlFpYVoK"
     }

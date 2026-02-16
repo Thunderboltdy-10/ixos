@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="${IXOS_REPO:-Thunderboltdy10/Ixos}"
+REPO="${IXOS_REPO:-IxosProtocol/ixos-releases}"
 INSTALL_ROOT="${IXOS_INSTALL_DIR:-$HOME/.ixos}"
 BIN_DIR="$INSTALL_ROOT/bin"
 ASSET_URL_OVERRIDE="${IXOS_ASSET_URL:-}"
@@ -60,6 +60,29 @@ resolve_tag() {
   exit 1
 }
 
+verify_checksum() {
+  local archive="$1" checksum_url="$2" tmp_dir="$3"
+  local checksum_file="$tmp_dir/checksum.sha256"
+
+  if ! curl -fsSL "$checksum_url" -o "$checksum_file" 2>/dev/null; then
+    echo "Warning: SHA256 checksum file not available, skipping verification" >&2
+    return 0
+  fi
+
+  local expected actual
+  expected="$(awk '{print $1}' "$checksum_file")"
+  actual="$(shasum -a 256 "$archive" | awk '{print $1}')"
+
+  if [[ "$expected" != "$actual" ]]; then
+    echo "Checksum verification FAILED" >&2
+    echo "  Expected: $expected" >&2
+    echo "  Got:      $actual" >&2
+    exit 1
+  fi
+
+  echo "Checksum verified OK"
+}
+
 ensure_path() {
   if [[ "$SKIP_PATH_PERSIST" == "1" ]]; then
     return
@@ -99,6 +122,11 @@ main() {
 
   mkdir -p "$BIN_DIR"
   curl -fL "$url" -o "$tmp_dir/$artifact"
+
+  # Verify SHA256 checksum
+  local checksum_url="https://github.com/$REPO/releases/download/$tag/$artifact.sha256"
+  verify_checksum "$tmp_dir/$artifact" "$checksum_url" "$tmp_dir"
+
   tar -xzf "$tmp_dir/$artifact" -C "$tmp_dir"
 
   if [[ ! -f "$tmp_dir/ixos" ]]; then

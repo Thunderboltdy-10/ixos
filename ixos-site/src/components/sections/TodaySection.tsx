@@ -100,18 +100,16 @@ export function TodaySection() {
                 Instantly resume where you left off. Your most recent files are always one click away.
               </p>
               <p className="mb-4 text-[11px] font-mono text-accent-teal/80">PRIMARY OUTCOME: Reopen the right file first try.</p>
-              <div className="space-y-2">
-                {RECENTLY_TOUCHED.map((file) => (
-                  <div
-                    key={file.name}
-                    className="flex items-center gap-3 rounded-lg border border-white/6 bg-bg-graphite-0/50 px-3 py-2.5 group hover:border-accent-teal/20 transition-colors"
-                  >
-                    <file.icon className="w-3.5 h-3.5 text-fg-muted/35 group-hover:text-accent-teal/60 transition-colors shrink-0" />
-                    <span className="text-[12px] text-fg-muted/70 truncate flex-1 font-mono">{file.name}</span>
-                    <span className="text-[10px] text-fg-muted/30 shrink-0">{file.time}</span>
-                  </div>
-                ))}
-              </div>
+              {RECENTLY_TOUCHED.map((file) => (
+                <div
+                  key={file.name}
+                  className="group flex items-center gap-3 rounded-lg border border-white/5 bg-bg-graphite-0/50 px-3 py-2.5 transition-all duration-300 hover:border-accent-teal/30 hover:bg-bg-graphite-0/80 hover:-translate-y-0.5 hover:shadow-sm"
+                >
+                  <file.icon className="w-3.5 h-3.5 text-fg-muted/35 group-hover:text-accent-teal/80 transition-colors shrink-0" />
+                  <span className="text-[12px] text-fg-muted/70 truncate flex-1 font-mono group-hover:text-fg-porcelain transition-colors">{file.name}</span>
+                  <span className="text-[10px] text-fg-muted/30 shrink-0 group-hover:text-fg-muted/50 transition-colors">{file.time}</span>
+                </div>
+              ))}
               <Link href="/download" className="mt-4 inline-block text-xs font-mono text-accent-teal hover:text-accent-teal-glow transition-colors">
                 Jump to file context
               </Link>
@@ -139,12 +137,12 @@ export function TodaySection() {
                 {SUGGESTED_NEXT.map((item) => (
                   <div
                     key={item.action}
-                    className="flex items-start gap-3 rounded-lg border border-white/6 bg-bg-graphite-0/50 px-3 py-2.5 group hover:border-accent-teal/20 transition-colors"
+                    className="group flex items-start gap-3 rounded-lg border border-white/5 bg-bg-graphite-0/50 px-3 py-2.5 transition-all duration-300 hover:border-accent-teal/30 hover:bg-bg-graphite-0/80 hover:-translate-y-0.5 hover:shadow-sm"
                   >
-                    <ArrowRight className="w-3.5 h-3.5 text-fg-muted/25 mt-0.5 shrink-0 group-hover:text-accent-teal/60 transition-colors" />
+                    <ArrowRight className="w-3.5 h-3.5 text-fg-muted/25 mt-0.5 shrink-0 group-hover:text-accent-teal/80 transition-colors" />
                     <div className="min-w-0">
-                      <span className="text-[12px] text-fg-muted/65 leading-relaxed">{item.action}</span>
-                      <span className={`ml-2 text-[9px] font-mono tracking-wider ${item.color}`}>{item.tag}</span>
+                      <span className="text-[12px] text-fg-muted/65 leading-relaxed group-hover:text-fg-porcelain transition-colors">{item.action}</span>
+                      <span className={`ml-2 text-[9px] font-mono tracking-wider opacity-70 group-hover:opacity-100 transition-opacity ${item.color}`}>{item.tag}</span>
                     </div>
                   </div>
                 ))}
@@ -174,6 +172,6 @@ export function TodaySection() {
           </p>
         </FadeInView>
       </div>
-    </div>
+    </div >
   );
 }

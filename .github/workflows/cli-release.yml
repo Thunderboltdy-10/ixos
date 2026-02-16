@@ -167,6 +167,10 @@ jobs:
             cat release-assets/*.sha256 > release-assets/SHA256SUMS
           fi
 
+          # Publish stable installer script entrypoints from release assets.
+          cp scripts/install.sh release-assets/install.sh
+          cp scripts/install.ps1 release-assets/install.ps1
+
           if ! find release-assets -maxdepth 1 -type f | grep -q .; then
             echo "No file artifacts were found to publish." >&2
             exit 1

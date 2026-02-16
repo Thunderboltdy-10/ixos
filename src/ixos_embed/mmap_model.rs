@@ -371,8 +371,12 @@ impl MmapModel2VecEmbedder {
                     return Some(resources_path);
                 }
 
-                // Also check flattened resources if using sidecar-style bundling
-                // (less likely for directories but possible)
+                // Also check flattened resources when bundle resources are included
+                // as "../models/<name>" entries, which end up in "resources/<name>".
+                let flattened_resources_path = exe_dir.join("resources").join(model_name);
+                if Self::has_model_files(&flattened_resources_path) {
+                    return Some(flattened_resources_path);
+                }
 
                 // 2. Check parent directories of executable (handles target/debug structure)
                 // This is common for Tauri dev builds where exe is in target/debug/

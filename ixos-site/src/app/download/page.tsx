@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Nav } from "@/components/ui/Nav";
 import { SectionDivider } from "@/components/ui/SectionDivider";
@@ -88,19 +88,28 @@ const PLATFORMS: PlatformInfo[] = [
 ];
 
 export default function DownloadPage() {
-  const [selectedPlatform, setSelectedPlatform] = useState<PlatformId>(() => {
-    const detectedDesktop = detectDesktopPlatform();
-    if (detectedDesktop.startsWith("macos")) return "macos";
-    if (detectedDesktop.startsWith("linux")) return "linux";
-    return "windows";
-  });
-  const [macChip, setMacChip] = useState<MacChip>(() => (
-    detectDesktopPlatform() === "macos-x64" ? "intel" : "apple"
-  ));
+  const [selectedPlatform, setSelectedPlatform] = useState<PlatformId>("windows");
+  const [macChip, setMacChip] = useState<MacChip>("apple");
   const [showThankYou, setShowThankYou] = useState(false);
   const [downloadingPlatform, setDownloadingPlatform] = useState("");
-  const [installOs, setInstallOs] = useState<InstallOs>(() => detectInstallOs());
+  const [installOs, setInstallOs] = useState<InstallOs>("windows");
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const detectedDesktop = detectDesktopPlatform();
+      if (detectedDesktop.startsWith("macos")) {
+        setSelectedPlatform("macos");
+        setMacChip(detectedDesktop === "macos-x64" ? "intel" : "apple");
+      } else if (detectedDesktop.startsWith("linux")) {
+        setSelectedPlatform("linux");
+      } else {
+        setSelectedPlatform("windows");
+      }
+      setInstallOs(detectInstallOs());
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const handleCopy = async () => {
     try {

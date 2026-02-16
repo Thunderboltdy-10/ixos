@@ -24,6 +24,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Validate install.sh syntax
         if: matrix.platform == 'ubuntu-22.04'
@@ -97,15 +99,34 @@ jobs:
             node -e "require('./ui/node_modules/rollup/dist/native.js')"
           fi
 
-      - name: Create model stubs for desktop build
+      - name: Verify bundled model assets
         shell: bash
         run: |
-          mkdir -p models/ixos-flash-v2
-          mkdir -p models/potion-base-8m-int8
-          mkdir -p models/potion-base-8M-int8
-          touch models/ixos-flash-v2/.gitkeep
-          touch models/potion-base-8m-int8/.gitkeep
-          touch models/potion-base-8M-int8/.gitkeep
+          set -euo pipefail
+          required=(
+            "models/ixos-flash-v2/config.json"
+            "models/ixos-flash-v2/model.safetensors"
+            "models/ixos-flash-v2/tokenizer.json"
+            "models/potion-base-8M-int8/config.json"
+            "models/potion-base-8M-int8/model.safetensors"
+            "models/potion-base-8M-int8/tokenizer.json"
+          )
+          for file in "${required[@]}"; do
+            if [[ ! -f "$file" ]]; then
+              echo "Missing required bundled model file: $file" >&2
+              exit 1
+            fi
+          done
+
+          # Guard against accidentally bundling LFS pointers instead of real model weights.
+          flash_size="$(wc -c < models/ixos-flash-v2/model.safetensors)"
+          potion_size="$(wc -c < models/potion-base-8M-int8/model.safetensors)"
+          if [[ "$flash_size" -lt 1000000 || "$potion_size" -lt 1000000 ]]; then
+            echo "Model safetensors files look too small (possible LFS pointer checkout)." >&2
+            echo "ixos-flash-v2/model.safetensors: $flash_size bytes" >&2
+            echo "potion-base-8M-int8/model.safetensors: $potion_size bytes" >&2
+            exit 1
+          fi
 
       - name: Build UI
         working-directory: ui
@@ -220,11 +241,29 @@ jobs:
       - name: Download release artifacts
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASES_PAT }}
         run: |
           set -euo pipefail
-          gh release download "${{ github.ref_name }}" \
-            --repo "${{ github.repository }}" \
+          TAG="${{ github.ref_name }}"
+          REPO="IxosProtocol/ixos-releases"
+
+          for attempt in $(seq 1 12); do
+            asset_count="$(gh release view "$TAG" --repo "$REPO" --json assets --jq '.assets | length' 2>/dev/null || echo 0)"
+            if [[ "$asset_count" -gt 0 ]]; then
+              echo "Found release $TAG in $REPO with $asset_count assets"
+              break
+            fi
+            if [[ "$attempt" -eq 12 ]]; then
+              echo "Release $TAG with assets was not found in $REPO after waiting." >&2
+              gh release list --repo "$REPO" --limit 10 || true
+              exit 1
+            fi
+            echo "Waiting for $REPO release assets (attempt $attempt/12)..."
+            sleep 10
+          done
+
+          gh release download "$TAG" \
+            --repo "$REPO" \
             --dir artifacts \
             --clobber
 
@@ -243,4 +282,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release edit "${{ github.ref_name }}" --draft=false --repo "${{ github.repository }}"
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          SOURCE_REPO="${{ github.repository }}"
+
+          if gh release view "$TAG" --repo "$SOURCE_REPO" >/dev/null 2>&1; then
+            gh release edit "$TAG" --draft=false --repo "$SOURCE_REPO"
+          else
+            echo "No private release $TAG found in $SOURCE_REPO; skipping publish-draft."
+          fi

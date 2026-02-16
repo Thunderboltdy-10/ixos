@@ -44,7 +44,7 @@ const FEATURES = [
 ];
 
 export function ProFeatures({
-  billing = "monthly",
+  billing = "annual",
   showProCard = true,
   proCardLayoutId = "pro-card",
   cardAnchorRef,
@@ -131,7 +131,7 @@ export function ProFeatures({
             {showProCard ? (
               <motion.aside
                 layoutId={proCardLayoutId}
-                transition={{ type: "spring", stiffness: 74, damping: 26, mass: 1.2 }}
+                transition={{ type: "spring", stiffness: 56, damping: 29, mass: 1.34 }}
                 className="relative group h-full"
               >
                 <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />

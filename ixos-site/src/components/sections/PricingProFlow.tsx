@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LayoutGroup } from "framer-motion";
+import { LayoutGroup, motion } from "framer-motion";
 import { Pricing, type BillingCycle } from "@/components/sections/Pricing";
 import { ProFeatures } from "@/components/sections/ProFeatures";
+import { ProCard } from "@/components/sections/ProCard";
 
 type CardHost = "pricing" | "hidden" | "features";
 
@@ -14,12 +15,14 @@ export function PricingProFlow({
   pricingSectionClassName?: string;
   proSectionClassName?: string;
 }) {
-  const [billing, setBilling] = useState<BillingCycle>("monthly");
+  const [billing, setBilling] = useState<BillingCycle>("annual");
   const [cardHost, setCardHost] = useState<CardHost>("pricing");
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.innerWidth >= 1024;
   });
+  const [pricingRatio, setPricingRatio] = useState(1);
+  const [featuresRatio, setFeaturesRatio] = useState(0);
   const pricingSlotRef = useRef<HTMLDivElement | null>(null);
   const featuresSlotRef = useRef<HTMLDivElement | null>(null);
 
@@ -30,37 +33,78 @@ export function PricingProFlow({
   }, []);
 
   useEffect(() => {
-    const updateHost = () => {
-      const pricingRect = pricingSlotRef.current?.getBoundingClientRect();
-      const featureTop = featuresSlotRef.current?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY;
-      const viewportHeight = window.innerHeight || 1;
-      const pricingBottom = pricingRect?.bottom ?? Number.POSITIVE_INFINITY;
+    const pricingEl = pricingSlotRef.current;
+    const featuresEl = featuresSlotRef.current;
+    if (!pricingEl || !featuresEl) return;
 
-      if (!isDesktop) {
-        setCardHost(featureTop <= viewportHeight * 0.72 ? "features" : "pricing");
-        return;
-      }
+    const thresholds = Array.from({ length: 21 }, (_, i) => i / 20);
+    const pricingObserver = new IntersectionObserver(
+      ([entry]) => setPricingRatio(entry.intersectionRatio),
+      { threshold: thresholds, rootMargin: "-20% 0px -20% 0px" }
+    );
+    const featuresObserver = new IntersectionObserver(
+      ([entry]) => setFeaturesRatio(entry.intersectionRatio),
+      { threshold: thresholds, rootMargin: "-22% 0px -22% 0px" }
+    );
 
-      if (featureTop <= viewportHeight * 0.66) {
-        setCardHost("features");
-      } else if (pricingBottom <= viewportHeight * 0.24) {
-        setCardHost("hidden");
-      } else {
-        setCardHost("pricing");
-      }
-    };
+    pricingObserver.observe(pricingEl);
+    featuresObserver.observe(featuresEl);
 
-    updateHost();
-    window.addEventListener("scroll", updateHost, { passive: true });
-    window.addEventListener("resize", updateHost);
     return () => {
-      window.removeEventListener("scroll", updateHost);
-      window.removeEventListener("resize", updateHost);
+      pricingObserver.disconnect();
+      featuresObserver.disconnect();
     };
   }, [isDesktop]);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setCardHost((prev) => {
+        if (!isDesktop) {
+          return featuresRatio > 0.28 ? "features" : "pricing";
+        }
+
+        if (prev === "pricing") {
+          if (featuresRatio > 0.24) return "features";
+          if (pricingRatio < 0.14) return "hidden";
+          return prev;
+        }
+
+        if (prev === "hidden") {
+          if (featuresRatio > 0.22) return "features";
+          if (pricingRatio > 0.3) return "pricing";
+          return prev;
+        }
+
+        if (pricingRatio > 0.34) return "pricing";
+        if (featuresRatio < 0.12) return "hidden";
+        return prev;
+      });
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [featuresRatio, isDesktop, pricingRatio]);
+
   return (
     <LayoutGroup id="pricing-pro-card-flow">
+      {isDesktop && cardHost === "hidden" ? (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed top-[44vh] right-[-430px] z-[65] hidden h-[640px] w-[420px] lg:block"
+        >
+          <motion.div
+            layoutId="pro-card-flow"
+            transition={{ type: "spring", stiffness: 56, damping: 29, mass: 1.34 }}
+            className="h-full w-full opacity-0"
+          >
+            <ProCard
+              price={billing === "monthly" ? "$7.99" : "$6.35"}
+              period="/ month"
+              desc="Ask Mode evidence answers. Saved searches. Priority support."
+              actionNode={<div />}
+            />
+          </motion.div>
+        </div>
+      ) : null}
+
       <section className={pricingSectionClassName}>
         <Pricing
           billing={billing}

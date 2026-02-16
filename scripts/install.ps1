@@ -12,6 +12,25 @@ if ([string]::IsNullOrWhiteSpace($Repo)) {
     $Repo = "IxosProtocol/ixos-releases"
 }
 
+function Parse-TagVersion {
+    param([string]$TagName)
+
+    if ([string]::IsNullOrWhiteSpace($TagName)) {
+        return $null
+    }
+
+    $match = [regex]::Match($TagName, '^cli-v(\d+)\.(\d+)\.(\d+)$')
+    if (-not $match.Success) {
+        return $null
+    }
+
+    return [PSCustomObject]@{
+        Major = [int]$match.Groups[1].Value
+        Minor = [int]$match.Groups[2].Value
+        Patch = [int]$match.Groups[3].Value
+    }
+}
+
 function Resolve-Arch {
     switch ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()) {
         "X64" { return "x86_64" }
@@ -26,8 +45,28 @@ function Resolve-Tag {
         return $ExplicitTag
     }
 
-    $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$RepoName/releases?per_page=30" -Headers @{ "User-Agent" = "ixos-install-script" }
-    $cli = $releases | Where-Object { $_.tag_name -like "cli-v*" } | Select-Object -First 1
+    $releasesRaw = Invoke-RestMethod -Uri "https://api.github.com/repos/$RepoName/releases?per_page=100" -Headers @{ "User-Agent" = "ixos-install-script" }
+    $releases = @($releasesRaw)
+    if ($releases.Count -eq 0) {
+        throw "No releases found for $RepoName."
+    }
+
+    $cli = $releases |
+        Where-Object {
+            $_ -and
+            $_.tag_name -and
+            -not $_.draft -and
+            (Parse-TagVersion -TagName $_.tag_name)
+        } |
+        Sort-Object -Descending -Property @{
+            Expression = {
+                $v = Parse-TagVersion -TagName $_.tag_name
+                if ($null -eq $v) { return [long]0 }
+                return ([long]$v.Major * [long]1000000000) + ([long]$v.Minor * [long]1000000) + [long]$v.Patch
+            }
+        } |
+        Select-Object -First 1
+
     if ($null -ne $cli) {
         return $cli.tag_name
     }
@@ -39,8 +78,19 @@ function Verify-Checksum {
     param([string]$ArchivePath, [string]$ChecksumUrl)
 
     try {
-        $checksumContent = Invoke-RestMethod -Uri $ChecksumUrl -Headers @{ "User-Agent" = "ixos-install-script" }
-        $expected = ($checksumContent -split '\s+')[0].ToLower()
+        $checksumContent = (Invoke-WebRequest -Uri $ChecksumUrl -Headers @{ "User-Agent" = "ixos-install-script" }).Content
+        if ([string]::IsNullOrWhiteSpace($checksumContent)) {
+            Write-Host "Warning: Checksum response was empty, skipping verification" -ForegroundColor Yellow
+            return
+        }
+
+        $expectedMatch = [regex]::Match($checksumContent, '(?i)\b[0-9a-f]{64}\b')
+        if (-not $expectedMatch.Success) {
+            Write-Host "Warning: Could not parse SHA256 checksum payload, skipping verification" -ForegroundColor Yellow
+            return
+        }
+
+        $expected = $expectedMatch.Value.ToLowerInvariant()
         $actual = (Get-FileHash -Path $ArchivePath -Algorithm SHA256).Hash.ToLower()
 
         if ($expected -ne $actual) {
@@ -102,7 +152,8 @@ Copy-Item $exePath (Join-Path $binDir "ixos.exe") -Force
 $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
 if ($null -eq $userPath) { $userPath = "" }
 if (-not $SkipPathPersist -and $env:IXOS_SKIP_PATH_PERSIST -ne "1") {
-    if (-not ($userPath -split ';' | Where-Object { $_.Trim() -ieq $binDir })) {
+    $pathEntries = @($userPath -split ';' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if (-not ($pathEntries | Where-Object { $_.Trim() -ieq $binDir })) {
         $newPath = ($userPath.TrimEnd(';') + ";" + $binDir).Trim(';')
         [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
         Write-Host "Updated user PATH with $binDir"

@@ -44,12 +44,13 @@ resolve_tag() {
   fi
 
   local releases_json
-  releases_json="$(curl -fsSL -H "User-Agent: ixos-install-script" "https://api.github.com/repos/$REPO/releases?per_page=30")"
+  releases_json="$(curl -fsSL -H "User-Agent: ixos-install-script" "https://api.github.com/repos/$REPO/releases?per_page=100")"
   local cli_tag
   cli_tag="$(printf '%s' "$releases_json" \
-    | grep -oE '"tag_name":[[:space:]]*"cli-v[^"]+"' \
-    | head -n1 \
-    | sed -E 's/.*"([^"]+)"/\1/')"
+    | grep -oE '"tag_name":[[:space:]]*"cli-v[0-9]+\.[0-9]+\.[0-9]+"' \
+    | sed -E 's/.*"([^"]+)"/\1/' \
+    | sort -u -V \
+    | tail -n1)"
 
   if [[ -n "$cli_tag" ]]; then
     echo "$cli_tag"

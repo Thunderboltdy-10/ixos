@@ -14,17 +14,34 @@ const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 
-const RELEASES_REPO = "IxosProtocol/ixos-releases";
+const RELEASES_REPO = process.env.RELEASES_REPO || "IxosProtocol/ixos-releases";
 
 // Map installer filename patterns to Tauri updater platform keys
 const PLATFORM_MAP = [
-  { pattern: /aarch64-apple-darwin.*\.app\.tar\.gz$/, key: "darwin-aarch64" },
-  { pattern: /x86_64-apple-darwin.*\.app\.tar\.gz$/, key: "darwin-x86_64" },
-  { pattern: /amd64\.AppImage\.tar\.gz$/, key: "linux-x86_64" },
-  { pattern: /x86_64.*\.AppImage\.tar\.gz$/, key: "linux-x86_64" },
-  { pattern: /x64[-_]setup.*\.nsis\.zip$/, key: "windows-x86_64" },
-  { pattern: /x64[-_]en-US.*\.msi\.zip$/, key: "windows-x86_64" },
+  { pattern: /aarch64(?:-apple-darwin)?.*\.app\.tar\.gz$/i, key: "darwin-aarch64" },
+  { pattern: /(x86_64|x64)(?:-apple-darwin)?.*\.app\.tar\.gz$/i, key: "darwin-x86_64" },
+  { pattern: /(amd64|x86_64).+\.AppImage\.tar\.gz$/i, key: "linux-x86_64" },
+  { pattern: /(x64|x86_64)[-_]setup.*\.nsis\.zip$/i, key: "windows-x86_64" },
+  { pattern: /(x64|x86_64).+\.msi\.zip$/i, key: "windows-x86_64" },
 ];
+
+function walkFiles(rootDir) {
+  const out = [];
+  const stack = [rootDir];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    const entries = fs.readdirSync(current, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(fullPath);
+      } else if (entry.isFile()) {
+        out.push(fullPath);
+      }
+    }
+  }
+  return out;
+}
 
 function main() {
   const artifactsDir = process.env.ARTIFACTS_DIR || "./artifacts";
@@ -35,7 +52,15 @@ function main() {
     process.exit(1);
   }
 
-  const files = fs.readdirSync(artifactsDir);
+  const filePaths = walkFiles(artifactsDir);
+  const filePathByName = new Map();
+  for (const filePath of filePaths) {
+    const basename = path.basename(filePath);
+    if (!filePathByName.has(basename)) {
+      filePathByName.set(basename, filePath);
+    }
+  }
+  const files = Array.from(filePathByName.keys());
   const platforms = {};
 
   for (const file of files) {
@@ -60,8 +85,8 @@ function main() {
     // Read signature file if available
     const sigFile = `${file}.sig`;
     let signature = "";
-    if (files.includes(sigFile)) {
-      signature = fs.readFileSync(path.join(artifactsDir, sigFile), "utf-8").trim();
+    if (filePathByName.has(sigFile)) {
+      signature = fs.readFileSync(filePathByName.get(sigFile), "utf-8").trim();
     }
 
     // Construct download URL pointing to ixos-releases
@@ -73,6 +98,10 @@ function main() {
 
   if (Object.keys(platforms).length === 0) {
     console.error("No updater-compatible artifacts found.");
+    console.error("Artifacts scanned:");
+    for (const file of files.sort()) {
+      console.error(` - ${file}`);
+    }
     process.exit(1);
   }
 

@@ -40,7 +40,8 @@ export default function Home() {
       </section>
 
       {/* Workstreams - Amber accent (NEW) */}
-      <div className="section-workstreams accent-teal relative z-10 -mt-24 pb-24 md:pb-32">    <WorkstreamsSection />
+      <div className="section-workstreams accent-amber relative z-10 -mt-24 pb-24 md:pb-32">
+        <WorkstreamsSection />
       </div>
 
       <SectionDivider accent="magenta" label="PRICING" />

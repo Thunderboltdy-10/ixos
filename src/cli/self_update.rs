@@ -55,6 +55,8 @@ pub fn check_latest() -> anyhow::Result<Option<ReleaseInfo>> {
     let (os, arch) = platform_archive_suffix()?;
     let ext = if os == "windows" { "zip" } else { "tar.gz" };
 
+    let mut best: Option<((u32, u32, u32), ReleaseInfo)> = None;
+
     for release in releases {
         let tag = match release["tag_name"].as_str() {
             Some(t) if t.starts_with("cli-v") => t,
@@ -62,6 +64,10 @@ pub fn check_latest() -> anyhow::Result<Option<ReleaseInfo>> {
         };
 
         let version = tag.strip_prefix("cli-v").unwrap_or(tag);
+        let version_tuple = match parse_semver(version) {
+            Some(v) => v,
+            None => continue,
+        };
         let archive_name = format!("ixos-{version}-{os}-{arch}.{ext}");
 
         // Find the asset download URL
@@ -83,16 +89,20 @@ pub fn check_latest() -> anyhow::Result<Option<ReleaseInfo>> {
         }
 
         if let Some(dl) = download_url {
-            return Ok(Some(ReleaseInfo {
+            let info = ReleaseInfo {
                 tag: tag.to_string(),
                 version: version.to_string(),
                 download_url: dl,
                 checksum_url: checksum_url.unwrap_or_default(),
-            }));
+            };
+            match &best {
+                Some((best_version, _)) if *best_version >= version_tuple => {}
+                _ => best = Some((version_tuple, info)),
+            }
         }
     }
 
-    Ok(None)
+    Ok(best.map(|(_, release)| release))
 }
 
 /// Compare two semver-style version strings.  Returns true when `latest` is
@@ -107,6 +117,17 @@ fn is_newer(current: &str, latest: &str) -> bool {
         )
     };
     parse(latest) > parse(current)
+}
+
+fn parse_semver(version: &str) -> Option<(u32, u32, u32)> {
+    let mut parts = version.split('.');
+    let major = parts.next()?.parse::<u32>().ok()?;
+    let minor = parts.next()?.parse::<u32>().ok()?;
+    let patch = parts.next()?.parse::<u32>().ok()?;
+    if parts.next().is_some() {
+        return None;
+    }
+    Some((major, minor, patch))
 }
 
 /// Download a URL into a byte buffer.
@@ -173,7 +194,7 @@ fn extract_archive(data: &[u8], dest_dir: &std::path::Path) -> anyhow::Result<Pa
 /// Replace the current binary with the new one.
 ///
 /// On Windows we do a rename dance: current → .old, new → current.
-/// On Unix we simply rename over the existing binary (atomic on same FS).
+/// On Unix we stage a sibling temp binary and rename over the current path.
 fn replace_binary(new_bin: &std::path::Path) -> anyhow::Result<()> {
     let current_exe = std::env::current_exe()?;
 
@@ -184,13 +205,22 @@ fn replace_binary(new_bin: &std::path::Path) -> anyhow::Result<()> {
         std::fs::rename(&current_exe, &old_path)?;
         std::fs::copy(new_bin, &current_exe)?;
     } else {
-        // Copy then set permissions
-        std::fs::copy(new_bin, &current_exe)?;
+        // Avoid ETXTBSY by not writing directly to the running executable.
+        let file_name = current_exe
+            .file_name()
+            .and_then(|n| n.to_str())
+            .ok_or_else(|| anyhow::anyhow!("Failed to resolve current executable file name"))?;
+        let staged_path = current_exe.with_file_name(format!("{file_name}.new-{}", std::process::id()));
+        let _ = std::fs::remove_file(&staged_path);
+
+        std::fs::copy(new_bin, &staged_path)?;
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(&current_exe, std::fs::Permissions::from_mode(0o755))?;
+            std::fs::set_permissions(&staged_path, std::fs::Permissions::from_mode(0o755))?;
         }
+
+        std::fs::rename(&staged_path, &current_exe)?;
     }
 
     Ok(())
@@ -281,6 +311,15 @@ mod tests {
         assert!(is_newer("0.1.0", "1.0.0"));
         assert!(!is_newer("0.2.0", "0.1.0"));
         assert!(!is_newer("0.1.0", "0.1.0"));
+    }
+
+    #[test]
+    fn test_parse_semver() {
+        assert_eq!(parse_semver("0.1.6"), Some((0, 1, 6)));
+        assert_eq!(parse_semver("1.2.3"), Some((1, 2, 3)));
+        assert_eq!(parse_semver("1.2"), None);
+        assert_eq!(parse_semver("1.2.3.4"), None);
+        assert_eq!(parse_semver("v1.2.3"), None);
     }
 
     #[test]

@@ -662,3 +662,76 @@
 - Evidence (links to /reports or output files): ixos-site/src/components/sections/TodaySection.tsx, ixos-site/src/components/sections/WorkstreamsSection.tsx, ixos-site/src/components/sections/MeetingUseCase.tsx, ixos-site/src/components/sections/Benchmarks.tsx, ixos-site/src/components/sections/ProFeatures.tsx, ixos-site/src/components/sections/ProCard.tsx, ixos-site/src/components/sections/Pricing.tsx
 - Risks: copy may need one final tone pass after stakeholder review.
 - Follow-ups: capture screenshot/video QA and iterate micro-copy.
+- Decision: Stabilize Pro-card handoff with hysteresis + rAF-throttled host switching and an offscreen hidden host.
+- Options considered: simple threshold switching; bridge-zone UI; hysteresis state machine plus offscreen hidden stage.
+- Why chosen: removes oscillation/jank near scroll boundaries while preserving the no-transfer-zone visual requirement.
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/PricingProFlow.tsx, ixos-site/src/components/sections/Pricing.tsx, ixos-site/src/components/sections/ProFeatures.tsx
+- Risks: exact threshold feel still depends on viewport height.
+- Follow-ups: final micro-tune after recorded browser QA.
+
+- Decision: Make annual billing the default in shared pricing flow and pricing component fallback state.
+- Options considered: keep monthly default; set default only in wrapper; set default in wrapper + component fallback.
+- Why chosen: guarantees annual default across both home and /pricing and any direct component usage.
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/PricingProFlow.tsx, ixos-site/src/components/sections/Pricing.tsx
+- Risks: none material.
+- Follow-ups: none.
+
+- Decision: Defer platform auto-detection until after hydration using post-mount scheduling.
+- Options considered: server-time detection fallback only; immediate effect setState; post-hydration scheduled update.
+- Why chosen: prevents SSR/client platform mismatch markup on macOS/Linux while satisfying lint and avoiding hydration churn.
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/DownloadActions.tsx, ixos-site/src/app/download/page.tsx
+- Risks: one-frame Windows default before update on non-Windows clients.
+- Follow-ups: optional cookie/localStorage hint if zero-flip UX is needed.
+
+- Decision: Redesign Workstreams into an asymmetric operations-board layout to differentiate it from Today.
+- Options considered: iterate existing two-column template; minor spacing tweaks; full layout differentiation with stream rail + execution deck + evidence path.
+- Why chosen: user feedback required non-generic, non-template feel and clear visual distinction from Today.
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/WorkstreamsSection.tsx
+- Risks: may need one more brand-polish pass after visual review.
+- Follow-ups: capture screenshot/video QA and tune spacing/accent intensity.- Decision: Move `generate-latest-json` artifact download source from private repo release to `IxosProtocol/ixos-releases`, with asset-availability retries.
+- Options considered: keep source-repo download; immediate one-shot against releases repo; releases-repo download with retry/wait.
+- Why chosen: desktop publish now targets a dedicated releases repo; the manifest job must read from the same source of truth and tolerate propagation delay.
+- Evidence (links to /reports or output files): .github/workflows/release.yml
+- Risks: requires valid `RELEASES_PAT` scope for releases repo.
+- Follow-ups: confirm live `v*` run completes generate-latest-json without manual rerun.
+
+- Decision: Make `publish-draft` non-fatal when the source private release is absent.
+- Options considered: hard fail; create missing release; skip with explicit log.
+- Why chosen: avoids blocking public desktop distribution when private draft publication is not present or not required.
+- Evidence (links to /reports or output files): .github/workflows/release.yml
+- Risks: private repo may stay draft/absent silently if expected by internal process.
+- Follow-ups: if internal distribution depends on source release publish, add explicit policy gate env flag.
+
+- Decision: Broaden updater artifact matching and recursive scan in `generate-latest-json.js`.
+- Options considered: strict top-level patterns; update a few regexes only; recursive scan + broader filename support + debug listing.
+- Why chosen: eliminates false negatives across runner-specific artifact naming and folder structures.
+- Evidence (links to /reports or output files): scripts/generate-latest-json.js
+- Risks: basename dedupe could pick first duplicate asset name across folders.
+- Follow-ups: enforce unique artifact names in release pipeline if duplicates ever appear.
+- Decision: Add a manual `Release Postprocess` workflow for existing desktop tags.
+- Options considered: force new tag rebuild only; edit old tag; manual postprocess workflow against `ixos-releases`.
+- Why chosen: allows repairing `generate-latest-json` / `publish-draft` failures for already-cut tags without another full matrix build.
+- Evidence (links to /reports or output files): .github/workflows/release-postprocess.yml
+- Risks: relies on `RELEASES_PAT` correctness and existing tag assets in `ixos-releases`.
+- Follow-ups: keep this workflow for emergency recovery and release operations.
+
+- Decision: Bundle real Flash v2 and Potion models in desktop installers and fail CI on missing/pointer assets.
+- Options considered: keep stub directories; optional model download post-install; ship required model files in bundle.
+- Why chosen: user requirement is zero post-install model download and deterministic offline readiness.
+- Evidence (links to /reports or output files): .github/workflows/release.yml, src-tauri/tauri.conf.json, src/ixos_embed/mmap_model.rs
+- Risks: larger installer size.
+- Follow-ups: monitor installer size growth and, if needed, split optional models while keeping required defaults bundled.
+
+- Decision: Switch CLI install entrypoint URLs to release assets and publish install scripts with each CLI release.
+- Options considered: keep raw GitHub repo scripts; publish scripts to release assets and reference latest download URLs.
+- Why chosen: decouples install entrypoint from source repo branch churn and aligns with release-driven distribution.
+- Evidence (links to /reports or output files): .github/workflows/cli-release.yml, ixos-site/src/lib/downloads.ts, ixos-site/src/app/docs/cli-reference/page.tsx
+- Risks: release assets must include installer scripts before latest URLs become valid.
+- Follow-ups: run one `cli-v*` release to publish `install.sh`/`install.ps1` assets.
+
+- Decision: Replace Unix self-update copy-over with staged rename to fix ETXTBSY.
+- Options considered: direct overwrite; delete+copy; staged sibling copy + atomic rename.
+- Why chosen: avoids writing to running executable and resolves Linux `Text file busy` failures.
+- Evidence (links to /reports or output files): src/cli/self_update.rs
+- Risks: staged file cleanup if rename fails mid-flight.
+- Follow-ups: add integration test coverage for replace path behavior when test harness is available.

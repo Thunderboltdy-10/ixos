@@ -2,6 +2,7 @@ Param(
     [string]$Repo = $env:IXOS_REPO,
     [string]$Tag = $env:IXOS_TAG,
     [string]$AssetUrl = $env:IXOS_ASSET_URL,
+    [string]$InstallDir = $env:IXOS_INSTALL_DIR,
     [switch]$SkipPathPersist
 )
 
@@ -48,8 +49,18 @@ function Verify-Checksum {
 
         Write-Host "Checksum verified OK"
     }
-    catch [System.Net.WebException] {
-        Write-Host "Warning: SHA256 checksum file not available, skipping verification" -ForegroundColor Yellow
+    catch {
+        $statusCode = $null
+        if ($_.Exception.Response -and $_.Exception.Response.StatusCode) {
+            $statusCode = [int]$_.Exception.Response.StatusCode
+        }
+
+        if ($statusCode -eq 404) {
+            Write-Host "Warning: SHA256 checksum file not available, skipping verification" -ForegroundColor Yellow
+            return
+        }
+
+        throw
     }
 }
 
@@ -60,7 +71,11 @@ $version = $resolvedTag -replace "^cli-v", ""
 $asset = "ixos-$version-$os-$arch.zip"
 $url = if (-not [string]::IsNullOrWhiteSpace($AssetUrl)) { $AssetUrl } else { "https://github.com/$Repo/releases/download/$resolvedTag/$asset" }
 
-$installRoot = Join-Path $env:LOCALAPPDATA "Ixos"
+$installRoot = if (-not [string]::IsNullOrWhiteSpace($InstallDir)) {
+    $InstallDir
+} else {
+    Join-Path $env:LOCALAPPDATA "IxosCLI"
+}
 $binDir = Join-Path $installRoot "bin"
 $tmpDir = Join-Path $env:TEMP ("ixos-install-" + [System.Guid]::NewGuid().ToString("N"))
 
@@ -87,7 +102,7 @@ Copy-Item $exePath (Join-Path $binDir "ixos.exe") -Force
 $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
 if ($null -eq $userPath) { $userPath = "" }
 if (-not $SkipPathPersist -and $env:IXOS_SKIP_PATH_PERSIST -ne "1") {
-    if (-not ($userPath -split ';' | Where-Object { $_ -eq $binDir })) {
+    if (-not ($userPath -split ';' | Where-Object { $_.Trim() -ieq $binDir })) {
         $newPath = ($userPath.TrimEnd(';') + ";" + $binDir).Trim(';')
         [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
         Write-Host "Updated user PATH with $binDir"
@@ -97,7 +112,7 @@ if (-not $SkipPathPersist -and $env:IXOS_SKIP_PATH_PERSIST -ne "1") {
 Remove-Item -Path $tmpDir -Recurse -Force
 
 Write-Host "Installed Ixos CLI to $binDir\ixos.exe"
-if (-not ($env:Path -split ';' | Where-Object { $_ -eq $binDir })) {
+if (-not ($env:Path -split ';' | Where-Object { $_.Trim() -ieq $binDir })) {
     $env:Path = "$binDir;$env:Path"
 }
 & (Join-Path $binDir "ixos.exe") --version

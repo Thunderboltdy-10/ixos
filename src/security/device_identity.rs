@@ -256,7 +256,8 @@ fn store_key_bytes(key_bytes: &[u8]) -> Result<(), DeviceIdentityError> {
 
 #[cfg(target_os = "linux")]
 fn load_key_bytes() -> Result<Option<Vec<u8>>, DeviceIdentityError> {
-    use secret_service::blocking::{EncryptionType, SecretService};
+    use secret_service::blocking::SecretService;
+    use secret_service::EncryptionType;
     use std::collections::HashMap;
 
     let ss = SecretService::connect(EncryptionType::Dh)
@@ -289,7 +290,8 @@ fn load_key_bytes() -> Result<Option<Vec<u8>>, DeviceIdentityError> {
 
 #[cfg(target_os = "linux")]
 fn store_key_bytes(key_bytes: &[u8]) -> Result<(), DeviceIdentityError> {
-    use secret_service::blocking::{EncryptionType, SecretService};
+    use secret_service::blocking::SecretService;
+    use secret_service::EncryptionType;
     use std::collections::HashMap;
 
     let ss = SecretService::connect(EncryptionType::Dh)

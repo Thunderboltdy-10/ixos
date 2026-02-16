@@ -572,3 +572,73 @@
 - Evidence (links to /reports or output files): ixos-site/src/components/sections/HeroPipeline.tsx, ixos-site/src/components/hero/IxosDemoWindow.tsx, reports/landing_pipeline_polish_2026-02-15.md
 - Risks: scroll choreography remains sensitive to device/browser variance.
 - Follow-ups: collect visual QA clips across common viewport sizes and adjust trigger thresholds if needed.
+
+- Decision: Harden release workflows for cross-arch and cross-runner reliability (CLI + desktop).
+- Options considered: keep existing matrix/scripts and rely on reruns; only patch failing jobs ad hoc; make deterministic workflow hardening changes with runner/arch guards.
+- Why chosen: macOS/Linux failures were tied to deterministic config issues (cross-arch smoke execution, package naming/casing, and brittle dependency setup), so targeted hardening is lower risk than repeated manual retries.
+- Evidence (links to /reports or output files): .github/workflows/cli-release.yml, .github/workflows/release.yml, RUNLOG.md (Entry 039)
+- Risks: hosted runner images can still change package availability over time.
+- Follow-ups: run real `cli-v*` and `v*` tag releases and capture logs/artifacts in `/reports`.
+
+- Decision: Isolate CLI installer paths from desktop app install roots by default.
+- Options considered: keep shared `Ixos` install root; require users to pass custom install dirs; switch defaults to dedicated CLI roots while preserving overrides.
+- Why chosen: avoids path/asset collisions when users install both desktop and CLI, especially on Windows where `%LOCALAPPDATA%\\Ixos` can overlap app-owned files.
+- Evidence (links to /reports or output files): scripts/install.sh, scripts/install.ps1, ixos-site/src/lib/downloads.ts
+- Risks: users with old PATH entries may have stale CLI paths until they reinstall/update PATH.
+- Follow-ups: add migration note in CLI docs and optional cleanup helper.
+
+- Decision: Replace duplicated Pro capability pricing card with a shared transfer flow component across home and `/pricing`.
+- Options considered: keep duplicated static cards; animate independent cards; use one shared component with layout transfer and section handoff.
+- Why chosen: directly satisfies the requirement that the same Pro card component visually continues into capabilities, reducing duplicated UI and improving continuity.
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/PricingProFlow.tsx, ixos-site/src/components/sections/Pricing.tsx, ixos-site/src/components/sections/ProFeatures.tsx
+- Risks: transfer timing may need tuning per viewport height.
+- Follow-ups: record manual QA for mobile/desktop transition thresholds and retune observer root margins if needed.
+
+- Decision: Convert Pro-card handoff to a three-stage motion path and add flip-style price animation.
+- Options considered: keep two-position snap handoff; use a fully free-floating overlay; use a bridge lane plus softer spring and animated price glyph flips.
+- Why chosen: bridge lane smooths abrupt travel without obscuring content columns, while digit-flip price animation makes monthly/annual changes legible and premium.
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/PricingProFlow.tsx, ixos-site/src/components/sections/ProCard.tsx
+- Risks: bridge lane spacing can still feel heavy on short laptop viewports.
+- Follow-ups: tune bridge lane height and spring constants after recorded visual QA.
+
+- Decision: Rebuild Today/Workstreams into cleaner boxy panels with one core message per panel.
+- Options considered: keep previous dense interactive cards; add minor spacing tweaks only; full section composition rewrite with explicit main-point framing.
+- Why chosen: screenshot feedback showed uneven density and generic feel; rewrite improves hierarchy, readability, and product-context clarity while preserving site visual language.
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/TodaySection.tsx, ixos-site/src/components/sections/WorkstreamsSection.tsx
+- Risks: copy tone and information density may still need final brand/marketing polish.
+- Follow-ups: run live stakeholder review on desktop/mobile and trim/expand copy where needed.
+
+- Decision: Remove the `settings-matrix` PR workflow entirely.
+- Options considered: keep and debug failing combinations; keep but make non-blocking; remove workflow per user request.
+- Why chosen: requested explicitly, and failing matrix combinations were not release-critical to current shipping goals.
+- Evidence (links to /reports or output files): .github/workflows/settings-matrix.yml (deleted)
+- Risks: reduced early detection for settings-combination regressions.
+- Follow-ups: reintroduce only with a narrower, validated matrix if needed.
+
+- Decision: Harden release publish steps to upload files only and ensure release exists before upload.
+- Options considered: keep `artifacts/*` glob upload; retry around failures; stage and upload explicit file list.
+- Why chosen: fixes deterministic failure where `gh release` received directories and aborted (`is a directory` / `release not found`).
+- Evidence (links to /reports or output files): .github/workflows/cli-release.yml, .github/workflows/release.yml
+- Risks: filename collisions when flattening artifacts must remain controlled.
+- Follow-ups: add a CI check that asserts expected unique artifact names before publish.
+
+- Decision: Add a post-`npm ci` Rollup native-package verification and fallback install in desktop release workflow.
+- Options considered: rely on reruns; regenerate lockfiles; install rollup native package when missing.
+- Why chosen: directly addresses macOS/Linux runner failure from npm optional dependency omission.
+- Evidence (links to /reports or output files): .github/workflows/release.yml
+- Risks: if npm optional-dependency behavior changes again, fallback may need adjustment.
+- Follow-ups: monitor one full successful `v*` run and keep fallback until lockfile generation is stable.
+
+- Decision: Replace the visible Pro-card transfer lane with direct `pricing -> hidden -> capabilities` handoff.
+- Options considered: keep bridge lane; full free-floating card across viewport; direct disappear/reappear handoff.
+- Why chosen: user requested no transfer-zone UI and smoother non-obstructive behavior during scroll.
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/PricingProFlow.tsx
+- Risks: transition timing still depends on viewport thresholds.
+- Follow-ups: tune thresholds after manual browser recordings if handoff feels early/late.
+
+- Decision: Use one shared Pro CTA component (`ProUpgradeAction`) in both pricing and capabilities cards.
+- Options considered: separate CTA implementations (`VIEW_PRICING` in capabilities); duplicate auth logic in each section; shared action component.
+- Why chosen: enforces consistent card behavior and avoids divergent CTAs between sections.
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/ProUpgradeAction.tsx, ixos-site/src/components/sections/Pricing.tsx, ixos-site/src/components/sections/ProFeatures.tsx
+- Risks: duplicate subscription fetches are possible if both cards mount in future layouts.
+- Follow-ups: move subscription state to shared context if both cards are ever rendered concurrently.

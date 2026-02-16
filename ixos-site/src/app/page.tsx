@@ -5,8 +5,7 @@ import { MeetingUseCase } from "@/components/sections/MeetingUseCase";
 import { Benchmarks } from "@/components/sections/Benchmarks";
 import { TodaySection } from "@/components/sections/TodaySection";
 import { WorkstreamsSection } from "@/components/sections/WorkstreamsSection";
-import { Pricing } from "@/components/sections/Pricing";
-import { ProFeatures } from "@/components/sections/ProFeatures";
+import { PricingProFlow } from "@/components/sections/PricingProFlow";
 import { DownloadActions } from "@/components/sections/DownloadActions";
 import { FAQ } from "@/components/sections/FAQ";
 import { Trust } from "@/components/sections/Trust";
@@ -46,16 +45,9 @@ export default function Home() {
 
       <SectionDivider accent="magenta" label="PRICING" />
 
-      {/* Pricing - Magenta accent */}
-      <section className="section-pricing accent-magenta">
-        <Suspense fallback={null}>
-          <Pricing />
-        </Suspense>
-      </section>
-
-      <section className="accent-teal">
-        <ProFeatures />
-      </section>
+      <Suspense fallback={null}>
+        <PricingProFlow />
+      </Suspense>
 
       <section className="accent-teal">
         <DownloadActions />

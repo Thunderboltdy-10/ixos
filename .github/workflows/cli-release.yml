@@ -16,24 +16,30 @@ jobs:
           - runner: ubuntu-latest
             target_os: linux
             target_arch: x86_64
-          - runner: macos-14
+            rust_target: x86_64-unknown-linux-gnu
+          - runner: macos-latest
             target_os: macos
             target_arch: arm64
-          - runner: macos-13
+            rust_target: aarch64-apple-darwin
+          - runner: macos-latest
             target_os: macos
             target_arch: x86_64
+            rust_target: x86_64-apple-darwin
           - runner: windows-latest
             target_os: windows
             target_arch: x86_64
+            rust_target: x86_64-pc-windows-msvc
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
 
       - name: Build ixos CLI
-        run: cargo build --locked --release --bin ixos
+        run: cargo build --locked --release --bin ixos --target ${{ matrix.rust_target }}
 
       - name: Derive version
         shell: bash
@@ -47,12 +53,16 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist/pkg
-          cp target/release/ixos dist/pkg/ixos
+          cp target/${{ matrix.rust_target }}/release/ixos dist/pkg/ixos
           [ -f README.md ] && cp README.md dist/pkg/README.md || true
           [ -f LICENSE ] && cp LICENSE dist/pkg/LICENSE || true
           ARCHIVE="ixos-${VERSION}-${{ matrix.target_os }}-${{ matrix.target_arch }}.tar.gz"
           tar -czf "dist/$ARCHIVE" -C dist/pkg .
-          shasum -a 256 "dist/$ARCHIVE" > "dist/$ARCHIVE.sha256"
+          if command -v shasum >/dev/null 2>&1; then
+            shasum -a 256 "dist/$ARCHIVE" > "dist/$ARCHIVE.sha256"
+          else
+            sha256sum "dist/$ARCHIVE" > "dist/$ARCHIVE.sha256"
+          fi
 
       - name: Smoke test packaged Unix artifact
         if: matrix.target_os != 'windows'
@@ -63,7 +73,19 @@ jobs:
           mkdir -p dist/smoke
           tar -xzf "$ARCHIVE" -C dist/smoke
           test -x dist/smoke/ixos
-          dist/smoke/ixos --version
+          host_arch="$(uname -m)"
+          if [[ "$host_arch" == "arm64" || "$host_arch" == "aarch64" ]]; then
+            host_arch="arm64"
+          elif [[ "$host_arch" == "x86_64" || "$host_arch" == "amd64" ]]; then
+            host_arch="x86_64"
+          fi
+
+          if [[ "$host_arch" == "${{ matrix.target_arch }}" ]]; then
+            dist/smoke/ixos --version
+          else
+            echo "Skipping execution smoke test for cross-arch artifact (host=$host_arch target=${{ matrix.target_arch }})"
+            file dist/smoke/ixos || true
+          fi
 
       - name: Package Windows artifact
         if: matrix.target_os == 'windows'
@@ -71,7 +93,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Path dist -Force | Out-Null
           $archive = "ixos-$env:VERSION-${{ matrix.target_os }}-${{ matrix.target_arch }}.zip"
-          $files = @("target/release/ixos.exe")
+          $files = @("target/${{ matrix.rust_target }}/release/ixos.exe")
           if (Test-Path "README.md") { $files += "README.md" }
           if (Test-Path "LICENSE") { $files += "LICENSE" }
           Compress-Archive -Path $files -DestinationPath (Join-Path "dist" $archive) -Force
@@ -97,13 +119,19 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cli-${{ matrix.target_os }}-${{ matrix.target_arch }}
-          path: dist/*
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*.sha256
 
       - name: Upload assets to private GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          files: dist/*
+          files: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*.sha256
 
   publish-to-releases:
     needs: build-cli
@@ -125,24 +153,45 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      - name: Aggregate SHA256SUMS
+      - name: Prepare release assets
         shell: bash
         run: |
-          cd artifacts
-          cat *.sha256 > SHA256SUMS
+          set -euo pipefail
+          mkdir -p release-assets
+
+          while IFS= read -r -d '' file; do
+            cp "$file" "release-assets/$(basename "$file")"
+          done < <(find artifacts -type f -print0)
+
+          if compgen -G "release-assets/*.sha256" > /dev/null; then
+            cat release-assets/*.sha256 > release-assets/SHA256SUMS
+          fi
+
+          if ! find release-assets -maxdepth 1 -type f | grep -q .; then
+            echo "No file artifacts were found to publish." >&2
+            exit 1
+          fi
+
+          ls -la release-assets
 
       - name: Upload to ixos-releases
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.RELEASES_PAT }}
         run: |
-          # Create or update release on ixos-releases
-          gh release create "${{ github.ref_name }}" \
-            --repo IxosProtocol/ixos-releases \
-            --title "Ixos CLI ${{ github.ref_name }}" \
-            --notes "CLI release ${{ github.ref_name }}" \
-            artifacts/* \
-            || gh release upload "${{ github.ref_name }}" \
-              --repo IxosProtocol/ixos-releases \
-              --clobber \
-              artifacts/*
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          REPO="IxosProtocol/ixos-releases"
+
+          if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --repo "$REPO" \
+              --title "Ixos CLI $TAG" \
+              --notes "CLI release $TAG"
+          fi
+
+          mapfile -t files < <(find release-assets -maxdepth 1 -type f | sort)
+          gh release upload "$TAG" \
+            --repo "$REPO" \
+            --clobber \
+            "${files[@]}"

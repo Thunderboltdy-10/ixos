@@ -1,133 +1,40 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
 import Link from "next/link";
+
+import { useState, type ReactNode, type RefObject } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { SignedIn, SignedOut, useAuth, useUser } from "@clerk/nextjs";
+import { ProCard } from "@/components/sections/ProCard";
+import { ProUpgradeAction } from "@/components/sections/ProUpgradeAction";
 
 import { FadeInView } from "@/components/effects/FadeInView";
 
-type SubscriptionState = {
-    plan: string;
-    status: string;
-    isActive: boolean;
-    currentPeriodEnd: string | null;
-    portalUrl: string | null;
-};
+export type BillingCycle = "monthly" | "annual";
 
-export function Pricing() {
-    const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
-    const [subscription, setSubscription] = useState<SubscriptionState | null>(null);
-    const [isLoadingSubscription, setIsLoadingSubscription] = useState(false);
-    const searchParams = useSearchParams();
-    const { isSignedIn, isLoaded, userId } = useAuth();
-    const { user } = useUser();
-    const clerkUserId = searchParams.get("clerk_user_id") || undefined;
-    const email = searchParams.get("email") || undefined;
-    const variantId =
-        searchParams.get("variant_id") ||
-        process.env.NEXT_PUBLIC_LEMONSQUEEZY_PRO_VARIANT_ID ||
-        undefined;
-    const successUrlParam = searchParams.get("success_url") || undefined;
-    const cancelUrlParam = searchParams.get("cancel_url") || undefined;
-    const currentUrl =
-        typeof window !== "undefined" ? window.location.href.split("#")[0] : null;
-    const buildReturnUrl = (state: "success" | "cancelled") => {
-        if (!currentUrl) return null;
-        try {
-            const url = new URL(currentUrl);
-            url.searchParams.set("checkout", state);
-            return url.toString();
-        } catch {
-            return null;
+export function Pricing({
+    billing,
+    onBillingChange,
+    showProCard = true,
+    proCardLayoutId = "pro-card",
+    proCardSlotRef,
+}: {
+    billing?: BillingCycle;
+    onBillingChange?: (next: BillingCycle) => void;
+    showProCard?: boolean;
+    proCardLayoutId?: string;
+    proCardSlotRef?: RefObject<HTMLDivElement | null>;
+}) {
+    const [internalBilling, setInternalBilling] = useState<BillingCycle>("monthly");
+    const effectiveBilling = billing ?? internalBilling;
+    const setEffectiveBilling = (next: BillingCycle) => {
+        if (onBillingChange) {
+            onBillingChange(next);
+            return;
         }
+        setInternalBilling(next);
     };
-    const successUrl = successUrlParam || buildReturnUrl("success");
-    const cancelUrl = cancelUrlParam || buildReturnUrl("cancelled");
-    const hasDesktopContext = Boolean(clerkUserId || email);
-
-    useEffect(() => {
-        let cancelled = false;
-
-        async function loadSubscription() {
-            if (!isLoaded || !isSignedIn || hasDesktopContext) {
-                setSubscription(null);
-                return;
-            }
-            if (!cancelled) setIsLoadingSubscription(true);
-            try {
-                const res = await fetch("/api/account/subscription", {
-                    method: "GET",
-                });
-                if (!res.ok) {
-                    setSubscription(null);
-                    return;
-                }
-                const data = (await res.json()) as SubscriptionState;
-                if (!cancelled) {
-                    setSubscription(data);
-                }
-            } catch (error) {
-                console.error("Failed to load subscription:", error);
-            } finally {
-                if (!cancelled) setIsLoadingSubscription(false);
-            }
-        }
-
-        loadSubscription();
-
-        // Use visibility-based refresh instead of polling (reduces API load significantly)
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible' && isSignedIn && !hasDesktopContext) {
-                loadSubscription();
-            }
-        };
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('focus', handleVisibilityChange);
-
-        return () => {
-            cancelled = true;
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('focus', handleVisibilityChange);
-        };
-    }, [isLoaded, isSignedIn, hasDesktopContext]);
-
-    const checkoutUrl = useMemo(() => {
-        const template = process.env.NEXT_PUBLIC_LEMON_CHECKOUT_URL_TEMPLATE;
-        if (!template || !variantId) return null;
-        const effectiveClerkUserId = clerkUserId || userId || undefined;
-        const effectiveEmail =
-            email ||
-            user?.primaryEmailAddress?.emailAddress ||
-            user?.emailAddresses?.[0]?.emailAddress ||
-            undefined;
-        const base = template.replace("{variantId}", variantId);
-        const params = new URLSearchParams();
-        if (effectiveClerkUserId) {
-            params.append("checkout[custom][clerk_user_id]", effectiveClerkUserId);
-        }
-
-        if (successUrl) {
-            params.append("checkout[success_url]", successUrl);
-        }
-        if (cancelUrl) {
-            params.append("checkout[cancel_url]", cancelUrl);
-        }
-
-        // Autofill user details
-        if (effectiveEmail) {
-            params.append("checkout[email]", effectiveEmail);
-        }
-        if (user?.fullName) {
-            params.append("checkout[name]", user.fullName);
-        }
-
-        const paramString = params.toString();
-        return paramString ? `${base}${base.includes("?") ? "&" : "?"}${paramString}` : base;
-    }, [clerkUserId, email, variantId, successUrl, cancelUrl, userId, user, user?.fullName]);
 
     return (
         <div className="relative">
@@ -146,17 +53,17 @@ export function Pricing() {
                             data-trace-anchor="pricing-toggle"
                             data-trace-color="magenta"
                         >
-                            <span className={cn("text-sm transition-colors", billing === "monthly" ? "text-fg-porcelain" : "text-fg-muted")}>Monthly</span>
+                            <span className={cn("text-sm transition-colors", effectiveBilling === "monthly" ? "text-fg-porcelain" : "text-fg-muted")}>Monthly</span>
                             <button
-                                onClick={() => setBilling(b => b === "monthly" ? "annual" : "monthly")}
+                                onClick={() => setEffectiveBilling(effectiveBilling === "monthly" ? "annual" : "monthly")}
                                 className="relative w-14 h-7 bg-white/5 rounded-full border border-white/10 p-1 transition-colors hover:border-accent-magenta/50"
                             >
                                 <div className={cn(
                                     "w-4 h-4 rounded-full bg-accent-magenta shadow-glow-magenta transition-all duration-300",
-                                    billing === "annual" ? "translate-x-7" : "translate-x-0"
+                                    effectiveBilling === "annual" ? "translate-x-7" : "translate-x-0"
                                 )} />
                             </button>
-                            <span className={cn("text-sm transition-colors", billing === "annual" ? "text-fg-porcelain" : "text-fg-muted")}>Annual <span className="text-accent-magenta text-xs font-mono ml-1">-20%</span></span>
+                            <span className={cn("text-sm transition-colors", effectiveBilling === "annual" ? "text-fg-porcelain" : "text-fg-muted")}>Annual <span className="text-accent-magenta text-xs font-mono ml-1">-20%</span></span>
                         </div>
                     </FadeInView>
                 </div>
@@ -177,118 +84,55 @@ export function Pricing() {
                                 "Community support"
                             ]}
                             actionNode={(
-                                <Button
-                                    className="w-full font-mono text-xs uppercase tracking-widest h-12 bg-accent-teal/10 hover:bg-accent-teal/20 border border-accent-teal/20 text-accent-teal font-medium hover:border-accent-teal/40"
-                                    asChild
-                                >
-                                    <Link href="/download">DOWNLOAD_FREE</Link>
-                                </Button>
+                                <div className="space-y-3">
+                                    <Button
+                                        className="w-full font-mono text-xs uppercase tracking-widest h-12 bg-accent-teal/10 hover:bg-accent-teal/20 border border-accent-teal/20 text-accent-teal font-medium hover:border-accent-teal/40"
+                                        asChild
+                                    >
+                                        <Link href="/download">DOWNLOAD_FREE</Link>
+                                    </Button>
+                                    <div className="text-center">
+                                        <Link href="/docs/cli-reference" className="text-[10px] text-fg-muted hover:text-fg-porcelain transition-colors border-b border-transparent hover:border-fg-muted/50 pb-0.5">
+                                            OR INSTALL VIA CLI
+                                        </Link>
+                                    </div>
+                                </div>
                             )}
                         />
                     </FadeInView>
 
                     {/* Pro Tier */}
                     <FadeInView direction="up" delay={300} className="h-full">
-                        <div
-                            className="relative group h-full"
-                            data-trace-anchor="pricing-pro"
-                            data-trace-color="magenta"
-                        >
-                            <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />
-                            <SignedIn>
-                                <PricingCard
-                                    title="PRO"
-                                    price={billing === "monthly" ? "$7.99" : "$6.35"}
+                        <div ref={proCardSlotRef} className="h-full">
+                        {showProCard ? (
+                            <motion.div
+                                layoutId={proCardLayoutId}
+                                transition={{ type: "spring", stiffness: 74, damping: 26, mass: 1.2 }}
+                                className="relative group h-full lg:sticky lg:top-20"
+                                data-trace-anchor="pricing-pro"
+                                data-trace-color="magenta"
+                            >
+                                <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />
+                                <ProCard
+                                    price={effectiveBilling === "monthly" ? "$7.99" : "$6.35"}
                                     period="/ month"
                                     desc="Ask Mode evidence answers. Saved searches. Priority support."
-                                    highlighted
-                                    onAction={() => {
-                                        if (subscription?.isActive) {
-                                            if (subscription.portalUrl) {
-                                                window.location.href = subscription.portalUrl;
-                                            } else {
-                                                window.location.href = "/account";
-                                            }
-                                            return;
-                                        }
-                                        if (checkoutUrl) {
-                                            window.open(checkoutUrl, "_blank");
-                                        }
-                                    }}
-                                    features={[
-                                        "Ask Mode answer cards + citations",
-                                        "Today view: daily brief + suggested next files",
-                                        "Workstreams: auto/manual context clusters",
-                                        "Connection map + folder move recommendations",
-                                        "File watch & notifications",
-                                        "Developer file types (TS, PY, RS, GO)",
-                                        "Deep Search Mode (thorough analysis)",
-                                        "Priority model updates",
-                                        "Direct support access"
-                                    ]}
-                                    actionLabel={
-                                        subscription?.isActive
-                                            ? (subscription.portalUrl ? "MANAGE_SUBSCRIPTION" : "VIEW_ACCOUNT")
-                                            : "INITIALIZE_LICENSE"
-                                    }
+                                    actionNode={<ProUpgradeAction />}
                                 />
-                            </SignedIn>
-                            <SignedOut>
-                                <PricingCard
-                                    title="PRO"
-                                    price={billing === "monthly" ? "$7.99" : "$6.35"}
-                                    period="/ month"
-                                    desc="Ask Mode evidence answers. Saved searches. Priority support."
-                                    highlighted
-                                    features={[
-                                        "Ask Mode answer cards + citations",
-                                        "Today view: daily brief + suggested next files",
-                                        "Workstreams: auto/manual context clusters",
-                                        "Connection map + folder move recommendations",
-                                        "File watch & notifications",
-                                        "Developer file types (TS, PY, RS, GO)",
-                                        "Deep Search Mode (thorough analysis)",
-                                        "Priority model updates",
-                                        "Direct support access"
-                                    ]}
-                                    actionNode={
-                                        hasDesktopContext && checkoutUrl ? (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    window.open(checkoutUrl, "_blank");
-                                                }}
-                                                className={cn(
-                                                    "w-full font-mono text-xs uppercase tracking-widest h-12 rounded-md",
-                                                    "bg-accent-magenta hover:bg-accent-magenta-glow text-bg-graphite-0 font-bold shadow-glow-magenta hover:scale-[1.02] transition-all"
-                                                )}
-                                            >
-                                                INITIALIZE_LICENSE
-                                            </button>
-                                        ) : (
-                                            <Link
-                                                href="/sign-in?redirect_url=/pricing"
-                                                className={cn(
-                                                    "w-full font-mono text-xs uppercase tracking-widest h-12 rounded-md inline-flex items-center justify-center",
-                                                    "bg-accent-magenta hover:bg-accent-magenta-glow text-bg-graphite-0 font-bold shadow-glow-magenta hover:scale-[1.02] transition-all"
-                                                )}
-                                            >
-                                                SIGN_IN_TO_UPGRADE
-                                            </Link>
-                                        )
-                                    }
-                                />
-                            </SignedOut>
+                            </motion.div>
+                        ) : (
+                            <div
+                                aria-hidden="true"
+                                className="h-full min-h-[640px] rounded-sm border border-transparent opacity-0 pointer-events-none"
+                            >
+                                <div className="h-full" />
+                            </div>
+                        )}
                         </div>
                     </FadeInView>
                 </div>
-                {isSignedIn && isLoadingSubscription && (
-                    <div className="mt-6 text-center text-xs text-fg-muted">
-                        Checking subscription status...
-                    </div>
-                )}
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
 

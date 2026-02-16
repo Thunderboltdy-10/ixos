@@ -120,22 +120,20 @@ function modeToAccent(mode: DemoMode): AccentColor {
 export function HeroPipeline() {
   const sectionRef = useRef<HTMLElement>(null);
   const progressRafRef = useRef<number | null>(null);
-  const activeStepRef = useRef<number | null>(null);
   const latestProgressRef = useRef(0);
   const [isDesktop, setIsDesktop] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   });
-  // PERFORMANCE: Detect low-powered devices to reduce animation load
-  const [isLowPowered, setIsLowPowered] = useState(() => {
+  // PERFORMANCE: Detect low-powered devices to reduce animation load.
+  const isLowPowered = useMemo(() => {
     if (typeof window === "undefined") return false;
-    // Check device memory and hardware concurrency
-    const deviceMemory = (navigator as any).deviceMemory;
-    const hardwareConcurrency = navigator.hardwareConcurrency;
-    // Consider low-powered if < 4GB RAM or < 4 cores
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const deviceMemory = nav.deviceMemory;
+    const hardwareConcurrency = nav.hardwareConcurrency;
     return (deviceMemory && deviceMemory < 4) || (hardwareConcurrency && hardwareConcurrency < 4);
-  });
+  }, []);
   const [progress, setProgress] = useState(0);
   const [mobileStep, setMobileStep] = useState(0);
   const [demoMode, setDemoMode] = useState<DemoMode>("memory");
@@ -175,9 +173,7 @@ export function HeroPipeline() {
       end: isLowPowered ? "+=175%" : "+=200%",
       pin: true,
       pinSpacing: true,
-      pinType: "fixed",
-      pinReparent: false,
-      scrub: isLowPowered ? 0.9 : 0.72,
+      scrub: true,
       anticipatePin: 1,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
@@ -223,44 +219,23 @@ export function HeroPipeline() {
     const narrative = reducedFx ? mapProgress(progress, 0.04, 0.98) : mapProgress(progress, 0.46, 0.9);
     const exit = reducedFx ? 0 : easeOutCubic(mapProgress(progress, 0.92, 1));
 
-    const heroOpacity = reducedFx ? 0 : clamp01(1 - mapProgress(progress, 0.65, 0.95));
-    const heroDrop = mapProgress(progress, 0.16, 0.46);
-    const heroShiftY = reducedFx ? 0 : -36 + intro * 10 + heroDrop * 170 - exit * 8;
+    // Hero text fades and blurs BEFORE pipeline cards start appearing (entry starts at 0.2)
+    const heroOpacity = reducedFx ? 0 : clamp01(1 - mapProgress(progress, 0.08, 0.22));
+    const heroDrop = mapProgress(progress, 0.08, 0.24);
+    const heroShiftY = reducedFx ? 0 : -36 + intro * 10 + heroDrop * 120 - exit * 8;
 
     const demoLift = reducedFx ? 0 : 214 - entry * 176 - mapProgress(progress, 0.62, 0.9) * 34;
     const demoScale = reducedFx ? 1 : 0.986 + entry * 0.028;
     const headerOpacity = reducedFx ? 1 : clamp01(mapProgress(progress, 0.26, 0.48));
-    const heroMorph = reducedFx ? 1 : mapProgress(progress, 0.28, 0.56);
+    const heroMorph = reducedFx ? 1 : mapProgress(progress, 0.10, 0.22);
     const titleMorph = reducedFx ? 1 : mapProgress(progress, 0.34, 0.58);
 
-    let activeStep: number | null = null;
-    // Keep autonomous hero loop active longer; switch to scroll-guided mode
-    // only once the pipeline frame has clearly taken over.
-    if (entry > 0.66) {
-      const rawStep =
-        narrative < 1 ? Math.min(PHASES.length - 1, Math.floor(narrative * PHASES.length)) : PHASES.length - 1;
-      const normalizedPosition = narrative * PHASES.length;
-      const previousStep = activeStepRef.current;
-      if (previousStep === null) {
-        activeStep = rawStep;
-      } else {
-        const hysteresis = 0.22;
-        if (rawStep > previousStep && normalizedPosition >= (previousStep + 1) + hysteresis) {
-          activeStep = rawStep;
-        } else if (rawStep < previousStep && normalizedPosition <= previousStep - hysteresis) {
-          activeStep = rawStep;
-        } else if (rawStep < previousStep && normalizedPosition <= previousStep - hysteresis) {
-          activeStep = rawStep;
-        } else {
-          activeStep = previousStep;
-        }
-      }
-    }
+    // A floor-based quantization avoids highlight bouncing at phase boundaries.
+    const activeStep = entry > 0.64
+      ? Math.min(PHASES.length - 1, Math.max(0, Math.floor(narrative * PHASES.length)))
+      : null;
 
-    activeStepRef.current = activeStep;
-
-    // When in hero stage (before pipeline cards appear), pass null to allow autonomous loop
-    const demoStep = entry > 0.66 ? activeStep : null;
+    const demoStep = entry > 0.64 ? activeStep : null;
 
     return {
       entry,
@@ -275,12 +250,15 @@ export function HeroPipeline() {
       activeStep,
       demoStep,
     };
-  }, [prefersReducedMotion, progress]);
+  }, [isLowPowered, prefersReducedMotion, progress]);
 
   if (!isDesktop) {
     return (
       <section ref={sectionRef} className="section-hero relative w-full overflow-hidden pt-[14vh]">
-        <PageGlow color={modeToAccent(demoMode) === "violet" ? "purple" : modeToAccent(demoMode)} />
+        <PageGlow color={(() => {
+          const accent = modeToAccent(demoMode);
+          return accent === "violet" ? "purple" : accent;
+        })()} />
         <div className="relative z-10 container mx-auto px-6 pb-20">
           <div className="mx-auto max-w-3xl text-center select-text">
             <div className="mb-5 inline-flex items-center gap-3 rounded-sm border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-sm">
@@ -310,19 +288,17 @@ export function HeroPipeline() {
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button
                 size="lg"
+                variant="ghost"
                 hasParticleMagnet
-                className="bg-accent-amber font-medium text-bg-graphite-0 hover:bg-accent-amber/80 hover:scale-[1.02] transition-transform"
+                className="bg-accent-amber font-medium text-bg-graphite-0 hover:bg-accent-amber/80 hover:text-bg-graphite-0 hover:scale-[1.02] transition-transform"
                 asChild
               >
                 <Link href="/download">Download Desktop</Link>
               </Button>
-              <Button size="lg" variant="secondary" asChild>
-                <Link href="/docs/cli-reference#install">View CLI Install</Link>
-              </Button>
-            </div>
-            <div className="mt-4 text-[11px] font-mono text-fg-muted/70">
-              curl -fsSL https://ixos.dev/install.sh | sh
-            </div>
+            <Button size="lg" variant="secondary" asChild>
+              <Link href="/docs/cli-reference#install">View CLI Install</Link>
+            </Button>
+          </div>
           </div>
 
           <div className="mx-auto mt-10 w-full max-w-[860px] overflow-hidden rounded-xl border border-white/12 bg-bg-graphite-0/95 shadow-2xl">
@@ -383,7 +359,7 @@ export function HeroPipeline() {
       <div
         className="absolute inset-x-0 top-0 z-10 flex justify-center px-6 pt-[14vh]"
         style={{
-          opacity: derived.heroOpacity * (1 - derived.exit * 0.75),
+          opacity: derived.heroOpacity * (1 - derived.exit * 0.2),
           transform: `translate3d(0, ${derived.heroShiftY}px, 0)`,
           filter: `blur(${derived.heroMorph * 7}px)`,
           willChange: "transform, opacity, filter",
@@ -417,8 +393,9 @@ export function HeroPipeline() {
           <div className="mt-6 flex justify-center gap-3">
             <Button
               size="lg"
+              variant="ghost"
               hasParticleMagnet
-              className="min-w-[164px] bg-accent-amber font-medium text-bg-graphite-0 hover:bg-accent-amber/80 hover:scale-[1.02] transition-transform"
+              className="min-w-[164px] bg-accent-amber font-medium text-bg-graphite-0 hover:bg-accent-amber/80 hover:text-bg-graphite-0 hover:scale-[1.02] transition-transform"
               asChild
             >
               <Link href="/download">Download Desktop</Link>
@@ -427,13 +404,10 @@ export function HeroPipeline() {
               <Link href="/docs/cli-reference#install">CLI Install</Link>
             </Button>
           </div>
-          <div className="mt-4 text-[11px] font-mono text-fg-muted/70">
-            curl -fsSL https://ixos.dev/install.sh | sh
-          </div>
         </div>
       </div>
 
-      <div className="absolute inset-0 z-30 flex items-center justify-center px-4 md:px-6">
+      <div className="absolute inset-0 z-30 flex items-center justify-center px-4 md:px-6 pointer-events-none">
         <div
           className="relative w-full max-w-[1420px] xl:max-w-[1620px]"
           style={{
@@ -499,7 +473,7 @@ export function HeroPipeline() {
             <div
               className={cn(
                 "relative z-20 flex min-h-0 items-center justify-center",
-                "pointer-events-auto"
+                activeStep !== null ? "pointer-events-none" : "pointer-events-auto"
               )}
               style={{ gridArea: "demo", contain: "layout paint" }}
             >
@@ -636,9 +610,8 @@ function PipelineCardWrapper({
         zIndex: 35,
         opacity: reveal,
         transform: `translate3d(${(1 - reveal) * config.x}px, ${(1 - reveal) * config.y - exit * 6}px, 0)`,
-        filter: `blur(${(1 - reveal) * 6}px)`,
         pointerEvents: reveal > 0.42 ? "auto" : "none",
-        willChange: "transform, opacity, filter",
+        willChange: "transform, opacity",
         contain: "layout paint",
       }}
     >
@@ -702,7 +675,7 @@ function PhaseTile({
   return (
     <article
       className={cn(
-        "relative flex min-h-0 overflow-hidden rounded-2xl border-2 bg-bg-graphite-2/92 backdrop-blur-sm transition-all duration-700 ease-out",
+        "relative flex min-h-0 overflow-hidden rounded-2xl border-2 bg-bg-graphite-2/92 backdrop-blur-sm transition-[border-color,box-shadow,opacity] duration-280 ease-out",
         compact ? "h-full items-start gap-5 p-6" : "grid h-full grid-rows-[auto_minmax(0,1fr)] gap-4 p-6",
         isActive
           ? cn(styles.borderActive, styles.shadow, "z-10 ring-2 opacity-100", styles.ring)

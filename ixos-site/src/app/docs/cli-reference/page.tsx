@@ -17,10 +17,10 @@ export default function DocsCliReferencePage() {
       </p>
       <pre>
         <code>{`# macOS / Linux / WSL
-curl -fsSL https://ixos.dev/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/IxosProtocol/ixos-cli/main/scripts/install.sh | bash
 
 # Windows PowerShell
-irm https://ixos.dev/install.ps1 | iex
+irm https://raw.githubusercontent.com/IxosProtocol/ixos-cli/main/scripts/install.ps1 | iex
 
 # Verify
 ixos --version`}</code>

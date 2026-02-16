@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import { Nav } from "@/components/ui/Nav";
 import { SectionDivider } from "@/components/ui/SectionDivider";
-import { Pricing } from "@/components/sections/Pricing";
+import { PricingProFlow } from "@/components/sections/PricingProFlow";
+import { DownloadActions } from "@/components/sections/DownloadActions";
 import { Footer } from "@/components/sections/Footer";
 import { PageGlow } from "@/components/effects/PageGlow";
 
@@ -20,7 +21,13 @@ export default function PricingPage() {
                         <p className="text-text-secondary text-lg">Simple, transparent, and built for developers.</p>
                     </div>
                     <Suspense fallback={null}>
-                        <Pricing />
+                        <PricingProFlow
+                            pricingSectionClassName="section-pricing accent-magenta"
+                            proSectionClassName="accent-teal"
+                        />
+                        <section className="accent-teal">
+                            <DownloadActions />
+                        </section>
                     </Suspense>
                 </main>
                 <Footer />

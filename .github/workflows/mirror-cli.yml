@@ -23,7 +23,7 @@ jobs:
 
           # Copy only public-safe files
           mkdir -p "$MIRROR_DIR/src" "$MIRROR_DIR/scripts"
-          cp -r src/ "$MIRROR_DIR/src/"
+          rsync -a src/ "$MIRROR_DIR/src/"
           cp Cargo.toml "$MIRROR_DIR/Cargo.toml"
           cp Cargo.lock "$MIRROR_DIR/Cargo.lock"
           cp LICENSE "$MIRROR_DIR/LICENSE"

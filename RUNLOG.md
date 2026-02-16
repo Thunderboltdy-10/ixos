@@ -1072,3 +1072,83 @@
   1. Run manual visual QA in browser for scroll layering and demo interaction feel.
   2. If any residual jitter appears, tune `ScrollTrigger` thresholds with viewport recordings.
 - Follow-up (same pass): disabled demo interaction lock in `IxosDemoWindow` so live demo remains interactive at all stages.
+## Entry 039 - Cross-repo release workflow hardening + landing pricing/download overhaul
+- Date/Time: 2026-02-16
+- Branch/Commit: roadmap (working tree)
+- Goal: Audit and harden CLI/desktop GitHub Actions for macOS/Linux reliability, verify install/download flows for split repos, and complete landing/pricing/download UX fixes (including shared Pro card transfer).
+- Commands run:
+  - `bash -n scripts/install.sh`
+  - PowerShell parser check for `scripts/install.ps1`
+  - `python -c "import pathlib,yaml; [yaml.safe_load(...)]"` for `.github/workflows/*.yml`
+  - `npm --prefix ixos-site run build`
+  - `cd ixos-site; npx eslint src/components/sections/DownloadActions.tsx src/app/download/page.tsx src/components/sections/Pricing.tsx src/components/sections/ProFeatures.tsx src/components/sections/PricingProFlow.tsx src/components/sections/ProCard.tsx src/components/sections/TodaySection.tsx src/components/sections/WorkstreamsSection.tsx src/lib/downloads.ts src/app/page.tsx src/app/pricing/page.tsx src/app/docs/page.tsx src/app/docs/cli-reference/page.tsx`
+- Outputs saved to:
+  - Workflow/script hardening in `.github/workflows/cli-release.yml`, `.github/workflows/release.yml`, `scripts/install.sh`, `scripts/install.ps1`
+  - Landing/pricing/download redesign in `ixos-site/src/components/sections/*` and `ixos-site/src/app/*`
+- Key results:
+  - Fixed cross-arch CLI smoke test behavior (macOS x86_64 artifact no longer executed on arm hosts).
+  - Hardened Ubuntu dependency install and Rust target install flow in desktop release workflow.
+  - Added lowercase `potion-base-8m-int8` stub creation for case-sensitive runners.
+  - Installer scripts now default to isolated CLI paths (`~/.ixos/cli/bin`, `%LOCALAPPDATA%\IxosCLI\bin`) and improved checksum handling.
+  - Centralized download/installer detection logic and corrected script commands to `| bash` for POSIX safety.
+  - Reworked landing Today + Workstreams with interactive, product-faithful UI.
+  - Implemented shared pricing-to-pro capability card transfer flow on both `/` and `/pricing` via `PricingProFlow`.
+  - Expanded pricing page to include the same Pro capability flow and download actions.
+- Validation summary:
+  - `bash -n scripts/install.sh`: PASS
+  - PowerShell parser check for `scripts/install.ps1`: PASS
+  - Workflow YAML parse check: PASS
+  - `npm --prefix ixos-site run build`: PASS
+  - targeted eslint over changed landing/download files: PASS
+- Decision: KEEP
+- Next:
+  1. Run real GitHub tag builds (`cli-v*` and `v*`) to verify live runner behavior and release uploads.
+  2. Capture manual QA clips for Pro card transfer motion and hero scroll behavior across viewport sizes.
+  3. Add CI assertion for release artifact naming consumed by `generate-latest-json.js`.## Entry 040 - Landing polish pass 2 (hero cleanup, smoother Pro transfer, flip pricing, section redesign)
+- Date/Time: 2026-02-16
+- Branch/Commit: roadmap (working tree)
+- Goal: Apply direct UX feedback: remove hero curl line, reduce pipeline flicker, smooth Pro card transfer, add pricing flip animation, and redesign Today/Workstreams for cleaner boxy/product-aligned composition.
+- Commands run:
+  - `cd ixos-site; npx eslint src/components/sections/TodaySection.tsx src/components/sections/WorkstreamsSection.tsx src/components/sections/PricingProFlow.tsx src/components/sections/Pricing.tsx src/components/sections/ProFeatures.tsx src/components/sections/ProCard.tsx src/app/page.tsx src/app/pricing/page.tsx src/app/download/page.tsx src/components/sections/DownloadActions.tsx src/lib/downloads.ts src/app/docs/page.tsx src/app/docs/cli-reference/page.tsx`
+  - `npm --prefix ixos-site run build`
+- Outputs saved to:
+  - Updated landing/pricing components and motion behavior (`HeroPipeline`, `PricingProFlow`, `ProCard`, `TodaySection`, `WorkstreamsSection`)
+- Key results:
+  - Removed hero install curl snippet from desktop and mobile hero variants.
+  - Reduced search pipeline flicker by stabilizing quantized step selection and removing blur-based card transitions.
+  - Smoothed Pro card handoff with a three-stage path (pricing -> transfer lane -> capabilities) and softer spring settings.
+  - Added flip-style animated price rendering in Pro card when switching monthly/annual.
+  - Rebuilt Today and Workstreams with cleaner boxy hierarchy and one-primary-point content framing per panel.
+- Validation summary:
+  - targeted eslint on updated landing/pricing/download files: PASS
+  - `npm --prefix ixos-site run build`: PASS
+- Decision: KEEP
+- Next:
+  1. Run manual visual QA and tune spacing/motion if needed.
+  2. Trigger live release tag workflows for final CI confidence.
+## Entry 041 - Release publish fixes + landing feedback correction pass
+- Date/Time: 2026-02-16
+- Branch/Commit: roadmap (working tree)
+- Goal: Fix remaining GitHub Actions failures (settings-test removal, mac/linux UI build instability, CLI publish failure) and apply latest landing feedback (remove transfer zone, unify Pro CTA, reduce pipeline flicker, redesign Today/Workstreams).
+- Commands run:
+  - `npm --prefix ixos-site run lint -- src/components/sections/Pricing.tsx src/components/sections/PricingProFlow.tsx src/components/sections/ProFeatures.tsx src/components/sections/ProUpgradeAction.tsx src/components/sections/HeroPipeline.tsx src/components/sections/TodaySection.tsx src/components/sections/WorkstreamsSection.tsx src/app/page.tsx src/app/pricing/page.tsx`
+  - `npm --prefix ixos-site run build`
+- Outputs saved to:
+  - Workflow fixes: `.github/workflows/release.yml`, `.github/workflows/cli-release.yml`, `.github/workflows/settings-matrix.yml` (deleted)
+  - Landing updates: `ixos-site/src/components/sections/HeroPipeline.tsx`, `PricingProFlow.tsx`, `Pricing.tsx`, `ProFeatures.tsx`, `ProUpgradeAction.tsx`, `TodaySection.tsx`, `WorkstreamsSection.tsx`
+- Key results:
+  - Removed `settings-matrix` workflow as requested.
+  - Fixed CLI publish path to stage/upload only files and to create-or-view release before upload.
+  - Applied same file-only publish hardening to desktop copy-to-releases job.
+  - Added Rollup native package verification + fallback install after `npm ci` in desktop release workflow for macOS/Linux optional-dependency failures.
+  - Removed transfer-zone UI and switched Pro-card flow to direct `pricing -> hidden -> capabilities` handoff.
+  - Unified pricing/capabilities card CTA behavior through shared `ProUpgradeAction` (removed `VIEW_PRICING` split behavior).
+  - Reduced pipeline flicker by floor-quantized phase mapping, no blur transition in card wrappers, and direct scroll scrub.
+  - Rebuilt Today/Workstreams section composition around one main point per panel with cleaner boxy hierarchy.
+- Validation summary:
+  - targeted eslint on changed landing files: PASS
+  - `npm --prefix ixos-site run build`: PASS
+- Decision: KEEP
+- Next:
+  1. Run real `cli-v*` and `v*` tags to confirm publish succeeds with live secrets/runners.
+  2. Record short desktop/mobile QA clips for hero pipeline and Pro-card handoff timing.

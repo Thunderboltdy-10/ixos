@@ -15,7 +15,7 @@ export default function DocsOverviewPage() {
 
       <div className="mt-6 flex flex-wrap gap-3">
         <Button asChild>
-          <Link href={getDownloadUrl("windows") ?? "/download"}>Download for Windows</Link>
+          <Link href={getDownloadUrl("windows-x64") ?? "/download"}>Download for Windows</Link>
         </Button>
         <Button variant="secondary" asChild>
           <Link href="/docs/getting-started">Start Setup Guide</Link>

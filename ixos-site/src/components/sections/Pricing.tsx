@@ -1,11 +1,14 @@
 "use client";
 
+import { motion } from "framer-motion";
+import Link from "next/link";
+
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { SignedIn, SignedOut, useAuth, useUser } from "@clerk/nextjs";
+import { ProCard } from "@/components/sections/ProCard";
 
 import { FadeInView } from "@/components/effects/FadeInView";
 
@@ -17,8 +20,20 @@ type SubscriptionState = {
     portalUrl: string | null;
 };
 
-export function Pricing() {
-    const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
+export type BillingCycle = "monthly" | "annual";
+
+export function Pricing({
+    billing,
+    onBillingChange,
+    showProCard = true,
+    proCardLayoutId = "pro-card",
+}: {
+    billing?: BillingCycle;
+    onBillingChange?: (next: BillingCycle) => void;
+    showProCard?: boolean;
+    proCardLayoutId?: string;
+}) {
+    const [internalBilling, setInternalBilling] = useState<BillingCycle>("monthly");
     const [subscription, setSubscription] = useState<SubscriptionState | null>(null);
     const [isLoadingSubscription, setIsLoadingSubscription] = useState(false);
     const searchParams = useSearchParams();
@@ -47,6 +62,14 @@ export function Pricing() {
     const successUrl = successUrlParam || buildReturnUrl("success");
     const cancelUrl = cancelUrlParam || buildReturnUrl("cancelled");
     const hasDesktopContext = Boolean(clerkUserId || email);
+    const effectiveBilling = billing ?? internalBilling;
+    const setEffectiveBilling = (next: BillingCycle) => {
+        if (onBillingChange) {
+            onBillingChange(next);
+            return;
+        }
+        setInternalBilling(next);
+    };
 
     useEffect(() => {
         let cancelled = false;
@@ -127,7 +150,7 @@ export function Pricing() {
 
         const paramString = params.toString();
         return paramString ? `${base}${base.includes("?") ? "&" : "?"}${paramString}` : base;
-    }, [clerkUserId, email, variantId, successUrl, cancelUrl, userId, user, user?.fullName]);
+    }, [clerkUserId, email, variantId, successUrl, cancelUrl, userId, user]);
 
     return (
         <div className="relative">
@@ -146,17 +169,17 @@ export function Pricing() {
                             data-trace-anchor="pricing-toggle"
                             data-trace-color="magenta"
                         >
-                            <span className={cn("text-sm transition-colors", billing === "monthly" ? "text-fg-porcelain" : "text-fg-muted")}>Monthly</span>
+                            <span className={cn("text-sm transition-colors", effectiveBilling === "monthly" ? "text-fg-porcelain" : "text-fg-muted")}>Monthly</span>
                             <button
-                                onClick={() => setBilling(b => b === "monthly" ? "annual" : "monthly")}
+                                onClick={() => setEffectiveBilling(effectiveBilling === "monthly" ? "annual" : "monthly")}
                                 className="relative w-14 h-7 bg-white/5 rounded-full border border-white/10 p-1 transition-colors hover:border-accent-magenta/50"
                             >
                                 <div className={cn(
                                     "w-4 h-4 rounded-full bg-accent-magenta shadow-glow-magenta transition-all duration-300",
-                                    billing === "annual" ? "translate-x-7" : "translate-x-0"
+                                    effectiveBilling === "annual" ? "translate-x-7" : "translate-x-0"
                                 )} />
                             </button>
-                            <span className={cn("text-sm transition-colors", billing === "annual" ? "text-fg-porcelain" : "text-fg-muted")}>Annual <span className="text-accent-magenta text-xs font-mono ml-1">-20%</span></span>
+                            <span className={cn("text-sm transition-colors", effectiveBilling === "annual" ? "text-fg-porcelain" : "text-fg-muted")}>Annual <span className="text-accent-magenta text-xs font-mono ml-1">-20%</span></span>
                         </div>
                     </FadeInView>
                 </div>
@@ -177,118 +200,116 @@ export function Pricing() {
                                 "Community support"
                             ]}
                             actionNode={(
-                                <Button
-                                    className="w-full font-mono text-xs uppercase tracking-widest h-12 bg-accent-teal/10 hover:bg-accent-teal/20 border border-accent-teal/20 text-accent-teal font-medium hover:border-accent-teal/40"
-                                    asChild
-                                >
-                                    <Link href="/download">DOWNLOAD_FREE</Link>
-                                </Button>
+                                <div className="space-y-3">
+                                    <Button
+                                        className="w-full font-mono text-xs uppercase tracking-widest h-12 bg-accent-teal/10 hover:bg-accent-teal/20 border border-accent-teal/20 text-accent-teal font-medium hover:border-accent-teal/40"
+                                        asChild
+                                    >
+                                        <Link href="/download">DOWNLOAD_FREE</Link>
+                                    </Button>
+                                    <div className="text-center">
+                                        <Link href="/docs/cli-reference" className="text-[10px] text-fg-muted hover:text-fg-porcelain transition-colors border-b border-transparent hover:border-fg-muted/50 pb-0.5">
+                                            OR INSTALL VIA CLI
+                                        </Link>
+                                    </div>
+                                </div>
                             )}
                         />
                     </FadeInView>
 
                     {/* Pro Tier */}
                     <FadeInView direction="up" delay={300} className="h-full">
-                        <div
-                            className="relative group h-full"
-                            data-trace-anchor="pricing-pro"
-                            data-trace-color="magenta"
-                        >
-                            <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />
-                            <SignedIn>
-                                <PricingCard
-                                    title="PRO"
-                                    price={billing === "monthly" ? "$7.99" : "$6.35"}
-                                    period="/ month"
-                                    desc="Ask Mode evidence answers. Saved searches. Priority support."
-                                    highlighted
-                                    onAction={() => {
-                                        if (subscription?.isActive) {
-                                            if (subscription.portalUrl) {
-                                                window.location.href = subscription.portalUrl;
-                                            } else {
-                                                window.location.href = "/account";
-                                            }
-                                            return;
-                                        }
-                                        if (checkoutUrl) {
-                                            window.open(checkoutUrl, "_blank");
-                                        }
-                                    }}
-                                    features={[
-                                        "Ask Mode answer cards + citations",
-                                        "Today view: daily brief + suggested next files",
-                                        "Workstreams: auto/manual context clusters",
-                                        "Connection map + folder move recommendations",
-                                        "File watch & notifications",
-                                        "Developer file types (TS, PY, RS, GO)",
-                                        "Deep Search Mode (thorough analysis)",
-                                        "Priority model updates",
-                                        "Direct support access"
-                                    ]}
-                                    actionLabel={
-                                        subscription?.isActive
-                                            ? (subscription.portalUrl ? "MANAGE_SUBSCRIPTION" : "VIEW_ACCOUNT")
-                                            : "INITIALIZE_LICENSE"
-                                    }
-                                />
-                            </SignedIn>
-                            <SignedOut>
-                                <PricingCard
-                                    title="PRO"
-                                    price={billing === "monthly" ? "$7.99" : "$6.35"}
-                                    period="/ month"
-                                    desc="Ask Mode evidence answers. Saved searches. Priority support."
-                                    highlighted
-                                    features={[
-                                        "Ask Mode answer cards + citations",
-                                        "Today view: daily brief + suggested next files",
-                                        "Workstreams: auto/manual context clusters",
-                                        "Connection map + folder move recommendations",
-                                        "File watch & notifications",
-                                        "Developer file types (TS, PY, RS, GO)",
-                                        "Deep Search Mode (thorough analysis)",
-                                        "Priority model updates",
-                                        "Direct support access"
-                                    ]}
-                                    actionNode={
-                                        hasDesktopContext && checkoutUrl ? (
-                                            <button
-                                                type="button"
+                        {showProCard ? (
+                            <motion.div
+                                layoutId={proCardLayoutId}
+                                transition={{ type: "spring", stiffness: 220, damping: 26 }}
+                                className="relative group h-full lg:sticky lg:top-20"
+                                data-trace-anchor="pricing-pro"
+                                data-trace-color="magenta"
+                            >
+                                <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />
+                                <SignedIn>
+                                    <ProCard
+                                        price={effectiveBilling === "monthly" ? "$7.99" : "$6.35"}
+                                        period="/ month"
+                                        desc="Ask Mode evidence answers. Saved searches. Priority support."
+                                        actionNode={(
+                                            <Button
                                                 onClick={() => {
-                                                    window.open(checkoutUrl, "_blank");
+                                                    if (subscription?.isActive) {
+                                                        if (subscription.portalUrl) {
+                                                            window.location.href = subscription.portalUrl;
+                                                        } else {
+                                                            window.location.href = "/account";
+                                                        }
+                                                        return;
+                                                    }
+                                                    if (checkoutUrl) {
+                                                        window.open(checkoutUrl, "_blank");
+                                                    }
                                                 }}
-                                                className={cn(
-                                                    "w-full font-mono text-xs uppercase tracking-widest h-12 rounded-md",
-                                                    "bg-accent-magenta hover:bg-accent-magenta-glow text-bg-graphite-0 font-bold shadow-glow-magenta hover:scale-[1.02] transition-all"
-                                                )}
+                                                className="w-full font-mono text-xs uppercase tracking-widest h-12 bg-accent-magenta hover:bg-accent-magenta-glow text-bg-graphite-0 font-bold shadow-glow-magenta hover:scale-[1.02] transition-all"
                                             >
-                                                INITIALIZE_LICENSE
-                                            </button>
-                                        ) : (
-                                            <Link
-                                                href="/sign-in?redirect_url=/pricing"
-                                                className={cn(
-                                                    "w-full font-mono text-xs uppercase tracking-widest h-12 rounded-md inline-flex items-center justify-center",
-                                                    "bg-accent-magenta hover:bg-accent-magenta-glow text-bg-graphite-0 font-bold shadow-glow-magenta hover:scale-[1.02] transition-all"
-                                                )}
-                                            >
-                                                SIGN_IN_TO_UPGRADE
-                                            </Link>
-                                        )
-                                    }
-                                />
-                            </SignedOut>
-                        </div>
+                                                {subscription?.isActive
+                                                    ? (subscription.portalUrl ? "MANAGE_SUBSCRIPTION" : "VIEW_ACCOUNT")
+                                                    : "INITIALIZE_LICENSE"}
+                                            </Button>
+                                        )}
+                                    />
+                                </SignedIn>
+                                <SignedOut>
+                                    <ProCard
+                                        price={effectiveBilling === "monthly" ? "$7.99" : "$6.35"}
+                                        period="/ month"
+                                        desc="Ask Mode evidence answers. Saved searches. Priority support."
+                                        actionNode={
+                                            hasDesktopContext && checkoutUrl ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        window.open(checkoutUrl, "_blank");
+                                                    }}
+                                                    className={cn(
+                                                        "w-full font-mono text-xs uppercase tracking-widest h-12 rounded-md",
+                                                        "bg-accent-magenta hover:bg-accent-magenta-glow text-bg-graphite-0 font-bold shadow-glow-magenta hover:scale-[1.02] transition-all"
+                                                    )}
+                                                >
+                                                    INITIALIZE_LICENSE
+                                                </button>
+                                            ) : (
+                                                <Link
+                                                    href="/sign-in?redirect_url=/pricing"
+                                                    className={cn(
+                                                        "w-full font-mono text-xs uppercase tracking-widest h-12 rounded-md inline-flex items-center justify-center",
+                                                        "bg-accent-magenta hover:bg-accent-magenta-glow text-bg-graphite-0 font-bold shadow-glow-magenta hover:scale-[1.02] transition-all"
+                                                    )}
+                                                >
+                                                    SIGN_IN_TO_UPGRADE
+                                                </Link>
+                                            )
+                                        }
+                                    />
+                                </SignedOut>
+                            </motion.div>
+                        ) : (
+                            <div className="h-full rounded-sm border border-accent-magenta/30 bg-bg-graphite-1/50 p-6 flex flex-col justify-center text-center">
+                                <p className="text-[10px] font-mono tracking-[0.14em] text-accent-magenta/70">PRO_CARD_TRANSFER</p>
+                                <p className="mt-3 text-sm text-fg-muted/80">
+                                    Pro card is now pinned to the capabilities section below.
+                                </p>
+                            </div>
+                        )}
                     </FadeInView>
                 </div>
-                {isSignedIn && isLoadingSubscription && (
-                    <div className="mt-6 text-center text-xs text-fg-muted">
-                        Checking subscription status...
-                    </div>
-                )}
-            </div>
-        </div>
+                {
+                    isSignedIn && isLoadingSubscription && (
+                        <div className="mt-6 text-center text-xs text-fg-muted">
+                            Checking subscription status...
+                        </div>
+                    )
+                }
+            </div >
+        </div >
     );
 }
 

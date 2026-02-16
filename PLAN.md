@@ -334,3 +334,26 @@
   1. Manual visual QA pass on hero/pipeline layering + demo interaction at desktop breakpoints.
   2. Fine-tune ScrollTrigger thresholds only if residual flicker remains in QA recordings.
   3. Continue Pro feature clarity iteration using user feedback from Today/Workstreams adoption.
+
+## STATE SNAPSHOT (Release + landing audit pass, 2026-02-16)
+- Date: 2026-02-16
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Hosted runner variance for macOS/Linux release packaging
+  2. Hero scroll choreography sensitivity on lower-power devices
+  3. Workspace-wide strict lint/clippy debt outside release-critical paths
+- Current pass validation (2026-02-16):
+  - `bash -n scripts/install.sh`: PASS
+  - PowerShell parser check for `scripts/install.ps1`: PASS
+  - `python -c "...yaml.safe_load(...)"` over `.github/workflows/*.yml`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+  - `cd ixos-site; npx eslint <changed-landing-files>`: PASS
+- What is next (top 3 tasks):
+  1. Trigger real tag pipelines (`cli-v*`, `v*`) to validate macOS/Linux signing + upload behavior with live secrets.
+  2. Run manual browser QA for pricing-to-pro card transfer motion on desktop and mobile breakpoints.
+  3. Add CI smoke checks for release artifact names consumed by `scripts/generate-latest-json.js`.

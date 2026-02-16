@@ -169,7 +169,8 @@ fn delete_secret(service: &str, account: &str) -> Result<(), SecureStoreError> {
 
 #[cfg(target_os = "linux")]
 fn load_secret(service: &str, account: &str) -> Result<Option<Vec<u8>>, SecureStoreError> {
-    use secret_service::blocking::{EncryptionType, SecretService};
+    use secret_service::blocking::SecretService;
+    use secret_service::EncryptionType;
     use std::collections::HashMap;
 
     let ss = SecretService::connect(EncryptionType::Dh)
@@ -207,7 +208,8 @@ fn store_secret(
     label: &str,
     secret: &[u8],
 ) -> Result<(), SecureStoreError> {
-    use secret_service::blocking::{EncryptionType, SecretService};
+    use secret_service::blocking::SecretService;
+    use secret_service::EncryptionType;
     use std::collections::HashMap;
 
     let ss = SecretService::connect(EncryptionType::Dh)
@@ -232,7 +234,8 @@ fn store_secret(
 
 #[cfg(target_os = "linux")]
 fn delete_secret(service: &str, account: &str) -> Result<(), SecureStoreError> {
-    use secret_service::blocking::{EncryptionType, SecretService};
+    use secret_service::blocking::SecretService;
+    use secret_service::EncryptionType;
     use std::collections::HashMap;
 
     let ss = SecretService::connect(EncryptionType::Dh)

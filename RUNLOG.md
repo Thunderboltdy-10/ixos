@@ -1072,3 +1072,36 @@
   1. Run manual visual QA in browser for scroll layering and demo interaction feel.
   2. If any residual jitter appears, tune `ScrollTrigger` thresholds with viewport recordings.
 - Follow-up (same pass): disabled demo interaction lock in `IxosDemoWindow` so live demo remains interactive at all stages.
+## Entry 039 - Cross-repo release workflow hardening + landing pricing/download overhaul
+- Date/Time: 2026-02-16
+- Branch/Commit: roadmap (working tree)
+- Goal: Audit and harden CLI/desktop GitHub Actions for macOS/Linux reliability, verify install/download flows for split repos, and complete landing/pricing/download UX fixes (including shared Pro card transfer).
+- Commands run:
+  - `bash -n scripts/install.sh`
+  - PowerShell parser check for `scripts/install.ps1`
+  - `python -c "import pathlib,yaml; [yaml.safe_load(...)]"` for `.github/workflows/*.yml`
+  - `npm --prefix ixos-site run build`
+  - `cd ixos-site; npx eslint src/components/sections/DownloadActions.tsx src/app/download/page.tsx src/components/sections/Pricing.tsx src/components/sections/ProFeatures.tsx src/components/sections/PricingProFlow.tsx src/components/sections/ProCard.tsx src/components/sections/TodaySection.tsx src/components/sections/WorkstreamsSection.tsx src/lib/downloads.ts src/app/page.tsx src/app/pricing/page.tsx src/app/docs/page.tsx src/app/docs/cli-reference/page.tsx`
+- Outputs saved to:
+  - Workflow/script hardening in `.github/workflows/cli-release.yml`, `.github/workflows/release.yml`, `scripts/install.sh`, `scripts/install.ps1`
+  - Landing/pricing/download redesign in `ixos-site/src/components/sections/*` and `ixos-site/src/app/*`
+- Key results:
+  - Fixed cross-arch CLI smoke test behavior (macOS x86_64 artifact no longer executed on arm hosts).
+  - Hardened Ubuntu dependency install and Rust target install flow in desktop release workflow.
+  - Added lowercase `potion-base-8m-int8` stub creation for case-sensitive runners.
+  - Installer scripts now default to isolated CLI paths (`~/.ixos/cli/bin`, `%LOCALAPPDATA%\IxosCLI\bin`) and improved checksum handling.
+  - Centralized download/installer detection logic and corrected script commands to `| bash` for POSIX safety.
+  - Reworked landing Today + Workstreams with interactive, product-faithful UI.
+  - Implemented shared pricing-to-pro capability card transfer flow on both `/` and `/pricing` via `PricingProFlow`.
+  - Expanded pricing page to include the same Pro capability flow and download actions.
+- Validation summary:
+  - `bash -n scripts/install.sh`: PASS
+  - PowerShell parser check for `scripts/install.ps1`: PASS
+  - Workflow YAML parse check: PASS
+  - `npm --prefix ixos-site run build`: PASS
+  - targeted eslint over changed landing/download files: PASS
+- Decision: KEEP
+- Next:
+  1. Run real GitHub tag builds (`cli-v*` and `v*`) to verify live runner behavior and release uploads.
+  2. Capture manual QA clips for Pro card transfer motion and hero scroll behavior across viewport sizes.
+  3. Add CI assertion for release artifact naming consumed by `generate-latest-json.js`.

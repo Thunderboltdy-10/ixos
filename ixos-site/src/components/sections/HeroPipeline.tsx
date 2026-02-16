@@ -177,7 +177,7 @@ export function HeroPipeline() {
       pinSpacing: true,
       pinType: "fixed",
       pinReparent: false,
-      scrub: isLowPowered ? 0.9 : 0.72,
+      scrub: isLowPowered ? 1.5 : 1.2,
       anticipatePin: 1,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
@@ -223,14 +223,15 @@ export function HeroPipeline() {
     const narrative = reducedFx ? mapProgress(progress, 0.04, 0.98) : mapProgress(progress, 0.46, 0.9);
     const exit = reducedFx ? 0 : easeOutCubic(mapProgress(progress, 0.92, 1));
 
-    const heroOpacity = reducedFx ? 0 : clamp01(1 - mapProgress(progress, 0.65, 0.95));
-    const heroDrop = mapProgress(progress, 0.16, 0.46);
-    const heroShiftY = reducedFx ? 0 : -36 + intro * 10 + heroDrop * 170 - exit * 8;
+    // Hero text fades and blurs BEFORE pipeline cards start appearing (entry starts at 0.2)
+    const heroOpacity = reducedFx ? 0 : clamp01(1 - mapProgress(progress, 0.08, 0.22));
+    const heroDrop = mapProgress(progress, 0.08, 0.24);
+    const heroShiftY = reducedFx ? 0 : -36 + intro * 10 + heroDrop * 120 - exit * 8;
 
     const demoLift = reducedFx ? 0 : 214 - entry * 176 - mapProgress(progress, 0.62, 0.9) * 34;
     const demoScale = reducedFx ? 1 : 0.986 + entry * 0.028;
     const headerOpacity = reducedFx ? 1 : clamp01(mapProgress(progress, 0.26, 0.48));
-    const heroMorph = reducedFx ? 1 : mapProgress(progress, 0.28, 0.56);
+    const heroMorph = reducedFx ? 1 : mapProgress(progress, 0.10, 0.22);
     const titleMorph = reducedFx ? 1 : mapProgress(progress, 0.34, 0.58);
 
     let activeStep: number | null = null;
@@ -244,10 +245,8 @@ export function HeroPipeline() {
       if (previousStep === null) {
         activeStep = rawStep;
       } else {
-        const hysteresis = 0.22;
+        const hysteresis = 0.45;
         if (rawStep > previousStep && normalizedPosition >= (previousStep + 1) + hysteresis) {
-          activeStep = rawStep;
-        } else if (rawStep < previousStep && normalizedPosition <= previousStep - hysteresis) {
           activeStep = rawStep;
         } else if (rawStep < previousStep && normalizedPosition <= previousStep - hysteresis) {
           activeStep = rawStep;
@@ -280,7 +279,10 @@ export function HeroPipeline() {
   if (!isDesktop) {
     return (
       <section ref={sectionRef} className="section-hero relative w-full overflow-hidden pt-[14vh]">
-        <PageGlow color={modeToAccent(demoMode) === "violet" ? "purple" : modeToAccent(demoMode)} />
+        <PageGlow color={(() => {
+          const accent = modeToAccent(demoMode);
+          return accent === "violet" ? "purple" : accent;
+        })()} />
         <div className="relative z-10 container mx-auto px-6 pb-20">
           <div className="mx-auto max-w-3xl text-center select-text">
             <div className="mb-5 inline-flex items-center gap-3 rounded-sm border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-sm">
@@ -310,8 +312,9 @@ export function HeroPipeline() {
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button
                 size="lg"
+                variant="ghost"
                 hasParticleMagnet
-                className="bg-accent-amber font-medium text-bg-graphite-0 hover:bg-accent-amber/80 hover:scale-[1.02] transition-transform"
+                className="bg-accent-amber font-medium text-bg-graphite-0 hover:bg-accent-amber/80 hover:text-bg-graphite-0 hover:scale-[1.02] transition-transform"
                 asChild
               >
                 <Link href="/download">Download Desktop</Link>
@@ -321,7 +324,7 @@ export function HeroPipeline() {
               </Button>
             </div>
             <div className="mt-4 text-[11px] font-mono text-fg-muted/70">
-              curl -fsSL https://ixos.dev/install.sh | sh
+              curl -fsSL https://raw.githubusercontent.com/IxosProtocol/ixos-cli/main/scripts/install.sh | bash
             </div>
           </div>
 
@@ -383,7 +386,7 @@ export function HeroPipeline() {
       <div
         className="absolute inset-x-0 top-0 z-10 flex justify-center px-6 pt-[14vh]"
         style={{
-          opacity: derived.heroOpacity * (1 - derived.exit * 0.75),
+          opacity: derived.heroOpacity * (1 - derived.exit * 0.2),
           transform: `translate3d(0, ${derived.heroShiftY}px, 0)`,
           filter: `blur(${derived.heroMorph * 7}px)`,
           willChange: "transform, opacity, filter",
@@ -417,8 +420,9 @@ export function HeroPipeline() {
           <div className="mt-6 flex justify-center gap-3">
             <Button
               size="lg"
+              variant="ghost"
               hasParticleMagnet
-              className="min-w-[164px] bg-accent-amber font-medium text-bg-graphite-0 hover:bg-accent-amber/80 hover:scale-[1.02] transition-transform"
+              className="min-w-[164px] bg-accent-amber font-medium text-bg-graphite-0 hover:bg-accent-amber/80 hover:text-bg-graphite-0 hover:scale-[1.02] transition-transform"
               asChild
             >
               <Link href="/download">Download Desktop</Link>
@@ -428,12 +432,12 @@ export function HeroPipeline() {
             </Button>
           </div>
           <div className="mt-4 text-[11px] font-mono text-fg-muted/70">
-            curl -fsSL https://ixos.dev/install.sh | sh
+            curl -fsSL https://raw.githubusercontent.com/IxosProtocol/ixos-cli/main/scripts/install.sh | bash
           </div>
         </div>
       </div>
 
-      <div className="absolute inset-0 z-30 flex items-center justify-center px-4 md:px-6">
+      <div className="absolute inset-0 z-30 flex items-center justify-center px-4 md:px-6 pointer-events-none">
         <div
           className="relative w-full max-w-[1420px] xl:max-w-[1620px]"
           style={{
@@ -499,7 +503,7 @@ export function HeroPipeline() {
             <div
               className={cn(
                 "relative z-20 flex min-h-0 items-center justify-center",
-                "pointer-events-auto"
+                activeStep !== null ? "pointer-events-none" : "pointer-events-auto"
               )}
               style={{ gridArea: "demo", contain: "layout paint" }}
             >
@@ -638,6 +642,7 @@ function PipelineCardWrapper({
         transform: `translate3d(${(1 - reveal) * config.x}px, ${(1 - reveal) * config.y - exit * 6}px, 0)`,
         filter: `blur(${(1 - reveal) * 6}px)`,
         pointerEvents: reveal > 0.42 ? "auto" : "none",
+        transition: "opacity 0.15s linear, filter 0.15s linear",
         willChange: "transform, opacity, filter",
         contain: "layout paint",
       }}

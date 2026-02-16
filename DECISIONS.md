@@ -572,3 +572,24 @@
 - Evidence (links to /reports or output files): ixos-site/src/components/sections/HeroPipeline.tsx, ixos-site/src/components/hero/IxosDemoWindow.tsx, reports/landing_pipeline_polish_2026-02-15.md
 - Risks: scroll choreography remains sensitive to device/browser variance.
 - Follow-ups: collect visual QA clips across common viewport sizes and adjust trigger thresholds if needed.
+
+- Decision: Harden release workflows for cross-arch and cross-runner reliability (CLI + desktop).
+- Options considered: keep existing matrix/scripts and rely on reruns; only patch failing jobs ad hoc; make deterministic workflow hardening changes with runner/arch guards.
+- Why chosen: macOS/Linux failures were tied to deterministic config issues (cross-arch smoke execution, package naming/casing, and brittle dependency setup), so targeted hardening is lower risk than repeated manual retries.
+- Evidence (links to /reports or output files): .github/workflows/cli-release.yml, .github/workflows/release.yml, RUNLOG.md (Entry 039)
+- Risks: hosted runner images can still change package availability over time.
+- Follow-ups: run real `cli-v*` and `v*` tag releases and capture logs/artifacts in `/reports`.
+
+- Decision: Isolate CLI installer paths from desktop app install roots by default.
+- Options considered: keep shared `Ixos` install root; require users to pass custom install dirs; switch defaults to dedicated CLI roots while preserving overrides.
+- Why chosen: avoids path/asset collisions when users install both desktop and CLI, especially on Windows where `%LOCALAPPDATA%\\Ixos` can overlap app-owned files.
+- Evidence (links to /reports or output files): scripts/install.sh, scripts/install.ps1, ixos-site/src/lib/downloads.ts
+- Risks: users with old PATH entries may have stale CLI paths until they reinstall/update PATH.
+- Follow-ups: add migration note in CLI docs and optional cleanup helper.
+
+- Decision: Replace duplicated Pro capability pricing card with a shared transfer flow component across home and `/pricing`.
+- Options considered: keep duplicated static cards; animate independent cards; use one shared component with layout transfer and section handoff.
+- Why chosen: directly satisfies the requirement that the same Pro card component visually continues into capabilities, reducing duplicated UI and improving continuity.
+- Evidence (links to /reports or output files): ixos-site/src/components/sections/PricingProFlow.tsx, ixos-site/src/components/sections/Pricing.tsx, ixos-site/src/components/sections/ProFeatures.tsx
+- Risks: transfer timing may need tuning per viewport height.
+- Follow-ups: record manual QA for mobile/desktop transition thresholds and retune observer root margins if needed.

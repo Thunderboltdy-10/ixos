@@ -25,8 +25,8 @@ async function verify(token: string) {
             console.log("✅ Verification Successful (No Errors)");
             console.log("Data:", JSON.stringify(data, null, 2));
 
-            if (data?.sub) {
-                console.log(`✅ Valid Subject (User ID): ${data.sub}`);
+            if ((data as any)?.sub) {
+                console.log(`✅ Valid Subject (User ID): ${(data as any).sub}`);
             } else {
                 console.error("⚠️  DATA MISSING 'sub' CLAIM!");
             }

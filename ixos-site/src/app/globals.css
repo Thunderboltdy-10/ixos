@@ -417,21 +417,12 @@ video::-moz-media-controls {
   animation: node-pulse 2s ease-in-out infinite;
 }
 
-/* Heading gradient for teal accent */
-@utility heading-gradient-teal {
-  background: linear-gradient(180deg, #FFFFFF 0%, #5EEAD4 60%, #14B8A6 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* Dynamic Glow Utilities */
 @utility hover-glow-subtle {
   transition: box-shadow 0.3s ease, transform 0.3s ease;
 
   &:hover {
     /* Requires --accent-rgb to be defined in scope */
-    box-shadow: 0 0 40px rgba(var(--accent-rgb), 0.15);
+    box-shadow: 0 0 50px rgba(var(--accent-rgb), 0.25);
     transform: scale(1.01);
   }
 }
@@ -643,4 +634,33 @@ video::-moz-media-controls {
       rgba(20, 184, 166, 0.3) 50%,
       transparent 100%);
   animation: shimmer-sweep 2s ease-in-out infinite;
+}
+
+/* Animated gradient text — teal shimmer */
+@keyframes gradient-shift-teal {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@utility animated-gradient-teal {
+  background: linear-gradient(
+    90deg,
+    #14B8A6 0%,
+    #5EEAD4 25%,
+    #99F6E4 50%,
+    #5EEAD4 75%,
+    #14B8A6 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-shift-teal 3s ease-in-out infinite;
 }

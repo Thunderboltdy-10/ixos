@@ -9,10 +9,17 @@ import { Footer } from "@/components/sections/Footer";
 import { FadeInView } from "@/components/effects/FadeInView";
 import { DownloadThankYou } from "@/components/ui/DownloadThankYou";
 import { cn } from "@/lib/utils";
-import { getDownloadUrl, type DownloadPlatform } from "@/lib/downloads";
+import {
+  CLI_INSTALL_COMMANDS,
+  CLI_INSTALL_LOCATIONS,
+  detectDesktopPlatform,
+  detectInstallOs,
+  getDownloadUrl,
+  type DownloadPlatform,
+  type InstallOs,
+} from "@/lib/downloads";
 import { PageGlow } from "@/components/effects/PageGlow";
 import { Check, Copy, Terminal } from "lucide-react";
-import { CLI_INSTALL_COMMANDS, type InstallOs } from "@/components/sections/DownloadActions";
 
 type PlatformId = "windows" | "macos" | "linux";
 type MacChip = "apple" | "intel";
@@ -81,11 +88,18 @@ const PLATFORMS: PlatformInfo[] = [
 ];
 
 export default function DownloadPage() {
-  const [selectedPlatform, setSelectedPlatform] = useState<PlatformId>("windows");
-  const [macChip, setMacChip] = useState<MacChip>("apple");
+  const [selectedPlatform, setSelectedPlatform] = useState<PlatformId>(() => {
+    const detectedDesktop = detectDesktopPlatform();
+    if (detectedDesktop.startsWith("macos")) return "macos";
+    if (detectedDesktop.startsWith("linux")) return "linux";
+    return "windows";
+  });
+  const [macChip, setMacChip] = useState<MacChip>(() => (
+    detectDesktopPlatform() === "macos-x64" ? "intel" : "apple"
+  ));
   const [showThankYou, setShowThankYou] = useState(false);
   const [downloadingPlatform, setDownloadingPlatform] = useState("");
-  const [installOs, setInstallOs] = useState<InstallOs>("windows");
+  const [installOs, setInstallOs] = useState<InstallOs>(() => detectInstallOs());
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -129,7 +143,7 @@ export default function DownloadPage() {
     setShowThankYou(true);
 
     // Trigger download
-    window.location.href = url;
+    window.location.assign(url);
   };
 
   return (
@@ -165,8 +179,35 @@ export default function DownloadPage() {
           </div>
         </section>
 
+        <section className="pb-10">
+          <div className="container mx-auto px-6">
+            <div className="mx-auto grid max-w-4xl gap-4 md:grid-cols-2">
+              <div className="rounded-lg border border-accent-amber/25 bg-bg-graphite-1/70 p-5">
+                <p className="text-[10px] font-mono tracking-[0.15em] text-accent-amber/80">DESKTOP_APP</p>
+                <h3 className="mt-2 text-lg font-semibold text-porcelain">Installer download</h3>
+                <p className="mt-2 text-sm text-fg-muted/80">
+                  Auto-detected platform: <span className="text-accent-amber">{getPlatformDisplayName(selectedPlatform)}</span>
+                </p>
+                <a href="#desktop-downloads" className="mt-4 inline-flex text-xs font-mono text-accent-amber hover:text-accent-amber/80 transition-colors">
+                  Jump to desktop downloads &rarr;
+                </a>
+              </div>
+              <div className="rounded-lg border border-accent-teal/25 bg-bg-graphite-1/70 p-5">
+                <p className="text-[10px] font-mono tracking-[0.15em] text-accent-teal/80">CLI</p>
+                <h3 className="mt-2 text-lg font-semibold text-porcelain">Script install</h3>
+                <p className="mt-2 text-sm text-fg-muted/80">
+                  Auto-detected shell target: <span className="text-accent-teal">{CLI_INSTALL_COMMANDS[installOs].label}</span>
+                </p>
+                <a href="#cli-install" className="mt-4 inline-flex text-xs font-mono text-accent-teal hover:text-accent-teal/80 transition-colors">
+                  Jump to CLI install &rarr;
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Platform Cards */}
-        <section className="pb-16">
+        <section className="pb-16" id="desktop-downloads">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
               {PLATFORMS.map((platform, index) => (
@@ -192,7 +233,7 @@ export default function DownloadPage() {
                       </div>
                       <div>
                         <h3 className="text-xl font-semibold text-porcelain">{platform.name}</h3>
-                        <p className="text-xs font-mono text-fg-muted">{platform.version}</p>
+                        <p className="text-xs font-mono text-fg-muted">latest</p>
                       </div>
                     </div>
 
@@ -322,7 +363,7 @@ export default function DownloadPage() {
                       <h3 className="font-medium text-porcelain">Download the installer</h3>
                     </div>
                     <p className="text-sm text-fg-muted ml-9">
-                      Click the download button above to get the latest version for your platform.
+                      Click the desktop button above to get the latest installer for your platform.
                     </p>
                   </div>
 
@@ -332,7 +373,7 @@ export default function DownloadPage() {
                       <h3 className="font-medium text-porcelain">Run the installer</h3>
                     </div>
                     <p className="text-sm text-fg-muted ml-9">
-                      Double-click the downloaded file. No admin rights required for per-user installation.
+                      Run the downloaded installer package. Desktop and CLI installs are isolated and can coexist.
                     </p>
                   </div>
 
@@ -355,6 +396,100 @@ export default function DownloadPage() {
                     All indexing and search happens locally on your device. We never see your files or search queries.
                   </p>
                 </div>
+              </FadeInView>
+            </div>
+          </div>
+        </section>
+
+        {/* CLI Install */}
+        <section className="py-8" id="cli-install">
+          <SectionDivider accent="teal" label="CLI_INSTALL" />
+          <div className="container mx-auto px-6 py-16">
+            <div className="max-w-3xl mx-auto">
+              <FadeInView direction="up">
+                <div className="text-center mb-10">
+                  <h2 className="text-2xl font-semibold text-porcelain mb-3">
+                    CLI Installation
+                  </h2>
+                  <p className="text-sm text-fg-muted/80">
+                    Install the Ixos CLI for terminal-based workflows. One command, no manual setup.
+                  </p>
+                </div>
+              </FadeInView>
+
+              <FadeInView direction="up" delay={100}>
+                <div className="mb-6 inline-flex rounded-md border border-white/10 bg-bg-graphite-0/40 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setInstallOs("windows")}
+                    className={cn(
+                      "px-5 py-2.5 text-[11px] font-mono uppercase tracking-[0.12em] rounded-sm transition-all",
+                      installOs === "windows"
+                        ? "bg-accent-teal/14 text-accent-teal border border-accent-teal/25"
+                        : "text-fg-muted/65 hover:text-fg-secondary hover:bg-white/5"
+                    )}
+                  >
+                    Windows
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInstallOs("macos")}
+                    className={cn(
+                      "px-5 py-2.5 text-[11px] font-mono uppercase tracking-[0.12em] rounded-sm transition-all",
+                      (installOs === "macos" || installOs === "linux")
+                        ? "bg-accent-teal/14 text-accent-teal border border-accent-teal/25"
+                        : "text-fg-muted/65 hover:text-fg-secondary hover:bg-white/5"
+                    )}
+                  >
+                    macOS / Linux
+                  </button>
+                </div>
+
+                <div className="rounded-lg border border-accent-teal/20 bg-bg-graphite-0/85 p-5 relative group/code">
+                  <div className="flex items-center gap-2 mb-3 text-[10px] font-mono text-fg-muted/40 uppercase tracking-wider">
+                    <Terminal className="w-3 h-3" />
+                    <span>{CLI_INSTALL_COMMANDS[installOs].shell}</span>
+                  </div>
+                  <code className="block overflow-x-auto text-sm text-accent-teal font-mono selection:bg-accent-teal/20">
+                    {CLI_INSTALL_COMMANDS[installOs].command}
+                  </code>
+                  <button
+                    onClick={handleCopy}
+                    className="absolute top-3 right-3 h-8 w-8 p-0 flex items-center justify-center rounded-md hover:bg-white/10 text-fg-muted hover:text-fg-porcelain transition-colors"
+                  >
+                    {copied ? <Check className="h-4 w-4 text-accent-teal" /> : <Copy className="h-4 w-4" />}
+                  </button>
+                </div>
+
+                <div className="mt-5 flex items-center gap-4">
+                  <Link
+                    href="/docs/cli-reference"
+                    className="text-xs font-mono text-accent-teal hover:text-accent-teal-glow transition-colors"
+                  >
+                    Full CLI reference &rarr;
+                  </Link>
+                  <span className="text-[10px] text-fg-muted/30">|</span>
+                  <span className="text-[10px] text-fg-muted/40 font-mono">
+                    Installs to {CLI_INSTALL_LOCATIONS[installOs]} &middot; Auto-adds to PATH
+                  </span>
+                </div>
+                <p className="mt-3 text-[11px] text-fg-muted/50">
+                  Desktop installers come from{" "}
+                  <Link
+                    href="https://github.com/IxosProtocol/ixos-releases/releases/latest"
+                    className="text-accent-amber hover:text-accent-amber/80 transition-colors"
+                  >
+                    ixos-releases
+                  </Link>
+                  . CLI scripts install from{" "}
+                  <Link
+                    href="https://github.com/IxosProtocol/ixos-cli"
+                    className="text-accent-teal hover:text-accent-teal/80 transition-colors"
+                  >
+                    ixos-cli
+                  </Link>
+                  {" "}and fetch versioned CLI assets from the release repo.
+                </p>
               </FadeInView>
             </div>
           </div>

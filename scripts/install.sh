@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REPO="${IXOS_REPO:-IxosProtocol/ixos-releases}"
-INSTALL_ROOT="${IXOS_INSTALL_DIR:-$HOME/.ixos}"
+INSTALL_ROOT="${IXOS_INSTALL_DIR:-$HOME/.ixos/cli}"
 BIN_DIR="$INSTALL_ROOT/bin"
 ASSET_URL_OVERRIDE="${IXOS_ASSET_URL:-}"
 SKIP_PATH_PERSIST="${IXOS_SKIP_PATH_PERSIST:-}"
@@ -71,7 +71,14 @@ verify_checksum() {
 
   local expected actual
   expected="$(awk '{print $1}' "$checksum_file")"
-  actual="$(shasum -a 256 "$archive" | awk '{print $1}')"
+  if command -v shasum >/dev/null 2>&1; then
+    actual="$(shasum -a 256 "$archive" | awk '{print $1}')"
+  elif command -v sha256sum >/dev/null 2>&1; then
+    actual="$(sha256sum "$archive" | awk '{print $1}')"
+  else
+    echo "Warning: neither shasum nor sha256sum is available, skipping verification" >&2
+    return 0
+  fi
 
   if [[ "$expected" != "$actual" ]]; then
     echo "Checksum verification FAILED" >&2
@@ -141,6 +148,7 @@ main() {
   fi
   ensure_path
   export PATH="$BIN_DIR:$PATH"
+  hash -r 2>/dev/null || true
 
   echo "Installed to $BIN_DIR/ixos"
   "$BIN_DIR/ixos" --version || true

@@ -62,6 +62,8 @@ jobs:
 
           cd "$MIRROR_DIR"
           git init
+          git config user.name "ixos-bot"
+          git config user.email "actions@users.noreply.github.com"
           git checkout -b main
           git add -A
           git commit -m "Mirror from ${{ github.ref_name }}"

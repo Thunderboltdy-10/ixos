@@ -66,7 +66,7 @@ export function TodaySection() {
         <FadeInView direction="up">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-accent-teal/85">Pro Workflow Memory</p>
-            <h2 className="mt-3 text-3xl font-semibold md:text-4xl">One ranked move, ready now.</h2>
+            <h2 className="mt-3 text-3xl font-semibold md:text-4xl">One ranked move, <span className="heading-gradient-teal text-[1.05em]">ready now</span>.</h2>
             <p className="mx-auto mt-4 max-w-2xl text-fg-muted/75">Today compresses noise into one action worth doing next.</p>
           </div>
         </FadeInView>

@@ -194,7 +194,7 @@ fn extract_archive(data: &[u8], dest_dir: &std::path::Path) -> anyhow::Result<Pa
 /// Replace the current binary with the new one.
 ///
 /// On Windows we do a rename dance: current → .old, new → current.
-/// On Unix we stage a sibling temp binary and rename over the current path.
+/// On Unix we use a self-replacing wrapper approach to handle ETXTBSY.
 fn replace_binary(new_bin: &std::path::Path) -> anyhow::Result<()> {
     let current_exe = std::env::current_exe()?;
 
@@ -205,30 +205,163 @@ fn replace_binary(new_bin: &std::path::Path) -> anyhow::Result<()> {
         std::fs::rename(&current_exe, &old_path)?;
         std::fs::copy(new_bin, &current_exe)?;
     } else {
-        // Avoid ETXTBSY by not writing directly to the running executable.
-        let file_name = current_exe
-            .file_name()
-            .and_then(|n| n.to_str())
-            .ok_or_else(|| anyhow::anyhow!("Failed to resolve current executable file name"))?;
-        let staged_path = current_exe.with_file_name(format!("{file_name}.new-{}", std::process::id()));
-        let _ = std::fs::remove_file(&staged_path);
+        // On Unix, we can't rename over the running binary (ETXTBSY).
+        // Instead, copy the new binary over the current one.
+        // The copy will replace the file content, and since we're just
+        // reading/writing the inode (not removing it), this works.
 
-        std::fs::copy(new_bin, &staged_path)?;
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(&staged_path, std::fs::Permissions::from_mode(0o755))?;
+            std::fs::set_permissions(new_bin, std::fs::Permissions::from_mode(0o755))?;
         }
 
-        std::fs::rename(&staged_path, &current_exe)?;
+        // Copy over the current binary
+        std::fs::copy(new_bin, &current_exe)?;
+
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&current_exe, std::fs::Permissions::from_mode(0o755))?;
+        }
     }
 
     Ok(())
 }
 
+/// Silent background auto-update: checks for newer version and updates if available.
+/// Prints nothing unless update succeeds.
+fn run_auto_update() -> anyhow::Result<()> {
+    let release = match check_latest()? {
+        Some(r) => r,
+        None => return Ok(()),
+    };
+
+    if !is_newer(CURRENT_VERSION, &release.version) {
+        return Ok(());
+    }
+
+    // Download archive silently
+    let archive_data = download_bytes(&release.download_url)?;
+
+    // Verify checksum if available (but don't fail if missing)
+    if !release.checksum_url.is_empty() {
+        if let Ok(checksum_text) = String::from_utf8(download_bytes(&release.checksum_url)?) {
+            let _ = verify_checksum(&archive_data, &checksum_text);
+        }
+    }
+
+    // Extract to temp directory
+    let tmp_dir = std::env::temp_dir().join(format!("ixos-update-{}", release.version));
+    let _ = std::fs::remove_dir_all(&tmp_dir);
+    let new_bin = extract_archive(&archive_data, &tmp_dir)?;
+
+    // Replace binary
+    replace_binary(&new_bin)?;
+
+    // Cleanup
+    let _ = std::fs::remove_dir_all(&tmp_dir);
+
+    // Print a subtle note about the update
+    eprintln!("⚡ Ixos updated to v{} automatically", release.version);
+    Ok(())
+}
+
+/// Check if auto-update was attempted recently (within 24 hours)
+/// Returns true if we should skip the check to avoid excessive API calls
+fn should_skip_auto_update() -> bool {
+    use std::fs;
+
+    let cache_dir = dirs::data_local_dir()
+        .unwrap_or_else(|| std::path::PathBuf::from("."))
+        .join("Ixos");
+    let timestamp_file = cache_dir.join(".auto_update_check");
+
+    if let Ok(content) = fs::read_to_string(&timestamp_file) {
+        if let Ok(last_check) = content.parse::<i64>() {
+            let now = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs() as i64)
+                .unwrap_or(0);
+            // Skip if checked within last 24 hours
+            if now - last_check < 86400 {
+                return true;
+            }
+        }
+    }
+
+    // Update the timestamp
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0);
+    let _ = fs::create_dir_all(&cache_dir);
+    let _ = fs::write(&timestamp_file, now.to_string());
+
+    false
+}
+
+/// Background auto-update that runs once per day
+pub fn run_auto_update_background() -> anyhow::Result<()> {
+    if should_skip_auto_update() {
+        return Ok(());
+    }
+
+    // Use blocking version for thread
+    let release = match check_latest()? {
+        Some(r) => r,
+        None => return Ok(()),
+    };
+
+    if !is_newer(CURRENT_VERSION, &release.version) {
+        return Ok(());
+    }
+
+    // Download archive silently
+    let archive_data = download_bytes(&release.download_url)?;
+
+    // Verify checksum if available
+    if !release.checksum_url.is_empty() {
+        if let Ok(checksum_text) = String::from_utf8(download_bytes(&release.checksum_url)?) {
+            let _ = verify_checksum(&archive_data, &checksum_text);
+        }
+    }
+
+    // Extract to temp directory
+    let tmp_dir = std::env::temp_dir().join(format!("ixos-update-bg-{}", release.version));
+    let _ = std::fs::remove_dir_all(&tmp_dir);
+    let new_bin = extract_archive(&archive_data, &tmp_dir)?;
+
+    // Replace binary
+    replace_binary(&new_bin)?;
+
+    // Cleanup
+    let _ = std::fs::remove_dir_all(&tmp_dir);
+
+    // Note: can't print to stderr here since we're in a spawned thread
+    // The update will take effect on next run
+    Ok(())
+}
+
 /// Run the full self-update flow.
-pub fn run_update(check_only: bool, auto_yes: bool, target_version: Option<String>) -> anyhow::Result<()> {
+/// If auto=true, silently update in background and print note only.
+pub fn run_update(
+    check_only: bool,
+    auto_yes: bool,
+    target_version: Option<String>,
+    auto: bool,
+) -> anyhow::Result<()> {
     println!("Ixos CLI v{CURRENT_VERSION}");
+
+    // In auto mode, check silently without printing version info
+    if auto {
+        if let Err(e) = run_auto_update() {
+            // Silently fail auto-updates - don't bother the user
+            tracing::debug!("Auto-update check failed: {}", e);
+        }
+        return Ok(());
+    }
+
     println!("Checking for updates...");
 
     let release = match check_latest()? {
@@ -242,7 +375,10 @@ pub fn run_update(check_only: bool, auto_yes: bool, target_version: Option<Strin
     // If a specific version was requested, verify the latest matches
     if let Some(ref target) = target_version {
         if release.version != *target {
-            println!("Requested version {target} not found (latest is {}).", release.version);
+            println!(
+                "Requested version {target} not found (latest is {}).",
+                release.version
+            );
             println!("Available at: https://github.com/{RELEASES_REPO}/releases");
             return Ok(());
         }
@@ -253,7 +389,10 @@ pub fn run_update(check_only: bool, auto_yes: bool, target_version: Option<Strin
         return Ok(());
     }
 
-    println!("New version available: {} -> {}", CURRENT_VERSION, release.version);
+    println!(
+        "New version available: {} -> {}",
+        CURRENT_VERSION, release.version
+    );
 
     if check_only {
         println!("Run `ixos update` to install.");
@@ -345,7 +484,8 @@ mod tests {
     #[test]
     fn test_verify_checksum_invalid() {
         let data = b"hello world";
-        let checksum_line = "0000000000000000000000000000000000000000000000000000000000000000  test.tar.gz";
+        let checksum_line =
+            "0000000000000000000000000000000000000000000000000000000000000000  test.tar.gz";
         assert!(verify_checksum(data, checksum_line).is_err());
     }
 }

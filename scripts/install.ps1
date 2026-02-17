@@ -45,7 +45,16 @@ function Resolve-Tag {
         return $ExplicitTag
     }
 
-    $releasesRaw = Invoke-RestMethod -Uri "https://api.github.com/repos/$RepoName/releases?per_page=100" -Headers @{ "User-Agent" = "ixos-install-script" }
+    $releasesRaw = try {
+        Invoke-RestMethod -Uri "https://api.github.com/repos/$RepoName/releases?per_page=100" -Headers @{ "User-Agent" = "ixos-install-script" } -ErrorAction Stop
+    } catch {
+        throw "Failed to fetch releases from GitHub: $($_.Exception.Message). Make sure you have internet access."
+    }
+    
+    if ($null -eq $releasesRaw) {
+        throw "No releases found for $RepoName. Check that the repository exists."
+    }
+    
     $releases = @($releasesRaw)
     if ($releases.Count -eq 0) {
         throw "No releases found for $RepoName."
@@ -119,7 +128,13 @@ $os = "windows"
 $resolvedTag = Resolve-Tag -RepoName $Repo -ExplicitTag $Tag
 $version = $resolvedTag -replace "^cli-v", ""
 $asset = "ixos-$version-$os-$arch.zip"
-$url = if (-not [string]::IsNullOrWhiteSpace($AssetUrl)) { $AssetUrl } else { "https://github.com/$Repo/releases/download/$resolvedTag/$asset" }
+
+# Construct the URL using the proper release tag (not /latest/)
+$url = if (-not [string]::IsNullOrWhiteSpace($AssetUrl)) { 
+    $AssetUrl 
+} else { 
+    "https://github.com/$Repo/releases/download/$resolvedTag/$asset" 
+}
 
 $installRoot = if (-not [string]::IsNullOrWhiteSpace($InstallDir)) {
     $InstallDir

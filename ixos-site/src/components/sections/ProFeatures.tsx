@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties, RefObject } from "react";
+import React, { type CSSProperties, type RefObject } from "react";
 import { motion } from "framer-motion";
 import { FadeInView } from "@/components/effects/FadeInView";
 import { SectionDivider } from "@/components/ui/SectionDivider";
@@ -48,11 +48,13 @@ export function ProFeatures({
   showProCard = true,
   proCardLayoutId = "pro-card",
   cardAnchorRef,
+  proCardContent,
 }: {
   billing?: BillingCycle;
   showProCard?: boolean;
   proCardLayoutId?: string;
   cardAnchorRef?: RefObject<HTMLDivElement | null>;
+  proCardContent?: React.ReactNode;
 }) {
   const accentStyles = {
     amber: {
@@ -93,7 +95,7 @@ export function ProFeatures({
         <FadeInView direction="up">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-semibold md:text-4xl">
-              What You Unlock With <span className="heading-gradient-magenta">Ixos Pro</span>
+              What You Unlock With <span className="heading-gradient-magenta text-[1.05em]">Ixos Pro</span>
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-fg-muted/80">
               Pro is for heavier workflows where Ask Mode, Today, and Workstreams stay in one loop.
@@ -129,19 +131,23 @@ export function ProFeatures({
 
           <div ref={cardAnchorRef} className="h-full">
             {showProCard ? (
-              <motion.aside
-                layoutId={proCardLayoutId}
-                transition={{ type: "spring", stiffness: 56, damping: 29, mass: 1.34 }}
-                className="relative group h-full"
-              >
-                <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />
-                <ProCard
-                  price={billing === "monthly" ? "$7.99" : "$6.35"}
-                  period="/ month"
-                  desc="Ask Mode evidence answers. Saved searches. Priority support."
-                  actionNode={<ProUpgradeAction />}
-                />
-              </motion.aside>
+              proCardContent ? (
+                proCardContent
+              ) : (
+                <motion.aside
+                  layoutId={proCardLayoutId}
+                  transition={{ type: "tween", duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="relative group h-full"
+                >
+                  <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />
+                  <ProCard
+                    price={billing === "monthly" ? "$7.99" : "$6.35"}
+                    period="/ month"
+                    desc="Ask Mode evidence answers. Saved searches. Priority support."
+                    actionNode={<ProUpgradeAction />}
+                  />
+                </motion.aside>
+              )
             ) : (
               <aside
                 aria-hidden="true"

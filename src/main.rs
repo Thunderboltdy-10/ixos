@@ -162,10 +162,18 @@ async fn main() -> anyhow::Result<()> {
             handle_model(action).await?;
         }
 
-        Commands::Update { check, yes, version } => {
-            ixos_protocol::cli::self_update::run_update(check, yes, version)?;
+        Commands::Update { check, yes, version, auto } => {
+            ixos_protocol::cli::self_update::run_update(check, yes, version, auto)?;
         }
     }
+
+    // Background auto-update check (runs silently after any command)
+    // Only check once per day to avoid excessive API calls
+    std::thread::spawn(|| {
+        if let Err(e) = ixos_protocol::cli::self_update::run_auto_update_background() {
+            tracing::debug!("Background auto-update check failed: {}", e);
+        }
+    });
 
     Ok(())
 }

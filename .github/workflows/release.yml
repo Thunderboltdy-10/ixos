@@ -110,7 +110,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          FLASH_MODEL_REPO="${FLASH_MODEL_REPO:-Thunderbolty10/Ixos-Flash}"
+          FLASH_MODEL_REPO="${FLASH_MODEL_REPO:-Thunderboltdy10/Ixos-Flash}"
           FLASH_MODEL_REF="${FLASH_MODEL_REF:-main}"
           FLASH_MODEL_SUBDIR="${FLASH_MODEL_SUBDIR:-ixos-flash-v2}"
           POTION_MODEL_REPO="${POTION_MODEL_REPO:-minishlab/potion-base-8M}"
@@ -141,20 +141,14 @@ jobs:
           }
 
           fetch_if_missing "models/ixos-flash-v2/config.json" \
-            "https://raw.githubusercontent.com/$FLASH_MODEL_REPO/$FLASH_MODEL_REF/$FLASH_MODEL_SUBDIR/config.json" \
-            "https://raw.githubusercontent.com/$FLASH_MODEL_REPO/$FLASH_MODEL_REF/config.json" \
             "https://huggingface.co/$FLASH_MODEL_REPO/resolve/$FLASH_MODEL_REF/$FLASH_MODEL_SUBDIR/config.json" \
             "https://huggingface.co/$FLASH_MODEL_REPO/resolve/$FLASH_MODEL_REF/config.json"
 
           fetch_if_missing "models/ixos-flash-v2/model.safetensors" \
-            "https://raw.githubusercontent.com/$FLASH_MODEL_REPO/$FLASH_MODEL_REF/$FLASH_MODEL_SUBDIR/model.safetensors" \
-            "https://raw.githubusercontent.com/$FLASH_MODEL_REPO/$FLASH_MODEL_REF/model.safetensors" \
             "https://huggingface.co/$FLASH_MODEL_REPO/resolve/$FLASH_MODEL_REF/$FLASH_MODEL_SUBDIR/model.safetensors" \
             "https://huggingface.co/$FLASH_MODEL_REPO/resolve/$FLASH_MODEL_REF/model.safetensors"
 
           fetch_if_missing "models/ixos-flash-v2/tokenizer.json" \
-            "https://raw.githubusercontent.com/$FLASH_MODEL_REPO/$FLASH_MODEL_REF/$FLASH_MODEL_SUBDIR/tokenizer.json" \
-            "https://raw.githubusercontent.com/$FLASH_MODEL_REPO/$FLASH_MODEL_REF/tokenizer.json" \
             "https://huggingface.co/$FLASH_MODEL_REPO/resolve/$FLASH_MODEL_REF/$FLASH_MODEL_SUBDIR/tokenizer.json" \
             "https://huggingface.co/$FLASH_MODEL_REPO/resolve/$FLASH_MODEL_REF/tokenizer.json"
 

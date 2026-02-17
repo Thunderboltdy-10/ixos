@@ -388,6 +388,13 @@ impl MmapModel2VecEmbedder {
                     return Some(flattened_resources_path);
                 }
 
+                // Also check resources/models/ subdirectory (explicit resource mapping)
+                let resources_models_path =
+                    exe_dir.join("resources").join("models").join(model_name);
+                if Self::has_model_files(&resources_models_path) {
+                    return Some(resources_models_path);
+                }
+
                 // 2. Check parent directories of executable (handles target/debug structure)
                 // This is common for Tauri dev builds where exe is in target/debug/
                 let mut parent = exe_dir.to_path_buf();

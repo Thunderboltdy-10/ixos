@@ -181,18 +181,38 @@ jobs:
             exit 1
           fi
 
+      - name: Derive version from tag
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "Derived version: $VERSION"
+
+      - name: Update version in tauri.conf.json and package.json
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: |
+          # Update version in tauri.conf.json using Node.js (cross-platform)
+          node -e "
+            const fs = require('fs');
+            const version = process.env.VERSION;
+            const tauri = JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json', 'utf8'));
+            tauri.version = version;
+            fs.writeFileSync('src-tauri/tauri.conf.json', JSON.stringify(tauri, null, 2) + '\n');
+            console.log('Updated tauri.conf.json to ' + version);
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = version;
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+            console.log('Updated package.json to ' + version);
+          "
+
       - name: Build UI
         working-directory: ui
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_LEMONSQUEEZY_PRO_VARIANT_ID: ${{ vars.VITE_LEMONSQUEEZY_PRO_VARIANT_ID }}
         run: npm run build
-
-      - name: Verify built assets
-        shell: bash
-        run: |
-          test -d ui/dist
-          echo "UI build successful: ui/dist exists"
 
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -257,8 +277,6 @@ jobs:
           find . -name "*_x64.dmg" -exec cp {} ixos-x64.dmg \;
           find . -name "*.AppImage" -exec cp {} ixos.AppImage \;
           cd ..
-          cp scripts/install.sh artifacts/install.sh
-          cp scripts/install.ps1 artifacts/install.ps1
 
       - name: Upload desktop installers to ixos-releases
         env:
@@ -275,16 +293,14 @@ jobs:
               --notes "Desktop release $TAG"
           fi
 
-          mapfile -t files < <(find artifacts -type f | sort)
-          if [[ "${#files[@]}" -eq 0 ]]; then
-            echo "No file artifacts were found to publish." >&2
-            exit 1
-          fi
-
+          # Only upload the fixed-name installer files, not the original artifacts or scripts
           gh release upload "$TAG" \
             --repo "$REPO" \
             --clobber \
-            "${files[@]}"
+            artifacts/ixos-setup.exe \
+            artifacts/ixos-aarch64.dmg \
+            artifacts/ixos-x64.dmg \
+            artifacts/ixos.AppImage
 
   generate-latest-json:
     needs: copy-to-releases

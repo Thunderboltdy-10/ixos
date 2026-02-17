@@ -189,6 +189,9 @@ jobs:
 
       - name: Build UI
         working-directory: ui
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
         run: npm run build
 
       - name: Verify built assets

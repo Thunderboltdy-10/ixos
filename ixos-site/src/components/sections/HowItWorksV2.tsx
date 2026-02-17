@@ -142,7 +142,7 @@ export function HowItWorksV2() {
               How It Works
             </p>
             <h2 className="mt-2 text-3xl font-semibold leading-tight text-fg-porcelain md:text-4xl">
-              Pipeline view, compact and live.
+              <span className="heading-gradient-teal text-[1.05em]">Pipeline view</span>, compact and live.
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-fg-muted/70 md:text-base">
               Scroll. The interface stays pinned while stages activate in order.

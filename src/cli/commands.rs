@@ -318,6 +318,10 @@ pub enum Commands {
         /// Install a specific version (e.g., 0.2.0)
         #[arg(long)]
         version: Option<String>,
+
+        /// Automatic silent update (check in background and update if newer, print note only)
+        #[arg(long, default_value = "true")]
+        auto: bool,
     },
 }
 
@@ -769,7 +773,11 @@ mod tests {
     fn test_update_command() {
         let cli = Cli::try_parse_from(["ixos", "update", "--check"]).unwrap();
         match cli.command {
-            Commands::Update { check, yes, version } => {
+            Commands::Update {
+                check,
+                yes,
+                version,
+            } => {
                 assert!(check);
                 assert!(!yes);
                 assert!(version.is_none());
@@ -782,7 +790,11 @@ mod tests {
     fn test_update_command_with_version() {
         let cli = Cli::try_parse_from(["ixos", "update", "--yes", "--version", "0.2.0"]).unwrap();
         match cli.command {
-            Commands::Update { check, yes, version } => {
+            Commands::Update {
+                check,
+                yes,
+                version,
+            } => {
                 assert!(!check);
                 assert!(yes);
                 assert_eq!(version, Some("0.2.0".to_string()));

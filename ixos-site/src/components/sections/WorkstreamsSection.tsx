@@ -62,7 +62,7 @@ export function WorkstreamsSection() {
         <FadeInView direction="up">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-accent-amber/85">Project Context Graph</p>
-            <h2 className="mt-3 text-3xl font-semibold md:text-4xl">One stream. One executable thread.</h2>
+            <h2 className="mt-3 text-3xl font-semibold md:text-4xl">One stream. One <span className="heading-gradient-amber text-[1.05em]">executable thread</span>.</h2>
             <p className="mx-auto mt-4 max-w-2xl text-fg-muted/75">Pick a stream and continue with the exact evidence path it was built from.</p>
           </div>
         </FadeInView>

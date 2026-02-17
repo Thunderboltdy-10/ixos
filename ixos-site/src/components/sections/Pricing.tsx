@@ -19,12 +19,14 @@ export function Pricing({
     showProCard = true,
     proCardLayoutId = "pro-card",
     proCardSlotRef,
+    proCardContent,
 }: {
     billing?: BillingCycle;
     onBillingChange?: (next: BillingCycle) => void;
     showProCard?: boolean;
     proCardLayoutId?: string;
     proCardSlotRef?: RefObject<HTMLDivElement | null>;
+    proCardContent?: React.ReactNode;
 }) {
     const [internalBilling, setInternalBilling] = useState<BillingCycle>("annual");
     const effectiveBilling = billing ?? internalBilling;
@@ -104,21 +106,25 @@ export function Pricing({
                     <FadeInView direction="up" delay={300} className="h-full">
                         <div ref={proCardSlotRef} className="h-full">
                         {showProCard ? (
-                            <motion.div
-                                layoutId={proCardLayoutId}
-                                transition={{ type: "spring", stiffness: 56, damping: 29, mass: 1.34 }}
-                                className="relative group h-full lg:sticky lg:top-20"
-                                data-trace-anchor="pricing-pro"
-                                data-trace-color="magenta"
-                            >
-                                <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />
-                                <ProCard
-                                    price={effectiveBilling === "monthly" ? "$7.99" : "$6.35"}
-                                    period="/ month"
-                                    desc="Ask Mode evidence answers. Saved searches. Priority support."
-                                    actionNode={<ProUpgradeAction />}
-                                />
-                            </motion.div>
+                            proCardContent ? (
+                                proCardContent
+                            ) : (
+                                <motion.div
+                                    layoutId={proCardLayoutId}
+                                    transition={{ type: "tween", duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                                    className="relative group h-full lg:sticky lg:top-20"
+                                    data-trace-anchor="pricing-pro"
+                                    data-trace-color="magenta"
+                                >
+                                    <div className="absolute -inset-0.5 bg-gradient-to-b from-accent-magenta/40 to-transparent rounded-lg opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-700" />
+                                    <ProCard
+                                        price={effectiveBilling === "monthly" ? "$7.99" : "$6.35"}
+                                        period="/ month"
+                                        desc="Ask Mode evidence answers. Saved searches. Priority support."
+                                        actionNode={<ProUpgradeAction />}
+                                    />
+                                </motion.div>
+                            )
                         ) : (
                             <div
                                 aria-hidden="true"

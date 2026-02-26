@@ -1,83 +1,138 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
-import { FileNodesBg } from "./FileNodesBg";
+import { useRef, useState } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+// ─── Qualitative capability matrix ───────────────────────────────────────────
+// Replaces the invented numeric bar chart.
+// Uses checkmarks / partial / not-applicable — no fabricated scores.
+// "Pro" denotes Ixos Pro tier only. Competitor info is broadly accurate
+// to public documentation, not a precise benchmark.
+
+type Support = "yes" | "partial" | "no" | "pro";
+
+interface Row {
+  feature: string;
+  note?: string;
+  ixos: Support;
+  grep: Support;
+  spotlight: Support;
+  vscode: Support;
+}
+
+const ROWS: Row[] = [
+  {
+    feature: "Full-text keyword search",
+    ixos: "yes",
+    grep: "yes",
+    spotlight: "yes",
+    vscode: "yes",
+  },
+  {
+    feature: "Semantic understanding",
+    note: "Finds files by meaning, not just exact tokens",
+    ixos: "yes",
+    grep: "no",
+    spotlight: "partial",
+    vscode: "no",
+  },
+  {
+    feature: "Local-first / no egress",
+    note: "All processing on-device, no network requests",
+    ixos: "yes",
+    grep: "yes",
+    spotlight: "partial",
+    vscode: "partial",
+  },
+  {
+    feature: "Progressive results",
+    note: "Streams results as confidence increases",
+    ixos: "yes",
+    grep: "no",
+    spotlight: "no",
+    vscode: "no",
+  },
+  {
+    feature: "No background daemon",
+    note: "Runs on demand, no persistent index watcher",
+    ixos: "yes",
+    grep: "yes",
+    spotlight: "no",
+    vscode: "partial",
+  },
+  {
+    feature: "Natural language queries",
+    note: "Intent-aware query understanding (Pro tier)",
+    ixos: "pro",
+    grep: "no",
+    spotlight: "no",
+    vscode: "no",
+  },
+  {
+    feature: "Hybrid retrieval",
+    note: "Lexical + semantic scoring in one pass",
+    ixos: "yes",
+    grep: "no",
+    spotlight: "no",
+    vscode: "no",
+  },
+  {
+    feature: "Cross-platform",
+    note: "Windows, macOS, Linux",
+    ixos: "yes",
+    grep: "yes",
+    spotlight: "no",
+    vscode: "yes",
+  },
+];
+
 const TOOLS = [
-  { name: "Ixos", highlight: true, color: "#2DD4BF" },
-  { name: "grep/rg", highlight: false, color: "rgba(255,255,255,0.35)" },
-  { name: "Spotlight", highlight: false, color: "rgba(255,255,255,0.35)" },
-  { name: "VS Code", highlight: false, color: "rgba(255,255,255,0.35)" },
-];
+  { key: "ixos", label: "Ixos", highlight: true, color: "#2DD4BF" },
+  { key: "grep", label: "grep / rg", highlight: false, color: "rgba(255,255,255,0.3)" },
+  { key: "spotlight", label: "Spotlight", highlight: false, color: "rgba(255,255,255,0.3)" },
+  { key: "vscode", label: "VS Code", highlight: false, color: "rgba(255,255,255,0.3)" },
+] as const;
 
-const QUALITIES = [
-  {
-    label: "Speed",
-    scores: [95, 70, 45, 55],
-  },
-  {
-    label: "Semantic Understanding",
-    scores: [95, 5, 35, 25],
-  },
-  {
-    label: "Privacy (local-first)",
-    scores: [100, 100, 40, 70],
-  },
-  {
-    label: "Progressive Results",
-    scores: [95, 0, 15, 10],
-  },
-  {
-    label: "Ask Mode",
-    scores: [90, 0, 20, 0],
-  },
-];
+// ─── Cell indicator ───────────────────────────────────────────────────────────
+function SupportCell({ support, isIxos }: { support: Support; isIxos: boolean }) {
+  const configs = {
+    yes: {
+      icon: "■",
+      color: isIxos ? "#2DD4BF" : "rgba(255,255,255,0.35)",
+      label: "Supported",
+    },
+    partial: {
+      icon: "◐",
+      color: "rgba(255,255,255,0.22)",
+      label: "Partial",
+    },
+    no: {
+      icon: "—",
+      color: "rgba(255,255,255,0.1)",
+      label: "Not supported",
+    },
+    pro: {
+      icon: "◆",
+      color: "#7C3AED",
+      label: "Pro tier",
+    },
+  };
+  const c = configs[support];
 
-const MAX_BAR_PX = 120;
-
-// ─── Bar cell ─────────────────────────────────────────────────────────────────
-function BarCell({
-  score,
-  isIxos,
-  inView,
-  delay,
-}: {
-  score: number;
-  isIxos: boolean;
-  inView: boolean;
-  delay: number;
-}) {
   return (
-    <div className="flex items-center gap-2">
-      <div
-        className="relative"
-        style={{ width: MAX_BAR_PX, height: 6, backgroundColor: "rgba(255,255,255,0.05)" }}
+    <div className="flex flex-col items-center gap-1">
+      <span
+        className="font-mono text-sm"
+        style={{ color: c.color }}
+        title={c.label}
       >
-        <motion.div
-          initial={{ width: 0 }}
-          animate={inView ? { width: (score / 100) * MAX_BAR_PX } : { width: 0 }}
-          transition={{ delay, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            bottom: 0,
-            backgroundColor: isIxos ? "#2DD4BF" : "rgba(255,255,255,0.2)",
-            boxShadow: isIxos ? "0 0 8px rgba(45,212,191,0.4)" : "none",
-          }}
-        />
-      </div>
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={inView ? { opacity: 1 } : { opacity: 0 }}
-        transition={{ delay: delay + 0.5, duration: 0.3 }}
-        className="font-mono text-[10px] tabular-nums"
-        style={{ color: isIxos ? "#2DD4BF" : "rgba(255,255,255,0.22)" }}
-      >
-        {score}
-      </motion.span>
+        {c.icon}
+      </span>
+      {support === "pro" && (
+        <span className="font-mono text-[8px] tracking-[0.15em]" style={{ color: "#7C3AED", opacity: 0.7 }}>
+          Pro
+        </span>
+      )}
     </div>
   );
 }
@@ -86,29 +141,25 @@ function BarCell({
 export function ComparisonV4() {
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, { once: true, margin: "-80px" });
+  const [hoveredRow, setHoveredRow] = useState<number | null>(null);
 
   return (
     <section
       ref={sectionRef}
       className="relative py-32 px-6 overflow-hidden"
-      style={{
-        backgroundColor: "#0C0E10",
-        borderTop: "1px solid rgba(255,255,255,0.04)",
-      }}
+      style={{ backgroundColor: "#0C0E10", borderTop: "1px solid rgba(255,255,255,0.04)" }}
     >
       {/* Blueprint grid */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(255,255,255,0.014) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.014) 1px, transparent 1px)
+            linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px)
           `,
           backgroundSize: "72px 72px",
         }}
       />
-
-      <FileNodesBg density={0.15} opacity={0.1} color="#2DD4BF" speed={0.4} />
 
       <div className="relative z-10 max-w-5xl mx-auto w-full">
         {/* Header */}
@@ -119,33 +170,34 @@ export function ComparisonV4() {
           className="mb-16"
         >
           <p className="font-mono text-[10px] tracking-[0.35em] uppercase mb-4" style={{ color: "rgba(255,255,255,0.2)" }}>
-            Comparison · Search Tools
+            Capability Matrix · Search Tools
           </p>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-4">
-            Built different.
+            Purpose-built.
           </h2>
           <p className="font-mono text-sm max-w-md" style={{ color: "rgba(255,255,255,0.35)" }}>
-            Designed from the ground up for semantic, local-first retrieval.
+            Ixos is designed from the ground up for semantic, local-first retrieval.
+            Not a wrapper around an existing tool.
           </p>
         </motion.div>
 
         {/* Table */}
-        <div
-          className="overflow-x-auto"
-          style={{ border: "1px solid rgba(255,255,255,0.06)" }}
-        >
+        <div className="overflow-x-auto" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
           {/* Tool headers */}
           <div
             className="grid"
             style={{
-              gridTemplateColumns: "200px repeat(4, 1fr)",
+              gridTemplateColumns: "220px repeat(4, 1fr)",
               borderBottom: "1px solid rgba(255,255,255,0.06)",
             }}
           >
             <div className="px-5 py-4" />
             {TOOLS.map((tool) => (
-              <div
-                key={tool.name}
+              <motion.div
+                key={tool.key}
+                initial={{ opacity: 0, y: -8 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: 0.15, duration: 0.4 }}
                 className="px-4 py-4 text-center"
                 style={{
                   backgroundColor: tool.highlight ? "rgba(45,212,191,0.04)" : "transparent",
@@ -153,57 +205,71 @@ export function ComparisonV4() {
                     ? "1px solid rgba(45,212,191,0.18)"
                     : "1px solid rgba(255,255,255,0.04)",
                   borderRight: tool.highlight ? "1px solid rgba(45,212,191,0.18)" : "none",
-                  boxShadow: tool.highlight ? "0 0 24px rgba(45,212,191,0.05) inset" : "none",
                 }}
               >
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={inView ? { opacity: 1 } : { opacity: 0 }}
-                  transition={{ delay: 0.2, duration: 0.4 }}
+                <span
                   className="font-mono text-xs tracking-[0.15em] uppercase font-semibold"
                   style={{ color: tool.color }}
                 >
-                  {tool.name}
-                </motion.span>
-              </div>
+                  {tool.label}
+                </span>
+              </motion.div>
             ))}
           </div>
 
           {/* Rows */}
-          {QUALITIES.map((quality, qi) => (
+          {ROWS.map((row, ri) => (
             <motion.div
-              key={quality.label}
-              initial={{ opacity: 0, x: -12 }}
+              key={row.feature}
+              initial={{ opacity: 0, x: -10 }}
               animate={inView ? { opacity: 1, x: 0 } : {}}
-              transition={{ delay: 0.1 + qi * 0.08, duration: 0.45 }}
-              className="grid items-center"
+              transition={{ delay: 0.08 + ri * 0.07, duration: 0.4 }}
+              className="grid items-center cursor-default"
               style={{
-                gridTemplateColumns: "200px repeat(4, 1fr)",
-                borderBottom: qi < QUALITIES.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                gridTemplateColumns: "220px repeat(4, 1fr)",
+                borderBottom: ri < ROWS.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                backgroundColor: hoveredRow === ri ? "rgba(255,255,255,0.018)" : "transparent",
+                transition: "background-color 0.15s ease",
               }}
+              onMouseEnter={() => setHoveredRow(ri)}
+              onMouseLeave={() => setHoveredRow(null)}
             >
+              {/* Feature label */}
               <div className="px-5 py-5">
-                <span className="font-mono text-[10px] tracking-[0.12em] uppercase" style={{ color: "rgba(255,255,255,0.35)" }}>
-                  {quality.label}
+                <span className="font-mono text-[10px] tracking-[0.1em] uppercase block" style={{ color: "rgba(255,255,255,0.38)" }}>
+                  {row.feature}
                 </span>
+                <AnimatePresence>
+                  {hoveredRow === ri && row.note && (
+                    <motion.span
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="font-mono text-[9px] block mt-1.5 leading-relaxed"
+                      style={{ color: "rgba(255,255,255,0.2)" }}
+                    >
+                      {row.note}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </div>
-              {TOOLS.map((tool, ti) => (
+
+              {/* Support cells */}
+              {TOOLS.map((tool) => (
                 <div
-                  key={tool.name}
+                  key={tool.key}
                   className="px-4 py-5 flex justify-center"
                   style={{
-                    backgroundColor: tool.highlight ? "rgba(45,212,191,0.03)" : "transparent",
+                    backgroundColor: tool.highlight ? "rgba(45,212,191,0.025)" : "transparent",
                     borderLeft: tool.highlight
                       ? "1px solid rgba(45,212,191,0.12)"
                       : "1px solid rgba(255,255,255,0.03)",
                     borderRight: tool.highlight ? "1px solid rgba(45,212,191,0.12)" : "none",
                   }}
                 >
-                  <BarCell
-                    score={quality.scores[ti]}
+                  <SupportCell
+                    support={row[tool.key as keyof typeof row] as Support}
                     isIxos={tool.highlight}
-                    inView={inView}
-                    delay={0.2 + qi * 0.1 + ti * 0.04}
                   />
                 </div>
               ))}
@@ -211,16 +277,30 @@ export function ComparisonV4() {
           ))}
         </div>
 
-        {/* Footnote */}
-        <motion.p
+        {/* Legend + footnote */}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ delay: 0.8, duration: 0.5 }}
-          className="mt-6 font-mono text-[9px] tracking-[0.15em]"
-          style={{ color: "rgba(255,255,255,0.15)" }}
+          className="mt-8 flex flex-wrap items-center justify-between gap-4"
         >
-          * Scores are relative qualitative ratings, not benchmark data. Ask Mode requires Pro tier.
-        </motion.p>
+          <div className="flex flex-wrap items-center gap-6">
+            {[
+              { icon: "■", label: "Supported", color: "#2DD4BF" },
+              { icon: "◐", label: "Partial", color: "rgba(255,255,255,0.22)" },
+              { icon: "—", label: "Not supported", color: "rgba(255,255,255,0.1)" },
+              { icon: "◆", label: "Pro tier", color: "#7C3AED" },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center gap-2">
+                <span className="font-mono text-xs" style={{ color: item.color }}>{item.icon}</span>
+                <span className="font-mono text-[9px] tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.2)" }}>{item.label}</span>
+              </div>
+            ))}
+          </div>
+          <p className="font-mono text-[9px] tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.12)" }}>
+            * Qualitative assessment based on public documentation. Hover rows for details.
+          </p>
+        </motion.div>
       </div>
     </section>
   );

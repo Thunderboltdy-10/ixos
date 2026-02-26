@@ -444,3 +444,103 @@
 - Desktop release no longer requires pre-checked-in model files; it now fetches missing Flash/Potion assets and validates before packaging.
 - Desktop and CLI releases both publish installer scripts to `ixos-releases` so `latest/download/install.*` remains available.
 - `install.sh` semver selection is now portable on macOS (no GNU `sort -V` dependency).
+
+## STATE SNAPSHOT (Landing /4 V4 completion, 2026-02-26)
+- Date: 2026-02-26
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Final visual/motion QA on `/4` hero + long-scroll pacing across device classes
+  2. Pre-existing `_v4` lint debt in earlier section files
+  3. Remaining release workflow validation on live tag runs
+- Current pass validation (2026-02-26):
+  - `npm --prefix C:/Users/pablo/Downloads/Ixos/ixos-site run build`: PASS
+  - `/4` orchestrator now imports `_v4/*` only with content-matrix source references
+- What is next (top 3 tasks):
+  1. Record desktop/mobile QA passes for `/4` and trim any motion/copy overload spots.
+  2. Execute a focused lint-hardening pass for legacy `_v4` files without changing section behavior.
+  3. If required, wire live pricing data source into `/4` to support explicit numeric plan copy safely.
+
+## STATE SNAPSHOT (/4 spatial redesign pass, 2026-02-26)
+- Date: 2026-02-26
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Final human visual QA/tuning for spatial camera intensity and comfort on `/4`
+  2. Existing lint debt in older untouched `_v4` modules
+  3. Release workflow live tag validation
+- Current pass validation (2026-02-26):
+  - `npm --prefix C:/Users/pablo/Downloads/Ixos/ixos-site run build`: PASS
+  - `eslint` PASS on newly changed spatial files (`page.tsx`, `V4Loader`, `V4SpatialStage`, `V4ResultNode`)
+- What is next (top 3 tasks):
+  1. Run manual browser QA recordings (desktop/mobile) for the new search-flight experience.
+  2. Tweak camera transforms/flicker amplitude based on comfort and readability.
+  3. Optionally add user-selectable camera intensity mode if feedback remains split.
+
+## STATE SNAPSHOT (/4 WebGL rail + desktop token alignment pass, 2026-02-26)
+- Date: 2026-02-26
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Per-device comfort tuning for new `/4` WebGL camera rail intensity
+  2. Remaining lint debt in older untouched `_v4` modules (`V4Hero`, `V4Pipeline`, `V4CLI`)
+  3. Final content polish pass to tighten desktop-term consistency across all cards
+- Current pass validation (2026-02-26):
+  - `npx eslint src/app/4/page.tsx src/app/4/_v4/V4SpatialStage.tsx src/app/4/_v4/V4ResultSpace.tsx src/app/4/_v4/V4ResultNode.tsx src/app/4/_v4/V4Comparison.tsx`: PASS
+  - `npm --prefix C:/Users/pablo/Downloads/Ixos/ixos-site run build`: PASS
+- What is next (top 3 tasks):
+  1. QA desktop/mobile recordings for camera rail comfort and readability.
+  2. Decide whether to add a user-facing camera intensity toggle (default/cinematic).
+  3. Run a focused lint-hardening pass for older `_v4` files without behavior changes.
+
+## STATE SNAPSHOT (/4 no-WebGL pivot + centered desktop shell pass, 2026-02-26)
+- Date: 2026-02-26
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Hero + section internals still need deeper one-to-one desktop visual parity (cards/microcontrols)
+  2. Copy/style harmonization across remaining `_v4` sections
+  3. Older untouched `_v4` lint debt
+- Current pass validation (2026-02-26):
+  - `npx eslint src/app/4/page.tsx src/app/4/_v4/V4SpatialStage.tsx src/app/4/_v4/V4ResultNode.tsx`: PASS
+  - `npm --prefix C:/Users/pablo/Downloads/Ixos/ixos-site run build`: PASS
+- What is next (top 3 tasks):
+  1. Rebuild hero simulator controls/cards to match desktop component anatomy 1:1.
+  2. Apply the same desktop anatomy pass to 3-4 key sections (progressive, compute, comparison, pricing).
+  3. Final pacing/motion tuning pass after visual parity is achieved.
+
+## STATE SNAPSHOT (/4 desktop-faithful hero + result-node expansion pass, 2026-02-26)
+- Date: 2026-02-26
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Remaining non-hero sections still need deeper desktop component parity
+  2. Motion choreography can be pushed further (phase-linked section transitions)
+  3. Legacy `_v4` lint debt outside touched files
+- Current pass validation (2026-02-26):
+  - `npx eslint src/app/4/_v4/V4SpatialStage.tsx src/app/4/_v4/V4ResultNode.tsx src/app/4/_v4/V4Hero.tsx src/app/4/_v4/V4Progressive.tsx src/app/4/page.tsx`: PASS
+  - `npm --prefix C:/Users/pablo/Downloads/Ixos/ixos-site run build`: PASS
+- What is next (top 3 tasks):
+  1. Apply desktop-card parity to Progressive/Compute/Comparison internals.
+  2. Introduce phase-synced section transition choreography (expand/collapse continuity) without fixed overlays.
+  3. Run manual visual QA and tighten typography/spacing to desktop density.

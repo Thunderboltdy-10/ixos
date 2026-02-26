@@ -1,3 +1,4 @@
+@import "../../../packages/ui/src/tokens/tokens.css";
 @import "tailwindcss";
 
 /* Hide native video controls globally */
@@ -181,6 +182,18 @@ video::-moz-media-controls {
 
   p {
     color: var(--color-fg-muted);
+  }
+
+  [data-section] > section {
+    background-color: transparent !important;
+  }
+
+  .v4-desktop-surface {
+    border: 1px solid rgba(243, 245, 247, 0.08);
+    border-radius: 12px;
+    background: rgba(20, 24, 31, 0.52);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
   }
 }
 

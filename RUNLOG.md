@@ -1309,3 +1309,136 @@
 - Next:
   1. Run `Release Postprocess` for `v0.1.6` (adds scripts + latest.json without full rebuild).
   2. Cut `cli-v0.1.7` then `v0.1.7`.
+
+## Entry 047 - Landing /4 scratch-orchestrator completion and hero density upgrade
+- Date/Time: 2026-02-26
+- Branch/Commit: (working tree)
+- Goal: Finish the /4 scratch rebuild by switching to strict `_v4` orchestration, shipping missing sections, and upgrading hero/process fidelity.
+- Commands run:
+  - `npm --prefix C:/Users/pablo/Downloads/Ixos/ixos-site run build`
+  - `cd C:/Users/pablo/Downloads/Ixos/ixos-site && npx eslint src/app/4/page.tsx src/app/4/_v4/*.tsx src/app/4/_v4/hooks/*.ts`
+  - `npm --prefix C:/Users/pablo/Downloads/Ixos/ixos-site run build` (post-fix verification)
+- Outputs saved to:
+  - `ixos-site/src/app/4/page.tsx`
+  - `ixos-site/src/app/4/_v4/V4SkimNav.tsx`
+  - `ixos-site/src/app/4/_v4/V4AskMode.tsx`
+  - `ixos-site/src/app/4/_v4/V4ProValue.tsx`
+  - `ixos-site/src/app/4/_v4/V4Pricing.tsx`
+  - `ixos-site/src/app/4/_v4/V4CTA.tsx`
+  - `ixos-site/src/app/4/_v4/V4Footer.tsx`
+  - `ixos-site/src/app/4/_v4/V4Hero.tsx`
+  - `ixos-site/src/app/4/_v4/V4Progressive.tsx`
+  - `ixos-site/src/app/4/_v4/V4Nav.tsx`
+  - `ixos-site/src/app/4/_v4/V4SectionDivider.tsx`
+  - `ixos-site/src/app/4/_v4/V4Loader.tsx`
+- Key results:
+  - `/4/page.tsx` now imports only `_v4/*` and includes a source-backed content matrix.
+  - Missing v4 sections were implemented from scratch (`SkimNav`, `AskMode`, `ProValue`, `Pricing`, `CTA`, `Footer`).
+  - Hero was upgraded with denser telemetry (stage lanes, TTFR/files/mode strip) while keeping the progressive evidence story.
+  - Progressive section now uses a single deterministic stage resolver for initial mount + scroll change mapping.
+  - Final `ixos-site` production build is green after changes.
+- Decision: KEEP
+- Next:
+  1. Run visual QA recordings on `/4` desktop + mobile to verify pacing and readability.
+  2. Decide whether to bring remaining pre-existing `_v4` lint issues to zero in a dedicated lint-hardening pass.
+
+## Entry 048 - /4 spatial search-flight redesign (camera rail + result nodes + desktop-search loader)
+- Date/Time: 2026-02-26
+- Branch/Commit: (working tree)
+- Goal: Replace flat section flow with a cinematic search-space experience: instant search-like loader, 3D camera drift, and section-as-result navigation.
+- Commands run:
+  - `npm --prefix C:/Users/pablo/Downloads/Ixos/ixos-site run build`
+  - `cd C:/Users/pablo/Downloads/Ixos/ixos-site; npx eslint src/app/4/page.tsx src/app/4/_v4/V4Loader.tsx src/app/4/_v4/V4SpatialStage.tsx src/app/4/_v4/V4ResultNode.tsx`
+  - `npm --prefix C:/Users/pablo/Downloads/Ixos/ixos-site run build` (post-fix verification)
+- Outputs saved to:
+  - `ixos-site/src/app/4/page.tsx`
+  - `ixos-site/src/app/4/_v4/V4Loader.tsx`
+  - `ixos-site/src/app/4/_v4/V4SpatialStage.tsx`
+  - `ixos-site/src/app/4/_v4/V4ResultNode.tsx`
+- Key results:
+  - Loader now behaves like a desktop search boot scene (query present, rapid row slam-in, scan counter spike, fast handoff).
+  - Added global scroll-driven 3D camera rail with controlled flicker and active-result HUD (`V4SpatialStage`).
+  - Reframed content sections as sequential result nodes with rank/file headers and in-view motion (`V4ResultNode`).
+  - Removed right-side skim bar from active `/4` flow and replaced with spatial left HUD + sticky result chips.
+  - Final production build is green.
+- Decision: KEEP
+- Next:
+  1. Capture manual `/4` motion QA (desktop + mobile) and tune camera amplitude if needed.
+  2. If required, add optional “extreme mode” camera intensity toggle for A/B visual preference testing.
+
+## Entry 049 - /4 immersive spatial pass (WebGL rail + desktop HUD + token alignment)
+- Date/Time: 2026-02-26
+- Branch/Commit: (working tree)
+- Goal: Make `/4` feel like traversing real desktop search results with stronger 3D movement and tighter desktop-app language.
+- Commands run:
+  - `npx eslint src/app/4/page.tsx src/app/4/_v4/V4SpatialStage.tsx src/app/4/_v4/V4ResultSpace.tsx src/app/4/_v4/V4ResultNode.tsx src/app/4/_v4/V4Comparison.tsx`
+  - `npm --prefix C:/Users/pablo/Downloads/Ixos/ixos-site run build`
+- Outputs saved to:
+  - `ixos-site/src/app/4/_v4/V4ResultSpace.tsx`
+  - `ixos-site/src/app/4/_v4/V4SpatialStage.tsx`
+  - `ixos-site/src/app/4/_v4/V4ResultNode.tsx`
+  - `ixos-site/src/app/4/page.tsx`
+  - `ixos-site/src/app/globals.css`
+  - copy-alignment pass in `ixos-site/src/app/4/_v4/V4Hero.tsx`, `V4Progressive.tsx`, `V4Pipeline.tsx`, `V4Pricing.tsx`, `V4CTA.tsx`, `V4CLI.tsx`, `V4Comparison.tsx`
+- Key results:
+  - Added fixed WebGL result rail scene (`V4ResultSpace`) with scroll-linked camera traversal across result nodes.
+  - Rebuilt spatial stage shell with interactive desktop-style result HUD and explicit `Flash/Auto/Pro` + `Memory/Local/Deep` controls.
+  - Added automatic heading accent highlighting and imported shared UI tokens for better desktop visual parity.
+  - Made section backgrounds transparent to preserve the ambient pixel-wave layer through the full page.
+  - Shifted copy toward desktop terms while keeping CLI flag truthfulness (`--cache-mode native-cache`, `--journalist-mode`).
+- Validation summary:
+  - targeted eslint on new spatial files: PASS
+  - `ixos-site` production build: PASS
+- Decision: KEEP
+- Next:
+  1. Run motion comfort QA and tune camera amplitudes if needed.
+  2. Optionally add a user toggle for camera intensity.
+  3. Tidy residual lint debt in older `_v4` modules.
+
+## Entry 050 - /4 stabilization pivot (remove WebGL, centered desktop search shell)
+- Date/Time: 2026-02-26
+- Branch/Commit: (working tree)
+- Goal: Address rendering bug (`uniform3fv`/WebGL context issues), remove disliked left HUD, and push closer to desktop search feel.
+- Commands run:
+  - `npx eslint src/app/4/page.tsx src/app/4/_v4/V4SpatialStage.tsx src/app/4/_v4/V4ResultNode.tsx`
+  - `npm --prefix C:/Users/pablo/Downloads/Ixos/ixos-site run build`
+- Outputs saved to:
+  - `ixos-site/src/app/4/_v4/V4SpatialStage.tsx` (rewritten)
+  - `ixos-site/src/app/4/_v4/V4ResultNode.tsx` (surface opacity/behavior tuned)
+  - `ixos-site/src/app/4/_v4/V4ResultSpace.tsx` (removed from active codebase)
+- Key results:
+  - Removed active WebGL scene path from `/4` experience to eliminate rendering-context failures and ring artifacts.
+  - Replaced left-side HUD with centered desktop-style search shell containing query, quality/mode toggles, and scroll-synced result cards.
+  - Kept stronger 3D feel via CSS perspective camera transforms and section motion, without WebGL dependency.
+  - Build and targeted lint remain green.
+- Decision: KEEP
+- Next:
+  1. Complete one-to-one desktop anatomy for hero/result cards (deeper parity than current shell).
+  2. Apply same parity to key high-impact sections.
+
+## Entry 051 - /4 hard reset (no agents): desktop-faithful hero + result-driven section cards
+- Date/Time: 2026-02-26
+- Branch/Commit: (working tree)
+- Goal: Correct failed direction by removing static overlay UX, rebuilding hero closer to desktop app UI anatomy, and making section wrappers behave like expanding results.
+- Constraints honored:
+  - No parallel agents used in this pass.
+- Commands run:
+  - `npx eslint src/app/4/_v4/V4SpatialStage.tsx src/app/4/_v4/V4ResultNode.tsx src/app/4/_v4/V4Hero.tsx src/app/4/_v4/V4Progressive.tsx src/app/4/page.tsx`
+  - `npm --prefix C:/Users/pablo/Downloads/Ixos/ixos-site run build`
+- Outputs saved to:
+  - `ixos-site/src/app/4/_v4/V4SpatialStage.tsx` (simplified stage system, removed fixed top shell)
+  - `ixos-site/src/app/4/_v4/V4ResultNode.tsx` (desktop-like result card expansion/collapse behavior)
+  - `ixos-site/src/app/4/_v4/V4Hero.tsx` (full desktop-faithful search simulator rebuild)
+  - `ixos-site/src/app/4/_v4/V4Progressive.tsx` (reduced scroll span from 200vh to 160vh to prevent broken spacing)
+- Key results:
+  - Removed the static always-on top shell that dominated the page.
+  - Hero now uses desktop-style search chrome (query bar, quality/mode controls, staged result cards, Why matched expansion).
+  - Section headers now read as result cards that expand/collapse as they enter view.
+  - 3D feel remains via perspective transforms, without WebGL artifacts.
+- Validation summary:
+  - targeted eslint: PASS
+  - production build: PASS
+- Decision: KEEP
+- Next:
+  1. Continue desktop one-to-one parity in non-hero sections.
+  2. Add stronger phase-linked section transition choreography.

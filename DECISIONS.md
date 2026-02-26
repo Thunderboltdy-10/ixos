@@ -755,3 +755,80 @@
 - Evidence (links to /reports or output files): scripts/install.sh
 - Risks: none material for x.y.z tag format.
 - Follow-ups: keep tags strictly in `cli-vMAJOR.MINOR.PATCH` format.
+
+- Decision: Enforce strict `/4` scratch namespace orchestration (`_v4` only) and complete missing sections with source-backed claims.
+- Options considered: keep mixed legacy imports; partially wire `_v4` while leaving older components active; full `_v4`-only page orchestrator with newly built missing modules.
+- Why chosen: satisfies rebuild contract, removes ambiguity about active implementation, and keeps claims tied to explicit source paths.
+- Evidence (links to /reports or output files): `ixos-site/src/app/4/page.tsx`, `ixos-site/src/app/4/_v4/V4AskMode.tsx`, `ixos-site/src/app/4/_v4/V4ProValue.tsx`, `ixos-site/src/app/4/_v4/V4Pricing.tsx`.
+- Risks: existing `_v4` lint debt remains in previously authored files not touched in this pass.
+- Follow-ups: run a dedicated lint-hardening pass for legacy `_v4` files (`V4CLI`, `V4Pipeline`, `V4Stats`, `useReducedOrLowEnd`) without changing shipped behavior.
+
+- Decision: Keep pricing copy qualitative on `/4` and avoid unsourced numeric plan claims.
+- Options considered: keep prior `$9/mo` style claims; infer price from older section variants; remove unsourced numbers and point to live pricing route.
+- Why chosen: avoids truthfulness violations while still guiding users to a current source of plan details.
+- Evidence (links to /reports or output files): `ixos-site/src/app/4/_v4/V4Pricing.tsx`, `ixos-site/src/app/pricing/page.tsx`.
+- Risks: less immediate pricing specificity on `/4` hero flow.
+- Follow-ups: if product wants inline pricing numbers, wire them from a verified runtime source or shared pricing config.
+
+- Decision: Pivot `/4` from linear section browsing to a spatial search-flight metaphor (sections as result nodes with a camera rail).
+- Options considered: keep right skim nav and flat stack; keep section wrappers only; introduce global camera rail + result-node framing + search-like boot.
+- Why chosen: directly aligns with user request for stronger 3D spatial movement and “explore each result” feel while staying non-WebGL and stable.
+- Evidence (links to /reports or output files): `ixos-site/src/app/4/_v4/V4SpatialStage.tsx`, `ixos-site/src/app/4/_v4/V4ResultNode.tsx`, `ixos-site/src/app/4/page.tsx`.
+- Risks: camera amplitude may need per-device tuning for motion comfort.
+- Follow-ups: perform device QA and consider a reduced-amplitude user toggle if needed.
+
+- Decision: Replace minimalist loader branding with a desktop-search style instant-results loader.
+- Options considered: keep logo-only loader; remove loader entirely; simulate real search frame on first paint.
+- Why chosen: user asked first-load emotional moment to feel like using the desktop app search instantly.
+- Evidence (links to /reports or output files): `ixos-site/src/app/4/_v4/V4Loader.tsx`.
+- Risks: if too fast/short, some users may miss the setup narrative.
+- Follow-ups: tune loader duration by QA (currently ~1.36s end-to-end).
+
+- Decision: Introduce a true WebGL search-space rail (`V4ResultSpace`) and sync it with section/result traversal.
+- Options considered: keep CSS-only transforms; increase 2D parallax only; add fixed R3F camera rail bound to scroll progress.
+- Why chosen: user explicitly requested stronger spatial 3D motion where sections feel like zooming into real results.
+- Evidence (links to /reports or output files): `ixos-site/src/app/4/_v4/V4ResultSpace.tsx`, `ixos-site/src/app/4/_v4/V4SpatialStage.tsx`.
+- Risks: high camera amplitude can reduce readability/motion comfort on some screens.
+- Follow-ups: tune amplitudes after manual QA and optionally expose intensity toggle.
+
+- Decision: Keep `/4` source sections visually translucent and import shared desktop token source (`packages/ui/src/tokens/tokens.css`).
+- Options considered: leave opaque per-section backgrounds; partially reduce opacity in each component; enforce global transparent section layer + shared tokens.
+- Why chosen: preserves ambient brand field visibility and aligns colors/typography closer to desktop app styling without mutating desktop code.
+- Evidence (links to /reports or output files): `ixos-site/src/app/globals.css`.
+- Risks: low-contrast combinations can appear in some sections if local card backgrounds remain too dark.
+- Follow-ups: section-by-section contrast QA and selective card surface adjustments.
+
+- Decision: Shift copy to desktop terminology while keeping canonical CLI flags in code examples.
+- Options considered: purely user-facing terms everywhere; raw flag-only language; mixed approach (desktop labels in prose, real flags in commands).
+- Why chosen: preserves truthfulness and avoids inventing unsupported CLI syntax while improving branding consistency.
+- Evidence (links to /reports or output files): `ixos-site/src/app/4/_v4/V4CLI.tsx`, `V4CTA.tsx`, `V4Progressive.tsx`, `V4Pipeline.tsx`, `V4Pricing.tsx`, `V4Hero.tsx`.
+- Risks: some mixed terminology still needs final editorial harmonization.
+- Follow-ups: final copy pass across remaining `_v4` files.
+
+- Decision: Remove active `/4` WebGL rail and ship a no-WebGL 3D camera system for now.
+- Options considered: keep WebGL and debug shader/uniform path; add optional WebGL toggle; remove WebGL from active path and rely on CSS 3D.
+- Why chosen: user hit live rendering failures/artifacts and requested stability plus better readability while keeping strong motion.
+- Evidence (links to /reports or output files): `ixos-site/src/app/4/_v4/V4SpatialStage.tsx`, deletion of `ixos-site/src/app/4/_v4/V4ResultSpace.tsx` usage.
+- Risks: less extreme spatial depth than a polished WebGL scene.
+- Follow-ups: reintroduce WebGL only behind strict capability checks after full parity + stability.
+
+- Decision: Replace left fixed HUD with centered desktop-style search shell.
+- Options considered: keep left nav/HUD; disable HUD entirely; center shell that mirrors desktop search interaction model.
+- Why chosen: user explicitly rejected left panel and asked for sections to feel like real search results expanding/collapsing.
+- Evidence (links to /reports or output files): `ixos-site/src/app/4/_v4/V4SpatialStage.tsx`.
+- Risks: still not full 1:1 desktop visual parity until per-section card internals are rebuilt.
+- Follow-ups: continue section-by-section parity rebuild.
+
+- Decision: Remove fixed top shell and shift search-result affordances into hero and per-section result cards.
+- Options considered: keep fixed overlay shell; hide shell only after hero; remove shell and embed result interaction into section flow.
+- Why chosen: user explicitly rejected static overlay behavior and asked for sections to feel like expandable/collapsible results.
+- Evidence (links to /reports or output files): `ixos-site/src/app/4/_v4/V4SpatialStage.tsx`, `ixos-site/src/app/4/_v4/V4ResultNode.tsx`.
+- Risks: less persistent global navigation state than fixed shell.
+- Follow-ups: add optional compact progress indicator if needed.
+
+- Decision: Rebuild hero around desktop search anatomy (search bar + quality/mode controls + result cards + Why matched expansion).
+- Options considered: incremental tweaks to old hero; keep cinematic mock panel; full hero rewrite aligned to desktop interaction model.
+- Why chosen: user requested one-to-one desktop style and rejected prior mock-up feel.
+- Evidence (links to /reports or output files): `ixos-site/src/app/4/_v4/V4Hero.tsx`.
+- Risks: other sections still need similar parity work to fully match hero quality.
+- Follow-ups: propagate this anatomy to key sections next.

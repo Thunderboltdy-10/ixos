@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   motion,
   AnimatePresence,
@@ -274,6 +274,12 @@ function StageDescription({ stageIdx }: { stageIdx: StageIndex }) {
 }
 
 // ─── Scroll-driven version ────────────────────────────────────────────────────
+// BUG FIX: Stage 3 (Locked) never loaded because useMotionValueEvent only fires
+// on changes — if the page is already scrolled to this section when loaded,
+// or if the initial scrollYProgress value is past a threshold, no "change" event
+// fires to advance the stage. Fix: read the initial value in a useEffect.
+// Also shortening height from 280vh → 200vh for snappier stage transitions
+// (stages advance at 30% and 62% of a 100vh scroll range instead of 186vh).
 function ScrollDrivenStages() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [stageIdx, setStageIdx] = useState<StageIndex>(0);
@@ -283,14 +289,22 @@ function ScrollDrivenStages() {
     offset: ["start start", "end end"],
   });
 
+  // FIX: Initialize stage from current scroll value on mount
+  useEffect(() => {
+    const v = scrollYProgress.get();
+    if (v < 0.30) setStageIdx(0);
+    else if (v < 0.62) setStageIdx(1);
+    else setStageIdx(2);
+  }, [scrollYProgress]);
+
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    if (v < 0.33) setStageIdx(0);
-    else if (v < 0.67) setStageIdx(1);
+    if (v < 0.30) setStageIdx(0);
+    else if (v < 0.62) setStageIdx(1);
     else setStageIdx(2);
   });
 
   return (
-    <div ref={containerRef} style={{ height: "280vh" }}>
+    <div ref={containerRef} style={{ height: "200vh" }}>
       {/* Sticky display */}
       <div
         className="sticky top-0 flex flex-col"

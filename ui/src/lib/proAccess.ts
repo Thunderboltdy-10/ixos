@@ -24,15 +24,16 @@ export function hasProAccess(
   proStatus: ProStatus | null | undefined
 ): boolean {
   const statusAllowsPro = proStatus?.status === 'active' || proStatus?.status === 'grace';
+  const statusExplicitlyDenied = proStatus?.status === 'timeSuspect';
 
   if (entitlement?.plan === 'pro') {
-    // Security-first UI gating: require both active lease and active/grace local status.
-    // Backend enforcement remains authoritative.
-    if (entitlement.lease?.status !== 'active') return false;
-    return statusAllowsPro;
+    // Trust server-side entitlement as source of truth for UI gating.
+    // Keep local lock only for the anti-tamper clock condition.
+    if (statusExplicitlyDenied) return false;
+    return true;
   }
 
-  if (!entitlementToken || !statusAllowsPro) {
+  if (!entitlementToken || !statusAllowsPro || statusExplicitlyDenied) {
     return false;
   }
 

@@ -16,6 +16,7 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.12.0",
     "@gsap/react": "^2.1.2",
+    "@ixos/ixos-ui": "*",
     "@ixos/ui": "*",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",

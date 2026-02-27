@@ -772,7 +772,7 @@
 
 - Decision: Pivot `/4` from linear section browsing to a spatial search-flight metaphor (sections as result nodes with a camera rail).
 - Options considered: keep right skim nav and flat stack; keep section wrappers only; introduce global camera rail + result-node framing + search-like boot.
-- Why chosen: directly aligns with user request for stronger 3D spatial movement and “explore each result” feel while staying non-WebGL and stable.
+- Why chosen: directly aligns with user request for stronger 3D spatial movement and ï¿½explore each resultï¿½ feel while staying non-WebGL and stable.
 - Evidence (links to /reports or output files): `ixos-site/src/app/4/_v4/V4SpatialStage.tsx`, `ixos-site/src/app/4/_v4/V4ResultNode.tsx`, `ixos-site/src/app/4/page.tsx`.
 - Risks: camera amplitude may need per-device tuning for motion comfort.
 - Follow-ups: perform device QA and consider a reduced-amplitude user toggle if needed.
@@ -832,3 +832,65 @@
 - Evidence (links to /reports or output files): `ixos-site/src/app/4/_v4/V4Hero.tsx`.
 - Risks: other sections still need similar parity work to fully match hero quality.
 - Follow-ups: propagate this anatomy to key sections next.
+
+- Decision: Create a new shared package at `packages/ixos-ui` and consume it from both desktop UI and `ixos-site`.
+- Options considered: keep shared UI only in existing `packages/ui`; duplicate demo components under `ixos-site/src`; build a new package and wire both apps.
+- Why chosen: satisfies Vercel root constraints while enforcing landing/desktop component parity for `/4` App-World.
+- Evidence (links to /reports or output files): `packages/ixos-ui/package.json`, `package.json`, `ui/package.json`, `ixos-site/package.json`, `ixos-site/next.config.ts`.
+- Risks: temporary visual mismatch can remain where legacy desktop search components still diverge from shared surface internals.
+- Follow-ups: continue search-surface parity pass and prune redundant legacy component paths.
+
+- Decision: Rebuild `/4` as one continuous AppWorld layer with lens overlays instead of stacked section cards.
+- Options considered: keep prior `_v4` section stack; incremental polish on card sections; full AppWorld world-layer + lens overlay architecture.
+- Why chosen: directly addresses non-negotiables (no repetitive section cards, same app surface continuity, non-blocking overlays).
+- Evidence (links to /reports or output files): `ixos-site/src/app/4/page.tsx`, `FEATURE_INVENTORY.md`, `COPY_MAP.md`.
+- Risks: scroll pacing can feel heavy on smaller screens if lens spacing is not tuned.
+- Follow-ups: run mobile QA and adjust section heights/trigger margins.
+
+- Decision: Use source-cited lens claims only and remove unsupported numeric marketing claims.
+- Options considered: preserve prior benchmark-heavy hero language; add new numbers; strictly qualitative + source path citations.
+- Why chosen: preserves truthfulness constraints and prevents fabricated benchmark/comparison statements.
+- Evidence (links to /reports or output files): `FEATURE_INVENTORY.md`, `ixos-site/src/app/4/page.tsx` (lens `source` strings), `DESKTOP_UI_AUDIT.md`.
+- Risks: less flashy copy compared to unsourced quantitative claims.
+- Follow-ups: wire any future numeric claims only from canonical report files.
+- Decision: Trust `entitlement.plan === "pro"` for desktop UI unlocks, with only `timeSuspect` as a local hard-lock override.
+- Options considered: keep requiring local `proStatus` active/grace; trust plan with explicit expired lock; trust plan except anti-tamper lock.
+- Why chosen: fixes false-lock UX where account shows Pro but Today/Workstreams appear locked during status drift/bootstrap while preserving anti-tamper behavior.
+- Evidence (links to /reports or output files): `ui/src/lib/proAccess.ts`, user-reported lock mismatch in desktop nav/surfaces.
+- Risks: temporary grace for users with stale `expired` status until entitlement sync updates.
+- Follow-ups: if backend adds authoritative `plan_effective` flag, switch UI gating to that explicit field.
+
+- Decision: Keep a unified shared search surface but split CTA framing by context (`showInlineRunButton`).
+- Options considered: revert fully to old desktop search components; force one identical run-button layout everywhere; shared component with context-specific run affordance.
+- Why chosen: keeps landing/desktop component parity while restoring desktop ergonomics closer to prior behavior and preserving landing interactivity.
+- Evidence (links to /reports or output files): `packages/ixos-ui/src/components/SearchSurface.tsx`, `ui/src/components/search/MainSearchView.tsx`, `packages/ixos-ui/src/components/AppWorldSurface.tsx`.
+- Risks: subtle visual differences remain between desktop shell chrome and landing world framing.
+- Follow-ups: continue parity pass on micro-spacing and typography tokens.
+
+- Decision: Rebuild `/4` hero entry with true curved motion-path woosh (`offset-path`) and strengthen lens discoverability.
+- Options considered: keep framer x/y tween path approximation; use GSAP motion path; CSS `offset-path` + fallback.
+- Why chosen: satisfies explicit curved-path requirement with low runtime cost and clean reduced-motion fallback.
+- Evidence (links to /reports or output files): `ixos-site/src/app/4/page.tsx` (`.ixos-woosh-entry`, `@keyframes ixosWooshPath`, lens sections and skip rail).
+- Risks: browser support edge cases for motion path on older clients.
+- Follow-ups: if needed, add explicit non-motion-path JS fallback for unsupported browsers.
+
+- Decision: Restore desktop search control surface to legacy `SearchInput` while retaining shared `SearchSurface` for results/evidence.
+- Options considered: keep fully shared all-in-one search bar; revert entirely to old desktop stack; hybrid approach with legacy controls + shared results/evidence.
+- Why chosen: user explicitly requested old-style controls/directory handling while still requiring identical shared components/tokens for the landing demo.
+- Evidence (links to /reports or output files): `ui/src/components/search/MainSearchView.tsx`, `packages/ixos-ui/src/components/SearchSurface.tsx`.
+- Risks: two-part search layout increases integration surface between input and results.
+- Follow-ups: continue trimming spacing and interaction seams between top controls and shared evidence rail.
+
+- Decision: Keep recent/starred history visible in sidebar across Search, Today, and Workstreams.
+- Options considered: search-only history visibility; compact history widget outside Search; always-visible history list.
+- Why chosen: directly addresses workflow continuity issue reported by user and preserves context when switching views.
+- Evidence (links to /reports or output files): `ui/src/components/layout/Sidebar.tsx`.
+- Risks: sidebar vertical density can become tight on shorter displays.
+- Follow-ups: if needed, add collapsible history section for small heights.
+
+- Decision: Rebuild `/4` lens overlays as distinct toy-driven experiences with active app hotspots, instead of repeated card blocks.
+- Options considered: keep repeated lens cards; increase styling variance only; full toy-driven lens variants with hotspot linkage and stronger world choreography.
+- Why chosen: user explicitly rejected repetitive sections and requested a more animated, high-impact "App-World" tour.
+- Evidence (links to /reports or output files): `ixos-site/src/app/4/page.tsx`.
+- Risks: motion complexity may need further tuning for comfort on low-end devices.
+- Follow-ups: run manual QA and tune transform amplitudes and lens pacing.

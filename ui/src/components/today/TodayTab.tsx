@@ -1,24 +1,8 @@
-/**
- * Today Tab - Phase 2 Second Brain
- *
- * Default view for Pro users showing:
- * - Daily Brief (first open of day)
- * - Resume section (last workstream + top files)
- * - Recently touched files
- * - Suggested next files (based on co-occurrence)
- * - Pinned items
- */
-
-import { useEffect, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { Calendar, FolderTree, Sparkles, MessageCircleQuestion } from 'lucide-react';
+﻿import { useEffect, useState, useCallback, useMemo } from 'react';
+import { Sparkles, FolderTree, Pin } from 'lucide-react';
+import { TodaySurface, type IxosTodayRow, type IxosTodaySignal } from '@ixos/ixos-ui';
 import { useTodayStore } from '@/stores/todayStore';
 import { useAuthStore } from '@/stores/authStore';
-import { ResumeSection } from './ResumeSection';
-import { RecentlyTouched } from './RecentlyTouched';
-import { SuggestedNext } from './SuggestedNext';
-import { ConnectionMap } from './ConnectionMap';
-import { PinnedSection } from './PinnedSection';
 import { TodayEmptyState } from './TodayEmptyState';
 import { DailyBrief } from './DailyBrief';
 import { cn } from '@/lib/utils';
@@ -38,42 +22,24 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
   const proStatus = useAuthStore((s) => s.proStatus);
   const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
 
-  // State for Daily Brief
   const [showDailyBrief, setShowDailyBrief] = useState(false);
   const [workstreamCount, setWorkstreamCount] = useState(0);
   const [filesTouchedYesterday, setFilesTouchedYesterday] = useState(0);
 
-  // Initialize Today data on mount
   useEffect(() => {
-    initialize();
+    void initialize();
   }, [initialize]);
 
-  // Check if we should show daily brief
   useEffect(() => {
     if (isPro && data && shouldShowBrief()) {
-      // Fetch workstream stats for the brief
       tauri.getWorkstreamsStats().then((stats) => {
         setWorkstreamCount(stats.totalCount);
       }).catch(() => {});
 
-      // Count files touched yesterday (approximate from recentlyTouched)
       setFilesTouchedYesterday(data.recentlyTouched?.length || 0);
-
       setShowDailyBrief(true);
     }
   }, [isPro, data, shouldShowBrief]);
-
-  // Handle keyboard escape for daily brief
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && showDailyBrief) {
-        handleDismissBrief();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showDailyBrief]);
 
   const handleDismissBrief = useCallback(() => {
     setShowDailyBrief(false);
@@ -81,36 +47,24 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
   }, [markBriefSeen]);
 
   const handleResume = useCallback(() => {
-    // If there's a workstream, select it
     if (data?.resume.workstream && onSelectWorkstream) {
       onSelectWorkstream(data.resume.workstream.id);
     }
   }, [data, onSelectWorkstream]);
 
-  const handleStartFresh = useCallback(() => {
-    // Just dismiss and let user start searching
-    if (onStartSearch) {
-      onStartSearch();
-    }
-  }, [onStartSearch]);
-
-  // Show upgrade overlay for non-Pro users
   if (!isPro) {
     return (
       <div className="relative flex flex-col items-center justify-center h-full p-8">
         <div className="absolute inset-0 bg-graphite-1/80 backdrop-blur-sm z-10" />
         <div className="relative z-20 text-center max-w-md">
           <Sparkles className="w-12 h-12 mx-auto mb-4 text-accent-amber" />
-          <h2 className="text-xl font-semibold text-porcelain mb-2">
-            Second Brain
-          </h2>
+          <h2 className="text-xl font-semibold text-porcelain mb-2">Second Brain</h2>
           <p className="text-fg-muted mb-6">
-            Upgrade to Pro to unlock the Today Tab - your daily companion for resuming work,
-            tracking recent files, and discovering related content.
+            Upgrade to Pro to unlock Today: daily resume context, activity-driven recommendations, and workstream continuity.
           </p>
           <button
+            type="button"
             onClick={() => {
-              // Trigger upgrade flow
               window.dispatchEvent(new CustomEvent('open-pricing'));
             }}
             className={cn(
@@ -126,7 +80,6 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
     );
   }
 
-  // Loading state
   if (isLoading && !data) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -135,7 +88,6 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-8">
@@ -145,7 +97,6 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
     );
   }
 
-  // Empty state for new users
   const hasContent = data && (
     data.resume.workstream ||
     data.recentlyTouched.length > 0 ||
@@ -158,7 +109,6 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
     return <TodayEmptyState onStartSearch={onStartSearch} />;
   }
 
-  // Format today's date
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -166,171 +116,153 @@ export function TodayTab({ onStartSearch, onOpenFile, onSelectWorkstream }: Toda
     day: 'numeric',
   });
 
+  const signals = useMemo<IxosTodaySignal[]>(() => ([
+    {
+      label: 'Signals Today',
+      value: String(data?.recentlyTouched.length ?? 0),
+      hint: 'Recently touched files',
+    },
+    {
+      label: 'Suggested Next',
+      value: String(data?.suggestedNext.length ?? 0),
+      hint: 'Predicted follow-up files',
+    },
+    {
+      label: 'Move Hints',
+      value: String(data?.moveRecommendations.length ?? 0),
+      hint: 'Folder reorganization ideas',
+    },
+  ]), [data?.moveRecommendations.length, data?.recentlyTouched.length, data?.suggestedNext.length]);
+
+  const resumeRows = useMemo<IxosTodayRow[]>(() => {
+    if (!data) return [];
+    const rows: IxosTodayRow[] = [];
+    if (data.resume.workstream) {
+      rows.push({
+        id: data.resume.workstream.id,
+        title: data.resume.workstream.name,
+        meta: `${data.resume.workstream.eventCount} actions · ${new Date(data.resume.workstream.lastActive).toLocaleTimeString()}`,
+        detail: 'Jump back to this active stream with full context.',
+      });
+    }
+    for (const file of data.resume.topFiles.slice(0, 3)) {
+      rows.push({
+        id: file.path,
+        title: file.path.split(/[/\\]/).pop() || file.path,
+        meta: file.path,
+        detail: `${file.touchCount} touches in this stream`,
+      });
+    }
+    return rows;
+  }, [data]);
+
+  const recentRows = useMemo<IxosTodayRow[]>(
+    () =>
+      (data?.recentlyTouched ?? []).slice(0, 5).map((file) => ({
+        id: file.path,
+        title: file.path.split(/[/\\]/).pop() || file.path,
+        meta: file.path,
+        detail: `${file.touchCount} touches · ${Math.max(1, file.actions.length)} actions`,
+      })),
+    [data?.recentlyTouched],
+  );
+
+  const suggestedRows = useMemo<IxosTodayRow[]>(
+    () =>
+      (data?.suggestedNext ?? []).slice(0, 5).map((file) => ({
+        id: file.path,
+        title: file.name,
+        meta: file.path,
+        detail: `${Math.round(file.score * 100)}% confidence via ${file.reason}`,
+      })),
+    [data?.suggestedNext],
+  );
+
   return (
-    <>
-      {/* Daily Brief overlay */}
+    <div className="flex h-full flex-col overflow-auto p-6">
       <DailyBrief
         isVisible={showDailyBrief}
         workstreamCount={workstreamCount}
         filesTouchedYesterday={filesTouchedYesterday}
         topWorkstream={data?.resume.workstream || null}
         onResume={handleResume}
-        onStartFresh={handleStartFresh}
+        onStartFresh={() => { onStartSearch?.(); }}
         onDismiss={handleDismissBrief}
       />
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="flex flex-col h-full overflow-auto p-6"
-      >
-        {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <Calendar className="w-5 h-5 text-accent-amber" />
-        <div>
-          <h1 className="text-lg font-semibold text-porcelain">Today</h1>
-          <p className="text-xs text-fg-dim">{dateStr}</p>
-          <p className="mt-1 text-2xs text-fg-ghost">
-            Resume your latest flow, reopen recent files, and pick the next best file without re-searching.
-          </p>
-          <p className="mt-1 text-2xs text-fg-ghost">
-            Workstreams are generated from your search and file-open activity. Open files while working to strengthen suggestions.
-          </p>
-        </div>
-      </div>
+      <TodaySurface
+        dateLabel={dateStr}
+        signals={signals}
+        resumeRows={resumeRows}
+        recentRows={recentRows}
+        suggestedRows={suggestedRows}
+        sourcePath="source: ui/src/components/today/TodayTab.tsx + ui/src/stores/todayStore.ts"
+      />
 
-      {/* Content sections */}
-      <div className="space-y-6 flex-1">
-        <section className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-lg border border-white/10 bg-graphite-1/55 p-3">
-            <p className="text-2xs text-fg-ghost uppercase tracking-[0.12em]">Signals Today</p>
-            <p className="mt-1 text-lg font-semibold text-porcelain">{data?.recentlyTouched.length ?? 0}</p>
-            <p className="text-2xs text-fg-dim">Recently touched files</p>
+      {pinnedItems.length > 0 && (
+        <section className="mt-4 rounded-xl border border-stroke-hairline bg-graphite-1/70 p-4">
+          <div className="mb-2 flex items-center gap-2">
+            <Pin className="h-4 w-4 text-accent-amber" />
+            <h3 className="text-sm font-semibold text-porcelain">Pinned Context</h3>
           </div>
-          <div className="rounded-lg border border-white/10 bg-graphite-1/55 p-3">
-            <p className="text-2xs text-fg-ghost uppercase tracking-[0.12em]">Suggested Next</p>
-            <p className="mt-1 text-lg font-semibold text-porcelain">{data?.suggestedNext.length ?? 0}</p>
-            <p className="text-2xs text-fg-dim">Predicted follow-up files</p>
-          </div>
-          <div className="rounded-lg border border-white/10 bg-graphite-1/55 p-3">
-            <p className="text-2xs text-fg-ghost uppercase tracking-[0.12em]">Move Hints</p>
-            <p className="mt-1 text-lg font-semibold text-porcelain">{data?.moveRecommendations.length ?? 0}</p>
-            <p className="text-2xs text-fg-dim">Folder reorganization opportunities</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {pinnedItems.slice(0, 6).map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => {
+                  if (item.type === 'file' && item.path) {
+                    onOpenFile?.(item.path);
+                    return;
+                  }
+                  if (item.type === 'workstream') {
+                    const id = item.id.replace('workstream:', '');
+                    onSelectWorkstream?.(id);
+                  }
+                }}
+                className="rounded-lg border border-white/10 bg-graphite-2/45 px-3 py-2 text-left text-xs text-fg-secondary hover:border-accent-teal/35 hover:text-porcelain"
+              >
+                <p className="truncate font-medium text-porcelain">{item.name}</p>
+                <p className="truncate text-fg-dim">{item.type === 'file' ? item.path : 'workstream'}</p>
+              </button>
+            ))}
           </div>
         </section>
+      )}
 
-        <section className="rounded-lg border border-accent-violet/25 bg-accent-violet/8 p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <MessageCircleQuestion className="h-4 w-4 text-accent-violet" />
-            <h3 className="text-sm font-semibold text-porcelain">Ask Mode (Pro)</h3>
+      {data?.moveRecommendations && data.moveRecommendations.length > 0 && (
+        <section className="mt-4 rounded-xl border border-white/10 bg-graphite-1/60 p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <FolderTree className="h-4 w-4 text-accent-teal" />
+            <h3 className="text-sm font-semibold text-porcelain">Suggested Reorganization</h3>
           </div>
-          <p className="text-2xs text-fg-dim">
-            Ask Mode converts question intent into evidence-backed snippets. Trigger it with natural questions in Search.
-          </p>
-        </section>
-
-        {/* Resume section - most important */}
-        {data?.resume.workstream && (
-          <ResumeSection
-            workstream={data.resume.workstream}
-            topFiles={data.resume.topFiles}
-            onOpenFile={onOpenFile}
-            onSelectWorkstream={onSelectWorkstream}
-          />
-        )}
-
-        {/* Pinned items */}
-        {pinnedItems.length > 0 && (
-          <PinnedSection
-            items={pinnedItems}
-            onOpenFile={onOpenFile}
-            onSelectWorkstream={onSelectWorkstream}
-          />
-        )}
-
-        {/* Recently touched */}
-        {data?.recentlyTouched && data.recentlyTouched.length > 0 && (
-          <RecentlyTouched
-            files={data.recentlyTouched}
-            onOpenFile={onOpenFile}
-          />
-        )}
-
-        {/* Suggested next */}
-        {data?.suggestedNext && data.suggestedNext.length > 0 && (
-          <SuggestedNext
-            suggestions={data.suggestedNext}
-            onOpenFile={onOpenFile}
-          />
-        )}
-
-        {data?.suggestedNext && data.suggestedNext.length > 0 && data?.recentlyTouched?.[0] && (
-          <ConnectionMap
-            sourcePath={data.recentlyTouched[0].path}
-            suggestions={data.suggestedNext}
-            onOpenFile={onOpenFile}
-          />
-        )}
-
-        {/* Pro reorganization recommendations */}
-        {data?.moveRecommendations && data.moveRecommendations.length > 0 && (
-          <section className="rounded-xl border border-white/10 bg-graphite-1/60 p-4">
-            <div className="mb-3 flex items-center gap-2">
-              <FolderTree className="h-4 w-4 text-accent-teal" />
-              <h3 className="text-sm font-semibold text-porcelain">Suggested Reorganization</h3>
-            </div>
-            <p className="mb-3 text-2xs text-fg-ghost">
-              Based on repeated opens, Ixos detects files that might belong in a different folder structure.
-            </p>
-            <div className="space-y-2">
-              {data.moveRecommendations.slice(0, 4).map((rec) => (
-                <div
-                  key={`${rec.filePath}:${rec.suggestedFolder}`}
-                  className="rounded-lg border border-white/8 bg-graphite-2/40 p-3"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-xs font-medium text-porcelain">{rec.filePath}</p>
-                      <p className="mt-1 text-2xs text-fg-dim">
-                        {rec.currentFolder} {'->'} {rec.suggestedFolder}
-                      </p>
-                      <p className="mt-1 text-2xs text-fg-ghost">{rec.reason}</p>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className="text-2xs font-semibold text-accent-teal">
-                        {Math.round(rec.confidence * 100)}%
-                      </p>
-                      <p className="text-2xs text-fg-dim">{rec.evidenceCount} signals</p>
-                      {onOpenFile && (
-                        <button
-                          type="button"
-                          onClick={() => onOpenFile(rec.filePath)}
-                          className="mt-1 text-2xs text-accent-amber hover:text-accent-amber/80"
-                        >
-                          Open
-                        </button>
-                      )}
-                    </div>
+          <div className="space-y-2">
+            {data.moveRecommendations.slice(0, 4).map((rec) => (
+              <div
+                key={`${rec.filePath}:${rec.suggestedFolder}`}
+                className="rounded-lg border border-white/8 bg-graphite-2/40 p-3"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-medium text-porcelain">{rec.filePath}</p>
+                    <p className="mt-1 text-2xs text-fg-dim">
+                      {rec.currentFolder} {'->'} {rec.suggestedFolder}
+                    </p>
+                    <p className="mt-1 text-2xs text-fg-ghost">{rec.reason}</p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-2xs font-semibold text-accent-teal">
+                      {Math.round(rec.confidence * 100)}%
+                    </p>
+                    <p className="text-2xs text-fg-dim">{rec.evidenceCount} signals</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {data?.moveRecommendations && data.moveRecommendations.length === 0 && (
-          <section className="rounded-xl border border-white/8 bg-graphite-1/45 p-4">
-            <div className="mb-2 flex items-center gap-2">
-              <FolderTree className="h-4 w-4 text-fg-muted" />
-              <h3 className="text-sm font-semibold text-fg-secondary">Suggested Reorganization</h3>
-            </div>
-            <p className="text-2xs text-fg-dim">
-              No folder recommendations yet. Keep searching and opening related files from different folders to generate Pro automation signals.
-            </p>
-          </section>
-        )}
-      </div>
-    </motion.div>
-    </>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
   );
 }
+

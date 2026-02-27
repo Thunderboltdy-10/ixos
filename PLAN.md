@@ -544,3 +544,65 @@
   1. Apply desktop-card parity to Progressive/Compute/Comparison internals.
   2. Introduce phase-synced section transition choreography (expand/collapse continuity) without fixed overlays.
   3. Run manual visual QA and tighten typography/spacing to desktop density.
+
+## STATE SNAPSHOT (/4 app-world + shared-ui redesign pass, 2026-02-26)
+- Date: 2026-02-26
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Manual visual QA for new /4 App-World interactions (curve entry, lens pacing, non-blocking overlays)
+  2. Desktop polish for search parity against new shared surfaces (Today/Workstreams now upgraded; search needs final refinement)
+  3. Final consistency pass for source-backed copy across all active /4 lenses
+- Current pass validation (2026-02-26):
+  - `npm run tauri:dev`: PASS (app launches, model preloads)
+  - `npm --prefix ui run build`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+- What is next (top 3 tasks):
+  1. Run browser QA on `/4` for desktop/mobile and tune lens spacing + world transform intensity.
+  2. Tighten desktop search visual parity with shared AppWorld search component details.
+  3. Optional: add targeted lint pass for modified desktop and `/4` files only.
+
+## STATE SNAPSHOT (/4 execution-fix pass: curved woosh + lock-state + search polish, 2026-02-26)
+- Date: 2026-02-26
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Manual visual QA for `/4` scroll readability and AppWorld framing on 1920x1080 and mobile
+  2. Remaining parity polish between legacy desktop details and shared `@ixos/ixos-ui` primitives
+  3. Optional targeted lint cleanup on touched frontend files
+- Current pass validation (2026-02-26):
+  - `npm --prefix ui run build`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+  - Lens source-path validation script: PASS (`ALL_PATHS_EXIST`)
+- What is next (top 3 tasks):
+  1. Manually verify `/4` in browser for section discoverability and hero-entry comfort.
+  2. Capture screenshots/GIFs for desktop search, Today, Workstreams, and `/4` lenses.
+  3. If needed, tune AppWorld transform intensity for low-end and reduced-motion users.
+
+## STATE SNAPSHOT (/4 and desktop amplification pass, 2026-02-26)
+- Date: 2026-02-26
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Live visual QA for new `/4` world/lens choreography and hotspot readability across long scroll
+  2. Additional iteration for desktop Workstreams detail ergonomics after the density upgrade
+  3. Optional targeted lint pass for touched frontend files
+- Current pass validation (2026-02-26):
+  - `npm --prefix ui run build`: PASS
+  - `npm --prefix ixos-site run build`: PASS
+- What is next (top 3 tasks):
+  1. Validate `/4` in-browser for interaction continuity (hero -> world -> lenses) and note remaining motion polish.
+  2. Finalize desktop search micro-spacing around restored controls and evidence rail.
+  3. Adjust Today/Workstreams empty-state messaging if user data patterns require.

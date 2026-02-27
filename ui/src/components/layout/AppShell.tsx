@@ -299,6 +299,42 @@ export function AppShell({ children }: AppShellProps) {
           </div>
         )}
 
+        <div className="px-6 py-3 border-b border-stroke-hairline bg-graphite-1/65 backdrop-blur-md flex items-center justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.14em] text-fg-ghost">Workspace</p>
+            <h2 className="text-sm font-semibold text-porcelain capitalize">{activeView}</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => { closeOverlays(); setActiveView('search'); }}
+              className={activeView === 'search'
+                ? 'rounded-md border border-accent-teal/35 bg-accent-teal/15 px-2.5 py-1 text-xs text-accent-teal'
+                : 'rounded-md border border-stroke-hairline bg-graphite-2/55 px-2.5 py-1 text-xs text-fg-secondary hover:text-porcelain'}
+            >
+              Search
+            </button>
+            <button
+              type="button"
+              onClick={() => { closeOverlays(); setActiveView('today'); }}
+              className={activeView === 'today'
+                ? 'rounded-md border border-accent-teal/35 bg-accent-teal/15 px-2.5 py-1 text-xs text-accent-teal'
+                : 'rounded-md border border-stroke-hairline bg-graphite-2/55 px-2.5 py-1 text-xs text-fg-secondary hover:text-porcelain'}
+            >
+              Today
+            </button>
+            <button
+              type="button"
+              onClick={() => { closeOverlays(); setActiveView('workstreams'); }}
+              className={activeView === 'workstreams'
+                ? 'rounded-md border border-accent-teal/35 bg-accent-teal/15 px-2.5 py-1 text-xs text-accent-teal'
+                : 'rounded-md border border-stroke-hairline bg-graphite-2/55 px-2.5 py-1 text-xs text-fg-secondary hover:text-porcelain'}
+            >
+              Workstreams
+            </button>
+          </div>
+        </div>
+
         <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
           {activeView === 'search' && children}
           {activeView === 'today' && (

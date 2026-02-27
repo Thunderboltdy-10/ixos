@@ -1,33 +1,28 @@
-/**
- * Daily Brief - Phase 2 Second Brain
- *
- * Shows on first app open of day with a summary:
- * - Workstream count
- * - Files touched yesterday
- * - Top workstream to resume
- * - "Resume" and "Start Fresh" actions
- */
-
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sunrise, ArrowRight, RotateCcw, Folder, FileText, Clock } from 'lucide-react';
+import { useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowRight, Clock3, FileText, Folder, RotateCcw, Sparkles } from 'lucide-react';
+import { AmbientIxosField } from '@ixos/ixos-ui';
 import { cn } from '@/lib/utils';
 import type { Workstream } from '@/lib/types';
 
 interface DailyBriefProps {
-  /** Whether the brief should be shown */
   isVisible: boolean;
-  /** Total number of workstreams */
   workstreamCount: number;
-  /** Files touched yesterday */
   filesTouchedYesterday: number;
-  /** Most recent workstream to resume */
   topWorkstream: Workstream | null;
-  /** Callback when user clicks Resume */
   onResume: () => void;
-  /** Callback when user clicks Start Fresh */
   onStartFresh: () => void;
-  /** Callback to dismiss the brief */
   onDismiss: () => void;
+}
+
+function formatLastActive(timestamp: number) {
+  const diff = Date.now() - timestamp;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+  if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  return 'just now';
 }
 
 export function DailyBrief({
@@ -39,147 +34,124 @@ export function DailyBrief({
   onStartFresh,
   onDismiss,
 }: DailyBriefProps) {
-  // Get greeting based on time of day
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
-  // Format last active time
-  const formatLastActive = (timestamp: number) => {
-    const diff = Date.now() - timestamp;
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(hours / 24);
+  useEffect(() => {
+    if (!isVisible) return;
 
-    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
-    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    return 'Recently';
-  };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onDismiss();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isVisible, onDismiss]);
 
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className={cn(
-            'fixed inset-0 z-50 flex items-center justify-center',
-            'bg-graphite-0/90 backdrop-blur-md'
-          )}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 grid place-items-center bg-graphite-0/82 p-4 backdrop-blur-sm"
         >
-          <motion.div
-            initial={{ scale: 0.95 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0.95 }}
-            className={cn(
-              'w-full max-w-md mx-4 p-6 rounded-xl',
-              'bg-graphite-1 border border-border/50',
-              'shadow-2xl shadow-black/30'
-            )}
+          <motion.section
+            initial={{ opacity: 0, y: 26, scale: 0.98, rotateX: -3 }}
+            animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
+            exit={{ opacity: 0, y: 20, scale: 0.99 }}
+            transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
+            className="relative w-full max-w-[720px] overflow-hidden rounded-2xl border border-white/16 bg-graphite-1/90 shadow-[0_28px_90px_rgba(0,0,0,0.5)]"
           >
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-lg bg-accent-amber/10">
-                <Sunrise className="w-6 h-6 text-accent-amber" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-porcelain">{greeting}</h2>
-                <p className="text-sm text-fg-muted">Here's your daily brief</p>
-              </div>
+            <div className="pointer-events-none absolute inset-0">
+              <AmbientIxosField mode="contained" className="opacity-45" />
+              <div className="absolute inset-0 bg-gradient-to-b from-graphite-0/42 via-graphite-1/62 to-graphite-0/86" />
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className={cn(
-                'p-4 rounded-lg bg-graphite-2/50',
-                'border border-border/30'
-              )}>
-                <Folder className="w-4 h-4 text-accent-cyan mb-2" />
-                <div className="text-2xl font-bold text-porcelain">
-                  {workstreamCount}
+            <div className="relative p-6 sm:p-7">
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <p className="mb-2 inline-flex items-center gap-2 rounded-full border border-accent-teal/35 bg-accent-teal/14 px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-accent-teal">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Daily Brief
+                  </p>
+                  <h2 className="text-2xl font-semibold text-porcelain">{greeting}</h2>
+                  <p className="mt-1 text-sm text-fg-secondary">Resume context instantly or start a clean session.</p>
                 </div>
-                <div className="text-xs text-fg-muted">
-                  Active workstream{workstreamCount !== 1 ? 's' : ''}
-                </div>
+                <button
+                  type="button"
+                  onClick={onDismiss}
+                  className="rounded-md border border-white/16 px-2.5 py-1 text-xs text-fg-muted hover:border-white/28 hover:text-porcelain"
+                >
+                  Esc
+                </button>
               </div>
 
-              <div className={cn(
-                'p-4 rounded-lg bg-graphite-2/50',
-                'border border-border/30'
-              )}>
-                <FileText className="w-4 h-4 text-accent-lime mb-2" />
-                <div className="text-2xl font-bold text-porcelain">
-                  {filesTouchedYesterday}
-                </div>
-                <div className="text-xs text-fg-muted">
-                  File{filesTouchedYesterday !== 1 ? 's' : ''} touched yesterday
-                </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <article className="rounded-xl border border-white/14 bg-graphite-2/55 p-4">
+                  <p className="mb-2 flex items-center gap-2 text-[10px] uppercase tracking-[0.15em] text-fg-ghost">
+                    <Folder className="h-3.5 w-3.5 text-accent-teal" />
+                    Active Workstreams
+                  </p>
+                  <p className="text-3xl font-semibold text-porcelain">{workstreamCount}</p>
+                </article>
+                <article className="rounded-xl border border-white/14 bg-graphite-2/55 p-4">
+                  <p className="mb-2 flex items-center gap-2 text-[10px] uppercase tracking-[0.15em] text-fg-ghost">
+                    <FileText className="h-3.5 w-3.5 text-accent-amber" />
+                    Files Touched Yesterday
+                  </p>
+                  <p className="text-3xl font-semibold text-porcelain">{filesTouchedYesterday}</p>
+                </article>
+              </div>
+
+              {topWorkstream && (
+                <article className="mt-4 rounded-xl border border-accent-teal/28 bg-accent-teal/10 p-4">
+                  <p className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-accent-teal/35 bg-accent-teal/12 px-2.5 py-1 text-[10px] uppercase tracking-[0.15em] text-accent-teal">
+                    <Clock3 className="h-3.5 w-3.5" />
+                    Continue Where You Left Off
+                  </p>
+                  <h3 className="truncate text-base font-semibold text-porcelain">{topWorkstream.name}</h3>
+                  <p className="mt-1 text-xs text-fg-secondary">
+                    {formatLastActive(topWorkstream.lastActive)} · {topWorkstream.eventCount} activities
+                  </p>
+                </article>
+              )}
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onStartFresh();
+                    onDismiss();
+                  }}
+                  className={cn(
+                    'inline-flex items-center justify-center gap-2 rounded-lg border border-white/16 bg-graphite-2/58 px-4 py-3 text-sm text-fg-secondary',
+                    'hover:border-white/26 hover:text-porcelain'
+                  )}
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Start Fresh
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onResume();
+                    onDismiss();
+                  }}
+                  className={cn(
+                    'inline-flex items-center justify-center gap-2 rounded-lg border border-accent-teal/38 bg-accent-teal/16 px-4 py-3 text-sm font-semibold text-accent-teal',
+                    'hover:bg-accent-teal/20'
+                  )}
+                >
+                  {topWorkstream ? 'Resume Stream' : 'Get Started'}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
               </div>
             </div>
-
-            {/* Top workstream to resume */}
-            {topWorkstream && (
-              <div className={cn(
-                'p-4 rounded-lg mb-6',
-                'bg-gradient-to-r from-accent-amber/10 to-transparent',
-                'border border-accent-amber/20'
-              )}>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Clock className="w-3 h-3 text-accent-amber" />
-                      <span className="text-xs text-accent-amber">Continue where you left off</span>
-                    </div>
-                    <h3 className="font-medium text-porcelain truncate">
-                      {topWorkstream.name}
-                    </h3>
-                    <p className="text-xs text-fg-muted mt-1">
-                      {formatLastActive(topWorkstream.lastActive)} · {topWorkstream.eventCount} activities
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  onStartFresh();
-                  onDismiss();
-                }}
-                className={cn(
-                  'flex-1 px-4 py-3 rounded-lg',
-                  'bg-graphite-2 border border-border/50',
-                  'text-fg-muted hover:text-porcelain hover:bg-graphite-2/80',
-                  'transition-colors flex items-center justify-center gap-2'
-                )}
-              >
-                <RotateCcw className="w-4 h-4" />
-                <span>Start Fresh</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  onResume();
-                  onDismiss();
-                }}
-                className={cn(
-                  'flex-1 px-4 py-3 rounded-lg',
-                  'bg-accent-amber text-graphite-0 font-medium',
-                  'hover:bg-accent-amber/90 transition-colors',
-                  'flex items-center justify-center gap-2'
-                )}
-              >
-                <span>{topWorkstream ? 'Resume' : 'Get Started'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Dismiss hint */}
-            <p className="text-center text-xs text-fg-dim mt-4">
-              Press <kbd className="px-1.5 py-0.5 rounded bg-graphite-2 text-fg-muted">Esc</kbd> to dismiss
-            </p>
-          </motion.div>
+          </motion.section>
         </motion.div>
       )}
     </AnimatePresence>

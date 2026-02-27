@@ -1,19 +1,12 @@
-import { useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useCallback, useMemo } from 'react';
+import { AmbientIxosField, SearchSurface, type IxosSearchResult } from '@ixos/ixos-ui';
 import { useSearch } from '@/hooks/useSearch';
 import { useSearchStore } from '@/stores/searchStore';
 import { SearchInput } from './SearchInput';
-import { SearchResults } from './SearchResults';
-import { LateInsightBadge } from './LateInsightBadge';
-import { SearchDeck } from './SearchDeck';
-import { GhostScaffold } from './GhostScaffold';
-import { useSearchBarLayout } from '@/hooks/useLayoutSync';
-import { SearchCorridor } from '@/components/visualization/SearchCorridor';
-import { cn } from '@/lib/utils';
 import { type SearchMode } from './ModeSwitcher';
 
 export function MainSearchView() {
-  // Use useSearch hook for core data
-
   const {
     query,
     setQuery,
@@ -30,7 +23,6 @@ export function MainSearchView() {
     errorMessage,
   } = useSearch();
 
-  // Store access for specific modes and late insights
   const {
     cacheMode,
     setCacheMode,
@@ -40,117 +32,180 @@ export function MainSearchView() {
     hasLateInsights,
     revealLateResults,
     hasSearchIntent,
+    streamStats,
+    streamStage,
+    scanTrail,
   } = useSearchStore();
 
-  const searchBarRef = useSearchBarLayout();
-
-  // Derived state
   const isSearching = searchPhase === 'lexical' || searchPhase === 'semantic' || searchPhase === 'refining';
-  const hasActiveSearch = hasSearchIntent || isSearching || results.length > 0 || searchPhase === 'complete';
-  const showResults = results.length > 0;
-  const showGhostScaffold = hasSearchIntent && !showResults && searchPhase !== 'complete';
-  const showDeck = hasSearchIntent || isSearching || searchPhase === 'complete';
+  const inputMode: SearchMode = deepSearchMode ? 'journalist' : cacheMode;
 
-  // Mode handling
-  const mode: SearchMode = deepSearchMode ? 'journalist' : cacheMode;
-  const modeGlow = mode === 'journalist'
-    ? 'rgba(124, 92, 255, 0.12)'
-    : mode === 'native-cache'
-      ? 'rgba(13, 148, 136, 0.12)'
-      : 'rgba(246, 185, 76, 0.12)';
-  const handleModeChange = useCallback((newMode: SearchMode) => {
-    if (newMode === 'journalist') {
-      setDeepSearchMode(true);
-    } else {
+  const handleInputModeChange = useCallback(
+    (newMode: SearchMode) => {
+      if (newMode === 'journalist') {
+        setDeepSearchMode(true);
+        return;
+      }
       setDeepSearchMode(false);
       setCacheMode(newMode);
-    }
-  }, [setDeepSearchMode, setCacheMode]);
+    },
+    [setCacheMode, setDeepSearchMode],
+  );
+
+  const stageLabel =
+    searchPhase === 'lexical'
+      ? 'Lexical scan'
+      : searchPhase === 'semantic'
+        ? 'Semantic rerank'
+        : searchPhase === 'refining'
+          ? 'Refining'
+          : searchPhase === 'complete'
+            ? 'Locked'
+            : 'Ready';
+
+  const mappedResults = useMemo<IxosSearchResult[]>(
+    () =>
+      results.map((result) => ({
+        id: result.path,
+        title: result.filename,
+        path: `${result.directory}/${result.filename}`,
+        score: Number.isFinite(result.score) ? result.score : 0,
+        snippet:
+          'context' in result && result.context?.matched?.length
+            ? result.context.matched.join(' ').slice(0, 220)
+            : 'snippet' in result
+              ? String(result.snippet).slice(0, 220)
+              : 'Result matched by lexical and semantic relevance.',
+        rationale:
+          'evidence' in result && result.evidence?.explanation
+            ? result.evidence.explanation
+            : 'Rank stabilized by relevance, recency, and integrity-safe retrieval.',
+      })),
+    [results],
+  );
+
+  const streamSeedResults = useMemo<IxosSearchResult[]>(() => {
+    if (!isSearching) return [];
+    const seeds = [...scanTrail].slice(-10).reverse();
+    if (seeds.length === 0) return [];
+
+    return seeds.map((path, index) => {
+      const file = path.split(/[/\\]/).pop() || path;
+      return {
+        id: `stream-seed-${path}-${index}`,
+        title: file,
+        path,
+        score: Math.max(0.55, 0.78 - index * 0.03),
+        snippet: `Streaming lexical candidate while semantic rerank is warming for "${query || 'current query'}".`,
+        rationale: 'Live scan packet from progressive search pipeline.',
+      };
+    });
+  }, [isSearching, query, scanTrail]);
+
+  const liveResults = mappedResults.length > 0 ? mappedResults : streamSeedResults;
+  const canInteractWithResults = mappedResults.length > 0;
+  const resolvedSelectedIndex =
+    liveResults.length > 0 ? Math.min(selectedIndex, liveResults.length - 1) : 0;
+
+  const handleOpenResult = useCallback(
+    (index: number) => {
+      setSelectedIndex(index);
+      setTimeout(() => {
+        void openSelected();
+      }, 0);
+    },
+    [openSelected, setSelectedIndex],
+  );
+
+  const handleRevealResult = useCallback(
+    (index: number) => {
+      setSelectedIndex(index);
+      setTimeout(() => {
+        void revealSelected();
+      }, 0);
+    },
+    [revealSelected, setSelectedIndex],
+  );
+
+  const canSearch = query.trim().length > 0 && directory.trim().length > 0;
+  const showLowerPanels = searchPhase !== 'idle' || liveResults.length > 0 || hasLateInsights;
 
   return (
-    <div className="relative w-full h-full bg-graphite-0 text-porcelain overflow-hidden flex flex-col">
-      <div className="pointer-events-none absolute inset-0 opacity-70 bg-gradient-noise-teal" />
-      <div className="pointer-events-none absolute inset-0 opacity-60 bg-gradient-noise-violet" />
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: 'radial-gradient(ellipse 80% 55% at 50% -10%, rgba(255, 255, 255, 0.08) 0%, transparent 70%)',
+    <div className="relative flex h-full w-full flex-col overflow-hidden bg-graphite-0 p-6 text-porcelain">
+      <SearchInput
+        value={query}
+        onChange={setQuery}
+        onSearch={() => {
+          if (!canSearch) return;
+          void startSearch();
         }}
+        directory={directory}
+        onDirectoryChange={setDirectory}
+        isSearching={isSearching}
+        onCancel={() => void cancelSearch()}
+        mode={inputMode}
+        onModeChange={handleInputModeChange}
+        centered={false}
+        showControls
       />
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: `radial-gradient(ellipse 70% 50% at 50% 8%, ${modeGlow} 0%, transparent 65%)`,
-        }}
-      />
 
-      <SearchCorridor />
+      <div className="relative mt-4 min-h-0 flex-1">
+        <AnimatePresence initial={false}>
+          {showLowerPanels && (
+            <motion.div
+              key="search-panels"
+              initial={{ opacity: 0, y: 16, scale: 0.985 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.99 }}
+              transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+              className="relative h-full"
+            >
+              <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl border border-white/8">
+                <AmbientIxosField mode="contained" className="opacity-55" />
+                <div className="absolute inset-0 bg-gradient-to-b from-graphite-0/30 via-graphite-0/22 to-graphite-0/50" />
+              </div>
 
-      <div className="relative z-10 flex flex-col w-full h-full">
-        <div
-          ref={searchBarRef}
-          className={cn(
-            "w-full max-w-4xl mx-auto px-6 transition-all duration-300 ease-out z-50",
-            hasActiveSearch ? "pt-6" : "pt-[26vh]"
+              <div className="relative h-full p-1">
+                <SearchSurface
+                  query={query}
+                  stageLabel={stageLabel}
+                  isSearching={isSearching || (hasSearchIntent && searchPhase !== 'complete')}
+                  errorMessage={errorMessage}
+                  results={liveResults}
+                  selectedIndex={resolvedSelectedIndex}
+                  onSelectResult={canInteractWithResults ? setSelectedIndex : undefined}
+                  onOpenResult={canInteractWithResults ? handleOpenResult : undefined}
+                  onRevealResult={canInteractWithResults ? handleRevealResult : undefined}
+                  hideSearchChrome
+                  resultLimit={9}
+                  pipelineStats={{
+                    stage: streamStage ?? searchPhase,
+                    filesScanned: streamStats?.filesScanned ?? 0,
+                    candidates: streamStats?.candidates ?? liveResults.length,
+                    embedded: streamStats?.embedded ?? 0,
+                    cacheHits: streamStats?.cacheHits ?? 0,
+                    scanTrail,
+                  }}
+                  sourcePath="source: ui/src/stores/searchStore.ts + src-tauri/src/commands/search.rs"
+                />
+              </div>
+            </motion.div>
           )}
-        >
-          <div className="w-full">
-            <SearchInput
-              value={query}
-              onChange={setQuery}
-              onSearch={startSearch}
-              directory={directory}
-              onDirectoryChange={setDirectory}
-              isSearching={isSearching}
-              onCancel={cancelSearch}
-              mode={mode}
-              onModeChange={handleModeChange}
-              centered={!hasActiveSearch}
-            />
-          </div>
-
-          {errorMessage && (
-            <div className="mt-4 p-3 bg-error/10 border border-error/20 rounded-lg text-error text-sm text-center">
-              {errorMessage}
-            </div>
-          )}
-
-          {showDeck && <SearchDeck />}
-        </div>
-
-        <div className="flex-1 overflow-hidden relative w-full">
-          <GhostScaffold visible={showGhostScaffold} count={8} />
-
-          {showResults && (
-            <div className="absolute inset-0 overflow-y-auto px-8 py-6">
-              <SearchResults
-                results={results}
-                selectedIndex={selectedIndex}
-                onSelect={setSelectedIndex}
-                onOpen={openSelected}
-                onReveal={revealSelected}
-                phase={searchPhase}
-              />
-
-              {hasLateInsights && (
-                <div className="fixed bottom-6 right-6 z-50">
-                  <LateInsightBadge
-                    count={lateResults.length}
-                    onReveal={revealLateResults}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          {!showResults && query.length > 0 && searchPhase === 'complete' && (
-            <div className="w-full max-w-3xl mx-auto px-6 py-10 text-center">
-              <p className="text-fg-muted">No results found</p>
-              <p className="text-fg-dim text-sm mt-1">Try a different search term</p>
-            </div>
-          )}
-        </div>
+        </AnimatePresence>
       </div>
+
+      {hasLateInsights && lateResults.length > 0 && (
+        <div className="mt-3 rounded-lg border border-accent-violet/35 bg-accent-violet/10 px-3 py-2 text-xs text-fg-secondary">
+          {lateResults.length} late insights found after lock.
+          <button
+            type="button"
+            onClick={revealLateResults}
+            className="ml-2 text-accent-violet hover:text-accent-violet-glow"
+          >
+            Reveal now
+          </button>
+        </div>
+      )}
     </div>
   );
 }

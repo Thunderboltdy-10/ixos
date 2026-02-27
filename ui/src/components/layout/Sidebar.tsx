@@ -165,8 +165,7 @@ export function Sidebar({
         </nav>
       </div>
 
-      {/* Tab toggle for history (only show on search view) */}
-      {activeView === 'search' && (
+      {/* Tab toggle for history */}
       <div className="px-3 pb-3">
         <div className="flex items-center gap-1 p-0.5 bg-graphite-2/42 border border-white/6 rounded-md">
           <button
@@ -196,10 +195,9 @@ export function Sidebar({
           </button>
         </div>
       </div>
-      )}
 
-      {/* Deep Search notice - Only show when in Recent tab and search view */}
-      {deepSearchMode && activeTab === 'recent' && activeView === 'search' && (
+      {/* Deep Search notice */}
+      {deepSearchMode && activeTab === 'recent' && (
         <div className="mx-3 mt-3 px-3 py-2 bg-accent-violet/5 border border-accent-violet/10 rounded-md">
           <div className="flex items-start gap-2">
             <EyeOff className="w-3.5 h-3.5 text-accent-violet flex-shrink-0 mt-0.5" />
@@ -213,8 +211,7 @@ export function Sidebar({
 
       {showUpgrade && <UpgradeBanner onUpgrade={onOpenPricing} />}
 
-      {/* Search history list (only show on search view) */}
-      {activeView === 'search' && (
+      {/* Search history list */}
       <nav className="flex-1 overflow-y-auto px-2 pt-2 scrollbar-hide">
         {activeTab === 'recent' ? (
           // Recent searches from history store
@@ -323,7 +320,6 @@ export function Sidebar({
           )
         )}
       </nav>
-      )}
 
       {/* Guide button */}
       <div className="px-3 py-1.5 border-t border-stroke-hairline">

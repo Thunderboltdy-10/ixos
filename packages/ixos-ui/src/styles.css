@@ -1,0 +1,151 @@
+﻿.ixos-world {
+  border: 1px solid var(--border-subtle, rgba(243, 245, 247, 0.14));
+  background: linear-gradient(145deg, rgba(24, 27, 33, 0.95) 0%, rgba(15, 17, 21, 0.96) 100%);
+  border-radius: 18px;
+  box-shadow: 0 32px 120px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(243, 245, 247, 0.04) inset;
+  overflow: hidden;
+}
+
+.ixos-world-grid {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  min-height: 560px;
+}
+
+.ixos-world-rail {
+  border-right: 1px solid rgba(243, 245, 247, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
+  padding: 18px 14px;
+}
+
+.ixos-world-panel {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ixos-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(243, 245, 247, 0.12);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(243, 245, 247, 0.72);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ixos-nav-btn {
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(243, 245, 247, 0.64);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 160ms ease;
+}
+
+.ixos-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(243, 245, 247, 0.88);
+  border-color: rgba(243, 245, 247, 0.12);
+}
+
+.ixos-nav-btn[data-active='true'] {
+  background: rgba(20, 184, 166, 0.12);
+  border-color: rgba(20, 184, 166, 0.35);
+  color: #5eead4;
+}
+
+.ixos-card {
+  border: 1px solid rgba(243, 245, 247, 0.12);
+  border-radius: 12px;
+  background: rgba(20, 24, 30, 0.66);
+  padding: 12px;
+}
+
+.ixos-result-row {
+  border: 1px solid rgba(243, 245, 247, 0.09);
+  border-radius: 10px;
+  padding: 11px;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: 160ms ease;
+}
+
+.ixos-result-row:hover {
+  border-color: rgba(20, 184, 166, 0.36);
+  background: rgba(20, 184, 166, 0.05);
+}
+
+.ixos-result-row[data-selected='true'] {
+  border-color: rgba(20, 184, 166, 0.6);
+  background: rgba(20, 184, 166, 0.1);
+}
+
+.ixos-input {
+  width: 100%;
+  border: 1px solid rgba(243, 245, 247, 0.14);
+  border-radius: 12px;
+  background: rgba(15, 18, 22, 0.9);
+  color: #f3f5f7;
+  padding: 11px 12px;
+  font-size: 14px;
+  outline: none;
+}
+
+.ixos-input:focus {
+  border-color: rgba(20, 184, 166, 0.55);
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.18);
+}
+
+.ixos-kpi {
+  border: 1px solid rgba(243, 245, 247, 0.1);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 10px;
+}
+
+.ixos-loader-grid {
+  width: 120px;
+  height: 120px;
+  position: relative;
+}
+
+.ixos-loader-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: rgba(20, 184, 166, 0.22);
+  transition: 160ms ease;
+}
+
+@keyframes ixosPulse {
+  0% {
+    transform: translateX(-35%);
+  }
+  100% {
+    transform: translateX(160%);
+  }
+}
+
+@media (max-width: 1024px) {
+  .ixos-world-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ixos-world-rail {
+    border-right: 0;
+    border-bottom: 1px solid rgba(243, 245, 247, 0.08);
+  }
+}

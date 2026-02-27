@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.7.0",
+    "@ixos/ixos-ui": "*",
     "@neondatabase/serverless": "^0.9.5",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",

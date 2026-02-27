@@ -733,7 +733,7 @@
 - Key results:
   - Added `ixos-big-bench` binary with per-query metrics (`ttfr_ms`, `total_ms`, stage breakdown, cache stats, top-1 metadata) and embedded tier gates.
   - Added curated big-root query suite (`bench/big_root_queries.json`, 40 queries).
-  - Expanded CLI live matrix script to 48 combinations (`cache_mode × search_mode × progressive × secure_timing × journalist_mode`), including NDJSON validation for progressive JSON streams.
+  - Expanded CLI live matrix script to 48 combinations (`cache_mode ï¿½ search_mode ï¿½ progressive ï¿½ secure_timing ï¿½ journalist_mode`), including NDJSON validation for progressive JSON streams.
   - Added fast programmatic integration test matrix (`tests/settings_matrix.rs`).
   - Added `release-check` command stub (`ixos release-check --quick`) for Phase 1 contract.
   - Big bench acceptance command succeeded: `cargo run --release --bin ixos-big-bench -- --dir . --runs 3` with JSON+MD output and Tier C PASS.
@@ -1364,7 +1364,7 @@
 - Decision: KEEP
 - Next:
   1. Capture manual `/4` motion QA (desktop + mobile) and tune camera amplitude if needed.
-  2. If required, add optional “extreme mode” camera intensity toggle for A/B visual preference testing.
+  2. If required, add optional ï¿½extreme modeï¿½ camera intensity toggle for A/B visual preference testing.
 
 ## Entry 049 - /4 immersive spatial pass (WebGL rail + desktop HUD + token alignment)
 - Date/Time: 2026-02-26
@@ -1442,3 +1442,96 @@
 - Next:
   1. Continue desktop one-to-one parity in non-hero sections.
   2. Add stronger phase-linked section transition choreography.
+
+## Entry 052 - App-World redesign pass (shared package + desktop Today/Workstreams overhaul + /4 continuous world)
+- Date/Time: 2026-02-26 23:16:49
+- Branch/Commit: (working tree)
+- Goal: Deliver full `/4` "App-World" experience with truth-backed lenses and shared UI system used by both desktop and landing.
+- Commands run:
+  - `npm run tauri:dev`
+  - `npm install`
+  - `npm --prefix ui run build`
+  - `npm --prefix ixos-site run build`
+- Outputs saved to:
+  - `DESKTOP_UI_AUDIT.md`
+  - `FEATURE_INVENTORY.md`
+  - `COPY_MAP.md`
+  - new shared package: `packages/ixos-ui/*`
+  - desktop rewires: `ui/src/components/search/MainSearchView.tsx`, `ui/src/components/today/TodayTab.tsx`, `ui/src/components/workstreams/WorkstreamsList.tsx`, `ui/src/components/layout/AppShell.tsx`
+  - landing rewrite: `ixos-site/src/app/4/page.tsx`
+  - workspace wiring: `package.json`, `ui/package.json`, `ixos-site/package.json`, `ixos-site/next.config.ts`, `package-lock.json`
+- Key results:
+  - Added `packages/ixos-ui` with shared AppWorld surfaces, persistent pixel-square wave field, and Ixos-native square-ring loader.
+  - Reworked desktop Today/Workstreams into denser operational surfaces based on shared components.
+  - Replaced `/4` with one continuous AppWorld tour: fixed living app layer + non-blocking lens overlays + source citations.
+  - Implemented curved hero woosh entry using motion path (`offsetPath`/`offsetDistance`) with perspective settling.
+  - Added source-backed feature coverage mapping to avoid unsourced claims.
+- Validation summary:
+  - Desktop dev launch: PASS
+  - `ui` build: PASS
+  - `ixos-site` build: PASS (after fixing BOM encoding in `packages/ixos-ui/package.json`)
+- Decision: KEEP
+- Next:
+  1. Manual motion QA and viewport stress testing on `/4`.
+  2. Final search surface parity pass in desktop for fully uniform AppWorld language.
+  3. Optional targeted lint cleanup on touched files.
+## Entry 053 - Execution fix pass after user QA (desktop lock-state + search polish + /4 rework)
+- Date/Time: 2026-02-26
+- Branch/Commit: (working tree)
+- Goal: Resolve reported UX failures: false Pro locks, weak desktop search bar execution, and broken `/4` section visibility/flow.
+- Commands run:
+  - `npm --prefix ui run build`
+  - `npm --prefix ixos-site run build`
+  - source-path existence check script (PowerShell `Test-Path` batch across lens sources)
+- Outputs saved to:
+  - `ui/src/lib/proAccess.ts`
+  - `packages/ixos-ui/src/components/SearchSurface.tsx`
+  - `packages/ixos-ui/src/components/AppWorldSurface.tsx`
+  - `ui/src/components/search/MainSearchView.tsx`
+  - `ixos-site/src/app/4/page.tsx`
+- Key results:
+  - Updated Pro access gating to trust server entitlement plan for UI unlocks, with only `timeSuspect` remaining as explicit lock condition.
+  - Reworked shared search surface to a more desktop-like input frame and retained evidence panel quality; desktop now uses non-inline run action while landing keeps inline interaction.
+  - Rebuilt `/4` App-World flow for clearer section discoverability and stronger continuity: fixed live app layer, lens overlays, skip rail, and true curved motion-path entry (`offset-path` + overshoot settle).
+  - Added explicit reduced-motion fallback for hero woosh animation and kept persistent pixel-square field motif.
+  - Verified all cited lens source paths exist.
+- Validation summary:
+  - `ui` build: PASS
+  - `ixos-site` build: PASS
+  - source path validation: PASS (`ALL_PATHS_EXIST`)
+- Decision: KEEP
+- Next:
+  1. Manual browser QA on `/4` for scroll pacing and live-demo visibility.
+  2. Final desktop spacing pass at 1920x1080 if any clipping remains.
+  3. Optional targeted lint pass on touched frontend files.
+
+## Entry 054 - Desktop control restore + live evidence pipeline + `/4` world amplification
+- Date/Time: 2026-02-26
+- Branch/Commit: (working tree)
+- Goal: Address second user QA round: restore high-control desktop search UX, improve Today/Workstreams quality, and make `/4` far more interactive/animated while keeping shared UI parity.
+- Commands run:
+  - `npm --prefix ui run build`
+  - `npm --prefix ixos-site run build`
+- Outputs saved to:
+  - `ui/src/components/search/MainSearchView.tsx`
+  - `ui/src/components/layout/Sidebar.tsx`
+  - `ui/src/components/workstreams/WorkstreamDetail.tsx`
+  - `packages/ixos-ui/src/components/SearchSurface.tsx`
+  - `packages/ixos-ui/src/components/AppWorldSurface.tsx`
+  - `packages/ixos-ui/src/components/TodaySurface.tsx`
+  - `packages/ixos-ui/src/components/WorkstreamsSurface.tsx`
+  - `ixos-site/src/app/4/page.tsx`
+- Key results:
+  - Restored desktop search controls via legacy `SearchInput` (directory picker + mode controls), while preserving shared right-side evidence rail.
+  - Search evidence panel now streams dynamic pipeline telemetry (stage progression, counters, scan trail) instead of static copy.
+  - Sidebar now keeps recent/starred search history visible in Today and Workstreams views.
+  - Today and Workstreams shared surfaces were redesigned for denser hierarchy and stronger empty states.
+  - `/4` rebuilt again as a stronger App-World: centered persistent app layer, distinct lens overlays, active hotspots, and corrected curved woosh lifecycle (no persistent offset bug).
+- Validation summary:
+  - `ui` build: PASS
+  - `ixos-site` build: PASS
+- Decision: KEEP
+- Next:
+  1. Manual browser QA for `/4` motion comfort and lens readability across full scroll.
+  2. Final polish pass on desktop Workstream detail interaction density.
+  3. Optional lint pass on touched frontend files.

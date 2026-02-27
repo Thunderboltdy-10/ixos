@@ -97,10 +97,10 @@ export function WorkstreamDetail({ workstreamId, onBack, onOpenFile }: Workstrea
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex flex-col h-full"
+      className="flex h-full flex-col bg-graphite-0"
     >
       {/* Header */}
-      <div className="p-4 border-b border-stroke-hairline">
+      <div className="border-b border-stroke-hairline bg-graphite-1/58 px-5 py-4 backdrop-blur-sm">
         <div className="flex items-center gap-3 mb-3">
           <button
             onClick={onBack}
@@ -212,10 +212,26 @@ export function WorkstreamDetail({ workstreamId, onBack, onOpenFile }: Workstrea
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-4 space-y-6">
-        {/* Top Folders */}
-        {workstream.topFolders.length > 0 && (
-          <section>
+      <div className="flex-1 overflow-auto p-5">
+        <div className="mb-5 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-white/10 bg-graphite-1/70 p-3">
+            <p className="text-2xs uppercase tracking-[0.12em] text-fg-ghost">Actions</p>
+            <p className="mt-1 text-xl font-semibold text-porcelain">{workstream.eventCount}</p>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-graphite-1/70 p-3">
+            <p className="text-2xs uppercase tracking-[0.12em] text-fg-ghost">Duration</p>
+            <p className="mt-1 text-xl font-semibold text-porcelain">{formatDuration(workstream.durationMs)}</p>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-graphite-1/70 p-3">
+            <p className="text-2xs uppercase tracking-[0.12em] text-fg-ghost">Last Active</p>
+            <p className="mt-1 text-xl font-semibold text-porcelain">{formatRelativeTime(workstream.lastActive / 1000)}</p>
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[1.06fr_0.94fr]">
+          {/* Top Folders */}
+          {workstream.topFolders.length > 0 && (
+            <section className="rounded-xl border border-white/10 bg-graphite-1/58 p-4">
             <h2 className="text-sm font-semibold text-fg-muted uppercase tracking-wider flex items-center gap-2 mb-3">
               <FolderOpen className="w-4 h-4 text-accent-amber" />
               Top Folders
@@ -241,12 +257,12 @@ export function WorkstreamDetail({ workstreamId, onBack, onOpenFile }: Workstrea
                 );
               })}
             </div>
-          </section>
-        )}
+            </section>
+          )}
 
-        {/* Top Files */}
-        {workstream.topFiles.length > 0 && (
-          <section>
+          {/* Top Files */}
+          {workstream.topFiles.length > 0 && (
+            <section className="rounded-xl border border-white/10 bg-graphite-1/58 p-4">
             <h2 className="text-sm font-semibold text-fg-muted uppercase tracking-wider flex items-center gap-2 mb-3">
               <FileText className="w-4 h-4 text-accent-teal" />
               Top Files
@@ -276,12 +292,12 @@ export function WorkstreamDetail({ workstreamId, onBack, onOpenFile }: Workstrea
                 );
               })}
             </div>
-          </section>
-        )}
+            </section>
+          )}
 
-        {/* Top Queries */}
-        {workstream.topQueries.length > 0 && (
-          <section>
+          {/* Top Queries */}
+          {workstream.topQueries.length > 0 && (
+            <section className="rounded-xl border border-white/10 bg-graphite-1/58 p-4 lg:col-span-2">
             <h2 className="text-sm font-semibold text-fg-muted uppercase tracking-wider flex items-center gap-2 mb-3">
               <Search className="w-4 h-4 text-accent-violet" />
               Top Queries
@@ -301,8 +317,9 @@ export function WorkstreamDetail({ workstreamId, onBack, onOpenFile }: Workstrea
                 </span>
               ))}
             </div>
-          </section>
-        )}
+            </section>
+          )}
+        </div>
       </div>
     </motion.div>
   );

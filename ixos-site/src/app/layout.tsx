@@ -8,6 +8,8 @@ import { ParticlesFieldV3 } from "@/components/effects/ParticlesFieldV3";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from '@vercel/analytics/next';
 
+const analyticsEnabled = process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === "1";
+
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-ixo-heading",
   subsets: ["latin"],
@@ -60,7 +62,7 @@ export default function RootLayout({
             {/* app-root: relative, z-10 */}
             <div id="app-root" className="relative z-10 min-h-screen flex flex-col">
               {children}
-              <Analytics />
+              {analyticsEnabled ? <Analytics /> : null}
             </div>
           </SmoothScrollProvider>
         </ClerkProvider>

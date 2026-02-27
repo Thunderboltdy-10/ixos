@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:visual": "playwright test tests/landing.visual.spec.ts",
+    "test:visual:update": "playwright test tests/landing.visual.spec.ts --update-snapshots"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.7.0",
@@ -34,6 +36,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/nodemailer": "^6.4.17",

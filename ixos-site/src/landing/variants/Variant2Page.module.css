@@ -1,0 +1,215 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  color: #f3f5f7;
+  padding: 22px clamp(16px, 5vw, 64px) 110px;
+  overflow-x: clip;
+}
+
+.aura {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 74% 6%, rgba(139, 92, 246, 0.24) 0%, transparent 36%),
+    radial-gradient(circle at 16% 28%, rgba(45, 212, 191, 0.15) 0%, transparent 28%);
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  gap: 28px;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.wordmark {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(243, 245, 247, 0.72);
+}
+
+.routes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.route {
+  border: 1px solid rgba(243, 245, 247, 0.18);
+  border-radius: 999px;
+  text-decoration: none;
+  color: rgba(243, 245, 247, 0.7);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+}
+
+.routeActive {
+  border-color: color-mix(in oklab, var(--v-accent-main) 74%, white 26%);
+  background: color-mix(in oklab, var(--v-accent-main) 22%, transparent);
+  color: #fff;
+}
+
+.hero {
+  border: 1px solid rgba(243, 245, 247, 0.14);
+  border-radius: 24px;
+  background: linear-gradient(160deg, rgba(16, 14, 23, 0.82) 0%, rgba(12, 11, 18, 0.72) 100%);
+  padding: clamp(20px, 3vw, 36px);
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--v-accent-alt) 70%, white 30%);
+}
+
+.title {
+  margin: 0 0 12px;
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+}
+
+.lead {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 15px;
+  color: rgba(243, 245, 247, 0.76);
+  line-height: 1.8;
+}
+
+.grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1.06fr;
+  gap: 20px;
+}
+
+.threadLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.threadPath {
+  fill: none;
+  stroke: color-mix(in oklab, var(--v-accent-main) 72%, #ffffff 28%);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-dasharray: 5 8;
+  opacity: 0.72;
+}
+
+.claimPanel {
+  position: relative;
+  z-index: 2;
+  border: 1px solid rgba(243, 245, 247, 0.16);
+  border-radius: 22px;
+  background: rgba(14, 13, 21, 0.74);
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.claimButton {
+  border: 1px solid rgba(243, 245, 247, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  text-align: left;
+  padding: 14px;
+  display: grid;
+  gap: 9px;
+  transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease;
+}
+
+.claimButton:hover {
+  transform: translateX(2px);
+  border-color: color-mix(in oklab, var(--v-accent-main) 78%, white 22%);
+}
+
+.claimActive {
+  border-color: color-mix(in oklab, var(--v-accent-main) 82%, white 18%);
+  background: color-mix(in oklab, var(--v-accent-main) 14%, transparent);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+.claimTitle {
+  margin: 0;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+
+.claimText {
+  margin: 0;
+  color: rgba(243, 245, 247, 0.74);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.source {
+  justify-self: start;
+  border: 1px solid rgba(243, 245, 247, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 4px 10px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--v-accent-alt) 80%, white 20%);
+}
+
+.drawer {
+  margin-top: 6px;
+  border: 1px solid rgba(243, 245, 247, 0.18);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+  display: grid;
+  gap: 9px;
+}
+
+.drawerTitle {
+  margin: 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(243, 245, 247, 0.68);
+}
+
+.proof {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(243, 245, 247, 0.84);
+}
+
+.demoPanel {
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 1080px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .threadLayer {
+    display: none;
+  }
+}

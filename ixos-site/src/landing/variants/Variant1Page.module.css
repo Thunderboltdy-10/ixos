@@ -1,0 +1,267 @@
+.page {
+  --text-main: #f3f5f7;
+  --text-soft: rgba(243, 245, 247, 0.72);
+  --panel: rgba(11, 15, 19, 0.72);
+  position: relative;
+  min-height: 100vh;
+  color: var(--text-main);
+  padding: 24px clamp(16px, 5vw, 64px) 120px;
+  overflow-x: clip;
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.08;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(45, 212, 191, 0.22) 0%, transparent 32%),
+    radial-gradient(circle at 80% 0%, rgba(245, 158, 11, 0.18) 0%, transparent 28%);
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  max-width: 1260px;
+  margin: 0 auto;
+  display: grid;
+  gap: 40px;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.wordmark {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(243, 245, 247, 0.7);
+}
+
+.routes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.route {
+  border: 1px solid rgba(243, 245, 247, 0.2);
+  border-radius: 999px;
+  text-decoration: none;
+  color: rgba(243, 245, 247, 0.74);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+}
+
+.routeActive {
+  border-color: color-mix(in oklab, var(--v-accent-main) 70%, #ffffff 30%);
+  background: color-mix(in oklab, var(--v-accent-main) 18%, transparent);
+  color: #ffffff;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.02fr 1fr;
+  gap: 26px;
+  align-items: start;
+}
+
+.heroCopy {
+  border: 1px solid rgba(243, 245, 247, 0.16);
+  border-radius: 24px;
+  padding: clamp(24px, 4vw, 44px);
+  background: linear-gradient(170deg, rgba(14, 18, 22, 0.78) 0%, rgba(8, 12, 16, 0.7) 100%);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.45);
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: color-mix(in oklab, var(--v-accent-alt) 70%, white 30%);
+}
+
+.title {
+  margin: 0 0 16px;
+  font-size: clamp(40px, 6vw, 72px);
+  letter-spacing: -0.04em;
+  line-height: 0.94;
+}
+
+.lead {
+  margin: 0;
+  max-width: 50ch;
+  color: var(--text-soft);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.heroActions {
+  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.action {
+  border: 1px solid rgba(243, 245, 247, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(243, 245, 247, 0.88);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 9px 12px;
+}
+
+.action:hover {
+  border-color: color-mix(in oklab, var(--v-accent-main) 72%, white 28%);
+}
+
+.foundryGrid {
+  display: grid;
+  gap: 16px;
+}
+
+.foundryCard {
+  position: relative;
+  border-radius: 20px;
+  border: 1px solid rgba(243, 245, 247, 0.22);
+  background: var(--panel);
+  overflow: hidden;
+  padding: 26px 24px 28px;
+  transition: border-color 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+}
+
+.foundryCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(243, 245, 247, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(243, 245, 247, 0.05) 1px, transparent 1px);
+  background-size: 18px 18px;
+  opacity: 0.32;
+  transition: opacity 260ms ease;
+}
+
+.foundryCard:hover {
+  transform: translateY(-2px);
+}
+
+.foundryInner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.rank {
+  margin: 0 0 10px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: color-mix(in oklab, var(--v-accent-main) 75%, white 25%);
+}
+
+.cardTitle {
+  margin: 0 0 10px;
+  font-size: clamp(24px, 2.8vw, 36px);
+  letter-spacing: -0.03em;
+}
+
+.cardCopy {
+  margin: 0;
+  max-width: 44ch;
+  color: rgba(243, 245, 247, 0.74);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.tileGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tile {
+  border: 1px solid rgba(243, 245, 247, 0.16);
+  border-radius: 14px;
+  background: rgba(12, 16, 22, 0.72);
+  padding: 12px;
+  min-height: 70px;
+}
+
+.tileKey {
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--v-accent-alt) 72%, white 28%);
+}
+
+.tileValue {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(243, 245, 247, 0.86);
+}
+
+.closing {
+  margin-top: 6px;
+  border-radius: 24px;
+  border: 1px solid rgba(243, 245, 247, 0.14);
+  background: linear-gradient(150deg, rgba(12, 16, 20, 0.8) 0%, rgba(9, 12, 16, 0.72) 100%);
+  padding: clamp(22px, 3vw, 34px);
+  display: grid;
+  gap: 16px;
+}
+
+.closingTitle {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 40px);
+  letter-spacing: -0.03em;
+}
+
+.closingCopy {
+  margin: 0;
+  color: rgba(243, 245, 247, 0.72);
+  max-width: 58ch;
+  line-height: 1.7;
+}
+
+@media (max-width: 1080px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .foundryInner {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding-top: 16px;
+    padding-bottom: 92px;
+  }
+
+  .title {
+    font-size: clamp(34px, 12vw, 48px);
+  }
+
+  .tileGrid {
+    grid-template-columns: 1fr;
+  }
+}

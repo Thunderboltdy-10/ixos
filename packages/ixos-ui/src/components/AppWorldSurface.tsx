@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { Calendar, Layers, Search } from 'lucide-react';
 import { SearchSurface } from './SearchSurface';
 import { TodaySurface } from './TodaySurface';
@@ -62,6 +63,7 @@ interface AppWorldSurfaceProps {
   };
   interactive?: boolean;
   className?: string;
+  style?: CSSProperties;
 }
 
 export function AppWorldSurface({
@@ -74,9 +76,10 @@ export function AppWorldSurface({
   workstreams,
   interactive = true,
   className,
+  style,
 }: AppWorldSurfaceProps) {
   return (
-    <section className={`ixos-world ${className ?? ''}`}>
+    <section className={`ixos-world ${className ?? ''}`} style={style}>
       <div className="ixos-world-grid">
         <aside className="ixos-world-rail">
           <div style={{ display: 'grid', gap: 4, marginBottom: 18 }}>

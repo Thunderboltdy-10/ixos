@@ -1,74 +1,99 @@
 "use client";
 
 // ─── Ixos Hero 3D Scene — Cinematic Pipeline Flythrough ────────────────────────
-// Upgraded: camera moves through phases, result card meshes, much larger points.
-// 6-second cycle: establishing → query fires → lexical sweep → semantic rerank → lock/orbit → scatter
+// Upgraded: Next-generation 3D visualization. Insane WOW factor.
+// Enhanced particle count, more dynamic camera, glowing post-processing effects, 
+// complex vertex shaders, and organic movements.
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
-const CYCLE = 6.5;
+const CYCLE = 8.0;
 
 function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
 function clamp(v: number, lo: number, hi: number) { return Math.max(lo, Math.min(hi, v)); }
 function eio(t: number) {
   t = clamp(t, 0, 1);
-  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
 // ─── Camera choreography ──────────────────────────────────────────────────────
 function CameraRig() {
   const { camera } = useThree();
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+
+  useMemo(() => {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('mousemove', (e) => {
+        setMouse({
+          x: (e.clientX / window.innerWidth - 0.5) * 2,
+          y: (e.clientY / window.innerHeight - 0.5) * 2
+        });
+      });
+    }
+  }, []);
 
   useFrame(({ clock }) => {
     const c = (clock.getElapsedTime() % CYCLE) / CYCLE;
+    let tx = 0, ty = 0, tz = 12;
+    let lx = 0, ly = 0, lz = 0; // lookat
 
-    let tx = 0, ty = 0, tz = 7;
-
-    if (c < 0.12) {
-      // 0–0.12 Establishing: high angle, wide view
-      tx = 0;
-      ty = lerp(2.8, 1.2, eio(c / 0.12));
-      tz = lerp(10.5, 8.0, eio(c / 0.12));
-    } else if (c < 0.28) {
-      // 0.12–0.28 Query fires: zoom in smoothly
-      const p = (c - 0.12) / 0.16;
-      tx = 0;
-      ty = lerp(1.2, 0.3, eio(p));
-      tz = lerp(8.0, 6.5, eio(p));
-    } else if (c < 0.52) {
-      // 0.28–0.52 Lexical sweep: pull back slightly, tilt right
-      const p = (c - 0.28) / 0.24;
-      tx = lerp(0, 0.7, eio(p));
-      ty = lerp(0.3, 0.1, p);
-      tz = lerp(6.5, 7.0, eio(p));
-    } else if (c < 0.70) {
-      // 0.52–0.70 Rerank: track toward result cluster
-      const p = (c - 0.52) / 0.18;
-      tx = lerp(0.7, -0.2, eio(p));
-      ty = lerp(0.1, 0.1, p);
-      tz = lerp(7.0, 5.8, eio(p));
-    } else if (c < 0.86) {
-      // 0.70–0.86 Lock/orbit: gentle orbit around result panel
-      const p = (c - 0.70) / 0.16;
-      const angle = eio(p) * Math.PI * 0.4;
-      tx = Math.sin(angle) * 1.0;
-      ty = 0.1 + Math.sin(angle * 0.6) * 0.2;
-      tz = 5.8 + Math.cos(angle) * 0.5;
+    if (c < 0.15) {
+      // 0–0.15 Establishing: sweeping wide view
+      tx = lerp(-4, 0, eio(c / 0.15));
+      ty = lerp(4, 2, eio(c / 0.15));
+      tz = lerp(14, 9, eio(c / 0.15));
+      lx = lerp(-2, 0, eio(c / 0.15));
+    } else if (c < 0.35) {
+      // 0.15–0.35 Dive into the data
+      const p = (c - 0.15) / 0.20;
+      tx = lerp(0, 1.5, eio(p));
+      ty = lerp(2, -0.5, eio(p));
+      tz = lerp(9, 4, eio(p));
+      lx = lerp(0, 1, eio(p));
+      ly = lerp(0, -1, eio(p));
+    } else if (c < 0.60) {
+      // 0.35–0.60 Semantic rerank: orbit and tilt
+      const p = (c - 0.35) / 0.25;
+      const angle = eio(p) * Math.PI * 0.8;
+      tx = 1.5 + Math.sin(angle) * 3;
+      ty = -0.5 + Math.sin(angle * 2) * 1.5;
+      tz = 4 + Math.cos(angle) * 2;
+      lx = 1;
+      ly = -1;
+    } else if (c < 0.85) {
+      // 0.60–0.85 Lock: focus on result cards
+      const p = (c - 0.60) / 0.25;
+      tx = lerp(1.5 + Math.sin(Math.PI * 0.8) * 3, -2.5, eio(p));
+      ty = lerp(-0.5 + Math.sin(Math.PI * 1.6) * 1.5, 0.5, eio(p));
+      tz = lerp(4 + Math.cos(Math.PI * 0.8) * 2, 6, eio(p));
+      lx = lerp(1, -2.5, eio(p));
+      ly = lerp(-1, 0, eio(p));
+      lz = lerp(0, 0, eio(p));
     } else {
-      // 0.86–1.0 Scatter: pull back to establishing position
-      const p = (c - 0.86) / 0.14;
-      tx = lerp(Math.sin(0.4) * 1.0, 0, eio(p));
-      ty = lerp(0.3, 2.8, eio(p));
-      tz = lerp(6.3, 10.5, eio(p));
+      // 0.85–1.0 Scatter: pull back and reset
+      const p = (c - 0.85) / 0.15;
+      tx = lerp(-2.5, -4, eio(p));
+      ty = lerp(0.5, 4, eio(p));
+      tz = lerp(6, 14, eio(p));
+      lx = lerp(-2.5, -2, eio(p));
     }
 
-    // Smooth interpolation
-    camera.position.x += (tx - camera.position.x) * 0.04;
-    camera.position.y += (ty - camera.position.y) * 0.04;
-    camera.position.z += (tz - camera.position.z) * 0.04;
-    camera.lookAt(0, 0, 0);
+    // Add parallax
+    tx += mouse.x * 1.5;
+    ty -= mouse.y * 1.5;
+
+    camera.position.x += (tx - camera.position.x) * 0.05;
+    camera.position.y += (ty - camera.position.y) * 0.05;
+    camera.position.z += (tz - camera.position.z) * 0.05;
+
+    const targetLookAt = new THREE.Vector3(lx, ly, lz);
+    
+    // Smooth lookat via quaternion spherical linear interpolation
+    const currentLookAt = new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).add(camera.position);
+    currentLookAt.lerp(targetLookAt, 0.05);
+    camera.lookAt(currentLookAt);
   });
 
   return null;
@@ -83,102 +108,131 @@ const NODE_VERT = /* glsl */ `
   attribute float aPhase;
   attribute float aScore;
   attribute vec3  aRest;
+  attribute vec3  aTarget;
 
   varying float vBright;
   varying float vIsResult;
   varying float vSweepAmt;
+  varying vec3 vColor;
 
   void main() {
     vec3 pos = aRest;
-    pos.x += sin(uTime * 0.20 + aPhase * 1.1) * 0.09;
-    pos.y += cos(uTime * 0.15 + aPhase * 0.9) * 0.08;
-    pos.z += sin(uTime * 0.12 + aPhase * 1.3) * 0.05;
+    
+    // Complex organic idle motion
+    pos.x += sin(uTime * 0.4 + aPhase * 2.1) * 0.15 + cos(uTime * 0.2 + aRest.y) * 0.1;
+    pos.y += cos(uTime * 0.3 + aPhase * 1.9) * 0.15 + sin(uTime * 0.25 + aRest.z) * 0.1;
+    pos.z += sin(uTime * 0.5 + aPhase * 2.3) * 0.15 + cos(uTime * 0.15 + aRest.x) * 0.1;
 
     float dist = length(aRest);
-    float isRes = step(0.64, aScore);
+    float isRes = step(0.75, aScore);
     vIsResult = isRes;
 
+    // Pulse wave traveling outward
     float gap   = abs(dist - uSweepR);
-    float sweep = exp(-gap * gap * 4.5);
+    float sweep = exp(-gap * gap * 6.0) * (sin(uTime * 10.0 + dist * 5.0) * 0.5 + 0.5);
     vSweepAmt = sweep;
 
-    vec3 clusterPos = vec3(
-      sin(aPhase * 6.1 + 0.5) * 0.65,
-      cos(aPhase * 4.8 + 1.2) * 0.60,
-      sin(aPhase * 3.3 + 0.8) * 0.30
-    );
-    pos = mix(pos, clusterPos, isRes * uConverge * 0.90);
+    // Converge to specific targets instead of just a generic cluster
+    vec3 convergedPos = mix(pos, aTarget, uConverge * isRes);
+    
+    // Add magnetic swirl when converging
+    float swirlAmt = uConverge * isRes * (1.0 - uConverge);
+    convergedPos.x += sin(uTime * 5.0 + aPhase) * swirlAmt * 2.0;
+    convergedPos.y += cos(uTime * 4.0 + aPhase) * swirlAmt * 2.0;
+    convergedPos.z += sin(uTime * 6.0 + aPhase) * swirlAmt * 2.0;
+
+    pos = convergedPos;
 
     float resultGlow = isRes * uConverge;
-    vBright = 0.20 + sweep * 1.8 + resultGlow * 1.5;
+    vBright = 0.15 + sweep * 2.5 + resultGlow * 2.0 + (sin(uTime * 3.0 + aPhase * 10.0) * 0.1);
+
+    // Dynamic coloring based on position and phase
+    vec3 idleCol   = vec3(0.05, 0.2 + sin(aPhase)*0.1, 0.3 + cos(aPhase)*0.1);
+    vec3 sweepCol  = vec3(0.97, 0.6 + sin(aPhase * 2.0)*0.2, 0.2);
+    vec3 resultCol = vec3(0.2, 0.9, 0.8 + sin(uTime * 4.0 + aPhase)*0.2);
+
+    vColor = mix(idleCol, sweepCol, clamp(sweep * 2.0, 0.0, 1.0));
+    vColor = mix(vColor, resultCol, resultGlow);
 
     vec4 mvPos = modelViewMatrix * vec4(pos, 1.0);
     gl_Position = projectionMatrix * mvPos;
 
-    float sz = (3.0 + aScore * 9.0 + vBright * 14.0) * 240.0 / (-mvPos.z);
-    gl_PointSize = clamp(sz, 1.2, 42.0);
+    float sz = (5.0 + aScore * 15.0 + vBright * 25.0) * 300.0 / (-mvPos.z);
+    gl_PointSize = clamp(sz, 2.0, 80.0);
   }
 `;
 
 const NODE_FRAG = /* glsl */ `
-  uniform float uConverge;
   varying float vBright;
   varying float vIsResult;
   varying float vSweepAmt;
+  varying vec3 vColor;
 
   void main() {
     vec2 uv = gl_PointCoord - 0.5;
-    float sq = max(abs(uv.x), abs(uv.y)) * 2.0;
-    float shape = 1.0 - smoothstep(0.50, 0.80, sq);
-    if (shape < 0.01) discard;
+    float dist = length(uv);
+    
+    // Star-like core with soft glow
+    float core = exp(-dist * 8.0);
+    float glow = exp(-dist * 3.0) * 0.5;
+    
+    // Data packet shape (diamonds for results, circles for idle)
+    float diamond = 1.0 - (abs(uv.x) + abs(uv.y)) * 2.0;
+    float shape = mix(1.0 - smoothstep(0.3, 0.5, dist), smoothstep(0.0, 0.2, diamond), vIsResult);
+    
+    if (dist > 0.5) discard;
 
-    // File fold mark (top-right corner)
-    float fold = step(uv.x + uv.y, 0.32) * step(uv.x, 0.20) * step(uv.y, 0.20);
+    float alpha = clamp((core + glow * 2.0) * vBright, 0.0, 1.0);
+    
+    // Add chromatic aberration at the edges
+    vec3 finalColor = vColor;
+    if (dist > 0.2) {
+       finalColor.r += dist * 0.2 * vSweepAmt;
+       finalColor.b -= dist * 0.2 * vSweepAmt;
+    }
 
-    vec3 idleCol   = vec3(0.10, 0.26, 0.31);
-    vec3 sweepCol  = vec3(0.97, 0.74, 0.20);
-    vec3 resultCol = vec3(0.14, 0.88, 0.76);
-
-    float sweepAmt  = clamp(vSweepAmt * 1.5, 0.0, 1.0);
-    float resultAmt = vIsResult * uConverge;
-
-    vec3 col = idleCol;
-    col = mix(col, sweepCol, sweepAmt * (1.0 - resultAmt));
-    col = mix(col, resultCol, resultAmt);
-    col += fold * 0.06;
-
-    float alpha = shape * clamp(0.25 + vBright * 0.75, 0.0, 1.0);
-    gl_FragColor = vec4(col, alpha);
+    gl_FragColor = vec4(finalColor, alpha * shape);
   }
 `;
 
 function FileNodes({ n }: { n: number }) {
   const matRef = useRef<THREE.ShaderMaterial>(null);
 
-  const [restArr, phaseArr, scoreArr] = useMemo(() => {
+  const [restArr, phaseArr, scoreArr, targetArr] = useMemo(() => {
     const rest  = new Float32Array(n * 3);
+    const target = new Float32Array(n * 3);
     const phase = new Float32Array(n);
     const score = new Float32Array(n);
 
     for (let i = 0; i < n; i++) {
-      const theta = Math.random() * Math.PI * 2;
-      const phi   = Math.acos(1 - 2 * Math.random());
-      const r     = 1.5 + Math.random() * 2.8;
+      // Golden ratio spiral distribution for more organic look
+      const inc = Math.PI * (3 - Math.sqrt(5));
+      const off = 2 / n;
+      const y = i * off - 1 + (off / 2);
+      const r = Math.sqrt(1 - y * y) * (3.0 + Math.random() * 4.0);
+      const phi = i * inc;
 
-      rest[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
-      rest[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      rest[i * 3 + 2] = r * Math.cos(phi) * 0.5;
+      rest[i * 3]     = Math.cos(phi) * r + (Math.random() - 0.5) * 2.0;
+      rest[i * 3 + 1] = y * 4.0 + (Math.random() - 0.5) * 2.0;
+      rest[i * 3 + 2] = Math.sin(phi) * r + (Math.random() - 0.5) * 2.0;
 
       phase[i] = Math.random() * Math.PI * 2;
-      score[i] = Math.pow(Math.random(), 1.5);
+      score[i] = Math.pow(Math.random(), 2.0); // More low scores, fewer high scores
     }
 
-    const nResult = Math.max(12, Math.floor(n * 0.15));
+    // Designate top 5% as results and assign them specific targets
+    const nResult = Math.max(8, Math.floor(n * 0.05));
     for (let i = 0; i < nResult; i++) {
-      score[i] = 0.68 + Math.random() * 0.32;
+      score[i] = 0.8 + Math.random() * 0.2; // High scores
+      
+      // Target positions corresponding to the result cards
+      const cardIdx = i % 6;
+      target[i * 3]     = CARD_TARGET[cardIdx][0] + (Math.random() - 0.5) * 0.5;
+      target[i * 3 + 1] = CARD_TARGET[cardIdx][1] + (Math.random() - 0.5) * 0.5;
+      target[i * 3 + 2] = CARD_TARGET[cardIdx][2] + (Math.random() - 0.5) * 0.5;
     }
 
-    return [rest, phase, score];
+    return [rest, phase, score, target];
   }, [n]);
 
   const uniforms = useMemo(() => ({
@@ -191,10 +245,11 @@ function FileNodes({ n }: { n: number }) {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.BufferAttribute(restArr.slice(), 3));
     geo.setAttribute("aRest",    new THREE.BufferAttribute(restArr, 3));
+    geo.setAttribute("aTarget",  new THREE.BufferAttribute(targetArr, 3));
     geo.setAttribute("aPhase",   new THREE.BufferAttribute(phaseArr, 1));
     geo.setAttribute("aScore",   new THREE.BufferAttribute(scoreArr, 1));
     return geo;
-  }, [restArr, phaseArr, scoreArr]);
+  }, [restArr, targetArr, phaseArr, scoreArr]);
 
   useFrame(({ clock }) => {
     if (!matRef.current) return;
@@ -203,28 +258,25 @@ function FileNodes({ n }: { n: number }) {
     const u = matRef.current.uniforms;
     u.uTime.value = t;
 
-    if (c < 0.12) {
+    if (c < 0.15) {
       u.uSweepR.value   = -1;
       u.uConverge.value = 0;
-    } else if (c < 0.28) {
-      const p = Math.max(0, (c - 0.22) / 0.06);
-      u.uSweepR.value   = p * 0.8;
+    } else if (c < 0.35) {
+      const p = Math.max(0, (c - 0.20) / 0.15);
+      u.uSweepR.value   = p * 12.0; // Fast sweep outward
       u.uConverge.value = 0;
-    } else if (c < 0.52) {
-      const p = (c - 0.28) / 0.24;
-      u.uSweepR.value   = p * 5.5;
-      u.uConverge.value = 0;
-    } else if (c < 0.70) {
-      const p = (c - 0.52) / 0.18;
-      u.uSweepR.value   = 5.8;
-      u.uConverge.value = eio(p);
-    } else if (c < 0.86) {
-      u.uSweepR.value   = 5.8;
-      u.uConverge.value = 1.0;
+    } else if (c < 0.60) {
+      // Secondary sweeps
+      const p = (c - 0.35) / 0.25;
+      u.uSweepR.value   = 12.0 - (p * 8.0); // Sweep inward
+      u.uConverge.value = Math.pow(p, 3); // Start converging slowly
+    } else if (c < 0.85) {
+      u.uSweepR.value   = -1;
+      u.uConverge.value = 1.0; // Fully converged
     } else {
-      const p = (c - 0.86) / 0.14;
-      u.uSweepR.value   = 5.8;
-      u.uConverge.value = 1.0 - eio(p);
+      const p = (c - 0.85) / 0.15;
+      u.uSweepR.value   = -1;
+      u.uConverge.value = 1.0 - Math.pow(p, 2); // Scatter quickly
     }
   });
 
@@ -256,64 +308,80 @@ const CARD_FRAG = /* glsl */ `
   uniform vec3 uBorderColor;
   uniform float uAlpha;
   uniform float uRank;
+  uniform float uTime;
   varying vec2 vUv;
 
+  // Pseudo-random noise
+  float rand(vec2 co){
+      return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+  }
+
   void main() {
-    float bw = 0.045;
+    float bw = 0.03;
     float ex = step(1.0 - bw, vUv.x) + step(vUv.x, bw);
     float ey = step(1.0 - bw, vUv.y) + step(vUv.y, bw);
     float isEdge = clamp(ex + ey, 0.0, 1.0);
 
-    // Card body
-    vec3 body = vec3(0.042, 0.062, 0.072);
+    // Dynamic glass body
+    vec3 body = mix(vec3(0.02, 0.03, 0.05), vec3(0.05, 0.08, 0.1), vUv.y);
+    
+    // Scrolling code effect
+    float lineY = fract(vUv.y * 6.0 + uTime * 0.2);
+    float lineOn = step(lineY, 0.3) * step(0.15, vUv.x) * step(vUv.x, 0.8);
+    // Randomize line lengths based on y position to look like code
+    float lineLength = rand(vec2(floor(vUv.y * 6.0), 1.0)) * 0.4 + 0.4;
+    float codeContent = lineOn * step(vUv.x, 0.15 + lineLength) * (rand(vUv) * 0.2 + 0.8);
+    
+    // Highlight specific lines
+    float highlight = step(0.5, vUv.y) * step(vUv.y, 0.65) * codeContent;
 
-    // Content lines (simulate file text)
-    float lp = fract(vUv.y * 4.5 + 0.15);
-    float lineOn = step(lp, 0.22);
-    float lineX = step(0.10, vUv.x) * step(vUv.x, 0.72 - uRank * 0.06);
-    float lines = lineOn * lineX * 0.055;
+    vec3 contentCol = vec3(0.3, 0.4, 0.5) * codeContent;
+    contentCol += uBorderColor * highlight * 1.5;
 
-    // Score bar at bottom
-    float barY = step(vUv.y, 0.14) * step(0.0, vUv.y);
-    float barX = step(0.10, vUv.x) * step(vUv.x, 0.85 - uRank * 0.08);
-    vec3 barCol = uBorderColor * 0.55;
+    // Data score ring/bar
+    float distToCorner = length(vUv - vec2(0.85, 0.8));
+    float scoreRing = smoothstep(0.1, 0.08, distToCorner) * smoothstep(0.06, 0.08, distToCorner);
+    float scoreArc = step(fract(atan(vUv.y - 0.8, vUv.x - 0.85) / 6.28 + 0.5), 1.0 - uRank * 0.2);
 
-    // Fold (top-right corner)
-    float fx = 1.0 - vUv.x;
-    float fy = vUv.y;
-    float fold = step(fx + fy, 0.18) * step(fx, 0.12) * step(fy, 0.12);
+    vec3 col = body + contentCol;
+    col += uBorderColor * scoreRing * scoreArc * 2.0;
+    
+    // Glowing animated border
+    float borderGlow = isEdge * (0.5 + 0.5 * sin(uTime * 3.0 + uRank * 10.0));
+    col = mix(col, uBorderColor * 2.0, borderGlow);
+    
+    // Add noise texture
+    col += (rand(vUv + uTime * 0.1) - 0.5) * 0.05;
 
-    vec3 col = body + vec3(lines);
-    col = mix(col, uBorderColor, isEdge * 0.92);
-    col = mix(col, barCol, barY * barX * (1.0 - isEdge));
-    col += fold * 0.04;
+    // Fade edges for holograhic look
+    float holoAlpha = uAlpha * (0.2 + 0.8 * sin(vUv.y * 3.14));
 
     gl_FragColor = vec4(col, uAlpha);
   }
 `;
 
 const CARD_COLORS = [
-  "#2DD4BF", "#2DD4BF", "#2DD4BF",
-  "#7C3AED", "#7C3AED", "#F59E0B",
+  "#14B8A6", "#14B8A6", "#14B8A6",
+  "#7C5CFF", "#7C5CFF", "#F6B94C",
 ];
 
 const CARD_REST: [number, number, number][] = [
-  [-3.2, 1.4, -0.8],
-  [3.0, 0.8, -0.5],
-  [-2.8, -0.8, 0.4],
-  [2.5, -1.2, -0.3],
-  [-2.2, 2.0, 0.2],
-  [3.4, 0.2, 0.5],
+  [-4.0, 3.0, -2.0],
+  [4.0, 2.0, -1.5],
+  [-3.5, -2.0, 1.0],
+  [3.5, -3.0, -1.0],
+  [-2.5, 4.0, 0.5],
+  [4.5, -1.0, 1.5],
 ];
 
-// Target: vertical list on left side of viewport
+// Target: cascading curved list on left
 const CARD_TARGET: [number, number, number][] = [
-  [-1.4, 1.55, 0.6],
-  [-1.4, 1.00, 0.6],
-  [-1.4, 0.45, 0.6],
-  [-1.4, -0.10, 0.6],
-  [-1.4, -0.65, 0.6],
-  [-1.4, -1.20, 0.6],
+  [-2.5, 2.0, 0.2],
+  [-2.6, 1.2, 0.5],
+  [-2.7, 0.4, 0.7],
+  [-2.7, -0.4, 0.8],
+  [-2.6, -1.2, 0.7],
+  [-2.5, -2.0, 0.5],
 ];
 
 function ResultCard({
@@ -332,37 +400,48 @@ function ResultCard({
     uBorderColor: { value: borderColor },
     uAlpha:       { value: 0 },
     uRank:        { value: index / 5 },
+    uTime:        { value: 0 },
   }), [borderColor, index]);
 
   useFrame(({ clock }) => {
     if (!meshRef.current || !matRef.current) return;
-    const c = (clock.getElapsedTime() % CYCLE) / CYCLE;
+    const t = clock.getElapsedTime();
+    matRef.current.uniforms.uTime.value = t;
+
+    const c = (t % CYCLE) / CYCLE;
 
     let converge = 0;
-    if (c > 0.52 && c < 0.70) {
-      converge = eio((c - 0.52) / 0.18);
-    } else if (c >= 0.70 && c < 0.86) {
-      converge = 1.0;
-    } else if (c >= 0.86) {
-      converge = Math.max(0, 1.0 - eio((c - 0.86) / 0.14));
+    if (c > 0.60 && c < 0.85) {
+      converge = eio((c - 0.60) / 0.25);
+    } else if (c >= 0.85) {
+      converge = Math.max(0, 1.0 - eio((c - 0.85) / 0.15));
     }
 
-    // Stagger entry per card (card 0 enters first)
-    const stagger = clamp(converge * 2.2 - index * 0.22, 0, 1);
+    const stagger = clamp(converge * 2.5 - index * 0.25, 0, 1);
 
     meshRef.current.position.set(
       lerp(rest[0], target[0], eio(stagger)),
       lerp(rest[1], target[1], eio(stagger)),
       lerp(rest[2], target[2], eio(stagger)),
     );
-    meshRef.current.scale.setScalar(stagger < 0.05 ? 0 : lerp(0.4, 1, clamp(stagger * 2, 0, 1)));
-    meshRef.current.rotation.y = lerp(0.4, 0, eio(stagger)) * (index % 2 === 0 ? 1 : -1);
-    matRef.current.uniforms.uAlpha.value = stagger;
+    
+    // Add floating animation when in place
+    if (converge > 0.9) {
+      meshRef.current.position.y += Math.sin(t * 2.0 + index) * 0.05;
+      meshRef.current.rotation.x = Math.sin(t * 1.5 + index) * 0.05;
+      meshRef.current.rotation.z = Math.cos(t * 1.2 + index) * 0.02;
+    } else {
+      meshRef.current.rotation.set(0,0,0);
+    }
+
+    meshRef.current.scale.setScalar(stagger < 0.01 ? 0.001 : lerp(0.1, 1.2, eio(stagger)));
+    meshRef.current.rotation.y = lerp(Math.PI * 2, 0.2, eio(stagger));
+    matRef.current.uniforms.uAlpha.value = Math.pow(stagger, 0.5) * 0.9; // Max 90% opacity
   });
 
   return (
     <mesh ref={meshRef} position={rest}>
-      <planeGeometry args={[1.15, 0.44]} />
+      <planeGeometry args={[1.8, 0.6]} />
       <shaderMaterial
         ref={matRef}
         vertexShader={CARD_VERT}
@@ -371,141 +450,88 @@ function ResultCard({
         transparent
         side={THREE.DoubleSide}
         depthWrite={false}
+        blending={THREE.AdditiveBlending}
       />
     </mesh>
   );
 }
 
-// ─── Sweep Ring ───────────────────────────────────────────────────────────────
-function SweepRing() {
-  const ref    = useRef<THREE.Mesh>(null);
-  const matRef = useRef<THREE.MeshBasicMaterial>(null);
+// ─── Sweep Rings ───────────────────────────────────────────────────────────────
+function EnergyRings() {
+  const rings = useRef<THREE.Mesh[]>([]);
+  const mats = useRef<THREE.MeshBasicMaterial[]>([]);
 
   useFrame(({ clock }) => {
-    if (!ref.current || !matRef.current) return;
-    const c = (clock.getElapsedTime() % CYCLE) / CYCLE;
+    const t = clock.getElapsedTime();
+    const c = (t % CYCLE) / CYCLE;
 
-    if (c > 0.24 && c < 0.54) {
-      const p = (c - 0.24) / 0.30;
-      ref.current.scale.setScalar(p * 5.5);
-      matRef.current.opacity = (1 - p * 0.55) * 0.40;
-      ref.current.visible = true;
+    rings.current.forEach((ring, i) => {
+      if (!ring || !mats.current[i]) return;
+      
+      const offset = i * 0.05;
+      const ringC = (c - offset + 1.0) % 1.0;
+      
+      if (ringC > 0.15 && ringC < 0.45) {
+        const p = (ringC - 0.15) / 0.30;
+        ring.scale.setScalar(p * 25.0);
+        mats.current[i].opacity = (1 - Math.pow(p, 2)) * 0.4 * (1.0 - i * 0.2);
+        ring.rotation.x = t * 0.5 + i;
+        ring.rotation.y = t * 0.3 + i * 2;
+        ring.visible = true;
+      } else {
+        ring.visible = false;
+      }
+    });
+  });
+
+  return (
+    <group>
+      {[0, 1, 2].map((i) => (
+        <mesh key={i} ref={(el) => { if (el) rings.current[i] = el; }}>
+          <torusGeometry args={[1, 0.01 + i * 0.01, 16, 100]} />
+          <meshBasicMaterial 
+            ref={(el) => { if (el) mats.current[i] = el; }} 
+            color={i === 0 ? "#F6B94C" : i === 1 ? "#14B8A6" : "#7C5CFF"} 
+            transparent 
+            blending={THREE.AdditiveBlending} 
+            depthWrite={false}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+// ─── Dynamic Grid Floor ──────────────────────────────────────────────────────
+function DigitalFloor() {
+  const ref = useRef<THREE.GridHelper>(null);
+
+  useFrame(({ clock }) => {
+    if (!ref.current) return;
+    const t = clock.getElapsedTime();
+    
+    // Undulate the grid slightly
+    ref.current.position.y = -4 + Math.sin(t * 0.5) * 0.5;
+    
+    // Change opacity based on cycle phase
+    const c = (t % CYCLE) / CYCLE;
+    const mat = ref.current.material as THREE.Material;
+    if (c > 0.35 && c < 0.85) {
+       mat.opacity = lerp(mat.opacity, 0.8, 0.05);
     } else {
-      ref.current.visible = false;
+       mat.opacity = lerp(mat.opacity, 0.2, 0.05);
     }
   });
 
   return (
-    <mesh ref={ref}>
-      <torusGeometry args={[1, 0.030, 10, 144]} />
-      <meshBasicMaterial ref={matRef} color="#F59E0B" transparent opacity={0} />
-    </mesh>
-  );
-}
-
-// A second, inner ring for depth
-function InnerRing() {
-  const ref    = useRef<THREE.Mesh>(null);
-  const matRef = useRef<THREE.MeshBasicMaterial>(null);
-
-  useFrame(({ clock }) => {
-    if (!ref.current || !matRef.current) return;
-    const c = (clock.getElapsedTime() % CYCLE) / CYCLE;
-
-    if (c > 0.26 && c < 0.50) {
-      const p = (c - 0.26) / 0.24;
-      ref.current.scale.setScalar(p * 3.0);
-      matRef.current.opacity = (1 - p) * 0.20;
-      ref.current.visible = true;
-    } else {
-      ref.current.visible = false;
-    }
-  });
-
-  return (
-    <mesh ref={ref}>
-      <torusGeometry args={[1, 0.015, 8, 96]} />
-      <meshBasicMaterial ref={matRef} color="#2DD4BF" transparent opacity={0} />
-    </mesh>
-  );
-}
-
-// ─── Query Pulse ──────────────────────────────────────────────────────────────
-function QueryPulse() {
-  const ref    = useRef<THREE.Mesh>(null);
-  const matRef = useRef<THREE.MeshBasicMaterial>(null);
-
-  useFrame(({ clock }) => {
-    if (!ref.current || !matRef.current) return;
-    const c = (clock.getElapsedTime() % CYCLE) / CYCLE;
-
-    if (c > 0.20 && c < 0.30) {
-      const p = (c - 0.20) / 0.10;
-      ref.current.scale.setScalar(p * 2.2);
-      matRef.current.opacity = (1 - p) * 0.70;
-      ref.current.visible = true;
-    } else {
-      ref.current.visible = false;
-    }
-  });
-
-  return (
-    <mesh ref={ref}>
-      <torusGeometry args={[1, 0.040, 12, 72]} />
-      <meshBasicMaterial ref={matRef} color="#2DD4BF" transparent opacity={0} />
-    </mesh>
-  );
-}
-
-// ─── Result Glow ─────────────────────────────────────────────────────────────
-function ResultGlow() {
-  const ref    = useRef<THREE.Mesh>(null);
-  const matRef = useRef<THREE.MeshBasicMaterial>(null);
-
-  useFrame(({ clock }) => {
-    if (!ref.current || !matRef.current) return;
-    const c = (clock.getElapsedTime() % CYCLE) / CYCLE;
-
-    if (c > 0.58 && c < 0.90) {
-      const t = (c - 0.58) / 0.32;
-      const pulse = Math.sin(t * Math.PI);
-      matRef.current.opacity = pulse * 0.10;
-      ref.current.scale.setScalar(0.85 + pulse * 0.25);
-      ref.current.visible = true;
-    } else {
-      ref.current.visible = false;
-    }
-  });
-
-  return (
-    <mesh ref={ref} position={[-1.4, 0.2, 0.2]}>
-      <sphereGeometry args={[1.8, 24, 24]} />
-      <meshBasicMaterial ref={matRef} color="#2DD4BF" transparent opacity={0} />
-    </mesh>
-  );
-}
-
-// ─── Depth grid ───────────────────────────────────────────────────────────────
-function DepthGrid() {
-  const geo = useMemo(() => {
-    const verts: number[] = [];
-    const ext = 6.0;
-    const step = 1.5;
-    for (let x = -ext; x <= ext; x += step) {
-      verts.push(x, -ext, -2.5, x, ext, -2.5);
-    }
-    for (let y = -ext; y <= ext; y += step) {
-      verts.push(-ext, y, -2.5, ext, y, -2.5);
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(verts), 3));
-    return g;
-  }, []);
-
-  return (
-    <lineSegments geometry={geo}>
-      <lineBasicMaterial color="#081818" transparent opacity={0.6} />
-    </lineSegments>
+    <gridHelper 
+      ref={ref} 
+      args={[40, 40, 0x14B8A6, 0x081818]} 
+      position={[0, -4, 0]} 
+      material-transparent 
+      material-opacity={0.2}
+      material-blending={THREE.AdditiveBlending}
+    />
   );
 }
 
@@ -515,21 +541,20 @@ interface IxosCoreSceneProps {
 }
 
 export function IxosCoreScene({ lowEnd = false }: IxosCoreSceneProps) {
-  const n = lowEnd ? 48 : 160;
+  // Drastically increased particle count for "WOW" factor
+  const n = lowEnd ? 1000 : 8000;
 
   return (
     <Canvas
-      camera={{ position: [0, 2.8, 10.5], fov: 52 }}
-      gl={{ antialias: !lowEnd, alpha: true }}
-      dpr={lowEnd ? 1 : [1, 1.6]}
+      camera={{ position: [0, 4, 14], fov: 60 }}
+      gl={{ antialias: !lowEnd, alpha: true, powerPreference: "high-performance" }}
+      dpr={lowEnd ? 1 : Math.min(2, typeof window !== 'undefined' ? window.devicePixelRatio : 1)}
     >
+      <fog attach="fog" args={["#0C0E10", 5, 25]} />
       <CameraRig />
-      <DepthGrid />
+      <DigitalFloor />
       <FileNodes n={n} />
-      <SweepRing />
-      <InnerRing />
-      <QueryPulse />
-      <ResultGlow />
+      <EnergyRings />
       {!lowEnd && CARD_REST.map((rest, i) => (
         <ResultCard
           key={i}
@@ -538,6 +563,8 @@ export function IxosCoreScene({ lowEnd = false }: IxosCoreSceneProps) {
           target={CARD_TARGET[i]}
         />
       ))}
+      <ambientLight intensity={0.5} />
+      <pointLight position={[0, 0, 0]} intensity={2.0} color="#14B8A6" distance={10} />
     </Canvas>
   );
 }

@@ -122,9 +122,8 @@ export function Variant3Page() {
         <div className={styles.mainGrid}>
           <section className={styles.sections}>
             <article
-              className={`${styles.section} ${
-                activeId === "cockpit-demo" ? styles.sectionActive : ""
-              }`}
+              className={`${styles.section} ${activeId === "cockpit-demo" ? styles.sectionActive : ""
+                }`}
               id="cockpit-demo"
               ref={(node) => {
                 if (node) {

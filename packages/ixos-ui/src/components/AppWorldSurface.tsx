@@ -34,6 +34,7 @@ interface AppWorldSurfaceProps {
     pipelineStats?: {
       stage?: string;
       filesScanned?: number;
+      scanned?: number;
       candidates?: number;
       embedded?: number;
       cacheHits?: number;
@@ -45,6 +46,7 @@ interface AppWorldSurfaceProps {
     onPresetSelect?: (value: string) => void;
     onModeChange?: (mode: 'flash' | 'auto' | 'pro') => void;
     sourcePath?: string;
+    interactive?: boolean;
   };
   today: {
     dateLabel: string;
@@ -133,7 +135,7 @@ export function AppWorldSurface({
               resultLimit={search.resultLimit}
               pipelineStats={search.pipelineStats}
               sourcePath={search.sourcePath}
-              interactive={interactive}
+              interactive={search.interactive ?? interactive}
             />
           )}
 

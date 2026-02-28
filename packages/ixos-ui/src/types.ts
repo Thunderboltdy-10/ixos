@@ -5,7 +5,11 @@ export interface IxosSearchResult {
   title: string;
   path: string;
   score: number;
+  lexicalScore?: number;
+  semanticScore?: number;
+  boostScore?: number;
   snippet: string;
+  matchedLineNumber?: number;
   rationale?: string;
 }
 

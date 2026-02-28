@@ -542,6 +542,19 @@ export function ResultCard({
                     );
                   }
 
+                  // Default empty state or Pro upgrade CTA
+                  if (isRankedResult && !evidence) {
+                    return (
+                      <div className="bg-graphite-2 border border-white/5 rounded-lg p-4 flex flex-col items-center justify-center text-center">
+                         <div className="text-accent-violet font-semibold text-sm mb-1">Deep Evidence Unavailable</div>
+                         <p className="text-fg-muted text-xs mb-3">Upgrade to Ixos Pro to unlock deep semantic extraction and verifiable evidence for this match.</p>
+                         <button type="button" onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent('open-pricing')); }} className="px-3 py-1.5 rounded-md bg-accent-violet/10 text-accent-violet text-xs font-semibold hover:bg-accent-violet/20 transition-colors">
+                           Upgrade to Pro
+                         </button>
+                      </div>
+                    );
+                  }
+
                   return null;
                 })()}
               </div>

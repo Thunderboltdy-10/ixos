@@ -110,6 +110,18 @@
   box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.18);
 }
 
+/* Catch-all: prevent any unstyled inputs from showing white background */
+.ixos-world input,
+.ixos-world select,
+.ixos-world textarea,
+.ixos-search-surface input,
+.ixos-search-surface select,
+.ixos-search-surface textarea {
+  background: rgba(15, 18, 22, 0.9);
+  color: #f3f5f7;
+  border-color: rgba(243, 245, 247, 0.14);
+}
+
 .ixos-kpi {
   border: 1px solid rgba(243, 245, 247, 0.1);
   border-radius: 11px;

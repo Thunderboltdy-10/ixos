@@ -9,7 +9,7 @@ import type { IxosSearchResult, IxosTodayRow, IxosTodaySignal, IxosWorkstreamRow
 // ─── Search Adapter ──────────────────────────────────────────────────────────
 
 export type SearchMode = "flash" | "auto" | "pro";
-export type SearchStage = "idle" | "scanning" | "reranking" | "locked";
+export type SearchStage = "idle" | "scan" | "lexical" | "semantic" | "refine" | "locked" | "scanning" | "reranking";
 
 export interface SearchProgress {
   stage: SearchStage;

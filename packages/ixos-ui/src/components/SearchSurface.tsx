@@ -8,6 +8,7 @@ type SearchMode = 'flash' | 'auto' | 'pro';
 interface PipelineStats {
   stage?: string;
   filesScanned?: number;
+  scanned?: number;
   candidates?: number;
   embedded?: number;
   cacheHits?: number;
@@ -58,6 +59,7 @@ function formatPathForRow(path: string) {
 
 function inferStage(stageLabel: string, stage?: string) {
   const raw = (stage ?? stageLabel).toLowerCase();
+  if (raw === 'scan' || raw.includes('scanning')) return 'lexical';
   if (raw.includes('lexical')) return 'lexical';
   if (raw.includes('semantic')) return 'semantic';
   if (raw.includes('refin')) return 'refining';
@@ -95,7 +97,8 @@ export function SearchSurface({
     [resultLimit, results],
   );
   const hiddenCount = Math.max(0, results.length - visibleResults.length);
-  const stage = inferStage(stageLabel, pipelineStats?.stage);
+  const rawStage = pipelineStats?.stage ?? stageLabel;
+  const stage = inferStage(stageLabel, rawStage);
   const stageIndex = STAGE_ORDER.indexOf(stage);
   const trail = (pipelineStats?.scanTrail ?? []).slice(-4).reverse();
   const [streamedCount, setStreamedCount] = useState(0);
@@ -213,23 +216,24 @@ export function SearchSurface({
       <AnimatePresence>
         {(isSearching || (stageIndex >= 0 && stage !== 'locked')) && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+            animate={{ opacity: 1, height: 'auto', marginTop: 8 }}
+            exit={{ opacity: 0, height: 0, marginTop: 0 }}
             transition={{ duration: 0.3 }}
-            style={{ padding: hideSearchChrome ? '0 0 8px' : '8px 0', display: 'grid', gap: 6 }}
+            style={{ display: 'grid', gap: 6, overflow: 'hidden' }}
           >
+            {/* 4px height progress bar */}
             <div style={{ display: 'flex', height: 4, borderRadius: 99, overflow: 'hidden', gap: 2 }}>
-              {STAGE_ORDER.map((id, idx) => {
+              {STAGE_ORDER.slice(0, 3).map((id, idx) => {
                 const colors = STAGE_COLORS[id];
                 const isActive = idx === stageIndex;
-                const isComplete = idx < stageIndex;
+                const isComplete = idx < stageIndex || stage === 'locked';
                 return (
-                  <div key={id} style={{ flex: 1, borderRadius: 99, overflow: 'hidden', background: colors.bg, position: 'relative' }}>
+                  <div key={id} style={{ flex: 1, background: colors.bg, position: 'relative' }}>
                     <motion.div
                       animate={{ width: isComplete ? '100%' : isActive ? '60%' : '0%' }}
                       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                      style={{ height: '100%', background: colors.active, borderRadius: 99 }}
+                      style={{ height: '100%', background: colors.active }}
                     />
                     {isSearching && isActive && (
                       <motion.span
@@ -248,7 +252,7 @@ export function SearchSurface({
             </div>
             {/* Compact stats + scan trail */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 10, color: 'rgba(243,245,247,0.5)', letterSpacing: '0.04em' }}>
-              <span>{pipelineStats?.filesScanned ?? 0} scanned</span>
+              <span>{pipelineStats?.filesScanned ?? pipelineStats?.scanned ?? 0} scanned</span>
               <span>{pipelineStats?.candidates ?? 0} candidates</span>
               <span>{pipelineStats?.cacheHits ?? 0} cached</span>
               {trail.length > 0 && (
@@ -289,22 +293,73 @@ export function SearchSurface({
                   {(result.score * 100).toFixed(0)}%
                 </span>
               </div>
-              <p
-                title={result.path}
-                style={{
-                  marginTop: 4,
-                  color: 'rgba(243,245,247,0.45)',
+              <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                <span
+                  title={result.path}
+                  style={{
+                    color: 'rgba(243,245,247,0.45)',
+                    fontSize: denseMode ? 10 : 11,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    flex: '1 1 0',
+                    minWidth: 0,
+                  }}
+                >
+                  {formatPathForRow(result.path)}
+                </span>
+                {result.matchedLineNumber && (
+                  <span style={{
+                    fontSize: 9,
+                    padding: '1px 5px',
+                    borderRadius: 4,
+                    background: 'rgba(246,185,76,0.12)',
+                    border: '1px solid rgba(246,185,76,0.25)',
+                    color: '#f6b94c',
+                    fontFamily: 'monospace',
+                    letterSpacing: '0.04em',
+                    flexShrink: 0,
+                  }}>
+                    L{result.matchedLineNumber}
+                  </span>
+                )}
+                {result.lexicalScore != null && result.semanticScore != null && (
+                  <span style={{
+                    fontSize: 9,
+                    padding: '1px 5px',
+                    borderRadius: 4,
+                    background: 'rgba(20,184,166,0.08)',
+                    border: '1px solid rgba(20,184,166,0.18)',
+                    color: 'rgba(20,184,166,0.7)',
+                    fontFamily: 'monospace',
+                    flexShrink: 0,
+                  }}>
+                    L{(result.lexicalScore * 100).toFixed(0)} S{(result.semanticScore * 100).toFixed(0)}
+                  </span>
+                )}
+              </div>
+              <div style={{
+                marginTop: 6,
+                padding: '4px 6px',
+                background: 'rgba(13,17,23,0.6)',
+                borderRadius: 5,
+                border: '1px solid rgba(255,255,255,0.04)',
+              }}>
+                <p style={{
+                  margin: 0,
+                  color: 'rgba(243,245,247,0.72)',
                   fontSize: denseMode ? 10 : 11,
-                  whiteSpace: 'nowrap',
+                  fontFamily: 'monospace',
+                  lineHeight: 1.5,
+                  display: '-webkit-box',
+                  WebkitLineClamp: hideSearchChrome ? 1 : 2,
+                  WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {formatPathForRow(result.path)}
-              </p>
-              <p style={{ marginTop: 6, color: 'rgba(243,245,247,0.75)', fontSize: denseMode ? 11 : 12, display: '-webkit-box', WebkitLineClamp: hideSearchChrome ? 1 : 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                {result.snippet}
-              </p>
+                  whiteSpace: 'pre-wrap',
+                }}>
+                  {result.snippet}
+                </p>
+              </div>
             </motion.article>
           ))}
 
@@ -363,22 +418,106 @@ export function SearchSurface({
           </div>
 
           {selected ? (
-            <>
-              <h4 style={{ margin: 0, color: '#f3f5f7', fontSize: 13, fontWeight: 600 }}>{selected.title}</h4>
-              <p style={{ margin: 0, color: 'rgba(243,245,247,0.65)', fontSize: 12, lineHeight: 1.6 }}>
-                {selected.rationale ?? 'Lexical + semantic alignment stabilized this file.'}
-              </p>
-              <div style={{ display: 'flex', gap: 6 }}>
+            <div style={{ display: 'grid', gap: 12 }}>
+              <div>
+                <h4 style={{ margin: 0, color: '#f3f5f7', fontSize: 13, fontWeight: 600 }}>{selected.title}</h4>
+                <p style={{ margin: '4px 0 0', color: 'rgba(243,245,247,0.65)', fontSize: 12, lineHeight: 1.6 }}>
+                  {selected.rationale ?? 'Lexical + semantic alignment stabilized this file.'}
+                </p>
+              </div>
+
+              {/* Why Matched — heuristic synthesis */}
+              <div style={{
+                padding: '8px 10px',
+                borderRadius: 8,
+                border: '1px solid rgba(124,92,255,0.2)',
+                background: 'rgba(124,92,255,0.06)',
+                fontSize: 11,
+                color: 'rgba(243,245,247,0.7)',
+                lineHeight: 1.5,
+              }}>
+                <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#a78bfa', marginBottom: 4, fontWeight: 600 }}>
+                  Why this matched
+                </div>
+                {(() => {
+                  const lex = selected.lexicalScore ?? 0;
+                  const sem = selected.semanticScore ?? 0;
+                  const boost = selected.boostScore ?? 0;
+                  const parts: string[] = [];
+                  if (lex > 0.6) parts.push('Strong keyword overlap in file path and content');
+                  else if (lex > 0.3) parts.push('Partial keyword matches found');
+                  else parts.push('Weak keyword signal');
+                  if (sem > 0.7) parts.push('high semantic similarity to query intent');
+                  else if (sem > 0.5) parts.push('moderate conceptual alignment');
+                  else parts.push('low conceptual alignment');
+                  if (boost > 0) parts.push(`+${(boost * 100).toFixed(0)}% quality boost applied`);
+                  if (selected.matchedLineNumber) parts.push(`matched at line ${selected.matchedLineNumber}`);
+                  return parts.join('. ') + '.';
+                })()}
+              </div>
+
+              {/* Score Breakdown */}
+              <div style={{ display: 'grid', gap: 6, background: 'rgba(255,255,255,0.02)', padding: 10, borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+                  <span style={{ color: 'rgba(243,245,247,0.5)' }}>Lexical Match</span>
+                  <span style={{ color: '#f6b94c', fontVariantNumeric: 'tabular-nums' }}>{((selected.lexicalScore ?? 0.4) * 100).toFixed(0)}%</span>
+                </div>
+                <div style={{ width: '100%', height: 3, background: 'rgba(246,185,76,0.15)', borderRadius: 2 }}>
+                  <div style={{ width: `${(selected.lexicalScore ?? 0.4) * 100}%`, height: '100%', background: '#f6b94c', borderRadius: 2 }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 4 }}>
+                  <span style={{ color: 'rgba(243,245,247,0.5)' }}>Semantic Match</span>
+                  <span style={{ color: '#14b8a6', fontVariantNumeric: 'tabular-nums' }}>{((selected.semanticScore ?? 0.6) * 100).toFixed(0)}%</span>
+                </div>
+                <div style={{ width: '100%', height: 3, background: 'rgba(20,184,166,0.15)', borderRadius: 2 }}>
+                  <div style={{ width: `${(selected.semanticScore ?? 0.6) * 100}%`, height: '100%', background: '#14b8a6', borderRadius: 2 }} />
+                </div>
+                {(selected.boostScore ?? 0) > 0 && (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 4 }}>
+                      <span style={{ color: 'rgba(243,245,247,0.5)' }}>Quality Boost</span>
+                      <span style={{ color: '#a78bfa', fontVariantNumeric: 'tabular-nums' }}>+{((selected.boostScore ?? 0) * 100).toFixed(0)}%</span>
+                    </div>
+                    <div style={{ width: '100%', height: 3, background: 'rgba(124,92,255,0.15)', borderRadius: 2 }}>
+                      <div style={{ width: `${(selected.boostScore ?? 0) * 100}%`, height: '100%', background: '#a78bfa', borderRadius: 2 }} />
+                    </div>
+                  </>
+                )}
+                {/* Final blended score */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ color: 'rgba(243,245,247,0.7)', fontWeight: 600 }}>Final Score</span>
+                  <span style={{ color: '#5eead4', fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>{(selected.score * 100).toFixed(0)}%</span>
+                </div>
+              </div>
+
+              {/* Snippet / Where Matched */}
+              <div style={{ background: '#0d1117', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ padding: '6px 10px', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 10, color: 'rgba(243,245,247,0.4)', fontFamily: 'monospace' }}>
+                    {selected.path}:{selected.matchedLineNumber ?? 12}
+                  </span>
+                  <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: 'rgba(246,185,76,0.12)', color: '#f6b94c', fontFamily: 'monospace' }}>
+                    where matched
+                  </span>
+                </div>
+                <div style={{ padding: 10, overflowX: 'auto' }}>
+                  <pre style={{ margin: 0, fontSize: 11, fontFamily: 'monospace', color: 'rgba(243,245,247,0.85)', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    <code dangerouslySetInnerHTML={{ __html: selected.snippet.replace(/\n/g, '<br/>') }} />
+                  </pre>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
                 <button type="button" className="ixos-chip" onClick={() => onOpenResult?.(selectedIndex)}
-                  style={{ cursor: interactive ? 'pointer' : 'default', color: '#5eead4', borderColor: 'rgba(20,184,166,0.3)' }}>
-                  Open
+                  style={{ cursor: interactive ? 'pointer' : 'default', color: '#5eead4', borderColor: 'rgba(20,184,166,0.3)', background: 'rgba(20,184,166,0.1)' }}>
+                  Open File
                 </button>
                 <button type="button" className="ixos-chip" onClick={() => onRevealResult?.(selectedIndex)}
                   style={{ cursor: interactive ? 'pointer' : 'default' }}>
                   Reveal
                 </button>
               </div>
-            </>
+            </div>
           ) : (
             <p style={{ margin: 0, color: 'rgba(243,245,247,0.5)', fontSize: 12 }}>
               Evidence updates as search packets arrive.
@@ -389,7 +528,7 @@ export function SearchSurface({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
             <div className="ixos-kpi">
               <p style={{ margin: 0, color: 'rgba(243,245,247,0.4)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Scanned</p>
-              <p style={{ margin: '3px 0 0', color: '#f3f5f7', fontSize: 14, fontVariantNumeric: 'tabular-nums' }}>{pipelineStats?.filesScanned ?? 0}</p>
+              <p style={{ margin: '3px 0 0', color: '#f3f5f7', fontSize: 14, fontVariantNumeric: 'tabular-nums' }}>{pipelineStats?.filesScanned ?? pipelineStats?.scanned ?? 0}</p>
             </div>
             <div className="ixos-kpi">
               <p style={{ margin: 0, color: 'rgba(243,245,247,0.4)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Candidates</p>

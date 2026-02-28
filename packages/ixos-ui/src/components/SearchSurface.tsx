@@ -50,6 +50,12 @@ const STAGE_COLORS: Record<string, { bg: string; active: string }> = {
   locked: { bg: 'rgba(124, 92, 255, 0.15)', active: 'rgba(124, 92, 255, 0.9)' },
 };
 
+function formatPathForRow(path: string) {
+  const parts = path.split(/[\\/]/).filter(Boolean);
+  if (parts.length <= 3) return path;
+  return `.../${parts.slice(-3).join('/')}`;
+}
+
 function inferStage(stageLabel: string, stage?: string) {
   const raw = (stage ?? stageLabel).toLowerCase();
   if (raw.includes('lexical')) return 'lexical';
@@ -93,6 +99,8 @@ export function SearchSurface({
   const stageIndex = STAGE_ORDER.indexOf(stage);
   const trail = (pipelineStats?.scanTrail ?? []).slice(-4).reverse();
   const [streamedCount, setStreamedCount] = useState(0);
+  const fillHeight = hideSearchChrome;
+  const denseMode = hideSearchChrome;
 
   useEffect(() => {
     const target = visibleResults.length;
@@ -126,7 +134,7 @@ export function SearchSurface({
   const selected = streamedRows[selectedIndex] ?? streamedRows[0] ?? null;
 
   return (
-    <div style={{ display: 'grid', gap: 0 }}>
+    <div className="ixos-search-surface" data-fill={fillHeight} data-dense={denseMode}>
       {!hideSearchChrome && (
         <div className="ixos-card" style={{ display: 'grid', gap: 10, padding: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
@@ -254,15 +262,14 @@ export function SearchSurface({
       </AnimatePresence>
 
       {/* Results + Evidence panel */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) minmax(260px,0.6fr)', gap: 10 }}>
+      <div className="ixos-search-layout">
         {/* Results list */}
         <div
-          className="ixos-card"
+          className="ixos-card ixos-search-results"
+          data-scroll={allowResultsScroll}
           style={{
             display: 'grid',
             gap: 6,
-            height: hideSearchChrome ? 'min(65vh, 690px)' : 'min(56vh, 610px)',
-            overflow: allowResultsScroll ? 'auto' : 'hidden',
             padding: 8,
           }}
         >
@@ -277,13 +284,25 @@ export function SearchSurface({
               transition={{ duration: 0.3, ease: [0.22, 1, 0.3, 1], delay: Math.min(index * 0.025, 0.15) }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
-                <strong style={{ color: '#f3f5f7', fontSize: 13, lineHeight: 1.3 }}>{result.title}</strong>
-                <span style={{ color: '#5eead4', fontSize: 11, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.06em' }}>
+                <strong style={{ color: '#f3f5f7', fontSize: denseMode ? 12 : 13, lineHeight: 1.3 }}>{result.title}</strong>
+                <span style={{ color: '#5eead4', fontSize: denseMode ? 10 : 11, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.06em' }}>
                   {(result.score * 100).toFixed(0)}%
                 </span>
               </div>
-              <p style={{ marginTop: 4, color: 'rgba(243,245,247,0.45)', fontSize: 11 }}>{result.path}</p>
-              <p style={{ marginTop: 6, color: 'rgba(243,245,247,0.75)', fontSize: 12, display: '-webkit-box', WebkitLineClamp: hideSearchChrome ? 1 : 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              <p
+                title={result.path}
+                style={{
+                  marginTop: 4,
+                  color: 'rgba(243,245,247,0.45)',
+                  fontSize: denseMode ? 10 : 11,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {formatPathForRow(result.path)}
+              </p>
+              <p style={{ marginTop: 6, color: 'rgba(243,245,247,0.75)', fontSize: denseMode ? 11 : 12, display: '-webkit-box', WebkitLineClamp: hideSearchChrome ? 1 : 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                 {result.snippet}
               </p>
             </motion.article>
@@ -331,7 +350,7 @@ export function SearchSurface({
         </div>
 
         {/* Evidence aside — clean, compact */}
-        <aside className="ixos-card" style={{ display: 'grid', gap: 10, alignContent: 'start', padding: 12 }}>
+        <aside className="ixos-card ixos-search-evidence" style={{ display: 'grid', gap: 10, alignContent: 'start', padding: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
             <p className="ixos-chip" style={{ width: 'fit-content' }}>
               <Sparkles size={11} />

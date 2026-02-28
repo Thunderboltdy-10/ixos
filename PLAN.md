@@ -606,3 +606,25 @@
   1. Validate `/4` in-browser for interaction continuity (hero -> world -> lenses) and note remaining motion polish.
   2. Finalize desktop search micro-spacing around restored controls and evidence rail.
   3. Adjust Today/Workstreams empty-state messaging if user data patterns require.
+
+## STATE SNAPSHOT (/1-/2-/3 overhaul + shared surface responsive/cloud-safety pass, 2026-02-28)
+- Date: 2026-02-28
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Desktop search row hierarchy can still be tightened (path truncation + denser evidence typography)
+  2. Final manual UX QA in real Tauri app for mixed local/cloud folders and edge filesystem providers
+  3. Optional full Rust test sweep remains blocked by unrelated `Commands::Update` test pattern drift in `src/cli/commands.rs`
+- Current pass validation (2026-02-28):
+  - `cargo check --lib`: PASS
+  - `npx tsc -p packages/ixos-ui/tsconfig.json --noEmit`: PASS
+  - `npx tsc -p ui/tsconfig.json --noEmit`: PASS
+  - `cd ixos-site && npm run test:visual`: PASS (9/9, zero console/page errors)
+- What is next (top 3 tasks):
+  1. Run manual Tauri QA with OneDrive/iCloud placeholders to confirm no hydration in lexical/document paths.
+  2. Optional compact-mode pass for result metadata truncation and keyboard-first scanning speed.
+  3. Resolve unrelated `src/cli/commands.rs` test compile issue, then rerun targeted Rust test suites.

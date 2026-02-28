@@ -894,3 +894,24 @@
 - Evidence (links to /reports or output files): `ixos-site/src/app/4/page.tsx`.
 - Risks: motion complexity may need further tuning for comfort on low-end devices.
 - Follow-ups: run manual QA and tune transform amplitudes and lens pacing.
+
+- Decision: Move shared desktop/landing shell responsiveness from viewport media queries to container-query behavior.
+- Options considered: keep viewport-only breakpoints; duplicate variant-specific demo wrappers; make `@ixos/ixos-ui` container-responsive.
+- Why chosen: runtime variants embed shared surfaces inside narrower columns on wide viewports; container-based adaptation prevents visual squish and preserves cross-product component parity.
+- Evidence (links to /reports or output files): `packages/ixos-ui/src/styles.css`, `packages/ixos-ui/src/components/SearchSurface.tsx`, `packages/ixos-ui/src/components/TodaySurface.tsx`, `packages/ixos-ui/src/components/WorkstreamsSurface.tsx`.
+- Risks: container-query behavior can differ from prior screenshots and may require token tuning per host container.
+- Follow-ups: validate on additional host layouts and adjust compact thresholds if needed.
+
+- Decision: Enforce cloud-placeholder skip in lexical eligibility and parser entry points.
+- Options considered: rely on existing semantic/snippet guards only; add path blacklist in UI; guard lexical funnel + parser core.
+- Why chosen: lexical ripgrep and parser reads occur earlier than semantic safeguards and can hydrate cloud-only placeholders.
+- Evidence (links to /reports or output files): `src/ixos_rank/candidate_generator/ripgrep_funnel.rs`, `src/parsers/mod.rs`.
+- Risks: false-positive cloud detection could skip legitimate files in uncommon provider setups.
+- Follow-ups: run manual OneDrive/iCloud edge-case QA and log provider-specific exceptions if observed.
+
+- Decision: Keep `/1`, `/2`, `/3` runtime pages on shared `DemoSurface` while rebuilding each with distinct visual language and explicit preset/token contracts.
+- Options considered: use `src/landing/variants/*` wrappers; create route-specific fake app mockups; keep active `src/app/{1,2,3}` and strengthen them with shared demo primitives.
+- Why chosen: satisfies AGENTS shared-surface guardrail and avoids divergence between landing demos and desktop components.
+- Evidence (links to /reports or output files): `ixos-site/src/app/1/_mc/MissionControlPage.tsx`, `ixos-site/src/app/2/_ch/ChamberPage.tsx`, `ixos-site/src/app/3/_wire/WirePage.tsx`, `ixos-site/src/landing/DemoSurface.tsx`, Playwright visuals under `ixos-site/.visual/landing.visual.spec.ts/*`.
+- Risks: high visual complexity increases maintenance overhead across three route-specific themes.
+- Follow-ups: extract reusable structural primitives if repeated patterns grow.

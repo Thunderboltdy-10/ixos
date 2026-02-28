@@ -21,7 +21,7 @@ interface PipelineStats {
   cacheHits: number;
 }
 
-const PRESETS = [
+const DEFAULT_PRESETS = [
   "authentication token refresh",
   "rate limiter middleware",
   "How does token expiry work?",
@@ -118,6 +118,7 @@ export interface DemoSurfaceProps {
   initialView?: IxosView;
   initialQuery?: string;
   initialMode?: SearchMode;
+  presets?: string[];
   autoRun?: boolean;
   className?: string;
   style?: CSSProperties;
@@ -129,6 +130,7 @@ export function DemoSurface({
   initialView = "search",
   initialQuery = "authentication token refresh",
   initialMode = "auto",
+  presets = DEFAULT_PRESETS,
   autoRun = true,
   className,
   style,
@@ -266,7 +268,7 @@ export function DemoSurface({
         query,
         onQueryChange: setQuery,
         onSubmit: handleSubmit,
-        presets: PRESETS,
+        presets: presets.length > 0 ? presets : DEFAULT_PRESETS,
         onPresetSelect: handlePresetSelect,
         mode,
         onModeChange: handleModeChange,

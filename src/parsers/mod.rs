@@ -1,5 +1,6 @@
 //! Lightweight document parsers for evidence extraction.
 
+use crate::storage::cloud_detection::should_skip_cloud_file;
 use std::fs::File;
 use std::io::{BufReader, Read};
 use std::path::Path;
@@ -11,6 +12,10 @@ use zip::ZipArchive;
 
 /// Check if a path is likely to yield extractable text.
 pub fn can_extract_text(path: &Path) -> bool {
+    if should_skip_cloud_file(path) {
+        return false;
+    }
+
     let ext = path
         .extension()
         .and_then(|e| e.to_str())
@@ -56,6 +61,10 @@ pub fn can_extract_text(path: &Path) -> bool {
 
 /// Extract text from a file with byte and character caps.
 pub fn extract_text(path: &Path, max_bytes: usize, max_chars: usize) -> Option<String> {
+    if should_skip_cloud_file(path) {
+        return None;
+    }
+
     let ext = path
         .extension()
         .and_then(|e| e.to_str())

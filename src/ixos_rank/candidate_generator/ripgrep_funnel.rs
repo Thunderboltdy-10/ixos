@@ -5,6 +5,7 @@
 
 use super::path_engine::HARDCODED_SKIP_DIRS;
 use super::scorer::{MatchContext, ScoredCandidate};
+use crate::storage::cloud_detection::should_skip_cloud_file;
 use grep_regex::RegexMatcher;
 use grep_searcher::{sinks::UTF8, Searcher};
 use ignore::WalkBuilder;
@@ -188,7 +189,10 @@ impl RipgrepFunnel {
                     );
                 }
 
-                // Files in cached list are already filtered
+                if !self.should_search_file(path) {
+                    continue;
+                }
+
                 file_count.fetch_add(1, Ordering::Relaxed);
 
                 if let Some(candidate) = self.search_file(path, &matcher, &hit_count) {
@@ -444,6 +448,11 @@ impl RipgrepFunnel {
 
     /// Check if a file should be searched based on extension
     fn should_search_file(&self, path: &Path) -> bool {
+        // Prevent cloud provider hydration from lexical probing.
+        if should_skip_cloud_file(path) {
+            return false;
+        }
+
         let ext = match path.extension() {
             Some(e) => e.to_string_lossy().to_lowercase(),
             None => return false,

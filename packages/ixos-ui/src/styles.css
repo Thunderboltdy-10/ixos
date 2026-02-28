@@ -4,6 +4,7 @@
   border-radius: 18px;
   box-shadow: 0 32px 120px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(243, 245, 247, 0.04) inset;
   overflow: hidden;
+  container-type: inline-size;
 }
 
 .ixos-world-grid {
@@ -23,6 +24,7 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-height: 0;
 }
 
 .ixos-chip {
@@ -130,12 +132,133 @@
   transition: 160ms ease;
 }
 
+.ixos-search-surface {
+  display: grid;
+  gap: 0;
+  min-height: 0;
+  container-type: inline-size;
+}
+
+.ixos-search-surface[data-fill='true'] {
+  height: 100%;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.ixos-search-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(230px, 0.6fr);
+  gap: 10px;
+  min-height: 0;
+}
+
+.ixos-search-results {
+  min-height: 0;
+  align-content: start;
+  overflow: hidden;
+}
+
+.ixos-search-results[data-scroll='true'] {
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.ixos-search-evidence {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.ixos-search-surface[data-dense='true'] .ixos-result-row {
+  padding: 8px 9px;
+}
+
+.ixos-today-surface {
+  display: grid;
+  gap: 12px;
+  container-type: inline-size;
+}
+
+.ixos-today-signals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ixos-today-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 10px;
+}
+
+.ixos-workstreams-surface {
+  display: grid;
+  gap: 12px;
+  container-type: inline-size;
+}
+
+.ixos-workstreams-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ixos-workstreams-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+  gap: 10px;
+}
+
 @keyframes ixosPulse {
   0% {
     transform: translateX(-35%);
   }
   100% {
     transform: translateX(160%);
+  }
+}
+
+@container (max-width: 1024px) {
+  .ixos-world-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ixos-world-rail {
+    border-right: 0;
+    border-bottom: 1px solid rgba(243, 245, 247, 0.08);
+  }
+}
+
+@container (max-width: 980px) {
+  .ixos-search-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .ixos-today-signals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ixos-today-main {
+    grid-template-columns: 1fr;
+  }
+
+  .ixos-workstreams-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ixos-workstreams-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+@container (max-width: 640px) {
+  .ixos-today-signals {
+    grid-template-columns: 1fr;
+  }
+
+  .ixos-workstreams-summary {
+    grid-template-columns: 1fr;
   }
 }
 

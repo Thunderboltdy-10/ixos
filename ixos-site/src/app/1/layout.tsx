@@ -7,5 +7,15 @@ export const metadata: Metadata = {
 }
 
 export default function Layout1({ children }: { children: React.ReactNode }) {
-  return <>{children}</>
+  return (
+    <>
+      {/* Instrument Sans + JetBrains Mono for Mission Control */}
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet"
+      />
+      {children}
+    </>
+  )
 }

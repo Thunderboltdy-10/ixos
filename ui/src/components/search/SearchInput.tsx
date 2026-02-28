@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect, useCallback, type CSSProperties } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
-import { motion } from 'framer-motion';
+// motion import removed — search bar simplified
 import { cn } from '@/lib/utils';
 import { FolderPicker } from './FolderPicker';
 import { ModeSwitcher, type SearchMode } from './ModeSwitcher';
@@ -285,80 +285,27 @@ export function SearchInput({
     }
   }, [showSuggestions, suggestions, selectedIndex, handleSuggestionSelect, value, activeSearch, onSearch]);
 
-  type AccentStyle = CSSProperties & {
-    '--accent-focus'?: string;
-    '--accent-focus-soft'?: string;
-  };
-  const accentStyle: AccentStyle =
-    hasSearchIntent || activeSearch
-      ? {
-        borderColor: activePalette.border,
-        boxShadow: `0 0 0 1px ${activePalette.border}, 0 18px 40px rgba(0, 0, 0, 0.55), 0 0 28px ${activePalette.glow}`,
-        '--accent-focus': activePalette.accent,
-        '--accent-focus-soft': activePalette.accentSoft,
-      }
-      : {
-        '--accent-focus': activePalette.accent,
-        '--accent-focus-soft': activePalette.accentSoft,
-      };
+  // Accent style simplified — no longer using layered glow
 
   return (
     <div ref={containerRef} className={cn('w-full relative', centered && 'max-w-3xl mx-auto px-8')}>
       <div className="relative" ref={searchBarRef}>
-        <motion.div
-          className="absolute -inset-10 rounded-[28px] pointer-events-none blur-3xl"
-          style={{
-            background: `radial-gradient(circle at 38% 44%, ${activePalette.glowStrong} 0%, transparent 58%), radial-gradient(circle at 66% 62%, ${activeQuality.glow} 0%, transparent 64%)`,
-          }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: hasSearchIntent || activeSearch ? 0.9 : 0 }}
-          transition={{ duration: 0.25 }}
-        />
-
-        <motion.div
-          className="absolute -inset-[2px] rounded-2xl pointer-events-none"
-          style={{
-            background: `linear-gradient(135deg, ${activePalette.accentSoft} 0%, ${activePalette.accentFade} 62%, ${activeQuality.glow} 100%)`,
-          }}
-          initial={{ opacity: 0 }}
-          animate={{
-            opacity: hasSearchIntent || activeSearch ? 1 : 0,
-          }}
-          transition={{ duration: 0.3 }}
-        />
-
-        {(hasSearchIntent || activeSearch) && (
-          <motion.div
-            className="absolute -inset-[4px] rounded-2xl pointer-events-none"
-            style={{
-              border: `1px solid ${activePalette.border}`,
-            }}
-            animate={{
-              opacity: [0.6, 0.3, 0.6],
-              boxShadow: [
-                `0 0 40px ${activePalette.glowStrong}, 0 0 72px ${activePalette.glow}, 0 0 32px ${activeQuality.glowStrong}`,
-                `0 0 20px ${activePalette.glow}, 0 0 40px ${activePalette.accentFade}, 0 0 22px ${activeQuality.glow}`,
-                `0 0 40px ${activePalette.glowStrong}, 0 0 72px ${activePalette.glow}, 0 0 32px ${activeQuality.glowStrong}`,
-              ]
-            }}
-            transition={{
-              duration: 2.5,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          />
-        )}
-
         <div className={cn(
-          'relative gradient-border-focus overflow-visible',
-          'bg-graphite-2/80 border border-stroke-hairline',
-          'transition-all duration-200',
-          showSuggestions && suggestions.length > 0 ? 'rounded-t-xl rounded-b-none border-b-transparent' : 'rounded-xl',
-          hasSearchIntent || activeSearch
-            ? ''
-            : 'hover:border-border-medium'
+          'relative overflow-visible',
+          'bg-graphite-1/60 backdrop-blur-sm',
+          'transition-all duration-200 ease-out',
+          showSuggestions && suggestions.length > 0 ? 'rounded-t-xl rounded-b-none' : 'rounded-xl',
         )}
-          style={accentStyle}>
+          style={{
+            border: hasSearchIntent || activeSearch
+              ? `1px solid ${activePalette.border}`
+              : '1px solid rgba(243, 245, 247, 0.08)',
+            boxShadow: hasSearchIntent || activeSearch
+              ? `0 0 0 1px ${activePalette.accentFade}, 0 8px 24px rgba(0, 0, 0, 0.4)`
+              : '0 2px 8px rgba(0, 0, 0, 0.2)',
+            '--accent-focus': activePalette.accent,
+            '--accent-focus-soft': activePalette.accentSoft,
+          } as any}>
           {/* Search input row */}
           <SearchBar
             ref={inputRef}
@@ -430,9 +377,9 @@ export function SearchInput({
             }
           />
 
-          {/* Controls row - no separator, seamless */}
+          {/* Controls row */}
           {showControls && (
-            <div className="px-3.5 pb-3 flex items-center justify-start gap-1.5">
+            <div className="px-3 pb-2.5 pt-0.5 flex items-center gap-2">
               <div className="flex-1 min-w-0">
                 <FolderPicker
                   value={directory}
@@ -441,16 +388,13 @@ export function SearchInput({
                 />
               </div>
 
-              <div className="flex-shrink-0">
+              <div className="flex items-center gap-1.5">
                 <QualitySwitcher
                   className="w-[132px]"
                   value={qualityMode}
                   onChange={handleQualityChange}
                   proLocked={proLocked}
                 />
-              </div>
-
-              <div className="flex-shrink-0">
                 <ModeSwitcher
                   className="w-[126px]"
                   value={mode}

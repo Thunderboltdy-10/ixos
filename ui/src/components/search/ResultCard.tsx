@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText, FileCode, FileCode2, FileJson, FileCog, FileSpreadsheet, Terminal,
-  CheckCircle, AlertCircle, ChevronDown, ExternalLink, FolderOpen, Copy, Check, Clock, HardDrive,
+  CheckCircle, AlertCircle, ChevronDown, ExternalLink, FolderOpen, Copy, Check, Clock,
   EyeOff, ThumbsDown, Star
 } from 'lucide-react';
 import { cn, formatFileSize, formatRelativeTime, getFileTypeIcon } from '@/lib/utils';
@@ -110,22 +110,26 @@ interface ResultCardProps {
   onReveal: () => void;
 }
 
-const MATCH_TYPE_META: Record<MatchSignal, { label: string; className: string }> = {
+const MATCH_TYPE_META: Record<MatchSignal, { label: string; dotColor: string; textColor: string }> = {
   semantic: {
     label: 'Semantic',
-    className: 'bg-accent-magenta/10 text-accent-magenta border-accent-magenta/30',
+    dotColor: 'bg-accent-magenta',
+    textColor: 'text-accent-magenta',
   },
   integrity: {
     label: 'Integrity',
-    className: 'bg-success/10 text-success border-success/30',
+    dotColor: 'bg-success',
+    textColor: 'text-success',
   },
   temporal: {
     label: 'Age',
-    className: 'bg-accent-amber/10 text-accent-amber border-accent-amber/30',
+    dotColor: 'bg-accent-amber',
+    textColor: 'text-accent-amber',
   },
   behavior: {
     label: 'Pattern',
-    className: 'bg-accent-teal/10 text-accent-teal border-accent-teal/30',
+    dotColor: 'bg-accent-teal',
+    textColor: 'text-accent-teal',
   },
 };
 
@@ -158,34 +162,9 @@ export function ResultCard({
     journalist: { accent: '#A78BFA', bg: 'rgba(167, 139, 250, 0.08)' },
     ask: { accent: '#A78BFA', bg: 'rgba(167, 139, 250, 0.12)' }, // Ask Mode uses same purple but slightly stronger bg
   };
-  const qualityColors = {
-    flash: {
-      accent: '#F6B94C',
-      glow: 'rgba(246, 185, 76, 0.24)',
-      bg: 'rgba(246, 185, 76, 0.06)',
-      border: 'rgba(246, 185, 76, 0.18)',
-    },
-    auto: {
-      accent: '#14B8A6',
-      glow: 'rgba(20, 184, 166, 0.24)',
-      bg: 'rgba(20, 184, 166, 0.06)',
-      border: 'rgba(20, 184, 166, 0.18)',
-    },
-    pro: {
-      accent: '#A78BFA',
-      glow: 'rgba(167, 139, 250, 0.26)',
-      bg: 'rgba(167, 139, 250, 0.07)',
-      border: 'rgba(167, 139, 250, 0.2)',
-    },
-  } as const;
+  // Quality color mapping simplified — tone-based scoring in render
 
   const currentModeKey = isAskMode ? 'ask' : mode;
-  const qualityTone = qualityColors[qualityMode];
-  const selectedClass = isSelected ? 'bg-graphite-2/80' : '';
-
-  const iconColorClass = isSelected
-    ? (isAskMode ? 'text-accent-violet' : mode === 'ephemeral' ? 'text-accent-amber' : mode === 'journalist' ? 'text-accent-violet' : 'text-accent-teal')
-    : 'text-fg-dim';
 
   // Layout sync for Seamless Morph animation
   const cardRef = useResultCardLayout(index);
@@ -325,54 +304,26 @@ export function ResultCard({
     }
   };
 
-  // Hover classes - apply to all items
-  const qualityHoverClass =
-    qualityMode === 'flash'
-      ? 'hover:bg-accent-amber/8 hover:shadow-[0_0_12px_rgba(246,185,76,0.25)]'
-      : qualityMode === 'pro'
-        ? 'hover:bg-accent-violet/8 hover:shadow-[0_0_12px_rgba(167,139,250,0.28)]'
-        : 'hover:bg-accent-teal/8 hover:shadow-[0_0_12px_rgba(20,184,166,0.25)]';
-  const hoverClass = cn(
-    !isAskMode && qualityHoverClass,
-    isAskMode && 'hover:bg-accent-violet/12 hover:shadow-[0_0_15px_rgba(167,139,250,0.3)]',
-  );
   const tone = isAskMode || mode === 'journalist' ? 'violet' : mode === 'ephemeral' ? 'amber' : 'teal';
-  const highScoreToneClass = {
-    amber: 'bg-accent-amber/15 text-accent-amber border-accent-amber/30',
-    teal: 'bg-accent-teal/15 text-accent-teal border-accent-teal/30',
-    violet: 'bg-accent-violet/15 text-accent-violet border-accent-violet/30',
-  }[tone];
-  const mediumScoreToneClass = {
-    amber: 'bg-accent-amber/10 text-accent-amber border-accent-amber/20',
-    teal: 'bg-accent-teal/10 text-accent-teal border-accent-teal/20',
-    violet: 'bg-accent-violet/10 text-accent-violet border-accent-violet/20',
-  }[tone];
+  const toneAccent = { amber: '#F6B94C', teal: '#14B8A6', violet: '#7C5CFF' }[tone];
+  const scorePercent = Math.min(100, Math.round(result.score * 100));
 
   return (
     <div
       ref={cardRef}
       className={cn(
-        'px-5 py-4 cursor-pointer transition-all duration-300 relative overflow-hidden group',
-        'bg-graphite-1/40',
-        hoverClass,
-        selectedClass,
-        'no-drag'
+        'group relative cursor-pointer transition-all duration-200 ease-out no-drag',
+        'rounded-lg',
+        isSelected
+          ? 'bg-graphite-2/60'
+          : 'bg-transparent hover:bg-graphite-1/50',
       )}
       style={{
-        borderRadius: '8px',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        borderLeft: isSelected
-          ? `3px solid ${modeColors[currentModeKey].accent}`
-          : '1px solid rgba(255, 255, 255, 0.08)',
-        boxShadow: isSelected
-          ? `inset 4px 0 12px -4px ${modeColors[currentModeKey].accent}33, 0 0 0 1px ${qualityTone.border}, 0 0 14px ${qualityTone.glow}`
-          : 'none',
-        background: isSelected
-          ? `linear-gradient(120deg, ${modeColors[currentModeKey].bg} 0%, ${qualityTone.bg} 100%)`
-          : undefined,
+        padding: '12px 16px',
+        borderLeft: isSelected ? `2px solid ${toneAccent}` : '2px solid transparent',
         opacity: animatedOpacity,
         visibility: animatedOpacity > 0 ? 'visible' : 'hidden',
-        // @ts-ignore - Custom CSS variable for highlight color
+        // @ts-ignore
         '--highlight-color': modeColors[currentModeKey].accent,
       }}
       data-allow-context-menu="true"
@@ -383,98 +334,72 @@ export function ResultCard({
       onMouseEnter={() => handleMouseEnter(result.path)}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Subtle left border accent on hover (replaces dramatic swoosh) */}
-        <div
-          className={cn(
-          "absolute left-0 top-0 bottom-0 w-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0 pointer-events-none",
-          mode === 'ephemeral' && !isAskMode && "bg-accent-amber",
-          mode === 'native-cache' && !isAskMode && "bg-accent-teal",
-          mode === 'journalist' && !isAskMode && "bg-accent-violet",
-          isAskMode && "bg-accent-violet"
-        )}
-      />
-
-      <div className="flex items-center gap-4 relative z-10">
-        <span className="text-fg-dim text-xs w-6 flex-shrink-0 font-mono">
-          {index + 1}
-        </span>
-
+      <div className="flex items-center gap-3">
         <FileIcon className={cn(
           'w-4 h-4 flex-shrink-0 transition-colors',
-          iconColorClass
+          isSelected ? `text-[${toneAccent}]` : 'text-fg-dim',
+          isSelected && tone === 'teal' && 'text-accent-teal',
+          isSelected && tone === 'amber' && 'text-accent-amber',
+          isSelected && tone === 'violet' && 'text-accent-violet',
         )} />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <p className={cn(
-              'font-semibold truncate transition-colors',
-              isSelected ? 'text-porcelain' : 'text-porcelain',
-              isIgnored && 'line-through opacity-60'
+              'text-sm font-medium truncate',
+              isIgnored ? 'line-through opacity-50 text-fg-muted' : 'text-porcelain',
             )}>
               {result.filename}
             </p>
             {matchType && (
-              <span className={cn(
-                'px-2 py-0.5 text-[10px] rounded-full shrink-0 border',
-                MATCH_TYPE_META[matchType].className
-              )}>
-                {MATCH_TYPE_META[matchType].label}
+              <span className="flex items-center gap-1 shrink-0">
+                <span className={cn('w-1.5 h-1.5 rounded-full', MATCH_TYPE_META[matchType].dotColor)} />
+                <span className={cn('text-[10px] font-medium', MATCH_TYPE_META[matchType].textColor)}>
+                  {MATCH_TYPE_META[matchType].label}
+                </span>
               </span>
             )}
+            {isSemanticResult && integrityVerified && (
+              <CheckCircle className="w-3 h-3 text-success/60 flex-shrink-0" />
+            )}
+            {isSemanticResult && !integrityVerified && (
+              <AlertCircle className="w-3 h-3 text-warning/60 flex-shrink-0" />
+            )}
           </div>
-          <div className="flex items-center gap-3 text-xs text-fg-dim">
-            <span className="truncate font-mono">{result.directory}</span>
-            {(fileSize !== undefined || modifiedAt !== undefined) && (
-              <span className="flex items-center gap-2 shrink-0">
-                {fileSize !== undefined && (
-                  <span className="flex items-center gap-1" title="File size">
-                    <HardDrive className="w-3 h-3" />
-                    {formatFileSize(fileSize)}
-                  </span>
-                )}
-                {modifiedAt !== undefined && (
-                  <span className="flex items-center gap-1" title="Last modified">
-                    <Clock className="w-3 h-3" />
-                    {formatRelativeTime(modifiedAt)}
-                  </span>
-                )}
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-xs text-fg-dim truncate font-mono">{result.directory}</span>
+            {modifiedAt !== undefined && (
+              <span className="text-[10px] text-fg-ghost flex items-center gap-0.5 shrink-0">
+                <Clock className="w-2.5 h-2.5" />
+                {formatRelativeTime(modifiedAt)}
+              </span>
+            )}
+            {fileSize !== undefined && (
+              <span className="text-[10px] text-fg-ghost shrink-0">
+                {formatFileSize(fileSize)}
               </span>
             )}
           </div>
         </div>
 
-        {isSemanticResult && (
-          <span title={integrityVerified ? 'Integrity verified' : 'Integrity unverified'}>
-            {integrityVerified ? (
-              <CheckCircle className="w-4 h-4 text-success flex-shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-warning flex-shrink-0" />
-            )}
-          </span>
-        )}
-
-        <motion.div
-          key={`score-${result.path}-${Math.round(result.score * 100)}`}
-          initial={{ scale: 1.15, opacity: 0.7 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.25, ease: 'easeOut' }}
+        {/* Score circle */}
+        <div
+          className={cn(
+            'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0',
+            'text-[11px] font-mono font-semibold transition-colors duration-200',
+            result.score >= 0.9 && tone === 'teal' && 'bg-accent-teal/15 text-accent-teal border border-accent-teal/25',
+            result.score >= 0.9 && tone === 'amber' && 'bg-accent-amber/15 text-accent-amber border border-accent-amber/25',
+            result.score >= 0.9 && tone === 'violet' && 'bg-accent-violet/15 text-accent-violet border border-accent-violet/25',
+            result.score >= 0.7 && result.score < 0.9 && 'bg-graphite-3/80 text-fg-secondary border border-white/8',
+            result.score < 0.7 && 'bg-graphite-3/50 text-fg-dim border border-white/5',
+          )}
         >
-          <Badge
-            variant={integrityVerified ? 'secure' : 'warning'}
-            className={cn(
-              'font-mono font-semibold transition-colors duration-300 border',
-              result.score >= 0.9 ? highScoreToneClass :
-                result.score >= 0.7 ? mediumScoreToneClass :
-                  'bg-fg-dim/15 text-fg-muted border-fg-dim/30'
-            )}
-          >
-            {Math.min(100, Math.round(result.score * 100))}%
-          </Badge>
-        </motion.div>
+          {scorePercent}
+        </div>
 
         <ChevronDown
           className={cn(
-            'w-4 h-4 text-fg-dim transition-transform duration-200',
+            'w-3.5 h-3.5 text-fg-ghost transition-transform duration-200',
             expanded && 'rotate-180'
           )}
         />
@@ -490,7 +415,7 @@ export function ResultCard({
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="mt-4 pt-4 border-t border-stroke-hairline/50">
+            <div className="mt-3 pt-3 border-t border-white/5">
               {evidence && (
                 <div className="mb-4 flex flex-col gap-2">
                   {isAskMode && askAnswer && askConfidence && (
@@ -650,108 +575,70 @@ export function ResultCard({
                 </div>
               )}
 
-              <div className="flex items-center gap-2 mb-3">
-                <button
-                  type="button"
-                  onClick={handleTogglePin}
-                  onDoubleClick={(e) => e.stopPropagation()}
-                  disabled={!canApplyPersonalSignals}
-                  className={cn(
-                    'flex items-center gap-1.5 px-2.5 py-1.5 text-2xs rounded-md border transition-colors',
-                    isPinned
-                      ? 'bg-accent-amber/15 text-accent-amber border-accent-amber/40'
-                      : 'bg-graphite-3 text-fg-muted border-stroke-hairline hover:text-porcelain',
-                    !canApplyPersonalSignals && 'opacity-55 cursor-not-allowed'
-                  )}
-                  title={canApplyPersonalSignals ? undefined : 'Unavailable in Deep Search mode'}
-                >
-                  <Star className={cn('w-3.5 h-3.5', isPinned && 'fill-current')} />
-                  {isPinned ? 'Pinned' : 'Pin'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleToggleIgnore}
-                  onDoubleClick={(e) => e.stopPropagation()}
-                  disabled={!canApplyPersonalSignals}
-                  className={cn(
-                    'flex items-center gap-1.5 px-2.5 py-1.5 text-2xs rounded-md border transition-colors',
-                    isIgnored
-                      ? 'bg-error/15 text-error border-error/40'
-                      : 'bg-graphite-3 text-fg-muted border-stroke-hairline hover:text-porcelain',
-                    !canApplyPersonalSignals && 'opacity-55 cursor-not-allowed'
-                  )}
-                  title={canApplyPersonalSignals ? undefined : 'Unavailable in Deep Search mode'}
-                >
-                  <EyeOff className="w-3.5 h-3.5" />
-                  {isIgnored ? 'Ignored' : 'Ignore'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNotRelevant}
-                  onDoubleClick={(e) => e.stopPropagation()}
-                  disabled={!canApplyPersonalSignals}
-                  className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1.5 text-2xs rounded-md border bg-graphite-3 text-fg-muted border-stroke-hairline hover:text-porcelain transition-colors",
-                    !canApplyPersonalSignals && 'opacity-55 cursor-not-allowed'
-                  )}
-                  title={canApplyPersonalSignals ? undefined : 'Unavailable in Deep Search mode'}
-                >
-                  <ThumbsDown className="w-3.5 h-3.5" />
-                  Not Relevant
-                </button>
-              </div>
-
-              <div className="flex items-center gap-2 pt-2 border-t border-dashed border-stroke-hairline/30">
+              {/* Compact action bar */}
+              <div className="flex items-center gap-1.5 pt-2 mt-2 border-t border-white/5">
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onOpen(); }}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md',
-                    // Mode-aware colors
-                    mode === 'ephemeral' && !isAskMode && 'bg-accent-amber/10 text-accent-amber border border-accent-amber/30 hover:bg-accent-amber/20 hover:border-accent-amber/50',
-                    mode === 'native-cache' && !isAskMode && 'bg-accent-teal/10 text-accent-teal border border-accent-teal/30 hover:bg-accent-teal/20 hover:border-accent-teal/50',
-                    (mode === 'journalist' || isAskMode) && 'bg-accent-violet/10 text-accent-violet border border-accent-violet/30 hover:bg-accent-violet/20 hover:border-accent-violet/50',
-                    'transition-all duration-150'
+                    'flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium rounded-md transition-colors duration-150',
+                    tone === 'teal' && 'bg-accent-teal/10 text-accent-teal hover:bg-accent-teal/18',
+                    tone === 'amber' && 'bg-accent-amber/10 text-accent-amber hover:bg-accent-amber/18',
+                    tone === 'violet' && 'bg-accent-violet/10 text-accent-violet hover:bg-accent-violet/18',
                   )}
                 >
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <ExternalLink className="w-3 h-3" />
                   Open
                 </button>
-                <button
-                  type="button"
-                  onClick={handleReveal}
-                  className={cn(
-                    'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md',
-                    'bg-graphite-3 text-fg-muted border border-stroke-hairline',
-                    'hover:bg-graphite-2 hover:text-porcelain hover:border-border-medium',
-                    'transition-all duration-150'
-                  )}
+                <button type="button" onClick={handleReveal}
+                  className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium rounded-md text-fg-muted hover:text-porcelain hover:bg-graphite-3/70 transition-colors duration-150"
                 >
-                  <FolderOpen className="w-3.5 h-3.5" />
+                  <FolderOpen className="w-3 h-3" />
                   Reveal
                 </button>
-                <button
-                  type="button"
-                  onClick={handleCopyPath}
+                <button type="button" onClick={handleCopyPath}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md',
-                    'bg-graphite-3 text-fg-muted border border-stroke-hairline',
-                    'hover:bg-graphite-2 hover:text-porcelain hover:border-border-medium',
-                    'transition-all duration-150',
-                    copied && 'bg-success/10 text-success border-success/30'
+                    "flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium rounded-md transition-colors duration-150",
+                    copied ? 'text-success' : 'text-fg-muted hover:text-porcelain hover:bg-graphite-3/70'
                   )}
                 >
-                  {copied ? (
-                    <>
-                      <Check className="w-3.5 h-3.5" />
-                      Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      Copy Path
-                    </>
+                  {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  {copied ? 'Copied' : 'Copy'}
+                </button>
+
+                <div className="flex-1" />
+
+                <button type="button" onClick={handleTogglePin} onDoubleClick={(e) => e.stopPropagation()}
+                  disabled={!canApplyPersonalSignals}
+                  className={cn(
+                    'p-1.5 rounded-md transition-colors duration-150',
+                    isPinned ? 'text-accent-amber' : 'text-fg-ghost hover:text-fg-muted',
+                    !canApplyPersonalSignals && 'opacity-40 cursor-not-allowed'
                   )}
+                  title={isPinned ? 'Unpin' : 'Pin'}
+                >
+                  <Star className={cn('w-3.5 h-3.5', isPinned && 'fill-current')} />
+                </button>
+                <button type="button" onClick={handleToggleIgnore} onDoubleClick={(e) => e.stopPropagation()}
+                  disabled={!canApplyPersonalSignals}
+                  className={cn(
+                    'p-1.5 rounded-md transition-colors duration-150',
+                    isIgnored ? 'text-error' : 'text-fg-ghost hover:text-fg-muted',
+                    !canApplyPersonalSignals && 'opacity-40 cursor-not-allowed'
+                  )}
+                  title={isIgnored ? 'Unignore' : 'Ignore'}
+                >
+                  <EyeOff className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" onClick={handleNotRelevant} onDoubleClick={(e) => e.stopPropagation()}
+                  disabled={!canApplyPersonalSignals}
+                  className={cn(
+                    'p-1.5 rounded-md text-fg-ghost hover:text-fg-muted transition-colors duration-150',
+                    !canApplyPersonalSignals && 'opacity-40 cursor-not-allowed'
+                  )}
+                  title="Not relevant"
+                >
+                  <ThumbsDown className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

@@ -63,7 +63,7 @@ export function TodaySurface({
   sourcePath,
 }: TodaySurfaceProps) {
   return (
-    <div style={{ display: 'grid', gap: 12 }}>
+    <div className="ixos-today-surface">
       <motion.div
         className="ixos-card"
         style={{ display: 'grid', gap: 8 }}
@@ -80,7 +80,7 @@ export function TodaySurface({
         </p>
       </motion.div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
+      <div className="ixos-today-signals">
         {signals.map((signal, idx) => (
           <motion.article
             key={signal.label}
@@ -96,7 +96,7 @@ export function TodaySurface({
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: 10 }}>
+      <div className="ixos-today-main">
         <div style={{ display: 'grid', gap: 10 }}>
           <RowBlock
             title="Resume"

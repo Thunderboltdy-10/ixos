@@ -1535,3 +1535,39 @@
   1. Manual browser QA for `/4` motion comfort and lens readability across full scroll.
   2. Final polish pass on desktop Workstream detail interaction density.
   3. Optional lint pass on touched frontend files.
+
+## Entry 055 - Landing /1-/2-/3 creative rebuild + shared surface responsiveness + cloud-safe lexical/parser guards
+- Date/Time: 2026-02-28
+- Branch/Commit: (working tree)
+- Goal: Deliver high-impact variant redesign for `/1`, `/2`, `/3`, fix squished shared demo layouts, densify desktop search feedback, and prevent cloud-placeholder hydration during search.
+- Commands run:
+  - `cargo check --lib`
+  - `npx tsc -p packages/ixos-ui/tsconfig.json --noEmit`
+  - `npx tsc -p ui/tsconfig.json --noEmit`
+  - `cd ixos-site && npm run test:visual:update`
+  - `cd ixos-site && npm run test:visual`
+- Outputs saved to:
+  - landing runtime variants: `ixos-site/src/app/1/_mc/*`, `ixos-site/src/app/2/_ch/*`, `ixos-site/src/app/3/_wire/*`
+  - shared landing demo adapter: `ixos-site/src/landing/DemoSurface.tsx`
+  - shared component responsiveness: `packages/ixos-ui/src/styles.css`, `packages/ixos-ui/src/components/SearchSurface.tsx`, `packages/ixos-ui/src/components/TodaySurface.tsx`, `packages/ixos-ui/src/components/WorkstreamsSurface.tsx`
+  - desktop integration: `ui/src/components/search/MainSearchView.tsx`
+  - cloud safety fixes: `src/ixos_rank/candidate_generator/ripgrep_funnel.rs`, `src/parsers/mod.rs`
+  - visual artifacts: `ixos-site/.visual/landing.visual.spec.ts/variant-{1,2,3}-{1440,1024,390}.png`
+- Key results:
+  - Rebuilt `/1`, `/2`, `/3` into distinct branded themes with stronger atmosphere, typography, and motion while preserving shared `DemoSurface` usage.
+  - Added explicit AGENTS token/preset mappings in active route pages for all three variants.
+  - Switched shared Ixos UI responsiveness to container-query behavior to avoid squishing when embedded in narrow columns.
+  - Removed desktop result cap and improved nested scroll resilience in the search surface.
+  - Added cloud-only guards in lexical file eligibility and parser entry points to avoid accidental OneDrive/iCloud placeholder downloads.
+  - Regenerated and validated required Playwright visual snapshots across 1440/1024/390 for `/1`,`/2`,`/3` with zero console/runtime errors.
+- Validation summary:
+  - `cargo check --lib`: PASS
+  - `npx tsc -p packages/ixos-ui/tsconfig.json --noEmit`: PASS
+  - `npx tsc -p ui/tsconfig.json --noEmit`: PASS
+  - `cd ixos-site && npm run test:visual`: PASS (9 passed)
+  - Note: targeted Rust test commands remain blocked by unrelated existing compile issue in `src/cli/commands.rs` (`Commands::Update` pattern missing `auto` field).
+- Decision: KEEP
+- Next:
+  1. Manual local+cloud folder QA in desktop to confirm hydration prevention behavior in user-real paths.
+  2. Tighten compact search row truncation/typing rhythm for even denser expert scanning.
+  3. Fix unrelated CLI test compile drift and rerun targeted `ripgrep_funnel`/parser tests.

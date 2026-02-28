@@ -165,7 +165,7 @@ export function MainSearchView() {
                 <div className="absolute inset-0 bg-gradient-to-b from-graphite-0/30 via-graphite-0/22 to-graphite-0/50" />
               </div>
 
-              <div className="relative h-full p-1">
+              <div className="relative h-full min-h-0 p-1">
                 <SearchSurface
                   query={query}
                   stageLabel={stageLabel}
@@ -177,7 +177,7 @@ export function MainSearchView() {
                   onOpenResult={canInteractWithResults ? handleOpenResult : undefined}
                   onRevealResult={canInteractWithResults ? handleRevealResult : undefined}
                   hideSearchChrome
-                  resultLimit={9}
+                  allowResultsScroll
                   pipelineStats={{
                     stage: streamStage ?? searchPhase,
                     filesScanned: streamStats?.filesScanned ?? 0,

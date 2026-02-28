@@ -19,7 +19,7 @@ export function WorkstreamsSurface({ rows, summary, selectedId, onSelectRow, sou
   const selected = rows.find((row) => row.id === selectedId) ?? rows[0] ?? null;
 
   return (
-    <div style={{ display: 'grid', gap: 12 }}>
+    <div className="ixos-workstreams-surface">
       <div className="ixos-card" style={{ display: 'grid', gap: 6 }}>
         <p className="ixos-chip" style={{ width: 'fit-content' }}>
           Workstreams
@@ -32,7 +32,7 @@ export function WorkstreamsSurface({ rows, summary, selectedId, onSelectRow, sou
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10 }}>
+      <div className="ixos-workstreams-summary">
         {summary.map((item, idx) => (
           <motion.article
             key={item.label}
@@ -48,7 +48,7 @@ export function WorkstreamsSurface({ rows, summary, selectedId, onSelectRow, sou
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.02fr 0.98fr', gap: 10 }}>
+      <div className="ixos-workstreams-main">
         <section className="ixos-card" style={{ display: 'grid', gap: 8 }}>
           {rows.length > 0 ? (
             rows.map((row, idx) => (

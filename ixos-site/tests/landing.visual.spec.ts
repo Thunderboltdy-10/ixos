@@ -59,3 +59,29 @@ for (const route of ROUTES) {
     });
   }
 }
+
+// ─── No Horizontal Overflow Assertions ───────────────────────────────────────
+
+const OVERFLOW_ROUTES = ["/1", "/2", "/3", "/demo"] as const;
+
+for (const route of OVERFLOW_ROUTES) {
+  test(`${route} no horizontal overflow`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(route, { waitUntil: "networkidle" });
+    await page.waitForTimeout(1200);
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return {
+        scrollWidth: doc.scrollWidth,
+        clientWidth: doc.clientWidth,
+        hasOverflow: doc.scrollWidth > doc.clientWidth + 1,
+      };
+    });
+
+    expect(
+      overflow.hasOverflow,
+      `Horizontal overflow on ${route}: scrollWidth=${overflow.scrollWidth} > clientWidth=${overflow.clientWidth}`
+    ).toBe(false);
+  });
+}

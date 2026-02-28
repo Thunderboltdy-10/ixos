@@ -159,6 +159,17 @@ video::-moz-media-controls {
     overflow-x: hidden;
   }
 
+  input, textarea, select {
+    background-color: rgba(14, 17, 23, 0.9);
+    color: var(--color-fg-porcelain);
+    border: 1px solid var(--color-border-subtle);
+    outline: none;
+  }
+  
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--color-accent-teal);
+  }
+
   ::selection {
     background-color: var(--color-accent-amber);
     color: black;

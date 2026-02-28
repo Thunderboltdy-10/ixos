@@ -219,9 +219,8 @@ export function Variant2Page() {
                   }
                 }}
                 type="button"
-                className={`${styles.claimButton} ${
-                  activeClaim.id === claim.id ? styles.claimActive : ""
-                }`}
+                className={`${styles.claimButton} ${activeClaim.id === claim.id ? styles.claimActive : ""
+                  }`}
                 onMouseEnter={() => {
                   setHoveredId(claim.id);
                   const node = claimRefs.current.get(claim.id);

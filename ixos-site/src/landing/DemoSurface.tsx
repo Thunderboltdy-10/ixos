@@ -15,10 +15,11 @@ export type IxosView = "search" | "today" | "workstreams";
 export type SearchMode = "flash" | "auto" | "pro";
 
 interface PipelineStats {
-  scanned: number;
+  filesScanned: number;
   candidates: number;
   embedded: number;
   cacheHits: number;
+  stage: string;
 }
 
 const DEFAULT_PRESETS = [
@@ -144,10 +145,11 @@ export function DemoSurface({
   const [results, setResults] = useState<IxosSearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
   const [pipelineStats, setPipelineStats] = useState<PipelineStats>({
-    scanned: 0,
+    filesScanned: 0,
     candidates: 0,
     embedded: 0,
     cacheHits: 0,
+    stage: "",
   });
   const [stageLabel, setStageLabel] = useState<string>("");
   const [selectedWorkstream, setSelectedWorkstream] = useState<string | undefined>();
@@ -175,7 +177,7 @@ export function DemoSurface({
     setResults([]);
     setSelectedIndex(undefined);
     setStageLabel("SCANNING");
-    setPipelineStats({ scanned: 0, candidates: 0, embedded: 0, cacheHits: 0 });
+    setPipelineStats({ filesScanned: 0, candidates: 0, embedded: 0, cacheHits: 0, stage: "scan" });
 
     let cancelled = false;
     cancelRef.current = () => {
@@ -189,18 +191,21 @@ export function DemoSurface({
 
       if (event.type === "progress" && event.progress) {
         const stageToLabel: Record<string, string> = {
-          scanning: "SCANNING",
-          reranking: "RERANKING",
+          scan: "SCANNING",
+          lexical: "LEXICAL",
+          semantic: "SEMANTIC",
+          refine: "REFINING",
           locked: "LOCKED",
           idle: "",
         };
 
         setStageLabel(stageToLabel[event.progress.stage] ?? "");
         setPipelineStats({
-          scanned: event.progress.scanned,
+          filesScanned: event.progress.scanned,
           candidates: event.progress.candidates,
           embedded: event.progress.embedded,
           cacheHits: event.progress.cacheHits,
+          stage: event.progress.stage,
         });
       }
 
@@ -278,10 +283,11 @@ export function DemoSurface({
         selectedIndex,
         onSelectResult: setSelectedIndex,
         pipelineStats: {
-          scanned: pipelineStats.scanned,
+          filesScanned: pipelineStats.filesScanned,
           candidates: pipelineStats.candidates,
           embedded: pipelineStats.embedded,
           cacheHits: pipelineStats.cacheHits,
+          stage: pipelineStats.stage,
         },
         interactive: true,
       }}

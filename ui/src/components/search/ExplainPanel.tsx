@@ -18,8 +18,15 @@ export function ExplainPanel({ result }: { result: RankedResult }) {
 
   if (!isPro) {
     return (
-      <div className="text-xs text-fg-dim bg-graphite-2/35 border border-stroke-hairline rounded-md px-3 py-2">
-        Upgrade to Pro to see why this result ranks this way.
+      <div className="flex items-center justify-between text-xs bg-graphite-2/40 border border-accent-violet/15 rounded-lg px-3 py-2.5">
+        <span className="text-fg-muted">Score breakdown and evidence available on Pro.</span>
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent('open-pricing'))}
+          className="ml-3 shrink-0 px-2.5 py-1 rounded-md text-[11px] font-medium bg-accent-violet/12 text-accent-violet border border-accent-violet/25 hover:bg-accent-violet/20 transition-colors"
+        >
+          Upgrade
+        </button>
       </div>
     );
   }

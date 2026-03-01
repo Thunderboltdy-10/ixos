@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { DemoSurface } from "@/landing/DemoSurface";
 
 /* ──────────────────────────────────────────────
@@ -12,7 +12,7 @@ function RippleReveal({
   originX = 50,
   originY = 50,
   startRadius = 0,
-  endRadius = 85,
+  endRadius=150,
   duration = 0.8,
   className = "",
 }: {
@@ -173,6 +173,56 @@ function ScoreBar({
   );
 }
 
+/* ──────────────────────────────────────────────
+   Looping Cards
+   ────────────────────────────────────────────── */
+function LoopingCards({ cards }: { cards: any[] }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % cards.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [cards.length]);
+
+  return (
+    <div className="relative flex justify-center items-center w-full" style={{ height: 380 }} onClick={() => setActiveIndex((prev) => (prev + 1) % cards.length)}>
+      <AnimatePresence>
+        {cards.map((card: any, i: number) => {
+          const offset = (i - activeIndex + cards.length) % cards.length;
+          return (
+            <motion.div
+              key={card.text}
+              initial={false}
+              animate={{
+                opacity: 1 - offset * 0.3,
+                y: offset * 24,
+                scale: 1 - offset * 0.06,
+                zIndex: cards.length - offset,
+                rotate: offset === 0 ? 0 : offset === 1 ? -2 : 2,
+              }}
+              transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="absolute w-[340px] sm:w-[440px] p-10 rounded-xl border bg-[#0a0d14] cursor-pointer shadow-2xl"
+              style={{
+                borderColor: `${card.color}50`,
+                boxShadow: offset === 0 ? `0 20px 40px ${card.color}15` : 'none'
+              }}
+            >
+              <h3 className="text-xl font-bold mb-2" style={{ color: card.color }}>
+                {card.text}
+              </h3>
+              <p className="text-sm" style={{ color: "rgba(243,245,247,0.55)" }}>
+                {card.detail}
+              </p>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 /* ══════════════════════════════════════════════
    PAGE
    ══════════════════════════════════════════════ */
@@ -182,21 +232,28 @@ export default function Page3RippleFoundry() {
 
   return (
     <main className="relative min-h-screen bg-[#060810] text-[#f3f5f7] overflow-x-hidden font-sans selection:bg-[#F6B94C]/30">
-      {/* ── SVG Dot Grid Background ── */}
-      <div className="fixed inset-0 z-0 pointer-events-none" style={{ opacity: 0.05 }}>
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern
-              id="dot-grid"
-              width="32"
-              height="32"
-              patternUnits="userSpaceOnUse"
-            >
-              <circle cx="1" cy="1" r="0.8" fill="#f3f5f7" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#dot-grid)" />
-        </svg>
+      {/* ── Animated Background ── */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#060810]">
+        <motion.div
+          animate={{ x: ["-20%", "20%", "-20%"], y: ["-20%", "20%", "-20%"] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute top-1/4 left-1/4 w-[50vw] h-[50vh] bg-[#F6B94C]/[0.02] blur-[150px] rounded-full"
+        />
+        <motion.div
+          animate={{ x: ["20%", "-20%", "20%"], y: ["20%", "-20%", "20%"] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute bottom-1/4 right-1/4 w-[60vw] h-[60vh] bg-[#14B8A6]/[0.02] blur-[150px] rounded-full"
+        />
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-10">
+          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="dot-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+                <circle cx="1" cy="1" r="0.8" fill="#f3f5f7" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#dot-grid)" />
+          </svg>
+        </div>
       </div>
 
       <FloatingNav />
@@ -209,7 +266,7 @@ export default function Page3RippleFoundry() {
           originX={50}
           originY={50}
           startRadius={0}
-          endRadius={85}
+          endRadius={150}
           duration={1.0}
           className="absolute inset-0 bg-gradient-to-b from-[#F6B94C]/[0.04] via-transparent to-transparent"
         >
@@ -276,7 +333,7 @@ export default function Page3RippleFoundry() {
           2. IMPACT 1 — Speed (from LEFT)
           ═══════════════════════════════════ */}
       <section id="speed" className="relative z-10 py-28 px-6">
-        <RippleReveal originX={0} originY={50} endRadius={110} duration={0.9} className="max-w-6xl mx-auto">
+        <RippleReveal originX={0} originY={50} endRadius={150} duration={0.9} className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ letterSpacing: "-0.03em" }}>
               Frictionless speed
@@ -314,7 +371,7 @@ export default function Page3RippleFoundry() {
           3. IMPACT 2 — Privacy (from RIGHT)
           ═══════════════════════════════════ */}
       <section id="privacy" className="relative z-10 py-28 px-6">
-        <RippleReveal originX={100} originY={50} endRadius={110} duration={0.9} className="max-w-6xl mx-auto">
+        <RippleReveal originX={100} originY={50} endRadius={150} duration={0.9} className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ letterSpacing: "-0.03em" }}>
               Zero-trust by default
@@ -435,7 +492,7 @@ export default function Page3RippleFoundry() {
           5. RESULT ANATOMY — Crystallized UI
           ═══════════════════════════════════ */}
       <section className="relative z-10 py-28 px-6">
-        <RippleReveal originX={50} originY={30} endRadius={90} duration={0.8} className="max-w-4xl mx-auto">
+        <RippleReveal originX={50} originY={30} endRadius={150} duration={0.8} className="max-w-4xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ letterSpacing: "-0.03em" }}>
               Anatomy of a result
@@ -667,7 +724,7 @@ export default function Page3RippleFoundry() {
             </p>
           </div>
 
-          <RippleReveal originX={50} originY={50} startRadius={0} endRadius={85} duration={0.9}>
+          <RippleReveal originX={50} originY={50} startRadius={0} endRadius={150} duration={0.9}>
             <div
               className="rounded-xl overflow-hidden border border-white/[0.06] bg-[#0a0d12]/80 shadow-2xl shadow-[#14B8A6]/5"
               style={{ minHeight: 520 }}
@@ -752,66 +809,25 @@ export default function Page3RippleFoundry() {
             </p>
           </div>
 
-          <div className="relative flex justify-center items-center" style={{ height: 340 }}>
-            {[
+          <LoopingCards
+            cards={[
               {
                 text: "Every search runs locally",
-                detail: "Zero network calls. Works offline. Your filesystem is the only data source.",
-                rotate: -6,
-                x: -40,
-                y: -20,
-                opacity: 0.6,
+                detail: "Zero network calls. Works offline. Your filesystem is the only data source. No data ever leaves your SSD.",
                 color: "#F6B94C",
               },
               {
                 text: "Every score is deterministic",
-                detail: "Same query, same files, same result. No probabilistic re-ranking or server-side logic.",
-                rotate: -1,
-                x: 0,
-                y: 0,
-                opacity: 0.8,
+                detail: "Same query, same files, same result. No probabilistic re-ranking or opaque server-side logic adjusting your results.",
                 color: "#14B8A6",
               },
               {
                 text: "Every path is verifiable",
-                detail: "Ed25519 cryptographic attestation signs every search result for provenance.",
-                rotate: 4,
-                x: 40,
-                y: 20,
-                opacity: 1,
+                detail: "Ed25519 cryptographic attestation signs every search result for provenance. You can audit the entire index lifecycle.",
                 color: "#7C5CFF",
               },
-            ].map((card, i) => {
-              const ref = useRef<HTMLDivElement>(null);
-              const visible = useInView(ref, { once: true, margin: "-60px" });
-
-              return (
-                <motion.div
-                  key={card.text}
-                  ref={ref}
-                  initial={{ opacity: 0, y: 40, rotate: 0 }}
-                  animate={
-                    visible
-                      ? { opacity: card.opacity, y: card.y, rotate: card.rotate, x: card.x }
-                      : {}
-                  }
-                  transition={{ duration: 0.6, delay: i * 0.12 }}
-                  className="absolute w-[340px] sm:w-[400px] p-8 rounded-xl border bg-[#0a0d14]"
-                  style={{
-                    borderColor: `${card.color}30`,
-                    zIndex: i + 1,
-                  }}
-                >
-                  <h3 className="text-xl font-bold mb-2" style={{ color: card.color }}>
-                    {card.text}
-                  </h3>
-                  <p className="text-sm" style={{ color: "rgba(243,245,247,0.45)" }}>
-                    {card.detail}
-                  </p>
-                </motion.div>
-              );
-            })}
-          </div>
+            ]}
+          />
         </div>
       </section>
 

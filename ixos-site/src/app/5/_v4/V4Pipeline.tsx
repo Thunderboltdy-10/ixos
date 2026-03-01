@@ -51,37 +51,39 @@ const STAGES: PipelineStage[] = [
 function Arrow({ active, color }: { active: boolean; color: string }) {
   return (
     <div
-      className="hidden lg:flex items-center justify-center shrink-0"
-      style={{ width: 32 }}
+      className="hidden lg:flex items-center justify-center shrink-0 relative"
+      style={{ width: 48 }}
     >
       <motion.div
-        animate={{ opacity: active ? 1 : 0.15 }}
+        animate={{ opacity: active ? 1 : 0.2 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="flex items-center gap-0.5"
+        className="flex items-center"
       >
+        <div style={{ position: 'relative', width: 32, height: 2, background: active ? `${color}40` : 'rgba(255,255,255,0.1)', borderRadius: 2, overflow: 'hidden' }}>
+          {active && (
+            <motion.div
+              style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '40%', background: color, filter: `drop-shadow(0 0 6px ${color})` }}
+              animate={{ x: ['-100%', '300%'] }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            />
+          )}
+        </div>
         <motion.div
-          animate={{ width: active ? 20 : 12, backgroundColor: active ? color : 'rgba(255,255,255,0.15)' }}
-          transition={{ duration: 0.4 }}
-          style={{ height: 1, borderRadius: 1 }}
-        />
-        <motion.div
-          animate={{ borderLeftColor: active ? color : 'rgba(255,255,255,0.15)' }}
+          animate={{ borderLeftColor: active ? color : 'rgba(255,255,255,0.2)' }}
           transition={{ duration: 0.4 }}
           style={{
             width: 0,
             height: 0,
-            borderTop: '4px solid transparent',
-            borderBottom: '4px solid transparent',
-            borderLeft: `6px solid`,
-            borderLeftColor: active ? color : 'rgba(255,255,255,0.15)',
+            borderTop: '5px solid transparent',
+            borderBottom: '5px solid transparent',
+            borderLeft: `8px solid`,
+            filter: active ? `drop-shadow(0 0 4px ${color})` : 'none',
           }}
         />
       </motion.div>
     </div>
   )
 }
-
-// ─── Stage card ───────────────────────────────────────────────────────────────
 
 function StageCard({
   stage,
@@ -94,81 +96,113 @@ function StageCard({
   delay: number
   inView: boolean
 }) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [rotateX, setRotateX] = useState(0)
+  const [rotateY, setRotateY] = useState(0)
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    
+    setRotateX(((y - centerY) / centerY) * -12)
+    setRotateY(((x - centerX) / centerX) * 12)
+  }
+
+  const handleMouseLeave = () => {
+    setRotateX(0)
+    setRotateY(0)
+  }
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      initial={{ opacity: 0, y: 30 }}
+      animate={inView ? { opacity: 1, y: 0, rotateX, rotateY, scale: active ? 1.05 : 1 } : { rotateX: 0, rotateY: 0 }}
+      transition={{ 
+        opacity: { duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] },
+        y: { duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] },
+        rotateX: { type: 'spring', stiffness: 300, damping: 30 },
+        rotateY: { type: 'spring', stiffness: 300, damping: 30 },
+        scale: { duration: 0.4, ease: 'easeOut' }
+      }}
       style={{
         width: '100%',
-        maxWidth: 220,
-        background: 'rgba(255,255,255,0.03)',
-        border: `1px solid ${active ? stage.color + '40' : 'rgba(255,255,255,0.06)'}`,
-        borderRadius: 10,
-        padding: 20,
-        boxShadow: active ? `0 0 24px ${stage.color}14` : 'none',
-        transition: 'border-color 0.4s ease, box-shadow 0.4s ease',
+        maxWidth: 240,
+        background: active ? 'rgba(20,24,30,0.9)' : 'rgba(10,12,16,0.6)',
+        border: `1px solid ${active ? stage.color + '60' : 'rgba(255,255,255,0.05)'}`,
+        borderRadius: 16,
+        padding: 24,
+        boxShadow: active ? `0 20px 40px rgba(0,0,0,0.5), 0 0 30px ${stage.color}20 inset, 0 0 20px ${stage.color}40` : '0 10px 20px rgba(0,0,0,0.3)',
         position: 'relative',
         overflow: 'hidden',
+        transformStyle: 'preserve-3d',
+        perspective: 1000,
+        zIndex: active ? 10 : 1,
       }}
     >
-      {/* Corner glow */}
-      <div
-        aria-hidden
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          width: 60,
-          height: 60,
-          background: `radial-gradient(circle at top right, ${stage.color}${active ? '18' : '00'}, transparent 70%)`,
-          transition: 'background 0.4s ease',
-          pointerEvents: 'none',
-        }}
-      />
+      <div style={{ transform: 'translateZ(30px)' }}>
+        {/* Glow backdrop */}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            top: -50,
+            right: -50,
+            width: 150,
+            height: 150,
+            background: `radial-gradient(circle, ${stage.color}${active ? '40' : '10'}, transparent 70%)`,
+            transition: 'background 0.5s ease',
+            pointerEvents: 'none',
+            zIndex: -1,
+          }}
+        />
 
-      <div className="relative z-10">
         {/* Number circle */}
         <div
-          className="flex items-center justify-center font-mono mb-4"
+          className="flex items-center justify-center font-mono mb-6"
           style={{
-            width: 32,
-            height: 32,
+            width: 36,
+            height: 36,
             borderRadius: '50%',
-            border: `1px solid ${active ? stage.color + '60' : 'rgba(255,255,255,0.1)'}`,
-            background: active ? `${stage.color}10` : 'rgba(255,255,255,0.03)',
-            fontSize: 11,
-            color: active ? stage.color : 'rgba(255,255,255,0.3)',
-            transition: 'all 0.4s ease',
+            border: `1px solid ${active ? stage.color : 'rgba(255,255,255,0.1)'}`,
+            background: active ? `${stage.color}20` : 'rgba(255,255,255,0.02)',
+            fontSize: 13,
+            color: active ? stage.color : 'rgba(255,255,255,0.4)',
             fontWeight: 700,
+            boxShadow: active ? `0 0 15px ${stage.color}60` : 'none',
           }}
         >
           {stage.number}
         </div>
 
         {/* Stage name */}
-        <p
+        <h3
           style={{
             fontFamily: 'var(--font-ixo-heading)',
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: 700,
-            color: active ? '#F3F5F7' : 'rgba(243,245,247,0.6)',
-            marginBottom: 8,
-            letterSpacing: '-0.015em',
-            transition: 'color 0.4s ease',
+            color: active ? '#F3F5F7' : 'rgba(243,245,247,0.5)',
+            marginBottom: 10,
+            letterSpacing: '-0.02em',
           }}
         >
           {stage.name}
-        </p>
+        </h3>
 
         {/* Description */}
         <p
-          className="font-mono leading-relaxed"
           style={{
-            fontSize: 11,
-            color: active ? 'rgba(243,245,247,0.5)' : 'rgba(243,245,247,0.3)',
-            marginBottom: 12,
-            transition: 'color 0.4s ease',
+            fontFamily: 'var(--font-ixo-heading)',
+            fontSize: 13,
+            lineHeight: 1.5,
+            color: active ? 'rgba(243,245,247,0.7)' : 'rgba(243,245,247,0.3)',
+            marginBottom: 16,
           }}
         >
           {stage.description}
@@ -177,7 +211,7 @@ function StageCard({
         {/* Source */}
         <p
           className="font-mono"
-          style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)' }}
+          style={{ fontSize: 10, color: active ? stage.color : 'rgba(255,255,255,0.2)', opacity: 0.8 }}
         >
           {stage.source}
         </p>

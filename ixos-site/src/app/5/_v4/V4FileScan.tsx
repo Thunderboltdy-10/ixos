@@ -81,20 +81,53 @@ function BlueprintGrid() {
 
 function TreeCard({ inView }: { inView: boolean }) {
   const countDisplay = useCountUp(312, 1600, inView)
+  
+  // Interactive 3D hover effect
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [rotateX, setRotateX] = useState(0)
+  const [rotateY, setRotateY] = useState(0)
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    
+    const rotateXValue = ((y - centerY) / centerY) * -8
+    const rotateYValue = ((x - centerX) / centerX) * 8
+    
+    setRotateX(rotateXValue)
+    setRotateY(rotateYValue)
+  }
+
+  const handleMouseLeave = () => {
+    setRotateX(0)
+    setRotateY(0)
+  }
 
   return (
-    <div
+    <motion.div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      animate={{ rotateX, rotateY }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 1.5 }}
       className="relative overflow-hidden"
       style={{
         background: 'rgba(255,255,255,0.02)',
         border: '1px solid rgba(255,255,255,0.07)',
-        borderRadius: 12,
+        borderRadius: 16,
         padding: '24px',
+        transformStyle: 'preserve-3d',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+        perspective: 1000
       }}
     >
       <BlueprintGrid />
 
-      <div className="relative z-10">
+      <div className="relative z-10" style={{ transform: 'translateZ(30px)' }}>
         {/* Card header: counter + progress bar */}
         <div className="flex items-center justify-between mb-4">
           <motion.span
@@ -237,7 +270,7 @@ function TreeCard({ inView }: { inView: boolean }) {
           Source: CLAUDE.md (Architecture)
         </p>
       </div>
-    </div>
+    </motion.div>
   )
 }
 

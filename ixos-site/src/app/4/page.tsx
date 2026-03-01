@@ -1,1220 +1,1081 @@
 "use client";
 
-import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion, useInView, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from 'framer-motion';
-import {
-  AmbientIxosField,
-  AppWorldSurface,
-  PixelRingLoader,
-  type IxosSearchResult,
-  type IxosTodayRow,
-  type IxosTodaySignal,
-  type IxosView,
-  type IxosWorkstreamRow,
-} from '@ixos/ixos-ui';
+import { useRef, useState, useEffect } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
+import { DemoSurface } from "@/landing/DemoSurface";
 
-type LensTone = 'teal' | 'amber' | 'slate';
-type LensToy = 'stream' | 'mode' | 'evidence' | 'session' | 'today' | 'workstreams' | 'trust' | 'cli';
+/* ──────────────────────────────────────────────
+   Slash Section — diagonal wipe primitive
+   ────────────────────────────────────────────── */
+function SlashReveal({
+  children,
+  originX = 0,
+  originY = 0,
+  startRadius = 0,
+  endRadius = 150,
+  duration = 0.8,
+  className = "",
+}: {
+  children: React.ReactNode;
+  originX?: number;
+  originY?: number;
+  startRadius?: number;
+  endRadius?: number;
+  duration?: number;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
 
-interface LensItem {
-  id: string;
-  title: string;
-  claim: string;
-  source: string;
-  view: IxosView;
-  coverage: string[];
-  tone: LensTone;
-  toy: LensToy;
-  hotspot: { x: string; y: string; label: string };
-}
-
-interface PipelineState {
-  stage: string;
-  filesScanned: number;
-  candidates: number;
-  embedded: number;
-  cacheHits: number;
-  scanTrail: string[];
-}
-
-interface CameraPose {
-  x: number;
-  y: number;
-  scale: number;
-  rotateX: number;
-  rotateY: number;
-  rotateZ: number;
-}
-
-const BASE_RESULTS: IxosSearchResult[] = [
-  {
-    id: 'r1',
-    title: 'Q1-financial-report.md',
-    path: 'dataset/docs/Q1-financial-report.md',
-    score: 0.96,
-    snippet: 'Revenue variance was attributed to delayed enterprise renewals and support seat consolidation.',
-    rationale: 'Lexical candidate in title, semantic alignment in financial section, integrity-safe context extraction.',
-  },
-  {
-    id: 'r2',
-    title: 'meeting_notes_2024-11-15.txt',
-    path: 'dataset/docs/meeting_notes_2024-11-15.txt',
-    score: 0.94,
-    snippet: 'Action item: draft deployment checklist and update CLI reliability quickcheck procedure.',
-    rationale: 'Strong co-occurrence with deployment and checklist terms in recent workstream activity.',
-  },
-  {
-    id: 'r3',
-    title: 'CLI_RELIABILITY_QUICKCHECK.md',
-    path: 'docs/product/CLI_RELIABILITY_QUICKCHECK.md',
-    score: 0.93,
-    snippet: 'Use ixos doctor and release-check sequence before shipping desktop binaries.',
-    rationale: 'Direct lexical match and high semantic overlap with release preparation intent.',
-  },
-  {
-    id: 'r4',
-    title: 'search.rs',
-    path: 'src-tauri/src/commands/search.rs',
-    score: 0.91,
-    snippet: 'Ask mode resolves intent while preserving selected mode and preventing forced Pro fallback.',
-    rationale: 'Evidence block references ask_mode_active and resolve_search_mode behavior.',
-  },
-  {
-    id: 'r5',
-    title: 'TodayTab.tsx',
-    path: 'ui/src/components/today/TodayTab.tsx',
-    score: 0.9,
-    snippet: 'Today view combines resume context, recently touched files, and suggested next actions.',
-    rationale: 'Matched by Today workflow terms and proximity to workstream reconstruction logic.',
-  },
-  {
-    id: 'r6',
-    title: 'WorkstreamsList.tsx',
-    path: 'ui/src/components/workstreams/WorkstreamsList.tsx',
-    score: 0.89,
-    snippet: 'Workstreams are auto-clustered from search and file-open events with re-cluster controls.',
-    rationale: 'High lexical density around workstream/recluster terms and event pipeline alignment.',
-  },
-  {
-    id: 'r7',
-    title: 'commands.rs',
-    path: 'src/cli/commands.rs',
-    score: 0.87,
-    snippet: 'CLI exposes search, index, cache, compliance, doctor, model, and update command groups.',
-    rationale: 'Query intent references command surface inventory and direct enum definitions.',
-  },
-  {
-    id: 'r8',
-    title: 'config.rs',
-    path: 'src/cli/config.rs',
-    score: 0.86,
-    snippet: 'Config migration normalizes cache and model naming to canonical v2 identifiers.',
-    rationale: 'Strong match for mode normalization and naming policy checks.',
-  },
-  {
-    id: 'r9',
-    title: 'workstreams.rs',
-    path: 'src-tauri/src/commands/workstreams.rs',
-    score: 0.85,
-    snippet: 'Encrypted persistence for workstreams is enabled only with Pro capability.',
-    rationale: 'Privacy and persistence terms map directly to command implementation.',
-  },
-  {
-    id: 'r10',
-    title: 'activity.rs',
-    path: 'src-tauri/src/commands/activity.rs',
-    score: 0.84,
-    snippet: 'Activity ledger drives co-occurrence suggestions and move recommendations for Today.',
-    rationale: 'Co-occurrence and suggestion phrasing matches activity command payload definitions.',
-  },
-];
-
-const TODAY_SIGNALS: IxosTodaySignal[] = [
-  { label: 'Signals Today', value: '18', hint: 'recently touched files' },
-  { label: 'Suggested Next', value: '6', hint: 'predicted follow-ups' },
-  { label: 'Move Hints', value: '3', hint: 'folder reorganizations' },
-];
-
-const TODAY_RESUME: IxosTodayRow[] = [
-  {
-    id: 't-resume-1',
-    title: 'Release hardening sprint',
-    meta: 'Workstream - 47 actions - 12 minutes ago',
-    detail: 'Continue from diagnostics + benchmark pass with preloaded flash model context.',
-  },
-  {
-    id: 't-resume-2',
-    title: 'search.rs',
-    meta: 'src-tauri/src/commands/search.rs',
-    detail: 'Intent detection and mode routing edits were last touched in this stream.',
-  },
-];
-
-const TODAY_RECENT: IxosTodayRow[] = [
-  {
-    id: 't-recent-1',
-    title: 'FEATURE_INVENTORY.md',
-    meta: 'repo root',
-    detail: 'Feature coverage map updated for landing lens contract.',
-  },
-  {
-    id: 't-recent-2',
-    title: 'TodayTab.tsx',
-    meta: 'ui/src/components/today',
-    detail: 'Shared surface integration for desktop Today pass.',
-  },
-  {
-    id: 't-recent-3',
-    title: 'WorkstreamsList.tsx',
-    meta: 'ui/src/components/workstreams',
-    detail: 'Operational density and metrics layout pass.',
-  },
-];
-
-const TODAY_SUGGESTED: IxosTodayRow[] = [
-  {
-    id: 't-suggest-1',
-    title: 'src-tauri/src/commands/activity.rs',
-    meta: 'co-occurrence source',
-    detail: 'Supports suggested-next chain and recent signals used in Today.',
-  },
-  {
-    id: 't-suggest-2',
-    title: 'src/activity_ledger/mod.rs',
-    meta: 'ledger core',
-    detail: 'Local event ledger powering recommendation confidence.',
-  },
-];
-
-const WORKSTREAM_ROWS: IxosWorkstreamRow[] = [
-  {
-    id: 'w-1',
-    name: 'Release Safety Sweep',
-    status: 'active',
-    files: 14,
-    actions: 51,
-    lastActive: '12m ago',
-    detail: 'Doctor + release-check + docs alignment before build cut.',
-  },
-  {
-    id: 'w-2',
-    name: 'Search Pipeline Tuning',
-    status: 'warm',
-    files: 9,
-    actions: 33,
-    lastActive: '3h ago',
-    detail: 'Ask mode routing and progressive stage messaging updates.',
-  },
-  {
-    id: 'w-3',
-    name: 'Landing Proof Pass',
-    status: 'warm',
-    files: 11,
-    actions: 29,
-    lastActive: '5h ago',
-    detail: 'Truthful claim audit and source-path citation hardening.',
-  },
-  {
-    id: 'w-4',
-    name: 'Model Registry Cleanup',
-    status: 'cold',
-    files: 6,
-    actions: 18,
-    lastActive: '1d ago',
-    detail: 'Canonical v2 naming consistency across docs and config.',
-  },
-];
-
-const WORKSTREAM_SUMMARY = [
-  { label: 'Workstreams', value: '4', hint: 'active clusters' },
-  { label: 'Activity', value: '131', hint: 'tracked actions' },
-  { label: 'Files Linked', value: '40', hint: 'unique files' },
-  { label: 'Active 24h', value: '3', hint: 'recent streams' },
-];
-
-const LENSES: LensItem[] = [
-  {
-    id: 'speed-stream',
-    title: 'Speed You Can Feel',
-    claim: 'Progressive streaming starts lexical first, then stabilizes semantically as evidence arrives.',
-    source: 'src-tauri/src/commands/search.rs - ui/src/stores/searchStore.ts',
-    view: 'search',
-    coverage: ['D-01', 'D-02', 'D-03', 'D-04'],
-    tone: 'teal',
-    toy: 'stream',
-    hotspot: { x: '37%', y: '58%', label: 'Result stream' },
-  },
-  {
-    id: 'model-control',
-    title: 'Model and Ask Control',
-    claim: 'Mode and Ask behavior are explicit, and Ask follows intent without silently forcing slow Pro routing.',
-    source: 'src-tauri/src/commands/search.rs - docs/product/DESKTOP_APP.md - ui/src/components/search/AskModeSwitcher.tsx',
-    view: 'search',
-    coverage: ['D-05', 'D-06'],
-    tone: 'slate',
-    toy: 'mode',
-    hotspot: { x: '27%', y: '34%', label: 'Mode controls' },
-  },
-  {
-    id: 'evidence-actions',
-    title: 'Evidence and File Actions',
-    claim: 'Each selected match exposes rationale and supports direct open/reveal actions.',
-    source: 'ui/src/components/search/WhyMatched.tsx - ui/src/lib/tauri.ts - src/ixos_rank/evidence/mod.rs',
-    view: 'search',
-    coverage: ['D-07', 'D-08'],
-    tone: 'teal',
-    toy: 'evidence',
-    hotspot: { x: '77%', y: '50%', label: 'Evidence rail' },
-  },
-  {
-    id: 'session-flow',
-    title: 'Session Flow',
-    claim: 'History, starring, command palette, and overlay search keep navigation continuous across sessions.',
-    source: 'ui/src/components/layout/Sidebar.tsx - ui/src/components/search/CommandPalette.tsx - ui/src/components/search/SearchOverlay.tsx',
-    view: 'search',
-    coverage: ['D-09', 'D-10', 'D-11'],
-    tone: 'slate',
-    toy: 'session',
-    hotspot: { x: '8%', y: '48%', label: 'Session rail' },
-  },
-  {
-    id: 'today-lens',
-    title: 'Today Board',
-    claim: 'Today consolidates resume context, recency signals, and recommendation paths from local activity.',
-    source: 'ui/src/components/today/TodayTab.tsx - ui/src/stores/todayStore.ts - src-tauri/src/commands/activity.rs',
-    view: 'today',
-    coverage: ['D-12', 'D-14'],
-    tone: 'amber',
-    toy: 'today',
-    hotspot: { x: '52%', y: '35%', label: 'Today focus board' },
-  },
-  {
-    id: 'workstreams-lens',
-    title: 'Workstreams Loop',
-    claim: 'Workstreams cluster events into operational task threads with encrypted Pro persistence and quick recovery.',
-    source: 'ui/src/components/workstreams/WorkstreamsList.tsx - src-tauri/src/commands/workstreams.rs',
-    view: 'workstreams',
-    coverage: ['D-13'],
-    tone: 'amber',
-    toy: 'workstreams',
-    hotspot: { x: '55%', y: '63%', label: 'Cluster inspector' },
-  },
-  {
-    id: 'trust-controls',
-    title: 'Trust and Controls',
-    claim: 'Entitlements, diagnostics, compliance, and privacy controls stay explicit.',
-    source: 'ui/src/components/layout/AppShell.tsx - ui/src/components/settings/SettingsPanel.tsx - src/compliance/mod.rs - src/diagnostics.rs',
-    view: 'search',
-    coverage: ['D-15', 'D-16', 'D-17', 'D-18', 'D-19', 'D-20'],
-    tone: 'slate',
-    toy: 'trust',
-    hotspot: { x: '80%', y: '21%', label: 'Trust controls' },
-  },
-  {
-    id: 'cli-lens',
-    title: 'CLI Workflow Surface',
-    claim: 'Desktop and CLI share one retrieval core, with real command groups for search, cache, compliance, models, and updates.',
-    source: 'src/cli/commands.rs - src/main.rs - src/cli/config.rs - src/cli/self_update.rs',
-    view: 'search',
-    coverage: ['C-01', 'C-02', 'C-03', 'C-04', 'C-05', 'C-06', 'C-07', 'C-08', 'C-09', 'C-10', 'C-11', 'C-12', 'C-13'],
-    tone: 'teal',
-    toy: 'cli',
-    hotspot: { x: '34%', y: '24%', label: 'Command bridge' },
-  },
-];
-
-function buildResults(query: string): IxosSearchResult[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return BASE_RESULTS;
-
-  const preferred = BASE_RESULTS.filter((item) =>
-    `${item.title} ${item.path} ${item.snippet}`.toLowerCase().includes(q)
+  // A fast diagonal wipe mask
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ clipPath: `polygon(0% 0%, 0% 0%, -20% 100%, -20% 100%)` }}
+      animate={
+        inView
+          ? { clipPath: `polygon(0% -20%, 120% -20%, 100% 120%, -20% 120%)` }
+          : {}
+      }
+      onAnimationComplete={() => {
+        if (ref.current) {
+          ref.current.style.clipPath = 'none';
+        }
+      }}
+      transition={{ duration, ease: [0.19, 1, 0.22, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
   );
-  const remaining = BASE_RESULTS.filter((item) => !preferred.includes(item));
-  return [...preferred, ...remaining].map((item, index) => ({
-    ...item,
-    score: Math.max(0.7, item.score - index * 0.01),
-  }));
 }
 
-function lensPipelineSeed(index: number): PipelineState {
-  return {
-    stage: index <= 1 ? 'lexical' : index <= 3 ? 'semantic' : index <= 5 ? 'refining' : 'locked',
-    filesScanned: 46 + index * 21,
-    candidates: 12 + index * 2,
-    embedded: 8 + index * 2,
-    cacheHits: 3 + (index % 4),
-    scanTrail: BASE_RESULTS.slice(0, 4).map((item) => item.path),
-  };
-}
-
-function toneClass(tone: LensTone): { panel: string; chip: string; glow: string } {
-  if (tone === 'amber') {
-    return {
-      panel: 'border-accent-amber/38 bg-accent-amber/10',
-      chip: 'text-accent-amber border-accent-amber/35 bg-accent-amber/12',
-      glow: 'rgba(246, 185, 76, 0.16)',
-    };
-  }
-  if (tone === 'slate') {
-    return {
-      panel: 'border-white/22 bg-white/[0.07]',
-      chip: 'text-fg-secondary border-white/26 bg-white/8',
-      glow: 'rgba(210, 220, 232, 0.12)',
-    };
-  }
-  return {
-    panel: 'border-accent-teal/34 bg-accent-teal/12',
-    chip: 'text-accent-teal border-accent-teal/35 bg-accent-teal/16',
-    glow: 'rgba(20, 184, 166, 0.16)',
-  };
-}
-
-const BASE_CAMERA_POSE: CameraPose = {
-  x: 0,
-  y: 0,
-  scale: 1,
-  rotateX: 0,
-  rotateY: 0,
-  rotateZ: 0,
-};
-
-const LENS_CAMERA_POSE: Record<string, CameraPose> = {
-  'speed-stream': { x: -112, y: 52, scale: 1.26, rotateX: 9.2, rotateY: 13, rotateZ: -2.4 },
-  'model-control': { x: 150, y: -52, scale: 1.2, rotateX: 7.1, rotateY: -15, rotateZ: 1.8 },
-  'evidence-actions': { x: -196, y: 20, scale: 1.3, rotateX: 9, rotateY: 17, rotateZ: -1.8 },
-  'session-flow': { x: 222, y: 30, scale: 1.21, rotateX: 7.1, rotateY: -18, rotateZ: 2.2 },
-  'today-lens': { x: -36, y: -84, scale: 1.18, rotateX: 6.3, rotateY: 4, rotateZ: -1.2 },
-  'workstreams-lens': { x: -62, y: 86, scale: 1.23, rotateX: 8.8, rotateY: 6, rotateZ: -0.5 },
-  'trust-controls': { x: -176, y: -92, scale: 1.24, rotateX: 6.8, rotateY: 15, rotateZ: 1.3 },
-  'cli-lens': { x: 106, y: -72, scale: 1.23, rotateX: 7.5, rotateY: -9, rotateZ: -1.4 },
-};
-
-const LENS_WORLD_LAYOUT: Record<
-  string,
-  {
-    header: { left: string; top: string; width: string };
-    panel: { left: string; top: string; width: string };
-    focus: { left: string; top: string; width: string; height: string };
-  }
-> = {
-  'speed-stream': {
-    header: { left: '4%', top: '8%', width: '34%' },
-    panel: { left: '64%', top: '70%', width: '30%' },
-    focus: { left: '26%', top: '35%', width: '48%', height: '16%' },
-  },
-  'model-control': {
-    header: { left: '6%', top: '9%', width: '36%' },
-    panel: { left: '63%', top: '10%', width: '28%' },
-    focus: { left: '25%', top: '20%', width: '47%', height: '10%' },
-  },
-  'evidence-actions': {
-    header: { left: '6%', top: '9%', width: '38%' },
-    panel: { left: '46%', top: '70%', width: '26%' },
-    focus: { left: '73%', top: '33%', width: '20%', height: '45%' },
-  },
-  'session-flow': {
-    header: { left: '62%', top: '8%', width: '32%' },
-    panel: { left: '23%', top: '70%', width: '26%' },
-    focus: { left: '3%', top: '14%', width: '17%', height: '72%' },
-  },
-  'today-lens': {
-    header: { left: '5%', top: '7%', width: '38%' },
-    panel: { left: '65%', top: '12%', width: '28%' },
-    focus: { left: '24%', top: '24%', width: '56%', height: '52%' },
-  },
-  'workstreams-lens': {
-    header: { left: '5%', top: '8%', width: '38%' },
-    panel: { left: '63%', top: '66%', width: '30%' },
-    focus: { left: '21%', top: '22%', width: '66%', height: '62%' },
-  },
-  'trust-controls': {
-    header: { left: '5%', top: '8%', width: '37%' },
-    panel: { left: '52%', top: '72%', width: '28%' },
-    focus: { left: '76%', top: '2%', width: '17%', height: '20%' },
-  },
-  'cli-lens': {
-    header: { left: '5%', top: '8%', width: '38%' },
-    panel: { left: '22%', top: '68%', width: '38%' },
-    focus: { left: '22%', top: '68%', width: '50%', height: '18%' },
-  },
-};
-
-interface InWorldLensOverlayProps {
-  lens: LensItem;
-  index: number;
-  onRunDemo: () => void;
-  onModeChange: (mode: 'flash' | 'auto' | 'pro') => void;
-}
-
-const LENS_STORY: Record<string, { kicker: string; lineA: string; lineB: string; subline: string }> = {
-  'speed-stream': {
-    kicker: 'Process Topology',
-    lineA: 'One query,',
-    lineB: 'four stages.',
-    subline: 'Lexical first response, semantic lock-in, then evidence refinement.',
-  },
-  'model-control': {
-    kicker: 'Mode Governance',
-    lineA: 'Model choice',
-    lineB: 'stays explicit.',
-    subline: 'Ask behavior follows intent but keeps selected routing constraints.',
-  },
-  'evidence-actions': {
-    kicker: 'Evidence Rail',
-    lineA: 'Every result has',
-    lineB: 'traceable rationale.',
-    subline: 'Open and reveal actions stay coupled to ranked context.',
-  },
-  'session-flow': {
-    kicker: 'Session Continuity',
-    lineA: 'History becomes',
-    lineB: 'navigation memory.',
-    subline: 'Recent, starred, command palette, and overlay all stay in one flow.',
-  },
-  'today-lens': {
-    kicker: 'Today View',
-    lineA: 'Your day,',
-    lineB: 'organized.',
-    subline: 'Resume state, recents, and next actions from local activity.',
-  },
-  'workstreams-lens': {
-    kicker: 'Workstream History',
-    lineA: 'Every action,',
-    lineB: 'threaded.',
-    subline: 'Clusters preserve context with fast recovery across sessions.',
-  },
-  'trust-controls': {
-    kicker: 'Trust Layer',
-    lineA: 'Controls stay',
-    lineB: 'auditable.',
-    subline: 'Entitlement, compliance, diagnostics, and local-first boundaries.',
-  },
-  'cli-lens': {
-    kicker: 'CLI Parity',
-    lineA: 'Desktop and CLI',
-    lineB: 'share one core.',
-    subline: 'Command surfaces map to the same retrieval pipeline.',
-  },
-};
-
-function InWorldLensOverlay({
-  lens,
-  index,
-  onRunDemo,
-  onModeChange,
-}: InWorldLensOverlayProps) {
-  const tone = toneClass(lens.tone);
-  const story = LENS_STORY[lens.id] ?? LENS_STORY['speed-stream'];
-  const layout = LENS_WORLD_LAYOUT[lens.id] ?? LENS_WORLD_LAYOUT['speed-stream'];
-  const [privacyLock, setPrivacyLock] = useState(true);
-  const toy = (() => {
-    if (lens.toy === 'stream') {
-      const stages = ['Input Parser', 'Ralph Embedder', 'JIT Sweep', 'Fusion Ranker'];
-      return (
-        <div className="grid gap-2">
-          <button type="button" onClick={onRunDemo} className="justify-self-start rounded-md border border-accent-teal/35 bg-accent-teal/15 px-2.5 py-1 text-[10px] text-accent-teal">
-            Replay stream
-          </button>
-          <div className="grid gap-1.5">
-            {stages.map((stage, idx) => (
-              <div key={stage} className="relative rounded-md border border-white/12 bg-graphite-2/45 px-2.5 py-1.5 text-[10px] text-fg-secondary">
-                <span className="text-[9px] uppercase tracking-[0.14em] text-fg-ghost">stage 0{idx + 1}</span>{' '}
-                {stage}
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    if (lens.toy === 'mode') {
-      return (
-        <div className="grid gap-2">
-          <div className="flex gap-1.5 text-[10px]">
-            <button type="button" onClick={() => onModeChange('flash')} className="rounded-md border border-white/20 px-2 py-1">Flash</button>
-            <button type="button" onClick={() => onModeChange('auto')} className="rounded-md border border-white/20 px-2 py-1">Auto</button>
-            <button type="button" onClick={() => onModeChange('pro')} className="rounded-md border border-white/20 px-2 py-1">Pro</button>
-          </div>
-          <p className="text-[10px] text-fg-secondary">Selected mode persists while Ask intent toggles only interpretation depth.</p>
-        </div>
-      );
-    }
-
-    if (lens.toy === 'evidence') {
-      const bars = [
-        { label: 'Lexical', value: 100 },
-        { label: 'Semantic', value: 84 },
-        { label: 'Refining', value: 62 },
-        { label: 'Locked', value: 38 },
-      ];
-      return (
-        <div className="space-y-1.5">
-          {bars.map((bar, idx) => (
-            <div key={bar.label} className="space-y-1">
-              <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.12em] text-fg-ghost">
-                <span>{bar.label}</span>
-                <span>{bar.value}%</span>
-              </div>
-              <div className="h-1.5 rounded-full bg-white/8">
-                <motion.div
-                  className="h-full rounded-full bg-accent-teal"
-                  initial={{ width: '16%' }}
-                  animate={{ width: `${bar.value}%` }}
-                  transition={{ duration: 0.42, delay: idx * 0.06, ease: [0.22, 1, 0.36, 1] }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    if (lens.toy === 'session') {
-      return (
-        <div className="grid gap-1 text-[10px] text-fg-secondary">
-          <div className="rounded-md border border-white/12 bg-graphite-2/45 px-2 py-1">recent → starred → restore</div>
-          <div className="rounded-md border border-white/12 bg-graphite-2/45 px-2 py-1">Cmd+K command palette</div>
-          <div className="rounded-md border border-white/12 bg-graphite-2/45 px-2 py-1">overlay continuity</div>
-        </div>
-      );
-    }
-
-    if (lens.toy === 'today') {
-      return (
-        <div className="grid grid-cols-3 gap-1.5 text-[9px]">
-          <div className="rounded-md border border-white/12 bg-graphite-2/45 p-1.5">
-            <p className="text-fg-ghost uppercase tracking-[0.12em]">Upcoming</p>
-            <p className="mt-1 text-fg-secondary">Review auth PR</p>
-          </div>
-          <div className="rounded-md border border-accent-amber/28 bg-accent-amber/10 p-1.5">
-            <p className="text-accent-amber uppercase tracking-[0.12em]">Focus</p>
-            <p className="mt-1 text-fg-secondary">Investigate OOM</p>
-          </div>
-          <div className="rounded-md border border-white/12 bg-graphite-2/45 p-1.5 opacity-70">
-            <p className="text-fg-ghost uppercase tracking-[0.12em]">Done</p>
-            <p className="mt-1 text-fg-secondary">Deploy hotfix</p>
-          </div>
-        </div>
-      );
-    }
-
-    if (lens.toy === 'workstreams') {
-      return (
-        <div className="grid gap-1.5 text-[10px] text-fg-secondary">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-accent-amber" />
-            <span>09:42 Searched auth methods</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-accent-teal" />
-            <span>10:15 Modified token.ts</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-accent-amber" />
-            <span>11:05 PR created</span>
-          </div>
-        </div>
-      );
-    }
-
-    if (lens.toy === 'trust') {
-      return (
-        <div className="grid gap-2 text-[10px]">
-          <button
-            type="button"
-            onClick={() => setPrivacyLock((v) => !v)}
-            className="justify-self-start rounded-md border border-white/20 px-2 py-1"
-          >
-            Privacy lock: {privacyLock ? 'on-device only' : 'controls visible'}
-          </button>
-          <div className="grid grid-cols-2 gap-1.5 text-fg-secondary">
-            <p className="rounded-md border border-white/12 bg-graphite-2/45 px-2 py-1">Entitlement verify</p>
-            <p className="rounded-md border border-white/12 bg-graphite-2/45 px-2 py-1">Compliance checks</p>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-1 font-mono text-[9px]">
-        <p className="rounded-md border border-white/10 bg-black/35 px-2 py-1">ixos search "deployment checklist" --progressive</p>
-        <p className="rounded-md border border-white/10 bg-black/35 px-2 py-1">ixos cache stats --json</p>
-        <p className="rounded-md border border-white/10 bg-black/35 px-2 py-1">ixos doctor --verbose</p>
-      </div>
-    );
-  })();
+/* ──────────────────────────────────────────────
+   Stagger children wrapper
+   ────────────────────────────────────────────── */
+function StaggerChildren({
+  children,
+  stagger = 0.1,
+  className = "",
+}: {
+  children: React.ReactNode;
+  stagger?: number;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-40">
-      <motion.div
-        key={`${lens.id}-heading`}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute"
-        style={{
-          left: layout.header.left,
-          top: layout.header.top,
-          width: layout.header.width,
-        }}
+    <motion.div
+      ref={ref}
+      initial="hidden"
+      animate={inView ? "visible" : "hidden"}
+      variants={{
+        visible: { transition: { staggerChildren: stagger } },
+        hidden: {},
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
+
+const fadeLine = {
+  hidden: { opacity: 0, x: -12 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.35 } },
+};
+
+/* ──────────────────────────────────────────────
+   Floating Pill Nav
+   ────────────────────────────────────────────── */
+function FloatingNav() {
+  const links = [
+    { label: "Speed", href: "#speed" },
+    { label: "Privacy", href: "#privacy" },
+    { label: "Pipeline", href: "#pipeline" },
+    { label: "CLI", href: "#cli" },
+  ];
+
+  return (
+    <nav className="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-2 py-1.5 rounded-full border border-white/[0.08] bg-[#060810]/70 backdrop-blur-xl shadow-lg shadow-black/30">
+      <a
+        href="#hero"
+        className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold text-[#F6B94C] tracking-tight"
       >
-        <p className="text-[9px] uppercase tracking-[0.2em] text-fg-ghost">{story.kicker}</p>
-        <h2 className="mt-1 text-[28px] font-semibold leading-[1.02] text-porcelain">
-          {story.lineA}
-          <br />
-          <span className="italic text-accent-amber">{story.lineB}</span>
-        </h2>
-        <p className="mt-2 text-[11px] text-fg-secondary">{story.subline}</p>
-      </motion.div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="shrink-0">
+          <path
+            d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        Ixos
+      </a>
 
-      <motion.div
-        className="absolute rounded-lg border border-accent-teal/45 bg-accent-teal/8"
-        style={{
-          left: layout.focus.left,
-          top: layout.focus.top,
-          width: layout.focus.width,
-          height: layout.focus.height,
-        }}
-        animate={{
-          boxShadow: ['0 0 0 0 rgba(20,184,166,0.32)', '0 0 0 8px rgba(20,184,166,0)', '0 0 0 0 rgba(20,184,166,0.32)'],
-        }}
-        transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
-      />
+      <div className="w-px h-5 bg-white/10 mx-1" />
 
-      <motion.div
-        key={lens.id}
-        initial={{ opacity: 0, y: 14, scale: 0.995 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 6, scale: 0.995 }}
-        transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-        className={`pointer-events-auto absolute rounded-lg border ${tone.panel} bg-graphite-0/86 p-2.5 shadow-[0_12px_28px_rgba(0,0,0,0.45)]`}
-        style={{
-          left: layout.panel.left,
-          top: layout.panel.top,
-          width: layout.panel.width,
-        }}
+      {links.map((l) => (
+        <a
+          key={l.href}
+          href={l.href}
+          className="px-3 py-1.5 text-[13px] text-white/50 hover:text-white/90 transition-colors rounded-full hover:bg-white/5"
+        >
+          {l.label}
+        </a>
+      ))}
+
+      <a
+        href="#download"
+        className="ml-1 px-4 py-1.5 text-[13px] font-semibold rounded-full bg-[#F6B94C] text-[#060810] hover:bg-[#f0c45e] transition-colors"
       >
-        <p className="mb-1 text-[8px] uppercase tracking-[0.16em] text-fg-ghost">Lens {String(index + 1).padStart(2, '0')} · {lens.title}</p>
+        Download
+      </a>
+    </nav>
+  );
+}
 
-        <div className="mt-2 flex flex-wrap gap-1">
-          {lens.coverage.slice(0, 6).map((id) => (
-            <span key={id} className={`rounded-full border px-1.5 py-0.5 text-[7px] ${tone.chip}`}>
-              {id}
-            </span>
-          ))}
-          {lens.coverage.length > 6 && (
-            <span className="rounded-full border border-white/20 px-1.5 py-0.5 text-[7px] text-fg-ghost">
-              +{lens.coverage.length - 6}
-            </span>
-          )}
-        </div>
-
-        <div className="mt-2 rounded-md border border-white/12 bg-graphite-2/50 p-1.5">{toy}</div>
-        <p className="mt-2 text-[8px] text-fg-dim">source: {lens.source}</p>
-      </motion.div>
+/* ──────────────────────────────────────────────
+   Score Bar (animated fill)
+   ────────────────────────────────────────────── */
+function ScoreBar({
+  label,
+  value,
+  color,
+  inView,
+  delay = 0,
+}: {
+  label: string;
+  value: number;
+  color: string;
+  inView: boolean;
+  delay?: number;
+}) {
+  return (
+    <div className="mb-6">
+      <div className="flex justify-between mb-2">
+        <span className="text-sm text-white/60 font-mono">{label}</span>
+        <span className="text-sm font-mono" style={{ color }}>
+          {value.toFixed(2)}
+        </span>
+      </div>
+      <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+        <motion.div
+          className="h-full rounded-full"
+          style={{ backgroundColor: color }}
+          initial={{ width: "0%" }}
+          animate={inView ? { width: `${value * 100}%` } : {}}
+          transition={{ duration: 0.8, delay, ease: "easeOut" }}
+        />
+      </div>
     </div>
   );
 }
 
-interface LensAnchorProps {
-  lens: LensItem;
-  index: number;
-  onActive: (index: number) => void;
-  onFocusLens: (lens: LensItem, index: number) => void;
+/* ──────────────────────────────────────────────
+   Looping Cards
+   ────────────────────────────────────────────── */
+interface CardType {
+  text: string;
+  detail: string;
+  color: string;
 }
 
-function LensAnchor({ lens, index, onActive, onFocusLens }: LensAnchorProps) {
-  const ref = useRef<HTMLElement | null>(null);
-  const inView = useInView(ref, { margin: '-34% 0px -34% 0px' });
+function LoopingCards({ cards }: { cards: CardType[] }) {
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    if (inView) {
-      onActive(index);
-      onFocusLens(lens, index);
-    }
-  }, [inView, index, lens, onActive, onFocusLens]);
+    const timer = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % cards.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [cards.length]);
 
   return (
-    <section
-      ref={ref}
-      id={lens.id}
-      className="relative z-[12] h-[82vh] scroll-mt-24"
-      aria-label={`Lens ${index + 1}: ${lens.title}`}
-    />
+    <div className="relative flex justify-center items-center w-full" style={{ height: 420, perspective: 1200 }}>
+      {cards.map((card: CardType, i: number) => {
+        const offset = (i - activeIndex + cards.length) % cards.length;
+        const isFlippingAway = offset === cards.length - 1;
+
+        return (
+          <motion.div
+            key={card.text}
+            initial={false}
+            animate={{
+              opacity: isFlippingAway ? 0 : 1 - offset * 0.2,
+              y: isFlippingAway ? -120 : offset * 30,
+              rotateX: isFlippingAway ? 60 : offset * 5,
+              scale: isFlippingAway ? 1.1 : 1 - offset * 0.05,
+              zIndex: cards.length - offset,
+            }}
+            transition={{ duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
+            onClick={() => setActiveIndex((prev) => (prev + 1) % cards.length)}
+            className="absolute w-[340px] sm:w-[480px] p-10 rounded-2xl border bg-[#0a0d14]/80 cursor-pointer shadow-2xl backdrop-blur-xl"
+            style={{
+              borderColor: `${card.color}40`,
+              boxShadow: offset === 0 ? `0 30px 60px ${card.color}20` : 'none',
+              transformStyle: 'preserve-3d'
+            }}
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-white/5 border border-white/10" style={{ color: card.color }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              </div>
+              <h3 className="text-2xl font-bold" style={{ color: card.color }}>
+                {card.text}
+              </h3>
+            </div>
+            <p className="text-base leading-relaxed" style={{ color: "rgba(243,245,247,0.7)" }}>
+              {card.detail}
+            </p>
+          </motion.div>
+        );
+      })}
+    </div>
   );
 }
 
-export default function Variant4Page() {
-  const reducedMotion = useReducedMotion();
-  const [booting, setBooting] = useState(true);
-  const [entryAnimating, setEntryAnimating] = useState(false);
-  const [activeLens, setActiveLens] = useState(-1);
-  const [view, setView] = useState<IxosView>('search');
-  const [mode, setMode] = useState<'flash' | 'auto' | 'pro'>('auto');
-  const [query, setQuery] = useState('where is the deployment checklist?');
-  const [allResults, setAllResults] = useState<IxosSearchResult[]>(BASE_RESULTS);
-  const [visibleCount, setVisibleCount] = useState(8);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isSearching, setIsSearching] = useState(false);
-  const [stageLabel, setStageLabel] = useState('Locked');
-  const [pipeline, setPipeline] = useState<PipelineState>(lensPipelineSeed(0));
-  const [currentWorkstreamId, setCurrentWorkstreamId] = useState(WORKSTREAM_ROWS[0]?.id);
-  const [cameraPose, setCameraPose] = useState<CameraPose>(BASE_CAMERA_POSE);
-  const [enteredWorld, setEnteredWorld] = useState(false);
-  const [flashZoom, setFlashZoom] = useState(false);
-  const [lensWhip, setLensWhip] = useState<{ key: number; dir: 1 | -1 } | null>(null);
-  const streamTimerRef = useRef<number | null>(null);
-  const flashTimerRef = useRef<number | null>(null);
-  const whipTimerRef = useRef<number | null>(null);
-  const enteredWorldRef = useRef(false);
-  const lastLensIndexRef = useRef(-1);
-
-  useEffect(() => {
-    const waitMs = reducedMotion ? 120 : 980;
-    const id = window.setTimeout(() => {
-      setBooting(false);
-      if (!reducedMotion) {
-        setEntryAnimating(true);
-      }
-    }, waitMs);
-    return () => window.clearTimeout(id);
-  }, [reducedMotion]);
-
-  useEffect(() => {
-    return () => {
-      if (streamTimerRef.current) {
-        window.clearInterval(streamTimerRef.current);
-      }
-      if (flashTimerRef.current) {
-        window.clearTimeout(flashTimerRef.current);
-      }
-      if (whipTimerRef.current) {
-        window.clearTimeout(whipTimerRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    enteredWorldRef.current = enteredWorld;
-  }, [enteredWorld]);
-
-  const triggerFlashZoom = useCallback(() => {
-    if (reducedMotion) return;
-    setFlashZoom(true);
-    if (flashTimerRef.current) {
-      window.clearTimeout(flashTimerRef.current);
-    }
-    flashTimerRef.current = window.setTimeout(() => {
-      setFlashZoom(false);
-      flashTimerRef.current = null;
-    }, 280);
-  }, [reducedMotion]);
-
-  const runStream = useCallback((nextQuery?: string) => {
-    const q = (nextQuery ?? query).trim();
-    const nextResults = buildResults(q);
-    setQuery(q);
-    setAllResults(nextResults);
-    setSelectedIndex(0);
-    setVisibleCount(2);
-    setIsSearching(true);
-    setStageLabel('Lexical scan');
-    setPipeline({
-      stage: 'lexical',
-      filesScanned: 18,
-      candidates: 4,
-      embedded: 0,
-      cacheHits: 1,
-      scanTrail: nextResults.slice(0, 2).map((item) => item.path),
-    });
-
-    if (streamTimerRef.current) {
-      window.clearInterval(streamTimerRef.current);
-    }
-
-    let ticks = 0;
-    streamTimerRef.current = window.setInterval(() => {
-      ticks += 1;
-      setVisibleCount((count) => Math.min(nextResults.length, count + 2));
-
-      setPipeline((prev) => ({
-        stage: ticks <= 1 ? 'lexical' : ticks <= 3 ? 'semantic' : ticks <= 4 ? 'refining' : 'locked',
-        filesScanned: prev.filesScanned + 24,
-        candidates: Math.min(44, prev.candidates + 4),
-        embedded: Math.min(40, prev.embedded + 6),
-        cacheHits: Math.min(18, prev.cacheHits + 1),
-        scanTrail: [...nextResults.slice(0, Math.min(4 + ticks, nextResults.length)).map((item) => item.path)].slice(-4),
-      }));
-
-      if (ticks === 2) setStageLabel('Semantic rerank');
-      if (ticks === 4) setStageLabel('Refining evidence');
-      if (ticks >= 5) {
-        setStageLabel('Locked evidence');
-        setIsSearching(false);
-        if (streamTimerRef.current) {
-          window.clearInterval(streamTimerRef.current);
-          streamTimerRef.current = null;
-        }
-      }
-    }, reducedMotion ? 250 : 185);
-  }, [query, reducedMotion]);
-
-  const activeResults = useMemo(() => allResults.slice(0, Math.max(1, visibleCount)), [allResults, visibleCount]);
-  const { scrollYProgress } = useScroll();
-  const worldScale = useTransform(scrollYProgress, [0, 0.08, 0.16, 1], [1.0, 1.14, 2.75, 2.35]);
-  const worldWidth = useTransform(scrollYProgress, [0, 0.1, 0.18], ['94vw', '128vw', '230vw']);
-  const worldY = useTransform(scrollYProgress, [0, 0.08, 0.2, 1], [48, -40, -116, -158]);
-  const worldRotateX = useTransform(scrollYProgress, [0, 0.14, 0.2], ['-4deg', '8deg', '0deg']);
-  const worldRotateY = useTransform(scrollYProgress, [0, 0.18, 0.26], ['9deg', '0deg', '-2deg']);
-  const worldOpacity = useTransform(scrollYProgress, [0, 0.16, 0.95], [0.98, 1, 0.94]);
-  const ambientOpacity = useTransform(scrollYProgress, [0, 0.08, 0.16], [1, 0.45, 0.03]);
-  const worldBleedOpacity = useTransform(scrollYProgress, [0.06, 0.12, 0.2], [0, 0.75, 1]);
-
-  useMotionValueEvent(scrollYProgress, 'change', (value) => {
-    if (value > 0.12 && !enteredWorldRef.current) {
-      setEnteredWorld(true);
-      triggerFlashZoom();
-    }
-  });
-
-  const focusLens = useCallback((lens: LensItem, index: number) => {
-    const previous = lastLensIndexRef.current;
-    const dir: 1 | -1 = previous <= index ? 1 : -1;
-    lastLensIndexRef.current = index;
-
-    setEnteredWorld(true);
-    setView(lens.view);
-    const seededPipeline = lensPipelineSeed(index);
-    setPipeline(seededPipeline);
-    setCameraPose(LENS_CAMERA_POSE[lens.id] ?? BASE_CAMERA_POSE);
-
-    if (!reducedMotion) {
-      setLensWhip({ key: Date.now(), dir });
-      if (whipTimerRef.current) {
-        window.clearTimeout(whipTimerRef.current);
-      }
-      whipTimerRef.current = window.setTimeout(() => {
-        setLensWhip(null);
-        whipTimerRef.current = null;
-      }, 420);
-    }
-
-    if (lens.view === 'search') {
-      const queryByLens: Record<string, string> = {
-        'speed-stream': 'where is the deployment checklist?',
-        'model-control': 'show ask mode behavior',
-        'evidence-actions': 'financial report variance rationale',
-        'session-flow': 'restore starred recent context',
-        'trust-controls': 'entitlement compliance diagnostics',
-        'cli-lens': 'ixos doctor cache stats commands',
-      };
-      const nextQuery = queryByLens[lens.id] ?? query;
-      const nextResults = buildResults(nextQuery);
-      setQuery(nextQuery);
-      setAllResults(nextResults);
-      setSelectedIndex(Math.min(index % 3, Math.max(0, nextResults.length - 1)));
-      setVisibleCount(lens.id === 'speed-stream' ? Math.min(4, nextResults.length) : Math.min(8, nextResults.length));
-      setStageLabel(
-        lens.id === 'speed-stream'
-          ? 'Lexical scan'
-          : lens.id === 'evidence-actions'
-            ? 'Refining evidence'
-            : lens.id === 'cli-lens'
-              ? 'CLI parity'
-              : 'Semantic rerank'
-      );
-      setPipeline({
-        ...seededPipeline,
-        scanTrail: nextResults.slice(0, 4).map((item) => item.path),
-      });
-      setIsSearching(lens.id === 'speed-stream');
-    }
-
-    if (lens.id === 'speed-stream' || lens.id === 'evidence-actions' || lens.id === 'workstreams-lens') {
-      triggerFlashZoom();
-    }
-
-    if (lens.id === 'workstreams-lens') {
-      setCurrentWorkstreamId(WORKSTREAM_ROWS[1]?.id ?? WORKSTREAM_ROWS[0]?.id);
-      setStageLabel('Workstream clustering');
-      setIsSearching(false);
-    }
-
-    if (lens.id === 'today-lens') {
-      setIsSearching(false);
-      setStageLabel('Today context');
-    }
-  }, [query, reducedMotion, triggerFlashZoom]);
-
-  const activeLensItem = activeLens >= 0 ? LENSES[activeLens] : LENSES[0];
+/* ──────────────────────────────────────────────
+   Pipeline Card (fix hooks in map)
+   ────────────────────────────────────────────── */
+function PipelineCard({ item }: { item: any }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const visible = useInView(ref, { once: true, margin: "-60px" });
 
   return (
-    <main data-theme="landing" className="relative min-h-screen overflow-x-clip bg-graphite-0 text-porcelain">
-      <motion.div style={{ opacity: ambientOpacity }}>
-        <AmbientIxosField reducedMotion={Boolean(reducedMotion)} energy="dynamic" />
-      </motion.div>
+    <motion.div
+      ref={ref}
+      initial={{ clipPath: `circle(0% at ${item.origin})`, opacity: 0 }}
+      animate={
+        visible
+          ? { clipPath: `circle(150% at ${item.origin})`, opacity: 1 }
+          : {}
+      }
+      transition={{ duration: 0.7, delay: item.delay, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="p-8 md:p-10 rounded-xl border bg-white/[0.02]"
+      style={{ borderColor: `${item.color}22` }}
+    >
+      <div
+        className="font-mono text-xs font-semibold tracking-widest uppercase mb-3"
+        style={{ color: item.color }}
+      >
+        Phase {item.stage}
+      </div>
+      <h3 className="text-2xl font-bold mb-3">{item.title}</h3>
+      <p className="text-sm leading-relaxed" style={{ color: "rgba(243,245,247,0.5)" }}>
+        {item.desc}
+      </p>
+    </motion.div>
+  );
+}
 
-      {!reducedMotion && (
-        <>
-          <motion.div
-            className="pointer-events-none fixed inset-0 z-[6]"
-            style={{
-              background:
-                'radial-gradient(44% 36% at 26% 24%, rgba(20,184,166,0.14) 0%, rgba(20,184,166,0) 72%)',
-              mixBlendMode: 'screen',
-            }}
-            animate={{ x: [-24, 22, -24], y: [0, -18, 0], opacity: [0.52, 0.74, 0.52] }}
-            transition={{ duration: 14, ease: 'easeInOut', repeat: Infinity }}
-          />
-          <motion.div
-            className="pointer-events-none fixed inset-0 z-[6]"
-            style={{
-              background:
-                'radial-gradient(38% 32% at 76% 68%, rgba(246,185,76,0.12) 0%, rgba(246,185,76,0) 70%)',
-              mixBlendMode: 'screen',
-            }}
-            animate={{ x: [18, -20, 18], y: [10, -8, 10], opacity: [0.42, 0.62, 0.42] }}
-            transition={{ duration: 16, ease: 'easeInOut', repeat: Infinity }}
-          />
-        </>
-      )}
+/* ══════════════════════════════════════════════
+   PAGE
+   ══════════════════════════════════════════════ */
+export default function Page4SlashVelocity() {
+  const scoreRef = useRef<HTMLDivElement>(null);
+  const scoreInView = useInView(scoreRef, { once: true, margin: "-100px" });
 
-      <motion.div
-        className="pointer-events-none fixed inset-0 z-[20] bg-[radial-gradient(120%_95%_at_50%_58%,rgba(8,11,15,0.88)_0%,rgba(8,11,15,0.96)_58%,rgba(8,11,15,1)_100%)]"
-        style={{ opacity: worldBleedOpacity }}
-      />
-
-      {booting && (
-        <div className="fixed inset-0 z-[120] grid place-items-center bg-graphite-0/94 backdrop-blur-sm">
-          <PixelRingLoader />
-        </div>
-      )}
-
-      <AnimatePresence>
-        {flashZoom && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.95 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.24, ease: [0.2, 1, 0.3, 1] }}
-            className="pointer-events-none fixed inset-0 z-[62]"
-            style={{
-              background:
-                'radial-gradient(circle at 50% 48%, rgba(20,184,166,0.3) 0%, rgba(20,184,166,0.1) 28%, rgba(8,11,15,0) 56%), linear-gradient(180deg, rgba(243,245,247,0.18), rgba(243,245,247,0))',
-            }}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {lensWhip && (
-          <motion.div
-            key={lensWhip.key}
-            initial={{ opacity: 0, x: `${lensWhip.dir * 22}%`, rotate: lensWhip.dir * 3 }}
-            animate={{ opacity: [0, 0.28, 0], x: `${lensWhip.dir * -20}%`, rotate: lensWhip.dir * -2 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.42, ease: [0.2, 1, 0.3, 1] }}
-            className="pointer-events-none fixed inset-0 z-[61]"
-            style={{
-              background:
-                lensWhip.dir > 0
-                  ? 'linear-gradient(112deg, rgba(20,184,166,0) 20%, rgba(20,184,166,0.24) 44%, rgba(20,184,166,0) 70%)'
-                  : 'linear-gradient(68deg, rgba(20,184,166,0) 24%, rgba(20,184,166,0.24) 50%, rgba(20,184,166,0) 76%)',
-            }}
-          />
-        )}
-      </AnimatePresence>
-
-      <div className={`pointer-events-none fixed inset-0 z-[24] flex items-center justify-center ${enteredWorld ? 'px-0 py-0' : 'px-4 py-8 sm:px-8'}`}>
+  return (
+    <main className="relative min-h-screen bg-[#060810] text-[#f3f5f7] overflow-x-hidden font-sans selection:bg-[#F6B94C]/30">
+      {/* ── Immersive Effects Background ── */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#040508]">
         <motion.div
-          layoutId="app-world-shell"
-          onAnimationEnd={() => setEntryAnimating(false)}
-          style={{
-            scale: worldScale,
-            width: worldWidth,
-            y: worldY,
-            rotateX: worldRotateX,
-            rotateY: worldRotateY,
-            opacity: worldOpacity,
-            transformPerspective: 2100,
-            pointerEvents: 'auto',
-            filter: enteredWorld ? 'saturate(0.96) brightness(0.9)' : 'saturate(1) brightness(1)',
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 90, 0],
+            opacity: [0.1, 0.25, 0.1]
           }}
-          className={entryAnimating && !reducedMotion ? 'ixos-woosh-entry' : undefined}
-        >
-          <motion.div
-            className="relative"
-            animate={reducedMotion ? BASE_CAMERA_POSE : cameraPose}
-            transition={reducedMotion ? { duration: 0.3 } : { type: 'spring', stiffness: 96, damping: 20, mass: 0.86 }}
-            style={{ transformPerspective: 2200 }}
-          >
-            <AppWorldSurface
-              className={enteredWorld ? 'ixos-world-cinematic' : undefined}
-              view={view}
-              onViewChange={setView}
-              title="Ixos App-World"
-              subtitle="Desktop shell mirrored on landing"
-              search={{
-                query,
-                directoryLabel: 'C:\\Users\\pablo\\Downloads\\Ixos',
-                onQueryChange: setQuery,
-                onSubmit: () => runStream(query),
-                presets: [
-                  'where is the release checklist?',
-                  'show ask mode behavior',
-                  'workstream clustering flow',
-                  'cli cache audit commands',
-                ],
-                onPresetSelect: (preset) => runStream(preset),
-                mode,
-                onModeChange: setMode,
-                stageLabel,
-                isSearching,
-                results: activeResults,
-                selectedIndex,
-                onSelectResult: setSelectedIndex,
-                onOpenResult: setSelectedIndex,
-                onRevealResult: setSelectedIndex,
-                allowResultsScroll: false,
-                showInlineRunButton: true,
-                hideSearchChrome: true,
-                resultLimit: 8,
-                pipelineStats: pipeline,
-                sourcePath: 'source: src-tauri/src/commands/search.rs',
-              }}
-              today={{
-                dateLabel: new Date().toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  month: 'long',
-                  day: 'numeric',
-                }),
-                signals: TODAY_SIGNALS,
-                resumeRows: TODAY_RESUME,
-                recentRows: TODAY_RECENT,
-                suggestedRows: TODAY_SUGGESTED,
-                sourcePath: 'source: ui/src/components/today/TodayTab.tsx',
-              }}
-              workstreams={{
-                rows: WORKSTREAM_ROWS,
-                selectedId: currentWorkstreamId,
-                onSelectRow: setCurrentWorkstreamId,
-                summary: WORKSTREAM_SUMMARY,
-                sourcePath: 'source: ui/src/components/workstreams/WorkstreamsList.tsx',
-              }}
-            />
-
-            <AnimatePresence mode="wait">
-              <InWorldLensOverlay
-                key={activeLensItem.id}
-                lens={activeLensItem}
-                index={Math.max(activeLens, 0)}
-                onRunDemo={() => runStream(query)}
-                onModeChange={setMode}
-              />
-            </AnimatePresence>
-          </motion.div>
-        </motion.div>
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#F6B94C]/20 via-[#14B8A6]/5 to-transparent blur-[120px]"
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.5, 1],
+            rotate: [0, -90, 0],
+            opacity: [0.1, 0.2, 0.1]
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-[20%] -right-[10%] w-[60vw] h-[60vw] rounded-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#7C5CFF]/20 via-[#14B8A6]/5 to-transparent blur-[120px]"
+        />
+        <div 
+          className="absolute inset-0 z-0 pointer-events-none opacity-[0.04] mix-blend-overlay" 
+          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+        />
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
+          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="hex-grid" width="60" height="103.923" patternUnits="userSpaceOnUse" patternTransform="scale(0.5)">
+                <path d="M30 0L60 17.3205V51.9615L30 69.282L0 51.9615V17.3205L30 0Z" fill="none" stroke="#f3f5f7" strokeWidth="1" strokeOpacity="0.3"/>
+                <path d="M30 103.923L60 86.6025V51.9615" fill="none" stroke="#f3f5f7" strokeWidth="1" strokeOpacity="0.3"/>
+                <path d="M30 103.923L0 86.6025V51.9615" fill="none" stroke="#f3f5f7" strokeWidth="1" strokeOpacity="0.3"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#hex-grid)" />
+          </svg>
+        </div>
       </div>
 
-      <section id="hero" className="relative z-[36] flex min-h-screen items-end px-4 pb-16 pt-24 sm:px-8 lg:px-16">
-        <motion.div
-          initial={{ opacity: 0, y: 26 }}
-          animate={{ opacity: booting ? 0 : 1, y: booting ? 26 : 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-xl rounded-2xl border border-white/18 bg-graphite-1/88 p-6 backdrop-blur-md"
-        >
-          <p className="text-[10px] uppercase tracking-[0.22em] text-fg-ghost">Ixos /4 App-World</p>
-          <h1 className="mt-2 text-4xl font-semibold leading-[1.03] text-porcelain sm:text-5xl">
-            Speed you can feel,
-            <br />
-            accuracy you can trust.
-          </h1>
-          <p className="mt-3 text-sm text-fg-secondary">
-            One living app surface. Scroll through real product states with source-backed claims.
-          </p>
+      <FloatingNav />
 
-          <div className="mt-5 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => runStream('where is the deployment checklist?')}
-              className="rounded-md border border-accent-teal/35 bg-accent-teal/18 px-4 py-2 text-xs font-semibold text-accent-teal"
-            >
-              Start Interactive Demo
-            </button>
-            <Link href="/download" className="rounded-md border border-white/20 px-4 py-2 text-xs font-semibold text-fg-secondary hover:text-porcelain">
-              Download Desktop
-            </Link>
-            <Link href="/docs/cli-reference" className="rounded-md border border-white/20 px-4 py-2 text-xs font-semibold text-fg-secondary hover:text-porcelain">
-              CLI Docs
-            </Link>
-          </div>
+      {/* ═══════════════════════════════════
+          1. HERO — Circle expand reveal
+          ═══════════════════════════════════ */}
+      <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center pt-28 pb-16 px-6 z-10">
+        <SlashReveal
+          originX={50}
+          originY={50}
+          startRadius={0}
+          endRadius={150}
+          duration={1.0}
+          className="absolute inset-0 bg-gradient-to-b from-[#F6B94C]/[0.04] via-transparent to-transparent"
+        >
+          <div className="w-full h-full" />
+        </SlashReveal>
+
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.3 }}
+          className="relative z-10 text-center mb-12 max-w-4xl mx-auto"
+        >
+          <h1
+            className="text-5xl sm:text-6xl md:text-8xl font-bold mb-6"
+            style={{ letterSpacing: "-0.03em", lineHeight: 1.05 }}
+          >
+            The impact of
+            <br />
+            <span className="bg-gradient-to-r from-[#F6B94C] to-[#f0c45e] bg-clip-text text-transparent">
+              instant search.
+            </span>
+          </h1>
+          <p className="text-lg md:text-xl max-w-2xl mx-auto" style={{ color: "rgba(243,245,247,0.6)" }}>
+            Drop Ixos into your codebase and watch clarity ripple through your
+            entire engineering workflow. Local-first. Sub-second. Deterministic.
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="relative z-10 w-full max-w-4xl rounded-xl overflow-hidden border border-white/[0.06] bg-[#0a0d12]/80 shadow-2xl shadow-[#F6B94C]/5"
+          style={{ minHeight: 620 }}
+        >
+          <DemoSurface
+            initialQuery="authentication token refresh"
+            autoRun
+          />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2 }}
+          className="relative z-10 flex flex-wrap justify-center gap-4 mt-10"
+        >
+          <a
+            href="#download"
+            className="px-8 py-3.5 rounded-full bg-[#F6B94C] text-[#060810] font-semibold text-sm hover:bg-[#f0c45e] transition-colors"
+          >
+            Download Ixos
+          </a>
+          <a
+            href="#pipeline"
+            className="px-8 py-3.5 rounded-full border border-white/10 text-white/70 font-semibold text-sm hover:bg-white/5 transition-colors"
+          >
+            Learn More
+          </a>
         </motion.div>
       </section>
 
-      <div className="relative z-[36] pb-24">
-        {LENSES.map((lens, index) => (
-          <LensAnchor
-            key={lens.id}
-            lens={lens}
-            index={index}
-            onActive={setActiveLens}
-            onFocusLens={focusLens}
+      {/* ═══════════════════════════════════
+          2. IMPACT 1 — Speed (from LEFT)
+          ═══════════════════════════════════ */}
+      <section id="speed" className="relative z-10 py-28 px-6">
+        <SlashReveal originX={0} originY={50} endRadius={150} duration={0.9} className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ letterSpacing: "-0.03em" }}>
+              Frictionless speed
+            </h2>
+            <p style={{ color: "rgba(243,245,247,0.55)" }} className="text-lg max-w-xl mx-auto">
+              Every millisecond matters. Ixos searches your entire codebase before your finger lifts off the key.
+            </p>
+          </div>
+
+          <StaggerChildren stagger={0.15} className="flex flex-col gap-4">
+            {[
+              { metric: "Sub-second search", detail: "Average query resolves in under 50ms across 10k+ files", color: "#F6B94C" },
+              { metric: "312 files in 7ms", detail: "Parallel Rayon-powered file scanning with zero blocking I/O", color: "#F6B94C" },
+              { metric: "94% cache reuse", detail: "HMAC-SHA256 signed embeddings cached in NTFS ADS or xattr", color: "#F6B94C" },
+            ].map((row) => (
+              <motion.div
+                key={row.metric}
+                variants={fadeUp}
+                className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-6 px-6 md:px-10 rounded-xl border bg-white/[0.02]"
+                style={{ borderColor: `${row.color}33` }}
+              >
+                <span className="text-2xl md:text-3xl font-bold" style={{ color: row.color }}>
+                  {row.metric}
+                </span>
+                <span className="text-sm md:text-base" style={{ color: "rgba(243,245,247,0.5)" }}>
+                  {row.detail}
+                </span>
+              </motion.div>
+            ))}
+          </StaggerChildren>
+        </SlashReveal>
+      </section>
+
+      {/* ═══════════════════════════════════
+          3. IMPACT 2 — Privacy (from RIGHT)
+          ═══════════════════════════════════ */}
+      <section id="privacy" className="relative z-10 py-28 px-6">
+        <SlashReveal originX={100} originY={50} endRadius={150} duration={0.9} className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ letterSpacing: "-0.03em" }}>
+              Zero-trust by default
+            </h2>
+            <p style={{ color: "rgba(243,245,247,0.55)" }} className="text-lg max-w-xl mx-auto">
+              Your intellectual property never leaves your SSD. Not a single byte is transmitted, logged, or telemetered.
+            </p>
+          </div>
+
+          <StaggerChildren stagger={0.15} className="flex flex-col gap-4">
+            {[
+              { metric: "Zero cloud dependency", detail: "All embedding generation and search ranking runs on your local CPU", color: "#14B8A6" },
+              { metric: "HMAC-SHA256 signing", detail: "Every cached embedding is cryptographically signed to prevent tampering", color: "#14B8A6" },
+              { metric: "mlock memory protection", detail: "Sensitive buffers are locked in RAM and zeroized on drop. Never swapped to disk.", color: "#14B8A6" },
+            ].map((row) => (
+              <motion.div
+                key={row.metric}
+                variants={fadeUp}
+                className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-6 px-6 md:px-10 rounded-xl border bg-white/[0.02]"
+                style={{ borderColor: `${row.color}33` }}
+              >
+                <span className="text-2xl md:text-3xl font-bold" style={{ color: row.color }}>
+                  {row.metric}
+                </span>
+                <span className="text-sm md:text-base" style={{ color: "rgba(243,245,247,0.5)" }}>
+                  {row.detail}
+                </span>
+              </motion.div>
+            ))}
+          </StaggerChildren>
+        </SlashReveal>
+      </section>
+
+      {/* ═══════════════════════════════════
+          4. PIPELINE — Staggered 2x2 Grid
+          ═══════════════════════════════════ */}
+      <section id="pipeline" className="relative z-10 py-28 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ letterSpacing: "-0.03em" }}>
+              The crystallized pipeline
+            </h2>
+            <p style={{ color: "rgba(243,245,247,0.55)" }} className="text-lg max-w-xl mx-auto">
+              Four stages. From raw filesystem scan to cryptographically locked results.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {[
+              {
+                stage: "01",
+                title: "Scan",
+                desc: "Rust file-watcher daemon monitors your project in real-time. Rate-limited at 100 events/sec with dedup and symlink protection. Changes are captured instantly.",
+                color: "#F6B94C",
+                origin: "0% 0%",
+                delay: 0,
+              },
+              {
+                stage: "02",
+                title: "Lexical",
+                desc: "BM25-powered keyword matching with parallel Rayon processing. Pre-filters millions of tokens across your entire directory tree in under 10ms.",
+                color: "#14B8A6",
+                origin: "100% 0%",
+                delay: 0.15,
+              },
+              {
+                stage: "03",
+                title: "Semantic",
+                desc: "Model2Vec embeddings generated locally via ONNX runtime. Cosine similarity ranking surfaces intent-matching results that keyword search alone would miss.",
+                color: "#7C5CFF",
+                origin: "0% 100%",
+                delay: 0.3,
+              },
+              {
+                stage: "04",
+                title: "Locked",
+                desc: "Final hybrid score fuses lexical, semantic, and quality signals. Results are integrity-verified with behavioral scoring and attack detection. Deterministic output.",
+                color: "#F6B94C",
+                origin: "100% 100%",
+                delay: 0.45,
+              },
+            ].map((item) => {
+              const ref = useRef<HTMLDivElement>(null);
+              const visible = useInView(ref, { once: true, margin: "-60px" });
+
+              return (
+                <motion.div
+                  key={item.stage}
+                  ref={ref}
+                  initial={{ clipPath: `circle(0% at ${item.origin})`, opacity: 0 }}
+                  animate={
+                    visible
+                      ? { clipPath: `circle(150% at ${item.origin})`, opacity: 1 }
+                      : {}
+                  }
+                  transition={{ duration: 0.7, delay: item.delay, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  className="p-8 md:p-10 rounded-xl border bg-white/[0.02]"
+                  style={{ borderColor: `${item.color}22` }}
+                >
+                  <div
+                    className="font-mono text-xs font-semibold tracking-widest uppercase mb-3"
+                    style={{ color: item.color }}
+                  >
+                    Phase {item.stage}
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3">{item.title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: "rgba(243,245,247,0.5)" }}>
+                    {item.desc}
+                  </p>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════
+          5. RESULT ANATOMY — Crystallized UI
+          ═══════════════════════════════════ */}
+      <section className="relative z-10 py-28 px-6">
+        <SlashReveal originX={50} originY={30} endRadius={150} duration={0.8} className="max-w-4xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ letterSpacing: "-0.03em" }}>
+              Anatomy of a result
+            </h2>
+            <p style={{ color: "rgba(243,245,247,0.55)" }} className="text-lg max-w-xl mx-auto">
+              Every result is a self-contained evidence object. File, line, snippet, and full score breakdown.
+            </p>
+          </div>
+
+          {/* Mock result card */}
+          <div className="rounded-xl border border-white/[0.08] bg-[#0a0d14] overflow-hidden">
+            {/* Header */}
+            <div className="flex items-start justify-between p-6 pb-4 border-b border-white/[0.05]">
+              <div>
+                <div className="font-mono text-xs text-white/40 mb-1.5">
+                  src/middleware/jwt.ts:42
+                </div>
+                <h4 className="text-lg font-bold">
+                  validateAndRefreshToken()
+                </h4>
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-11 h-11 rounded-full border-2 flex items-center justify-center text-sm font-bold"
+                  style={{ borderColor: "#F6B94C", color: "#F6B94C" }}
+                >
+                  96
+                </div>
+              </div>
+            </div>
+
+            {/* Snippet */}
+            <div className="p-6 font-mono text-[13px] leading-relaxed" style={{ color: "rgba(243,245,247,0.6)" }}>
+              <div className="flex">
+                <span className="select-none w-10 shrink-0 text-white/20 text-right pr-4">40</span>
+                <span>{"export async function validateAndRefreshToken(req: Request) {"}</span>
+              </div>
+              <div className="flex">
+                <span className="select-none w-10 shrink-0 text-white/20 text-right pr-4">41</span>
+                <span>{"  const bearer = extractBearerToken(req.headers);"}</span>
+              </div>
+              <div className="flex bg-[#F6B94C]/[0.06] border-l-2 border-[#F6B94C] pl-0 -ml-px">
+                <span className="select-none w-10 shrink-0 text-[#F6B94C]/60 text-right pr-4">42</span>
+                <span className="text-[#F6B94C]/90">
+                  {"  if (isExpired(bearer)) return await rotateToken(bearer);"}
+                </span>
+              </div>
+              <div className="flex">
+                <span className="select-none w-10 shrink-0 text-white/20 text-right pr-4">43</span>
+                <span>{"  return { valid: true, token: bearer };"}</span>
+              </div>
+              <div className="flex">
+                <span className="select-none w-10 shrink-0 text-white/20 text-right pr-4">44</span>
+                <span>{"}"}</span>
+              </div>
+            </div>
+
+            {/* Score bars */}
+            <div className="px-6 pb-6 pt-2 border-t border-white/[0.05]">
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="font-mono text-white/40">lexical</span>
+                    <span className="font-mono text-[#F6B94C]">0.82</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                    <div className="h-full rounded-full bg-[#F6B94C]" style={{ width: "82%" }} />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="font-mono text-white/40">semantic</span>
+                    <span className="font-mono text-[#14B8A6]">0.91</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                    <div className="h-full rounded-full bg-[#14B8A6]" style={{ width: "91%" }} />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="font-mono text-white/40">quality</span>
+                    <span className="font-mono text-[#7C5CFF]">0.88</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                    <div className="h-full rounded-full bg-[#7C5CFF]" style={{ width: "88%" }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </SlashReveal>
+      </section>
+
+      {/* ═══════════════════════════════════
+          6. CODE SNIPPETS — Staggered lines
+          ═══════════════════════════════════ */}
+      <section className="relative z-10 py-28 px-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ letterSpacing: "-0.03em" }}>
+              Exact context, every time
+            </h2>
+            <p style={{ color: "rgba(243,245,247,0.55)" }} className="text-lg max-w-xl mx-auto">
+              Ixos returns the precise lines that matched. Not file names. Not summaries. The actual code.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-white/[0.08] bg-[#0a0d14] overflow-hidden">
+            {/* File header */}
+            <div className="px-5 py-3 border-b border-white/[0.05] flex items-center gap-3">
+              <div className="flex gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                <span className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                <span className="w-2.5 h-2.5 rounded-full bg-white/10" />
+              </div>
+              <span className="font-mono text-xs text-white/40">
+                src/middleware/jwt.ts:42
+              </span>
+            </div>
+
+            {/* Code lines with stagger */}
+            <StaggerChildren stagger={0.1} className="p-5 font-mono text-[13px] leading-[1.9]">
+              {[
+                { num: 38, text: "import { rotateToken, isExpired } from './token-manager';", color: "rgba(243,245,247,0.4)" },
+                { num: 39, text: "", color: "transparent" },
+                { num: 40, text: "export async function validateAndRefreshToken(req: Request) {", color: "rgba(243,245,247,0.65)" },
+                { num: 41, text: "  const bearer = extractBearerToken(req.headers);", color: "rgba(243,245,247,0.65)" },
+                { num: 42, text: "  if (isExpired(bearer)) return await rotateToken(bearer);", color: "#F6B94C", highlight: true },
+                { num: 43, text: "  return { valid: true, token: bearer };", color: "rgba(243,245,247,0.65)" },
+                { num: 44, text: "}", color: "rgba(243,245,247,0.65)" },
+                { num: 45, text: "", color: "transparent" },
+              ].map((line) => (
+                <motion.div
+                  key={line.num}
+                  variants={fadeLine}
+                  className={`flex ${line.highlight ? "bg-[#F6B94C]/[0.06] border-l-2 border-[#F6B94C] -ml-px pl-0" : ""}`}
+                >
+                  <span className="select-none w-10 shrink-0 text-right pr-4 text-white/20">
+                    {line.num}
+                  </span>
+                  <span style={{ color: line.color }}>{line.text || "\u00A0"}</span>
+                </motion.div>
+              ))}
+            </StaggerChildren>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════
+          7. SCORE BREAKDOWN — Pinned explainer
+          ═══════════════════════════════════ */}
+      <section className="relative z-10 py-28 px-6">
+        <div ref={scoreRef} className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-start">
+            {/* Left: explanation */}
+            <div className="md:sticky md:top-32">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ letterSpacing: "-0.03em" }}>
+                The math is transparent
+              </h2>
+              <p className="mb-6" style={{ color: "rgba(243,245,247,0.55)", fontSize: 15, lineHeight: 1.7 }}>
+                Every Ixos result carries a deterministic score breakdown that you can inspect and verify.
+                No black boxes. No hidden weights. The final score is a fusion of three independent signals.
+              </p>
+              <div className="space-y-4 text-sm" style={{ color: "rgba(243,245,247,0.5)" }}>
+                <div className="flex items-start gap-3">
+                  <span className="w-2 h-2 rounded-full bg-[#F6B94C] mt-1.5 shrink-0" />
+                  <span>
+                    <strong className="text-white/80">Lexical score</strong> measures exact keyword overlap using
+                    BM25 term-frequency analysis across the full document.
+                  </span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="w-2 h-2 rounded-full bg-[#14B8A6] mt-1.5 shrink-0" />
+                  <span>
+                    <strong className="text-white/80">Semantic score</strong> captures conceptual similarity through
+                    Model2Vec embeddings computed entirely on your local machine.
+                  </span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="w-2 h-2 rounded-full bg-[#7C5CFF] mt-1.5 shrink-0" />
+                  <span>
+                    <strong className="text-white/80">Quality boost</strong> factors in file recency, code structure
+                    quality, and access patterns for context-aware re-ranking.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: animated bars */}
+            <div className="pt-4">
+              <div className="p-8 rounded-xl border border-white/[0.08] bg-[#0a0d14]">
+                <div className="font-mono text-xs text-white/30 uppercase tracking-widest mb-8">
+                  Score Breakdown
+                </div>
+                <ScoreBar label="lexical" value={0.82} color="#F6B94C" inView={scoreInView} delay={0} />
+                <ScoreBar label="semantic" value={0.91} color="#14B8A6" inView={scoreInView} delay={0.15} />
+                <ScoreBar label="quality" value={0.88} color="#7C5CFF" inView={scoreInView} delay={0.3} />
+                <div className="mt-8 pt-6 border-t border-white/[0.06]">
+                  <div className="flex justify-between items-center">
+                    <span className="font-mono text-sm text-white/40">Final score</span>
+                    <motion.span
+                      className="text-3xl font-bold"
+                      style={{ color: "#F6B94C" }}
+                      initial={{ opacity: 0 }}
+                      animate={scoreInView ? { opacity: 1 } : {}}
+                      transition={{ delay: 0.6, duration: 0.4 }}
+                    >
+                      0.96
+                    </motion.span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════
+          8. WORKSTREAMS — Circle mask reveal
+          ═══════════════════════════════════ */}
+      <section className="relative z-10 py-28 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ letterSpacing: "-0.03em" }}>
+              Session recovery
+            </h2>
+            <p style={{ color: "rgba(243,245,247,0.55)" }} className="text-lg max-w-xl mx-auto">
+              Group your searches into logical workstreams. Resume exactly where you left off, across sessions and machines.
+            </p>
+          </div>
+
+          <SlashReveal originX={50} originY={50} startRadius={0} endRadius={150} duration={0.9}>
+            <div className="rounded-xl border border-white/[0.06] bg-[#0a0a0f] overflow-hidden p-6 md:p-10">
+              <div className="flex flex-col gap-6">
+                <div className="flex items-center gap-4 border-b border-white/[0.05] pb-6">
+                  <div className="w-12 h-12 rounded-xl bg-[#14B8A6]/10 flex items-center justify-center text-[#14B8A6]">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Refactor payment processing</h3>
+                    <p className="text-sm text-white/40">Last active 2 hours ago &middot; 14 files indexed</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  {[
+                    { path: "src/billing/stripe-webhook.ts", match: "handleSubscriptionUpdated", score: "98" },
+                    { path: "src/api/routes/checkout.ts", match: "createPaymentSession", score: "92" },
+                    { path: "tests/billing/webhooks.test.ts", match: "verifySignature", score: "85" },
+                  ].map((item, i) => (
+                    <motion.div 
+                      key={i}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2 + i * 0.1 }}
+                      className="flex items-center justify-between p-4 rounded-lg bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] transition-colors cursor-pointer"
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-mono text-xs text-white/50 mb-1">{item.path}</span>
+                        <span className="font-mono text-sm text-[#F6B94C]">{item.match}</span>
+                      </div>
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#14B8A6]/10 text-[#14B8A6] font-bold text-xs">
+                        {item.score}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </SlashReveal>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════
+          9. CLI FLOW — Terminal chrome
+          ═══════════════════════════════════ */}
+      <section id="cli" className="relative z-10 py-28 px-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ letterSpacing: "-0.03em" }}>
+              For the terminal native
+            </h2>
+            <p style={{ color: "rgba(243,245,247,0.55)" }} className="text-lg max-w-lg mx-auto">
+              Full CLI with progressive output, JSON export, and journalist mode for maximum privacy.
+            </p>
+          </div>
+
+          {/* Terminal chrome */}
+          <div className="rounded-xl border border-white/[0.08] bg-[#0a0d14] overflow-hidden">
+            {/* Title bar */}
+            <div className="flex items-center gap-3 px-5 py-3 border-b border-white/[0.05] bg-white/[0.02]">
+              <div className="flex gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+                <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
+                <span className="w-3 h-3 rounded-full bg-[#28c840]" />
+              </div>
+              <span className="font-mono text-xs text-white/30 ml-2">ixos v0.4.0</span>
+            </div>
+
+            {/* CLI commands */}
+            <StaggerChildren stagger={0.18} className="p-6 font-mono text-[13px] leading-[2.2] space-y-4">
+              <motion.div variants={fadeLine}>
+                <span className="text-white/30">$ </span>
+                <span className="text-[#F6B94C]">ixos</span>
+                <span className="text-white/70">{" search \"authentication token refresh\" --progressive"}</span>
+                <div className="text-white/25 ml-2 text-xs mt-0.5">Stream results as each pipeline stage completes</div>
+              </motion.div>
+              <motion.div variants={fadeLine}>
+                <span className="text-white/30">$ </span>
+                <span className="text-[#F6B94C]">ixos</span>
+                <span className="text-white/70">{" search --show-scores --json"}</span>
+                <div className="text-white/25 ml-2 text-xs mt-0.5">Pipe structured JSON with full score breakdown</div>
+              </motion.div>
+              <motion.div variants={fadeLine}>
+                <span className="text-white/30">$ </span>
+                <span className="text-[#F6B94C]">ixos</span>
+                <span className="text-white/70">{" search \"source protection\" --journalist-mode"}</span>
+                <div className="text-white/25 ml-2 text-xs mt-0.5">Maximum privacy: ephemeral cache, no logs, no history</div>
+              </motion.div>
+              <motion.div variants={fadeLine}>
+                <span className="text-white/30">$ </span>
+                <span className="text-[#F6B94C]">ixos</span>
+                <span className="text-white/70">{" search \"config\" --cache-mode ephemeral"}</span>
+                <div className="text-white/25 ml-2 text-xs mt-0.5">All embeddings discarded after query. Zero footprint.</div>
+              </motion.div>
+            </StaggerChildren>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════
+          10. TRANSPARENCY — Layered cards
+          ═══════════════════════════════════ */}
+      <section className="relative z-10 py-28 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ letterSpacing: "-0.03em" }}>
+              Auditable by design
+            </h2>
+            <p style={{ color: "rgba(243,245,247,0.55)" }} className="text-lg max-w-xl mx-auto">
+              Every claim we make is verifiable. The core engine is open source. Every search path is deterministic.
+            </p>
+          </div>
+
+          <LoopingCards
+            cards={[
+              {
+                text: "Every search runs locally",
+                detail: "Zero network calls. Works offline. Your filesystem is the only data source. No data ever leaves your SSD.",
+                color: "#F6B94C",
+              },
+              {
+                text: "Every score is deterministic",
+                detail: "Same query, same files, same result. No probabilistic re-ranking or opaque server-side logic adjusting your results.",
+                color: "#14B8A6",
+              },
+              {
+                text: "Every path is verifiable",
+                detail: "Ed25519 cryptographic attestation signs every search result for provenance. You can audit the entire index lifecycle.",
+                color: "#7C5CFF",
+              },
+            ]}
           />
-        ))}
-      </div>
+        </div>
+      </section>
 
-      <footer className="relative z-[36] border-t border-white/10 px-4 py-8 text-xs text-fg-dim sm:px-8 lg:px-16">
-        <p>All claims are source-mapped in each lens. No fabricated benchmarks or synthetic comparisons.</p>
-      </footer>
+      {/* ═══════════════════════════════════
+          11. PRICING — Concentric layout
+          ═══════════════════════════════════ */}
+      <section className="relative z-10 py-28 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ letterSpacing: "-0.03em" }}>
+              Simple pricing
+            </h2>
+            <p style={{ color: "rgba(243,245,247,0.55)" }} className="text-lg max-w-xl mx-auto">
+              Start free. Upgrade when your workstreams demand it.
+            </p>
+          </div>
 
-      <style jsx global>{`
-        .ixos-world.ixos-world-cinematic {
-          border-radius: 0;
-          border-color: rgba(243, 245, 247, 0.06);
-          box-shadow: 0 0 0 1px rgba(243, 245, 247, 0.02) inset;
-        }
+          {/* Concentric layout: outer = Community, inner = Pro */}
+          <div className="relative flex justify-center">
+            {/* Outer ring: Community */}
+            <div className="w-full max-w-3xl rounded-2xl border border-white/[0.06] bg-white/[0.01] p-8 md:p-12">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8 mb-10">
+                <div>
+                  <h3 className="text-xl font-bold text-white/80 mb-1">Community</h3>
+                  <div className="text-4xl font-bold">
+                    $0
+                    <span className="text-base font-normal text-white/30 ml-1">forever</span>
+                  </div>
+                </div>
+                <ul className="space-y-2 text-sm" style={{ color: "rgba(243,245,247,0.5)" }}>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1 h-1 rounded-full bg-white/30" />
+                    Local vector search with Flash and Auto modes
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1 h-1 rounded-full bg-white/30" />
+                    VS Code extension and standard CLI
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1 h-1 rounded-full bg-white/30" />
+                    Up to 3 active workstreams
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1 h-1 rounded-full bg-white/30" />
+                    HMAC-SHA256 cache signing
+                  </li>
+                </ul>
+              </div>
 
-        .ixos-woosh-entry {
-          offset-position: 50% 50%;
-          offset-anchor: 50% 50%;
-          offset-path: path('M -960 -560 C -720 -520 -260 -190 0 0');
-          offset-rotate: 0deg;
-          animation: ixosWooshPath 1.16s cubic-bezier(0.2, 0.94, 0.22, 1) forwards;
-          will-change: transform, filter, opacity, offset-distance;
-        }
+              {/* Inner ring: Pro */}
+              <div className="rounded-xl border border-[#F6B94C]/30 bg-[#F6B94C]/[0.03] p-8 md:p-10 relative overflow-hidden">
+                <div className="absolute -top-20 -right-20 w-60 h-60 bg-[#F6B94C]/[0.06] rounded-full blur-[80px]" />
+                <div className="relative z-10">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8 mb-8">
+                    <div>
+                      <h3 className="text-xl font-bold text-[#F6B94C] mb-1">Pro</h3>
+                      <div className="text-4xl font-bold">
+                        $12
+                        <span className="text-base font-normal text-white/30 ml-1">/month</span>
+                      </div>
+                    </div>
+                    <ul className="space-y-2 text-sm" style={{ color: "rgba(243,245,247,0.6)" }}>
+                      <li className="flex items-center gap-2">
+                        <span className="w-1 h-1 rounded-full bg-[#F6B94C]" />
+                        JIT Pro embedding models with deep reasoning
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-1 h-1 rounded-full bg-[#F6B94C]" />
+                        Unlimited workstreams with session recovery
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-1 h-1 rounded-full bg-[#F6B94C]" />
+                        Journalist mode and ephemeral cache
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-1 h-1 rounded-full bg-[#F6B94C]" />
+                        Ed25519 cryptographic attestation
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-1 h-1 rounded-full bg-[#F6B94C]" />
+                        Priority support and early access
+                      </li>
+                    </ul>
+                  </div>
+                  <a
+                    href="#download"
+                    className="inline-block px-8 py-3 rounded-full bg-[#F6B94C] text-[#060810] font-semibold text-sm hover:bg-[#f0c45e] transition-colors"
+                  >
+                    Start Free Trial
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        @keyframes ixosWooshPath {
-          0% {
-            opacity: 0;
-            offset-distance: 0%;
-            transform: perspective(2100px) rotateY(-18deg) rotateZ(5deg) scale(0.92);
-            filter: blur(7px) saturate(0.86);
-          }
-          74% {
-            opacity: 1;
-            offset-distance: 93%;
-            transform: perspective(2100px) rotateY(5deg) rotateZ(-1.5deg) scale(1.035);
-            filter: blur(1px) saturate(1.05);
-          }
-          100% {
-            opacity: 1;
-            offset-distance: 100%;
-            transform: perspective(2100px) rotateY(0deg) rotateZ(0deg) scale(1);
-            filter: blur(0px) saturate(1);
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .ixos-woosh-entry {
-            animation: none;
-            offset-path: none;
-            filter: none;
-          }
-        }
-      `}</style>
+      {/* ═══════════════════════════════════
+          12. FOOTER CTA — Collapsing ripple
+          ═══════════════════════════════════ */}
+      <section id="download" className="relative z-10 py-32 px-6">
+        <CollapsingRipple />
+      </section>
     </main>
+  );
+}
+
+/* ──────────────────────────────────────────────
+   Collapsing Ripple footer CTA
+   ────────────────────────────────────────────── */
+function CollapsingRipple() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+
+  return (
+    <div ref={ref} className="max-w-3xl mx-auto text-center">
+      <motion.div
+        initial={{ clipPath: "circle(85% at 50% 50%)" }}
+        animate={inView ? { clipPath: "circle(60% at 50% 50%)" } : {}}
+        transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="relative rounded-2xl p-16 md:p-20 overflow-hidden"
+      >
+        {/* Amber glow */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#F6B94C]/[0.06] via-[#F6B94C]/[0.03] to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-[#F6B94C]/[0.05] blur-[120px] rounded-full" />
+
+        <div className="relative z-10">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ letterSpacing: "-0.03em" }}>
+            Stop searching the cloud.
+          </h2>
+          <p className="mb-10 text-base" style={{ color: "rgba(243,245,247,0.5)" }}>
+            Your code deserves a search engine that respects it. Local-first.
+            Sub-second. Cryptographically verifiable.
+          </p>
+          <a
+            href="#"
+            className="inline-block px-10 py-4 rounded-full bg-[#F6B94C] text-[#060810] font-bold text-base hover:bg-[#f0c45e] transition-colors shadow-lg shadow-[#F6B94C]/20"
+          >
+            Download Ixos
+          </a>
+          <div className="mt-8 flex flex-wrap justify-center gap-6 text-xs font-mono" style={{ color: "rgba(243,245,247,0.3)" }}>
+            <span>macOS / Windows / Linux</span>
+            <span className="text-white/10">|</span>
+            <span>MIT License</span>
+            <span className="text-white/10">|</span>
+            <span>Zero telemetry</span>
+          </div>
+        </div>
+      </motion.div>
+
+      <div className="mt-16 text-white/20 text-xs">
+        2026 Ixos Inc. All rights reserved.
+      </div>
+    </div>
   );
 }

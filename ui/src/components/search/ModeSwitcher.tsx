@@ -209,7 +209,7 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
         {isOpen && menuMetrics && (
           <>
             <div
-              className="fixed inset-0 z-[130]"
+              className="fixed inset-0 z-[9990]"
               onClick={() => setIsOpen(false)}
             />
 
@@ -218,7 +218,7 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
               transition={{ duration: 0.15 }}
-              className="fixed z-[140] rounded-xl border border-stroke-hairline bg-graphite-2 shadow-lift overflow-hidden"
+              className="fixed z-[9999] rounded-xl border border-stroke-hairline bg-graphite-2 shadow-lift overflow-hidden"
               style={{
                 top: menuMetrics.top,
                 left: menuMetrics.left,

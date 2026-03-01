@@ -190,73 +190,106 @@ function StatCard({
       ? '0'
       : `${stat.numericPrefix}${count}${stat.numericSuffix}`
 
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [rotateX, setRotateX] = useState(0)
+  const [rotateY, setRotateY] = useState(0)
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    
+    setRotateX(((y - centerY) / centerY) * -10)
+    setRotateY(((x - centerX) / centerX) * 10)
+  }
+
+  const handleMouseLeave = () => {
+    setRotateX(0)
+    setRotateY(0)
+  }
+
   return (
     <motion.div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       initial={{ opacity: 0, y: 24 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
-      className="flex flex-col gap-4 py-8 px-2"
-      style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+      animate={inView ? { opacity: 1, y: 0, rotateX, rotateY } : { rotateX: 0, rotateY: 0 }}
+      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1], type: 'spring', stiffness: 300, damping: 30 }}
+      className="flex flex-col gap-4 py-8 px-6 relative"
+      style={{ 
+        border: '1px solid rgba(255,255,255,0.06)',
+        borderRadius: 16,
+        background: 'rgba(255,255,255,0.015)',
+        transformStyle: 'preserve-3d',
+        perspective: 1000
+      }}
     >
-      {/* Tick rule */}
-      <TickRule
-        color={stat.color}
-        progress={stat.tickProgress}
-        active={inView}
-        count={stat.tickCount}
-      />
+      <div style={{ transform: 'translateZ(20px)' }}>
+        {/* Tick rule */}
+        <TickRule
+          color={stat.color}
+          progress={stat.tickProgress}
+          active={inView}
+          count={stat.tickCount}
+        />
 
-      {/* Main value */}
-      <div
-        className="tabular-nums font-mono"
-        style={{
-          fontFamily: 'var(--font-ixo-heading)',
-          fontSize: 'clamp(3rem, 6vw, 5rem)',
-          fontWeight: 700,
-          color: stat.color,
-          letterSpacing: '-0.04em',
-          lineHeight: 1,
-        }}
-      >
-        {displayValue}
-        {stat.numericTarget === 0 && (
-          <span
-            style={{
-              fontFamily: 'var(--font-ixo-heading)',
-              fontSize: 'clamp(1rem, 2vw, 1.5rem)',
-              color: stat.color,
-              marginLeft: 8,
-              letterSpacing: '-0.02em',
-            }}
-          >
-            daemons
-          </span>
-        )}
-      </div>
-
-      {/* Label + sublabel */}
-      <div>
-        <p
-          className="font-mono uppercase"
-          style={{ fontSize: 11, letterSpacing: '0.15em', color: 'rgba(243,245,247,0.55)', marginBottom: 3 }}
+        {/* Main value */}
+        <div
+          className="tabular-nums font-mono"
+          style={{
+            fontFamily: 'var(--font-ixo-heading)',
+            fontSize: 'clamp(3rem, 6vw, 5rem)',
+            fontWeight: 700,
+            color: stat.color,
+            letterSpacing: '-0.04em',
+            lineHeight: 1,
+            marginTop: 16
+          }}
         >
-          {stat.numericTarget === 0 ? 'no background process' : stat.label}
-        </p>
+          {displayValue}
+          {stat.numericTarget === 0 && (
+            <span
+              style={{
+                fontFamily: 'var(--font-ixo-heading)',
+                fontSize: 'clamp(1rem, 2vw, 1.5rem)',
+                color: stat.color,
+                marginLeft: 8,
+                letterSpacing: '-0.02em',
+              }}
+            >
+              daemons
+            </span>
+          )}
+        </div>
+
+        {/* Label + sublabel */}
+        <div style={{ marginTop: 12 }}>
+          <p
+            className="font-mono uppercase"
+            style={{ fontSize: 11, letterSpacing: '0.15em', color: 'rgba(243,245,247,0.55)', marginBottom: 3 }}
+          >
+            {stat.numericTarget === 0 ? 'no background process' : stat.label}
+          </p>
+          <p
+            className="font-mono"
+            style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}
+          >
+            {stat.numericTarget === 0 ? 'JIT scan · on demand' : stat.sublabel}
+          </p>
+        </div>
+
+        {/* Source */}
         <p
           className="font-mono"
-          style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}
+          style={{ fontSize: 9, color: 'rgba(255,255,255,0.18)', marginTop: 16 }}
         >
-          {stat.numericTarget === 0 ? 'JIT scan · on demand' : stat.sublabel}
+          Source: {stat.source}
         </p>
       </div>
-
-      {/* Source */}
-      <p
-        className="font-mono"
-        style={{ fontSize: 9, color: 'rgba(255,255,255,0.18)' }}
-      >
-        Source: {stat.source}
-      </p>
     </motion.div>
   )
 }

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { Activity, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Search, Sparkles } from 'lucide-react';
 import type { IxosSearchResult } from '../types';
 
 type SearchMode = 'flash' | 'auto' | 'pro';
@@ -20,8 +20,6 @@ interface SearchSurfaceProps {
   onQueryChange?: (value: string) => void;
   onSubmit?: () => void;
   directoryLabel?: string;
-  presets?: string[];
-  onPresetSelect?: (value: string) => void;
   mode?: SearchMode;
   onModeChange?: (mode: SearchMode) => void;
   stageLabel?: string;
@@ -42,20 +40,6 @@ interface SearchSurfaceProps {
 }
 
 const MODES: SearchMode[] = ['flash', 'auto', 'pro'];
-const STAGE_ORDER = ['lexical', 'semantic', 'refining', 'locked'];
-
-const STAGE_COLORS: Record<string, { bg: string; active: string }> = {
-  lexical: { bg: 'rgba(246, 185, 76, 0.15)', active: 'rgba(246, 185, 76, 0.9)' },
-  semantic: { bg: 'rgba(20, 184, 166, 0.15)', active: 'rgba(20, 184, 166, 0.9)' },
-  refining: { bg: 'rgba(20, 184, 166, 0.15)', active: 'rgba(20, 184, 166, 0.9)' },
-  locked: { bg: 'rgba(124, 92, 255, 0.15)', active: 'rgba(124, 92, 255, 0.9)' },
-};
-
-function formatPathForRow(path: string) {
-  const parts = path.split(/[\\/]/).filter(Boolean);
-  if (parts.length <= 3) return path;
-  return `.../${parts.slice(-3).join('/')}`;
-}
 
 function inferStage(stageLabel: string, stage?: string) {
   const raw = (stage ?? stageLabel).toLowerCase();
@@ -72,8 +56,6 @@ export function SearchSurface({
   onQueryChange,
   onSubmit,
   directoryLabel,
-  presets = [],
-  onPresetSelect,
   mode = 'auto',
   onModeChange,
   stageLabel = 'Streaming',
@@ -96,464 +78,347 @@ export function SearchSurface({
     () => (resultLimit ? results.slice(0, resultLimit) : results),
     [resultLimit, results],
   );
-  const hiddenCount = Math.max(0, results.length - visibleResults.length);
+  
   const rawStage = pipelineStats?.stage ?? stageLabel;
   const stage = inferStage(stageLabel, rawStage);
-  const stageIndex = STAGE_ORDER.indexOf(stage);
-  const trail = (pipelineStats?.scanTrail ?? []).slice(-4).reverse();
-  const [streamedCount, setStreamedCount] = useState(0);
   const fillHeight = hideSearchChrome;
   const denseMode = hideSearchChrome;
 
-  useEffect(() => {
-    const target = visibleResults.length;
-    if (target === 0) {
-      setStreamedCount(0);
-      return;
-    }
-    if (streamedCount > target) {
-      setStreamedCount(target);
-      return;
-    }
-    if (streamedCount === target) return;
-
-    let current = streamedCount === 0 ? Math.min(2, target) : streamedCount;
-    setStreamedCount(current);
-
-    const id = window.setInterval(() => {
-      current += 1;
-      if (current >= target) {
-        setStreamedCount(target);
-        window.clearInterval(id);
-        return;
-      }
-      setStreamedCount(current);
-    }, isSearching ? 48 : 62);
-
-    return () => window.clearInterval(id);
-  }, [isSearching, streamedCount, visibleResults.length]);
-
-  const streamedRows = visibleResults.slice(0, Math.max(streamedCount, isSearching ? Math.min(2, visibleResults.length) : streamedCount));
-  const selected = streamedRows[selectedIndex] ?? streamedRows[0] ?? null;
+  const selected = visibleResults[selectedIndex] ?? visibleResults[0] ?? null;
+  
+  const progressText = isSearching ? `scanning ${pipelineStats?.filesScanned ?? 0} files...` : 'results ready';
+  const progressColor = isSearching ? '#F59E0B' : '#2DD4BF';
 
   return (
     <div className="ixos-search-surface" data-fill={fillHeight} data-dense={denseMode}>
       {!hideSearchChrome && (
-        <div className="ixos-card" style={{ display: 'grid', gap: 10, padding: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-            <span className="ixos-chip" style={{ borderColor: 'rgba(243,245,247,0.18)' }}>
-              <Search size={12} />
-              Search
+        <div style={{ paddingBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 10, letterSpacing: '0.16em', color: 'rgba(255,255,255,0.46)' }}>
+              IXOS DESKTOP
             </span>
-            <span className="ixos-chip" style={{ color: 'rgba(94, 234, 212, 0.92)' }}>
-              {stageLabel}
+            <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 10, color: progressColor }}>
+              {progressText}
             </span>
           </div>
 
-          {directoryLabel && (
-            <div style={{ border: '1px solid rgba(243, 245, 247, 0.14)', borderRadius: 10, padding: '8px 12px', color: 'rgba(243,245,247,0.58)', fontSize: 11, background: 'rgba(10, 13, 18, 0.46)' }}>
-              Directory: {directoryLabel}
-            </div>
-          )}
-
-          <div style={{ display: 'grid', gap: 10, border: '1px solid rgba(243, 245, 247, 0.14)', borderRadius: 12, padding: 6, background: 'linear-gradient(180deg, rgba(10,13,18,0.88) 0%, rgba(10,13,18,0.72) 100%)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span className="ixos-chip" style={{ borderColor: 'rgba(243,245,247,0.16)', color: 'rgba(243,245,247,0.72)', background: 'rgba(255,255,255,0.04)', minWidth: 74, justifyContent: 'center' }}>
-                Search
+          <div
+            style={{
+              height: 46,
+              borderRadius: 8,
+              border: '1px solid rgba(45,212,191,0.35)',
+              background: 'rgba(10,14,18,0.85)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '0 12px',
+            }}
+          >
+            <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
+              query
+            </span>
+            <input
+              value={query}
+              onChange={(e) => onQueryChange?.(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') onSubmit?.(); }}
+              readOnly={!interactive}
+              placeholder="Type what you remember..."
+              style={{
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                color: '#F3F5F7',
+                fontFamily: 'var(--font-ixo-mono), monospace',
+                fontSize: 13,
+                flex: 1,
+              }}
+            />
+            {directoryLabel && (
+              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-ixo-mono), monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>
+                in {directoryLabel}
               </span>
-              <input
-                className="ixos-input"
-                value={query}
-                onChange={(event) => onQueryChange?.(event.target.value)}
-                onKeyDown={(event) => { if (event.key === 'Enter') onSubmit?.(); }}
-                placeholder="Type what you remember..."
-                readOnly={!interactive}
-                style={{ border: '1px solid rgba(243, 245, 247, 0.12)', background: 'rgba(8, 11, 15, 0.82)', height: 44 }}
-              />
-              {showInlineRunButton && (
-                <button type="button" onClick={() => onSubmit?.()} className="ixos-chip"
-                  style={{ cursor: interactive ? 'pointer' : 'default', padding: '0 14px', borderRadius: 10, height: 44, borderColor: 'rgba(20, 184, 166, 0.42)', color: '#5eead4', background: 'rgba(20, 184, 166, 0.12)', fontWeight: 700 }}>
-                  Run Search
-                </button>
-              )}
-            </div>
-            {!showInlineRunButton && (
-              <div style={{ justifySelf: 'end', paddingRight: 8, fontSize: 10, color: 'rgba(243,245,247,0.46)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-                press enter to run
-              </div>
             )}
-          </div>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {MODES.map((item) => (
-              <button key={item} type="button" className="ixos-chip" onClick={() => onModeChange?.(item)}
-                style={{ cursor: interactive ? 'pointer' : 'default', borderColor: mode === item ? 'rgba(20, 184, 166, 0.45)' : undefined, color: mode === item ? '#5eead4' : undefined, background: mode === item ? 'rgba(20, 184, 166, 0.15)' : undefined }}>
-                {item}
-              </button>
-            ))}
-          </div>
-
-          {presets.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {presets.map((preset) => (
-                <button key={preset} type="button" className="ixos-chip" onClick={() => onPresetSelect?.(preset)}
-                  style={{ cursor: interactive ? 'pointer' : 'default' }}>
-                  {preset}
+            
+            <div style={{ display: 'flex', gap: 6 }}>
+              {MODES.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => onModeChange?.(item)}
+                  style={{
+                    borderRadius: 999,
+                    border: mode === item ? '1px solid rgba(45,212,191,0.4)' : '1px solid rgba(255,255,255,0.1)',
+                    background: mode === item ? 'rgba(45,212,191,0.16)' : 'transparent',
+                    color: mode === item ? '#2DD4BF' : 'rgba(255,255,255,0.4)',
+                    fontFamily: 'var(--font-ixo-mono), monospace',
+                    fontSize: 10,
+                    padding: '4px 10px',
+                    cursor: interactive ? 'pointer' : 'default',
+                    textTransform: 'capitalize',
+                  }}
+                >
+                  {item}
                 </button>
               ))}
             </div>
-          )}
-
+            
+            {showInlineRunButton && (
+              <button
+                type="button"
+                onClick={() => onSubmit?.()}
+                style={{
+                  borderRadius: 8,
+                  background: '#2DD4BF',
+                  color: '#031016',
+                  fontFamily: 'var(--font-ixo-mono), monospace',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: '6px 12px',
+                  cursor: interactive ? 'pointer' : 'default',
+                  border: 'none',
+                }}
+              >
+                Run Search
+              </button>
+            )}
+          </div>
+          
           {errorMessage && (
-            <div style={{ border: '1px solid rgba(239, 68, 68, 0.5)', borderRadius: 10, background: 'rgba(239, 68, 68, 0.08)', padding: '10px 12px', color: '#fca5a5', fontSize: 12 }}>
+            <div style={{ marginTop: 10, border: '1px solid rgba(239, 68, 68, 0.5)', borderRadius: 8, background: 'rgba(239, 68, 68, 0.08)', padding: '10px 12px', color: '#fca5a5', fontSize: 12 }}>
               {errorMessage}
             </div>
           )}
         </div>
       )}
 
-      {/* Thin segmented progress bar — Lexical (amber) → Semantic (teal) → Locked (violet) */}
-      <AnimatePresence>
-        {(isSearching || (stageIndex >= 0 && stage !== 'locked')) && (
-          <motion.div
-            initial={{ opacity: 0, height: 0, marginTop: 0 }}
-            animate={{ opacity: 1, height: 'auto', marginTop: 8 }}
-            exit={{ opacity: 0, height: 0, marginTop: 0 }}
-            transition={{ duration: 0.3 }}
-            style={{ display: 'grid', gap: 6, overflow: 'hidden' }}
-          >
-            {/* 4px height progress bar */}
-            <div style={{ display: 'flex', height: 4, borderRadius: 99, overflow: 'hidden', gap: 2 }}>
-              {STAGE_ORDER.slice(0, 3).map((id, idx) => {
-                const colors = STAGE_COLORS[id];
-                const isActive = idx === stageIndex;
-                const isComplete = idx < stageIndex || stage === 'locked';
-                return (
-                  <div key={id} style={{ flex: 1, background: colors.bg, position: 'relative' }}>
-                    <motion.div
-                      animate={{ width: isComplete ? '100%' : isActive ? '60%' : '0%' }}
-                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                      style={{ height: '100%', background: colors.active }}
-                    />
-                    {isSearching && isActive && (
-                      <motion.span
-                        animate={{ x: ['-30%', '200%'] }}
-                        transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-                        style={{
-                          position: 'absolute', top: 0, left: 0,
-                          width: '40%', height: '100%',
-                          background: `linear-gradient(90deg, transparent, ${colors.active}, transparent)`,
-                        }}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            {/* Compact stats + scan trail */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 10, color: 'rgba(243,245,247,0.5)', letterSpacing: '0.04em' }}>
-              <span>{pipelineStats?.filesScanned ?? pipelineStats?.scanned ?? 0} scanned</span>
-              <span>{pipelineStats?.candidates ?? 0} candidates</span>
-              <span>{pipelineStats?.cacheHits ?? 0} cached</span>
-              {trail.length > 0 && (
-                <span style={{ flex: 1, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'rgba(243,245,247,0.38)' }}>
-                  {trail[0]?.split(/[/\\]/).pop()}
-                </span>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Results + Evidence panel */}
-      <div className="ixos-search-layout">
-        {/* Results list */}
+      <div className="ixos-search-layout" style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+        {/* Results list - Terminal grid style */}
         <div
-          className="ixos-card ixos-search-results"
+          className="ixos-search-results"
           data-scroll={allowResultsScroll}
           style={{
-            display: 'grid',
-            gap: 6,
-            padding: 8,
+            flex: '1',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
           }}
         >
-          {streamedRows.map((result, index) => (
-            <motion.article
-              key={result.id}
-              className="ixos-result-row"
-              data-selected={index === selectedIndex}
-              onClick={() => onSelectResult?.(index)}
-              initial={{ opacity: 0, x: 32, scale: 0.99 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.3, 1], delay: Math.min(index * 0.025, 0.15) }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
-                <strong style={{ color: '#f3f5f7', fontSize: denseMode ? 12 : 13, lineHeight: 1.3 }}>{result.title}</strong>
-                <span style={{ color: '#5eead4', fontSize: denseMode ? 10 : 11, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.06em' }}>
-                  {(result.score * 100).toFixed(0)}%
-                </span>
-              </div>
-              <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                <span
-                  title={result.path}
-                  style={{
-                    color: 'rgba(243,245,247,0.45)',
-                    fontSize: denseMode ? 10 : 11,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    flex: '1 1 0',
-                    minWidth: 0,
-                  }}
+          <div
+            style={{
+              borderRadius: 8,
+              border: '1px solid rgba(255,255,255,0.08)',
+              overflow: 'hidden',
+              background: 'rgba(255,255,255,0.015)',
+            }}
+          >
+            <AnimatePresence>
+              {visibleResults.length > 0 ? visibleResults.map((result, index) => {
+                const isSelected = index === selectedIndex;
+                return (
+                  <motion.div
+                    key={result.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2, delay: index * 0.05 }}
+                    onClick={() => onSelectResult?.(index)}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      padding: '12px',
+                      borderBottom: index === visibleResults.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                      background: isSelected ? 'rgba(45,212,191,0.08)' : 'transparent',
+                      cursor: 'pointer',
+                      transition: 'background 0.2s',
+                      gap: 6,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSelected) e.currentTarget.style.background = 'transparent';
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden' }}>
+                        <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 10, color: isSelected ? 'rgba(45,212,191,0.8)' : 'rgba(255,255,255,0.38)', flexShrink: 0 }}>
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 13, fontWeight: 500, color: isSelected ? '#2DD4BF' : 'rgba(243,245,247,0.9)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {result.title || result.path}
+                        </span>
+                      </div>
+                      <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 11, color: isSelected ? '#2DD4BF' : 'rgba(45,212,191,0.6)', flexShrink: 0 }}>
+                        {result.score.toFixed(2)}
+                      </span>
+                    </div>
+                    <div style={{ paddingLeft: 24 }}>
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace', display: 'block', marginBottom: 4 }}>
+                        {result.path} {result.matchedLineNumber ? `:${result.matchedLineNumber}` : ''}
+                      </span>
+                      <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.6)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {result.snippet.replace(/\n/g, ' ')}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              }) : (
+                <motion.div 
+                  initial={{ opacity: 0 }} 
+                  animate={{ opacity: 1 }} 
+                  exit={{ opacity: 0 }}
+                  style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 12 }}
                 >
-                  {formatPathForRow(result.path)}
-                </span>
-                {result.matchedLineNumber && (
-                  <span style={{
-                    fontSize: 9,
-                    padding: '1px 5px',
-                    borderRadius: 4,
-                    background: 'rgba(246,185,76,0.12)',
-                    border: '1px solid rgba(246,185,76,0.25)',
-                    color: '#f6b94c',
-                    fontFamily: 'monospace',
-                    letterSpacing: '0.04em',
-                    flexShrink: 0,
-                  }}>
-                    L{result.matchedLineNumber}
-                  </span>
-                )}
-                {result.lexicalScore != null && result.semanticScore != null && (
-                  <span style={{
-                    fontSize: 9,
-                    padding: '1px 5px',
-                    borderRadius: 4,
-                    background: 'rgba(20,184,166,0.08)',
-                    border: '1px solid rgba(20,184,166,0.18)',
-                    color: 'rgba(20,184,166,0.7)',
-                    fontFamily: 'monospace',
-                    flexShrink: 0,
-                  }}>
-                    L{(result.lexicalScore * 100).toFixed(0)} S{(result.semanticScore * 100).toFixed(0)}
-                  </span>
-                )}
-              </div>
-              <div style={{
-                marginTop: 6,
-                padding: '4px 6px',
-                background: 'rgba(13,17,23,0.6)',
-                borderRadius: 5,
-                border: '1px solid rgba(255,255,255,0.04)',
-              }}>
-                <p style={{
-                  margin: 0,
-                  color: 'rgba(243,245,247,0.72)',
-                  fontSize: denseMode ? 10 : 11,
-                  fontFamily: 'monospace',
-                  lineHeight: 1.5,
-                  display: '-webkit-box',
-                  WebkitLineClamp: hideSearchChrome ? 1 : 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                  whiteSpace: 'pre-wrap',
-                }}>
-                  {result.snippet}
-                </p>
-              </div>
-            </motion.article>
-          ))}
-
-          {isSearching && streamedRows.length === 0 && (
-            <>
-              {Array.from({ length: 4 }, (_, idx) => (
-                <motion.div
-                  key={`skeleton-${idx}`}
-                  className="ixos-result-row"
-                  style={{ borderStyle: 'dashed', opacity: 0.7 }}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 0.7, y: 0 }}
-                  transition={{ delay: idx * 0.05, duration: 0.2 }}
-                >
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <motion.span
-                      style={{ width: 6, height: 6, borderRadius: 1, background: 'rgba(20,184,166,0.9)' }}
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 0.8, repeat: Infinity, delay: idx * 0.08 }}
-                    />
-                    <p style={{ margin: 0, fontSize: 12, color: 'rgba(243,245,247,0.55)' }}>
-                      {trail[idx]
-                        ? `Scanning ${trail[idx].split(/[/\\]/).pop() || trail[idx]}`
-                        : 'Streaming lexical candidates...'}
-                    </p>
-                  </div>
+                  {isSearching ? 'waiting for results...' : 'no results found.'}
                 </motion.div>
-              ))}
-            </>
-          )}
-
-          {hiddenCount > 0 && (
-            <div style={{ border: '1px solid rgba(243,245,247,0.08)', borderRadius: 10, padding: '8px 12px', color: 'rgba(243,245,247,0.5)', fontSize: 11 }}>
-              + {hiddenCount} more results
-            </div>
-          )}
-
-          {!isSearching && streamedRows.length === 0 && (
-            <div style={{ color: 'rgba(243,245,247,0.5)', fontSize: 12, padding: 8 }}>
-              No results yet. Start with a question or file memory fragment.
-            </div>
-          )}
+              )}
+            </AnimatePresence>
+          </div>
+          
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center', padding: '0 4px' }}>
+            <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 10, color: 'rgba(255,255,255,0.42)' }}>
+              lexical {'->'} semantic {'->'} lock
+            </span>
+            <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 10, color: 'rgba(45,212,191,0.9)' }}>
+              {pipelineStats?.candidates ?? 0} matches | local-first
+            </span>
+          </div>
         </div>
 
-        {/* Evidence aside — clean, compact */}
-        <aside className="ixos-card ixos-search-evidence" style={{ display: 'grid', gap: 10, alignContent: 'start', padding: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-            <p className="ixos-chip" style={{ width: 'fit-content' }}>
-              <Sparkles size={11} />
+        {/* Evidence aside */}
+        <aside 
+          className="ixos-card ixos-search-evidence" 
+          style={{ 
+            width: '380px', 
+            flexShrink: 0, 
+            display: 'grid', 
+            gap: 16, 
+            padding: 20,
+            background: 'rgba(18, 20, 24, 0.7)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 16,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            position: 'sticky',
+            top: 16,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 12 }}>
+            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#f3f5f7', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Sparkles size={16} className="text-accent-teal" />
               Evidence
-            </p>
-            <p className="ixos-chip" style={{ borderColor: stageIndex >= 3 ? 'rgba(124,92,255,0.35)' : 'rgba(20,184,166,0.35)', color: stageIndex >= 3 ? '#a78bfa' : '#5eead4' }}>
-              <Activity size={11} />
+            </h2>
+            <div className="ixos-chip" style={{ background: 'rgba(20,184,166,0.1)', color: '#5eead4', borderColor: 'rgba(20,184,166,0.2)' }}>
+              <Activity size={12} />
               {stage}
-            </p>
+            </div>
           </div>
 
           {selected ? (
-            <div style={{ display: 'grid', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <h4 style={{ margin: 0, color: '#f3f5f7', fontSize: 13, fontWeight: 600 }}>{selected.title}</h4>
-                <p style={{ margin: '4px 0 0', color: 'rgba(243,245,247,0.65)', fontSize: 12, lineHeight: 1.6 }}>
-                  {selected.rationale ?? 'Lexical + semantic alignment stabilized this file.'}
-                </p>
-              </div>
-
-              {/* Why Matched — heuristic synthesis */}
-              <div style={{
-                padding: '8px 10px',
-                borderRadius: 8,
-                border: '1px solid rgba(124,92,255,0.2)',
-                background: 'rgba(124,92,255,0.06)',
-                fontSize: 11,
-                color: 'rgba(243,245,247,0.7)',
-                lineHeight: 1.5,
-              }}>
-                <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#a78bfa', marginBottom: 4, fontWeight: 600 }}>
-                  Why this matched
-                </div>
-                {(() => {
-                  const lex = selected.lexicalScore ?? 0;
-                  const sem = selected.semanticScore ?? 0;
-                  const boost = selected.boostScore ?? 0;
-                  const parts: string[] = [];
-                  if (lex > 0.6) parts.push('Strong keyword overlap in file path and content');
-                  else if (lex > 0.3) parts.push('Partial keyword matches found');
-                  else parts.push('Weak keyword signal');
-                  if (sem > 0.7) parts.push('high semantic similarity to query intent');
-                  else if (sem > 0.5) parts.push('moderate conceptual alignment');
-                  else parts.push('low conceptual alignment');
-                  if (boost > 0) parts.push(`+${(boost * 100).toFixed(0)}% quality boost applied`);
-                  if (selected.matchedLineNumber) parts.push(`matched at line ${selected.matchedLineNumber}`);
-                  return parts.join('. ') + '.';
-                })()}
-              </div>
-
-              {/* Score Breakdown */}
-              <div style={{ display: 'grid', gap: 6, background: 'rgba(255,255,255,0.02)', padding: 10, borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
-                  <span style={{ color: 'rgba(243,245,247,0.5)' }}>Lexical Match</span>
-                  <span style={{ color: '#f6b94c', fontVariantNumeric: 'tabular-nums' }}>{((selected.lexicalScore ?? 0.4) * 100).toFixed(0)}%</span>
-                </div>
-                <div style={{ width: '100%', height: 3, background: 'rgba(246,185,76,0.15)', borderRadius: 2 }}>
-                  <div style={{ width: `${(selected.lexicalScore ?? 0.4) * 100}%`, height: '100%', background: '#f6b94c', borderRadius: 2 }} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 4 }}>
-                  <span style={{ color: 'rgba(243,245,247,0.5)' }}>Semantic Match</span>
-                  <span style={{ color: '#14b8a6', fontVariantNumeric: 'tabular-nums' }}>{((selected.semanticScore ?? 0.6) * 100).toFixed(0)}%</span>
-                </div>
-                <div style={{ width: '100%', height: 3, background: 'rgba(20,184,166,0.15)', borderRadius: 2 }}>
-                  <div style={{ width: `${(selected.semanticScore ?? 0.6) * 100}%`, height: '100%', background: '#14b8a6', borderRadius: 2 }} />
-                </div>
-                {(selected.boostScore ?? 0) > 0 && (
-                  <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 4 }}>
-                      <span style={{ color: 'rgba(243,245,247,0.5)' }}>Quality Boost</span>
-                      <span style={{ color: '#a78bfa', fontVariantNumeric: 'tabular-nums' }}>+{((selected.boostScore ?? 0) * 100).toFixed(0)}%</span>
-                    </div>
-                    <div style={{ width: '100%', height: 3, background: 'rgba(124,92,255,0.15)', borderRadius: 2 }}>
-                      <div style={{ width: `${(selected.boostScore ?? 0) * 100}%`, height: '100%', background: '#a78bfa', borderRadius: 2 }} />
-                    </div>
-                  </>
-                )}
-                {/* Final blended score */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span style={{ color: 'rgba(243,245,247,0.7)', fontWeight: 600 }}>Final Score</span>
-                  <span style={{ color: '#5eead4', fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>{(selected.score * 100).toFixed(0)}%</span>
-                </div>
-              </div>
-
-              {/* Snippet / Where Matched */}
-              <div style={{ background: '#0d1117', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, overflow: 'hidden' }}>
-                <div style={{ padding: '6px 10px', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 10, color: 'rgba(243,245,247,0.4)', fontFamily: 'monospace' }}>
-                    {selected.path}:{selected.matchedLineNumber ?? 12}
+                <h4 style={{ margin: 0, color: '#f3f5f7', fontSize: 15, fontWeight: 500, wordBreak: 'break-word' }}>
+                  {selected.title}
+                </h4>
+                <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,255,255,0.05)', color: '#bdc1c6', fontFamily: 'monospace' }}>
+                    Path: {selected.path}
                   </span>
-                  <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: 'rgba(246,185,76,0.12)', color: '#f6b94c', fontFamily: 'monospace' }}>
-                    where matched
+                  {selected.matchedLineNumber && (
+                    <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 99, background: 'rgba(20,184,166,0.1)', color: '#5eead4', fontFamily: 'monospace' }}>
+                      Line {selected.matchedLineNumber}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {selected.rationale && (
+                <div style={{ fontSize: 13, color: '#e8eaed', lineHeight: 1.5, fontFamily: 'var(--font-ixo-mono), monospace' }}>
+                  {selected.rationale}
+                </div>
+              )}
+
+              {/* Large Code Snippet */}
+              <div style={{ background: '#0d1117', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, overflow: 'hidden', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.2)' }}>
+                <div style={{ padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 11, color: '#9aa0a6', fontFamily: 'monospace' }}>
+                    Match Context
                   </span>
                 </div>
-                <div style={{ padding: 10, overflowX: 'auto' }}>
-                  <pre style={{ margin: 0, fontSize: 11, fontFamily: 'monospace', color: 'rgba(243,245,247,0.85)', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                <div style={{ padding: 16, overflowX: 'auto' }}>
+                  <pre style={{ margin: 0, fontSize: 12, fontFamily: 'monospace', color: '#e8eaed', lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                     <code dangerouslySetInnerHTML={{ __html: selected.snippet.replace(/\n/g, '<br/>') }} />
                   </pre>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-                <button type="button" className="ixos-chip" onClick={() => onOpenResult?.(selectedIndex)}
-                  style={{ cursor: interactive ? 'pointer' : 'default', color: '#5eead4', borderColor: 'rgba(20,184,166,0.3)', background: 'rgba(20,184,166,0.1)' }}>
-                  Open File
+              {/* Detailed Score Breakdown */}
+              <div style={{ display: 'grid', gap: 12, background: 'rgba(255,255,255,0.03)', padding: 16, borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)' }}>
+                <h4 style={{ margin: 0, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9aa0a6', fontWeight: 600 }}>Score Analysis</h4>
+                
+                {selected.lexicalScore !== undefined && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+                      <span style={{ color: '#bdc1c6', fontFamily: 'var(--font-ixo-mono), monospace' }}>Lexical Match (BM25)</span>
+                      <span style={{ color: '#f6b94c', fontWeight: 600, fontFamily: 'var(--font-ixo-mono), monospace' }}>{(selected.lexicalScore * 100).toFixed(1)}%</span>
+                    </div>
+                    <div style={{ width: '100%', height: 4, background: 'rgba(246,185,76,0.15)', borderRadius: 2 }}>
+                      <div style={{ width: `${selected.lexicalScore * 100}%`, height: '100%', background: '#f6b94c', borderRadius: 2, boxShadow: '0 0 8px rgba(246,185,76,0.4)' }} />
+                    </div>
+                  </div>
+                )}
+                
+                {selected.semanticScore !== undefined && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+                      <span style={{ color: '#bdc1c6', fontFamily: 'var(--font-ixo-mono), monospace' }}>Semantic Similarity</span>
+                      <span style={{ color: '#14b8a6', fontWeight: 600, fontFamily: 'var(--font-ixo-mono), monospace' }}>{(selected.semanticScore * 100).toFixed(1)}%</span>
+                    </div>
+                    <div style={{ width: '100%', height: 4, background: 'rgba(20,184,166,0.15)', borderRadius: 2 }}>
+                      <div style={{ width: `${selected.semanticScore * 100}%`, height: '100%', background: '#14b8a6', borderRadius: 2, boxShadow: '0 0 8px rgba(20,184,166,0.4)' }} />
+                    </div>
+                  </div>
+                )}
+                
+                {(selected.boostScore ?? 0) > 0 && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+                      <span style={{ color: '#bdc1c6', fontFamily: 'var(--font-ixo-mono), monospace' }}>Quality Boost</span>
+                      <span style={{ color: '#a78bfa', fontWeight: 600, fontFamily: 'var(--font-ixo-mono), monospace' }}>+{(selected.boostScore! * 100).toFixed(1)}%</span>
+                    </div>
+                    <div style={{ width: '100%', height: 4, background: 'rgba(124,92,255,0.15)', borderRadius: 2 }}>
+                      <div style={{ width: `${selected.boostScore! * 100}%`, height: '100%', background: '#a78bfa', borderRadius: 2, boxShadow: '0 0 8px rgba(124,92,255,0.4)' }} />
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginTop: 4, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                  <span style={{ color: '#f3f5f7', fontWeight: 600, fontFamily: 'var(--font-ixo-mono), monospace' }}>Final Match Score</span>
+                  <span style={{ color: '#5eead4', fontWeight: 700, fontFamily: 'var(--font-ixo-mono), monospace' }}>{(selected.score * 100).toFixed(1)}%</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                <button type="button" onClick={() => onOpenResult?.(selectedIndex)}
+                  style={{ flex: 1, padding: '10px', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: interactive ? 'pointer' : 'default', color: '#031016', background: '#5eead4', border: 'none', transition: 'background 0.2s', fontFamily: 'var(--font-ixo-mono), monospace' }}
+                  onMouseOver={(e) => e.currentTarget.style.background = '#2dd4bf'}
+                  onMouseOut={(e) => e.currentTarget.style.background = '#5eead4'}
+                >
+                  Open in Editor
                 </button>
-                <button type="button" className="ixos-chip" onClick={() => onRevealResult?.(selectedIndex)}
-                  style={{ cursor: interactive ? 'pointer' : 'default' }}>
-                  Reveal
+                <button type="button" onClick={() => onRevealResult?.(selectedIndex)}
+                  style={{ flex: 1, padding: '10px', borderRadius: 8, fontWeight: 500, fontSize: 13, cursor: interactive ? 'pointer' : 'default', color: '#f3f5f7', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', transition: 'background 0.2s', fontFamily: 'var(--font-ixo-mono), monospace' }}
+                  onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                >
+                  Reveal File
                 </button>
               </div>
             </div>
           ) : (
-            <p style={{ margin: 0, color: 'rgba(243,245,247,0.5)', fontSize: 12 }}>
-              Evidence updates as search packets arrive.
-            </p>
-          )}
-
-          {/* Compact KPIs */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
-            <div className="ixos-kpi">
-              <p style={{ margin: 0, color: 'rgba(243,245,247,0.4)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Scanned</p>
-              <p style={{ margin: '3px 0 0', color: '#f3f5f7', fontSize: 14, fontVariantNumeric: 'tabular-nums' }}>{pipelineStats?.filesScanned ?? pipelineStats?.scanned ?? 0}</p>
-            </div>
-            <div className="ixos-kpi">
-              <p style={{ margin: 0, color: 'rgba(243,245,247,0.4)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Candidates</p>
-              <p style={{ margin: '3px 0 0', color: '#f3f5f7', fontSize: 14, fontVariantNumeric: 'tabular-nums' }}>{pipelineStats?.candidates ?? 0}</p>
-            </div>
-            <div className="ixos-kpi">
-              <p style={{ margin: 0, color: 'rgba(243,245,247,0.4)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Embedded</p>
-              <p style={{ margin: '3px 0 0', color: '#f3f5f7', fontSize: 14, fontVariantNumeric: 'tabular-nums' }}>{pipelineStats?.embedded ?? 0}</p>
-            </div>
-            <div className="ixos-kpi">
-              <p style={{ margin: 0, color: 'rgba(243,245,247,0.4)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Cache Hits</p>
-              <p style={{ margin: '3px 0 0', color: '#f3f5f7', fontSize: 14, fontVariantNumeric: 'tabular-nums' }}>{pipelineStats?.cacheHits ?? 0}</p>
-            </div>
-          </div>
-
-          {trail.length > 0 && (
-            <div style={{ display: 'grid', gap: 3 }}>
-              <p style={{ margin: 0, fontSize: 9, color: 'rgba(243,245,247,0.38)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-                Scan trail
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 200 }}>
+              <p style={{ margin: 0, color: '#9aa0a6', fontSize: 14, textAlign: 'center', fontFamily: 'var(--font-ixo-mono), monospace' }}>
+                Select a result to view detailed evidence and match analysis.
               </p>
-              {trail.slice(0, 3).map((path) => (
-                <p key={path} style={{ margin: 0, fontSize: 11, color: 'rgba(243,245,247,0.5)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {path.split(/[/\\]/).pop()}
-                </p>
-              ))}
             </div>
           )}
         </aside>

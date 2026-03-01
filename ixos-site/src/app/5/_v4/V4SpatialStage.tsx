@@ -56,11 +56,7 @@ export function V4SpatialStage({ children }: { children: ReactNode }) {
     offset: ['start start', 'end end'],
   })
 
-  const cameraRotateX = useTransform(scrollYProgress, [0, 0.2, 0.5, 0.8, 1], [0, 1.4, -1.1, 1, 0])
-  const cameraRotateY = useTransform(scrollYProgress, [0, 0.2, 0.5, 0.8, 1], [0, 1.2, -1.4, 1.1, 0])
-  const cameraY = useTransform(scrollYProgress, [0, 0.5, 1], [0, -14, 0])
-  const cameraX = useTransform(scrollYProgress, [0, 0.5, 1], [0, 8, -7])
-  const cameraZ = useTransform(scrollYProgress, [0, 0.5, 1], [0, 20, 0])
+  // Removed camera transforms to avoid weird tilt effect on scroll.
 
   useEffect(() => {
     const root = stageRef.current
@@ -73,7 +69,7 @@ export function V4SpatialStage({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <div ref={stageRef} style={{ position: 'relative', perspective: lowEnd ? 'none' : '1700px' }}>
+    <div ref={stageRef} style={{ position: 'relative' }}>
       {!lowEnd && (
         <motion.div
           aria-hidden
@@ -91,23 +87,9 @@ export function V4SpatialStage({ children }: { children: ReactNode }) {
         />
       )}
 
-      <motion.div
-        style={
-          lowEnd
-            ? undefined
-            : {
-                transformStyle: 'preserve-3d',
-                rotateX: cameraRotateX,
-                rotateY: cameraRotateY,
-                x: cameraX,
-                y: cameraY,
-                z: cameraZ,
-                willChange: 'transform',
-              }
-        }
-      >
+      <div>
         {children}
-      </motion.div>
+      </div>
     </div>
   )
 }

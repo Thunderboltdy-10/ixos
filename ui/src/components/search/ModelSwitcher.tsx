@@ -238,10 +238,10 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
         disabled={!!preloadingModel || !!downloadingModel}
         className={cn(
           'flex items-center gap-2 px-3 py-2 rounded-md',
-          'bg-graphite-2 hover:bg-graphite-3',
-          'border border-stroke-hairline hover:border-border-medium',
+          'bg-transparent hover:bg-graphite-3/55',
           'transition-all duration-200',
-          'text-xs uppercase tracking-[0.16em] min-w-[150px] max-w-[190px]',
+          'text-[11px] uppercase tracking-[0.1em] border border-transparent hover:border-white/8',
+          'min-w-[150px] max-w-[190px]',
           noModelsAvailable && 'border-amber-500/50'
         )}
       >
@@ -271,7 +271,7 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
         {isOpen && menuMetrics && (
           <>
             <div
-              className="fixed inset-0 z-[130]"
+              className="fixed inset-0 z-[9990]"
               onClick={() => setIsOpen(false)}
             />
 
@@ -280,7 +280,7 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
               transition={{ duration: 0.15 }}
-              className="fixed z-[140] rounded-xl border border-stroke-hairline bg-graphite-2 shadow-lift overflow-hidden"
+              className="fixed z-[9999] rounded-xl border border-stroke-hairline bg-graphite-2 shadow-lift overflow-hidden"
               style={{
                 top: menuMetrics.top,
                 left: menuMetrics.left,

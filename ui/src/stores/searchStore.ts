@@ -544,6 +544,11 @@ export const useSearchStore = create<SearchState>((set, get) => ({
             starred: existing?.starred ?? false,
           });
 
+          // Also save to global history store for backend persistence
+          import('./historyStore').then(({ useHistoryStore }) => {
+            useHistoryStore.getState().addToHistory(threadQuery, state.directory, results.length);
+          });
+        }
           // Log search activity (Phase 2: Second Brain)
           useActivityStore.getState().logSearchQuery(threadQuery).catch(() => {
             // Silent failure - activity logging is non-critical
@@ -562,7 +567,6 @@ export const useSearchStore = create<SearchState>((set, get) => ({
           tauri.reclusterWorkstreams().catch(() => {
             // Silent failure - reclustering is non-critical for non-Pro users
           });
-        }
 
         // Increment search count safely
         get().setFileCount(state.fileCount || 0);

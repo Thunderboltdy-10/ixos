@@ -4,14 +4,21 @@ import { useEffect, useRef, useState } from 'react'
 const CHARS = '█░▓▒#@!?$%&*0123456789ABCDEF'
 
 export function useDecodeEffect(text: string, delay = 0) {
-  const [display, setDisplay] = useState(() =>
-    text
+  // Use the text itself as the initial display to avoid server/client mismatch.
+  // The scramble effect will start client-side via useEffect.
+  const [display, setDisplay] = useState(text)
+  const [revealed, setRevealed] = useState(false)
+  const ref = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    // Immediately scramble the text on mount (client-only), before intersection
+    const scrambled = text
       .split('')
       .map(() => CHARS[Math.floor(Math.random() * CHARS.length)])
       .join('')
-  )
-  const [revealed, setRevealed] = useState(false)
-  const ref = useRef<HTMLElement>(null)
+    setDisplay(scrambled)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // only once on mount
 
   useEffect(() => {
     const observer = new IntersectionObserver(

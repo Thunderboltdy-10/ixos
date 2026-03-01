@@ -132,19 +132,20 @@ export function AskModeSwitcher({ value, onChange, className, disabled = false }
               onClick={() => setIsOpen(false)}
             />
 
-            <motion.div
+              <motion.div
               ref={dropdownRef}
               initial={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
               transition={{ duration: 0.15 }}
+              style={{ pointerEvents: 'auto' }}
               className={cn(
                 'absolute z-[140]',
                 dropdownPosition === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
-                'right-0',
+                'left-0',
                 'w-52',
-                'bg-graphite-2 rounded-xl border border-stroke-hairline',
-                'shadow-lift overflow-hidden'
+                'bg-graphite-2/[0.98] rounded-xl border border-stroke-hairline',
+                'shadow-lift overflow-visible'
               )}
             >
               {modes.map((mode) => (

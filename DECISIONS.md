@@ -915,3 +915,31 @@
 - Evidence (links to /reports or output files): `ixos-site/src/app/1/_mc/MissionControlPage.tsx`, `ixos-site/src/app/2/_ch/ChamberPage.tsx`, `ixos-site/src/app/3/_wire/WirePage.tsx`, `ixos-site/src/landing/DemoSurface.tsx`, Playwright visuals under `ixos-site/.visual/landing.visual.spec.ts/*`.
 - Risks: high visual complexity increases maintenance overhead across three route-specific themes.
 - Follow-ups: extract reusable structural primitives if repeated patterns grow.
+
+- Decision: Normalize UI confidence scores from raw ranking scores before rendering in shared search surfaces.
+- Options considered: display raw backend score (can exceed 1.0); clamp raw score directly; derive normalized confidence from score breakdown with fallback normalization.
+- Why chosen: user-facing match confidence must remain 0-100% and comparable across Flash/Auto/Pro while preserving backend ranking semantics.
+- Evidence (links to /reports or output files): `ui/src/components/search/MainSearchView.tsx`, `packages/ixos-ui/src/components/SearchSurface.tsx`, `packages/ixos-ui/src/types.ts`.
+- Risks: confidence remains an inferred normalization when backend emits non-probabilistic ranking sums.
+- Follow-ups: expose explicit backend confidence field to remove UI-side inference.
+
+- Decision: Keep desktop and landing aligned through shared `@ixos/ixos-ui` surfaces, but feed desktop-specific controls and richer data mapping from `MainSearchView`.
+- Options considered: revert to legacy desktop-only result components; force one rigid shared search bar flow everywhere; hybrid shared surface + desktop control shell.
+- Why chosen: preserves mandatory shared-component parity while restoring advanced desktop behavior (folder/model controls, streaming telemetry, about panel actions).
+- Evidence (links to /reports or output files): `packages/ixos-ui/src/components/SearchSurface.tsx`, `ui/src/components/search/MainSearchView.tsx`, `ui/src/components/search/SearchInput.tsx`.
+- Risks: adapter/mapping layer in desktop can drift from backend schema over time.
+- Follow-ups: add small mapper tests for score/context conversion.
+
+- Decision: Serialize encrypted history writes and add a local mirror fallback for search threads.
+- Options considered: keep fire-and-forget encrypted saves; fetch sidebar history from backend only; queued encrypted writes plus mirror.
+- Why chosen: addresses restart inconsistency where stale/old searches sometimes replaced newer ones due asynchronous write races.
+- Evidence (links to /reports or output files): `ui/src/stores/starredStore.ts`.
+- Risks: local mirror can diverge if storage corruption occurs in both stores.
+- Follow-ups: add integrity checksum + periodic self-heal merge strategy.
+
+- Decision: Hydrate desktop build env requirements from `.env.local` files in root, `src-tauri`, and `ui` before failing validation.
+- Options considered: require explicit shell export only; only read root `.env.local`; load all relevant env files with shell vars overriding.
+- Why chosen: fixes local release build failures when variables are correctly set in project env files but not exported in shell/session.
+- Evidence (links to /reports or output files): `scripts/verify-desktop-build-env.js`, `npm run tauri:build` PASS after patch.
+- Risks: developers may assume CI also reads these files (it should still use secrets/vars explicitly).
+- Follow-ups: document CI vs local precedence in release docs.

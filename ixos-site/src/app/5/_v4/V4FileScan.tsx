@@ -116,13 +116,19 @@ function TreeCard({ inView }: { inView: boolean }) {
       transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 1.5 }}
       className="relative overflow-hidden"
       style={{
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.07)',
+        // 3D glassmorphic card — shadow top-left
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 60%, rgba(0,0,0,0.1) 100%)',
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
+        border: '1px solid rgba(255,255,255,0.09)',
+        borderTop: '1px solid rgba(255,255,255,0.16)',
+        borderLeft: '1px solid rgba(255,255,255,0.12)',
         borderRadius: 16,
         padding: '24px',
         transformStyle: 'preserve-3d',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-        perspective: 1000
+        boxShadow: '-8px -8px 24px rgba(0,0,0,0.7), 4px 4px 16px rgba(45,212,191,0.05), 0 20px 40px rgba(0,0,0,0.4)',
+        perspective: 1000,
+        transition: 'box-shadow 0.25s ease',
       }}
     >
       <BlueprintGrid />

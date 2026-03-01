@@ -1,740 +1,402 @@
 "use client"
 import { useState, useEffect, useRef } from 'react'
+import type { IxosSearchResult } from '@ixos/ixos-ui'
+import { DemoSurface } from '../../../landing/DemoSurface'
 
-// ─── Section definitions ───────────────────────────────────────────────────────
+// ─── Chapter definitions ─────────────────────────────────────────────────────
+// Each chapter = a scroll band (50%-100% split into 4) with:
+// - A search query shown in the search bar
+// - 3 search results whose snippet/rationale contains the landing-page story
+// - A search mode
 
-interface Section {
-  rank: string
-  file: string
-  score: number
-  tag: string
-  tone: 'amber' | 'teal' | 'violet'
-  title: string
-  body: string
+interface Chapter {
+  id: string
+  query: string
+  mode: 'flash' | 'auto' | 'pro'
+  results: IxosSearchResult[]
 }
 
-const SECTIONS: Section[] = [
+const CHAPTERS: Chapter[] = [
   {
-    rank: '01',
-    file: 'src/storage/validator.rs',
-    score: 0.97,
-    tag: 'STORAGE',
-    tone: 'amber',
-    title: 'Cache Everywhere',
-    body: 'Platform-aware embedding cache selects the best backend automatically — NTFS Alternate Data Streams on Windows, xattr on Linux and macOS, NullCache as graceful fallback for FAT32 and cloud mounts. Zero configuration required.',
+    id: 'ch1',
+    query: 'file search performance storage',
+    mode: 'flash',
+    results: [
+      {
+        id: 'ch1-r1',
+        title: 'Cache Everywhere',
+        path: 'src/storage/ads_windows.rs',
+        score: 0.97,
+        lexicalScore: 0.94,
+        semanticScore: 0.96,
+        snippet: 'Platform-aware embedding cache selects the best backend automatically.',
+        matchedLineNumber: 42,
+        contextBefore: ['// Auto-selects NTFS ADS on Windows, xattr on Unix'],
+        contextMatch: ['pub fn get_cache_for_path(p: &Path) -> Box<dyn EmbeddingCache> {'],
+        contextAfter: ['    #[cfg(windows)] return Box::new(AdsCache::new(p));'],
+        rationale: 'Platform-aware embedding cache selects the best backend automatically — NTFS Alternate Data Streams on Windows, xattr on Linux and macOS, NullCache as graceful fallback. 225 bytes per file. Zero configuration required. Your files stay yours.',
+      },
+      {
+        id: 'ch1-r2',
+        title: 'Sub-second Cold Cache',
+        path: 'src/ixos_embed/model2vec.rs',
+        score: 0.94,
+        lexicalScore: 0.91,
+        semanticScore: 0.93,
+        snippet: '64-dimension f16 embeddings, HMAC-SHA256 signed at write time.',
+        matchedLineNumber: 118,
+        contextMatch: ['pub fn embed(&self, text: &str) -> Result<Vec<f16>, EmbedError> {'],
+        contextAfter: ['    let vec = self.model.encode(text)?;'],
+        rationale: '64-dimension f16 embeddings stored in 128 bytes. HMAC-SHA256 signed at write time and cryptographically rejected at read time if tampered. Sub-second cold cache. Zero cloud dependency — the model runs entirely on your machine.',
+      },
+      {
+        id: 'ch1-r3',
+        title: '~7ms for 1000 Files',
+        path: 'src/optimization/mod.rs',
+        score: 0.91,
+        lexicalScore: 0.88,
+        semanticScore: 0.90,
+        snippet: 'Parallel file loading with rayon — 7ms for 1000 files.',
+        matchedLineNumber: 77,
+        contextMatch: ['files.par_iter().map(|f| load_with_cache(f)).collect()'],
+        rationale: 'Parallel file loading via rayon. 7ms to load 1000 files. Search completes in under 800ms including cold model inference. System-aware profile selection based on RAM and CPU count. No background daemon required.',
+      },
+    ],
   },
   {
-    rank: '02',
-    file: 'src/ixos_embed/model2vec.rs',
-    score: 0.94,
-    tag: 'SEMANTIC',
-    tone: 'teal',
-    title: 'Model2Vec Embeddings',
-    body: '64-dimension f16 embeddings, HMAC-SHA256 signed at write time and cryptographically rejected at read time if tampered. Sub-second cold cache. Zero cloud dependency. The model runs entirely on your machine.',
+    id: 'ch2',
+    query: 'privacy local search no cloud',
+    mode: 'pro',
+    results: [
+      {
+        id: 'ch2-r1',
+        title: 'Journalist Mode',
+        path: 'src/journalist_mode.rs',
+        score: 0.98,
+        lexicalScore: 0.95,
+        semanticScore: 0.97,
+        snippet: 'Maximum privacy posture. Nothing written to disk, nothing cached.',
+        matchedLineNumber: 29,
+        contextBefore: ['/// Ephemeral search session — no disk writes, no logs, no cache'],
+        contextMatch: ['pub fn journalist_search(query: &str) -> SearchResults {'],
+        contextAfter: ['    let session = EphemeralSession::new(); // mlock + zeroize-on-drop'],
+        rationale: 'Maximum privacy posture. Expanded evidence extraction with deep semantic matching. Ephemeral session — nothing written to disk, nothing cached, nothing logged. Memory locked with mlock and cleared on drop. Designed for high-stakes environments and sensitive investigations.',
+      },
+      {
+        id: 'ch2-r2',
+        title: 'Zero Cloud Index',
+        path: 'src/security/sandbox.rs',
+        score: 0.95,
+        lexicalScore: 0.92,
+        semanticScore: 0.94,
+        snippet: 'Path sandboxing validates all file access. 0 bytes to cloud.',
+        matchedLineNumber: 55,
+        contextMatch: ['pub fn validate_path(p: &Path, root: &Path) -> Result<(), SandboxError>'],
+        rationale: 'Path sandboxing validates every file access against configured root directories. No network calls permitted. 0 bytes to cloud — proven by the session attestation signature. Your search index is your local filesystem.',
+      },
+      {
+        id: 'ch2-r3',
+        title: 'Opt-in Timing Protection',
+        path: 'src/ixos_embed/secure_embedder.rs',
+        score: 0.92,
+        lexicalScore: 0.89,
+        semanticScore: 0.91,
+        snippet: 'Configurable timing floor prevents side-channel inference on query patterns.',
+        matchedLineNumber: 88,
+        contextMatch: ['if self.secure_timing { sleep(TIMING_FLOOR - elapsed); }'],
+        rationale: 'Default: fast mode — no timing floor, 4 concurrent embeddings. With --secure-timing: 100ms minimum floor, single-threaded, constant-time operations. Side-channel attacks cannot infer which files matched your query. Your search patterns stay private.',
+      },
+    ],
   },
   {
-    rank: '03',
-    file: 'src/ixos_rank/hybrid_engine.rs',
-    score: 0.91,
-    tag: 'RANKING',
-    tone: 'violet',
-    title: 'Adaptive Hybrid Mode',
-    body: 'Begins in fast lexical mode. When confidence is low or intent is ambiguous, the semantic layer activates automatically. Attack detection built in — if degradation is detected, the engine falls back to pure semantic ranking.',
+    id: 'ch3',
+    query: 'semantic embeddings hybrid ranking',
+    mode: 'auto',
+    results: [
+      {
+        id: 'ch3-r1',
+        title: 'Adaptive Hybrid Mode',
+        path: 'src/ixos_rank/hybrid_engine.rs',
+        score: 0.96,
+        lexicalScore: 0.93,
+        semanticScore: 0.95,
+        snippet: 'Begins in fast lexical mode. Semantic layer activates when confidence is low.',
+        matchedLineNumber: 144,
+        contextBefore: ['// Confidence-gated: if lexical score < threshold, run semantic pass'],
+        contextMatch: ['if lexical_conf < SEMANTIC_THRESHOLD { self.semantic_pass(query) }'],
+        contextAfter: ['// Attack detection: degradation triggers fallback to pure semantic'],
+        rationale: 'Begins in fast BM25-like lexical mode. When confidence is low or intent is ambiguous, the semantic layer activates automatically. Attack detection built in — if degradation is detected, the engine falls back to pure semantic ranking. MRR@10 of 0.92 with Pro quality.',
+      },
+      {
+        id: 'ch3-r2',
+        title: 'Model2Vec Embeddings',
+        path: 'src/ixos_embed/model2vec.rs',
+        score: 0.93,
+        lexicalScore: 0.90,
+        semanticScore: 0.92,
+        snippet: 'On-device 64-dim embeddings. Flash: 10ms. Auto: 40ms. Pro: 120ms.',
+        matchedLineNumber: 201,
+        contextMatch: ['// Quality tiers: flash (f16/64), auto (f16/64+bm25), pro (f32/128)'],
+        rationale: 'Model2Vec embeddings run entirely on-device. Three quality tiers: Flash at ~10ms with MRR 0.71, Auto at ~40ms with MRR 0.83, Pro at ~120ms with MRR 0.92. int8 quantization with less than 1% quality loss. No HuggingFace API calls during search.',
+      },
+      {
+        id: 'ch3-r3',
+        title: 'Secure Ranking',
+        path: 'src/ixos_rank/secure_ranker.rs',
+        score: 0.90,
+        lexicalScore: 0.87,
+        semanticScore: 0.89,
+        snippet: 'Integrity-verified ranking with behavioral scoring and tamper detection.',
+        matchedLineNumber: 67,
+        contextMatch: ['pub fn rank_verified(&self, results: &mut [FileResult]) -> IntegrityReport'],
+        rationale: 'Every ranking operation is integrity-verified. Behavioral scoring detects anomalous ranking patterns that could indicate data poisoning or cache tampering. If the integrity check fails, the search aborts — not silently degrades.',
+      },
+    ],
   },
   {
-    rank: '04',
-    file: 'src/journalist_mode.rs',
-    score: 0.88,
-    tag: 'PRIVACY',
-    tone: 'amber',
-    title: 'Journalist Mode',
-    body: 'Maximum privacy posture. Expanded evidence extraction with deep semantic matching. Ephemeral session — nothing written to disk, nothing cached, nothing logged. Designed for high-stakes environments.',
-  },
-  {
-    rank: '05',
-    file: 'src/attestation/mod.rs',
-    score: 0.85,
-    tag: 'SECURITY',
-    tone: 'teal',
-    title: 'Cryptographic Attestation',
-    body: 'Ed25519 signatures on every search session. Prove that your search ran locally without cloud intervention. Every result is signed. Every session is auditable. Trust, but verify — cryptographically.',
+    id: 'ch4',
+    query: 'cryptographic attestation Ed25519',
+    mode: 'pro',
+    results: [
+      {
+        id: 'ch4-r1',
+        title: 'Cryptographic Attestation',
+        path: 'src/attestation/mod.rs',
+        score: 0.99,
+        lexicalScore: 0.97,
+        semanticScore: 0.98,
+        snippet: 'Ed25519 signatures on every search session. Prove local execution.',
+        matchedLineNumber: 38,
+        contextBefore: ['/// Signs every result with the session private key'],
+        contextMatch: ['pub fn sign_session(&self, results: &[FileResult]) -> Attestation'],
+        contextAfter: ['    Ed25519Signer::new().sign(session_digest(results))'],
+        rationale: 'Ed25519 signatures on every search session. Prove that your search ran locally without cloud intervention. Every result is individually signed. Every session produces an auditable attestation record — verifiable by any third party with the public key.',
+      },
+      {
+        id: 'ch4-r2',
+        title: 'GDPR · CCPA · EU AI Act',
+        path: 'src/compliance/mod.rs',
+        score: 0.95,
+        lexicalScore: 0.92,
+        semanticScore: 0.94,
+        snippet: 'Built-in compliance for EU AI Act, GDPR, CCPA. No consent fatigue.',
+        matchedLineNumber: 14,
+        contextMatch: ['impl ComplianceLayer for IxosProtocol {'],
+        rationale: 'Compliance baked in by architecture, not by policy. GDPR right-to-deletion satisfied because no personal data leaves the device. EU AI Act requirements met — transparent algorithm, no black-box cloud AI. CCPA opt-out is the default state.',
+      },
+      {
+        id: 'ch4-r3',
+        title: 'Start Searching in 30 Seconds',
+        path: 'README.md',
+        score: 0.92,
+        lexicalScore: 0.89,
+        semanticScore: 0.91,
+        snippet: 'cargo install ixos && ixos search "your query" --dir ./your-files',
+        matchedLineNumber: 3,
+        contextMatch: ['cargo install ixos'],
+        contextAfter: ['ixos search "your query" --dir ./your-files --progressive'],
+        rationale: 'Install with cargo in under 30 seconds. No account required. No API key. No configuration. Run ixos search against any directory and get semantically ranked results immediately. Community tier is free forever.',
+      },
+    ],
   },
 ]
 
-// ─── Tone color maps ───────────────────────────────────────────────────────────
+// Chapter scroll bands: 20-35%, 35-50%, 50-65%, 65-80%
+function getChapterIndex(scrollProgress: number): number {
+  if (scrollProgress < 0.20) return 0
+  const inside = (scrollProgress - 0.20) / 0.60 // 0..1 across remaining 60%
+  return Math.min(Math.floor(inside * CHAPTERS.length), CHAPTERS.length - 1)
+}
 
-type Tone = 'amber' | 'teal' | 'violet'
+// Sidebar recent queries — deterministic order
+const SIDEBAR_QUERIES = [
+  'file search performance storage',
+  'privacy local search no cloud',
+  'semantic embeddings hybrid ranking',
+  'cryptographic attestation Ed25519',
+]
 
-const TONE = {
+// ─── Lerp helper ──────────────────────────────────────────────────────────────
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t
+}
+
+// ─── Tone colors (violet/amber per chapter) ──────────────────────────────────
+const CHAPTER_TONES = ['amber', 'violet', 'teal', 'amber'] as const
+type Tone = 'amber' | 'violet' | 'teal'
+
+const TONE_COLORS: Record<Tone, { accent: string; text: string; bg: string; border: string }> = {
   amber: {
+    accent: '#F6B94C',
     text: 'rgba(246,185,76,0.9)',
-    textDim: 'rgba(246,185,76,0.55)',
-    border: 'rgba(246,185,76,0.2)',
-    bg: 'rgba(246,185,76,0.04)',
-    bar: '#F6B94C',
-    glow: 'rgba(246,185,76,0.15)',
-  },
-  teal: {
-    text: 'rgba(45,212,191,0.9)',
-    textDim: 'rgba(45,212,191,0.55)',
-    border: 'rgba(45,212,191,0.2)',
-    bg: 'rgba(45,212,191,0.04)',
-    bar: '#2DD4BF',
-    glow: 'rgba(45,212,191,0.12)',
+    bg: 'rgba(246,185,76,0.06)',
+    border: 'rgba(246,185,76,0.25)',
   },
   violet: {
+    accent: '#7C5CFF',
     text: 'rgba(167,139,250,0.9)',
-    textDim: 'rgba(167,139,250,0.55)',
-    border: 'rgba(124,92,255,0.25)',
-    bg: 'rgba(124,92,255,0.06)',
-    bar: '#7C5CFF',
-    glow: 'rgba(124,92,255,0.15)',
+    bg: 'rgba(124,92,255,0.08)',
+    border: 'rgba(124,92,255,0.3)',
+  },
+  teal: {
+    accent: '#2DD4BF',
+    text: 'rgba(45,212,191,0.9)',
+    bg: 'rgba(45,212,191,0.06)',
+    border: 'rgba(45,212,191,0.25)',
   },
 }
 
-// ─── Section-specific content widgets ─────────────────────────────────────────
+// ─── Camera tilt state ────────────────────────────────────────────────────────
 
-function CacheWidget() {
-  return (
-    <div className="space-y-2">
-      {[
-        { name: 'NTFS ADS', platform: 'Windows', status: 'active', note: '225 bytes / file' },
-        { name: 'xattr', platform: 'Linux · macOS', status: 'active', note: 'same footprint' },
-        { name: 'NullCache', platform: 'FAT32 · Cloud', status: 'fallback', note: 'in-memory only' },
-      ].map(item => (
-        <div
-          key={item.name}
-          className="flex items-center gap-4 py-2.5"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-        >
-          <div
-            className="w-1.5 h-1.5 rounded-full shrink-0"
-            style={{
-              background: item.status === 'active' ? '#22c55e' : 'rgba(255,255,255,0.3)',
-              boxShadow: item.status === 'active' ? '0 0 6px rgba(34,197,94,0.6)' : 'none',
-            }}
-          />
-          <span className="font-mono w-24 shrink-0" style={{ fontSize: 12, color: TONE.amber.text }}>
-            {item.name}
-          </span>
-          <span className="font-mono flex-1" style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
-            {item.platform}
-          </span>
-          <span className="font-mono" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>
-            {item.note}
-          </span>
-        </div>
-      ))}
-
-      {/* Binary layout diagram */}
-      <div
-        className="font-mono mt-4 p-4 rounded-lg"
-        style={{ fontSize: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}
-      >
-        <div style={{ color: 'rgba(255,255,255,0.3)', marginBottom: 6, fontSize: 9, letterSpacing: '0.1em' }}>
-          CACHE BINARY FORMAT — 225 BYTES
-        </div>
-        {[
-          { field: 'version:u8', size: '1 byte', color: 'rgba(255,255,255,0.35)' },
-          { field: 'model_fingerprint', size: '32 bytes', color: 'rgba(255,255,255,0.35)' },
-          { field: 'file_hash:sha256', size: '32 bytes', color: 'rgba(255,255,255,0.35)' },
-          { field: 'embedding:f16×64', size: '128 bytes', color: 'rgba(45,212,191,0.7)' },
-          { field: 'signature:HMAC-SHA256', size: '32 bytes', color: TONE.amber.text },
-        ].map(row => (
-          <div key={row.field} className="flex gap-4 py-0.5">
-            <span style={{ color: row.color, minWidth: 180 }}>{row.field}</span>
-            <span style={{ color: 'rgba(255,255,255,0.25)' }}>{row.size}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function EmbeddingWidget() {
-  return (
-    <div className="space-y-4">
-      {/* Quality tiers */}
-      <div className="space-y-2">
-        {[
-          { tier: 'Flash', dim: 64, bits: 'f16', lat: '~10ms', mrr: 0.71 },
-          { tier: 'Auto', dim: 64, bits: 'f16', lat: '~40ms', mrr: 0.83 },
-          { tier: 'Pro', dim: 128, bits: 'f32', lat: '~120ms', mrr: 0.92 },
-        ].map(t => (
-          <div key={t.tier} className="flex items-center gap-4">
-            <span
-              className="font-mono w-12 shrink-0"
-              style={{ fontSize: 11, color: TONE.teal.text }}
-            >
-              {t.tier}
-            </span>
-            <div
-              className="rounded overflow-hidden shrink-0"
-              style={{ width: 200, height: 3, background: 'rgba(255,255,255,0.06)' }}
-            >
-              <div
-                style={{
-                  height: '100%',
-                  width: `${t.mrr * 100}%`,
-                  background: TONE.teal.bar,
-                  borderRadius: 2,
-                  boxShadow: `0 0 8px ${TONE.teal.glow}`,
-                }}
-              />
-            </div>
-            <span className="font-mono" style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>
-              MRR {t.mrr}
-            </span>
-            <span className="font-mono ml-auto" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>
-              {t.lat}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* Model facts */}
-      <div
-        className="grid grid-cols-3 gap-3 pt-3"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
-      >
-        {[
-          { label: 'Quantization', value: 'int8 / f16' },
-          { label: 'Telemetry', value: 'none' },
-          { label: 'Inference', value: 'on-device' },
-        ].map(f => (
-          <div key={f.label} className="text-center">
-            <div className="font-mono" style={{ fontSize: 12, color: TONE.teal.text, marginBottom: 2 }}>
-              {f.value}
-            </div>
-            <div
-              className="font-mono uppercase"
-              style={{ fontSize: 8, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.25)' }}
-            >
-              {f.label}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function HybridWidget() {
-  return (
-    <div className="space-y-3">
-      {/* Pipeline visualization */}
-      <div className="flex items-center gap-2">
-        {[
-          { label: 'Lexical', color: '#F59E0B', active: true },
-          { label: '→', color: 'rgba(255,255,255,0.2)', active: false, isArrow: true },
-          { label: 'Semantic', color: '#7C5CFF', active: true },
-          { label: '→', color: 'rgba(255,255,255,0.2)', active: false, isArrow: true },
-          { label: 'Hybrid Merge', color: '#2DD4BF', active: true },
-        ].map((step, i) => step.isArrow ? (
-          <span key={i} className="font-mono" style={{ fontSize: 12, color: step.color }}>→</span>
-        ) : (
-          <div
-            key={i}
-            className="font-mono px-3 py-1.5 rounded"
-            style={{
-              fontSize: 11,
-              color: step.color,
-              background: `${step.color}12`,
-              border: `1px solid ${step.color}30`,
-            }}
-          >
-            {step.label}
-          </div>
-        ))}
-      </div>
-
-      {/* Mode table */}
-      <div
-        className="space-y-1.5 pt-3"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
-      >
-        {[
-          { name: 'Flash', desc: 'Lexical only — BM25-like scoring', lat: '~10ms', score: '0.71 MRR' },
-          { name: 'Auto', desc: 'Hybrid — confidence-gated semantic layer', lat: '~40ms', score: '0.83 MRR' },
-          { name: 'Pro', desc: 'Full semantic — deep intent matching', lat: '~120ms', score: '0.92 MRR' },
-        ].map(row => (
-          <div
-            key={row.name}
-            className="flex items-center gap-3 py-2"
-            style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-          >
-            <span
-              className="font-mono w-12 shrink-0"
-              style={{ fontSize: 11, color: TONE.violet.text }}
-            >
-              {row.name}
-            </span>
-            <span className="font-mono flex-1" style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>
-              {row.desc}
-            </span>
-            <span className="font-mono shrink-0" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>
-              {row.lat}
-            </span>
-            <span className="font-mono shrink-0" style={{ fontSize: 10, color: TONE.violet.text }}>
-              {row.score}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <p className="font-mono" style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)' }}>
-        Attack detection: degradation triggers automatic fallback to pure semantic
-      </p>
-    </div>
-  )
-}
-
-function JournalistWidget() {
-  return (
-    <div className="space-y-4">
-      {/* Feature checklist */}
-      <div className="space-y-2">
-        {[
-          { label: 'Ephemeral session — nothing written to disk', on: true },
-          { label: 'Expanded evidence extraction', on: true },
-          { label: 'Deep semantic matching (Pro quality always)', on: true },
-          { label: 'Secure timing — constant-time operations', on: true },
-          { label: 'Memory locked with mlock + zeroize-on-drop', on: true },
-          { label: 'Background daemon', on: false },
-          { label: 'Cloud sync or telemetry', on: false },
-        ].map(item => (
-          <div key={item.label} className="flex items-center gap-3">
-            <span
-              className="font-mono shrink-0 w-4 text-center"
-              style={{
-                fontSize: 10,
-                color: item.on ? TONE.amber.text : 'rgba(255,255,255,0.2)',
-              }}
-            >
-              {item.on ? '✓' : '✗'}
-            </span>
-            <span
-              className="font-mono"
-              style={{
-                fontSize: 11,
-                color: item.on ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.25)',
-                textDecoration: item.on ? 'none' : 'line-through',
-              }}
-            >
-              {item.label}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <div
-        className="font-mono p-3 rounded-lg"
-        style={{ fontSize: 10, background: 'rgba(246,185,76,0.05)', border: '1px solid rgba(246,185,76,0.15)' }}
-      >
-        <span style={{ color: TONE.amber.text }}>--journalist-mode</span>
-        <span style={{ color: 'rgba(255,255,255,0.4)' }}> · activates maximum privacy posture</span>
-      </div>
-    </div>
-  )
-}
-
-function AttestationWidget() {
-  return (
-    <div className="space-y-4">
-      {/* Signature visualization */}
-      <div
-        className="font-mono p-4 rounded-lg space-y-1"
-        style={{ background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(45,212,191,0.12)' }}
-      >
-        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.12em', marginBottom: 6 }}>
-          SESSION ATTESTATION
-        </div>
-        {[
-          { label: 'algorithm', value: 'Ed25519' },
-          { label: 'session_id', value: 'a7f3c9d2-4b1e-...' },
-          { label: 'query_hash', value: 'sha256:9f4e2a...' },
-          { label: 'results_signed', value: '5 / 5' },
-          { label: 'cloud_calls', value: '0' },
-          { label: 'signature', value: 'Fp3mNx7R...' },
-        ].map(row => (
-          <div key={row.label} className="flex gap-3">
-            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', minWidth: 120 }}>{row.label}:</span>
-            <span style={{ fontSize: 10, color: TONE.teal.text }}>{row.value}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex gap-4">
-        {[
-          { label: 'Local Only', icon: '⬡', desc: 'No network calls' },
-          { label: 'Signed', icon: '◈', desc: 'Ed25519 per session' },
-          { label: 'Auditable', icon: '◎', desc: 'Verifiable proof' },
-        ].map(item => (
-          <div
-            key={item.label}
-            className="flex-1 text-center p-3 rounded-lg"
-            style={{ background: 'rgba(45,212,191,0.04)', border: '1px solid rgba(45,212,191,0.12)' }}
-          >
-            <div style={{ fontSize: 16, color: TONE.teal.text, marginBottom: 4 }}>{item.icon}</div>
-            <div className="font-mono" style={{ fontSize: 10, color: TONE.teal.text, marginBottom: 2 }}>
-              {item.label}
-            </div>
-            <div className="font-mono" style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>
-              {item.desc}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-const WIDGETS = [CacheWidget, EmbeddingWidget, HybridWidget, JournalistWidget, AttestationWidget]
-
-// ─── Active result card ────────────────────────────────────────────────────────
-
-function ResultCard({ section, isActive, direction }: {
-  section: Section
-  isActive: boolean
-  direction: 'up' | 'down'
-}) {
-  const tone = TONE[section.tone]
-  const Widget = WIDGETS[SECTIONS.indexOf(section)] || (() => null)
-
-  return (
-    <div
-      className="absolute inset-0"
-      style={{
-        opacity: isActive ? 1 : 0,
-        transform: isActive
-          ? 'translateY(0px)'
-          : direction === 'down'
-            ? 'translateY(20px)'
-            : 'translateY(-20px)',
-        transition: 'opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1)',
-        pointerEvents: isActive ? 'auto' : 'none',
-      }}
-    >
-      <div
-        className="h-full rounded-xl p-8 overflow-auto"
-        style={{
-          background: `linear-gradient(135deg, rgba(12,14,18,0.98), ${tone.bg})`,
-          border: `1px solid ${tone.border}`,
-          boxShadow: `inset 0 0 60px ${tone.glow}`,
-        }}
-      >
-        {/* Result header */}
-        <div className="flex items-center gap-3 mb-1">
-          <span
-            className="font-mono uppercase px-2 py-0.5 rounded"
-            style={{
-              fontSize: 9,
-              letterSpacing: '0.2em',
-              color: tone.text,
-              border: `1px solid ${tone.border}`,
-              background: tone.bg,
-            }}
-          >
-            {section.tag}
-          </span>
-          <span className="font-mono" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>
-            {section.file}
-          </span>
-        </div>
-
-        {/* Title */}
-        <h2
-          className="font-mono font-bold mb-4"
-          style={{
-            fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)',
-            color: tone.text,
-            letterSpacing: '-0.02em',
-            lineHeight: 1.1,
-          }}
-        >
-          {section.title}
-        </h2>
-
-        {/* Body */}
-        <p
-          className="font-mono leading-relaxed mb-8"
-          style={{
-            fontSize: 13,
-            color: 'rgba(243,245,247,0.6)',
-            maxWidth: 560,
-          }}
-        >
-          {section.body}
-        </p>
-
-        {/* Widget content */}
-        <Widget />
-      </div>
-    </div>
-  )
-}
-
-// ─── Sidebar nav item ──────────────────────────────────────────────────────────
-
-function SidebarQuery({ query, active }: { query: string; active: boolean }) {
-  return (
-    <div
-      className="font-mono px-2 py-1.5 rounded truncate mb-0.5 transition-all duration-300"
-      style={{
-        fontSize: 10,
-        color: active ? 'rgba(246,185,76,0.8)' : 'rgba(255,255,255,0.25)',
-        background: active ? 'rgba(246,185,76,0.07)' : 'transparent',
-      }}
-    >
-      {query}
-    </div>
-  )
-}
-
-// ─── Score bar ────────────────────────────────────────────────────────────────
-
-function ScoreBar({ score, tone }: { score: number; tone: Tone }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div
-        className="rounded-full overflow-hidden"
-        style={{ width: 80, height: 2, background: 'rgba(255,255,255,0.08)' }}
-      >
-        <div
-          style={{
-            height: '100%',
-            width: `${score * 100}%`,
-            background: TONE[tone].bar,
-            borderRadius: 2,
-            transition: 'width 0.4s ease',
-            boxShadow: `0 0 6px ${TONE[tone].glow}`,
-          }}
-        />
-      </div>
-      <span
-        className="font-mono"
-        style={{ fontSize: 10, color: TONE[tone].text, transition: 'color 0.3s ease' }}
-      >
-        {score}
-      </span>
-    </div>
-  )
+interface TiltState {
+  rotX: number
+  rotY: number
+  targetRotX: number
+  targetRotY: number
 }
 
 // ─── Main InsidePhase ─────────────────────────────────────────────────────────
 
-const SIDEBAR_QUERIES = [
-  'cache everywhere strategy',
-  'semantic model internals',
-  'adaptive hybrid ranking',
-  'journalist mode privacy',
-  'cryptographic attestation',
-]
-
 export function InsidePhase({ scrollProgress }: { scrollProgress: number }) {
-  const [activeSection, setActiveSection] = useState(0)
-  const [prevSection, setPrevSection] = useState(0)
-  const [direction, setDirection] = useState<'up' | 'down'>('down')
+  const [chapterIndex, setChapterIndex] = useState(0)
+  const [flashBar, setFlashBar] = useState(false)
+  const [resultsVisible, setResultsVisible] = useState(true)
+  const [selectedIndex, setSelectedIndex] = useState(0)
 
-  // Map scroll 0.5→1.0 to section index 0→4
+  // Camera tilt via RAF — no state, direct DOM mutation for performance
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const tiltRef = useRef<TiltState>({ rotX: 0, rotY: 0, targetRotX: 0, targetRotY: 0 })
+  const tiltRafRef = useRef<number>(0)
+
+  // Chapter transitions
   useEffect(() => {
-    const inside = Math.max(0, (scrollProgress - 0.5) / 0.5) // 0..1
-    const rawIdx = inside * SECTIONS.length
-    const idx = Math.min(Math.floor(rawIdx), SECTIONS.length - 1)
+    const next = getChapterIndex(scrollProgress)
 
-    setActiveSection(prev => {
-      if (idx !== prev) {
-        setDirection(idx > prev ? 'down' : 'up')
-        setPrevSection(prev)
+    setChapterIndex(prev => {
+      if (next !== prev) {
+        // Chapter changed: amber flash + results cross-fade
+        setFlashBar(true)
+        setResultsVisible(false)
+        setSelectedIndex(0)
+
+        // Tilt on chapter change: rotateY pan
+        tiltRef.current.targetRotY = next > prev ? 4 : -4
+        tiltRef.current.targetRotX = 0
+
+        setTimeout(() => {
+          setFlashBar(false)
+        }, 400)
+
+        setTimeout(() => {
+          setResultsVisible(true)
+        }, 350)
+
+        // Tilt returns to center after 700ms
+        setTimeout(() => {
+          tiltRef.current.targetRotY = 0
+          tiltRef.current.targetRotX = 0
+        }, 700)
       }
-      return idx
+      return next
     })
   }, [scrollProgress])
 
-  const currentSection = SECTIONS[activeSection]
-  const tone = TONE[currentSection.tone]
+  // RAF loop for smooth camera tilt + subtle idle breathing
+  useEffect(() => {
+    let lastTime = 0
 
-  // Fade in when scrollProgress crosses 0.5
-  const containerOpacity = Math.min((scrollProgress - 0.45) / 0.08, 1)
+    const animate = (time: number) => {
+      const dt = Math.min(time - lastTime, 50) // cap delta
+      lastTime = time
+
+      const t = tiltRef.current
+      const speed = dt * 0.008 // lerp speed
+
+      // Idle breathing — very subtle rotateX ±0.5deg
+      const breathe = Math.sin(time * 0.0007) * 0.5
+      const idleTarget = breathe
+
+      // If no chapter-change tilt is active (targetRotX/Y near 0), apply idle
+      const isIdling = Math.abs(t.targetRotY) < 0.1 && Math.abs(t.targetRotX) < 0.1
+
+      const finalTargetX = isIdling ? idleTarget : t.targetRotX
+      const finalTargetY = t.targetRotY
+
+      t.rotX = lerp(t.rotX, finalTargetX, speed * 1.5)
+      t.rotY = lerp(t.rotY, finalTargetY, speed)
+
+      if (wrapperRef.current) {
+        wrapperRef.current.style.transform =
+          `perspective(1400px) rotateX(${t.rotX.toFixed(3)}deg) rotateY(${t.rotY.toFixed(3)}deg)`
+      }
+
+      tiltRafRef.current = requestAnimationFrame(animate)
+    }
+
+    tiltRafRef.current = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(tiltRafRef.current)
+  }, [])
+
+  // Fade in when scrollProgress crosses 0.16 (sooner, to overlap with VoidPhase fading out)
+  const containerOpacity = Math.min(Math.max((scrollProgress - 0.16) / 0.08, 0), 1)
+
+  const chapter = CHAPTERS[chapterIndex]
+  const tone = CHAPTER_TONES[chapterIndex] as Tone
+  const colors = TONE_COLORS[tone]
 
   return (
     <div
       className="relative"
       style={{
         opacity: containerOpacity,
-        transition: 'opacity 0.3s ease',
+        transition: 'opacity 0.4s ease',
       }}
     >
-      {/* Sticky app shell */}
+      {/* Sticky app shell — full height */}
       <div
-        className="sticky top-0 h-screen flex overflow-hidden"
-        style={{
-          background: 'rgba(10,12,16,0.98)',
-          backdropFilter: 'blur(24px)',
-        }}
+        className="sticky top-0 h-screen flex items-center justify-center overflow-hidden"
+        style={{ background: '#04050A' }}
       >
-        {/* Left sidebar */}
+        {/* Use DemoSurface directly for consistent desktop app rendering */}
         <div
-          className="flex flex-col p-5 shrink-0"
           style={{
-            width: 224,
-            borderRight: '1px solid rgba(255,255,255,0.05)',
-            background: 'rgba(8,10,14,0.6)',
+            width: 'min(1400px, 98vw)',
+            height: 'min(850px, 92vh)',
+            borderRadius: 14,
+            border: `1px solid ${colors.border}`,
+            boxShadow: `0 0 60px ${colors.bg}, 0 30px 80px rgba(0,0,0,0.8)`,
+            background: 'rgba(8,10,14,0.99)',
+            overflow: 'hidden',
           }}
         >
-          {/* Brand */}
-          <div className="flex items-center gap-2 mb-7">
-            <div
-              className="w-5 h-5 rounded"
-              style={{
-                background: 'linear-gradient(135deg, rgba(124,92,255,0.7), rgba(124,58,237,0.4))',
-                border: '1px solid rgba(124,92,255,0.5)',
-                boxShadow: '0 0 12px rgba(124,92,255,0.2)',
-              }}
-            />
-            <span
-              className="font-mono font-bold"
-              style={{ fontSize: 14, color: 'rgba(124,92,255,0.95)' }}
-            >
-              ixos
-            </span>
-          </div>
-
-          {/* Nav */}
-          {[
-            { label: 'Search', active: true },
-            { label: 'Today', active: false },
-            { label: 'Workstreams', active: false },
-          ].map(item => (
-            <div
-              key={item.label}
-              className="font-mono px-3 py-2 rounded mb-1"
-              style={{
-                fontSize: 12,
-                color: item.active ? 'rgba(167,139,250,0.95)' : 'rgba(255,255,255,0.35)',
-                background: item.active ? 'rgba(124,92,255,0.12)' : 'transparent',
-              }}
-            >
-              {item.label}
+          {/* Title bar */}
+          <div className="flex items-center gap-3 px-4 py-2.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(6,8,12,0.95)' }}>
+            <div className="flex gap-1.5 shrink-0">
+              <div className="w-3 h-3 rounded-full" style={{ background: 'rgba(239,68,68,0.5)' }} />
+              <div className="w-3 h-3 rounded-full" style={{ background: 'rgba(234,179,8,0.5)' }} />
+              <div className="w-3 h-3 rounded-full" style={{ background: 'rgba(34,197,94,0.5)' }} />
             </div>
-          ))}
-
-          {/* Recent queries */}
-          <div className="mt-8">
-            <div
-              className="font-mono uppercase mb-3 px-1"
-              style={{ fontSize: 8, letterSpacing: '0.25em', color: 'rgba(255,255,255,0.2)' }}
-            >
-              Recent
-            </div>
-            {SIDEBAR_QUERIES.map((q, i) => (
-              <SidebarQuery key={i} query={q} active={i === activeSection} />
-            ))}
-          </div>
-
-          {/* Session indicator */}
-          <div className="mt-auto">
-            <div
-              className="flex items-center gap-2 px-2 py-2 rounded"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
-            >
-              <div
-                className="w-1.5 h-1.5 rounded-full shrink-0"
-                style={{ background: '#22c55e', boxShadow: '0 0 6px rgba(34,197,94,0.8)' }}
-              />
-              <span className="font-mono truncate" style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>
-                ixos-spatial-demo
+            <div className="flex-1 flex items-center justify-center">
+              <span className="font-mono uppercase" style={{ fontSize: 10, letterSpacing: '0.35em', color: 'rgba(243,245,247,0.3)' }}>
+                IXOS PROTOCOL — Local Search Engine
               </span>
             </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: flashBar ? '#F6B94C' : '#22c55e', boxShadow: flashBar ? '0 0 8px rgba(246,185,76,0.9)' : '0 0 6px rgba(34,197,94,0.7)' }} />
+              <span className="font-mono" style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>{flashBar ? 'searching...' : 'local · 0 bytes to cloud'}</span>
+            </div>
           </div>
-        </div>
-
-        {/* Main content area */}
-        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          {/* Search bar — pinned */}
-          <div
-            className="flex items-center gap-4 px-6 py-3 shrink-0"
-            style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
-          >
-            {/* Result index */}
-            <span
-              className="font-mono shrink-0"
-              style={{
-                fontSize: 10,
-                color: tone.textDim,
-                transition: 'color 0.3s ease',
-              }}
-            >
-              {currentSection.rank}
-            </span>
-            <div
-              className="w-px h-4 shrink-0"
-              style={{ background: 'rgba(255,255,255,0.08)' }}
-            />
-            {/* File path */}
-            <span
-              className="font-mono flex-1 truncate"
-              style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', transition: 'all 0.3s ease' }}
-            >
-              {currentSection.file}
-            </span>
-            {/* Score */}
-            <ScoreBar score={currentSection.score} tone={currentSection.tone} />
-            {/* Tag badge */}
-            <span
-              className="font-mono shrink-0 px-2 py-0.5 rounded"
-              style={{
-                fontSize: 8,
-                letterSpacing: '0.2em',
-                color: tone.textDim,
-                border: `1px solid ${tone.border}`,
-                background: tone.bg,
-                transition: 'all 0.3s ease',
-              }}
-            >
-              {currentSection.tag}
-            </span>
-          </div>
-
-          {/* Card viewport */}
-          <div className="flex-1 relative p-6 overflow-hidden">
-            {SECTIONS.map((section, i) => (
-              <ResultCard
-                key={i}
-                section={section}
-                isActive={i === activeSection}
-                direction={i < activeSection ? 'up' : direction}
-              />
-            ))}
-          </div>
-
-          {/* Progress dots */}
-          <div
-            className="flex items-center justify-center gap-2 py-4 shrink-0"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
-          >
-            {SECTIONS.map((_, i) => (
-              <div
-                key={i}
-                className="rounded-full transition-all duration-300"
-                style={{
-                  width: i === activeSection ? 16 : 4,
-                  height: 4,
-                  background: i === activeSection ? tone.bar : 'rgba(255,255,255,0.15)',
-                  boxShadow: i === activeSection ? `0 0 6px ${tone.glow}` : 'none',
-                }}
-              />
-            ))}
-            <span className="font-mono ml-4" style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)' }}>
-              scroll to explore
-            </span>
+          
+          {/* DemoSurface */}
+          <div style={{ height: 'calc(100% - 40px)', overflow: 'hidden' }}>
+            <DemoSurface initialQuery={chapter.query} autoRun style={{ height: '100%', overflow: 'hidden' }} />
           </div>
         </div>
       </div>
 
-      {/* Scroll spacer: one full viewport per section */}
-      {SECTIONS.map((_, i) => (
-        <div key={i} style={{ height: '100vh' }} aria-hidden />
+      {/* Scroll spacer */}
+      {CHAPTERS.map((ch) => (
+        <div key={ch.id} style={{ height: '100vh' }} aria-hidden />
       ))}
     </div>
   )

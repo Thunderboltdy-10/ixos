@@ -438,10 +438,16 @@ function ModePanel({
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.25 }}
           style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.06)',
+            // 3D glassmorphic card
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 60%, rgba(0,0,0,0.1) 100%)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderTop: '1px solid rgba(255,255,255,0.14)',
+            borderLeft: '1px solid rgba(255,255,255,0.1)',
             borderRadius: 12,
             padding: 20,
+            boxShadow: '-8px -8px 24px rgba(0,0,0,0.65), 4px 4px 16px rgba(246,185,76,0.04)',
           }}
         >
           {/* Tag */}
@@ -600,7 +606,7 @@ export function V4ComputeBudget() {
     >
       <section
         className="relative overflow-hidden"
-        style={{ backgroundColor: '#0C0E10', padding: '112px 0 144px' }}
+        style={{ backgroundColor: 'transparent', padding: '112px 0 144px' }}
       >
         <div className="relative z-10 max-w-6xl mx-auto px-6">
           {/* Header */}
@@ -657,10 +663,16 @@ export function V4ComputeBudget() {
               animate={inView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
               style={{
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.06)',
+                // 3D glassmorphic card
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 60%, rgba(0,0,0,0.1) 100%)',
+                backdropFilter: 'blur(6px)',
+                WebkitBackdropFilter: 'blur(6px)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderTop: '1px solid rgba(255,255,255,0.14)',
+                borderLeft: '1px solid rgba(255,255,255,0.1)',
                 borderRadius: 12,
                 padding: '16px 8px',
+                boxShadow: '-8px -8px 24px rgba(0,0,0,0.7), 4px 4px 16px rgba(246,185,76,0.05)',
               }}
             >
               <TriangleDiagram

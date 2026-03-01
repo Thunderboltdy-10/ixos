@@ -380,15 +380,16 @@ export function SearchInput({
           {/* Controls row */}
           {showControls && (
             <div className="px-3 pb-2.5 pt-0.5 flex items-center gap-2">
-              <div>
+              <div className="min-w-0 flex-1">
                 <FolderPicker
                   value={directory}
                   onChange={onDirectoryChange}
                   placeholder="Select folder..."
+                  className="w-full"
                 />
               </div>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex shrink-0 items-center gap-1.5">
                 <QualitySwitcher
                   className="w-[132px]"
                   value={qualityMode}

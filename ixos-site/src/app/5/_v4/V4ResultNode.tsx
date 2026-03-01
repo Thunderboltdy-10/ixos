@@ -2,7 +2,7 @@
 
 import { useRef, type ReactNode } from 'react'
 import { AnimatePresence, motion, useInView } from 'framer-motion'
-import { ChevronRight, FileText } from 'lucide-react'
+import { FileText } from 'lucide-react'
 import { useReducedOrLowEnd } from './hooks/useReducedOrLowEnd'
 
 type Tone = 'cyan' | 'violet' | 'amber'
@@ -12,6 +12,160 @@ function toneColor(tone: Tone): string {
   if (tone === 'violet') return '#7C3AED'
   return '#14B8A6'
 }
+
+// ─── Slide-in search result annotation ────────────────────────────────────────
+// Full-width card that expands as user scrolls past
+
+function ResultAnnotation({
+  rank,
+  file,
+  tone,
+  title,
+  score,
+  inView,
+  isExpanded,
+}: {
+  rank: string
+  file: string
+  tone: Tone
+  title: string
+  score: number
+  inView: boolean
+  isExpanded: boolean
+}) {
+  const color = toneColor(tone)
+  const lowEnd = useReducedOrLowEnd()
+
+  if (lowEnd) return null
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'flex-start',
+        paddingTop: 20,
+        paddingBottom: 8,
+        paddingLeft: 16,
+        paddingRight: 16,
+        overflow: 'hidden',
+      }}
+    >
+      <AnimatePresence>
+        {inView && (
+          <motion.div
+            key={`annotation-${rank}`}
+            initial={{ opacity: 0, x: -80 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -24 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            style={{
+              width: '100%',
+              maxWidth: '100vw',
+              borderRadius: isExpanded ? 12 : 8,
+              background: `linear-gradient(120deg, ${color}22 0%, rgba(18,20,26,0.98) 100%)`,
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              borderWidth: 1,
+              borderStyle: 'solid',
+              borderColor: `${color}44`,
+              borderTopWidth: 1,
+              borderTopStyle: 'solid',
+              borderTopColor: `${color}66`,
+              borderLeftWidth: 3,
+              borderLeftStyle: 'solid',
+              borderLeftColor: color,
+              boxShadow: [
+                `-6px -6px 18px rgba(0,0,0,0.6)`,
+                `3px 3px 12px ${color}10`,
+                `0 0 16px ${color}1a`,
+              ].join(', '),
+              padding: '7px 12px',
+              pointerEvents: 'none',
+            }}
+          >
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '22px 16px 1fr auto auto',
+                alignItems: 'center',
+                gap: 10,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: 'var(--font-ixo-mono)',
+                  fontSize: 10,
+                  letterSpacing: '0.1em',
+                  color,
+                }}
+              >
+                {rank}
+              </span>
+              <FileText size={13} color={color} />
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-ixo-mono)',
+                    fontSize: 11,
+                    color: 'rgba(243,245,247,0.9)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {file}
+                </div>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-ixo-mono)',
+                    fontSize: 9,
+                    color: 'rgba(243,245,247,0.45)',
+                    marginTop: 2,
+                  }}
+                >
+                  {title} · why this matched
+                </div>
+              </div>
+              {/* Score bar */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ width: 56, height: 2, borderRadius: 2, background: 'rgba(243,245,247,0.1)' }}>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${score}%` }}
+                    transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }}
+                    style={{
+                      height: '100%',
+                      borderRadius: 2,
+                      background: color,
+                      boxShadow: `0 0 6px ${color}80`,
+                    }}
+                  />
+                </div>
+                <span style={{ fontFamily: 'var(--font-ixo-mono)', fontSize: 10, color }}>
+                  {Math.round(score)}%
+                </span>
+              </div>
+              {/* Pulse indicator */}
+              <motion.div
+                animate={{ opacity: [0.4, 1, 0.4], scale: [0.9, 1.1, 0.9] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  background: color,
+                  boxShadow: `0 0 8px ${color}`,
+                }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ─── Main result node ──────────────────────────────────────────────────────────
 
 export function V4ResultNode({
   rank,
@@ -29,7 +183,7 @@ export function V4ResultNode({
   children: ReactNode
 }) {
   const nodeRef = useRef<HTMLDivElement>(null)
-  const inView = useInView(nodeRef, { margin: '-18% 0px -22% 0px' })
+  const inView = useInView(nodeRef, { margin: '-10% 0px -15% 0px' })
   const lowEnd = useReducedOrLowEnd()
   const color = toneColor(tone)
   const score = Math.max(72, 98 - Number(rank) * 1.5)
@@ -43,144 +197,37 @@ export function V4ResultNode({
       data-result-file={file}
       data-result-tone={tone}
       data-result-title={title}
-      style={{ position: 'relative', borderTop: '1px solid rgba(255,255,255,0.03)' }}
+      style={{ position: 'relative', borderTopWidth: 1, borderTopStyle: 'solid', borderTopColor: 'rgba(255,255,255,0.03)' }}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 18 }}
-        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0.45, y: 8 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      {/* Slide-in annotation */}
+      <ResultAnnotation
+        rank={rank}
+        file={file}
+        tone={tone}
+        title={title}
+        score={score}
+        inView={inView}
+        isExpanded={true}
+      />
+
+      {/* Section content */}
+      <div
         style={{
-          position: 'sticky',
-          top: 70,
-          zIndex: 38,
-          display: 'flex',
-          justifyContent: 'center',
-          paddingTop: 12,
-          pointerEvents: 'none',
+          borderRadius: 12,
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderColor: `${color}40`,
+          background: 'linear-gradient(135deg, rgba(18,20,26,0.85) 0%, rgba(12,14,18,0.88) 60%, rgba(8,10,12,0.92) 100%)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          boxShadow: `-8px -8px 24px rgba(0,0,0,0.6), 4px 4px 16px ${color}08, 0 18px 44px rgba(0,0,0,0.28)`,
+          overflow: 'hidden',
+          marginTop: 8,
+          padding: '20px',
         }}
       >
-        <div
-          style={{
-            width: 'min(1020px, calc(100vw - 20px))',
-            borderRadius: 9,
-            borderTop: `1px solid ${inView ? `${color}66` : 'rgba(243,245,247,0.12)'}`,
-            borderRight: `1px solid ${inView ? `${color}50` : 'rgba(243,245,247,0.08)'}`,
-            borderBottom: `1px solid ${inView ? `${color}50` : 'rgba(243,245,247,0.08)'}`,
-            borderLeft: `3px solid ${inView ? color : 'rgba(243,245,247,0.12)'}`,
-            background: inView
-              ? `linear-gradient(120deg, ${color}22 0%, rgba(27,30,35,0.86) 100%)`
-              : 'rgba(27,30,35,0.72)',
-            boxShadow: inView ? `0 0 22px ${color}26` : 'none',
-            padding: '8px 12px',
-            pointerEvents: 'none',
-          }}
-        >
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '24px 18px 1fr auto auto',
-              alignItems: 'center',
-              gap: 10,
-            }}
-          >
-            <span
-              style={{
-                fontFamily: 'var(--font-ixo-mono)',
-                fontSize: 10,
-                letterSpacing: '0.1em',
-                color: inView ? color : 'rgba(243,245,247,0.42)',
-              }}
-            >
-              {rank}
-            </span>
-            <FileText size={14} color={inView ? color : 'rgba(243,245,247,0.44)'} />
-            <div style={{ minWidth: 0 }}>
-              <div
-                style={{
-                  fontFamily: 'var(--font-ixo-mono)',
-                  fontSize: 12,
-                  color: 'rgba(243,245,247,0.88)',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {file}
-              </div>
-              <AnimatePresence>
-                {inView && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.24 }}
-                    style={{
-                      fontFamily: 'var(--font-ixo-mono)',
-                      fontSize: 10,
-                      color: 'rgba(243,245,247,0.52)',
-                      marginTop: 2,
-                    }}
-                  >
-                    {title} · Why this matched
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
-              <div style={{ width: 64, height: 2, borderRadius: 2, background: 'rgba(243,245,247,0.12)' }}>
-                <div
-                  style={{
-                    width: `${score}%`,
-                    height: '100%',
-                    borderRadius: 2,
-                    background: color,
-                  }}
-                />
-              </div>
-              <span
-                style={{
-                  fontFamily: 'var(--font-ixo-mono)',
-                  fontSize: 10,
-                  color,
-                }}
-              >
-                {Math.round(score)}%
-              </span>
-            </div>
-            <ChevronRight size={14} color={inView ? color : 'rgba(243,245,247,0.42)'} />
-          </div>
-        </div>
-      </motion.div>
-
-      <motion.div
-        animate={
-          lowEnd
-            ? undefined
-            : inView
-              ? { rotateX: 0, rotateY: 0, y: 0, scale: 1 }
-              : { rotateX: 1.2, rotateY: -1.2, y: 16, scale: 0.99 }
-        }
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        style={lowEnd ? undefined : { transformStyle: 'preserve-3d' }}
-      >
-        <div
-          style={{
-            borderRadius: 12,
-            border: `1px solid ${inView ? `${color}42` : 'rgba(243,245,247,0.08)'}`,
-            background: 'rgba(21,23,27,0.22)',
-            boxShadow: inView ? `0 0 0 1px ${color}24, 0 18px 44px rgba(0,0,0,0.28)` : '0 10px 26px rgba(0,0,0,0.18)',
-            overflow: 'hidden',
-          }}
-        >
-          {children}
-        </div>
-      </motion.div>
+        {children}
+      </div>
     </div>
   )
 }

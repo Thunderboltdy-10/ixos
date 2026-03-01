@@ -71,6 +71,7 @@ function TrackedResultNode({
   const { registerSection, setSectionInView, pulseForSection } = useLandingContext();
   const ref = useRef<HTMLDivElement>(null);
   const section = SECTION_MAP.find((s) => s.id === sectionId);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -78,12 +79,13 @@ function TrackedResultNode({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
+        setIsVisible(entry.isIntersecting);
         setSectionInView(sectionId, entry.isIntersecting);
         if (entry.isIntersecting && section) {
           pulseForSection(section);
         }
       },
-      { threshold: 0.2, rootMargin: "-10% 0px -20% 0px" }
+      { threshold: 0.1, rootMargin: "-5% 0px -10% 0px" }
     );
 
     observer.observe(ref.current);
@@ -91,7 +93,14 @@ function TrackedResultNode({
   }, [sectionId, registerSection, setSectionInView, pulseForSection, section]);
 
   return (
-    <div ref={ref} data-section-id={sectionId}>
+    <div
+      ref={ref}
+      data-section-id={sectionId}
+      style={{
+        opacity: isVisible ? 1 : 0.3,
+        transition: 'opacity 0.5s ease',
+      }}
+    >
       <V4ResultNode sectionId={sectionId} rank={rank} file={file} tone={tone} title={title}>
         {children}
       </V4ResultNode>

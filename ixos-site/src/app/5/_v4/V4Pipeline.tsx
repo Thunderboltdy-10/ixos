@@ -141,12 +141,27 @@ function StageCard({
       style={{
         width: '100%',
         maxWidth: 240,
-        background: active ? 'rgba(20,24,30,0.9)' : 'rgba(10,12,16,0.6)',
-        border: `1px solid ${active ? stage.color + '60' : hovered ? 'rgba(246,185,76,0.3)' : 'rgba(255,255,255,0.05)'}`,
+        // 3D glassmorphic card — shadow top-left, subtle accent glow bottom-right
+        background: active
+          ? `linear-gradient(135deg, ${stage.color}12 0%, rgba(255,255,255,0.04) 60%, rgba(0,0,0,0.12) 100%)`
+          : 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 60%, rgba(0,0,0,0.1) 100%)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        border: `1px solid ${active ? stage.color + '55' : hovered ? 'rgba(246,185,76,0.25)' : 'rgba(255,255,255,0.07)'}`,
+        borderTop: `1px solid ${active ? stage.color + '80' : 'rgba(255,255,255,0.13)'}`,
+        borderLeft: `1px solid ${active ? stage.color + '66' : 'rgba(255,255,255,0.1)'}`,
         borderRadius: 16,
         padding: 24,
-        boxShadow: active ? `0 20px 40px rgba(0,0,0,0.5), 0 0 30px ${stage.color}20 inset, 0 0 20px ${stage.color}40` : hovered ? '0 10px 20px rgba(0,0,0,0.3), 0 0 20px rgba(246,185,76,0.08)' : '0 10px 20px rgba(0,0,0,0.3)',
-        transition: 'border 0.25s ease, box-shadow 0.25s ease',
+        boxShadow: active
+          ? [
+              `-8px -8px 24px rgba(0,0,0,0.7)`,
+              `4px 4px 16px ${stage.color}18`,
+              `0 0 30px ${stage.color}22`,
+            ].join(', ')
+          : hovered
+            ? `-6px -6px 18px rgba(0,0,0,0.6), 3px 3px 12px rgba(246,185,76,0.08)`
+            : `-8px -8px 24px rgba(0,0,0,0.65), 4px 4px 16px rgba(246,185,76,0.04)`,
+        transition: 'border 0.25s ease, box-shadow 0.25s ease, background 0.25s ease',
         position: 'relative',
         overflow: 'hidden',
         transformStyle: 'preserve-3d',
@@ -313,7 +328,15 @@ export function V4Pipeline() {
       onMouseEnter={handleMouseEnter}
       style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
     >
-      <section className="py-28 md:py-36 overflow-hidden" style={{ backgroundColor: 'transparent' }}>
+      <section
+        className="py-28 md:py-36 overflow-hidden"
+        style={{
+          // Semi-transparent so the electric field shows through — mixture as requested
+          background: 'rgba(14,17,23,0.55)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+        }}
+      >
         <div className="max-w-6xl mx-auto px-6">
           {/* Header */}
           <div className="text-center mb-16">

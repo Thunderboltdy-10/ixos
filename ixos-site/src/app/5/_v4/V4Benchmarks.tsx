@@ -128,13 +128,24 @@ function ModelCard({ badge, color, metrics, source, inView, delay }: ModelCardPr
       initial={{ opacity: 0, y: 24 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{
+        y: -3,
+        boxShadow: `-5px -5px 18px rgba(0,0,0,0.55), 6px 6px 24px ${color}18`,
+      }}
       className="relative overflow-hidden flex-1"
       style={{
-        background: 'rgba(255,255,255,0.03)',
-        border: `1px solid ${color}18`,
+        // 3D glassmorphic card
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 60%, rgba(0,0,0,0.1) 100%)',
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
+        border: `1px solid ${color}28`,
+        borderTop: `1px solid ${color}44`,
+        borderLeft: `1px solid ${color}38`,
         borderRadius: 12,
         padding: 24,
         minWidth: 0,
+        boxShadow: `-8px -8px 24px rgba(0,0,0,0.7), 4px 4px 16px ${color}08`,
+        transition: 'box-shadow 0.25s ease, transform 0.25s ease',
       }}
     >
       {/* Corner glow */}
@@ -272,7 +283,7 @@ export function V4Benchmarks() {
       onMouseEnter={handleMouseEnter}
       style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
     >
-      <section className="py-28 md:py-36" style={{ backgroundColor: '#0C0E10' }}>
+      <section className="py-28 md:py-36" style={{ backgroundColor: 'transparent' }}>
         <div className="max-w-6xl mx-auto px-6">
           {/* Section label + heading */}
           <div className="text-center mb-4">

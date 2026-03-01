@@ -5,6 +5,9 @@ interface AmbientIxosFieldProps {
   className?: string;
   mode?: 'fixed' | 'contained';
   energy?: 'calm' | 'dynamic';
+  accentRgb?: string;
+  accentAltRgb?: string;
+  intensity?: number;
 }
 
 interface PixelCell {
@@ -19,6 +22,9 @@ export function AmbientIxosField({
   className,
   mode = 'fixed',
   energy = 'calm',
+  accentRgb = '20, 184, 166',
+  accentAltRgb = '124, 92, 255',
+  intensity = 1,
 }: AmbientIxosFieldProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const frameRef = useRef<number>(0);
@@ -93,14 +99,14 @@ export function AmbientIxosField({
       for (const cell of cellsRef.current) {
         const wave = Math.sin(cell.base + t * cell.drift * driftScale + cell.x * freqX + cell.y * freqY);
         const glow = reducedMotion ? 0.35 : (wave + 1) * 0.5;
-        const alpha = (0.045 + glow * 0.09) * alphaBoost;
+        const alpha = (0.045 + glow * 0.09) * alphaBoost * intensity;
         const size = (2.2 + glow * 1.8) * sizeBoost;
 
-        ctx.fillStyle = `rgba(20, 184, 166, ${alpha})`;
+        ctx.fillStyle = `rgba(${accentRgb}, ${alpha})`;
         ctx.fillRect(cell.x - size * 0.5, cell.y - size * 0.5, size, size);
 
         if (glow > 0.78) {
-          ctx.fillStyle = 'rgba(124, 92, 255, 0.11)';
+          ctx.fillStyle = `rgba(${accentAltRgb}, ${Math.min(0.2, 0.11 * intensity)})`;
           ctx.fillRect(cell.x + 3, cell.y - 1, 1.8, 1.8);
         }
       }
@@ -134,7 +140,7 @@ export function AmbientIxosField({
       window.removeEventListener('resize', resize);
       observer?.disconnect();
     };
-  }, [energy, mode, reducedMotion]);
+  }, [accentAltRgb, accentRgb, energy, intensity, mode, reducedMotion]);
 
   return (
     <canvas

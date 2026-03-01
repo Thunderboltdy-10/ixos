@@ -130,12 +130,23 @@ export function V4SpatialStage({ children }: { children: ReactNode }) {
 
       <div style={{ position: 'relative' }}>
         {/* Subtle scrim for text legibility over the ambient field */}
+        {/* Legibility scrim — stronger mid-page where text sections are denser */}
         <div
           aria-hidden
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'linear-gradient(to bottom, rgba(12,14,16,0.18) 0%, rgba(12,14,16,0.0) 20%, rgba(12,14,16,0.0) 80%, rgba(12,14,16,0.18) 100%)',
+            // Light at top (hero shines), stronger at mid-scroll, fades at bottom
+            background: [
+              'linear-gradient(to bottom,',
+              '  rgba(12,14,16,0.0) 0%,',
+              '  rgba(12,14,16,0.0) 18%,',
+              '  rgba(12,14,16,0.45) 35%,',
+              '  rgba(12,14,16,0.5) 65%,',
+              '  rgba(12,14,16,0.35) 85%,',
+              '  rgba(12,14,16,0.2) 100%',
+              ')',
+            ].join(' '),
             pointerEvents: 'none',
             zIndex: 1,
           }}

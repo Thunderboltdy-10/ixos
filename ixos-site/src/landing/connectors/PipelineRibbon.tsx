@@ -213,6 +213,29 @@ export function PipelineRibbonFlyover({
           }}
         />
 
+        {/* Data pulse dots — 3 staggered dots travel top → bottom */}
+        {[0, 1, 2].map((i) => {
+          const pulseDuration = ribbonDuration * 0.85;
+          const stagger = pulseDuration / 3;
+          return (
+            <motion.circle
+              key={`pulse-${i}`}
+              cx={RIBBON_X}
+              r={3}
+              fill={activeColor}
+              filter="url(#prf-glow)"
+              animate={{ cy: [0, windowHeight] }}
+              transition={{
+                duration: pulseDuration,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: i * stagger,
+              }}
+              style={{ opacity: 0.75 }}
+            />
+          );
+        })}
+
         {/* Active segment highlight — segment above the active station brightens */}
         {activeIndex >= 0 && (
           <motion.line

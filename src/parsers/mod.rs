@@ -1,6 +1,7 @@
 //! Lightweight document parsers for evidence extraction.
 
 use crate::storage::cloud_detection::should_skip_cloud_file;
+use regex::Regex;
 use std::fs::File;
 use std::io::{BufReader, Read};
 use std::path::Path;
@@ -114,7 +115,48 @@ fn extract_plain_text(path: &Path, max_bytes: usize) -> Option<String> {
 }
 
 fn extract_pdf(path: &Path) -> Option<String> {
-    pdf_extract::extract_text(path).ok()
+    if let Ok(text) = pdf_extract::extract_text(path) {
+        if !text.trim().is_empty() {
+            return Some(text);
+        }
+    }
+
+    if let Ok(doc) = lopdf::Document::load(path) {
+        let mut pages: Vec<u32> = doc.get_pages().keys().copied().collect();
+        pages.sort_unstable();
+        if let Ok(fallback) = doc.extract_text(&pages) {
+            if !fallback.trim().is_empty() {
+                return Some(fallback);
+            }
+        }
+    }
+
+    extract_pdf_literal_text(path)
+}
+
+fn extract_pdf_literal_text(path: &Path) -> Option<String> {
+    let raw = std::fs::read(path).ok()?;
+    let content = String::from_utf8_lossy(&raw);
+    let pattern = Regex::new(r"\(([^()]*)\)\s*Tj").ok()?;
+    let mut out = String::new();
+    let mut last_space = true;
+
+    for capture in pattern.captures_iter(&content) {
+        let token = capture.get(1)?.as_str();
+        let decoded = token
+            .replace("\\\\", "\\")
+            .replace("\\(", "(")
+            .replace("\\)", ")");
+        push_clean_text(&mut out, &decoded, &mut last_space);
+        out.push('\n');
+        last_space = true;
+    }
+
+    if out.trim().is_empty() {
+        None
+    } else {
+        Some(out)
+    }
 }
 
 fn extract_docx(path: &Path) -> Option<String> {

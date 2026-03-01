@@ -1,10 +1,73 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { DemoSurface } from "@/landing/DemoSurface";
+import { ArcNoiseBackground } from "@/components/effects/ArcNoiseBackground";
 
-/* ── Scroll-driven amber spotlight ─────────────────────────────────── */
+/* ── CSS injection for conic pulse + section reveals ────────────────── */
+
+const GLOBAL_STYLES = `
+@keyframes amberSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes sectionRevealLeft {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0% 0 0); }
+}
+@keyframes sectionRevealRight {
+  from { clip-path: inset(0 0 0 100%); }
+  to   { clip-path: inset(0 0 0 0%); }
+}
+@keyframes sectionRevealUp {
+  from { clip-path: inset(100% 0 0 0); }
+  to   { clip-path: inset(0% 0 0 0); }
+}
+@keyframes sectionRevealDown {
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0 0 0% 0); }
+}
+@keyframes nodeActivePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(246,185,76,0.5); }
+  50%       { box-shadow: 0 0 0 8px rgba(246,185,76,0); }
+}
+@keyframes scanLine {
+  0%   { top: 0%; opacity: 0.6; }
+  90%  { top: 100%; opacity: 0.3; }
+  100% { top: 100%; opacity: 0; }
+}
+@keyframes amberBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+@keyframes floatUp {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.04; }
+  50%       { opacity: 0.09; }
+}
+@keyframes datastream {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+`;
+
+function GlobalStyles() {
+  useEffect(() => {
+    if (document.getElementById("p1-global-styles")) return;
+    const el = document.createElement("style");
+    el.id = "p1-global-styles";
+    el.textContent = GLOBAL_STYLES;
+    document.head.appendChild(el);
+  }, []);
+  return null;
+}
+
+/* ── Scroll-driven amber spotlight (enhanced) ────────────────────────── */
 
 function SpotlightBackground() {
   const ref = useRef<HTMLDivElement>(null);
@@ -15,8 +78,10 @@ function SpotlightBackground() {
         window.scrollY /
         Math.max(1, document.body.scrollHeight - window.innerHeight);
       const y = 10 + progress * 80;
+      const x = 40 + Math.sin(progress * Math.PI * 2) * 15;
       if (ref.current) {
         ref.current.style.setProperty("--spot-y", `${y}vh`);
+        ref.current.style.setProperty("--spot-x", `${x}%`);
       }
     };
     window.addEventListener("scroll", update, { passive: true });
@@ -25,34 +90,68 @@ function SpotlightBackground() {
   }, []);
 
   return (
-    <div
-      ref={ref}
-      className="fixed inset-0 pointer-events-none z-0"
-      style={{
-        background:
-          "radial-gradient(600px circle at 50% var(--spot-y, 15vh), rgba(246,185,76,0.05) 0%, transparent 70%)",
-      }}
-    />
+    <div ref={ref} className="fixed inset-0 pointer-events-none z-0">
+      {/* Noise texture overlay */}
+      <ArcNoiseBackground />
+      {/* Main amber bloom */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(800px circle at var(--spot-x, 50%) var(--spot-y, 15vh), rgba(246,185,76,0.07) 0%, transparent 65%)",
+        }}
+      />
+      {/* Conic breathing pulse — very subtle */}
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          width: "180vmax",
+          height: "180vmax",
+          marginLeft: "-90vmax",
+          marginTop: "-90vmax",
+          background:
+            "conic-gradient(from 0deg, transparent 0%, rgba(246,185,76,0.03) 25%, transparent 50%, rgba(20,184,166,0.02) 75%, transparent 100%)",
+          animation: "amberSpin 24s linear infinite",
+          opacity: 0.06,
+          willChange: "transform",
+        }}
+      />
+      {/* Bottom teal accent gradient */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "40vh",
+          background:
+            "linear-gradient(to top, rgba(20,184,166,0.03) 0%, transparent 100%)",
+          animation: "glowPulse 8s ease-in-out infinite",
+        }}
+      />
+    </div>
   );
 }
 
 /* ── Corner bracket decorations ─────────────────────────────────────── */
 
-function CornerBrackets({ className }: { className?: string }) {
-  const corner = "absolute w-4 h-4 border-amber-400/20";
+function CornerBrackets({ className, color = "rgba(246,185,76,0.2)" }: { className?: string; color?: string }) {
   return (
     <div className={`absolute inset-0 pointer-events-none ${className ?? ""}`}>
-      <span className={`${corner} top-0 left-0 border-t border-l`} />
-      <span className={`${corner} top-0 right-0 border-t border-r`} />
-      <span className={`${corner} bottom-0 left-0 border-b border-l`} />
-      <span className={`${corner} bottom-0 right-0 border-b border-r`} />
+      <span style={{ position: "absolute", top: 0, left: 0, width: 16, height: 16, borderTop: `1px solid ${color}`, borderLeft: `1px solid ${color}` }} />
+      <span style={{ position: "absolute", top: 0, right: 0, width: 16, height: 16, borderTop: `1px solid ${color}`, borderRight: `1px solid ${color}` }} />
+      <span style={{ position: "absolute", bottom: 0, left: 0, width: 16, height: 16, borderBottom: `1px solid ${color}`, borderLeft: `1px solid ${color}` }} />
+      <span style={{ position: "absolute", bottom: 0, right: 0, width: 16, height: 16, borderBottom: `1px solid ${color}`, borderRight: `1px solid ${color}` }} />
     </div>
   );
 }
 
-/* ── Count-up hook ──────────────────────────────────────────────────── */
+/* ── Count-up hook (scroll-triggered) ──────────────────────────────── */
 
-function useCountUp(target: number, duration = 1200) {
+function useCountUp(target: number, duration = 1400) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const triggered = useRef(false);
@@ -67,13 +166,13 @@ function useCountUp(target: number, duration = 1200) {
         const tick = (now: number) => {
           const elapsed = now - start;
           const progress = Math.min(elapsed / duration, 1);
-          const ease = 1 - Math.pow(1 - progress, 3);
+          const ease = 1 - Math.pow(1 - progress, 4);
           setCount(Math.round(target * ease));
           if (progress < 1) requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);
       },
-      { threshold: 0.5 }
+      { threshold: 0.4 }
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
@@ -82,9 +181,11 @@ function useCountUp(target: number, duration = 1200) {
   return { ref, count };
 }
 
-/* ── Directional clip-path reveal ──────────────────────────────────── */
+/* ── Directional clip-path reveal (scroll-triggered) ───────────────── */
 
-function useDirectionalReveal(direction: "left" | "right" | "up" | "down") {
+type RevealDirection = "left" | "right" | "up" | "down";
+
+function useDirectionalReveal(direction: RevealDirection) {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
 
@@ -96,28 +197,40 @@ function useDirectionalReveal(direction: "left" | "right" | "up" | "down") {
           observer.disconnect();
         }
       },
-      { threshold: 0.15 }
+      { threshold: 0.12 }
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
 
-  const clipHidden: Record<string, string> = {
+  const animName: Record<RevealDirection, string> = {
+    left: "sectionRevealLeft",
+    right: "sectionRevealRight",
+    up: "sectionRevealUp",
+    down: "sectionRevealDown",
+  };
+
+  const clipHidden: Record<RevealDirection, string> = {
     left: "inset(0 100% 0 0)",
     right: "inset(0 0 0 100%)",
     up: "inset(100% 0 0 0)",
     down: "inset(0 0 100% 0)",
   };
 
-  const style: React.CSSProperties = {
-    clipPath: inView ? "inset(0 0 0 0)" : clipHidden[direction],
-    transition: "clip-path 0.6s cubic-bezier(0.16,1,0.3,1)",
-  };
+  const style: React.CSSProperties = inView
+    ? {
+        animation: `${animName[direction]} 700ms cubic-bezier(0.16,1,0.3,1) forwards`,
+        willChange: "clip-path",
+      }
+    : {
+        clipPath: clipHidden[direction],
+        willChange: "clip-path",
+      };
 
-  return { ref, style };
+  return { ref, style, inView };
 }
 
-/* ── Utilities ─────────────────────────────────────────────────────── */
+/* ── Reveal: fade+lift on scroll entry ─────────────────────────────── */
 
 function Reveal({
   children,
@@ -133,15 +246,18 @@ function Reveal({
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 28 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.35, delay, ease: "easeOut" }}
+      transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
       className={className}
+      style={{ willChange: "transform, opacity" }}
     >
       {children}
     </motion.div>
   );
 }
+
+/* ── StaggerGroup ──────────────────────────────────────────────────── */
 
 function StaggerGroup({
   children,
@@ -171,9 +287,52 @@ function StaggerGroup({
 }
 
 const cFade = {
-  hidden: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const } },
 };
+
+/* ── Scan Line effect for demo containers ─────────────────────────── */
+
+function ScanLine() {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        height: 1,
+        background: "linear-gradient(90deg, transparent, rgba(246,185,76,0.4), transparent)",
+        animation: "scanLine 4s ease-in-out infinite",
+        pointerEvents: "none",
+        zIndex: 10,
+      }}
+    />
+  );
+}
+
+/* ── Animated data-stream bar ─────────────────────────────────────── */
+
+function DataStreamBar({ pct, color }: { pct: number; color: string }) {
+  return (
+    <div className="h-1.5 rounded-full bg-white/[0.04] overflow-hidden">
+      <motion.div
+        className="h-full rounded-full"
+        style={{
+          backgroundColor: color,
+          backgroundImage: `linear-gradient(90deg, ${color}, ${color}dd, ${color})`,
+          backgroundSize: "200% 100%",
+          animation: "datastream 2s linear infinite",
+        }}
+        initial={{ width: 0 }}
+        whileInView={{ width: `${pct}%` }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        viewport={{ once: true }}
+      />
+    </div>
+  );
+}
+
+/* ── NAV constants ─────────────────────────────────────────────────── */
 
 const NAV = [
   { label: "Pipeline", id: "pipeline" },
@@ -183,6 +342,8 @@ const NAV = [
   { label: "CLI", id: "cli" },
   { label: "Pricing", id: "pricing" },
 ];
+
+/* ── FAQ data ──────────────────────────────────────────────────────── */
 
 const FAQS = [
   {
@@ -207,35 +368,7 @@ const FAQS = [
   },
 ];
 
-/* ── Tiny helpers ──────────────────────────────────────────────────── */
-
-const Dot = ({ color }: { color: string }) => (
-  <span
-    className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
-    style={{ backgroundColor: color }}
-  />
-);
-const Kicker = ({
-  color,
-  children,
-}: {
-  color: string;
-  children: React.ReactNode;
-}) => (
-  <span
-    className="inline-block font-mono text-[10px] tracking-[0.25em] uppercase px-2.5 py-1 rounded-full mb-5"
-    style={{
-      background: `${color}15`,
-      color,
-      border: `1px solid ${color}30`,
-    }}
-  >
-    {children}
-  </span>
-);
-const SepBorder = "border-t border-white/[0.04]";
-
-/* ── KPI stat cards with count-up ──────────────────────────────────── */
+/* ── KPI stat card ─────────────────────────────────────────────────── */
 
 function KpiCard({
   val,
@@ -254,15 +387,29 @@ function KpiCard({
   suffix?: string;
   isStatic?: boolean;
 }) {
-  const { ref, count } = useCountUp(target, 1200);
-
+  const { ref, count } = useCountUp(target, 1400);
   const displayVal = isStatic ? val : `${prefix ?? ""}${count}${suffix ?? ""}`;
 
   return (
-    <motion.div variants={cFade} className="flex items-start gap-3" ref={ref}>
-      <div className="w-[3px] shrink-0 self-stretch rounded-full bg-[var(--color-accent-amber)]" />
+    <motion.div
+      variants={cFade}
+      className="flex items-start gap-3"
+      ref={ref}
+      whileHover={{ scale: 1.03 }}
+      transition={{ duration: 0.2 }}
+    >
+      <div
+        className="w-[3px] shrink-0 self-stretch rounded-full"
+        style={{
+          background: "linear-gradient(180deg, #F6B94C, #14B8A6)",
+          boxShadow: "0 0 8px rgba(246,185,76,0.4)",
+        }}
+      />
       <div>
-        <div className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-white">
+        <div
+          className="font-mono text-2xl sm:text-3xl font-semibold tracking-tight text-white"
+          style={{ textShadow: "0 0 20px rgba(246,185,76,0.3)" }}
+        >
           {displayVal}
         </div>
         <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-white/40 mt-0.5">
@@ -282,58 +429,415 @@ const FEATURES = [
     stat: "0 B",
     desc: "Zero data sent. Ever.",
     wide: true,
+    icon: "◎",
+    color: "#F6B94C",
   },
-  { title: "HMAC-SHA256", stat: "✓", desc: "Signed embeddings" },
-  { title: "mlock Memory", stat: "Protected", desc: "Secured RAM pages" },
+  {
+    title: "HMAC-SHA256",
+    stat: "✓",
+    desc: "Signed embeddings",
+    wide: false,
+    icon: "⬡",
+    color: "#14B8A6",
+  },
+  {
+    title: "mlock Memory",
+    stat: "Protected",
+    desc: "Secured RAM pages",
+    wide: false,
+    icon: "⬛",
+    color: "#7C5CFF",
+  },
   {
     title: "Timing Protection",
     stat: "Opt-in",
     desc: "Side-channel guard",
     wide: true,
+    icon: "◈",
+    color: "#F6B94C",
   },
   {
     title: "Ephemeral Mode",
     stat: "JIT",
     desc: "RAM only, no disk writes",
+    wide: false,
+    icon: "◇",
+    color: "#14B8A6",
   },
-  { title: "Local-Only", stat: "100%", desc: "Your machine, your data" },
+  {
+    title: "Local-Only",
+    stat: "100%",
+    desc: "Your machine, your data",
+    wide: false,
+    icon: "◉",
+    color: "#F6B94C",
+  },
 ];
+
+/* ── Bento card with hover microanimation ───────────────────────────── */
+
+function BentoCard({ f, i }: { f: typeof FEATURES[number]; i: number }) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <motion.div
+      key={i}
+      variants={cFade}
+      className={`relative p-6 rounded-lg flex flex-col gap-2 cursor-default ${f.wide ? "col-span-2" : ""}`}
+      style={{
+        background: "rgba(22,27,34,0.5)",
+        border: hovered
+          ? `1px solid ${f.color}40`
+          : "1px solid rgba(255,255,255,0.06)",
+        boxShadow: hovered
+          ? `0 0 0 1px ${f.color}30, 0 0 24px ${f.color}12, inset 0 0 20px ${f.color}05`
+          : "none",
+        transform: hovered ? "translateY(-4px) scale(1.02)" : "translateY(0px) scale(1)",
+        transition: "all 250ms cubic-bezier(0.16,1,0.3,1)",
+        willChange: "transform, box-shadow, border-color",
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <CornerBrackets color={hovered ? `${f.color}35` : "rgba(246,185,76,0.12)"} />
+      {/* Icon with pulsing glow on hover */}
+      <div
+        style={{
+          fontSize: 22,
+          color: f.color,
+          textShadow: hovered ? `0 0 16px ${f.color}90, 0 0 32px ${f.color}40` : "none",
+          transition: "text-shadow 250ms cubic-bezier(0.16,1,0.3,1)",
+          animation: hovered ? "nodeActivePulse 1.2s ease-in-out infinite" : "none",
+          display: "inline-block",
+        }}
+      >
+        {f.icon}
+      </div>
+      <div
+        className="text-2xl font-mono font-semibold"
+        style={{
+          color: f.color,
+          textShadow: hovered ? `0 0 20px ${f.color}60` : "none",
+          transition: "text-shadow 250ms",
+        }}
+      >
+        {f.stat}
+      </div>
+      <div className="text-sm font-mono text-white/80">{f.title}</div>
+      <div className="text-xs text-white/45">{f.desc}</div>
+    </motion.div>
+  );
+}
+
+/* ── Live mission control ticker ────────────────────────────────────── */
+
+function MissionTicker() {
+  const TICKS = useMemo(() => [
+    "SCAN ░ 1,247 files",
+    "LEXICAL ░ 89 candidates",
+    "SEMANTIC ░ 24 embedded",
+    "CACHE ░ 19 hits",
+    "LOCKED ░ 312ms",
+    "MRR@10 ░ 0.834",
+    "HMAC ░ VERIFIED",
+    "PRIVACY ░ LOCAL ONLY",
+  ], []);
+
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setIdx((n) => (n + 1) % TICKS.length), 2200);
+    return () => clearInterval(id);
+  }, [TICKS.length]);
+
+  return (
+    <div
+      className="flex items-center gap-3 font-mono text-[10px] tracking-[0.2em] uppercase"
+      style={{ color: "rgba(246,185,76,0.6)" }}
+    >
+      <span
+        style={{
+          display: "inline-block",
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          backgroundColor: "#F6B94C",
+          boxShadow: "0 0 8px #F6B94C",
+          animation: "amberBlink 1s steps(1) infinite",
+        }}
+      />
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={idx}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.2 }}
+        >
+          {TICKS[idx]}
+        </motion.span>
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ── Hero mockup: properly scaled DemoSurface ───────────────────────── */
+
+function HeroMockup() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.72);
+  const NATURAL_W = 1200;
+  const NATURAL_H = 780;
+  const CHROME_H = 32;
+
+  useEffect(() => {
+    const updateScale = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const availableH = rect.height - 40;
+      const availableW = rect.width - 40;
+      
+      const scaleX = availableW / NATURAL_W;
+      const scaleY = availableH / NATURAL_H;
+      // Increase minimum scale to show more of the desktop app
+      const newScale = Math.min(Math.max(Math.min(scaleX, scaleY), 0.55), 0.85);
+      setScale(newScale);
+    };
+
+    updateScale();
+    const observer = new ResizeObserver(updateScale);
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  // Render at actual size, not scaled with CSS transform
+  const displayW = Math.round(NATURAL_W * scale);
+  const displayH = Math.round(NATURAL_H * scale);
+  const chromeH = Math.round(CHROME_H * scale);
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        width: "100%",
+        height: "100%",
+        minHeight: 560,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+      }}
+    >
+      <div
+        style={{
+          width: displayW,
+          height: displayH,
+          position: "relative",
+          borderRadius: 12,
+          overflow: "hidden",
+          border: "1px solid rgba(246,185,76,0.12)",
+          boxShadow:
+            "0 0 0 1px rgba(255,255,255,0.04), 0 32px 80px rgba(0,0,0,0.7), 0 0 60px rgba(246,185,76,0.06)",
+          background: "rgba(14,17,23,0.9)",
+          backdropFilter: "blur(4px)",
+        }}
+      >
+        {/* Window chrome */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: chromeH,
+            background: "rgba(10,12,16,0.95)",
+            borderBottom: "1px solid rgba(255,255,255,0.05)",
+            display: "flex",
+            alignItems: "center",
+            gap: Math.max(3, 6 * scale),
+            padding: `0 ${Math.max(6, 12 * scale)}px`,
+            zIndex: 20,
+          }}
+        >
+          <div style={{ width: Math.max(5, 10 * scale), height: Math.max(5, 10 * scale), borderRadius: "50%", backgroundColor: "rgba(255,95,87,0.7)" }} />
+          <div style={{ width: Math.max(5, 10 * scale), height: Math.max(5, 10 * scale), borderRadius: "50%", backgroundColor: "rgba(255,189,68,0.7)" }} />
+          <div style={{ width: Math.max(5, 10 * scale), height: Math.max(5, 10 * scale), borderRadius: "50%", backgroundColor: "rgba(40,201,64,0.7)" }} />
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <span style={{ fontFamily: "monospace", fontSize: Math.max(5, 9 * scale), color: "rgba(255,255,255,0.2)", letterSpacing: "0.1em" }}>
+              IXOS DESKTOP — COMMAND CENTER
+            </span>
+          </div>
+        </div>
+
+        {/* Scan overlay */}
+        <ScanLine />
+
+        {/* The DemoSurface rendered at ACTUAL size (not scaled with CSS transform) */}
+        <div
+          style={{
+            position: "absolute",
+            top: chromeH,
+            left: 0,
+            width: displayW,
+            height: displayH - chromeH,
+          }}
+        >
+          <DemoSurface
+            initialQuery="authentication token refresh"
+            initialMode="auto"
+            autoRun
+            presets={[
+              "authentication token refresh",
+              "rate limiter middleware",
+              "How does token expiry work?",
+              "database migration scripts",
+            ]}
+            style={{ width: displayW, height: displayH - chromeH }}
+          />
+        </div>
+
+        {/* Amber glow edge top */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 2,
+            background: "linear-gradient(90deg, transparent, rgba(246,185,76,0.5) 40%, rgba(20,184,166,0.4) 60%, transparent)",
+            zIndex: 15,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ── Pipeline stage visualization ───────────────────────────────────── */
+
+function PipelineStageViz() {
+  const stages = useMemo(() => [
+    { label: "SCAN", time: "7ms", color: "#F6B94C", pct: 14 },
+    { label: "LEXICAL", time: "12ms", color: "#F59E0B", pct: 24 },
+    { label: "SEMANTIC", time: "280ms", color: "#14B8A6", pct: 56 },
+    { label: "LOCKED", time: "312ms", color: "#2DD4BF", pct: 100 },
+  ], []);
+
+  return (
+    <div className="relative rounded-lg border border-white/[0.06] bg-[rgba(22,27,34,0.5)] p-6 space-y-5">
+      <CornerBrackets />
+      <div className="font-mono text-[10px] tracking-wider uppercase text-white/30 mb-4">
+        Pipeline execution — 1,247 files
+      </div>
+      {stages.map((s, i) => (
+        <div key={i}>
+          <div className="flex justify-between mb-1.5">
+            <span className="font-mono text-xs tracking-wide" style={{ color: s.color }}>
+              {s.label}
+            </span>
+            <span className="font-mono text-xs text-white/40">{s.time}</span>
+          </div>
+          <DataStreamBar pct={s.pct} color={s.color} />
+        </div>
+      ))}
+      {/* Active scan line */}
+      <div
+        style={{
+          marginTop: 16,
+          padding: "10px 12px",
+          background: "rgba(246,185,76,0.04)",
+          border: "1px solid rgba(246,185,76,0.1)",
+          borderRadius: 6,
+          fontFamily: "monospace",
+          fontSize: 11,
+          color: "rgba(246,185,76,0.7)",
+          letterSpacing: "0.05em",
+        }}
+      >
+        <span style={{ color: "rgba(255,255,255,0.25)", marginRight: 8 }}>▶</span>
+        89 candidates → 24 embedded → 8 results
+      </div>
+    </div>
+  );
+}
+
+/* ── Helpers ─────────────────────────────────────────────────────────── */
+
+const Dot = ({ color }: { color: string }) => (
+  <span
+    className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
+    style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}80` }}
+  />
+);
+
+const Kicker = ({ color, children }: { color: string; children: React.ReactNode }) => (
+  <span
+    className="inline-block font-mono text-[10px] tracking-[0.25em] uppercase px-2.5 py-1 rounded-full mb-5"
+    style={{
+      background: `${color}12`,
+      color,
+      border: `1px solid ${color}30`,
+      boxShadow: `0 0 12px ${color}15`,
+    }}
+  >
+    {children}
+  </span>
+);
+
+const SepBorder = "border-t border-white/[0.04]";
+const A = "#F6B94C";
+const T = "#14B8A6";
+const V = "#7C5CFF";
 
 /* ── Page ──────────────────────────────────────────────────────────── */
 
-export default function Page1DemoGuided() {
+export default function Page1CommandCenter() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
   const scrollTo = useCallback((id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   }, []);
-  const A = "var(--color-accent-amber)",
-    T = "var(--color-accent-teal)",
-    V = "var(--color-accent-violet)";
 
   const pipelineReveal = useDirectionalReveal("left");
   const semanticReveal = useDirectionalReveal("right");
   const evidenceReveal = useDirectionalReveal("up");
   const modesReveal = useDirectionalReveal("down");
   const cliReveal = useDirectionalReveal("left");
+  const bentoReveal = useDirectionalReveal("right");
 
   return (
-    <main className="min-h-screen bg-transparent text-[var(--color-fg-porcelain)] selection:bg-amber-500/30 overflow-x-hidden">
+    <main className="min-h-screen bg-[#0E1117] text-white selection:bg-amber-500/30 overflow-x-hidden" style={{ fontFamily: "'Geist Mono', monospace" }}>
+      <GlobalStyles />
       <SpotlightBackground />
 
       {/* ── NAV ──────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 inset-x-0 z-50 h-12 flex items-center border-b border-white/[0.06] bg-[var(--color-bg-graphite-0)]/80 backdrop-blur-md px-4 md:px-8">
+      <nav
+        className="fixed top-0 inset-x-0 z-50 h-12 flex items-center px-4 md:px-8"
+        style={{
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          background: "rgba(14,17,23,0.85)",
+          backdropFilter: "blur(12px)",
+        }}
+      >
+        {/* Left: brand */}
         <button
           onClick={() => scrollTo("hero")}
-          className="font-display text-sm font-semibold tracking-tight text-[var(--color-accent-amber)] mr-8 shrink-0"
+          className="font-mono text-sm font-semibold tracking-tight mr-8 shrink-0"
+          style={{ color: A }}
         >
-          Ixos
+          IXOS
         </button>
-        <div className="hidden md:flex items-center gap-5 text-[11px] tracking-wide uppercase text-white/50">
+        {/* Mission ticker */}
+        <div className="hidden lg:block mr-8">
+          <MissionTicker />
+        </div>
+        {/* Nav links */}
+        <div className="hidden md:flex items-center gap-5 text-[11px] tracking-widest uppercase text-white/40">
           {NAV.map((l) => (
             <button
               key={l.id}
               onClick={() => scrollTo(l.id)}
-              className="hover:text-white/90 transition-colors duration-150"
+              className="hover:text-white/80 transition-colors duration-150"
             >
               {l.label}
             </button>
@@ -342,123 +846,145 @@ export default function Page1DemoGuided() {
         <div className="ml-auto">
           <button
             onClick={() => scrollTo("pricing")}
-            className="text-[11px] font-semibold tracking-wide uppercase px-3 py-1 rounded bg-[var(--color-accent-amber)]/10 text-[var(--color-accent-amber)] border border-[var(--color-accent-amber)]/20 hover:bg-[var(--color-accent-amber)]/20 transition-colors duration-150"
+            className="text-[11px] font-semibold tracking-wide uppercase px-3 py-1 rounded"
+            style={{
+              background: `${A}15`,
+              color: A,
+              border: `1px solid ${A}25`,
+              boxShadow: `0 0 12px ${A}10`,
+            }}
           >
             Download
           </button>
         </div>
       </nav>
 
-      {/* ── S1  HERO: Full-bleed Split Screen ────────────────────── */}
+      {/* ── S1  HERO ──────────────────────────────────────────────── */}
       <section
         id="hero"
-        className="section-hero relative pt-16 min-h-screen flex flex-col lg:flex-row items-center gap-8 lg:gap-12 px-5 md:px-10 lg:px-16 pb-24"
+        className="relative pt-16 min-h-screen flex flex-col lg:flex-row items-center gap-12 px-5 md:px-10 lg:px-16 pb-24"
+        style={{ zIndex: 1 }}
       >
-        <div className="relative z-10 flex-1 max-w-xl pt-12 lg:pt-24">
+        {/* Left: copy */}
+        <div className="relative flex-1 max-w-xl pt-12 lg:pt-24">
           <Reveal>
-            <p className="font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--color-accent-amber)] mb-4">
-              Local-first semantic search
+            <p
+              className="font-mono text-[10px] tracking-[0.3em] uppercase mb-4"
+              style={{ color: A }}
+            >
+              ◈ Local-first semantic search
             </p>
           </Reveal>
           <Reveal delay={0.05}>
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.08] mb-5">
-              Search reimagined locally.{" "}
-              <span
-                className="heading-gradient-amber text-amber-400"
-                style={{ textShadow: "0 0 40px rgba(246,185,76,0.4)" }}
-              >
-                Every file remembered.
+            <h1 className="font-mono text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.08] mb-5">
+              Search reimagined{" "}
+              <span style={{ color: A, textShadow: `0 0 40px ${A}50` }}>
+                locally.
               </span>
-              <span className="inline-block w-0.5 h-[0.85em] bg-amber-400 ml-1 align-middle animate-pulse" />
+              <br />
+              <span style={{ color: T, textShadow: `0 0 30px ${T}40` }}>
+                Every file{" "}
+              </span>
+              remembered.
+              <span
+                style={{
+                  display: "inline-block",
+                  width: 4,
+                  height: "0.85em",
+                  backgroundColor: A,
+                  marginLeft: 6,
+                  verticalAlign: "middle",
+                  animation: "amberBlink 1.1s steps(1) infinite",
+                  boxShadow: `0 0 12px ${A}`,
+                }}
+              />
             </h1>
           </Reveal>
           <Reveal delay={0.1}>
-            <p className="text-base sm:text-lg leading-relaxed text-white/60 max-w-lg mb-8">
+            <p className="text-base sm:text-lg leading-relaxed text-white/55 max-w-lg mb-8">
               Ixos indexes your codebase on-device with sub-second hybrid
               search. No cloud. No telemetry. Just results that understand what
               you mean, not just what you type.
             </p>
           </Reveal>
+          {/* Status readout */}
+          <Reveal delay={0.12}>
+            <div
+              className="flex items-center gap-6 mb-8 font-mono text-[10px] tracking-widest uppercase"
+              style={{ color: "rgba(255,255,255,0.3)" }}
+            >
+              <span className="flex items-center gap-2">
+                <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#22c55e", display: "inline-block", boxShadow: "0 0 8px #22c55e" }} />
+                ONLINE
+              </span>
+              <span>|</span>
+              <span>LOCAL ONLY</span>
+              <span>|</span>
+              <span style={{ color: A }}>0 BYTES SENT</span>
+            </div>
+          </Reveal>
           <Reveal delay={0.15}>
             <div className="flex flex-wrap gap-3">
-              <button
+              <motion.button
                 onClick={() => scrollTo("pricing")}
-                className="px-5 py-2.5 rounded-md bg-[var(--color-accent-amber)] text-black text-sm font-semibold hover:brightness-110 transition-all duration-200"
+                className="px-6 py-3 rounded-md font-mono text-sm font-semibold text-black"
+                style={{
+                  background: `linear-gradient(135deg, ${A}, #F59E0B)`,
+                  boxShadow: `0 0 20px ${A}30`,
+                }}
+                whileHover={{ scale: 1.04, boxShadow: `0 0 32px ${A}50` }}
+                whileTap={{ scale: 0.98 }}
               >
                 Download Free
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 onClick={() => scrollTo("pipeline")}
-                className="px-5 py-2.5 rounded-md border border-white/10 text-sm font-medium text-white/70 hover:text-white hover:border-white/20 transition-all duration-200"
+                className="px-6 py-3 rounded-md font-mono text-sm font-medium text-white/65"
+                style={{ border: "1px solid rgba(255,255,255,0.12)" }}
+                whileHover={{ borderColor: "rgba(255,255,255,0.25)", color: "rgba(255,255,255,0.9)" }}
               >
-                See how it works
-              </button>
+                See how it works →
+              </motion.button>
             </div>
           </Reveal>
         </div>
-        <div className="relative z-10 flex-1 w-full min-w-0 lg:min-w-[620px] max-w-2xl">
+
+        {/* Right: desktop mockup */}
+        <div className="relative flex-1 flex justify-center items-center">
           <Reveal delay={0.2}>
-            {/* Fixed-height container prevents layout shift when results load */}
-            <div
-              className="relative overflow-hidden rounded-xl border border-white/8 shadow-2xl shadow-amber-500/5 bg-[var(--color-bg-graphite-1)]/60 backdrop-blur-sm"
-              style={{ height: "520px", minHeight: "520px" }}
-            >
-              <DemoSurface
-                initialQuery="authentication token refresh"
-                initialMode="auto"
-                autoRun
-                presets={[
-                  "authentication token refresh",
-                  "rate limiter middleware",
-                  "How does token expiry work?",
-                  "database migration scripts",
-                ]}
-              />
+            <div style={{ animation: "floatUp 6s ease-in-out infinite" }}>
+              <HeroMockup />
             </div>
           </Reveal>
+          {/* Glow behind mockup */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: `radial-gradient(50% 50%, ${A}08 0%, transparent 70%)`,
+              pointerEvents: "none",
+            }}
+          />
         </div>
       </section>
 
-      {/* ── S2  TRUST STRIP: Asymmetric Grid Band ────────────────── */}
-      <section className="relative z-10 py-16 px-5 md:px-10 border-y border-white/[0.04]">
+      {/* ── S2  TRUST STRIP ───────────────────────────────────────── */}
+      <section
+        className="relative z-10 py-16 px-5 md:px-10"
+        style={{ borderTop: "1px solid rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+      >
+        {/* Section scan bar */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${A}30, ${T}20, transparent)` }} />
         <StaggerGroup className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10">
-          <KpiCard
-            val="100%"
-            label="Local-first"
-            sub="Zero cloud dependency"
-            target={100}
-            suffix="%"
-          />
-          <KpiCard
-            val="0 B"
-            label="Data sent"
-            sub="No telemetry ever"
-            target={0}
-            isStatic
-          />
-          <KpiCard
-            val="<800ms"
-            label="Search latency"
-            sub="1,000 files, cold cache"
-            target={800}
-            prefix="<"
-            suffix="ms"
-          />
-          <KpiCard
-            val="250+"
-            label="Tests passed"
-            sub="Security + correctness"
-            target={250}
-            suffix="+"
-          />
+          <KpiCard val="100%" label="Local-first" sub="Zero cloud dependency" target={100} suffix="%" />
+          <KpiCard val="0 B" label="Data sent" sub="No telemetry ever" target={0} isStatic />
+          <KpiCard val="<800ms" label="Search latency" sub="1,000 files, cold cache" target={800} prefix="<" suffix="ms" />
+          <KpiCard val="250+" label="Tests passed" sub="Security + correctness" target={250} suffix="+" />
         </StaggerGroup>
       </section>
 
       {/* ── S3  PIPELINE 1: Lexical Scan ─────────────────────────── */}
-      <section
-        id="pipeline"
-        className="section-how relative z-10 py-28 md:py-36 px-5 md:px-10"
-      >
+      <section id="pipeline" className="relative z-10 py-28 md:py-36 px-5 md:px-10">
         <div
           ref={pipelineReveal.ref}
           style={pipelineReveal.style}
@@ -466,11 +992,12 @@ export default function Page1DemoGuided() {
         >
           <div>
             <Reveal>
-              <Kicker color={A}>Phase 1 &mdash; Lexical</Kicker>
+              <Kicker color={A}>Phase 1 — Lexical</Kicker>
             </Reveal>
             <Reveal delay={0.05}>
-              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight mb-4">
-                Millions of tokens, scanned in&nbsp;milliseconds.
+              <h2 className="font-mono text-3xl sm:text-4xl font-semibold tracking-tight mb-4">
+                Millions of tokens,{" "}
+                <span style={{ color: A }}>scanned in milliseconds.</span>
               </h2>
             </Reveal>
             <Reveal delay={0.1}>
@@ -478,7 +1005,7 @@ export default function Page1DemoGuided() {
                 When you hit enter, Ixos fires up a Rayon-parallelized lexical
                 engine that streams through your entire directory. It tokenizes
                 file contents, scores n-gram overlap against your query, and
-                produces a ranked candidate set -- typically in under 10ms for
+                produces a ranked candidate set — typically in under 10ms for
                 1,000 files.
               </p>
             </Reveal>
@@ -497,9 +1024,10 @@ export default function Page1DemoGuided() {
               </ul>
             </Reveal>
           </div>
-          <Reveal delay={0.15}>
-            <div className="relative rounded-lg border border-white/[0.06] bg-[var(--color-bg-graphite-1)]/50 p-6 space-y-3">
+          <Reveal delay={0.12}>
+            <div className="relative rounded-lg border border-white/[0.06] bg-[rgba(22,27,34,0.5)] p-6 space-y-3">
               <CornerBrackets />
+              <ScanLine />
               <div className="font-mono text-[10px] tracking-wider uppercase text-white/30 mb-4">
                 Lexical score distribution
               </div>
@@ -515,22 +1043,10 @@ export default function Page1DemoGuided() {
               ).map(([file, pct], i) => (
                 <div key={i}>
                   <div className="flex justify-between mb-1">
-                    <span className="font-mono text-xs text-white/50 truncate mr-4">
-                      {file}
-                    </span>
-                    <span className="font-mono text-xs text-[var(--color-accent-amber)] shrink-0">
-                      {pct}%
-                    </span>
+                    <span className="font-mono text-xs text-white/50 truncate mr-4">{file}</span>
+                    <span className="font-mono text-xs shrink-0" style={{ color: A }}>{pct}%</span>
                   </div>
-                  <div className="h-1.5 rounded-full bg-white/[0.04] overflow-hidden">
-                    <motion.div
-                      className="h-full rounded-full bg-[var(--color-accent-amber)]"
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${pct}%` }}
-                      transition={{ duration: 0.4, delay: i * 0.06 }}
-                      viewport={{ once: true }}
-                    />
-                  </div>
+                  <DataStreamBar pct={pct} color={A} />
                 </div>
               ))}
             </div>
@@ -539,21 +1055,19 @@ export default function Page1DemoGuided() {
       </section>
 
       {/* ── S4  PIPELINE 2: Semantic Index ────────────────────────── */}
-      <section
-        className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}
-      >
+      <section className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}>
         <div
           ref={semanticReveal.ref}
           style={semanticReveal.style}
           className="relative z-10 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-14 items-center"
         >
           <Reveal>
-            <div className="relative rounded-lg border border-white/[0.06] bg-[var(--color-bg-graphite-1)]/50 p-6">
+            <div className="relative rounded-lg border border-white/[0.06] bg-[rgba(22,27,34,0.5)] p-6">
               <CornerBrackets />
               <div className="font-mono text-[10px] tracking-wider uppercase text-white/30 mb-5">
                 Embedding similarity space
               </div>
-              <div className="relative h-64 rounded-md bg-[var(--color-bg-graphite-0)]/60 overflow-hidden">
+              <div className="relative h-64 rounded-md bg-[rgba(14,17,23,0.6)] overflow-hidden">
                 {(
                   [
                     { x: 20, y: 25, l: "query", c: T, s: 10 },
@@ -561,7 +1075,7 @@ export default function Page1DemoGuided() {
                     { x: 18, y: 38, l: "refresh.ts", c: T, s: 6 },
                     { x: 55, y: 55, l: "middleware", c: V, s: 5 },
                     { x: 72, y: 20, l: "crypto.ts", c: A, s: 4 },
-                    { x: 80, y: 70, l: "sessions", c: "white", s: 3 },
+                    { x: 80, y: 70, l: "sessions", c: "rgba(255,255,255,0.5)", s: 3 },
                   ] as const
                 ).map((d, i) => (
                   <motion.div
@@ -570,7 +1084,7 @@ export default function Page1DemoGuided() {
                     style={{ left: `${d.x}%`, top: `${d.y}%` }}
                     initial={{ opacity: 0, scale: 0 }}
                     whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.25, delay: 0.1 + i * 0.06 }}
+                    transition={{ duration: 0.3, delay: 0.1 + i * 0.08 }}
                     viewport={{ once: true }}
                   >
                     <div
@@ -579,57 +1093,31 @@ export default function Page1DemoGuided() {
                         width: d.s + 4,
                         height: d.s + 4,
                         backgroundColor: d.c,
-                        opacity: d.l === "query" ? 1 : 0.6,
+                        opacity: d.l === "query" ? 1 : 0.65,
+                        boxShadow: d.l === "query" ? `0 0 12px ${d.c}` : "none",
                       }}
                     />
-                    <span
-                      className="font-mono text-[9px] whitespace-nowrap"
-                      style={{ color: d.c, opacity: 0.7 }}
-                    >
+                    <span className="font-mono text-[9px] whitespace-nowrap" style={{ color: d.c, opacity: 0.75 }}>
                       {d.l}
                     </span>
                   </motion.div>
                 ))}
-                <svg
-                  className="absolute inset-0 w-full h-full pointer-events-none"
-                  style={{ opacity: 0.15 }}
-                >
-                  <line
-                    x1="20%"
-                    y1="25%"
-                    x2="26%"
-                    y2="32%"
-                    stroke={T}
-                    strokeWidth="1"
-                  />
-                  <line
-                    x1="20%"
-                    y1="25%"
-                    x2="18%"
-                    y2="38%"
-                    stroke={T}
-                    strokeWidth="1"
-                  />
-                  <line
-                    x1="20%"
-                    y1="25%"
-                    x2="55%"
-                    y2="55%"
-                    stroke={V}
-                    strokeWidth="0.5"
-                    strokeDasharray="4"
-                  />
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.18 }}>
+                  <line x1="20%" y1="25%" x2="26%" y2="32%" stroke={T} strokeWidth="1" />
+                  <line x1="20%" y1="25%" x2="18%" y2="38%" stroke={T} strokeWidth="1" />
+                  <line x1="20%" y1="25%" x2="55%" y2="55%" stroke={V} strokeWidth="0.5" strokeDasharray="4" />
                 </svg>
               </div>
             </div>
           </Reveal>
           <div>
             <Reveal>
-              <Kicker color={T}>Phase 2 &mdash; Semantic</Kicker>
+              <Kicker color={T}>Phase 2 — Semantic</Kicker>
             </Reveal>
             <Reveal delay={0.05}>
-              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight mb-4">
-                Understanding intent, not just&nbsp;keywords.
+              <h2 className="font-mono text-3xl sm:text-4xl font-semibold tracking-tight mb-4">
+                Understanding{" "}
+                <span style={{ color: T }}>intent,</span> not just keywords.
               </h2>
             </Reveal>
             <Reveal delay={0.1}>
@@ -644,7 +1132,7 @@ export default function Page1DemoGuided() {
             <Reveal delay={0.15}>
               <ul className="mt-6 space-y-3 text-sm text-white/45">
                 {[
-                  "int8 quantized model -- 16.6 MB, MRR@10 = 0.834",
+                  "int8 quantized model — 16.6 MB, MRR@10 = 0.834",
                   "HMAC-verified cache with NTFS ADS / xattr backends",
                   "Cosine similarity in 64-dimensional embedding space",
                 ].map((t, i) => (
@@ -659,11 +1147,26 @@ export default function Page1DemoGuided() {
         </div>
       </section>
 
-      {/* ── S5  EVIDENCE DRAWER: Score Rationale Cards ────────────── */}
-      <section
-        id="evidence"
-        className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}
-      >
+      {/* ── S5  PIPELINE VISUALIZATION ────────────────────────────── */}
+      <section className={`relative z-10 py-20 px-5 md:px-10 ${SepBorder}`}>
+        <div className="relative z-10 max-w-4xl mx-auto">
+          <Reveal>
+            <div className="text-center mb-10">
+              <Kicker color={A}>Full pipeline</Kicker>
+              <h2 className="font-mono text-2xl sm:text-3xl font-semibold tracking-tight mb-2">
+                From keystroke to result in{" "}
+                <span style={{ color: A }}>312ms.</span>
+              </h2>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <PipelineStageViz />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── S6  EVIDENCE DRAWER: Score Rationale Cards ────────────── */}
+      <section id="evidence" className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}>
         <div
           ref={evidenceReveal.ref}
           style={evidenceReveal.style}
@@ -671,15 +1174,16 @@ export default function Page1DemoGuided() {
         >
           <Reveal>
             <div className="text-center mb-14">
-              <p className="font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--color-accent-violet)] mb-3">
+              <p className="font-mono text-[10px] tracking-[0.25em] uppercase mb-3" style={{ color: V }}>
                 Transparency
               </p>
-              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
+              <h2 className="font-mono text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
                 Every result tells you{" "}
-                <span className="heading-gradient-violet">why</span> it matched.
+                <span style={{ color: V, textShadow: `0 0 20px ${V}50` }}>why</span>{" "}
+                it matched.
               </h2>
               <p className="text-white/50 max-w-xl mx-auto">
-                No black boxes. Ixos exposes the full scoring breakdown --
+                No black boxes. Ixos exposes the full scoring breakdown —
                 lexical overlap, semantic similarity, recency boost, and
                 behavioral adjustment.
               </p>
@@ -711,46 +1215,42 @@ export default function Page1DemoGuided() {
               <motion.div
                 key={i}
                 variants={cFade}
-                className="relative rounded-lg border border-white/[0.06] bg-[var(--color-bg-graphite-1)]/40 p-5"
+                className="relative rounded-lg p-5"
+                style={{
+                  background: "rgba(22,27,34,0.4)",
+                  border: `1px solid rgba(255,255,255,0.06)`,
+                }}
+                whileHover={{
+                  y: -4,
+                  scale: 1.02,
+                  borderColor: `${card.c}30`,
+                  boxShadow: `0 0 24px ${card.c}12`,
+                }}
+                transition={{ duration: 0.25 }}
               >
-                <CornerBrackets />
+                <CornerBrackets color={`${card.c}25`} />
                 <div className="flex items-baseline justify-between mb-3">
-                  <span className="font-mono text-[10px] tracking-wider uppercase text-white/40">
-                    {card.t}
-                  </span>
-                  <span
-                    className="font-display text-2xl font-semibold"
-                    style={{ color: card.c }}
-                  >
+                  <span className="font-mono text-[10px] tracking-wider uppercase text-white/40">{card.t}</span>
+                  <span className="font-mono text-2xl font-semibold" style={{ color: card.c, textShadow: `0 0 16px ${card.c}50` }}>
                     {card.v}
                   </span>
                 </div>
-                <div className="h-1 rounded-full bg-white/[0.04] mb-4 overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: card.c }}
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${parseFloat(card.v) * 100}%` }}
-                    transition={{ duration: 0.4, delay: 0.15 }}
-                    viewport={{ once: true }}
-                  />
-                </div>
-                <p className="text-xs text-white/40 leading-relaxed">{card.d}</p>
+                <DataStreamBar pct={parseFloat(card.v) * 100} color={card.c} />
+                <p className="text-xs text-white/40 leading-relaxed mt-3">{card.d}</p>
               </motion.div>
             ))}
           </StaggerGroup>
         </div>
       </section>
 
-      {/* ── S6  RESULT ANATOMY: Zoomed UI Overlay ────────────────── */}
-      <section
-        className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}
-      >
+      {/* ── S7  RESULT ANATOMY ────────────────────────────────────── */}
+      <section className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}>
         <div className="relative z-10 max-w-4xl mx-auto">
           <Reveal>
             <div className="text-center mb-12">
-              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
-                Anatomy of a result
+              <h2 className="font-mono text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
+                Anatomy of a{" "}
+                <span style={{ color: T }}>result</span>
               </h2>
               <p className="text-white/50 max-w-lg mx-auto">
                 Dense, utilitarian, and instantly actionable. Every element
@@ -759,36 +1259,50 @@ export default function Page1DemoGuided() {
             </div>
           </Reveal>
           <Reveal delay={0.1}>
-            <div className="relative rounded-xl border border-white/[0.08] bg-[var(--color-bg-graphite-1)]/60 backdrop-blur-sm overflow-hidden p-5 sm:p-6">
-              <CornerBrackets />
+            <div
+              className="relative rounded-xl overflow-hidden p-5 sm:p-6"
+              style={{
+                border: "1px solid rgba(255,255,255,0.08)",
+                background: "rgba(22,27,34,0.6)",
+                backdropFilter: "blur(8px)",
+                boxShadow: `0 0 40px rgba(20,184,166,0.06)`,
+              }}
+            >
+              <CornerBrackets color={`${T}30`} />
+              <ScanLine />
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="min-w-0">
                   <div className="font-mono text-[11px] text-white/35 truncate mb-1">
                     src/auth/token-manager.ts:142
                   </div>
-                  <div className="font-display text-lg font-semibold tracking-tight">
+                  <div className="font-mono text-lg font-semibold tracking-tight">
                     TokenManager::refreshAndRotate
                   </div>
                 </div>
-                <div className="shrink-0 w-12 h-12 rounded-full border-2 border-[var(--color-accent-teal)] flex items-center justify-center">
-                  <span className="font-display text-sm font-semibold text-[var(--color-accent-teal)]">
-                    98
-                  </span>
+                <div
+                  className="shrink-0 w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{ border: `2px solid ${T}`, boxShadow: `0 0 16px ${T}40` }}
+                >
+                  <span className="font-mono text-sm font-semibold" style={{ color: T }}>98</span>
                 </div>
               </div>
-              <div className="rounded-md bg-[var(--color-bg-graphite-0)]/80 border border-white/[0.04] p-4 font-mono text-xs leading-relaxed overflow-x-auto">
+              <div
+                className="rounded-md p-4 font-mono text-xs leading-relaxed overflow-x-auto"
+                style={{ background: "rgba(14,17,23,0.8)", border: "1px solid rgba(255,255,255,0.04)" }}
+              >
                 <div className="text-white/30">
                   <span className="text-white/20 select-none mr-3">140</span>
                   {`/// Refresh the current token and rotate the signing key`}
                 </div>
                 <div className="text-white/30">
                   <span className="text-white/20 select-none mr-3">141</span>
-                  <span className="text-[var(--color-accent-violet)]">
-                    pub async fn
-                  </span>
+                  <span style={{ color: V }}>{`pub async fn`}</span>
                   {` refreshAndRotate(`}
                 </div>
-                <div className="bg-[var(--color-accent-teal)]/10 border-l-2 border-[var(--color-accent-teal)] -mx-4 px-4 py-0.5 text-white/70">
+                <div
+                  className="-mx-4 px-4 py-0.5 text-white/70"
+                  style={{ background: `${T}10`, borderLeft: `2px solid ${T}` }}
+                >
                   <span className="text-white/20 select-none mr-3">142</span>
                   {`  let new_token = self.issuer.rotate(old_token).await?;`}
                 </div>
@@ -798,35 +1312,21 @@ export default function Page1DemoGuided() {
                 </div>
               </div>
               <div className="flex items-center gap-4 mt-4 text-[10px] font-mono tracking-wide uppercase text-white/30">
-                <span>
-                  Lexical{" "}
-                  <span className="text-[var(--color-accent-amber)]">0.87</span>
-                </span>
+                <span>Lexical <span style={{ color: A }}>0.87</span></span>
                 <span className="w-px h-3 bg-white/10" />
-                <span>
-                  Semantic{" "}
-                  <span className="text-[var(--color-accent-teal)]">0.94</span>
-                </span>
+                <span>Semantic <span style={{ color: T }}>0.94</span></span>
                 <span className="w-px h-3 bg-white/10" />
-                <span>
-                  Recency{" "}
-                  <span className="text-[var(--color-accent-violet)]">0.72</span>
-                </span>
+                <span>Recency <span style={{ color: V }}>0.72</span></span>
                 <span className="w-px h-3 bg-white/10" />
-                <span>
-                  Hybrid <span className="text-white/70">0.98</span>
-                </span>
+                <span>Hybrid <span className="text-white/70">0.98</span></span>
               </div>
             </div>
           </Reveal>
         </div>
       </section>
 
-      {/* ── S7  MODES / QUALITY: Stepper Rail ────────────────────── */}
-      <section
-        id="modes"
-        className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}
-      >
+      {/* ── S8  MODES / QUALITY ───────────────────────────────────── */}
+      <section id="modes" className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}>
         <div
           ref={modesReveal.ref}
           style={modesReveal.style}
@@ -837,8 +1337,9 @@ export default function Page1DemoGuided() {
               <p className="font-mono text-[10px] tracking-[0.25em] uppercase text-white/40 mb-3">
                 Search modes
               </p>
-              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight">
-                Choose your depth
+              <h2 className="font-mono text-3xl sm:text-4xl font-semibold tracking-tight">
+                Choose your{" "}
+                <span style={{ color: A }}>depth.</span>
               </h2>
             </div>
           </Reveal>
@@ -877,34 +1378,34 @@ export default function Page1DemoGuided() {
               <motion.div
                 key={i}
                 variants={cFade}
-                className="relative rounded-lg border border-white/[0.06] bg-[var(--color-bg-graphite-1)]/40 p-6 flex flex-col hover:border-amber-400/20 transition-colors duration-300"
+                className="relative rounded-lg p-6 flex flex-col"
+                style={{
+                  background: "rgba(22,27,34,0.4)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                }}
+                whileHover={{
+                  y: -5,
+                  scale: 1.02,
+                  borderColor: `${m.c}30`,
+                  boxShadow: `0 0 30px ${m.c}12, inset 0 0 20px ${m.c}04`,
+                }}
+                transition={{ duration: 0.25 }}
               >
-                <CornerBrackets />
+                <CornerBrackets color={`${m.c}20`} />
                 <div className="flex items-baseline justify-between mb-1">
-                  <span
-                    className="font-display text-xl font-semibold"
-                    style={{ color: m.c }}
-                  >
+                  <span className="font-mono text-xl font-semibold" style={{ color: m.c, textShadow: `0 0 16px ${m.c}50` }}>
                     {m.mode}
                   </span>
-                  <span className="font-mono text-xs text-white/30">
-                    {m.speed}
-                  </span>
+                  <span className="font-mono text-xs text-white/30">{m.speed}</span>
                 </div>
-                <div className="h-1 rounded-full bg-white/[0.04] mb-4 overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${m.bar}%`, backgroundColor: m.c }}
-                  />
-                </div>
-                <p className="text-xs text-white/45 leading-relaxed flex-1 mb-4">
-                  {m.desc}
-                </p>
-                <div className="flex items-center justify-between text-[10px] font-mono tracking-wide uppercase text-white/25 border-t border-white/[0.04] pt-3">
+                <DataStreamBar pct={m.bar} color={m.c} />
+                <p className="text-xs text-white/45 leading-relaxed flex-1 my-4">{m.desc}</p>
+                <div
+                  className="flex items-center justify-between text-[10px] font-mono tracking-wide uppercase text-white/25 pt-3"
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
+                >
                   <span>{m.model}</span>
-                  <span>
-                    MRR@10 <span className="text-white/50">{m.mrr}</span>
-                  </span>
+                  <span>MRR@10 <span className="text-white/50">{m.mrr}</span></span>
                 </div>
               </motion.div>
             ))}
@@ -912,28 +1413,26 @@ export default function Page1DemoGuided() {
         </div>
       </section>
 
-      {/* ── S8  TODAY / WORKSTREAMS: Inline Demo Container ────────── */}
-      <section
-        id="today"
-        className={`section-today relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}
-      >
+      {/* ── S9  TODAY / WORKSTREAMS ────────────────────────────────── */}
+      <section id="today" className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}>
         <div className="relative z-10 max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-10 items-start">
           <div className="pt-4">
             <Reveal>
-              <p className="font-mono text-[10px] tracking-[0.25em] uppercase text-[var(--color-accent-teal)] mb-4">
+              <p className="font-mono text-[10px] tracking-[0.25em] uppercase mb-4" style={{ color: T }}>
                 Context recovery
               </p>
             </Reveal>
             <Reveal delay={0.05}>
-              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight mb-4">
-                Pick up right where you&nbsp;left&nbsp;off.
+              <h2 className="font-mono text-3xl sm:text-4xl font-semibold tracking-tight mb-4">
+                Pick up right where you{" "}
+                <span style={{ color: T }}>left off.</span>
               </h2>
             </Reveal>
             <Reveal delay={0.1}>
               <p className="text-white/55 leading-relaxed mb-6">
                 Ixos watches which files you touch, groups them into
-                workstreams, and tells you what you were doing when you sit back
-                down. No manual bookmarks. No IDE history digging.
+                workstreams, and tells you what you were doing when you sit
+                back down. No manual bookmarks. No IDE history digging.
               </p>
             </Reveal>
             <Reveal delay={0.15}>
@@ -952,7 +1451,15 @@ export default function Page1DemoGuided() {
             </Reveal>
           </div>
           <Reveal delay={0.15}>
-            <div className="rounded-xl overflow-hidden border border-white/[0.06] shadow-lg shadow-teal-500/5 bg-[var(--color-bg-graphite-1)]/60 backdrop-blur-sm min-w-0 lg:min-w-[520px]">
+            <div
+              className="rounded-xl overflow-hidden min-w-0"
+              style={{
+                border: "1px solid rgba(255,255,255,0.06)",
+                boxShadow: `0 0 40px rgba(20,184,166,0.06)`,
+                background: "rgba(22,27,34,0.6)",
+                backdropFilter: "blur(8px)",
+              }}
+            >
               <DemoSurface
                 initialView="today"
                 initialQuery="What was I working on yesterday in the auth module?"
@@ -963,19 +1470,17 @@ export default function Page1DemoGuided() {
         </div>
       </section>
 
-      {/* ── S9  CLI WORKFLOWS: Terminal Window Chrome ─────────────── */}
-      <section
-        id="cli"
-        className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}
-      >
+      {/* ── S10  CLI WORKFLOWS ────────────────────────────────────── */}
+      <section id="cli" className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}>
         <div className="relative z-10 max-w-3xl mx-auto">
           <Reveal>
             <div className="text-center mb-10">
               <p className="font-mono text-[10px] tracking-[0.25em] uppercase text-white/40 mb-3">
                 CLI-native
               </p>
-              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
-                For the terminal-native developer
+              <h2 className="font-mono text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
+                For the{" "}
+                <span style={{ color: A }}>terminal-native</span> developer
               </h2>
               <p className="text-white/50 max-w-lg mx-auto">
                 Ixos is a single Rust binary. Pipe results into your existing
@@ -985,89 +1490,59 @@ export default function Page1DemoGuided() {
           </Reveal>
           <div ref={cliReveal.ref} style={cliReveal.style}>
             <Reveal delay={0.1}>
-              <div className="relative rounded-lg overflow-hidden border border-white/[0.08]">
+              <div
+                className="relative rounded-lg overflow-hidden"
+                style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+              >
                 <CornerBrackets />
-                <div className="flex items-center gap-2 px-4 py-2.5 bg-[#0d0f14] border-b border-white/[0.06]">
+                {/* Terminal chrome */}
+                <div
+                  className="flex items-center gap-2 px-4 py-2.5"
+                  style={{ background: "#0d0f14", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+                >
                   <div className="flex gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: "rgba(255,95,87,0.7)" }} />
+                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: "rgba(255,189,68,0.7)" }} />
+                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: "rgba(40,201,64,0.7)" }} />
                   </div>
-                  <span className="font-mono text-[10px] text-white/25 ml-2">
-                    terminal
-                  </span>
+                  <span className="font-mono text-[10px] text-white/25 ml-2">ixos — terminal</span>
                 </div>
-                <div className="bg-[#08090d] p-5 font-mono text-[12px] leading-[1.8] text-white/60 space-y-4 overflow-x-auto">
+                <div
+                  className="p-5 font-mono text-[12px] leading-[1.8] text-white/60 space-y-4 overflow-x-auto"
+                  style={{ background: "#08090d" }}
+                >
                   <div>
                     <span className="text-white/25">$</span>{" "}
-                    <span className="text-[var(--color-accent-amber)]">
-                      ixos
-                    </span>{" "}
-                    search &quot;authentication token refresh&quot;
-                    --progressive --show-scores
+                    <span style={{ color: A }}>ixos</span>{" "}
+                    search &quot;authentication token refresh&quot; --progressive --show-scores
                   </div>
                   <div className="text-white/25 text-[11px]">
-                    {`[scan] 1,247 files in 7ms`}
-                    <br />
-                    {`[lexical] 89 candidates scored`}
-                    <br />
-                    {`[semantic] 24 embedded (19 cache hits)`}
-                    <br />
+                    {`[scan] 1,247 files in 7ms`}<br />
+                    {`[lexical] 89 candidates scored`}<br />
+                    {`[semantic] 24 embedded (19 cache hits)`}<br />
                     {`[locked] 8 results in 312ms`}
                   </div>
                   <div>
-                    <span className="text-[var(--color-accent-teal)]">1.</span>{" "}
-                    <span className="text-white/80">
-                      src/auth/token-manager.ts:142
-                    </span>{" "}
-                    <span className="text-[var(--color-accent-amber)]">
-                      [0.98]
-                    </span>
+                    <span style={{ color: T }}>1.</span>{" "}
+                    <span className="text-white/80">src/auth/token-manager.ts:142</span>{" "}
+                    <span style={{ color: A }}>[0.98]</span>
                     <br />
-                    <span className="text-[var(--color-accent-teal)]">2.</span>{" "}
-                    <span className="text-white/80">
-                      src/auth/refresh.ts:89
-                    </span>{" "}
-                    <span className="text-[var(--color-accent-amber)]">
-                      [0.94]
-                    </span>
+                    <span style={{ color: T }}>2.</span>{" "}
+                    <span className="text-white/80">src/auth/refresh.ts:89</span>{" "}
+                    <span style={{ color: A }}>[0.94]</span>
                     <br />
-                    <span className="text-[var(--color-accent-teal)]">3.</span>{" "}
-                    <span className="text-white/80">
-                      src/api/middleware/auth.ts:31
-                    </span>{" "}
-                    <span className="text-[var(--color-accent-amber)]">
-                      [0.87]
-                    </span>
+                    <span style={{ color: T }}>3.</span>{" "}
+                    <span className="text-white/80">src/api/middleware/auth.ts:31</span>{" "}
+                    <span style={{ color: A }}>[0.87]</span>
                   </div>
-                  <div className="border-t border-white/[0.04] pt-4">
+                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.04)", paddingTop: 16 }}>
                     <span className="text-white/25">$</span>{" "}
-                    <span className="text-[var(--color-accent-amber)]">
-                      ixos
-                    </span>{" "}
-                    search &quot;unhandled exceptions&quot; --json | jq
-                    &quot;.results[].path&quot;
-                  </div>
-                  <div className="text-white/35 text-[11px]">
-                    {`"src/api/errorHandler.ts"`}
-                    <br />
-                    {`"src/core/pipeline.rs"`}
-                    <br />
-                    {`"tests/error.test.ts"`}
-                  </div>
-                  <div className="border-t border-white/[0.04] pt-4">
-                    <span className="text-white/25">$</span>{" "}
-                    <span className="text-[var(--color-accent-amber)]">
-                      ixos
-                    </span>{" "}
-                    search &quot;database migration&quot; --cache-mode ephemeral
-                    --journalist-mode
+                    <span style={{ color: A }}>ixos</span>{" "}
+                    search &quot;database migration&quot; --cache-mode ephemeral --journalist-mode
                   </div>
                   <div className="text-white/25 text-[11px]">
-                    {`[journalist] ephemeral mode active — no cache persisted`}
-                    <br />
-                    {`[journalist] secure timing floor enabled (100ms)`}
-                    <br />
+                    {`[journalist] ephemeral mode active — no cache persisted`}<br />
+                    {`[journalist] secure timing floor enabled (100ms)`}<br />
                     {`[locked] 5 results — memory wiped on exit`}
                   </div>
                 </div>
@@ -1077,15 +1552,18 @@ export default function Page1DemoGuided() {
         </div>
       </section>
 
-      {/* ── S10  BENTO FEATURE GRID: Privacy Architecture ─────────── */}
-      <section
-        className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}
-      >
-        <div className="relative z-10 max-w-6xl mx-auto">
+      {/* ── S11  BENTO FEATURE GRID ───────────────────────────────── */}
+      <section className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}>
+        <div
+          ref={bentoReveal.ref}
+          style={bentoReveal.style}
+          className="relative z-10 max-w-6xl mx-auto"
+        >
           <Reveal>
             <div className="text-center mb-14">
-              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
-                Zero cloud. Zero telemetry. Provable.
+              <h2 className="font-mono text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
+                Zero cloud.{" "}
+                <span style={{ color: A }}>Zero telemetry.</span> Provable.
               </h2>
               <p className="text-white/50 max-w-xl mx-auto">
                 Six guarantees baked into the architecture, not bolted on after.
@@ -1094,77 +1572,37 @@ export default function Page1DemoGuided() {
           </Reveal>
           <StaggerGroup className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {FEATURES.map((f, i) => (
-              <motion.div
-                key={i}
-                variants={cFade}
-                className={`relative p-6 bg-[var(--color-bg-graphite-1)]/50 border border-white/[0.06] rounded-lg group hover:border-amber-400/30 transition-colors duration-300 ${
-                  f.wide ? "col-span-2" : ""
-                }`}
-              >
-                <CornerBrackets />
-                <div
-                  className="text-2xl font-mono text-amber-400 mb-1"
-                  style={{ textShadow: "0 0 20px rgba(246,185,76,0.3)" }}
-                >
-                  {f.stat}
-                </div>
-                <div className="text-sm font-mono text-[var(--color-fg-porcelain)] mb-2">
-                  {f.title}
-                </div>
-                <div className="text-xs text-white/50">{f.desc}</div>
-              </motion.div>
+              <BentoCard key={i} f={f} i={i} />
             ))}
           </StaggerGroup>
 
-          {/* Legacy proof cards kept below for SEO / extra detail */}
+          {/* Proof cards */}
           <StaggerGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             {(
               [
-                {
-                  t: "No network calls",
-                  d: "The binary contains zero HTTP client code. There are no servers to send data to. Verify with `cargo audit` or read the source.",
-                  c: A,
-                },
-                {
-                  t: "HMAC-signed cache",
-                  d: "Every cached embedding is signed with HMAC-SHA256. Tampered or stale entries are rejected and re-computed automatically.",
-                  c: T,
-                },
-                {
-                  t: "Local execution only",
-                  d: "Embedding inference runs on your CPU. Model2Vec int8 model ships with the binary. No GPU required, no API keys.",
-                  c: V,
-                },
-                {
-                  t: "Path sandboxing",
-                  d: "The security sandbox validates all file paths and restricts access to configured directories. No symlink traversal attacks.",
-                  c: A,
-                },
-                {
-                  t: "Memory protection",
-                  d: "SecureBuffer uses mlock to prevent embedding data from being swapped to disk. Zeroize-on-drop clears sensitive memory.",
-                  c: T,
-                },
-                {
-                  t: "Compliance built in",
-                  d: "GDPR right-to-delete, CCPA opt-out, and EU AI Act transparency requirements are satisfied by design, not by policy.",
-                  c: V,
-                },
+                { t: "No network calls", d: "The binary contains zero HTTP client code. There are no servers to send data to. Verify with `cargo audit` or read the source.", c: A },
+                { t: "HMAC-signed cache", d: "Every cached embedding is signed with HMAC-SHA256. Tampered or stale entries are rejected and re-computed automatically.", c: T },
+                { t: "Local execution only", d: "Embedding inference runs on your CPU. Model2Vec int8 model ships with the binary. No GPU required, no API keys.", c: V },
+                { t: "Path sandboxing", d: "The security sandbox validates all file paths and restricts access to configured directories. No symlink traversal attacks.", c: A },
+                { t: "Memory protection", d: "SecureBuffer uses mlock to prevent embedding data from being swapped to disk. Zeroize-on-drop clears sensitive memory.", c: T },
+                { t: "Compliance built in", d: "GDPR right-to-delete, CCPA opt-out, and EU AI Act transparency requirements are satisfied by design, not by policy.", c: V },
               ] as const
             ).map((item, i) => (
               <motion.div
                 key={i}
                 variants={cFade}
-                className="relative rounded-lg border border-white/[0.06] bg-[var(--color-bg-graphite-1)]/40 p-5"
+                className="relative rounded-lg p-5"
+                style={{ background: "rgba(22,27,34,0.4)", border: "1px solid rgba(255,255,255,0.06)" }}
+                whileHover={{
+                  y: -3,
+                  borderColor: `${item.c}25`,
+                  boxShadow: `0 0 16px ${item.c}10`,
+                }}
+                transition={{ duration: 0.2 }}
               >
-                <CornerBrackets />
-                <div
-                  className="w-1.5 h-1.5 rounded-full mb-3"
-                  style={{ backgroundColor: item.c }}
-                />
-                <h3 className="font-display text-sm font-semibold mb-2 text-white/90">
-                  {item.t}
-                </h3>
+                <CornerBrackets color={`${item.c}20`} />
+                <div className="w-1.5 h-1.5 rounded-full mb-3" style={{ backgroundColor: item.c, boxShadow: `0 0 6px ${item.c}` }} />
+                <h3 className="font-mono text-sm font-semibold mb-2 text-white/90">{item.t}</h3>
                 <p className="text-xs text-white/40 leading-relaxed">{item.d}</p>
               </motion.div>
             ))}
@@ -1172,15 +1610,12 @@ export default function Page1DemoGuided() {
         </div>
       </section>
 
-      {/* ── S11  PRICING: Monolithic Table ────────────────────────── */}
-      <section
-        id="pricing"
-        className={`section-pricing relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}
-      >
+      {/* ── S12  PRICING ──────────────────────────────────────────── */}
+      <section id="pricing" className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}>
         <div className="relative z-10 max-w-4xl mx-auto">
           <Reveal>
             <div className="text-center mb-14">
-              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
+              <h2 className="font-mono text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
                 Simple, honest pricing
               </h2>
               <p className="text-white/50 max-w-lg mx-auto">
@@ -1189,22 +1624,19 @@ export default function Page1DemoGuided() {
             </div>
           </Reveal>
           <Reveal delay={0.1}>
-            <div className="rounded-xl border border-white/[0.08] bg-[var(--color-bg-graphite-1)]/40 overflow-hidden">
-              <div className="grid grid-cols-[1fr_120px_120px] sm:grid-cols-[1fr_150px_150px] border-b border-white/[0.06]">
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(22,27,34,0.4)" }}
+            >
+              <div className="grid grid-cols-[1fr_120px_120px] sm:grid-cols-[1fr_150px_150px]" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
                 <div className="p-4 sm:p-5" />
-                <div className="p-4 sm:p-5 text-center border-l border-white/[0.06]">
-                  <div className="font-display text-lg font-semibold">
-                    Community
-                  </div>
-                  <div className="font-display text-2xl font-semibold mt-1">
-                    Free
-                  </div>
+                <div className="p-4 sm:p-5 text-center" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="font-mono text-lg font-semibold">Community</div>
+                  <div className="font-mono text-2xl font-semibold mt-1">Free</div>
                 </div>
-                <div className="p-4 sm:p-5 text-center border-l border-[var(--color-accent-amber)]/20 bg-[var(--color-accent-amber)]/[0.03]">
-                  <div className="font-display text-lg font-semibold text-[var(--color-accent-amber)]">
-                    Pro
-                  </div>
-                  <div className="font-display text-2xl font-semibold mt-1">
+                <div className="p-4 sm:p-5 text-center" style={{ borderLeft: `1px solid ${A}20`, background: `${A}03` }}>
+                  <div className="font-mono text-lg font-semibold" style={{ color: A }}>Pro</div>
+                  <div className="font-mono text-2xl font-semibold mt-1">
                     $12<span className="text-sm text-white/40">/mo</span>
                   </div>
                 </div>
@@ -1224,40 +1656,34 @@ export default function Page1DemoGuided() {
               ).map(([feat, comm, pro], i) => (
                 <div
                   key={i}
-                  className="grid grid-cols-[1fr_120px_120px] sm:grid-cols-[1fr_150px_150px] border-b border-white/[0.03] last:border-b-0"
+                  className="grid grid-cols-[1fr_120px_120px] sm:grid-cols-[1fr_150px_150px]"
+                  style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}
                 >
-                  <div className="px-4 sm:px-5 py-3 text-xs text-white/50">
-                    {feat}
+                  <div className="px-4 sm:px-5 py-3 text-xs text-white/50">{feat}</div>
+                  <div className="px-4 sm:px-5 py-3 text-center text-sm" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }}>
+                    {comm ? <span className="text-white/50">&#10003;</span> : <span className="text-white/15">&mdash;</span>}
                   </div>
-                  <div className="px-4 sm:px-5 py-3 text-center border-l border-white/[0.06] text-sm">
-                    {comm ? (
-                      <span className="text-white/50">&#10003;</span>
-                    ) : (
-                      <span className="text-white/15">&mdash;</span>
-                    )}
-                  </div>
-                  <div className="px-4 sm:px-5 py-3 text-center border-l border-[var(--color-accent-amber)]/10 bg-[var(--color-accent-amber)]/[0.02] text-sm">
-                    {pro ? (
-                      <span className="text-[var(--color-accent-amber)]">
-                        &#10003;
-                      </span>
-                    ) : (
-                      <span className="text-white/15">&mdash;</span>
-                    )}
+                  <div className="px-4 sm:px-5 py-3 text-center text-sm" style={{ borderLeft: `1px solid ${A}10`, background: `${A}02` }}>
+                    {pro ? <span style={{ color: A }}>&#10003;</span> : <span className="text-white/15">&mdash;</span>}
                   </div>
                 </div>
               ))}
-              <div className="grid grid-cols-[1fr_120px_120px] sm:grid-cols-[1fr_150px_150px] border-t border-white/[0.06]">
+              <div className="grid grid-cols-[1fr_120px_120px] sm:grid-cols-[1fr_150px_150px]" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                 <div className="p-4 sm:p-5" />
-                <div className="p-4 sm:p-5 flex justify-center border-l border-white/[0.06]">
-                  <button className="px-4 py-2 rounded-md border border-white/10 text-xs font-medium text-white/60 hover:text-white hover:border-white/20 transition-colors duration-150">
+                <div className="p-4 sm:p-5 flex justify-center" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }}>
+                  <button className="px-4 py-2 rounded-md text-xs font-medium text-white/60 hover:text-white transition-colors duration-150" style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
                     Download
                   </button>
                 </div>
-                <div className="p-4 sm:p-5 flex justify-center border-l border-[var(--color-accent-amber)]/10 bg-[var(--color-accent-amber)]/[0.03]">
-                  <button className="px-4 py-2 rounded-md bg-[var(--color-accent-amber)] text-black text-xs font-semibold hover:brightness-110 transition-all duration-150">
+                <div className="p-4 sm:p-5 flex justify-center" style={{ borderLeft: `1px solid ${A}10`, background: `${A}03` }}>
+                  <motion.button
+                    className="px-4 py-2 rounded-md text-xs font-semibold text-black"
+                    style={{ background: `linear-gradient(135deg, ${A}, #F59E0B)`, boxShadow: `0 0 16px ${A}30` }}
+                    whileHover={{ scale: 1.05, boxShadow: `0 0 24px ${A}50` }}
+                    whileTap={{ scale: 0.97 }}
+                  >
                     Start Free Trial
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             </div>
@@ -1265,14 +1691,12 @@ export default function Page1DemoGuided() {
         </div>
       </section>
 
-      {/* ── S12  FAQ & CTA FOOTER: Accordion Block ───────────────── */}
-      <section
-        className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}
-      >
+      {/* ── S13  FAQ & CTA FOOTER ─────────────────────────────────── */}
+      <section className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}>
         <div className="relative z-10 max-w-3xl mx-auto">
           <Reveal>
             <div className="text-center mb-12">
-              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
+              <h2 className="font-mono text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
                 Frequently asked questions
               </h2>
             </div>
@@ -1280,14 +1704,15 @@ export default function Page1DemoGuided() {
           <div className="space-y-2 mb-20">
             {FAQS.map((item, i) => (
               <Reveal key={i} delay={i * 0.04}>
-                <div className="rounded-lg border border-white/[0.06] bg-[var(--color-bg-graphite-1)]/30 overflow-hidden">
+                <div
+                  className="rounded-lg overflow-hidden"
+                  style={{ border: "1px solid rgba(255,255,255,0.06)", background: "rgba(22,27,34,0.3)" }}
+                >
                   <button
                     onClick={() => setOpenFaq(openFaq === i ? null : i)}
                     className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
                   >
-                    <span className="text-sm font-medium text-white/80">
-                      {item.q}
-                    </span>
+                    <span className="text-sm font-medium text-white/80">{item.q}</span>
                     <motion.span
                       animate={{ rotate: openFaq === i ? 45 : 0 }}
                       transition={{ duration: 0.2 }}
@@ -1305,9 +1730,7 @@ export default function Page1DemoGuided() {
                         transition={{ duration: 0.25, ease: "easeInOut" }}
                         className="overflow-hidden"
                       >
-                        <div className="px-5 pb-4 text-xs text-white/45 leading-relaxed">
-                          {item.a}
-                        </div>
+                        <div className="px-5 pb-4 text-xs text-white/45 leading-relaxed">{item.a}</div>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -1317,30 +1740,35 @@ export default function Page1DemoGuided() {
           </div>
           <Reveal>
             <div className="text-center">
-              <h3 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight mb-4">
+              <h3 className="font-mono text-2xl sm:text-3xl font-semibold tracking-tight mb-4">
                 Ready to search smarter?
               </h3>
               <p className="text-white/45 text-sm mb-7 max-w-md mx-auto">
                 Download Ixos, point it at a directory, and search. Setup takes
                 less than 30 seconds.
               </p>
-              <button className="px-7 py-3 rounded-md bg-[var(--color-accent-amber)] text-black text-sm font-semibold hover:brightness-110 transition-all duration-200">
+              <motion.button
+                className="px-7 py-3 rounded-md font-mono text-sm font-semibold text-black"
+                style={{
+                  background: `linear-gradient(135deg, ${A}, #F59E0B)`,
+                  boxShadow: `0 0 24px ${A}35`,
+                }}
+                whileHover={{ scale: 1.05, boxShadow: `0 0 40px ${A}55` }}
+                whileTap={{ scale: 0.97 }}
+              >
                 Get Ixos Free
-              </button>
+              </motion.button>
             </div>
           </Reveal>
-          <div className="mt-24 pt-8 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-mono tracking-wide uppercase text-white/20">
+          <div
+            className="mt-24 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-mono tracking-wide uppercase text-white/20"
+            style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
+          >
             <span>&copy; 2026 Ixos. All rights reserved.</span>
             <div className="flex gap-5">
-              <span className="hover:text-white/40 cursor-pointer transition-colors">
-                Privacy
-              </span>
-              <span className="hover:text-white/40 cursor-pointer transition-colors">
-                Terms
-              </span>
-              <span className="hover:text-white/40 cursor-pointer transition-colors">
-                GitHub
-              </span>
+              <span className="hover:text-white/40 cursor-pointer transition-colors">Privacy</span>
+              <span className="hover:text-white/40 cursor-pointer transition-colors">Terms</span>
+              <span className="hover:text-white/40 cursor-pointer transition-colors">GitHub</span>
             </div>
           </div>
         </div>

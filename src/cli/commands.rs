@@ -306,6 +306,7 @@ pub enum Commands {
     },
 
     /// Check for and install CLI updates
+    #[command(disable_version_flag = true)]
     Update {
         /// Only check for updates without installing
         #[arg(long)]
@@ -777,10 +778,12 @@ mod tests {
                 check,
                 yes,
                 version,
+                auto,
             } => {
                 assert!(check);
                 assert!(!yes);
                 assert!(version.is_none());
+                assert!(auto);
             }
             _ => panic!("Expected Update command"),
         }
@@ -794,10 +797,12 @@ mod tests {
                 check,
                 yes,
                 version,
+                auto,
             } => {
                 assert!(!check);
                 assert!(yes);
                 assert_eq!(version, Some("0.2.0".to_string()));
+                assert!(auto);
             }
             _ => panic!("Expected Update command"),
         }

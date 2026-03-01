@@ -628,3 +628,25 @@
   1. Run manual Tauri QA with OneDrive/iCloud placeholders to confirm no hydration in lexical/document paths.
   2. Optional compact-mode pass for result metadata truncation and keyboard-first scanning speed.
   3. Resolve unrelated `src/cli/commands.rs` test compile issue, then rerun targeted Rust test suites.
+
+## STATE SNAPSHOT (desktop search restoration + release hardening pass, 2026-03-01)
+- Date: 2026-03-01
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Desktop/landing search parity still needs one QA pass for micro-spacing and dropdown ergonomics on small heights.
+  2. Cross-platform release confidence is gated on CI secrets/vars presence (`VITE_API_URL`, `VITE_CLERK_PUBLISHABLE_KEY`, `IXOS_JWT_PUBLIC_KEY`) and updater metadata warning follow-up.
+  3. Identifier hygiene: `com.ixos.app` suffix warning and updater bundler metadata warning should be cleaned before broad rollout.
+- Current pass validation (2026-03-01):
+  - `npm run build`: PASS
+  - `cargo build --release`: PASS
+  - `cargo test`: PASS
+  - `npm run tauri:build`: PASS (after env-file hydration fix)
+- What is next (top 3 tasks):
+  1. Run manual desktop QA on Windows/macOS/Linux for new search dropdown anchoring, result scroll, and context rendering.
+  2. Address Tauri warnings (`com.ixos.app` identifier suffix and `__TAURI_BUNDLE_TYPE` updater patch warning) before production tagging.
+  3. Record release checklist completion in a dedicated report under `/reports` and attach CI artifact links.

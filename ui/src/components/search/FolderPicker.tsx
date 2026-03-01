@@ -35,8 +35,9 @@ export function FolderPicker({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        title={value}
         className={cn(
-          'flex-1 h-8 px-2.5 py-1 rounded-md',
+          'min-w-0 flex-1 h-8 px-2.5 py-1 rounded-md',
           'bg-transparent',
           'text-fg-muted text-xs font-mono',
           'placeholder:text-fg-dim/60',

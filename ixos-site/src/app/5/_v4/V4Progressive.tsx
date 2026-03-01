@@ -170,7 +170,7 @@ function ScrollDrivenProgressive() {
       {/* Sticky panel */}
       <div
         className="sticky top-0 flex flex-col overflow-hidden"
-        style={{ height: '100vh', backgroundColor: '#0C0E10' }}
+        style={{ height: '100vh', background: 'rgba(14,17,23,0.7)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
       >
         {/* Section header */}
         <div
@@ -478,7 +478,7 @@ export function V4Progressive() {
     <div
       data-section="progressive"
       id="progressive"
-      style={{ borderTop: '1px solid rgba(255,255,255,0.04)', backgroundColor: '#0C0E10' }}
+      style={{ borderTop: '1px solid rgba(255,255,255,0.04)', backgroundColor: 'transparent' }}
     >
       {lowEnd ? <StaticProgressive /> : <ScrollDrivenProgressive />}
     </div>

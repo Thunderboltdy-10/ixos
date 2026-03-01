@@ -52,7 +52,7 @@ export function V4ProValue() {
       }}
       style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
     >
-      <section style={{ backgroundColor: '#0C0E10', padding: '112px 0 136px', position: 'relative', overflow: 'hidden' }}>
+      <section style={{ backgroundColor: 'transparent', padding: '112px 0 136px', position: 'relative', overflow: 'hidden' }}>
         <div
           aria-hidden
           style={{

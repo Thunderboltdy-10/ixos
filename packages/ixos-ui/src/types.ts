@@ -4,12 +4,18 @@ export interface IxosSearchResult {
   id: string;
   title: string;
   path: string;
+  /** Normalized confidence score in [0..1] for UI display */
   score: number;
+  /** Optional raw ranking score from backend (can exceed 1.0) */
+  rawScore?: number;
   lexicalScore?: number;
   semanticScore?: number;
   boostScore?: number;
   snippet: string;
   matchedLineNumber?: number;
+  contextBefore?: string[];
+  contextMatch?: string[];
+  contextAfter?: string[];
   rationale?: string;
 }
 

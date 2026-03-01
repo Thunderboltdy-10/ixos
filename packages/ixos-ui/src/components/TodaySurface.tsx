@@ -27,48 +27,82 @@ function RowBlock({
   showResumeAction?: boolean;
 }) {
   return (
-    <section className="ixos-card" style={{ display: 'grid', gap: 4, padding: 10 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-        {Icon && <Icon size={13} color={accentColor} />}
-        <h4 style={{ margin: 0, color: '#f3f5f7', fontSize: 12, fontWeight: 600, letterSpacing: '-0.01em' }}>{title}</h4>
-        <span style={{ marginLeft: 'auto', fontSize: 9, color: 'rgba(243,245,247,0.35)', fontVariantNumeric: 'tabular-nums' }}>
-          {rows.length} item{rows.length !== 1 ? 's' : ''}
+    <section 
+      style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: 12, 
+        padding: 16, 
+        background: 'rgba(255,255,255,0.02)', 
+        borderRadius: 12, 
+        border: '1px solid rgba(255,255,255,0.05)' 
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+        {Icon && <Icon size={16} color={accentColor} />}
+        <h4 style={{ margin: 0, color: '#f3f5f7', fontSize: 14, fontWeight: 600 }}>{title}</h4>
+        <span style={{ 
+          marginLeft: 'auto', 
+          fontSize: 11, 
+          color: 'rgba(243,245,247,0.4)', 
+          background: 'rgba(255,255,255,0.05)', 
+          padding: '2px 8px', 
+          borderRadius: 99 
+        }}>
+          {rows.length}
         </span>
       </div>
-      {rows.length > 0 ? (
-        rows.map((row, idx) => (
-          <motion.article
-            key={row.id}
-            className="ixos-result-row"
-            data-selected="false"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.2, delay: Math.min(idx * 0.05, 0.2), ease: 'easeOut' }}
-            style={{ padding: '7px 9px', borderLeft: `2px solid ${accentColor}40`, background: 'rgba(255,255,255,0.02)' }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-              <strong style={{ color: '#f3f5f7', fontSize: 11, fontWeight: 500 }}>{row.title}</strong>
-              <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
-                <span style={{ color: 'rgba(243,245,247,0.35)', fontSize: 9, fontFamily: 'monospace' }}>{row.meta}</span>
-                {showResumeAction && (
-                  <span style={{
-                    fontSize: 8, padding: '1px 5px', borderRadius: 3,
-                    background: `${accentColor}18`, border: `1px solid ${accentColor}30`,
-                    color: accentColor, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700,
-                  }}>
-                    Resume
-                  </span>
-                )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {rows.length > 0 ? (
+          rows.map((row, idx) => (
+            <motion.article
+              key={row.id}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.2, delay: Math.min(idx * 0.05, 0.2), ease: 'easeOut' }}
+              style={{ 
+                padding: '12px 14px', 
+                borderLeft: `3px solid ${accentColor}80`, 
+                background: 'rgba(255,255,255,0.03)',
+                borderRadius: '0 8px 8px 0',
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                <strong style={{ color: '#f3f5f7', fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>{row.title}</strong>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
+                  <span style={{ color: 'rgba(243,245,247,0.4)', fontSize: 11, fontFamily: 'monospace' }}>{row.meta.split('·')[0].trim()}</span>
+                  {showResumeAction && (
+                    <span style={{
+                      fontSize: 10, padding: '2px 8px', borderRadius: 4,
+                      background: `${accentColor}18`, border: `1px solid ${accentColor}30`,
+                      color: accentColor, fontWeight: 600,
+                    }}>
+                      Resume
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-            <p style={{ margin: '3px 0 0', color: 'rgba(243,245,247,0.55)', fontSize: 10, lineHeight: 1.4 }}>{row.detail}</p>
-          </motion.article>
-        ))
-      ) : (
-        <div style={{ border: '1px dashed rgba(243,245,247,0.08)', borderRadius: 6, padding: 8, color: 'rgba(243,245,247,0.35)', fontSize: 10, textAlign: 'center' }}>
-          {emptyCopy}
-        </div>
-      )}
+              <p style={{ margin: '6px 0 0', color: 'rgba(243,245,247,0.6)', fontSize: 12, lineHeight: 1.4 }}>{row.detail}</p>
+            </motion.article>
+          ))
+        ) : (
+          <div style={{ 
+            border: '1px dashed rgba(243,245,247,0.1)', 
+            borderRadius: 8, 
+            padding: 16, 
+            color: 'rgba(243,245,247,0.4)', 
+            fontSize: 12, 
+            textAlign: 'center' 
+          }}>
+            {emptyCopy}
+          </div>
+        )}
+      </div>
     </section>
   );
 }
@@ -82,49 +116,76 @@ export function TodaySurface({
   sourcePath,
 }: TodaySurfaceProps) {
   return (
-    <div className="ixos-today-surface" style={{ display: 'grid', gap: 10, padding: 14 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: 24, maxWidth: 1000, margin: '0 auto', width: '100%' }}>
+      {/* Header Banner */}
       <motion.div
-        className="ixos-card"
-        style={{ display: 'grid', gap: 4, padding: '12px 14px', borderLeft: '3px solid #f6b94c' }}
+        style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: 8, 
+          padding: '24px 28px', 
+          background: 'linear-gradient(135deg, rgba(246,185,76,0.1) 0%, rgba(20,184,166,0.05) 100%)',
+          border: '1px solid rgba(246,185,76,0.2)',
+          borderRadius: 16,
+          position: 'relative',
+          overflow: 'hidden'
+        }}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: [0.2, 0.9, 0.25, 1] }}
+        transition={{ duration: 0.4, ease: [0.2, 0.9, 0.25, 1] }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <p className="ixos-chip" style={{ width: 'fit-content', borderColor: 'rgba(246,185,76,0.3)', color: '#f6b94c', background: 'rgba(246,185,76,0.1)' }}>
-            <Activity size={11} /> Active Session
-          </p>
-          <span style={{ color: 'rgba(243,245,247,0.4)', fontSize: 11, fontFamily: 'monospace' }}>{dateLabel}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 2 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', background: 'rgba(246,185,76,0.15)', borderRadius: 99, color: '#f6b94c', fontSize: 12, fontWeight: 600 }}>
+            <Activity size={14} /> Active Session
+          </div>
+          <span style={{ color: 'rgba(243,245,247,0.5)', fontSize: 13, fontFamily: 'monospace', background: 'rgba(0,0,0,0.2)', padding: '4px 10px', borderRadius: 6 }}>{dateLabel}</span>
         </div>
-        <h3 style={{ margin: '4px 0 0', color: '#f3f5f7', fontSize: 20, letterSpacing: '-0.02em', fontWeight: 600 }}>Ready to resume.</h3>
-        <p style={{ margin: 0, color: 'rgba(243,245,247,0.55)', fontSize: 11 }}>
-          Recover evidence context and keep momentum without re-searching.
-        </p>
+        <div style={{ position: 'relative', zIndex: 2, marginTop: 8 }}>
+          <h3 style={{ margin: 0, color: '#f3f5f7', fontSize: 28, letterSpacing: '-0.02em', fontWeight: 600 }}>Ready to resume.</h3>
+          <p style={{ margin: '4px 0 0', color: 'rgba(243,245,247,0.7)', fontSize: 14 }}>
+            Recover evidence context and keep momentum without re-searching.
+          </p>
+        </div>
+        
+        {/* Decorative background element */}
+        <div style={{ position: 'absolute', right: -50, top: -50, width: 200, height: 200, background: 'radial-gradient(circle, rgba(246,185,76,0.15) 0%, transparent 70%)', borderRadius: '50%' }} />
       </motion.div>
 
-      <div className="ixos-today-signals" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 6 }}>
+      {/* KPI Signals */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
         {signals.map((signal, idx) => (
           <motion.article
             key={signal.label}
-            className="ixos-kpi"
-            style={{ padding: '8px 10px', background: 'rgba(255,255,255,0.025)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.04)' }}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.2, delay: idx * 0.04 }}
+            style={{ 
+              padding: '16px 20px', 
+              background: 'rgba(255,255,255,0.03)', 
+              borderRadius: 12, 
+              border: '1px solid rgba(255,255,255,0.06)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              transition: 'transform 0.2s, background 0.2s',
+              cursor: 'default'
+            }}
+            whileHover={{ y: -2, background: 'rgba(255,255,255,0.05)' }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: idx * 0.05 }}
           >
-            <p style={{ margin: 0, color: 'rgba(243,245,247,0.45)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{signal.label}</p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 3 }}>
-              <span style={{ color: '#f3f5f7', fontSize: 18, fontWeight: 700, fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{signal.value}</span>
-              <span style={{ color: 'rgba(20,184,166,0.7)', fontSize: 9 }}>{signal.hint}</span>
+            <p style={{ margin: 0, color: 'rgba(243,245,247,0.5)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 500 }}>{signal.label}</p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span style={{ color: '#f3f5f7', fontSize: 28, fontWeight: 700, fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{signal.value}</span>
             </div>
+            <span style={{ color: 'rgba(20,184,166,0.8)', fontSize: 11, marginTop: 'auto' }}>{signal.hint}</span>
           </motion.article>
         ))}
       </div>
 
-      <div className="ixos-today-main" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <div style={{ display: 'grid', gap: 12, alignContent: 'start' }}>
+      {/* Main Content Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <RowBlock
-            title="Resume"
+            title="Active Workstreams"
             icon={Target}
             accentColor="#f6b94c"
             rows={resumeRows}
@@ -140,9 +201,9 @@ export function TodaySurface({
           />
         </div>
 
-        <div style={{ alignContent: 'start' }}>
+        <div>
           <RowBlock
-            title="Suggested Next"
+            title="Suggested Next Files"
             icon={Activity}
             accentColor="#14b8a6"
             rows={suggestedRows}
@@ -150,6 +211,12 @@ export function TodaySurface({
           />
         </div>
       </div>
+      
+      {sourcePath && (
+        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.2)', fontSize: 10, fontFamily: 'monospace', marginTop: 20 }}>
+          {sourcePath}
+        </div>
+      )}
     </div>
   );
 }

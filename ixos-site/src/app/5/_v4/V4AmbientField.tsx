@@ -1,6 +1,22 @@
 'use client'
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useReducedOrLowEnd } from './hooks/useReducedOrLowEnd'
+
+function useScrollIntensity() {
+  const [intensity, setIntensity] = useState(1)
+
+  useEffect(() => {
+    const onScroll = () => {
+      const progress = window.scrollY / Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
+      // Full intensity at top, 30% at bottom
+      setIntensity(Math.max(0.3, 1 - progress * 0.85))
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  return intensity
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -215,6 +231,8 @@ function PixelWaveCanvas() {
     }
   }, [])
 
+  const intensity = useScrollIntensity()
+
   return (
     <canvas
       ref={canvasRef}
@@ -227,6 +245,8 @@ function PixelWaveCanvas() {
         height: '100%',
         pointerEvents: 'none',
         zIndex: 0,
+        opacity: intensity,
+        transition: 'opacity 0.15s linear',
       }}
     />
   )

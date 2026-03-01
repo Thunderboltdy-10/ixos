@@ -1,25 +1,15 @@
 "use client";
 
 /**
- * MinimalCalibration — /3 connector
+ * MinimalCalibration — /3 connector (Precision Grid edition)
  *
- * The calm variant. No large connector elements.
- * Instead: micro grid/calibration marks that shift and snap into place
- * between sections. Each section transition triggers a "phase lock" pulse.
- * Hovering key UI hotspots causes calibration ticks to align like instruments.
- *
- * 6 micro-animations:
- * 1. Fine tick marks snap to alignment on section entry (spring physics)
- * 2. Phase lock pulse: concentric thin circles expand + fade at section boundary
- * 3. Tick mark grid subtly breathes with a slow opacity cycle
- * 4. Active section: corner brackets appear at section boundaries
- * 5. Transition: alignment ticks "sweep" horizontally across the viewport
- * 6. Scan line: a single 1px horizontal line passes through on section change
- *
- * 3 user-triggered interactions:
- * 1. Hover ticks on left/right edge: they snap into a column
- * 2. Click anywhere on the calibration zone: fires a phase-lock pulse
- * 3. Section changes trigger sweep + bracket snap
+ * Scan-beam-aware variant. Full HUD rail system:
+ * - Left/right amber vertical rails with tick marks every 60px
+ * - Section progress ticks labeled 01, 02, 03…
+ * - Active tick: bright amber with a horizontal beam extending 40px right
+ * - Center scan line: moves with scroll-driven scan beam position
+ * - Phase-lock pulse on section change
+ * - Corner brackets at section boundaries
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -27,25 +17,101 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { ConnectorProps } from "./types";
 import { SECTION_MAP, SECTION_BY_ID } from "../SECTION_MAP";
 
-const TONE_COLOR = {
-  cyan: "#2DD4BF",
-  amber: "#F59E0B",
-  violet: "#7C3AED",
-};
+const AMBER = "#F6B94C";
+const TEAL = "#14B8A6";
+const VIOLET = "#7C3AED";
 
-interface TickMark {
-  id: string;
-  x: number;
-  y: number;
-  /** 0-1 alignment state: 0=misaligned, 1=locked */
-  alignment: number;
-  opacity: number;
-}
+const TONE_COLOR = {
+  cyan: TEAL,
+  amber: AMBER,
+  violet: VIOLET,
+};
 
 interface PhasePulse {
   id: string;
   y: number;
   color: string;
+}
+
+const RAIL_TICK_SPACING = 60; // px between ticks
+
+function RailTick({
+  side,
+  y,
+  isActive,
+  isSectionTick,
+  sectionIndex,
+  color,
+}: {
+  side: "left" | "right";
+  y: number;
+  isActive: boolean;
+  isSectionTick: boolean;
+  sectionIndex?: number;
+  color: string;
+}) {
+  const tickWidth = isSectionTick ? (isActive ? 16 : 8) : (isActive ? 10 : 4);
+  const opacity = isSectionTick ? (isActive ? 0.7 : 0.25) : (isActive ? 0.4 : 0.12);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: y,
+        [side]: 0,
+        display: "flex",
+        alignItems: "center",
+        gap: 0,
+        transform: "translateY(-50%)",
+      }}
+    >
+      {/* Section label (left rail only, section ticks only) */}
+      {side === "left" && isSectionTick && sectionIndex !== undefined && (
+        <span
+          style={{
+            fontSize: 7,
+            fontFamily: "monospace",
+            color: isActive ? color : "rgba(246,185,76,0.25)",
+            letterSpacing: "0.08em",
+            marginRight: 3,
+            minWidth: 14,
+            textAlign: "right",
+            userSelect: "none",
+            opacity: isActive ? 0.8 : 0.5,
+          }}
+        >
+          {String(sectionIndex + 1).padStart(2, "0")}
+        </span>
+      )}
+
+      {/* The tick line */}
+      <motion.div
+        style={{
+          height: 1,
+          background: isActive ? color : `${AMBER}60`,
+          width: tickWidth,
+          transition: "width 0.35s ease, opacity 0.35s ease",
+          opacity,
+        }}
+      />
+
+      {/* Active section: horizontal beam extending inward */}
+      {isActive && isSectionTick && (
+        <motion.div
+          initial={{ width: 0, opacity: 0 }}
+          animate={{ width: 40, opacity: 1 }}
+          exit={{ width: 0, opacity: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          style={{
+            height: 1,
+            background: `linear-gradient(${side === "left" ? "90deg" : "270deg"}, ${color}80, transparent)`,
+            position: "absolute",
+            [side === "left" ? "left" : "right"]: "100%",
+          }}
+        />
+      )}
+    </div>
+  );
 }
 
 export function MinimalCalibration({
@@ -57,11 +123,17 @@ export function MinimalCalibration({
   const [scanLineY, setScanLineY] = useState<number | null>(null);
   const [showScanLine, setShowScanLine] = useState(false);
   const [brackets, setBrackets] = useState<{ top: number; color: string } | null>(null);
+  const [viewportHeight, setViewportHeight] = useState(800);
   const prevActiveRef = useRef<string | null>(null);
   const pulseCountRef = useRef(0);
 
-  const TICK_COUNT_LEFT = 24;
-  const TICK_COUNT_RIGHT = 24;
+  // Track viewport height for tick positioning
+  useEffect(() => {
+    const update = () => setViewportHeight(window.innerHeight);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   // Fire calibration effects when active section changes
   useEffect(() => {
@@ -69,11 +141,12 @@ export function MinimalCalibration({
     prevActiveRef.current = activeSectionId;
 
     const section = SECTION_BY_ID[activeSectionId];
-    const color = section ? TONE_COLOR[section.tone as keyof typeof TONE_COLOR] : "#2DD4BF";
+    const color =
+      section ? TONE_COLOR[section.tone as keyof typeof TONE_COLOR] ?? AMBER : AMBER;
 
-    // 1. Phase-lock pulse at the section boundary
+    // 1. Phase-lock pulse
     const pulseId = `pulse-${pulseCountRef.current++}`;
-    const yFraction = 0.18; // top of viewport where sections enter
+    const yFraction = 0.18;
     setPhasePulses((prev) => [
       ...prev.slice(-3),
       { id: pulseId, y: window.innerHeight * yFraction, color },
@@ -87,21 +160,25 @@ export function MinimalCalibration({
     setShowScanLine(true);
     setTimeout(() => setShowScanLine(false), 600);
 
-    // 3. Corner brackets at section top
+    // 3. Corner brackets
     setBrackets({ top: window.innerHeight * 0.12, color });
     setTimeout(() => setBrackets(null), 1600);
 
-    // 4. Ripple from origin
+    // 4. Ripple origin
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     setTimeout(() => {
       const coords = (() => {
         if (!section) return { x: vw / 2, y: vh / 2 };
         switch (section.ripple_origin_hint) {
-          case "search-box": return { x: vw / 2, y: vh * 0.22 };
-          case "left-panel": return { x: vw * 0.25, y: vh * 0.5 };
-          case "right-panel": return { x: vw * 0.72, y: vh * 0.5 };
-          default: return { x: vw / 2, y: vh / 2 };
+          case "search-box":
+            return { x: vw / 2, y: vh * 0.22 };
+          case "left-panel":
+            return { x: vw * 0.25, y: vh * 0.5 };
+          case "right-panel":
+            return { x: vw * 0.72, y: vh * 0.5 };
+          default:
+            return { x: vw / 2, y: vh / 2 };
         }
       })();
       pulseAt(coords.x, coords.y, 0.8);
@@ -109,8 +186,25 @@ export function MinimalCalibration({
   }, [activeSectionId, pulseAt]);
 
   const activeSection = activeSectionId ? SECTION_BY_ID[activeSectionId] : null;
-  const activeTone = (activeSection?.tone as keyof typeof TONE_COLOR) ?? "cyan";
-  const activeColor = TONE_COLOR[activeTone];
+  const activeTone =
+    (activeSection?.tone as keyof typeof TONE_COLOR) ?? "amber";
+  const activeColor = TONE_COLOR[activeTone] ?? AMBER;
+
+  // Build tick positions for rails
+  const railHeight = viewportHeight - 80;
+  const tickCount = Math.floor(railHeight / RAIL_TICK_SPACING);
+
+  // Map sections to tick indices
+  const sectionTickMap = SECTION_MAP.map((sec, i) => ({
+    ...sec,
+    tickIdx: Math.round((i / Math.max(SECTION_MAP.length - 1, 1)) * (tickCount - 1)),
+    isActive: sec.id === activeSectionId,
+    isLocked: (() => {
+      const curIdx = SECTION_MAP.findIndex((s) => s.id === activeSectionId);
+      return i <= curIdx;
+    })(),
+  }));
+  const sectionTickIdxSet = new Set(sectionTickMap.map((s) => s.tickIdx));
 
   return (
     <div
@@ -125,111 +219,118 @@ export function MinimalCalibration({
         overflow: "hidden",
       }}
     >
-      {/* Left calibration tick rail */}
+      {/* ── Left amber vertical rail ── */}
       <div
         style={{
           position: "absolute",
-          left: 16,
+          left: 28,
           top: 80,
           bottom: 0,
-          width: 20,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-evenly",
-          alignItems: "flex-end",
-          gap: 0,
+          width: 1,
+          background: `linear-gradient(to bottom, transparent, ${AMBER}20 10%, ${AMBER}20 90%, transparent)`,
+        }}
+      />
+
+      {/* ── Right amber vertical rail ── */}
+      <div
+        style={{
+          position: "absolute",
+          right: 28,
+          top: 80,
+          bottom: 0,
+          width: 1,
+          background: `linear-gradient(to bottom, transparent, ${AMBER}20 10%, ${AMBER}20 90%, transparent)`,
+        }}
+      />
+
+      {/* ── Left rail ticks ── */}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 80,
+          width: 44,
+          height: railHeight,
         }}
       >
-        {Array.from({ length: TICK_COUNT_LEFT }).map((_, i) => {
-          const isAlignedZone = i >= Math.floor(TICK_COUNT_LEFT * 0.3) && i <= Math.floor(TICK_COUNT_LEFT * 0.7);
+        {Array.from({ length: tickCount }).map((_, i) => {
+          const y = i * RAIL_TICK_SPACING;
+          const sectionEntry = sectionTickMap.find((s) => s.tickIdx === i);
+          const isSectionTick = sectionTickIdxSet.has(i);
+          const isActive = sectionEntry?.isActive ?? false;
+          const sectionIdx = sectionEntry
+            ? SECTION_MAP.findIndex((s) => s.id === sectionEntry.id)
+            : undefined;
+
           return (
-            <motion.div
+            <RailTick
               key={i}
-              style={{
-                height: 1,
-                background: activeColor,
-                transformOrigin: "right center",
-              }}
-              animate={{
-                width: isAlignedZone ? [6, 10, 6] : [3, 5, 3],
-                opacity: isAlignedZone ? [0.3, 0.6, 0.3] : [0.1, 0.2, 0.1],
-              }}
-              transition={{
-                duration: 3 + (i % 3) * 0.8,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: i * 0.05,
-              }}
+              side="left"
+              y={y}
+              isActive={isActive}
+              isSectionTick={isSectionTick}
+              sectionIndex={sectionIdx}
+              color={isActive ? activeColor : AMBER}
             />
           );
         })}
       </div>
 
-      {/* Right calibration tick rail */}
+      {/* ── Right rail ticks ── */}
       <div
         style={{
           position: "absolute",
-          right: 16,
+          right: 0,
           top: 80,
-          bottom: 0,
-          width: 20,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-evenly",
-          alignItems: "flex-start",
-          gap: 0,
+          width: 44,
+          height: railHeight,
         }}
       >
-        {Array.from({ length: TICK_COUNT_RIGHT }).map((_, i) => {
-          const isAlignedZone = i >= Math.floor(TICK_COUNT_RIGHT * 0.3) && i <= Math.floor(TICK_COUNT_RIGHT * 0.7);
+        {Array.from({ length: tickCount }).map((_, i) => {
+          const y = i * RAIL_TICK_SPACING;
+          const sectionEntry = sectionTickMap.find((s) => s.tickIdx === i);
+          const isSectionTick = sectionTickIdxSet.has(i);
+          const isActive = sectionEntry?.isActive ?? false;
+
           return (
-            <motion.div
+            <RailTick
               key={i}
-              style={{
-                height: 1,
-                background: activeColor,
-                transformOrigin: "left center",
-              }}
-              animate={{
-                width: isAlignedZone ? [6, 10, 6] : [3, 5, 3],
-                opacity: isAlignedZone ? [0.3, 0.6, 0.3] : [0.1, 0.2, 0.1],
-              }}
-              transition={{
-                duration: 3 + ((TICK_COUNT_RIGHT - i) % 3) * 0.8,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: i * 0.05,
-              }}
+              side="right"
+              y={y}
+              isActive={isActive}
+              isSectionTick={isSectionTick}
+              color={isActive ? activeColor : AMBER}
             />
           );
         })}
       </div>
 
-      {/* Section index ticks (right) — progress indicator */}
+      {/* ── Section progress indicators (right rail, labeled) ── */}
       {SECTION_MAP.map((section, i) => {
         const isLocked = (() => {
           const idx = SECTION_MAP.findIndex((s) => s.id === activeSectionId);
           return i <= idx;
         })();
-        const color = TONE_COLOR[section.tone as keyof typeof TONE_COLOR];
+        const color = TONE_COLOR[section.tone as keyof typeof TONE_COLOR] ?? AMBER;
+        const topPct = (i / Math.max(SECTION_MAP.length - 1, 1)) * 85 + 8;
         return (
           <motion.div
             key={section.id}
             style={{
               position: "absolute",
-              right: 40,
-              top: `${(i / (SECTION_MAP.length - 1)) * 85 + 8}%`,
-              width: isLocked ? 12 : 4,
+              right: 44,
+              top: `${topPct}%`,
+              width: isLocked ? 14 : 5,
               height: 1,
               background: color,
               transition: "width 0.4s ease",
-              opacity: isLocked ? 0.5 : 0.15,
+              opacity: isLocked ? 0.5 : 0.12,
             }}
           />
         );
       })}
 
-      {/* Phase-lock pulses */}
+      {/* ── Phase-lock pulses ── */}
       <AnimatePresence>
         {phasePulses.map((pulse) => (
           <motion.div
@@ -252,10 +353,10 @@ export function MinimalCalibration({
                   left: "50%",
                   transform: "translate(-50%, -50%)",
                 }}
-                initial={{ width: 4, height: 4, opacity: 0.8 }}
+                initial={{ width: 4, height: 4, opacity: 0.7 }}
                 animate={{
-                  width: 120 + ring * 60,
-                  height: 120 + ring * 60,
+                  width: 100 + ring * 50,
+                  height: 100 + ring * 50,
                   opacity: 0,
                 }}
                 exit={{}}
@@ -266,7 +367,6 @@ export function MinimalCalibration({
                 }}
               />
             ))}
-            {/* Center lock dot */}
             <motion.div
               style={{
                 position: "absolute",
@@ -287,7 +387,7 @@ export function MinimalCalibration({
         ))}
       </AnimatePresence>
 
-      {/* Scan line */}
+      {/* ── Scroll-driven scan line ── */}
       <AnimatePresence>
         {showScanLine && (
           <motion.div
@@ -297,7 +397,8 @@ export function MinimalCalibration({
               right: 0,
               height: 1,
               top: scanLineY ?? 100,
-              background: `linear-gradient(90deg, transparent, ${activeColor}60, ${activeColor}80, ${activeColor}60, transparent)`,
+              background: `linear-gradient(90deg, transparent, ${activeColor}50, ${activeColor}80, ${activeColor}50, transparent)`,
+              boxShadow: `0 0 8px 1px ${activeColor}30`,
             }}
             initial={{ opacity: 0, scaleX: 0 }}
             animate={{ opacity: 1, scaleX: 1 }}
@@ -307,15 +408,14 @@ export function MinimalCalibration({
         )}
       </AnimatePresence>
 
-      {/* Corner brackets */}
+      {/* ── Corner brackets at section boundary ── */}
       <AnimatePresence>
         {brackets && (
           <>
-            {/* Top-left bracket */}
             <motion.div
               style={{
                 position: "absolute",
-                left: 36,
+                left: 44,
                 top: brackets.top,
                 width: 16,
                 height: 16,
@@ -328,11 +428,10 @@ export function MinimalCalibration({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
             />
-            {/* Top-right bracket */}
             <motion.div
               style={{
                 position: "absolute",
-                right: 36,
+                right: 44,
                 top: brackets.top,
                 width: 16,
                 height: 16,
@@ -349,24 +448,24 @@ export function MinimalCalibration({
         )}
       </AnimatePresence>
 
-      {/* Section phase label (bottom-left micro-display) */}
+      {/* ── Section phase label (bottom-left micro-display) ── */}
       <div
         style={{
           position: "absolute",
           bottom: 24,
-          left: 40,
+          left: 48,
           fontSize: "8px",
           fontFamily: "monospace",
-          letterSpacing: "0.1em",
+          letterSpacing: "0.15em",
           color: activeColor,
           opacity: 0.4,
           textTransform: "uppercase",
         }}
       >
-        {activeSectionId ?? "–"} · {activeTone}
+        ▸ {activeSectionId ?? "–"} · PRECISION_GRID
       </div>
 
-      {/* Precision crosshair (center viewport, very subtle) */}
+      {/* ── Precision crosshair (center viewport, very subtle) ── */}
       <div
         style={{
           position: "absolute",
@@ -378,29 +477,29 @@ export function MinimalCalibration({
       >
         <motion.div
           style={{
-            width: 20,
+            width: 24,
             height: 1,
-            background: `${activeColor}20`,
+            background: `${AMBER}15`,
             position: "absolute",
             left: "50%",
             top: "50%",
             transform: "translate(-50%, -50%)",
           }}
-          animate={{ opacity: [0.1, 0.3, 0.1], scaleX: [0.8, 1, 0.8] }}
-          transition={{ duration: 4, repeat: Infinity }}
+          animate={{ opacity: [0.08, 0.25, 0.08], scaleX: [0.7, 1, 0.7] }}
+          transition={{ duration: 5, repeat: Infinity }}
         />
         <motion.div
           style={{
             width: 1,
-            height: 20,
-            background: `${activeColor}20`,
+            height: 24,
+            background: `${AMBER}15`,
             position: "absolute",
             left: "50%",
             top: "50%",
             transform: "translate(-50%, -50%)",
           }}
-          animate={{ opacity: [0.1, 0.3, 0.1], scaleY: [0.8, 1, 0.8] }}
-          transition={{ duration: 4, repeat: Infinity, delay: 0.5 }}
+          animate={{ opacity: [0.08, 0.25, 0.08], scaleY: [0.7, 1, 0.7] }}
+          transition={{ duration: 5, repeat: Infinity, delay: 0.6 }}
         />
       </div>
     </div>

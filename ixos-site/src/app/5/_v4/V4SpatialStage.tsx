@@ -1,8 +1,47 @@
 'use client'
 
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useReducedOrLowEnd } from './hooks/useReducedOrLowEnd'
+
+function ScrollProgressBar() {
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    const onScroll = () => {
+      const p = window.scrollY / Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
+      setProgress(p)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: 2,
+        width: '100%',
+        zIndex: 50,
+        pointerEvents: 'none',
+      }}
+    >
+      <div
+        style={{
+          height: '100%',
+          background: '#F59E0B',
+          transformOrigin: 'left center',
+          transform: `scaleX(${progress})`,
+          transition: 'transform 0.1s linear',
+          boxShadow: '0 0 8px rgba(245,158,11,0.6)',
+        }}
+      />
+    </div>
+  )
+}
 
 type Tone = 'cyan' | 'amber' | 'violet'
 
@@ -56,11 +95,7 @@ export function V4SpatialStage({ children }: { children: ReactNode }) {
     offset: ['start start', 'end end'],
   })
 
-  const cameraRotateX = useTransform(scrollYProgress, [0, 0.2, 0.5, 0.8, 1], [0, 1.4, -1.1, 1, 0])
-  const cameraRotateY = useTransform(scrollYProgress, [0, 0.2, 0.5, 0.8, 1], [0, 1.2, -1.4, 1.1, 0])
-  const cameraY = useTransform(scrollYProgress, [0, 0.5, 1], [0, -14, 0])
-  const cameraX = useTransform(scrollYProgress, [0, 0.5, 1], [0, 8, -7])
-  const cameraZ = useTransform(scrollYProgress, [0, 0.5, 1], [0, 20, 0])
+  // Removed camera transforms to avoid weird tilt effect on scroll.
 
   useEffect(() => {
     const root = stageRef.current
@@ -73,7 +108,9 @@ export function V4SpatialStage({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <div ref={stageRef} style={{ position: 'relative', perspective: lowEnd ? 'none' : '1700px' }}>
+    <div ref={stageRef} style={{ position: 'relative' }}>
+      <ScrollProgressBar />
+
       {!lowEnd && (
         <motion.div
           aria-hidden
@@ -91,23 +128,22 @@ export function V4SpatialStage({ children }: { children: ReactNode }) {
         />
       )}
 
-      <motion.div
-        style={
-          lowEnd
-            ? undefined
-            : {
-                transformStyle: 'preserve-3d',
-                rotateX: cameraRotateX,
-                rotateY: cameraRotateY,
-                x: cameraX,
-                y: cameraY,
-                z: cameraZ,
-                willChange: 'transform',
-              }
-        }
-      >
-        {children}
-      </motion.div>
+      <div style={{ position: 'relative' }}>
+        {/* Subtle scrim for text legibility over the ambient field */}
+        <div
+          aria-hidden
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'linear-gradient(to bottom, rgba(12,14,16,0.18) 0%, rgba(12,14,16,0.0) 20%, rgba(12,14,16,0.0) 80%, rgba(12,14,16,0.18) 100%)',
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        />
+        <div style={{ position: 'relative', zIndex: 2 }}>
+          {children}
+        </div>
+      </div>
     </div>
   )
 }

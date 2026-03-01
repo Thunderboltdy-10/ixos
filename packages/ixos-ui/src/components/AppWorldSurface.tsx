@@ -118,8 +118,6 @@ export function AppWorldSurface({
               directoryLabel={search.directoryLabel}
               onQueryChange={search.onQueryChange}
               onSubmit={search.onSubmit}
-              presets={search.presets}
-              onPresetSelect={search.onPresetSelect}
               mode={search.mode}
               onModeChange={search.onModeChange}
               stageLabel={search.stageLabel}

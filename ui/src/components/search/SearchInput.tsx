@@ -380,7 +380,7 @@ export function SearchInput({
           {/* Controls row */}
           {showControls && (
             <div className="px-3 pb-2.5 pt-0.5 flex items-center gap-2">
-              <div className="flex-1 min-w-0">
+              <div>
                 <FolderPicker
                   value={directory}
                   onChange={onDirectoryChange}

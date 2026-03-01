@@ -141,7 +141,7 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
       <AnimatePresence>
         {isOpen && (
           <>
-            <div className="fixed inset-0 z-[130]" onClick={() => setIsOpen(false)} />
+            <div className="fixed inset-0 z-[9990]" onClick={() => setIsOpen(false)} />
             <motion.div
               ref={dropdownRef}
               initial={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
@@ -149,7 +149,7 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
               exit={{ opacity: 0, y: dropdownPosition === 'bottom' ? -10 : 10 }}
               transition={{ duration: 0.15 }}
               className={cn(
-                'absolute z-[140] right-0',
+                'absolute z-[9999] right-0',
                 dropdownPosition === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
                 'w-72',
                 'bg-graphite-2 rounded-xl border border-stroke-hairline',

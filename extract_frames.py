@@ -2,7 +2,7 @@ import cv2
 import os
 import glob
 
-videos = ['lando.mp4', 'convex.mp4', 'graphite.mp4', 'greptile.mp4', 'vercel.mp4', 'site 5.mp4']
+videos = ['lando.mp4', 'convex.mp4', 'graphite.mp4', 'greptile.mp4', 'vercel.mp4', 'site 5.mp4', 'superhuman.mp4', 'cashapp.mp4', 'augment.mp4']
 output_base = os.path.join('ixos-site', '.inspo_frames')
 
 os.makedirs(output_base, exist_ok=True)

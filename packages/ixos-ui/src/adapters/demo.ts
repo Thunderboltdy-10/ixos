@@ -252,11 +252,11 @@ class DemoSearchAdapter implements SearchAdapter {
     this._cancelled = false;
 
     // Filter and score results dynamically
-    let results: IxosSearchResult[] = BASE_RESULTS.map((base, idx) => {
+    let results: IxosSearchResult[] = BASE_RESULTS.map((base) => {
       const scores = computeScores(query, base.path, base.snippet, mode);
       return {
         ...base,
-        id: `result-${idx}`,
+        id: `result-${base.path}`,
         score: scores.finalScore,
         lexicalScore: scores.lexicalScore,
         semanticScore: scores.semanticScore,

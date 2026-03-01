@@ -147,7 +147,7 @@ export function Sidebar({
           value={historyFilter}
           onChange={(e) => setHistoryFilter(e.target.value)}
           placeholder="Filter history..."
-          className="w-full px-2.5 py-1.5 rounded-md text-[11px] bg-graphite-2/30 border border-white/[0.04] text-fg-secondary placeholder:text-fg-ghost focus:border-white/10 focus:outline-none transition-colors"
+          className="w-full px-2.5 py-1.5 rounded-md text-[11px] bg-[#1a1a24] border border-white/10 text-porcelain placeholder:text-fg-dim focus:border-accent-teal/50 focus:outline-none transition-colors"
         />
       </div>
 

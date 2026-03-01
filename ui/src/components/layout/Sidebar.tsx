@@ -7,7 +7,6 @@ import { useStarredStore, type SearchThread } from '@/stores/starredStore';
 import { useSearchStore } from '@/stores/searchStore';
 import ixosIcon from '@/assets/ixos-icon.png';
 import { useAuthStore } from '@/stores/authStore';
-import { PlanBadge } from '@/components/account/PlanBadge';
 import { UpgradeBanner } from '@/components/account/UpgradeBanner';
 import { openExternalUrl } from '@/lib/tauri';
 import { useAuth } from '@clerk/clerk-react';
@@ -44,6 +43,14 @@ export function Sidebar({
   const { user, entitlement, proStatus, entitlementToken, fetchBillingPortal } = useAuthStore();
   const { signOut, getToken } = useAuth();
   const deepSearchMode = searchStore.deepSearchMode;
+  const cacheMode = searchStore.cacheMode;
+
+  // Dynamic accent color follows search mode — same palette as SearchInput
+  const modeAccent = deepSearchMode
+    ? '#7c5cff'
+    : cacheMode === 'ephemeral'
+    ? '#f59e0b'
+    : '#14b8a6';
 
   const starredThreads = starred.getStarredThreads();
   const recentSearches = starred.getRecentThreads();
@@ -116,9 +123,9 @@ export function Sidebar({
 
       {/* Main nav */}
       <nav className="px-3 pb-3 space-y-0.5">
-        <NavItem icon={Search} label="Search" isActive={activeView === 'search'} onClick={() => onViewChange?.('search')} />
-        <NavItem icon={Calendar} label="Today" isActive={activeView === 'today'} onClick={() => onViewChange?.('today')} isPro isLocked={!isPro} onLockedClick={onOpenPricing} />
-        <NavItem icon={Layers} label="Workstreams" isActive={activeView === 'workstreams'} onClick={() => onViewChange?.('workstreams')} isPro isLocked={!isPro} onLockedClick={onOpenPricing} />
+        <NavItem icon={Search} label="Search" isActive={activeView === 'search'} onClick={() => onViewChange?.('search')} accentColor={modeAccent} />
+        <NavItem icon={Calendar} label="Today" isActive={activeView === 'today'} onClick={() => onViewChange?.('today')} isPro isLocked={!isPro} onLockedClick={onOpenPricing} accentColor={modeAccent} />
+        <NavItem icon={Layers} label="Workstreams" isActive={activeView === 'workstreams'} onClick={() => onViewChange?.('workstreams')} isPro isLocked={!isPro} onLockedClick={onOpenPricing} accentColor={modeAccent} />
       </nav>
 
       {/* Tab toggle */}
@@ -155,7 +162,7 @@ export function Sidebar({
           value={historyFilter}
           onChange={(e) => setHistoryFilter(e.target.value)}
           placeholder="Filter history..."
-          className="w-full px-2.5 py-1.5 rounded-md text-[11px] bg-[#1a1a24] border border-white/10 text-porcelain placeholder:text-fg-dim focus:border-accent-teal/50 focus:outline-none transition-colors"
+          className="w-full px-2.5 py-1.5 rounded-md text-[11px] bg-graphite-0 border border-white/10 text-porcelain placeholder:text-fg-dim focus:outline-none focus:ring-0 transition-colors"
         />
       </div>
 
@@ -181,7 +188,7 @@ export function Sidebar({
               <p className="text-[11px] text-fg-dim">{historyFilter ? 'No matches' : 'No recent searches'}</p>
             </div>
           ) : (
-            <div className="space-y-px">
+            <div className="space-y-0.5">
               {filteredRecent.map((item) => (
                 <HistoryRow
                   key={item.id}
@@ -205,7 +212,7 @@ export function Sidebar({
               <p className="text-[11px] text-fg-dim">{historyFilter ? 'No matches' : 'No starred searches'}</p>
             </div>
           ) : (
-            <div className="space-y-px">
+            <div className="space-y-0.5">
               {filteredStarred.map((item) => (
                 <HistoryRow
                   key={item.id}
@@ -245,7 +252,11 @@ export function Sidebar({
               {displayName.slice(0, 1).toUpperCase()}
             </div>
             <p className="text-[11px] text-fg-muted truncate flex-1" title={displayName}>{displayName}</p>
-            {entitlement && <PlanBadge plan={entitlement.plan} />}
+            {isPro && (
+              <span className="inline-flex items-center text-[9px] font-semibold px-1.5 py-0.5 rounded bg-accent-magenta/14 text-accent-magenta border border-accent-magenta/28 flex-shrink-0">
+                PRO
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1.5">
             <button type="button" onClick={() => onOpenSettings?.('account')}
@@ -366,9 +377,10 @@ interface NavItemProps {
   isPro?: boolean;
   isLocked?: boolean;
   onLockedClick?: () => void;
+  accentColor?: string;
 }
 
-function NavItem({ icon: Icon, label, isActive, onClick, isPro, isLocked, onLockedClick }: NavItemProps) {
+function NavItem({ icon: Icon, label, isActive, onClick, isPro, isLocked, onLockedClick, accentColor = '#14b8a6' }: NavItemProps) {
   const handleClick = () => {
     if (isLocked) {
       onLockedClick?.();
@@ -381,16 +393,20 @@ function NavItem({ icon: Icon, label, isActive, onClick, isPro, isLocked, onLock
     <button
       type="button"
       onClick={handleClick}
+      style={isActive ? { borderLeftColor: accentColor } : undefined}
       className={cn(
         'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left',
         'transition-all duration-150',
         isActive
-          ? 'text-porcelain bg-graphite-2/40 border-l-2 border-accent-teal ml-0'
+          ? 'text-porcelain bg-graphite-2/40 border-l-2 ml-0'
           : 'text-fg-muted hover:text-porcelain hover:bg-graphite-2/25 border-l-2 border-transparent',
         isLocked && 'opacity-55'
       )}
     >
-      <Icon className={cn('w-3.5 h-3.5', isActive ? 'text-accent-teal' : 'text-fg-dim')} />
+      <Icon
+        style={isActive ? { color: accentColor } : undefined}
+        className={cn('w-3.5 h-3.5', isActive ? '' : 'text-fg-dim')}
+      />
       <span className="text-[12px] font-medium flex-1">{label}</span>
       {isPro && (
         <span className="inline-flex items-center gap-1 text-[9px] font-semibold px-1.5 py-0.5 rounded bg-accent-magenta/14 text-accent-magenta border border-accent-magenta/28">

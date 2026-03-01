@@ -134,6 +134,8 @@ export function AppWorldSurface({
               pipelineStats={search.pipelineStats}
               sourcePath={search.sourcePath}
               interactive={search.interactive ?? interactive}
+              presets={search.presets}
+              onPresetSelect={search.onPresetSelect}
             />
           )}
 

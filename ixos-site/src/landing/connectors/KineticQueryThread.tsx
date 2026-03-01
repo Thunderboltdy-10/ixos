@@ -55,8 +55,12 @@ function getSectionScrollY(sectionId: string): number {
 /* CSS keyframes injected once for node-burst ring */
 const BURST_STYLE = `
 @keyframes kqt-node-burst {
-  0%   { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-  100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+  0%   { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
+}
+@keyframes kqt-active-ring {
+  0%   { transform: translate(-50%, -50%) scale(0.8); opacity: 0.7; }
+  100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; }
 }
 .kqt-burst-ring {
   position: absolute;
@@ -67,10 +71,29 @@ const BURST_STYLE = `
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  animation: kqt-node-burst 0.7s ease-out forwards;
+  animation: kqt-node-burst 0.8s cubic-bezier(0,0,0.2,1) forwards;
+  will-change: transform, opacity;
 }
-.kqt-burst-ring:nth-child(2) { animation-delay: 0.12s; border-color: #F6B94C99; }
-.kqt-burst-ring:nth-child(3) { animation-delay: 0.24s; border-color: #F6B94C55; }
+.kqt-burst-ring:nth-child(1) { animation-delay: 0ms;   border-color: #F6B94C; }
+.kqt-burst-ring:nth-child(2) { animation-delay: 150ms; border-color: #F6B94C99; }
+.kqt-burst-ring:nth-child(3) { animation-delay: 300ms; border-color: #F6B94C55; }
+.kqt-burst-ring:nth-child(4) { animation-delay: 450ms; border-color: #14B8A630; border-color: #14B8A640; }
+.kqt-active-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid #F6B94C;
+  width: 12px;
+  height: 12px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: kqt-active-ring 1.2s cubic-bezier(0,0,0.2,1) forwards;
+  will-change: transform, opacity;
+}
+.kqt-active-ring:nth-child(1) { animation-delay: 0ms;   border-color: #F6B94C80; }
+.kqt-active-ring:nth-child(2) { animation-delay: 150ms; border-color: #F6B94C50; }
+.kqt-active-ring:nth-child(3) { animation-delay: 300ms; border-color: #14B8A640; }
+.kqt-active-ring:nth-child(4) { animation-delay: 450ms; border-color: #14B8A625; }
 `;
 
 export function KineticQueryThread({
@@ -83,6 +106,7 @@ export function KineticQueryThread({
   const [svgSize, setSvgSize] = useState({ w: 0, h: 0 });
   const [pathDrawn, setPathDrawn] = useState(false);
   const [burstId, setBurstId] = useState<string | null>(null);
+  const [activeBurstId, setActiveBurstId] = useState<string | null>(null);
   const [isLocked, setIsLocked] = useState(false);
   const driftPhaseRef = useRef<Record<string, number>>({});
 
@@ -120,6 +144,17 @@ export function KineticQueryThread({
     /* Simulate "search locked" teal state ~1.5s after section change */
     setIsLocked(false);
     const tid = setTimeout(() => setIsLocked(true), 1500);
+
+    /* Fire 4-ring burst on the newly active node */
+    if (activeSectionId) {
+      setActiveBurstId(activeSectionId);
+      const clearTid = setTimeout(() => setActiveBurstId(null), 1400);
+      return () => {
+        clearTimeout(tid);
+        clearTimeout(clearTid);
+      };
+    }
+
     return () => clearTimeout(tid);
   }, [activeSectionId]);
 
@@ -322,6 +357,7 @@ export function KineticQueryThread({
         const pos = getNodePos(node.id, index);
         const color = NODE_TONE[node.tone] || "#2DD4BF";
         const isBursting = burstId === node.id;
+        const isActiveBursting = activeBurstId === node.id;
 
         return (
           <div
@@ -338,12 +374,23 @@ export function KineticQueryThread({
             onMouseLeave={() => handleNodeHover(node.id, false)}
             onClick={() => handleNodeClick(node, index)}
           >
-            {/* Burst rings — CSS animation for the active-node burst */}
+            {/* Click-burst rings — 4 rings with 150ms stagger */}
             {isBursting && (
               <>
                 <div className="kqt-burst-ring" />
                 <div className="kqt-burst-ring" />
                 <div className="kqt-burst-ring" />
+                <div className="kqt-burst-ring" />
+              </>
+            )}
+
+            {/* Section activation rings — subtle 4-ring expand on section enter */}
+            {isActiveBursting && !isBursting && (
+              <>
+                <div className="kqt-active-ring" />
+                <div className="kqt-active-ring" />
+                <div className="kqt-active-ring" />
+                <div className="kqt-active-ring" />
               </>
             )}
 

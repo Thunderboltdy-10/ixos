@@ -21,7 +21,7 @@ export function V4CTA() {
       }}
       style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
     >
-      <section style={{ backgroundColor: '#0C0E10', padding: '120px 0 132px', position: 'relative', overflow: 'hidden' }}>
+      <section style={{ backgroundColor: 'transparent', padding: '120px 0 132px', position: 'relative', overflow: 'hidden' }}>
         <div
           aria-hidden
           style={{
@@ -94,9 +94,15 @@ export function V4CTA() {
             style={{
               margin: '0 auto 24px',
               maxWidth: 780,
+              // 3D glassmorphic code block
               border: '1px solid rgba(255,255,255,0.1)',
+              borderTop: '1px solid rgba(255,255,255,0.18)',
+              borderLeft: '1px solid rgba(255,255,255,0.14)',
               borderRadius: 10,
-              background: 'rgba(7,9,12,0.86)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(7,9,12,0.88) 100%)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              boxShadow: '-8px -8px 24px rgba(0,0,0,0.7), 4px 4px 16px rgba(45,212,191,0.05)',
               textAlign: 'left',
               padding: '12px 14px',
             }}

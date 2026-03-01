@@ -233,7 +233,7 @@ export function MainSearchView() {
   const showLowerPanels = !showIdleDashboard && (searchPhase !== 'idle' || liveResults.length > 0 || hasLateInsights || query.trim().length > 0);
 
   return (
-    <div className="relative flex h-full w-full flex-col overflow-hidden bg-graphite-0 p-6 text-porcelain">
+    <div className="relative flex h-full w-full flex-col bg-graphite-0 p-6 text-porcelain">
       <SearchInput
         value={query}
         onChange={setQuery}
@@ -251,7 +251,7 @@ export function MainSearchView() {
         showControls
       />
 
-      <div className="relative mt-4 min-h-0 flex-1">
+      <div className="relative mt-4 min-h-0 flex-1 overflow-hidden">
         <AnimatePresence initial={false} mode="wait">
           {showIdleDashboard ? (
             <motion.div

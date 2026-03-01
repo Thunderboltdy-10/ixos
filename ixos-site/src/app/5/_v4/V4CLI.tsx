@@ -325,7 +325,7 @@ export function V4CLI() {
     >
       <section
         className="relative overflow-hidden"
-        style={{ backgroundColor: '#0C0E10', padding: '112px 0 144px' }}
+        style={{ backgroundColor: 'transparent', padding: '112px 0 144px' }}
       >
         <div className="relative z-10 max-w-6xl mx-auto px-6">
           {/* Two-column layout */}

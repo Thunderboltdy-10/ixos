@@ -36,7 +36,7 @@ export function V4Pricing() {
       }}
       style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
     >
-      <section style={{ backgroundColor: '#0C0E10', padding: '110px 0 138px', position: 'relative', overflow: 'hidden' }}>
+      <section style={{ backgroundColor: 'transparent', padding: '110px 0 138px', position: 'relative', overflow: 'hidden' }}>
         <div
           aria-hidden
           style={{
@@ -210,11 +210,22 @@ function PlanCard({
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.55, delay }}
+      whileHover={{
+        y: -3,
+        boxShadow: `-5px -5px 18px rgba(0,0,0,0.55), 6px 6px 24px ${accent}18`,
+      }}
       style={{
-        border: `1px solid ${accent}55`,
+        border: `1px solid ${accent}44`,
+        borderTop: `1px solid ${accent}66`,
+        borderLeft: `1px solid ${accent}55`,
         borderRadius: 12,
-        background: 'rgba(255,255,255,0.03)',
+        // 3D glassmorphic card
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 60%, rgba(0,0,0,0.1) 100%)',
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
+        boxShadow: `-8px -8px 24px rgba(0,0,0,0.7), 4px 4px 16px ${accent}08`,
         padding: 20,
+        transition: 'box-shadow 0.25s ease, transform 0.25s ease',
       }}
     >
       <span

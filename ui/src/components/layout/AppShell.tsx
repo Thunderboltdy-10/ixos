@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
@@ -308,28 +309,59 @@ export function AppShell({ children }: AppShellProps) {
         </div>
 
         <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
-          {activeView === 'search' && children}
-          {activeView === 'today' && (
-            <TodayTab
-              onStartSearch={() => setActiveView('search')}
-              onOpenFile={handleOpenFile}
-              onSelectWorkstream={handleSelectWorkstream}
-            />
-          )}
-          {activeView === 'workstreams' && (
-            currentWorkstream ? (
-              <WorkstreamDetail
-                workstreamId={currentWorkstream.id}
-                onBack={() => setCurrentWorkstream(null)}
-                onOpenFile={handleOpenFile}
-              />
-            ) : (
-              <WorkstreamsList
-                onSelectWorkstream={handleSelectWorkstream}
-                onOpenFile={handleOpenFile}
-              />
-            )
-          )}
+          <AnimatePresence mode="wait" initial={false}>
+            {activeView === 'search' && (
+              <motion.div
+                key="search-view"
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -18 }}
+                transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 flex flex-col"
+              >
+                {children}
+              </motion.div>
+            )}
+            {activeView === 'today' && (
+              <motion.div
+                key="today-view"
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -18 }}
+                transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 flex flex-col"
+              >
+                <TodayTab
+                  onStartSearch={() => setActiveView('search')}
+                  onOpenFile={handleOpenFile}
+                  onSelectWorkstream={handleSelectWorkstream}
+                />
+              </motion.div>
+            )}
+            {activeView === 'workstreams' && (
+              <motion.div
+                key="workstreams-view"
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -18 }}
+                transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 flex flex-col"
+              >
+                {currentWorkstream ? (
+                  <WorkstreamDetail
+                    workstreamId={currentWorkstream.id}
+                    onBack={() => setCurrentWorkstream(null)}
+                    onOpenFile={handleOpenFile}
+                  />
+                ) : (
+                  <WorkstreamsList
+                    onSelectWorkstream={handleSelectWorkstream}
+                    onOpenFile={handleOpenFile}
+                  />
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {shouldLock && (

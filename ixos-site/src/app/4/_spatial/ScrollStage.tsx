@@ -1,14 +1,25 @@
 "use client"
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { VoidPhase } from './VoidPhase'
 import { InsidePhase } from './InsidePhase'
 import { EnteringText } from './EnteringText'
 
 type Phase = 'void' | 'zoom' | 'inside'
 
+// Precomputed deterministic star attributes — no Math.random() in render
+const STARS = Array.from({ length: 80 }, (_, i) => ({
+  width: ((i * 137.5) % 7) > 5.95 ? 2 : 1,
+  height: ((i * 137.5) % 7) > 5.95 ? 2 : 1,
+  left: `${(i * 137.5) % 100}%`,
+  top: `${(i * 97.3 + 13) % 100}%`,
+  baseOpacity: 0.04 + ((i * 31.7) % 100) / 100 * 0.15,
+}))
+
 export function ScrollStage() {
   const [scrollProgress, setScrollProgress] = useState(0)
   const [phase, setPhase] = useState<Phase>('void')
+  // stars is a module-level constant but typed here for IDE clarity
+  const stars = useMemo(() => STARS, [])
   const rafRef = useRef<number>(0)
   const pendingScrollRef = useRef<number | null>(null)
 
@@ -28,8 +39,8 @@ export function ScrollStage() {
 
         setScrollProgress(progress)
         setPhase(
-          progress < 0.25 ? 'void'
-          : progress < 0.5 ? 'zoom'
+          progress < 0.08 ? 'void'
+          : progress < 0.20 ? 'zoom'
           : 'inside'
         )
       }
@@ -45,11 +56,11 @@ export function ScrollStage() {
     }
   }, [])
 
-  // Showing entering text between 32% and 48% of scroll
-  const showEntering = scrollProgress > 0.32 && scrollProgress < 0.48
+  // Showing entering text between 12% and 18% of scroll
+  const showEntering = scrollProgress > 0.12 && scrollProgress < 0.18
 
   return (
-    <div className="relative" style={{ minHeight: '650vh' }}>
+    <div className="relative" style={{ minHeight: '250vh' }}>
 
       {/* ── Background: Deep void nebula ── */}
       <div
@@ -65,19 +76,19 @@ export function ScrollStage() {
         }}
       />
 
-      {/* ── Star field (static, very subtle) ── */}
+      {/* ── Star field (deterministic, no flicker on scroll) ── */}
       <div className="fixed inset-0 z-0 pointer-events-none" aria-hidden>
-        {Array.from({ length: 80 }, (_, i) => (
+        {stars.map((star, i) => (
           <div
             key={i}
             className="absolute rounded-full"
             style={{
-              width: Math.random() > 0.85 ? 2 : 1,
-              height: Math.random() > 0.85 ? 2 : 1,
-              left: `${(i * 137.5) % 100}%`,
-              top: `${(i * 97.3 + 13) % 100}%`,
-              background: `rgba(255,255,255,${0.04 + Math.random() * 0.15})`,
-              opacity: 1 - scrollProgress * 1.5, // fades as we enter the app
+              width: star.width,
+              height: star.height,
+              left: star.left,
+              top: star.top,
+              background: `rgba(255,255,255,${star.baseOpacity.toFixed(3)})`,
+              opacity: Math.max(0, 1 - scrollProgress * 1.5),
             }}
           />
         ))}
@@ -96,7 +107,7 @@ export function ScrollStage() {
       />
 
       {/* ── Phase label (void phase only) ── */}
-      {scrollProgress < 0.28 && (
+      {scrollProgress < 0.15 && (
         <div
           className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 pointer-events-none"
           style={{
@@ -123,19 +134,19 @@ export function ScrollStage() {
       )}
 
       {/* ── Void + Zoom phase: sticky viewport ── */}
-      <div className="sticky top-0 h-screen z-10 overflow-hidden">
+      <div className="sticky top-0 h-screen z-10">
         <VoidPhase scrollProgress={scrollProgress} phase={phase} />
         <EnteringText visible={showEntering} />
       </div>
 
-      {/* ── Inside phase: layered below, fades in at 50% ── */}
+      {/* ── Inside phase: layered below, fades in at 20% ── */}
       <div
         className="relative z-20"
         style={{
           // Overlap with the sticky section so transition is seamless
           marginTop: '-100vh',
-          // Only becomes interactive and visible at/after 50%
-          pointerEvents: scrollProgress >= 0.5 ? 'auto' : 'none',
+          // Only becomes interactive and visible at/after 20%
+          pointerEvents: scrollProgress >= 0.20 ? 'auto' : 'none',
         }}
       >
         <InsidePhase scrollProgress={scrollProgress} />

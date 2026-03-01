@@ -61,6 +61,8 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [hoveredMode, setHoveredMode] = useState<SearchMode>(value);
   const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
 
   const selectedMode = modes.find((mode) => mode.id === value) ?? modes[0];
   const hoveredDetails = useMemo(
@@ -71,8 +73,29 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
   useEffect(() => {
     if (!isOpen) {
       setHoveredMode(value);
+      setDropdownPos(null);
     }
   }, [isOpen, value]);
+
+  useEffect(() => {
+    if (!isOpen || !buttonRef.current) return;
+
+    const updatePos = () => {
+      const rect = buttonRef.current!.getBoundingClientRect();
+      setDropdownPos({
+        top: rect.bottom + 8,
+        left: rect.left,
+      });
+    };
+
+    updatePos();
+    window.addEventListener('resize', updatePos);
+    window.addEventListener('scroll', updatePos, true);
+    return () => {
+      window.removeEventListener('resize', updatePos);
+      window.removeEventListener('scroll', updatePos, true);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -146,6 +169,7 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
   return (
     <div ref={containerRef} className={cn('relative w-[126px]', className)}>
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen((open) => !open)}
         className={cn(
           'flex w-full items-center gap-2 px-2.5 py-1.5 rounded-md',
@@ -167,13 +191,20 @@ export function ModeSwitcher({ value, onChange, className, compact = false }: Mo
       </button>
 
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && dropdownPos && (
           <motion.div
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 z-[12010] w-[320px] max-w-[min(92vw,320px)] rounded-xl border border-white/14 bg-[#11161d] shadow-lift overflow-hidden"
+            style={{
+              position: 'absolute',
+              top: dropdownPos.top,
+              left: dropdownPos.left,
+              zIndex: 15000,
+              pointerEvents: 'auto',
+            }}
+            className="w-[320px] max-w-[min(92vw,320px)] rounded-xl border border-white/14 bg-[#1a1d24]/[0.98] shadow-lift overflow-visible isolate"
           >
             <div className="max-h-[280px] overflow-y-auto">
               {modes.map((mode) => (

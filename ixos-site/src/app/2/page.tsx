@@ -495,7 +495,61 @@ function EmbeddingSpaceSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ODOMETER STAT — count-up animation on scroll entry
+   ODOMETER DIGIT — single rolling digit column
+   ═══════════════════════════════════════════════════════════════════════════ */
+function OdometerDigit({
+  digit,
+  glowColor,
+  digitH,
+}: {
+  digit: number;
+  glowColor: string;
+  digitH: number;
+}) {
+  // Digit strip: 0-9 repeated, we offset to the target digit
+  const ROWS = 10;
+  const translateY = -(digit * digitH);
+
+  return (
+    <div
+      style={{
+        display: "inline-block",
+        height: digitH,
+        overflow: "hidden",
+        position: "relative",
+      }}
+    >
+      <div
+        style={{
+          transform: `translateY(${translateY}px)`,
+          transition: "transform 0.7s cubic-bezier(0.23, 1, 0.32, 1)",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {Array.from({ length: ROWS }, (_, i) => (
+          <div
+            key={i}
+            style={{
+              height: digitH,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              textShadow: i === digit ? `0 0 40px ${glowColor}` : "none",
+              lineHeight: 1,
+            }}
+          >
+            {i}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ODOMETER STAT — rolls up digit by digit like a physical counter
    ═══════════════════════════════════════════════════════════════════════════ */
 function OdometerStat({
   value,
@@ -510,7 +564,7 @@ function OdometerStat({
   label: string;
   glowColor: string;
 }) {
-  const [count, setCount] = useState(0);
+  const [displayValue, setDisplayValue] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const hasRun = useRef(false);
 
@@ -521,34 +575,50 @@ function OdometerStat({
         hasRun.current = true;
         observer.disconnect();
         const start = performance.now();
-        const dur = 1600;
+        const dur = 1800;
         const tick = (now: number) => {
           const p = Math.min((now - start) / dur, 1);
+          // Ease: fast start, slow end (overshoot style)
           const ease = 1 - Math.pow(1 - p, 3);
-          setCount(Math.round(value * ease));
+          setDisplayValue(Math.round(value * ease));
           if (p < 1) requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);
       },
-      { threshold: 0.5 }
+      { threshold: 0.4 }
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, [value]);
 
+  // Split number into digits
+  const digits = String(displayValue).split("").map(Number);
+  // Font size / digit height
+  const digitH = 80; // px — matches roughly text-7xl
+
   return (
     <div ref={ref} className="relative text-center">
       <div
-        className="text-6xl md:text-7xl lg:text-8xl font-extralight tracking-tighter leading-none mb-3"
+        className="font-extralight tracking-tighter leading-none mb-3 flex items-center justify-center"
         style={{
           fontFamily: "var(--font-display)",
-          color: "#fff",
-          textShadow: `0 0 60px ${glowColor}`,
+          fontSize: `${digitH}px`,
+          height: `${digitH}px`,
         }}
       >
-        {prefix}
-        {count}
-        {suffix}
+        {prefix && (
+          <span style={{ color: "#fff", textShadow: `0 0 40px ${glowColor}` }}>
+            {prefix}
+          </span>
+        )}
+        {digits.map((d, i) => (
+          <OdometerDigit key={i} digit={d} glowColor={glowColor} digitH={digitH} />
+        ))}
+        {suffix && (
+          <span style={{ color: "rgba(255,255,255,0.7)", fontSize: `${digitH * 0.55}px`, marginLeft: 2 }}>
+            {suffix}
+          </span>
+        )}
       </div>
       <div
         className="uppercase tracking-[0.2em] text-[11px] font-mono"
@@ -718,46 +788,14 @@ export default function Page2SignalArchitecture() {
           </motion.div>
         </motion.div>
 
-        {/* CSS 3D Lattice */}
+        {/* CSS 3D Lattice — expanded, fills hero */}
         <motion.div
-          className="w-full max-w-3xl mx-auto"
+          className="w-full max-w-5xl mx-auto"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1.2, delay: 1.0 }}
+          transition={{ duration: 1.4, delay: 0.9 }}
         >
           <CSSLattice />
-        </motion.div>
-
-        {/* Demo surface */}
-        <motion.div
-          className="relative z-10 w-full max-w-4xl mx-auto mt-6"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.2 }}
-        >
-          <div
-            className="rounded-xl overflow-hidden"
-            style={{
-              height: "480px",
-              minHeight: "480px",
-              border: "1px solid rgba(20,184,166,0.12)",
-              background: "rgba(8,12,20,0.9)",
-              backdropFilter: "blur(20px)",
-              boxShadow:
-                "0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(20,184,166,0.05)",
-            }}
-          >
-            <DemoSurface
-              initialQuery="How does token refresh work?"
-              autoRun
-              presets={[
-                "How does token refresh work?",
-                "rate limiter middleware",
-                "database migration scripts",
-                "authentication flow",
-              ]}
-            />
-          </div>
         </motion.div>
 
         {/* Scroll hint */}
@@ -867,6 +905,68 @@ export default function Page2SignalArchitecture() {
           4. EMBEDDING SPACE — Semantic understanding visualization
           ================================================================ */}
       <EmbeddingSpaceSection />
+
+      {/* ================================================================
+          4b. SEE IT IN ACTION — Full Search Interface demo
+          ================================================================ */}
+      <section className="relative py-20 md:py-28 px-6 z-10" style={{ background: "rgba(3,5,8,0.85)" }}>
+        <div className="max-w-5xl mx-auto">
+          <Reveal className="text-center mb-10">
+            <p
+              className="text-[10px] uppercase tracking-[0.25em] mb-3 font-mono"
+              style={{ color: "rgba(20,184,166,0.7)" }}
+            >
+              Full Search Interface
+            </p>
+            <h2
+              className="text-2xl md:text-3xl font-light text-white tracking-tight mb-3"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              See how results look in the actual app.
+            </h2>
+            <p className="text-sm max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.3)" }}>
+              Hybrid scoring, evidence cards, workstream tracking — all running locally on your machine.
+            </p>
+          </Reveal>
+
+          <Reveal delay={0.15}>
+            {/* Scale-down container so the full UI fits naturally */}
+            <div
+              style={{
+                position: "relative",
+                height: "420px",
+                overflow: "hidden",
+                borderRadius: "16px",
+                border: "1px solid rgba(20,184,166,0.12)",
+                background: "rgba(8,12,20,0.9)",
+                boxShadow: "0 24px 72px rgba(0,0,0,0.5), 0 0 48px rgba(20,184,166,0.04)",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  transform: "scale(0.78)",
+                  transformOrigin: "top center",
+                  height: "538px",
+                  pointerEvents: "auto",
+                }}
+              >
+                <DemoSurface
+                  initialQuery="How does token refresh work?"
+                  autoRun
+                  presets={[
+                    "How does token refresh work?",
+                    "rate limiter middleware",
+                    "database migration scripts",
+                    "authentication flow",
+                  ]}
+                />
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
 
       {/* ================================================================
           5. SPEED METRICS — Odometer stats

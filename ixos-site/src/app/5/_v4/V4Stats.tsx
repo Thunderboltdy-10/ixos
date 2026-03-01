@@ -219,13 +219,24 @@ function StatCard({
       initial={{ opacity: 0, y: 24 }}
       animate={inView ? { opacity: 1, y: 0, rotateX, rotateY } : { rotateX: 0, rotateY: 0 }}
       transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1], type: 'spring', stiffness: 300, damping: 30 }}
+      whileHover={{
+        boxShadow: '-5px -5px 18px rgba(0,0,0,0.55), 6px 6px 20px rgba(246,185,76,0.08)',
+        y: -2,
+      }}
       className="flex flex-col gap-4 py-8 px-6 relative"
-      style={{ 
-        border: '1px solid rgba(255,255,255,0.06)',
+      style={{
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderTop: '1px solid rgba(255,255,255,0.14)',
+        borderLeft: '1px solid rgba(255,255,255,0.1)',
         borderRadius: 16,
-        background: 'rgba(255,255,255,0.015)',
+        // 3D glassmorphic card
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 60%, rgba(0,0,0,0.1) 100%)',
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
+        boxShadow: '-8px -8px 24px rgba(0,0,0,0.7), 4px 4px 16px rgba(246,185,76,0.05)',
         transformStyle: 'preserve-3d',
-        perspective: 1000
+        perspective: 1000,
+        transition: 'box-shadow 0.25s ease, transform 0.25s ease',
       }}
     >
       <div style={{ transform: 'translateZ(20px)' }}>

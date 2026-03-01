@@ -132,7 +132,7 @@ export function V4AskMode() {
       }}
       style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
     >
-      <section className="relative overflow-hidden" style={{ backgroundColor: '#0C0E10', padding: '108px 0 136px' }}>
+      <section className="relative overflow-hidden" style={{ backgroundColor: 'transparent', padding: '108px 0 136px' }}>
         <div
           aria-hidden
           style={{

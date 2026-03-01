@@ -8,8 +8,20 @@ function useScrollIntensity() {
   useEffect(() => {
     const onScroll = () => {
       const progress = window.scrollY / Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
-      // Full intensity at top, 30% at bottom
-      setIntensity(Math.max(0.3, 1 - progress * 0.85))
+      // Full intensity in hero, dims aggressively as you scroll:
+      // 0%   scroll → 1.0
+      // 20%  scroll → 0.5
+      // 60%  scroll → 0.25
+      // 100% scroll → 0.15
+      let val: number
+      if (progress < 0.2) {
+        val = 1 - progress * 2.5  // 1.0 → 0.5
+      } else if (progress < 0.6) {
+        val = 0.5 - (progress - 0.2) * 0.625  // 0.5 → 0.25
+      } else {
+        val = 0.25 - (progress - 0.6) * 0.25   // 0.25 → 0.15
+      }
+      setIntensity(Math.max(0.15, val))
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)

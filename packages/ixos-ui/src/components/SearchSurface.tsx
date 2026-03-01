@@ -39,6 +39,8 @@ interface SearchSurfaceProps {
   pipelineStats?: PipelineStats;
   sourcePath?: string;
   interactive?: boolean;
+  presets?: string[];
+  onPresetSelect?: (value: string) => void;
 }
 
 interface AccentTheme {
@@ -202,6 +204,8 @@ export function SearchSurface({
   pipelineStats,
   sourcePath: _sourcePath,
   interactive = true,
+  presets,
+  onPresetSelect,
 }: SearchSurfaceProps) {
   const visibleResults = useMemo(
     () => (resultLimit ? results.slice(0, resultLimit) : results),
@@ -372,6 +376,43 @@ export function SearchSurface({
               </button>
             )}
           </div>
+
+          {presets && presets.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+              {presets.map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => onPresetSelect?.(preset)}
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${theme.border}`,
+                    borderRadius: 6,
+                    color: theme.text,
+                    fontFamily: 'var(--font-ixo-mono), monospace',
+                    fontSize: 10,
+                    padding: '3px 9px',
+                    cursor: interactive ? 'pointer' : 'default',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: 200,
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (interactive) {
+                      (e.currentTarget as HTMLButtonElement).style.background = theme.accentFaint;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.04)';
+                  }}
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
+          )}
 
           {errorMessage && (
             <div style={{ marginTop: 10, border: '1px solid rgba(239, 68, 68, 0.5)', borderRadius: 8, background: 'rgba(239, 68, 68, 0.08)', padding: '10px 12px', color: '#fca5a5', fontSize: 12 }}>

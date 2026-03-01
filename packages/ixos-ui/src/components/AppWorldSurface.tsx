@@ -107,7 +107,7 @@ export function AppWorldSurface({
           <div style={{ marginTop: 18, display: 'grid', gap: 7 }}>
             <span className="ixos-chip">No Cloud Index</span>
             <span className="ixos-chip">Progressive Stream</span>
-            <span className="ixos-chip">Evidence Ready</span>
+            <span className="ixos-chip">Context Ready</span>
           </div>
         </aside>
 

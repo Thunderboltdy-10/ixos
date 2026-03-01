@@ -50,6 +50,14 @@ export function Sidebar({
   const isPro = hasProAccess(entitlement, entitlementToken, proStatus);
   const showUpgrade = !!user && !isPro;
   const cacheHitRate = stats.getCacheHitRate() * 100;
+  const displayName = user?.email
+    ? user.email
+      .split('@')[0]
+      .replace(/[._-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, (char) => char.toUpperCase())
+    : 'Ixos User';
 
   const filteredRecent = useMemo(() => {
     if (!historyFilter.trim()) return recentSearches;
@@ -234,9 +242,9 @@ export function Sidebar({
         <div className="px-3 py-2.5 border-t border-white/[0.04] space-y-2">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-graphite-2 border border-white/[0.06] flex items-center justify-center text-[10px] text-fg-muted font-medium">
-              {user.email.slice(0, 1).toUpperCase()}
+              {displayName.slice(0, 1).toUpperCase()}
             </div>
-            <p className="text-[11px] text-fg-muted truncate flex-1">{user.email}</p>
+            <p className="text-[11px] text-fg-muted truncate flex-1" title={displayName}>{displayName}</p>
             {entitlement && <PlanBadge plan={entitlement.plan} />}
           </div>
           <div className="flex items-center gap-1.5">
@@ -257,7 +265,7 @@ export function Sidebar({
             )}
             <button type="button" onClick={() => signOut()}
               className="py-1.5 px-2 rounded-md text-[10px] text-fg-ghost hover:text-fg-muted bg-graphite-2/40 hover:bg-graphite-3/50 transition-colors">
-              Out
+              Sign out
             </button>
           </div>
         </div>
@@ -385,13 +393,10 @@ function NavItem({ icon: Icon, label, isActive, onClick, isPro, isLocked, onLock
       <Icon className={cn('w-3.5 h-3.5', isActive ? 'text-accent-teal' : 'text-fg-dim')} />
       <span className="text-[12px] font-medium flex-1">{label}</span>
       {isPro && (
-        isLocked ? (
-          <Lock className="w-3 h-3 text-fg-ghost" />
-        ) : (
-          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-accent-teal/12 text-accent-teal border border-accent-teal/20">
-            Pro
-          </span>
-        )
+        <span className="inline-flex items-center gap-1 text-[9px] font-semibold px-1.5 py-0.5 rounded bg-accent-magenta/14 text-accent-magenta border border-accent-magenta/28">
+          {isLocked && <Lock className="w-2.5 h-2.5" />}
+          Pro
+        </span>
       )}
     </button>
   );

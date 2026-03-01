@@ -1571,3 +1571,43 @@
   1. Manual local+cloud folder QA in desktop to confirm hydration prevention behavior in user-real paths.
   2. Tighten compact search row truncation/typing rhythm for even denser expert scanning.
   3. Fix unrelated CLI test compile drift and rerun targeted `ripgrep_funnel`/parser tests.
+
+## Entry 056 - Desktop search restoration + env/release hardening pass
+- Date/Time: 2026-03-01
+- Branch/Commit: (working tree)
+- Goal: Restore missing desktop search functionality and visuals (history reliability, mode-aware theming, sane score formatting, context panel quality), then validate release readiness for tag/GitHub Actions publishing.
+- Commands run:
+  - `npm run build`
+  - `cargo build --release`
+  - `cargo test`
+  - `npm run tauri:build`
+  - `npx tauri icon ../ui/src/assets/ixos-icon.png -o icons` (from `src-tauri`)
+  - `node scripts/verify-desktop-build-env.js`
+- Outputs saved to:
+  - shared surface updates: `packages/ixos-ui/src/components/SearchSurface.tsx`, `packages/ixos-ui/src/components/AmbientIxosField.tsx`, `packages/ixos-ui/src/styles.css`, `packages/ixos-ui/src/types.ts`, `packages/ixos-ui/src/components/AppWorldSurface.tsx`
+  - desktop integration/fixes: `ui/src/components/search/MainSearchView.tsx`, `ui/src/components/search/SearchIdleDashboard.tsx`, `ui/src/components/search/SearchInput.tsx`, `ui/src/components/search/ModeSwitcher.tsx`, `ui/src/components/search/QualitySwitcher.tsx`, `ui/src/components/search/FolderPicker.tsx`, `ui/src/components/layout/Sidebar.tsx`, `ui/src/stores/searchStore.ts`, `ui/src/stores/starredStore.ts`
+  - release/build hardening: `scripts/verify-desktop-build-env.js`, regenerated installer icons under `src-tauri/icons/*`
+  - test blockers fixed: `src/cli/commands.rs`, `src/parsers/mod.rs`, `Cargo.toml`, `Cargo.lock`
+- Key results:
+  - Reworked shared search results/about panel to clamp confidence display to percentages, remove gibberish/ANSI artifacts, render line-aware match context, add copy-path/copy-context actions, and make evidence rail wider/more usable.
+  - Added mode-aware accent propagation (Flash amber, Auto teal, Pro violet) to rows, about panel actions, and ambient dot field.
+  - Restored idle search dashboard (non-blank state) with recent searches + Today/Workstreams snapshot surface for Pro users.
+  - Improved history persistence reliability by serializing encrypted writes and adding local mirror fallback to prevent stale-history regressions after restart.
+  - Fixed mode/quality dropdown anchoring and layering using viewport-fixed metrics and higher z-index, plus reduced translucency.
+  - Updated sidebar account/footer behavior: display name instead of full email, `Sign out` label, and pink Pro badges on Today/Workstreams nav.
+  - Fixed Rust test regressions blocking release checks (`Commands::Update` pattern/flag conflict and PDF extraction resilience fallback).
+  - Regenerated Tauri installer icons from canonical `ui/src/assets/ixos-icon.png`.
+  - Patched desktop build env validator to load `.env/.env.local` from root, `src-tauri`, and `ui`, so `npm run tauri:build` works with `.env.local` without manual exports.
+- Validation summary:
+  - `npm run build`: PASS
+  - `cargo build --release`: PASS
+  - `cargo test`: PASS (`475 passed; 0 failed; 6 ignored` + settings/doc tests pass)
+  - `npm run tauri:build`: PASS (MSI + NSIS generated)
+  - Remaining non-fatal Tauri warnings observed:
+    - bundle identifier suffix warning (`com.ixos.app` ends with `.app`)
+    - updater bundler metadata warning (`__TAURI_BUNDLE_TYPE` patch not found)
+- Decision: KEEP
+- Next:
+  1. Validate updated search UX manually on Windows/macOS/Linux runners (especially dropdown placement and context readability).
+  2. Resolve Tauri warnings before tagging a production release.
+  3. Publish a release checklist write-up in `/reports` that maps each checklist item to command evidence.

@@ -10,7 +10,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { hasProAccess } from '@/lib/proAccess';
 
 const MAX_LEXICAL_DISPLAY = 50;
-const MAX_SCAN_TRAIL = 6;
+const MAX_SCAN_TRAIL = 24;
 const DUPLICATE_EVENT_WINDOW_MS = 40;
 
 let lastSearchEventDigest: string | null = null;

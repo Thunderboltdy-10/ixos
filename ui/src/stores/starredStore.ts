@@ -9,13 +9,52 @@ import { saveEncrypted, loadEncrypted } from '@/lib/storage';
 
 const HISTORY_FILE = 'search_history.encrypted';
 const LEGACY_STARRED_FILE = 'starred_searches.encrypted';
+const HISTORY_MIRROR_KEY = 'ixos:search_history_mirror_v2';
 const MAX_THREADS = 100;
+let saveQueue: Promise<void> = Promise.resolve();
 
 function normalizeMode(mode: string): 'native-cache' | 'ephemeral' | 'deep-search' {
   if (mode === 'deep-search' || mode === 'journalist') return 'deep-search';
   if (mode === 'ephemeral' || mode === 'jit') return 'ephemeral';
   if (mode === 'native-cache' || mode === 'cache' || mode === 'persistent') return 'native-cache';
   return 'native-cache';
+}
+
+function normalizeThreads(threads: SearchThread[]): SearchThread[] {
+  return threads.slice(0, MAX_THREADS).map((thread) => ({
+    ...thread,
+    mode: normalizeMode(thread.mode),
+    isAskMode: thread.isAskMode ?? false,
+  }));
+}
+
+function getLatestTimestamp(threads: SearchThread[]): number {
+  return threads.reduce((latest, thread) => Math.max(latest, thread.timestamp), 0);
+}
+
+function readHistoryMirror(): SearchThread[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(HISTORY_MIRROR_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as { threads?: SearchThread[] };
+    if (!parsed.threads || !Array.isArray(parsed.threads)) return [];
+    return normalizeThreads(parsed.threads);
+  } catch {
+    return [];
+  }
+}
+
+function writeHistoryMirror(threads: SearchThread[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(HISTORY_MIRROR_KEY, JSON.stringify({
+      savedAt: Date.now(),
+      threads,
+    }));
+  } catch {
+    // Mirror writes are best-effort only.
+  }
 }
 
 /**
@@ -95,7 +134,7 @@ export const useStarredStore = create<StarredState>((set, get) => ({
       activeThreadId: nextId,
     }));
 
-    get().saveStarred();
+    void get().saveStarred();
     return nextId;
   },
 
@@ -108,7 +147,7 @@ export const useStarredStore = create<StarredState>((set, get) => ({
       activeThreadId: thread.id,
     }));
 
-    get().saveStarred();
+    void get().saveStarred();
   },
 
   selectThread: (id) => {
@@ -122,7 +161,7 @@ export const useStarredStore = create<StarredState>((set, get) => ({
     }));
 
     // Save after delete
-    get().saveStarred();
+    void get().saveStarred();
   },
 
   toggleStar: (id) => {
@@ -133,7 +172,7 @@ export const useStarredStore = create<StarredState>((set, get) => ({
     }));
 
     // Save after toggle
-    get().saveStarred();
+    void get().saveStarred();
   },
 
   getStarredThreads: () => {
@@ -184,31 +223,34 @@ export const useStarredStore = create<StarredState>((set, get) => ({
 
     try {
       const loaded = await loadEncrypted<{ threads: SearchThread[] }>(HISTORY_FILE);
+      const mirrorThreads = readHistoryMirror();
 
       if (loaded?.threads) {
+        const encryptedThreads = normalizeThreads(loaded.threads);
+        const preferredThreads =
+          getLatestTimestamp(mirrorThreads) > getLatestTimestamp(encryptedThreads)
+            ? mirrorThreads
+            : encryptedThreads;
+
         set({
-          threads: loaded.threads.slice(0, MAX_THREADS).map((thread) => ({
-            ...thread,
-            mode: normalizeMode(thread.mode),
-            isAskMode: thread.isAskMode ?? false,
-          })),
+          threads: preferredThreads,
           isLoaded: true,
         });
       } else {
         const legacy = await loadEncrypted<{ threads: SearchThread[] }>(LEGACY_STARRED_FILE);
         if (legacy?.threads) {
-          const normalized = legacy.threads.slice(0, MAX_THREADS).map((thread) => ({
-            ...thread,
-            mode: normalizeMode(thread.mode),
-            isAskMode: thread.isAskMode ?? false,
-          }));
+          const normalized = normalizeThreads(legacy.threads);
           set({
             threads: normalized,
             isLoaded: true,
           });
           await saveEncrypted(HISTORY_FILE, { threads: normalized });
+          writeHistoryMirror(normalized);
         } else {
-          set({ isLoaded: true });
+          set({
+            threads: mirrorThreads,
+            isLoaded: true,
+          });
         }
       }
     } catch (error) {
@@ -220,10 +262,16 @@ export const useStarredStore = create<StarredState>((set, get) => ({
   },
 
   saveStarred: async () => {
-    const { threads } = get();
+    const snapshot = [...get().threads];
+    writeHistoryMirror(snapshot);
+    saveQueue = saveQueue
+      .catch(() => undefined)
+      .then(async () => {
+        await saveEncrypted(HISTORY_FILE, { threads: snapshot });
+      });
 
     try {
-      await saveEncrypted(HISTORY_FILE, { threads });
+      await saveQueue;
     } catch (error) {
       console.error('Failed to save starred searches:', error);
     }

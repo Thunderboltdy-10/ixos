@@ -97,6 +97,7 @@ tar = "0.4"
 
 # Document parsing (evidence extraction)
 pdf-extract = "0.7"
+lopdf = "0.32"
 calamine = "0.24"
 zip = "0.6"
 quick-xml = "0.31"

@@ -180,7 +180,7 @@ export function V4Hero() {
               Desktop search,{' '}
               <span
                 style={{
-                  background: 'linear-gradient(135deg, #14B8A6 0%, #7C3AED 100%)',
+                  background: 'linear-gradient(135deg, #F6B94C 0%, #F59E0B 60%, #7C3AED 100%)',
                   WebkitBackgroundClip: 'text',
                   backgroundClip: 'text',
                   color: 'transparent',
@@ -203,6 +203,21 @@ export function V4Hero() {
             </p>
           </div>
 
+          {/* KPI strip */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 32, justifyContent: 'center', marginTop: 0, paddingTop: 20, paddingBottom: 0 }}>
+            {[
+              { value: '100%', label: 'Local-First' },
+              { value: '0 B', label: 'Data Sent' },
+              { value: '<800ms', label: 'Search Latency' },
+              { value: '250+', label: 'Tests Passed' },
+            ].map(({ value, label }) => (
+              <div key={label} style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 'clamp(1.25rem, 2vw, 1.75rem)', fontFamily: 'var(--font-ixo-heading)', fontWeight: 700, color: '#F6B94C', letterSpacing: '-0.02em' }}>{value}</div>
+                <div style={{ fontSize: 9, fontFamily: 'var(--font-ixo-mono)', color: 'rgba(243,245,247,0.4)', textTransform: 'uppercase', letterSpacing: '0.2em', marginTop: 4 }}>{label}</div>
+              </div>
+            ))}
+          </div>
+
           <div style={{ position: 'relative' }}>
             {/* 3D Glass Shadow / Superposition effect */}
             <motion.div
@@ -216,7 +231,7 @@ export function V4Hero() {
                 left: 12,
                 right: -12,
                 bottom: -12,
-                background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(124, 58, 237, 0.1) 100%)',
+                background: 'linear-gradient(135deg, rgba(246, 185, 76, 0.2) 0%, rgba(124, 58, 237, 0.1) 100%)',
                 filter: 'blur(32px)',
                 borderRadius: 24,
                 zIndex: 0,
@@ -251,7 +266,7 @@ export function V4Hero() {
                 background: 'rgba(6,8,11,0.95)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                boxShadow: '0 0 60px rgba(20, 184, 166, 0.1), 0 28px 72px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.05)',
+                boxShadow: '0 0 60px rgba(246, 185, 76, 0.12), 0 0 40px rgba(246,185,76,0.08), 0 28px 72px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.05)',
                 height: 600,
                 overflow: 'hidden',
                 display: 'flex',

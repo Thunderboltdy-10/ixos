@@ -265,6 +265,29 @@ export function PipelineRibbonFlyover({
                 </>
               )}
 
+              {/* Amber glow pulse behind active diamond */}
+              {isActive && (
+                <motion.rect
+                  x={RIBBON_X - halfSize - 4}
+                  y={y - halfSize - 4}
+                  width={size + 8}
+                  height={size + 8}
+                  rx={3}
+                  fill="none"
+                  stroke={color}
+                  strokeWidth={1.5}
+                  strokeOpacity={0.45}
+                  style={{
+                    transformOrigin: `${RIBBON_X}px ${y}px`,
+                    transform: "rotate(45deg)",
+                    filter: `drop-shadow(0 0 6px ${color})`,
+                    pointerEvents: "none",
+                  }}
+                  animate={{ scale: [1, 1.12, 1], opacity: [0.45, 0.85, 0.45] }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+                />
+              )}
+
               {/* Diamond station marker */}
               <motion.rect
                 x={RIBBON_X - halfSize}
@@ -288,14 +311,24 @@ export function PipelineRibbonFlyover({
                   transform: "rotate(45deg)",
                   cursor: "pointer",
                   pointerEvents: "all",
+                  boxShadow: isActive ? `0 0 20px ${color}66` : undefined,
                 }}
                 animate={{
                   width: size,
                   height: size,
                   x: RIBBON_X - halfSize,
                   y: y - halfSize,
+                  scale: isActive ? [1, 1.1, 1] : 1,
                 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
+                transition={{
+                  width: { duration: 0.2, ease: "easeOut" },
+                  height: { duration: 0.2, ease: "easeOut" },
+                  x: { duration: 0.2, ease: "easeOut" },
+                  y: { duration: 0.2, ease: "easeOut" },
+                  scale: isActive
+                    ? { duration: 1, repeat: Infinity, ease: "easeInOut" }
+                    : { duration: 0.2 },
+                }}
                 onClick={() => handleStationClick(section.id, section.tone)}
                 onMouseEnter={() => setHoveredId(section.id)}
                 onMouseLeave={() => setHoveredId(null)}

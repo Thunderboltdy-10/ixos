@@ -28,7 +28,7 @@ const STATS: StatDef[] = [
     label: 'file loading',
     sublabel: '1,000 files',
     source: 'CLAUDE.md',
-    color: '#2DD4BF',
+    color: '#F59E0B',
     numericTarget: 7,
     numericSuffix: 'ms',
     numericPrefix: '~',
@@ -52,7 +52,7 @@ const STATS: StatDef[] = [
     label: 'daemons',
     sublabel: 'no background process',
     source: 'CLAUDE.md',
-    color: '#F59E0B',
+    color: '#2DD4BF',
     numericTarget: 0,
     numericSuffix: '',
     numericPrefix: '',
@@ -315,7 +315,7 @@ export function V4Stats() {
       onMouseEnter={handleMouseEnter}
       style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
     >
-      <section className="py-28 md:py-36" style={{ backgroundColor: '#0C0E10' }}>
+      <section className="py-28 md:py-36" style={{ backgroundColor: 'transparent' }}>
         <div className="max-w-6xl mx-auto px-6">
           {/* Header */}
           <div className="mb-16">

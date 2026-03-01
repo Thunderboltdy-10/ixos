@@ -99,6 +99,7 @@ function StageCard({
   const cardRef = useRef<HTMLDivElement>(null)
   const [rotateX, setRotateX] = useState(0)
   const [rotateY, setRotateY] = useState(0)
+  const [hovered, setHovered] = useState(false)
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return
@@ -107,7 +108,7 @@ function StageCard({
     const y = e.clientY - rect.top
     const centerX = rect.width / 2
     const centerY = rect.height / 2
-    
+
     setRotateX(((y - centerY) / centerY) * -12)
     setRotateY(((x - centerX) / centerX) * 12)
   }
@@ -115,6 +116,11 @@ function StageCard({
   const handleMouseLeave = () => {
     setRotateX(0)
     setRotateY(0)
+    setHovered(false)
+  }
+
+  const handleMouseEnter = () => {
+    setHovered(true)
   }
 
   return (
@@ -122,9 +128,10 @@ function StageCard({
       ref={cardRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onMouseEnter={handleMouseEnter}
       initial={{ opacity: 0, y: 30 }}
       animate={inView ? { opacity: 1, y: 0, rotateX, rotateY, scale: active ? 1.05 : 1 } : { rotateX: 0, rotateY: 0 }}
-      transition={{ 
+      transition={{
         opacity: { duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] },
         y: { duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] },
         rotateX: { type: 'spring', stiffness: 300, damping: 30 },
@@ -135,10 +142,11 @@ function StageCard({
         width: '100%',
         maxWidth: 240,
         background: active ? 'rgba(20,24,30,0.9)' : 'rgba(10,12,16,0.6)',
-        border: `1px solid ${active ? stage.color + '60' : 'rgba(255,255,255,0.05)'}`,
+        border: `1px solid ${active ? stage.color + '60' : hovered ? 'rgba(246,185,76,0.3)' : 'rgba(255,255,255,0.05)'}`,
         borderRadius: 16,
         padding: 24,
-        boxShadow: active ? `0 20px 40px rgba(0,0,0,0.5), 0 0 30px ${stage.color}20 inset, 0 0 20px ${stage.color}40` : '0 10px 20px rgba(0,0,0,0.3)',
+        boxShadow: active ? `0 20px 40px rgba(0,0,0,0.5), 0 0 30px ${stage.color}20 inset, 0 0 20px ${stage.color}40` : hovered ? '0 10px 20px rgba(0,0,0,0.3), 0 0 20px rgba(246,185,76,0.08)' : '0 10px 20px rgba(0,0,0,0.3)',
+        transition: 'border 0.25s ease, box-shadow 0.25s ease',
         position: 'relative',
         overflow: 'hidden',
         transformStyle: 'preserve-3d',
@@ -305,7 +313,7 @@ export function V4Pipeline() {
       onMouseEnter={handleMouseEnter}
       style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
     >
-      <section className="py-28 md:py-36 overflow-hidden" style={{ backgroundColor: '#0C0E10' }}>
+      <section className="py-28 md:py-36 overflow-hidden" style={{ backgroundColor: 'transparent' }}>
         <div className="max-w-6xl mx-auto px-6">
           {/* Header */}
           <div className="text-center mb-16">

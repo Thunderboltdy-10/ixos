@@ -295,7 +295,7 @@ export function V4FileScan() {
       onMouseEnter={handleMouseEnter}
       style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
     >
-      <section className="relative py-28 md:py-36 overflow-hidden" style={{ backgroundColor: '#0C0E10' }}>
+      <section className="relative py-28 md:py-36 overflow-hidden" style={{ backgroundColor: 'transparent' }}>
         <div className="relative z-10 max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
             {/* Left: copy */}

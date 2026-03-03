@@ -4,29 +4,32 @@ import { useEffect, useRef, useMemo } from "react";
 
 /* ─── File-type cluster definitions ────────────────────────────────────────── */
 
-const FILE_CLUSTERS = [
-  { id: 0, label: ".ts",   color: "#14B8A6", glowColor: "rgba(20,184,166,0.8)"  },
-  { id: 1, label: ".py",   color: "#7C5CFF", glowColor: "rgba(124,92,255,0.8)"  },
-  { id: 2, label: ".rs",   color: "#F6B94C", glowColor: "rgba(246,185,76,0.8)"  },
-  { id: 3, label: ".md",   color: "#2DD4BF", glowColor: "rgba(45,212,191,0.8)"  },
-  { id: 4, label: ".json", color: "#5EEAD4", glowColor: "rgba(94,234,212,0.8)"  },
+const CLUSTER_COLORS = [
+  { color: "#14B8A6", glowColor: "rgba(20,184,166,0.8)" },
+  { color: "#7C5CFF", glowColor: "rgba(124,92,255,0.8)" },
+  { color: "#F6B94C", glowColor: "rgba(246,185,76,0.8)" },
+  { color: "#2DD4BF", glowColor: "rgba(45,212,191,0.8)" },
+  { color: "#5EEAD4", glowColor: "rgba(94,234,212,0.8)" },
+];
+
+const RANDOM_LABELS = [
+  "auth/", "db/", "core/", "ui/", "api/", "tests/", "utils/", "config/", "scripts/", "docs/",
+  "models/", "routes/", "services/", "types/", "assets/"
 ];
 
 /* ─── Deterministic node layout ─────────────────────────────────────────────
-   90 nodes, grouped in 5 clusters. Each cluster has a center point in 3D space.
-   Node positions are offset from cluster center using index-based trig patterns.
-   No Math.random() — all values derived from node index.
+   We'll make it much bigger since it's the main hero background.
 ──────────────────────────────────────────────────────────────────────────── */
 
 const CLUSTER_CENTERS: [number, number, number][] = [
-  [-140, -90,  40],
-  [ 100, -80, -60],
-  [  30,  80,  80],
-  [-100,  70, -80],
-  [ 160,  20,  20],
+  [-220, -140, 80],
+  [200, -180, -120],
+  [50, 180, 160],
+  [-180, 120, -140],
+  [280, 40, 60],
 ];
 
-const NODES_PER_CLUSTER = 18; // 5 * 18 = 90 nodes
+const NODES_PER_CLUSTER = 24;
 
 interface NodeDef {
   x: number;
@@ -34,7 +37,8 @@ interface NodeDef {
   z: number;
   id: number;
   clusterId: number;
-  // Drift parameters — index-derived, deterministic
+  label: string;
+  // Drift parameters
   freqX: number;
   freqY: number;
   freqZ: number;
@@ -48,53 +52,54 @@ interface NodeDef {
 
 function buildNodes(): NodeDef[] {
   const nodes: NodeDef[] = [];
+  // Randomize labels per cluster
+  const shuffledLabels = [...RANDOM_LABELS].sort(() => Math.random() - 0.5);
+
   for (let c = 0; c < 5; c++) {
     const [cx, cy, cz] = CLUSTER_CENTERS[c];
+    const clusterLabel = shuffledLabels[c % shuffledLabels.length];
+
     for (let n = 0; n < NODES_PER_CLUSTER; n++) {
       const id = c * NODES_PER_CLUSTER + n;
-      // Spread nodes around cluster center using fibonacci-sphere-like pattern
-      const golden = 2.399963; // golden angle in radians
+      const golden = 2.399963;
       const theta = n * golden;
       const phi = Math.acos(1 - (2 * (n + 0.5)) / NODES_PER_CLUSTER);
-      const r = 48 + (id % 7) * 8; // radius 48..96
+      const r = 80 + (id % 11) * 12; // much larger radius
 
       const ox = Math.sin(phi) * Math.cos(theta) * r;
       const oy = Math.sin(phi) * Math.sin(theta) * r;
-      const oz = Math.cos(phi) * r * 0.6; // flatten Z
+      const oz = Math.cos(phi) * r * 0.6;
 
-      // Drift parameters — fully deterministic from index
-      const freqBase = 0.00035 + (id % 11) * 0.000018;
+      const freqBase = 0.00025 + (id % 11) * 0.000015;
       nodes.push({
         x: cx + ox,
         y: cy + oy,
         z: cz + oz,
         id,
         clusterId: c,
+        label: n === 0 ? clusterLabel : "", // label the center-ish node
         freqX: freqBase * (1 + (id % 3) * 0.3),
         freqY: freqBase * (1 + (id % 5) * 0.2),
         freqZ: freqBase * (1 + (id % 7) * 0.15),
         phaseX: (id * 1.618) % (Math.PI * 2),
         phaseY: (id * 2.618) % (Math.PI * 2),
         phaseZ: (id * 0.987) % (Math.PI * 2),
-        ampX: 6 + (id % 9) * 1.5,
-        ampY: 5 + (id % 7) * 1.5,
-        ampZ: 3 + (id % 5) * 1.0,
+        ampX: 12 + (id % 9) * 2.5,
+        ampY: 10 + (id % 7) * 2.5,
+        ampZ: 6 + (id % 5) * 1.5,
       });
     }
   }
   return nodes;
 }
 
-/* ─── Build edge pairs within each cluster ──────────────────────────────────
-   Connect nodes within the same cluster if their base distance is < threshold.
-   Also add inter-cluster connections to show relationships between file types.
-─────────────────────────────────────────────────────────────────────────── */
+/* ─── Build edges forming a graph ─────────────────────────────────────────── */
 function buildEdges(nodes: NodeDef[]): [number, number, number, boolean][] {
-  const edges: [number, number, number, boolean][] = []; // [nodeA, nodeB, clusterId, isInterCluster]
-  const INTRA_THRESHOLD = 90;
-  const INTER_THRESHOLD = 140; // Larger threshold for inter-cluster
-  
-  // Within cluster connections
+  const edges: [number, number, number, boolean][] = [];
+  const INTRA_THRESHOLD = 150;
+  const INTER_THRESHOLD = 260;
+
+  // Within cluster
   for (let c = 0; c < 5; c++) {
     const start = c * NODES_PER_CLUSTER;
     const end = start + NODES_PER_CLUSTER;
@@ -110,24 +115,22 @@ function buildEdges(nodes: NodeDef[]): [number, number, number, boolean][] {
       }
     }
   }
-  
-  // Inter-cluster connections (between different clusters)
-  // This creates a more web-like structure showing relationships
+
+  // Inter-cluster
   for (let c1 = 0; c1 < 5; c1++) {
     for (let c2 = c1 + 1; c2 < 5; c2++) {
       const start1 = c1 * NODES_PER_CLUSTER;
       const end1 = start1 + NODES_PER_CLUSTER;
       const start2 = c2 * NODES_PER_CLUSTER;
-      
-      // Connect a few representative nodes between clusters
-      for (let i = start1; i < end1; i += 3) { // Every 3rd node
-        for (let j = start2; j < start2 + NODES_PER_CLUSTER; j += 3) {
+
+      for (let i = start1; i < end1; i += 4) {
+        for (let j = start2; j < start2 + NODES_PER_CLUSTER; j += 4) {
           const dx = nodes[i].x - nodes[j].x;
           const dy = nodes[i].y - nodes[j].y;
           const dz = nodes[i].z - nodes[j].z;
           const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
           if (dist < INTER_THRESHOLD) {
-            edges.push([i, j, -1, true]); // -1 for inter-cluster
+            edges.push([i, j, -1, true]);
           }
         }
       }
@@ -147,13 +150,11 @@ function project(
   cx: number,
   cy: number
 ): { sx: number; sy: number; scale: number } {
-  // Rotate Y
   const cosY = Math.cos(rotY);
   const sinY = Math.sin(rotY);
   const rx = x * cosY + z * sinY;
   const rz = -x * sinY + z * cosY;
 
-  // Rotate X
   const cosX = Math.cos(rotX);
   const sinX = Math.sin(rotX);
   const ry = y * cosX - rz * sinX;
@@ -168,65 +169,96 @@ function project(
   };
 }
 
-/* ─── Path tracer particle ─────────────────────────────────────────────── */
-interface PathTracer {
-  fromNode: number;
-  toNode: number;
-  progress: number; // 0-1
-  speed: number;
-  isInterCluster: boolean;
-}
+/* ─── Find continuous paths using BFS ────────────────────────────────────── */
+function findPath(nodes: NodeDef[], edges: [number, number, number, boolean][], startNode: number, minLength: number, targetCluster: number): number[] {
+  const currentCluster = nodes[startNode].clusterId;
+  const adj = new Map<number, number[]>();
 
-// Precompute random path connections between clusters
-function buildPathConnections(nodes: NodeDef[]): [number, number, boolean][] {
-  const paths: [number, number, boolean][] = [];
-  
-  // Same-cluster paths (intra)
-  for (let c = 0; c < 5; c++) {
-    const start = c * NODES_PER_CLUSTER;
-    const end = start + NODES_PER_CLUSTER;
-    // Pick 2-3 random connections within each cluster
-    for (let i = 0; i < 3; i++) {
-      const a = start + ((c * 7 + i * 5) % NODES_PER_CLUSTER);
-      const b = start + ((c * 11 + i * 7) % NODES_PER_CLUSTER);
-      if (a !== b) paths.push([a, b, false]);
+  // Build adjacency
+  for (const [a, b, _cid, isInter] of edges) {
+    if (isInter) {
+      if (targetCluster === -1) continue;
+      const aCluster = nodes[a].clusterId;
+      const bCluster = nodes[b].clusterId;
+      const connectsToTarget = (aCluster === currentCluster && bCluster === targetCluster) || (bCluster === currentCluster && aCluster === targetCluster);
+      if (!connectsToTarget) continue;
+    }
+    if (!adj.has(a)) adj.set(a, []);
+    if (!adj.has(b)) adj.set(b, []);
+    adj.get(a)!.push(b);
+    adj.get(b)!.push(a);
+  }
+
+  // If we need to connect to targetCluster, find a bridge edge
+  let bridgeNode = -1;
+  let nextNode = -1;
+  if (targetCluster !== -1) {
+    for (const [a, b, _cid, isInter] of edges) {
+      if (isInter) {
+        if (nodes[a].clusterId === currentCluster && nodes[b].clusterId === targetCluster) { bridgeNode = a; nextNode = b; break; }
+        if (nodes[b].clusterId === currentCluster && nodes[a].clusterId === targetCluster) { bridgeNode = b; nextNode = a; break; }
+      }
     }
   }
-  
-  // Inter-cluster paths
-  const clusterPairs = [[0,1], [1,2], [2,3], [3,4], [4,0], [0,2], [1,3], [2,4]];
-  for (const [c1, c2] of clusterPairs) {
-    const a = c1 * NODES_PER_CLUSTER + ((c1 * 3) % NODES_PER_CLUSTER);
-    const b = c2 * NODES_PER_CLUSTER + ((c2 * 7) % NODES_PER_CLUSTER);
-    paths.push([a, b, true]);
+
+  const path: number[] = [startNode];
+  const visited = new Set<number>();
+  visited.add(startNode);
+  let curr = startNode;
+
+  // Simple random walk
+  for (let i = 0; i < minLength; i++) {
+    // If we have a bridge destination, try to step toward it or literally just jump to it eventually
+    if (bridgeNode !== -1 && i === Math.floor(minLength / 2)) {
+      curr = bridgeNode;
+      path.push(curr);
+      visited.add(curr);
+      path.push(nextNode);
+      curr = nextNode;
+      visited.add(curr);
+      bridgeNode = -1; // cross the bridge
+      continue;
+    }
+
+    const neighbors = adj.get(curr) || [];
+    const unvisited = neighbors.filter(n => !visited.has(n));
+    if (unvisited.length === 0) break;
+
+    const next = unvisited[Math.floor(Math.random() * unvisited.length)];
+    visited.add(next);
+    path.push(next);
+    curr = next;
   }
-  
-  return paths;
+  return path;
 }
 
-/* ─── Main Component ─────────────────────────────────────────────────────── */
+interface PathTracer {
+  path: number[];
+  currentIndex: number;
+  progress: number; // 0-1 between current and next
+  speed: number;
+}
+
 export function CSSLattice() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const tRef = useRef<number>(0);
+
   const matchClusterRef = useRef<number>(-1);
-  const matchProgressRef = useRef<number>(0); // 0=off, 0-1=fade-in, -1=fading out
+  const matchProgressRef = useRef<number>(0);
   const matchTRef = useRef<number>(0);
+
   const pathTracersRef = useRef<PathTracer[]>([]);
-  const tracePhaseRef = useRef<number>(0); // 0=no trace, 1=intra, 2=inter
 
   const nodes = useMemo(() => buildNodes(), []);
   const edges = useMemo(() => buildEdges(nodes), [nodes]);
-  const pathConnections = useMemo(() => buildPathConnections(nodes), [nodes]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // DPI-aware sizing
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
@@ -238,68 +270,48 @@ export function CSSLattice() {
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
 
-    // ── Match wave scheduler ─────────────────────────────────────────────
     let matchCluster = -1;
-    let matchT = 0; // time elapsed within match cycle
-    const MATCH_PERIOD = 3500; // ms
+    const MATCH_PERIOD = 4000;
 
     const matchInterval = setInterval(() => {
-      // Advance to next cluster in round-robin
       matchCluster = (matchCluster + 1) % 5;
       matchClusterRef.current = matchCluster;
       matchProgressRef.current = 0;
       matchTRef.current = 0;
+
+      // Spawn exactly two path tracers
+      const newTracers: PathTracer[] = [];
+      const targetCluster = (matchCluster + 1) % 5;
+      const startBase = matchCluster * NODES_PER_CLUSTER;
+
+      // Path 1: Head to the next cluster
+      const startNode1 = startBase + Math.floor(Math.random() * NODES_PER_CLUSTER);
+      const path1 = findPath(nodes, edges, startNode1, 8 + Math.floor(Math.random() * 4), targetCluster);
+      if (path1.length > 1) {
+        newTracers.push({
+          path: path1,
+          currentIndex: 0,
+          progress: 0,
+          speed: 0.0015 + Math.random() * 0.0005,
+        });
+      }
+
+      // Path 2: Stay inside current cluster
+      const startNode2 = startBase + Math.floor(Math.random() * NODES_PER_CLUSTER);
+      const path2 = findPath(nodes, edges, startNode2, 6 + Math.floor(Math.random() * 4), -1);
+      if (path2.length > 1) {
+        newTracers.push({
+          path: path2,
+          currentIndex: 0,
+          progress: 0,
+          speed: 0.0015 + Math.random() * 0.0005,
+        });
+      }
+
+      // Overwrite the array to discard previous paths
+      pathTracersRef.current = newTracers;
     }, MATCH_PERIOD);
 
-    // ── Path tracer scheduler ─────────────────────────────────────────────
-    let tracePhase = 0;
-    let traceT = 0;
-    const TRACE_PERIOD = 4500; // ms
-    
-    const traceInterval = setInterval(() => {
-      tracePhase = (tracePhase + 1) % 3; // 0=off, 1=intra, 2=inter
-      tracePhaseRef.current = tracePhase;
-      traceT = 0;
-      
-      // Spawn new tracers based on phase
-      pathTracersRef.current = [];
-      if (tracePhase === 1) {
-        // Intra-cluster: 3-4 tracers within same cluster
-        for (let i = 0; i < 4; i++) {
-          const cluster = (i + matchCluster) % 5;
-          const start = cluster * NODES_PER_CLUSTER;
-          const pathsInCluster = pathConnections.filter(([a, b, inter]) => !inter && 
-            (a >= start && a < start + NODES_PER_CLUSTER));
-          if (pathsInCluster.length > 0) {
-            const [from, to] = pathsInCluster[i % pathsInCluster.length];
-            pathTracersRef.current.push({
-              fromNode: from,
-              toNode: to,
-              progress: 0,
-              speed: 0.0008 + Math.random() * 0.0004,
-              isInterCluster: false,
-            });
-          }
-        }
-      } else if (tracePhase === 2) {
-        // Inter-cluster: 2-3 tracers between clusters
-        const interPaths = pathConnections.filter(([,,inter]) => inter);
-        for (let i = 0; i < 3; i++) {
-          if (interPaths.length > 0) {
-            const [from, to] = interPaths[i % interPaths.length];
-            pathTracersRef.current.push({
-              fromNode: from,
-              toNode: to,
-              progress: 0,
-              speed: 0.0006 + Math.random() * 0.0003,
-              isInterCluster: true,
-            });
-          }
-        }
-      }
-    }, TRACE_PERIOD);
-
-    // ── RAF render loop ──────────────────────────────────────────────────
     let lastTime = performance.now();
 
     const tick = (now: number) => {
@@ -308,12 +320,11 @@ export function CSSLattice() {
       tRef.current += dt;
       const t = tRef.current;
 
-      // Update match progress
       if (matchClusterRef.current >= 0) {
         matchTRef.current += dt;
-        const fadeIn = 400;
-        const hold = 800;
-        const fadeOut = 600;
+        const fadeIn = 600;
+        const hold = 1200;
+        const fadeOut = 800;
         const total = fadeIn + hold + fadeOut;
         const mt = matchTRef.current;
         if (mt < fadeIn) {
@@ -331,21 +342,18 @@ export function CSSLattice() {
       const W = canvas.getBoundingClientRect().width;
       const H = canvas.getBoundingClientRect().height;
       const cx = W / 2;
-      const cy = H / 2 - 50;
-      const fov = 600;
+      const cy = H / 2;
+      const fov = 800;
 
-      // Slow global rotation
-      const rotY = t * 0.00025;
-      const rotX = 0.22 + Math.sin(t * 0.000082) * 0.08;
+      const rotY = t * 0.00015;
+      const rotX = 0.15 + Math.sin(t * 0.00005) * 0.05;
 
-      // Cluster-level drift phases
       const clusterPhases = CLUSTER_CENTERS.map((_, ci) => ({
-        ox: Math.sin(t * 0.000095 + ci * 1.3) * 18,
-        oy: Math.cos(t * 0.000078 + ci * 0.9) * 14,
-        oz: Math.sin(t * 0.000061 + ci * 2.1) * 10,
+        ox: Math.sin(t * 0.00008 + ci * 1.3) * 25,
+        oy: Math.cos(t * 0.00006 + ci * 0.9) * 20,
+        oz: Math.sin(t * 0.00004 + ci * 2.1) * 15,
       }));
 
-      // Compute live positions for all nodes
       const pos = nodes.map((nd) => {
         const cp = clusterPhases[nd.clusterId];
         const lx = nd.x + Math.sin(t * nd.freqX + nd.phaseX) * nd.ampX + cp.ox;
@@ -354,31 +362,25 @@ export function CSSLattice() {
         return project(lx, ly, lz, rotY, rotX, fov, cx, cy);
       });
 
-      // ── Clear ──────────────────────────────────────────────────────────
       ctx.clearRect(0, 0, W, H);
 
       const matchC = matchClusterRef.current;
       const matchP = matchProgressRef.current;
 
-      // ── Draw edges ─────────────────────────────────────────────────────
+      // Draw edges
       for (const edge of edges) {
         const [a, b, clusterId, isInter] = edge;
         const pa = pos[a];
         const pb = pos[b];
         const cid = isInter ? -1 : clusterId;
-        const cluster = FILE_CLUSTERS[Math.max(0, cid)];
+        const cluster = CLUSTER_COLORS[Math.max(0, cid)];
         const isMatch = !isInter && cid === matchC && matchP > 0;
 
-        const baseAlpha = isInter ? 0.04 + pa.scale * 0.06 : 0.08 + pa.scale * 0.12;
+        const baseAlpha = isInter ? 0.02 + pa.scale * 0.04 : 0.06 + pa.scale * 0.08;
 
         let strokeColor: string;
-        if (isMatch) {
-          // Interpolate from teal to amber
-          const t2 = matchP;
-          strokeColor = `rgba(246,185,76,${(baseAlpha * 0.5 + t2 * 0.55).toFixed(3)})`;
-        } else if (isInter) {
-          // Inter-cluster connections are more subtle, purple-tinted
-          strokeColor = `rgba(139,92,246,${baseAlpha.toFixed(3)})`;
+        if (isInter) {
+          strokeColor = `rgba(139,92,246,${(baseAlpha * 0.7).toFixed(3)})`;
         } else {
           const [r, g, b2] = parseHex(cluster.color);
           strokeColor = `rgba(${r},${g},${b2},${baseAlpha.toFixed(3)})`;
@@ -388,127 +390,127 @@ export function CSSLattice() {
         ctx.moveTo(pa.sx, pa.sy);
         ctx.lineTo(pb.sx, pb.sy);
         ctx.strokeStyle = strokeColor;
-        ctx.lineWidth = isMatch ? 1.0 + matchP * 0.5 : isInter ? 0.3 : 0.6;
+        ctx.lineWidth = isInter ? 0.4 : 0.8;
         ctx.stroke();
       }
 
-      // ── Draw path tracers ─────────────────────────────────────────────────
-      for (const tracer of pathTracersRef.current) {
+      // Draw path tracers (continuous line)
+      for (let i = pathTracersRef.current.length - 1; i >= 0; i--) {
+        const tracer = pathTracersRef.current[i];
+
+        // Advance
         tracer.progress += tracer.speed * dt;
-        
-        if (tracer.progress >= 1) {
-          tracer.progress = 0; // Loop the tracer
+        while (tracer.progress >= 1 && tracer.currentIndex < tracer.path.length - 1) {
+          tracer.progress -= 1;
+          tracer.currentIndex++;
         }
-        
-        const pa = pos[tracer.fromNode];
-        const pb = pos[tracer.toNode];
-        
-        // Draw the full path line (faint)
+
+        if (tracer.currentIndex >= tracer.path.length - 1) {
+          pathTracersRef.current.splice(i, 1);
+          continue;
+        }
+
+        const currNodeIdx = tracer.path[tracer.currentIndex];
+        const nextNodeIdx = tracer.path[tracer.currentIndex + 1];
+
+        const pCurr = pos[currNodeIdx];
+        const pNext = pos[nextNodeIdx];
+
+        const interpX = pCurr.sx + (pNext.sx - pCurr.sx) * tracer.progress;
+        const interpY = pCurr.sy + (pNext.sy - pCurr.sy) * tracer.progress;
+
+        // Draw continuous tail
         ctx.beginPath();
-        ctx.moveTo(pa.sx, pa.sy);
-        ctx.lineTo(pb.sx, pb.sy);
-        ctx.strokeStyle = 'rgba(246,185,76,0.15)';
-        ctx.lineWidth = 1;
+        let tailAlpha = 1;
+        // Start from current segment
+        ctx.moveTo(interpX, interpY);
+        ctx.lineTo(pCurr.sx, pCurr.sy);
+
+        // Go back up to 3 previous segments
+        const tailLength = Math.min(tracer.currentIndex, 3);
+        let lastPx = pCurr.sx, lastPy = pCurr.sy;
+        for (let j = 0; j < tailLength; j++) {
+          const prevIdx = tracer.path[tracer.currentIndex - j - 1];
+          const pPrev = pos[prevIdx];
+          ctx.lineTo(pPrev.sx, pPrev.sy);
+          lastPx = pPrev.sx; lastPy = pPrev.sy;
+        }
+
+        const grad = ctx.createLinearGradient(interpX, interpY, lastPx, lastPy);
+        grad.addColorStop(0, `rgba(246,185,76, 0.9)`);
+        grad.addColorStop(1, `rgba(246,185,76, 0)`);
+
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
-        
-        // Interpolate position along the path
-        const interpX = pa.sx + (pb.sx - pa.sx) * tracer.progress;
-        const interpY = pa.sy + (pb.sy - pa.sy) * tracer.progress;
-        
-        // Calculate particle size based on scale
-        const scale = (pa.scale + pb.scale) / 2;
-        const r = 2 + scale * 2;
-        
-        // Draw tracer particle with glow
-        const glowSize = r * 4;
-        const grad = ctx.createRadialGradient(interpX, interpY, 0, interpX, interpY, glowSize);
-        grad.addColorStop(0, 'rgba(246,185,76,0.8)');
-        grad.addColorStop(0.3, 'rgba(246,185,76,0.3)');
-        grad.addColorStop(1, 'rgba(246,185,76,0)');
-        
+
+        // Glowing head
+        const scale = (pCurr.scale + pNext.scale) / 2;
+        const r = 3 + scale * 3;
+
+        const headGrad = ctx.createRadialGradient(interpX, interpY, 0, interpX, interpY, r * 4);
+        headGrad.addColorStop(0, 'rgba(246,185,76,1)');
+        headGrad.addColorStop(0.4, 'rgba(246,185,76,0.4)');
+        headGrad.addColorStop(1, 'rgba(246,185,76,0)');
+
         ctx.beginPath();
-        ctx.arc(interpX, interpY, glowSize, 0, Math.PI * 2);
-        ctx.fillStyle = grad;
+        ctx.arc(interpX, interpY, r * 4, 0, Math.PI * 2);
+        ctx.fillStyle = headGrad;
         ctx.fill();
-        
-        // Core bright point
+
         ctx.beginPath();
         ctx.arc(interpX, interpY, r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(246,185,76,1)';
+        ctx.fillStyle = '#fff';
         ctx.fill();
-        
-        // Draw trail (line from start to current position)
-        ctx.beginPath();
-        ctx.moveTo(pa.sx, pa.sy);
-        ctx.lineTo(interpX, interpY);
-        ctx.strokeStyle = `rgba(246,185,76,${0.3 + tracer.progress * 0.3})`;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
       }
 
-      // ── Draw nodes ─────────────────────────────────────────────────────
+      // Draw nodes
       for (const nd of nodes) {
         const p = pos[nd.id];
-        const cluster = FILE_CLUSTERS[nd.clusterId];
+        const cluster = CLUSTER_COLORS[nd.clusterId];
         const isMatch = nd.clusterId === matchC && matchP > 0;
 
-        const baseR = 1.8 + p.scale * 1.6;
-        const r = isMatch ? baseR + matchP * 2.2 : baseR;
+        const baseR = 2.2 + p.scale * 2.0;
+        const r = isMatch ? baseR + matchP * 3.0 : baseR;
 
-        if (isMatch && matchP > 0.2) {
-          // Glow halo
-          const grad = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, r * 3.5);
-          grad.addColorStop(0, `rgba(246,185,76,${(matchP * 0.35).toFixed(3)})`);
+        if (isMatch && matchP > 0.1) {
+          const grad = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, r * 4.0);
+          grad.addColorStop(0, `rgba(246,185,76,${(matchP * 0.4).toFixed(3)})`);
           grad.addColorStop(1, "rgba(246,185,76,0)");
           ctx.beginPath();
-          ctx.arc(p.sx, p.sy, r * 3.5, 0, Math.PI * 2);
+          ctx.arc(p.sx, p.sy, r * 4.0, 0, Math.PI * 2);
           ctx.fillStyle = grad;
           ctx.fill();
-        } else if (p.scale > 0.85) {
-          // Subtle teal glow for close nodes
-          const grad = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, r * 2.5);
+        } else if (p.scale > 0.9) {
+          const grad = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, r * 3.0);
           const [cr, cg, cb] = parseHex(cluster.color);
-          grad.addColorStop(0, `rgba(${cr},${cg},${cb},0.18)`);
+          grad.addColorStop(0, `rgba(${cr},${cg},${cb},0.25)`);
           grad.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
           ctx.beginPath();
-          ctx.arc(p.sx, p.sy, r * 2.5, 0, Math.PI * 2);
+          ctx.arc(p.sx, p.sy, r * 3.0, 0, Math.PI * 2);
           ctx.fillStyle = grad;
           ctx.fill();
         }
 
-        // Core dot
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, r, 0, Math.PI * 2);
         if (isMatch) {
-          ctx.fillStyle = `rgba(246,185,76,${(0.6 + matchP * 0.4).toFixed(3)})`;
+          ctx.fillStyle = `rgba(246,185,76,${(0.7 + matchP * 0.3).toFixed(3)})`;
         } else {
           const [cr, cg, cb] = parseHex(cluster.color);
-          const alpha = 0.25 + p.scale * 0.45;
+          const alpha = 0.3 + p.scale * 0.5;
           ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha.toFixed(3)})`;
         }
         ctx.fill();
-      }
 
-      // ── Cluster labels (file type tags) ─────────────────────────────────
-      // Draw a small label near the centroid of each cluster
-      for (let c = 0; c < 5; c++) {
-        const clusterNodes = nodes.filter((n) => n.clusterId === c);
-        let sumX = 0, sumY = 0;
-        for (const n of clusterNodes) {
-          sumX += pos[n.id].sx;
-          sumY += pos[n.id].sy;
+        if (nd.label) {
+          const alpha = isMatch ? 0.8 + matchP * 0.2 : 0.4;
+          const [r2, g2, b3] = parseHex(cluster.color);
+          ctx.font = "bold 13px 'Geist Mono', monospace";
+          ctx.textAlign = "center";
+          ctx.fillStyle = `rgba(${r2},${g2},${b3},${alpha.toFixed(3)})`;
+          ctx.fillText(nd.label, p.sx, p.sy - 8 - r);
         }
-        const lx = sumX / clusterNodes.length;
-        const ly = sumY / clusterNodes.length;
-        const cl = FILE_CLUSTERS[c];
-        const isMatch = c === matchC && matchP > 0;
-        const alpha = isMatch ? 0.6 + matchP * 0.4 : 0.2;
-        const [r2, g2, b3] = parseHex(cl.color);
-
-        ctx.font = "bold 9px 'Geist Mono', monospace";
-        ctx.textAlign = "center";
-        ctx.fillStyle = `rgba(${r2},${g2},${b3},${alpha.toFixed(3)})`;
-        ctx.fillText(cl.label, lx, ly - 2);
       }
 
       rafRef.current = requestAnimationFrame(tick);
@@ -519,34 +521,27 @@ export function CSSLattice() {
     return () => {
       cancelAnimationFrame(rafRef.current);
       clearInterval(matchInterval);
-      clearInterval(traceInterval);
       ro.disconnect();
     };
-  }, [nodes, edges, pathConnections]);
+  }, [nodes, edges]);
 
   return (
-    <div
-      className="relative w-full"
-      style={{ height: "600px" }}
-    >
-      {/* Radial fog vignette */}
+    <div className="relative w-full h-full">
       <div
         className="absolute inset-0 pointer-events-none z-10"
         style={{
           background:
-            "radial-gradient(ellipse 80% 70% at 50% 50%, transparent 40%, #080c14 85%)",
+            "radial-gradient(ellipse 90% 90% at 50% 50%, transparent 30%, #080c14 85%)",
         }}
       />
-      {/* Bottom fade */}
       <div
-        className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none z-10"
+        className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none z-10"
         style={{
           background: "linear-gradient(to top, #080c14 0%, transparent 100%)",
         }}
       />
-      {/* Top fade */}
       <div
-        className="absolute top-0 left-0 right-0 h-20 pointer-events-none z-10"
+        className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-10"
         style={{
           background: "linear-gradient(to bottom, #080c14 0%, transparent 100%)",
         }}
@@ -564,7 +559,6 @@ export function CSSLattice() {
   );
 }
 
-/* ─── Hex color parser (cached) ─────────────────────────────────────────── */
 const hexCache: Record<string, [number, number, number]> = {};
 
 function parseHex(hex: string): [number, number, number] {

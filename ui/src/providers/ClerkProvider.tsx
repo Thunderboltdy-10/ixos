@@ -4,7 +4,7 @@ interface IxosClerkProviderProps {
   children: React.ReactNode;
 }
 
-const publishableKey = (import.meta as any).env?.VITE_CLERK_PUBLISHABLE_KEY;
+const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 export function IxosClerkProvider({ children }: IxosClerkProviderProps) {
   if (!publishableKey) {

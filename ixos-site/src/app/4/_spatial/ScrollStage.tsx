@@ -2,29 +2,59 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { VoidPhase } from './VoidPhase'
 import { InsidePhase } from './InsidePhase'
-import { EnteringText } from './EnteringText'
+import { V4Nav } from '../../5/_v4/V4Nav'
 
 type Phase = 'void' | 'zoom' | 'inside'
 
-// Precomputed deterministic star attributes — no Math.random() in render
-const STARS = Array.from({ length: 80 }, (_, i) => ({
-  width: ((i * 137.5) % 7) > 5.95 ? 2 : 1,
-  height: ((i * 137.5) % 7) > 5.95 ? 2 : 1,
-  left: `${(i * 137.5) % 100}%`,
-  top: `${(i * 97.3 + 13) % 100}%`,
-  baseOpacity: 0.04 + ((i * 31.7) % 100) / 100 * 0.15,
-}))
+// Precomputed deterministic particle attributes — squared style
+const STARS = Array.from({ length: 45 }, (_, i) => {
+  const isLarge = ((i * 137.5) % 10) > 7;
+  const size = isLarge ? 12 : 5;
+  return {
+    width: size,
+    height: size,
+    left: `${(i * 137.5) % 100}%`,
+    top: `${(i * 97.3 + 13) % 100}%`,
+    baseOpacity: 0.12 + ((i * 31.7) % 100) / 100 * 0.15,
+    borderRadius: 1, // subtle rounding for the "pixels"
+  };
+});
 
 export function ScrollStage() {
   const [scrollProgress, setScrollProgress] = useState(0)
   const [phase, setPhase] = useState<Phase>('void')
-  // stars is a module-level constant but typed here for IDE clarity
+  const [enterProgress, setEnterProgress] = useState(0) // 0 to 1 time-based
   const stars = useMemo(() => STARS, [])
   const rafRef = useRef<number>(0)
   const pendingScrollRef = useRef<number | null>(null)
 
+  // Time-driven enter animation
   useEffect(() => {
-    // Use RAF-batched scroll updates to avoid layout thrashing
+    const startTime = performance.now()
+    const voidDuration = 400
+    const zoomDuration = 1200
+
+    const tick = (now: number) => {
+      const elapsed = now - startTime
+      if (elapsed < voidDuration) {
+        setPhase('void')
+        setEnterProgress(elapsed / voidDuration * 0.2) // 0 to 0.2
+      } else if (elapsed < voidDuration + zoomDuration) {
+        setPhase('zoom')
+        setEnterProgress(0.2 + ((elapsed - voidDuration) / zoomDuration) * 0.8) // 0.2 to 1.0
+      } else {
+        setPhase('inside')
+        setEnterProgress(1)
+        return // done
+      }
+      rafRef.current = requestAnimationFrame(tick)
+    }
+    rafRef.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [])
+
+  // Scroll-driven progress for InsidePhase
+  useEffect(() => {
     const onScroll = () => {
       pendingScrollRef.current = window.scrollY
     }
@@ -36,13 +66,7 @@ export function ScrollStage() {
 
         const maxScroll = document.documentElement.scrollHeight - window.innerHeight
         const progress = maxScroll > 0 ? Math.min(scrollY / maxScroll, 1) : 0
-
         setScrollProgress(progress)
-        setPhase(
-          progress < 0.08 ? 'void'
-          : progress < 0.20 ? 'zoom'
-          : 'inside'
-        )
       }
       rafRef.current = requestAnimationFrame(tick)
     }
@@ -56,12 +80,9 @@ export function ScrollStage() {
     }
   }, [])
 
-  // Showing entering text between 12% and 18% of scroll
-  const showEntering = scrollProgress > 0.12 && scrollProgress < 0.18
-
   return (
-    <div className="relative" style={{ minHeight: '250vh' }}>
-
+    <div className="relative bg-[#04050A]" style={{ minHeight: '400vh' }}>
+      <V4Nav />
       {/* ── Background: Deep void nebula ── */}
       <div
         className="fixed inset-0 z-0 pointer-events-none"
@@ -76,19 +97,31 @@ export function ScrollStage() {
         }}
       />
 
-      {/* ── Star field (deterministic, no flicker on scroll) ── */}
+      {/* ── Hologram Projector Effect ── */}
+      <div
+        className="fixed bottom-[-10vh] left-1/2 -translate-x-1/2 w-[100vw] h-[40vh] z-10 pointer-events-none transition-opacity duration-1000"
+        style={{
+          opacity: phase === 'inside' ? 1 : 0,
+          background: 'radial-gradient(ellipse at bottom, rgba(45,212,191,0.15) 0%, transparent 70%)',
+          borderBottom: '2px solid rgba(45,212,191,0.5)',
+          filter: 'blur(30px)',
+        }}
+      />
+
+      {/* ── Star field (deterministic, fades out during enter) ── */}
       <div className="fixed inset-0 z-0 pointer-events-none" aria-hidden>
         {stars.map((star, i) => (
           <div
             key={i}
-            className="absolute rounded-full"
+            className="absolute"
             style={{
               width: star.width,
               height: star.height,
               left: star.left,
               top: star.top,
               background: `rgba(255,255,255,${star.baseOpacity.toFixed(3)})`,
-              opacity: Math.max(0, 1 - scrollProgress * 1.5),
+              opacity: Math.max(0, 1 - enterProgress * 1.5),
+              borderRadius: star.borderRadius,
             }}
           />
         ))}
@@ -98,55 +131,29 @@ export function ScrollStage() {
       <div
         className="fixed top-0 left-0 z-50 pointer-events-none"
         style={{
-          height: 1,
+          height: 2,
           width: `${scrollProgress * 100}%`,
           background: 'linear-gradient(90deg, rgba(124,92,255,0.6), rgba(246,185,76,0.6))',
           transition: 'width 0.1s linear',
-          boxShadow: '0 0 8px rgba(124,92,255,0.4)',
+          boxShadow: '0 0 12px rgba(124,92,255,0.6)',
+          opacity: phase === 'inside' ? 1 : 0,
         }}
       />
 
-      {/* ── Phase label (void phase only) ── */}
-      {scrollProgress < 0.15 && (
-        <div
-          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 pointer-events-none"
-          style={{
-            opacity: Math.max(0, 1 - scrollProgress * 6),
-            transition: 'opacity 0.3s ease',
-          }}
-        >
-          <div className="flex flex-col items-center gap-2">
-            <span
-              className="font-mono uppercase"
-              style={{ fontSize: 9, letterSpacing: '0.4em', color: 'rgba(255,255,255,0.2)' }}
-            >
-              scroll to enter
-            </span>
-            <div className="flex flex-col gap-1 items-center">
-              <div className="w-px h-6" style={{ background: 'rgba(255,255,255,0.15)' }} />
-              <div
-                className="w-1 h-1 rounded-full"
-                style={{ background: 'rgba(124,92,255,0.6)' }}
-              />
-            </div>
-          </div>
+      {/* ── Void + Zoom phase: sticky viewport ── */}
+      {phase !== 'inside' && (
+        <div className="fixed inset-0 z-10 pointer-events-none">
+          <VoidPhase enterProgress={enterProgress} phase={phase} />
         </div>
       )}
 
-      {/* ── Void + Zoom phase: sticky viewport ── */}
-      <div className="sticky top-0 h-screen z-10">
-        <VoidPhase scrollProgress={scrollProgress} phase={phase} />
-        <EnteringText visible={showEntering} />
-      </div>
-
-      {/* ── Inside phase: layered below, fades in at 20% ── */}
+      {/* ── Inside phase: layered below, fades in fully at phase inside ── */}
       <div
         className="relative z-20"
         style={{
-          // Overlap with the sticky section so transition is seamless
-          marginTop: '-100vh',
-          // Only becomes interactive and visible at/after 20%
-          pointerEvents: scrollProgress >= 0.20 ? 'auto' : 'none',
+          opacity: enterProgress > 0.7 ? (enterProgress - 0.7) * 3.33 : 0, // fade in at the very end
+          transform: `scale(${enterProgress > 0.7 ? 0.9 + ((enterProgress - 0.7) * 3.33) * 0.1 : 0.9})`, // scale from 0.9 to 1.0
+          pointerEvents: phase === 'inside' ? 'auto' : 'none',
         }}
       >
         <InsidePhase scrollProgress={scrollProgress} />

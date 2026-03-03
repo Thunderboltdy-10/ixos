@@ -17,7 +17,8 @@
  *   <LandingCore connector={SearchResultStackConnector} />  // /5 base
  */
 
-import { useState, useEffect, useRef } from "react";
+import * as React from "react";
+const { useState, useEffect, useRef } = React;
 import { AnimatePresence, motion } from "framer-motion";
 
 // V4 visual shell — from /5's implementation (already independent of /4)
@@ -53,55 +54,87 @@ import { SECTION_MAP } from "./SECTION_MAP";
 
 // ─── Section wrapper — registers with context + triggers ripple on entry ──────
 
+interface TrackedResultNodeProps {
+  index: number;
+  sectionId: string;
+  rank: string;
+  file: string;
+  tone: any;
+  title: string;
+  children: React.ReactNode;
+  isRevealed?: boolean;
+}
+
 function TrackedResultNode({
+  index,
   sectionId,
   rank,
   file,
   tone,
   title,
   children,
-}: {
-  sectionId: string;
-  rank: string;
-  file: string;
-  tone: "cyan" | "amber" | "violet";
-  title: string;
-  children: React.ReactNode;
-}) {
-  const { registerSection, setSectionInView, pulseForSection } = useLandingContext();
+  isRevealed = false,
+}: TrackedResultNodeProps) {
+  const { registerSection, setSectionInView, pulseForSection, maxRevealedIndex, revealNextSection } = useLandingContext();
   const ref = useRef<HTMLDivElement>(null);
   const section = SECTION_MAP.find((s) => s.id === sectionId);
   const [isVisible, setIsVisible] = useState(false);
 
+  // Registration is a one-time stable operation per ID
   useEffect(() => {
     if (!ref.current) return;
     registerSection(sectionId, ref.current);
+  }, [sectionId, registerSection]);
+
+  // Observer logic depends on current reveal state
+  useEffect(() => {
+    if (!ref.current) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIsVisible(entry.isIntersecting);
         setSectionInView(sectionId, entry.isIntersecting);
+
         if (entry.isIntersecting && section) {
           pulseForSection(section);
+
+          // If this is the next section to reveal (the divider), reveal it!
+          // We trigger when it's entering from bottom
+          if (index === maxRevealedIndex + 1) {
+            revealNextSection();
+          }
         }
       },
-      { threshold: 0.1, rootMargin: "-5% 0px -10% 0px" }
+      { threshold: 0.2, rootMargin: "0px 0px -10% 0px" }
     );
 
     observer.observe(ref.current);
     return () => observer.disconnect();
-  }, [sectionId, registerSection, setSectionInView, pulseForSection, section]);
+  }, [sectionId, setSectionInView, pulseForSection, section, index, maxRevealedIndex, revealNextSection]);
 
+  // Don't render if it's too far down the pipeline
+  if (index > maxRevealedIndex + 1) return null;
+
+  // IMPORTANT: The section only EXPANDS if its index is <= maxRevealedIndex
+  // If index === maxRevealedIndex + 1, it's the "waiting" section (only divider shown)
+  const expanded = index <= maxRevealedIndex;
   return (
     <div
       ref={ref}
       data-section-id={sectionId}
       style={{
-        opacity: isVisible ? 1 : 0.3,
-        transition: 'opacity 0.5s ease',
+        opacity: isVisible ? 1 : (expanded ? 1 : 0.6),
+        transition: 'opacity 0.8s ease-in-out',
       }}
     >
-      <V4ResultNode sectionId={sectionId} rank={rank} file={file} tone={tone} title={title}>
+      <V4ResultNode
+        rank={rank}
+        file={file}
+        tone={tone}
+        title={title}
+        sectionId={sectionId}
+        isRevealed={expanded}
+      >
         {children}
       </V4ResultNode>
     </div>
@@ -127,6 +160,7 @@ function ConnectorOverlay({ Connector }: { Connector: ConnectorComponent }) {
 
 function LandingPageInner({ Connector }: { Connector: ConnectorComponent }) {
   const [loaded, setLoaded] = useState(false);
+  const { maxRevealedIndex } = useLandingContext();
 
   return (
     <main
@@ -154,7 +188,9 @@ function LandingPageInner({ Connector }: { Connector: ConnectorComponent }) {
             <V4Nav />
 
             <V4SpatialStage>
+              {/* Section 0: Hero (always index 0) */}
               <TrackedResultNode
+                index={0}
                 sectionId="hero"
                 rank="01"
                 file="src/ixos_rank/hybrid_engine.rs"
@@ -164,170 +200,120 @@ function LandingPageInner({ Connector }: { Connector: ConnectorComponent }) {
                 <V4Hero />
               </TrackedResultNode>
 
-              <V4SectionDivider accent="dim" />
+              {/* Sequential Sections */}
+              {[
+                { id: "filescan", rank: "02", file: "src/ixos_rank/lexical_engine.rs", tone: "amber", title: "filesystem sweep", content: <V4FileScan />, accent: "dim" },
+                { id: "stats", rank: "03", file: "CLAUDE.md#benchmarks", tone: "amber", title: "performance cluster", content: <V4Stats />, accent: "amber" },
+                { id: "progressive", rank: "04", file: "src/ixos_rank/progressive.rs", tone: "violet", title: "progressive lock", content: <V4Progressive />, accent: "dim" },
+                { id: "pipeline", rank: "05", file: "src/ixos_rank/hybrid_engine.rs", tone: "violet", title: "pipeline map", content: <V4Pipeline />, accent: "violet" },
+                { id: "benchmarks", rank: "06", file: "models/lab/CANONICAL_RESULTS.md", tone: "cyan", title: "bench board", content: <V4Benchmarks />, accent: "dim" },
+                { id: "compute", rank: "07", file: "src/ixos_rank/hybrid_engine.rs#auto", tone: "cyan", title: "compute map", content: <V4ComputeBudget />, accent: "cyan" },
+                { id: "comparison", rank: "08", file: "docs/product/DESKTOP_APP.md", tone: "cyan", title: "capability matrix", content: <V4Comparison />, accent: "dim" },
+                { id: "techbento", rank: "09", file: "src/storage/validator.rs", tone: "cyan", title: "system internals", content: <V4TechBento />, accent: "cyan" },
+              ].map((s, i) => {
+                const globalIndex = i + 1;
+                // Only render if it's already revealed OR it's the very next one to be revealed (as a divider)
+                if (globalIndex > maxRevealedIndex + 1) return null;
+
+                return (
+                  <React.Fragment key={s.id}>
+                    {globalIndex <= maxRevealedIndex + 1 && <V4SectionDivider accent={s.accent as any} />}
+                    <TrackedResultNode
+                      index={globalIndex}
+                      sectionId={s.id}
+                      rank={s.rank}
+                      file={s.file}
+                      tone={s.tone as any}
+                      title={s.title}
+                      isRevealed={maxRevealedIndex >= globalIndex}
+                    >
+                      {s.content}
+                    </TrackedResultNode>
+                  </React.Fragment>
+                );
+              })}
+
+              {/* Scroll Buffer: Ensures the next divider is always reachable/scrollable even when collapsed */}
+              <div aria-hidden style={{ height: '100vh', pointerEvents: 'none' }} />
 
               <TrackedResultNode
-                sectionId="filescan"
-                rank="02"
-                file="src/ixos_rank/lexical_engine.rs"
-                tone="amber"
-                title="filesystem sweep"
-              >
-                <V4FileScan />
-              </TrackedResultNode>
-
-              <V4SectionDivider accent="amber" />
-
-              <TrackedResultNode
-                sectionId="stats"
-                rank="03"
-                file="CLAUDE.md#benchmarks"
-                tone="amber"
-                title="performance cluster"
-              >
-                <V4Stats />
-              </TrackedResultNode>
-
-              <V4SectionDivider accent="dim" />
-
-              <TrackedResultNode
-                sectionId="progressive"
-                rank="04"
-                file="src/ixos_rank/progressive.rs"
-                tone="violet"
-                title="progressive lock"
-              >
-                <V4Progressive />
-              </TrackedResultNode>
-
-              <V4SectionDivider accent="violet" />
-
-              <TrackedResultNode
-                sectionId="pipeline"
-                rank="05"
-                file="src/ixos_rank/hybrid_engine.rs"
-                tone="violet"
-                title="pipeline map"
-              >
-                <V4Pipeline />
-              </TrackedResultNode>
-
-              <V4SectionDivider accent="dim" />
-
-              <TrackedResultNode
-                sectionId="benchmarks"
-                rank="06"
-                file="models/lab/CANONICAL_RESULTS.md"
-                tone="cyan"
-                title="bench board"
-              >
-                <V4Benchmarks />
-              </TrackedResultNode>
-
-              <V4SectionDivider accent="cyan" />
-
-              <TrackedResultNode
-                sectionId="compute"
-                rank="07"
-                file="src/ixos_rank/hybrid_engine.rs#auto"
-                tone="cyan"
-                title="compute map"
-              >
-                <V4ComputeBudget />
-              </TrackedResultNode>
-
-              <V4SectionDivider accent="dim" />
-
-              <TrackedResultNode
-                sectionId="comparison"
-                rank="08"
-                file="docs/product/DESKTOP_APP.md"
-                tone="cyan"
-                title="capability matrix"
-              >
-                <V4Comparison />
-              </TrackedResultNode>
-
-              <V4SectionDivider accent="cyan" />
-
-              <TrackedResultNode
-                sectionId="techbento"
-                rank="09"
-                file="src/storage/validator.rs"
-                tone="cyan"
-                title="system internals"
-              >
-                <V4TechBento />
-              </TrackedResultNode>
-
-              <V4SectionDivider accent="dim" />
-
-              <TrackedResultNode
+                index={9}
                 sectionId="cli"
                 rank="10"
                 file="CLAUDE.md#cli"
                 tone="amber"
                 title="terminal commands"
+                isRevealed={maxRevealedIndex >= 9}
               >
                 <V4CLI />
               </TrackedResultNode>
 
-              <V4SectionDivider accent="violet" />
+              {maxRevealedIndex >= 10 && <V4SectionDivider accent="violet" />}
 
               <TrackedResultNode
+                index={10}
                 sectionId="ask-mode"
                 rank="11"
                 file="src/ixos_rank/ask_mode/intent_detector.rs"
                 tone="violet"
                 title="ask pathway"
+                isRevealed={maxRevealedIndex >= 10}
               >
                 <V4AskMode />
               </TrackedResultNode>
 
-              <V4SectionDivider accent="cyan" />
+              {maxRevealedIndex >= 11 && <V4SectionDivider accent="cyan" />}
 
               <TrackedResultNode
-                sectionId="local"
+                index={11}
+                sectionId="local-first"
                 rank="12"
-                file="CLAUDE.md#architecture"
+                file="src/storage/local_first.rs"
                 tone="cyan"
-                title="local privacy"
+                title="edge sync"
+                isRevealed={maxRevealedIndex >= 11}
               >
                 <V4LocalFirst />
               </TrackedResultNode>
 
-              <V4SectionDivider accent="amber" />
+              {maxRevealedIndex >= 12 && <V4SectionDivider accent="cyan" />}
 
               <TrackedResultNode
-                sectionId="pro-value"
+                index={12}
+                sectionId="pro"
                 rank="13"
-                file="src/activity_ledger/mod.rs"
-                tone="amber"
-                title="pro loop"
+                file="docs/plans/pro.rs"
+                tone="cyan"
+                title="pro surface"
+                isRevealed={maxRevealedIndex >= 12}
               >
                 <V4ProValue />
               </TrackedResultNode>
 
-              <V4SectionDivider accent="violet" />
+              {maxRevealedIndex >= 13 && <V4SectionDivider accent="cyan" />}
 
               <TrackedResultNode
+                index={13}
                 sectionId="pricing"
                 rank="14"
-                file="src/app/pricing/page.tsx"
-                tone="violet"
-                title="plan split"
+                file="docs/product/PRICING.md"
+                tone="cyan"
+                title="investment tiers"
+                isRevealed={maxRevealedIndex >= 13}
               >
                 <V4Pricing />
               </TrackedResultNode>
 
-              <V4SectionDivider accent="cyan" />
+              {maxRevealedIndex >= 14 && <V4SectionDivider accent="cyan" />}
 
               <TrackedResultNode
+                index={14}
                 sectionId="cta"
                 rank="15"
-                file="src/lib/downloads.ts"
+                file="git checkout -b IXOS_PROTOCOL"
                 tone="cyan"
-                title="launch deck"
+                title="deployment"
+                isRevealed={maxRevealedIndex >= 14}
               >
                 <V4CTA />
               </TrackedResultNode>

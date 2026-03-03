@@ -225,9 +225,11 @@ function StatCard({
       }}
       className="flex flex-col gap-4 py-8 px-6 relative"
       style={{
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderTop: '1px solid rgba(255,255,255,0.14)',
-        borderLeft: '1px solid rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor: 'rgba(255,255,255,0.08)',
+        borderTopColor: 'rgba(255,255,255,0.14)',
+        borderLeftColor: 'rgba(255,255,255,0.1)',
         borderRadius: 16,
         // 3D glassmorphic card
         background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 60%, rgba(0,0,0,0.1) 100%)',

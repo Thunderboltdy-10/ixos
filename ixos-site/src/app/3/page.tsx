@@ -64,9 +64,8 @@ function SignalLocked({ delay = 0 }: { delay?: number }) {
 
   return (
     <div
-      className={`inline-flex items-center gap-2 px-3 py-1 border border-amber-400/30 rounded text-xs font-mono text-amber-400/60 uppercase tracking-widest transition-opacity duration-500 ${
-        visible ? "opacity-100" : "opacity-0"
-      }`}
+      className={`inline-flex items-center gap-2 px-3 py-1 border border-amber-400/30 rounded text-xs font-mono text-amber-400/60 uppercase tracking-widest transition-opacity duration-500 ${visible ? "opacity-100" : "opacity-0"
+        }`}
     >
       <span className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
       Signal Locked
@@ -190,9 +189,51 @@ function RadarPing({ scanY }: { scanY: number }) {
 }
 
 /* ──────────────────────────────────────────────
+   TOP HUD NAV — Fixed top bar for subpages
+   ────────────────────────────────────────────── */
+function HUDNav() {
+  return (
+    <nav
+      className="fixed top-0 left-0 right-0 z-50 h-[54px] flex items-center justify-between px-6 md:px-10"
+      style={{
+        background: "rgba(10,13,18,0.7)",
+        backdropFilter: "blur(10px)",
+        borderBottom: "1px solid rgba(246,185,76,0.08)",
+      }}
+    >
+      <div className="flex items-center gap-6">
+        <a href="/3" className="font-mono text-sm font-bold tracking-tighter text-amber-400">IXOS</a>
+        <div className="hidden lg:flex items-center gap-6 text-[10px] font-mono tracking-[0.2em] text-white/30 uppercase">
+          <a href="/3/docs" className="hover:text-amber-400/80 transition-colors">Docs</a>
+          <a href="/3/pricing" className="hover:text-amber-400/80 transition-colors">Pricing</a>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-5">
+        <a href="/3/signin" className="hidden sm:block font-mono text-[10px] tracking-[0.2em] text-white/40 uppercase hover:text-white/80">Sign In</a>
+        <a
+          href="/3/signup"
+          className="px-4 py-1.5 border border-amber-400/20 rounded font-mono text-[10px] tracking-[0.2em] text-amber-400/70 uppercase hover:bg-amber-400/5 transition-all"
+        >
+          Sign Up
+        </a>
+        <a
+          href="/3/download"
+          className="px-4 py-1.5 bg-amber-400 text-[#0A0D0F] font-mono font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-amber-300 transition-colors"
+        >
+          Download
+        </a>
+      </div>
+    </nav>
+  );
+}
+
+/* ──────────────────────────────────────────────
    Floating Pill Nav — HUD style
    ────────────────────────────────────────────── */
 function FloatingNav() {
+  const [activeSection, setActiveSection] = useState("hero");
+
   const links = [
     { label: "Speed", href: "#speed" },
     { label: "Privacy", href: "#privacy" },
@@ -200,11 +241,42 @@ function FloatingNav() {
     { label: "CLI", href: "#cli" },
   ];
 
+  useEffect(() => {
+    const sections = ["hero", "speed", "privacy", "pipeline", "cli"];
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    }, {
+      rootMargin: "-30% 0px -70% 0px"
+    });
+
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const id = href.replace('#', '');
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <nav className="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-2 py-1.5 rounded-full border border-amber-400/10 bg-[#0A0D0F]/80 backdrop-blur-xl shadow-lg shadow-black/40">
       <a
         href="#hero"
-        className="flex items-center gap-2 px-3 py-1.5 text-sm font-mono font-semibold text-amber-400 tracking-tight"
+        onClick={(e) => scrollTo(e, "#hero")}
+        className={`flex items-center gap-2 px-3 py-1.5 text-sm font-mono font-semibold tracking-tight transition-colors ${activeSection === 'hero' ? 'text-amber-400' : 'text-white/40 hover:text-white/80'}`}
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="shrink-0">
           <path
@@ -218,17 +290,32 @@ function FloatingNav() {
         IXOS
       </a>
       <div className="w-px h-5 bg-amber-400/10 mx-1" />
-      {links.map((l) => (
-        <a
-          key={l.href}
-          href={l.href}
-          className="px-3 py-1.5 text-[13px] font-mono text-white/40 hover:text-amber-400/80 transition-colors rounded-full hover:bg-amber-400/5"
-        >
-          {l.label}
-        </a>
-      ))}
+      {links.map((l) => {
+        const isActive = activeSection === l.href.replace('#', '');
+        return (
+          <a
+            key={l.href}
+            href={l.href}
+            onClick={(e) => scrollTo(e, l.href)}
+            className={`relative px-3 py-1.5 text-[13px] font-mono rounded-full transition-colors duration-300 flex items-center justify-center ${isActive
+              ? 'text-amber-400 font-semibold'
+              : 'text-white/40 hover:text-amber-400/80 hover:bg-amber-400/5'
+              }`}
+          >
+            {isActive && (
+              <motion.div
+                layoutId="active-pill-v3"
+                className="absolute inset-0 bg-amber-400/20 rounded-full"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+            <span className="relative z-10">{l.label}</span>
+          </a>
+        );
+      })}
       <a
         href="#download"
+        onClick={(e) => scrollTo(e, "#download")}
         className="ml-1 px-4 py-1.5 text-[13px] font-mono font-semibold rounded-full bg-amber-400 text-[#0A0D0F] hover:bg-amber-300 transition-colors"
       >
         Download
@@ -507,11 +594,12 @@ export default function Page3PrecisionGrid() {
       `}</style>
 
       <main
-        className="relative min-h-screen text-[#f3f5f7] overflow-x-hidden font-mono selection:bg-amber-400/30"
-        style={{ backgroundColor: '#0A0D0F' }}
+        className="relative min-h-screen text-[#f3f5f7] font-mono selection:bg-amber-400/30"
+        style={{ backgroundColor: '#0A0D0F', overflowX: 'clip' }}
       >
-        {/* ── Amber Grid Background ── */}
-        <GridBackground />
+        <HUDNav />
+        {/* ── Background grid ── */}
+        <GridBackground scanY={scanY} />
 
         {/* ── Scan Beam (sweeps once on load) ── */}
         <ScanBeam onProgress={handleScanProgress} />
@@ -527,6 +615,10 @@ export default function Page3PrecisionGrid() {
         <section
           id="hero"
           className="relative min-h-screen flex flex-col items-center justify-center pt-28 pb-16 px-6 z-10"
+          style={{
+            clipPath: `polygon(0 0, 100% 0, 100% ${Math.max(0, scanY)}vh, 0 ${Math.max(0, scanY)}vh)`,
+            transition: 'clip-path 0.1s linear'
+          }}
         >
           {/* Subtle amber glow center */}
           <div
@@ -564,10 +656,14 @@ export default function Page3PrecisionGrid() {
 
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
+            animate={{ opacity: 1, scale: 1, y: [0, -8, 0] }}
+            transition={{
+              opacity: { duration: 0.6, delay: 0.7 },
+              scale: { duration: 0.6, delay: 0.7 },
+              y: { duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1.3 }
+            }}
             className="relative z-10 w-full max-w-5xl overflow-hidden border border-amber-400/10 bg-[#0A0D0F]/90 shadow-2xl shadow-amber-400/5"
-            style={{ minHeight: 720 }}
+            style={{ height: 600 }}
           >
             {/* HUD frame top bar */}
             <div className="flex items-center justify-between px-5 py-2.5 border-b border-amber-400/10 bg-amber-400/[0.02]">
@@ -579,7 +675,17 @@ export default function Page3PrecisionGrid() {
               </div>
               <SignalLocked delay={1400} />
             </div>
-            <DemoSurface initialQuery="authentication token refresh" autoRun />
+            <div className="h-[calc(100%-45px)] w-full overflow-hidden pointer-events-none" style={{ position: "relative" }}>
+              <div className="absolute inset-0 pointer-events-auto">
+                <DemoSurface
+                  initialQuery="authentication token refresh"
+                  autoRun
+                  autoType
+                  displayMode="search-only"
+                  maxResults={3}
+                />
+              </div>
+            </div>
           </motion.div>
 
           <motion.div
@@ -1044,16 +1150,22 @@ export default function Page3PrecisionGrid() {
                 </p>
               </div>
 
-              <div
+              <motion.div
+                initial={{ y: 0 }}
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                 className="overflow-hidden border border-amber-400/8 bg-[#0A0D0F]/80 shadow-2xl shadow-amber-400/5 relative"
-                style={{ minHeight: 600 }}
+                style={{ height: 500 }}
               >
                 <CornerBrackets size={16} color="rgba(246,185,76,0.12)" />
-                <DemoSurface
-                  initialView="workstreams"
-                  initialQuery="Refactor payment processing"
-                />
-              </div>
+                <div className="absolute inset-0 pointer-events-auto overflow-hidden">
+                  <DemoSurface
+                    initialView="workstreams"
+                    initialQuery="Refactor payment processing"
+                    displayMode="full"
+                  />
+                </div>
+              </motion.div>
             </div>
           </section>
         </ScanSection>

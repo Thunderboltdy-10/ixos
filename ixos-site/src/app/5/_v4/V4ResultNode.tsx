@@ -173,6 +173,7 @@ export function V4ResultNode({
   tone,
   title,
   sectionId,
+  isRevealed = false,
   children,
 }: {
   rank: string
@@ -180,13 +181,17 @@ export function V4ResultNode({
   tone: Tone
   title: string
   sectionId: string
+  isRevealed?: boolean
   children: ReactNode
 }) {
   const nodeRef = useRef<HTMLDivElement>(null)
-  const inView = useInView(nodeRef, { margin: '-10% 0px -15% 0px' })
+  const rankNum = Number(rank)
+  const isInitial = rankNum <= 3
+  const inViewRaw = useInView(nodeRef, { once: true, margin: isInitial ? '0px' : '-10% 0px -15% 0px' })
+  const inView = isInitial || inViewRaw
   const lowEnd = useReducedOrLowEnd()
   const color = toneColor(tone)
-  const score = Math.max(72, 98 - Number(rank) * 1.5)
+  const score = Math.max(72, 98 - rankNum * 1.5)
 
   return (
     <div
@@ -211,7 +216,14 @@ export function V4ResultNode({
       />
 
       {/* Section content */}
-      <div
+      <motion.div
+        initial={{ height: 0, opacity: 0, scale: 0.98, overflow: 'hidden' }}
+        animate={
+          isRevealed
+            ? { height: 'auto', opacity: 1, scale: 1, transitionEnd: { overflow: 'visible' } }
+            : { height: 0, opacity: 0, scale: 0.98, overflow: 'hidden' }
+        }
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         style={{
           borderRadius: 12,
           borderWidth: 1,
@@ -221,13 +233,14 @@ export function V4ResultNode({
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
           boxShadow: `-8px -8px 24px rgba(0,0,0,0.6), 4px 4px 16px ${color}08, 0 18px 44px rgba(0,0,0,0.28)`,
-          overflow: 'hidden',
           marginTop: 8,
-          padding: '20px',
+          marginBottom: isRevealed ? 40 : 0,
         }}
       >
-        {children}
-      </div>
+        <div style={{ padding: '20px' }}>
+          {children}
+        </div>
+      </motion.div>
     </div>
   )
 }

@@ -17,6 +17,7 @@ export interface IxosSearchResult {
   contextMatch?: string[];
   contextAfter?: string[];
   rationale?: string;
+  isCollapsed?: boolean;
 }
 
 export interface IxosTodaySignal {

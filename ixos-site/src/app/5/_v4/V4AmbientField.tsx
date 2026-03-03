@@ -8,36 +8,39 @@ function useScrollIntensity() {
   useEffect(() => {
     const onScroll = () => {
       const progress = window.scrollY / Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
-      // Full intensity in hero, dims aggressively as you scroll:
-      // 0%   scroll → 1.0
-      // 20%  scroll → 0.5
-      // 60%  scroll → 0.25
-      // 100% scroll → 0.15
       let val: number
       if (progress < 0.2) {
-        val = 1 - progress * 2.5  // 1.0 → 0.5
+        val = 0.8 - progress * 2.5
       } else if (progress < 0.6) {
-        val = 0.5 - (progress - 0.2) * 0.625  // 0.5 → 0.25
+        val = 0.3 - (progress - 0.2) * 0.375
       } else {
-        val = 0.25 - (progress - 0.6) * 0.25   // 0.25 → 0.15
+        val = 0.15
       }
-      setIntensity(Math.max(0.15, val))
+      const next = Math.max(0.15, val)
+      setIntensity(prev => {
+        if (Math.abs(prev - next) < 0.005) return prev
+        return next
+      })
     }
     window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   return intensity
 }
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface Pixel {
   x: number
   y: number
-  size: number       // 5 (90%) or 9 (10%)
-  brightness: number // 0.0 to 1.0, decays toward 0
-  hue: number        // 0=cyan, 0.33=amber, 0.66=violet
+  vx: number
+  vy: number
+  originX: number
+  originY: number
+  size: number
+  brightness: number
+  hue: number
+  wanderPhase: number
 }
 
 interface Wave {
@@ -45,21 +48,17 @@ interface Wave {
   cy: number
   radius: number
   maxRadius: number
-  speed: number      // px per ms
+  speed: number
   intensity: number
-  hue: number        // wave color bias
+  hue: number
   createdAt: number
 }
 
-// ─── Color lookup ─────────────────────────────────────────────────────────────
-
 function hueToRGB(hue: number): [number, number, number] {
-  if (hue < 0.165) return [45, 212, 191]   // cyan   0
-  if (hue < 0.495) return [245, 158, 11]   // amber  0.33
-  return [124, 58, 237]                     // violet 0.66
+  if (hue < 0.165) return [45, 212, 191]
+  if (hue < 0.495) return [245, 158, 11]
+  return [124, 58, 237]
 }
-
-// ─── Canvas implementation ────────────────────────────────────────────────────
 
 function PixelWaveCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -75,9 +74,8 @@ function PixelWaveCanvas() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const CELL_SIZE = 22
+    const CELL_SIZE = 140 // Much larger cells = fewer particles
 
-    // ── Grid initialisation ─────────────────────────────────────────────────
     function buildGrid(W: number, H: number) {
       const px: Pixel[] = []
       const cols = Math.ceil(W / CELL_SIZE) + 1
@@ -85,22 +83,28 @@ function PixelWaveCanvas() {
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const rand = Math.random()
-          const size = rand < 0.90 ? 5 : 9
+          const size = rand < 0.8 ? 6 : 10
           const hueRand = Math.random()
           const hue = hueRand < 0.33 ? 0 : hueRand < 0.66 ? 0.33 : 0.66
+          const originX = c * CELL_SIZE + (Math.random() - 0.5) * 20
+          const originY = r * CELL_SIZE + (Math.random() - 0.5) * 20
           px.push({
-            x: c * CELL_SIZE,
-            y: r * CELL_SIZE,
+            x: originX,
+            y: originY,
+            vx: 0,
+            vy: 0,
+            originX,
+            originY,
             size,
             brightness: 0,
             hue,
+            wanderPhase: Math.random() * Math.PI * 2,
           })
         }
       }
       pixelsRef.current = px
     }
 
-    // ── Resize handler ──────────────────────────────────────────────────────
     function resize() {
       const dpr = window.devicePixelRatio || 1
       const W = window.innerWidth
@@ -112,11 +116,9 @@ function PixelWaveCanvas() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       dimsRef.current = { W, H, dpr }
       buildGrid(W, H)
-      // Trigger a gentle wave from center on resize
-      spawnWave(W / 2, H / 2, 0.25, 0.10, Math.min(W, H) * 0.8, 0)
+      spawnWave(W / 2, H / 2, 0.2, 0.1, Math.min(W, H) * 1.2, 0)
     }
 
-    // ── Wave factory ────────────────────────────────────────────────────────
     function spawnWave(
       cx: number,
       cy: number,
@@ -129,46 +131,35 @@ function PixelWaveCanvas() {
         cx, cy,
         radius: 0,
         maxRadius,
-        speed,
+        speed: speed * 0.4, // Slower ripples
         intensity,
         hue,
         createdAt: performance.now(),
       })
     }
 
-    // ── Initial center wave ─────────────────────────────────────────────────
-    // Deferred so dims are set first
     const initTimer = setTimeout(() => {
       const { W, H } = dimsRef.current
-      spawnWave(
-        W / 2, H / 2,
-        0.4,
-        0.10,
-        1.5 * Math.hypot(W / 2, H / 2),
-        0
-      )
+      spawnWave(W / 2, H / 2, 0.3, 0.1, 1.5 * Math.hypot(W / 2, H / 2), 0)
     }, 50)
 
-    // ── Auto-wave every 5s ──────────────────────────────────────────────────
     const autoWaveInterval = setInterval(() => {
       const { W, H } = dimsRef.current
       const x = Math.random() * W
       const y = Math.random() * H
       const hues = [0, 0.33, 0.66]
       const hue = hues[Math.floor(Math.random() * hues.length)]
-      spawnWave(x, y, 0.25, 0.12, Math.hypot(W, H), hue)
-    }, 5000)
+      spawnWave(x, y, 0.2, 0.12, Math.hypot(W, H), hue)
+    }, 6000)
 
-    // ── Pulse event listener ────────────────────────────────────────────────
     function onPulse(e: Event) {
       const ce = e as CustomEvent<{ x: number; y: number; intensity: number }>
       const { x, y, intensity } = ce.detail
       const { W, H } = dimsRef.current
-      spawnWave(x, y, intensity, 0.15, 0.8 * Math.hypot(W, H), 0)
+      spawnWave(x, y, intensity * 0.8, 0.15, 0.8 * Math.hypot(W, H), 0)
     }
     window.addEventListener('v4:pulse', onPulse)
 
-    // ── Animation loop ──────────────────────────────────────────────────────
     function draw(ts: number) {
       const dt = Math.min(ts - lastFrameRef.current, 50)
       lastFrameRef.current = ts
@@ -177,14 +168,12 @@ function PixelWaveCanvas() {
       const pixels = pixelsRef.current
       const waves = wavesRef.current
 
-      // Advance waves
       for (let wi = waves.length - 1; wi >= 0; wi--) {
         const wave = waves[wi]
         wave.radius += wave.speed * dt
 
-        // Influence nearby pixels
-        const lo = wave.radius - 18
-        const hi = wave.radius + 6
+        const lo = wave.radius - 40
+        const hi = wave.radius + 20
 
         for (let pi = 0; pi < pixels.length; pi++) {
           const p = pixels[pi]
@@ -192,10 +181,16 @@ function PixelWaveCanvas() {
           const dy = p.y - wave.cy
           const dist = Math.sqrt(dx * dx + dy * dy)
           if (dist >= lo && dist <= hi) {
-            const boost = wave.intensity * Math.max(0, 1 - Math.abs(dist - wave.radius) / 18)
-            p.brightness = Math.min(1, p.brightness + boost * 0.6)
-            // Nudge hue toward wave hue (weighted blend)
+            const force = wave.intensity * Math.max(0, 1 - Math.abs(dist - wave.radius) / 30)
+            p.brightness = Math.min(1, p.brightness + force * 0.6)
             p.hue = p.hue * 0.85 + wave.hue * 0.15
+
+            if (dist > 0) {
+              const pushX = (dx / dist) * force * 0.3
+              const pushY = (dy / dist) * force * 0.3
+              p.vx += pushX
+              p.vy += pushY
+            }
           }
         }
 
@@ -204,20 +199,41 @@ function PixelWaveCanvas() {
         }
       }
 
-      // Decay all pixels
-      for (let pi = 0; pi < pixels.length; pi++) {
-        pixels[pi].brightness *= 0.97
-      }
-
-      // Render
       ctx.fillStyle = '#0C0E10'
       ctx.fillRect(0, 0, W, H)
 
       for (let pi = 0; pi < pixels.length; pi++) {
         const p = pixels[pi]
-        if (p.brightness < 0.002) continue
-        const alpha = p.brightness * 0.12
+
+        p.wanderPhase += dt * 0.001
+        const wanderX = Math.sin(p.wanderPhase) * 0.1
+        const wanderY = Math.cos(p.wanderPhase * 0.8) * 0.1
+
+        const dxOrigin = p.originX - p.x
+        const dyOrigin = p.originY - p.y
+        p.vx += dxOrigin * 0.01 + wanderX
+        p.vy += dyOrigin * 0.01 + wanderY
+
+        p.vx *= 0.85
+        p.vy *= 0.85
+
+        p.x += p.vx
+        p.y += p.vy
+
+        p.brightness *= 0.96
+
+        // Reduced baseline visibility and alpha for more controlled look
+        const alpha = Math.max(0.02, p.brightness * 0.3)
         const [r, g, b] = hueToRGB(p.hue)
+
+        // Subtle glow only for very bright squares
+        if (p.brightness > 0.2) {
+          ctx.shadowBlur = p.size * 2
+          ctx.shadowColor = `rgba(${r},${g},${b},${p.brightness * 0.15})`
+        } else {
+          ctx.shadowBlur = 0
+        }
+
         ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`
         ctx.fillRect(
           p.x - p.size / 2,
@@ -264,8 +280,6 @@ function PixelWaveCanvas() {
   )
 }
 
-// ─── Static fallback ──────────────────────────────────────────────────────────
-
 function StaticAmbient() {
   return (
     <div
@@ -277,16 +291,14 @@ function StaticAmbient() {
         zIndex: 0,
         background: '#0C0E10',
         backgroundImage: `
-          radial-gradient(circle, rgba(45,212,191,0.018) 1px, transparent 1px),
-          radial-gradient(circle, rgba(124,58,237,0.012) 1px, transparent 1px)
+          radial-gradient(circle, rgba(45,212,191,0.02) 1px, transparent 1px),
+          radial-gradient(circle, rgba(124,58,237,0.015) 1px, transparent 1px)
         `,
         backgroundSize: '24px 24px, 48px 48px',
       }}
     />
   )
 }
-
-// ─── Export ───────────────────────────────────────────────────────────────────
 
 export function V4AmbientField() {
   const lowEnd = useReducedOrLowEnd()

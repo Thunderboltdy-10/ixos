@@ -1,18 +1,24 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { useReducedOrLowEnd } from './hooks/useReducedOrLowEnd'
-
-const NAV_LINKS = [
-  { label: 'Flow', href: '#progressive' },
-  { label: 'Proof', href: '#benchmarks' },
-  { label: 'Ask', href: '#ask-mode' },
-  { label: 'Pricing', href: '#pricing' },
-] as const
 
 export function V4Nav() {
   const [scrolled, setScrolled] = useState(false)
   const lowEnd = useReducedOrLowEnd()
+  const pathname = usePathname() || ''
+
+  // Detect variant prefix (e.g. /1, /4, /5)
+  const variantMatch = pathname.match(/^\/([1-5])(?:\/|$)/)
+  const variantPrefix = variantMatch ? `/${variantMatch[1]}` : '/5'
+
+  const NAV_LINKS = [
+    { label: 'Flow', href: '#progressive' },
+    { label: 'Proof', href: '#benchmarks' },
+    { label: 'Pricing', href: `${variantPrefix}/pricing` },
+    { label: 'Docs', href: `${variantPrefix}/docs` },
+  ] as const
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 18)
@@ -84,24 +90,61 @@ export function V4Nav() {
 
       <div style={{ width: 24 }} className="hidden md:block" />
 
-      <a
-        href="/download"
-        className="font-mono"
-        style={{
-          textDecoration: 'none',
-          color: '#0C0E10',
-          background: '#2DD4BF',
-          border: '1px solid rgba(45,212,191,0.9)',
-          borderRadius: 6,
-          fontSize: 10,
-          letterSpacing: '0.18em',
-          textTransform: 'uppercase',
-          padding: lowEnd ? '8px 14px' : '8px 18px',
-          fontWeight: 700,
-        }}
-      >
-        Download
-      </a>
+      {/* Auth & Primary Actions */}
+      <div className="flex items-center gap-4">
+        <a
+          href={`${variantPrefix}/signin`}
+          className="font-mono hidden md:inline-flex"
+          style={{
+            textDecoration: 'none',
+            color: 'rgba(255,255,255,0.46)',
+            fontSize: 10,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            padding: '8px 14px',
+          }}
+        >
+          Sign In
+        </a>
+
+        <a
+          href={`${variantPrefix}/signup`}
+          className="font-mono hidden md:inline-flex"
+          style={{
+            textDecoration: 'none',
+            color: 'rgba(255,255,255,0.7)',
+            fontSize: 10,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            padding: '8px 18px',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 6,
+            background: 'rgba(255,255,255,0.03)',
+          }}
+        >
+          Sign Up
+        </a>
+
+        <a
+          href={`${variantPrefix}/download`}
+          className="font-mono"
+          style={{
+            textDecoration: 'none',
+            color: '#0C0E10',
+            background: '#2DD4BF',
+            border: '1px solid rgba(45,212,191,0.9)',
+            borderRadius: 6,
+            fontSize: 10,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            padding: lowEnd ? '8px 14px' : '8px 18px',
+            fontWeight: 700,
+            boxShadow: '0 0 15px rgba(45,212,191,0.3)',
+          }}
+        >
+          Download
+        </a>
+      </div>
     </nav>
   )
 }

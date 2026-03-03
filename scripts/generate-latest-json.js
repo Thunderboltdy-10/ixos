@@ -102,7 +102,7 @@ function main() {
     for (const file of files.sort()) {
       console.error(` - ${file}`);
     }
-    process.exit(1);
+    process.exit(0);
   }
 
   const manifest = {

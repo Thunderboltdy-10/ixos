@@ -159,7 +159,7 @@ export function SearchSettings() {
               search: { ...config.search, searchMode: e.target.value as typeof config.search.searchMode },
             })
           }
-          className="ixos-select w-32 h-8 bg-graphite-2/70 border border-white/10 rounded-lg px-2.5 text-xs text-porcelain"
+          className="ixos-select w-32 h-8 bg-graphite-2 border border-white/10 rounded-lg px-2.5 text-xs text-porcelain"
         >
           <option value="flash">Ixos Flash</option>
             <option value="auto" disabled={!isPro}>Auto</option>
@@ -190,7 +190,7 @@ export function SearchSettings() {
               });
               useSearchStore.getState().setCacheMode(newValue as 'native-cache' | 'ephemeral');
             }}
-            className="ixos-select w-36 h-8 bg-graphite-2/70 border border-white/10 rounded-lg px-2.5 text-xs text-porcelain"
+            className="ixos-select w-36 h-8 bg-graphite-2 border border-white/10 rounded-lg px-2.5 text-xs text-porcelain"
           >
             <option value="native-cache">Local (Recommended)</option>
             <option value="ephemeral">Memory (No Disk Cache)</option>

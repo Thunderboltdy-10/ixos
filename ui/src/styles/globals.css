@@ -111,7 +111,8 @@
 
   select.ixos-select {
     color: #f5f7fa;
-    background-color: rgba(35, 39, 46, 0.82);
+    background-color: #23272e;
+    opacity: 1;
   }
 
   select.ixos-select option {
@@ -298,6 +299,16 @@
   .text-stroke {
     -webkit-text-stroke: 1px currentColor;
     -webkit-text-fill-color: transparent;
+  }
+
+  .desktop-window-shell {
+    border-radius: 12px;
+    border: 1px solid rgba(243, 245, 247, 0.06);
+  }
+
+  html[data-window-maximized="1"] .desktop-window-shell {
+    border-radius: 0;
+    border-color: transparent;
   }
 }
 

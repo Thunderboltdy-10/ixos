@@ -44,9 +44,9 @@ export function SettingsPanel({ initialTab, onUpgrade }: { initialTab?: Settings
   }, [initialTab]);
 
   return (
-    <div className="flex h-full bg-graphite-1/[0.97] backdrop-blur-xl border border-stroke-hairline rounded-2xl overflow-hidden shadow-2xl">
+    <div className="flex h-full bg-graphite-1/[0.985] backdrop-blur-xl border border-stroke-hairline rounded-2xl overflow-hidden shadow-2xl">
       {/* Sidebar Navigation */}
-      <nav className="w-64 bg-graphite-2/45 border-r border-stroke-hairline p-4 flex flex-col gap-1.5">
+      <nav className="w-64 bg-graphite-2/68 border-r border-stroke-hairline p-4 flex flex-col gap-1.5">
         <div className="mb-6 px-3 pt-2">
           <h2 className="text-xl font-display font-semibold text-porcelain tracking-tight">Settings</h2>
           <p className="text-sm text-fg-secondary">Preferences & Controls</p>
@@ -75,9 +75,9 @@ export function SettingsPanel({ initialTab, onUpgrade }: { initialTab?: Settings
       </nav>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto bg-transparent relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
-        <div className="p-8 max-w-4xl mx-auto">
+      <main className="relative flex-1 overflow-y-auto bg-transparent">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.045] via-white/[0.018] to-transparent" />
+        <div className="mx-auto max-w-4xl p-6 lg:p-8">
           {activeTab === 'search' && <SearchSettings />}
           {activeTab === 'account' && <AccountSettings onUpgrade={onUpgrade} />}
           {activeTab === 'keyboard' && <ShortcutSettings />}

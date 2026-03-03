@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Shield, Lock, ChevronDown, Check } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
+import { Check, ChevronDown, Lock, Shield, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type SearchMode = 'ephemeral' | 'native-cache' | 'journalist';
@@ -12,216 +13,201 @@ interface ModeSwitcherProps {
   compact?: boolean;
 }
 
-interface ModeOption {
-  id: SearchMode;
-  icon: React.ElementType;
-  label: string;
-  shortLabel: string;
-  description: string;
-  details: string;
-  color: string;
-  bgColor: string;
-}
-
-const modes: ModeOption[] = [
-  {
-    id: 'ephemeral',
+const MODE_META = {
+  ephemeral: {
     icon: Zap,
+    color: 'text-accent-amber',
     label: 'Memory Search',
     shortLabel: 'Memory',
     description: 'JIT embeddings in RAM only',
     details: 'JIT computes embeddings in memory and writes nothing to disk.',
-    color: 'text-accent-amber',
-    bgColor: 'bg-accent-amber/10',
   },
-  {
-    id: 'native-cache',
+  'native-cache': {
     icon: Shield,
+    color: 'text-accent-teal',
     label: 'Local Search',
     shortLabel: 'Local',
     description: 'Persist local cache for repeats',
     details: 'Uses ADS (Windows) or xattr (macOS/Linux) for fast repeat searches.',
-    color: 'text-accent-teal',
-    bgColor: 'bg-accent-teal/10',
   },
-  {
-    id: 'journalist',
+  journalist: {
     icon: Lock,
+    color: 'text-accent-violet',
     label: 'Deep Search',
     shortLabel: 'Deep',
     description: 'Expanded evidence path',
     details: 'Deep Search prioritizes richer evidence extraction while staying local.',
-    color: 'text-accent-violet',
-    bgColor: 'bg-accent-violet/10',
   },
-];
+} as const;
 
 export function ModeSwitcher({ value, onChange, className, compact = false }: ModeSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [hoveredMode, setHoveredMode] = useState<SearchMode>(value);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const selectedMode = modes.find((mode) => mode.id === value) ?? modes[0];
-  const hoveredDetails = useMemo(
-    () => modes.find((mode) => mode.id === hoveredMode) ?? selectedMode,
-    [hoveredMode, selectedMode],
-  );
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const selected = MODE_META[value] ?? MODE_META['native-cache'];
+  const SelectedIcon = selected.icon;
+  const hoveredDetails = useMemo(() => MODE_META[hoveredMode] ?? selected, [hoveredMode, selected]);
 
   useEffect(() => {
     if (!isOpen) {
       setHoveredMode(value);
+      setDropdownPos(null);
+      return;
     }
+
+    const syncPosition = () => {
+      if (!triggerRef.current) return;
+      const rect = triggerRef.current.getBoundingClientRect();
+      setDropdownPos({
+        top: rect.bottom + 8,
+        left: Math.max(12, rect.right - 320),
+        width: rect.width,
+      });
+    };
+
+    syncPosition();
+    window.addEventListener('resize', syncPosition);
+    window.addEventListener('scroll', syncPosition, true);
+    return () => {
+      window.removeEventListener('resize', syncPosition);
+      window.removeEventListener('scroll', syncPosition, true);
+    };
   }, [isOpen, value]);
 
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleOutside = (event: MouseEvent) => {
-      if (!containerRef.current) return;
-      if (!containerRef.current.contains(event.target as Node)) {
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (triggerRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      setIsOpen(false);
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleOutside);
-    return () => document.removeEventListener('mousedown', handleOutside);
+    document.addEventListener('mousedown', handlePointerDown, true);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown, true);
+      document.removeEventListener('keydown', handleEscape);
+    };
   }, [isOpen]);
-
-  const handleSelect = (mode: SearchMode) => {
-    onChange(mode);
-    setIsOpen(false);
-  };
 
   if (compact) {
     return (
-      <div className={cn('flex items-center gap-1 p-1 bg-graphite-2 rounded-md overflow-hidden border border-stroke-hairline', className)}>
-        {modes.map((mode) => (
-          <button
-            key={mode.id}
-            onClick={() => onChange(mode.id)}
-            onMouseEnter={() => setShowTooltip(mode.id)}
-            onMouseLeave={() => setShowTooltip(null)}
-            className={cn(
-              'relative px-2.5 py-1.5 rounded-md text-[10px] uppercase tracking-[0.14em] transition-all duration-150',
-              mode.id === value
-                ? `${mode.bgColor} ${mode.color}`
-                : 'text-fg-dim hover:text-porcelain hover:bg-graphite-3',
-            )}
-          >
-            <div className="flex items-center gap-1.5">
-              <mode.icon className="w-3 h-3" />
-              <span>{mode.shortLabel}</span>
-            </div>
-
-            <AnimatePresence>
-              {showTooltip === mode.id && (
-                <motion.div
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 5 }}
-                  className={cn(
-                    'absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50',
-                    'w-52 p-2 rounded-lg',
-                    'bg-graphite-2 border border-stroke-hairline shadow-lift',
-                    'pointer-events-none',
-                  )}
-                >
-                  <div className={cn('text-xs font-medium mb-1', mode.color)}>
-                    {mode.label}
-                  </div>
-                  <div className="text-2xs text-fg-dim leading-relaxed">
-                    {mode.details}
-                  </div>
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-graphite-2 border-r border-b border-stroke-hairline" />
-                </motion.div>
+      <div className={cn('flex items-center gap-1 rounded-md border border-stroke-hairline bg-graphite-2 p-1', className)}>
+        {(Object.keys(MODE_META) as SearchMode[]).map((mode) => {
+          const meta = MODE_META[mode];
+          const Icon = meta.icon;
+          return (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => onChange(mode)}
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[10px] uppercase tracking-[0.14em] transition-colors',
+                mode === value ? `${meta.color} bg-graphite-3` : 'text-fg-dim hover:bg-graphite-3 hover:text-porcelain',
               )}
-            </AnimatePresence>
-          </button>
-        ))}
+            >
+              <Icon className="h-3 w-3" />
+              <span>{meta.shortLabel}</span>
+            </button>
+          );
+        })}
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className={cn('relative w-[126px]', className)}>
+    <div className={cn('relative w-[126px]', className)}>
       <button
+        ref={triggerRef}
+        type="button"
         onClick={() => setIsOpen((open) => !open)}
         className={cn(
-          'flex w-full items-center gap-2 px-2.5 py-1.5 rounded-md',
-          'bg-transparent hover:bg-graphite-3/55',
-          'transition-all duration-200',
-          'text-[11px] uppercase tracking-[0.1em] border border-transparent hover:border-white/8',
+          'flex h-8 w-full items-center gap-2 rounded-md px-2.5 text-[11px] uppercase tracking-[0.1em]',
+          'text-porcelain transition-all duration-150 hover:bg-graphite-3/50',
+          'focus-visible:ring-0 focus-visible:ring-offset-0',
+          isOpen && 'bg-graphite-3/45',
         )}
       >
-        <selectedMode.icon className={cn('w-3.5 h-3.5', selectedMode.color)} />
-        <span className="text-porcelain text-left truncate">
-          {selectedMode.shortLabel}
-        </span>
-        <ChevronDown
-          className={cn(
-            'ml-auto w-3 h-3 text-fg-dim transition-transform duration-200',
-            isOpen && 'rotate-180',
-          )}
-        />
+        <SelectedIcon className={cn('h-3.5 w-3.5 shrink-0', selected.color)} />
+        <span className="min-w-0 truncate">{selected.shortLabel}</span>
+        <ChevronDown className={cn('ml-auto h-3 w-3 shrink-0 text-fg-dim transition-transform', isOpen && 'rotate-180')} />
       </button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.15 }}
-            style={{
-              position: 'absolute',
-              top: 'calc(100% + 8px)',
-              right: 0,
-              zIndex: 15000,
-            }}
-            className="w-[320px] max-w-[min(92vw,320px)] rounded-xl border border-white/14 bg-[#1a1d24] pointer-events-auto shadow-lift overflow-hidden isolate cursor-default"
-          >
-            <div className="max-h-[280px] overflow-y-auto">
-              {modes.map((mode) => (
-                <button
-                  key={mode.id}
-                  onClick={() => handleSelect(mode.id)}
-                  onMouseEnter={() => setHoveredMode(mode.id)}
-                  className={cn(
-                    'w-full flex items-start gap-3 px-3 py-3 border-l-2 cursor-pointer',
-                    'hover:bg-graphite-3 transition-colors duration-150',
-                    'text-left',
-                    mode.id === value ? `bg-graphite-3 ${mode.color} border-l-current` : 'border-l-transparent',
-                  )}
-                >
-                  <mode.icon className={cn('mt-0.5 w-3.5 h-3.5 shrink-0', mode.color)} />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-semibold text-porcelain leading-tight">{mode.label}</div>
-                    <div className="mt-0.5 text-xs text-fg-secondary">{mode.description}</div>
-                  </div>
-                  {mode.id === 'native-cache' && (
-                    <span className="text-[9px] px-1 py-px rounded bg-accent-amber/15 text-accent-amber shrink-0">
-                      Default
-                    </span>
-                  )}
-                  {mode.id === value && (
-                    <Check className={cn('w-3.5 h-3.5 shrink-0', mode.color)} />
-                  )}
-                </button>
-              ))}
-            </div>
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {isOpen && dropdownPos ? (
+              <motion.div
+                ref={menuRef}
+                initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  position: 'fixed',
+                  top: dropdownPos.top,
+                  left: dropdownPos.left,
+                  width: Math.max(320, dropdownPos.width),
+                  zIndex: 11000,
+                }}
+                className="overflow-hidden rounded-xl border border-white/12 bg-[#151b23] shadow-[0_24px_64px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.04)]"
+              >
+                <div className="max-h-[300px] overflow-y-auto">
+                  {(Object.keys(MODE_META) as SearchMode[]).map((mode) => {
+                    const meta = MODE_META[mode];
+                    const Icon = meta.icon;
+                    return (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => {
+                          onChange(mode);
+                          setIsOpen(false);
+                        }}
+                        onMouseEnter={() => setHoveredMode(mode)}
+                        className={cn(
+                          'flex w-full items-start gap-3 border-l-2 px-3 py-3 text-left transition-colors',
+                          mode === value
+                            ? `${meta.color} border-l-current bg-graphite-3/70`
+                            : 'border-l-transparent hover:border-l-accent-amber hover:bg-graphite-3/60',
+                        )}
+                      >
+                        <Icon className={cn('mt-0.5 h-3.5 w-3.5 shrink-0', meta.color)} />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-porcelain">{meta.label}</p>
+                          <p className="mt-0.5 truncate text-xs text-fg-muted">{meta.description}</p>
+                        </div>
+                        {mode === 'native-cache' && (
+                          <span className="mt-0.5 rounded bg-accent-teal/12 px-1 py-px text-[9px] font-semibold uppercase tracking-[0.08em] text-accent-teal">
+                            Default
+                          </span>
+                        )}
+                        {mode === value && <Check className={cn('mt-0.5 h-3.5 w-3.5 shrink-0', meta.color)} />}
+                      </button>
+                    );
+                  })}
+                </div>
 
-            <div className="border-t border-stroke-hairline bg-graphite-1 px-3 py-2">
-              <p className={cn('text-xs font-semibold uppercase tracking-[0.12em]', hoveredDetails.color)}>
-                {hoveredDetails.shortLabel}
-              </p>
-              <p className="mt-1 text-[11px] text-fg-secondary leading-relaxed">
-                {hoveredDetails.details}
-              </p>
-            </div>
-          </motion.div>
+                <div className="border-t border-white/8 bg-graphite-1 px-4 py-3">
+                  <p className={cn('text-xs font-semibold uppercase tracking-[0.12em]', hoveredDetails.color)}>
+                    {hoveredDetails.shortLabel}
+                  </p>
+                  <p className="mt-1 text-[11px] leading-relaxed text-fg-secondary">{hoveredDetails.details}</p>
+                </div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>,
+          document.body,
         )}
-      </AnimatePresence>
     </div>
   );
 }

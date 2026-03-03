@@ -61,6 +61,7 @@ export function SearchInput({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [suggestions, setSuggestions] = useState<HistorySuggestion[]>([]);
+  const [isInputFocused, setIsInputFocused] = useState(autoFocus);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchBarRef = useRef<HTMLDivElement>(null);
@@ -199,6 +200,15 @@ export function SearchInput({
     document.documentElement.style.setProperty('--quality-glow-rgb', activeQuality.rgb);
   }, [activeQuality.accent, activeQuality.rgb]);
 
+  useEffect(() => {
+    if (!autoFocus) return;
+    const id = window.setTimeout(() => {
+      inputRef.current?.focus();
+      setIsInputFocused(true);
+    }, 40);
+    return () => window.clearTimeout(id);
+  }, [autoFocus]);
+
   // Fetch suggestions when value changes
   // Show suggestions when:
   // - User is typing (value.length >= 1)
@@ -297,10 +307,12 @@ export function SearchInput({
           showSuggestions && suggestions.length > 0 ? 'rounded-t-xl rounded-b-none' : 'rounded-xl',
         )}
           style={{
-            border: hasSearchIntent || activeSearch
+            border: hasSearchIntent || activeSearch || isInputFocused
               ? `1px solid ${activePalette.border}`
               : '1px solid rgba(243, 245, 247, 0.08)',
-            boxShadow: hasSearchIntent || activeSearch
+            outline: isInputFocused ? `1px solid ${activePalette.accentSoft}` : 'none',
+            outlineOffset: isInputFocused ? '0px' : undefined,
+            boxShadow: hasSearchIntent || activeSearch || isInputFocused
               ? `0 0 0 1px ${activePalette.accentFade}, 0 8px 24px rgba(0, 0, 0, 0.4)`
               : '0 2px 8px rgba(0, 0, 0, 0.2)',
             '--accent-focus': activePalette.accent,
@@ -312,7 +324,11 @@ export function SearchInput({
             value={value}
             onChange={onChange}
             onKeyDown={handleKeyDown}
-            onFocus={() => value.length >= 1 && suggestions.length > 0 && setShowSuggestions(true)}
+            onFocus={() => {
+              setIsInputFocused(true);
+              value.length >= 1 && suggestions.length > 0 && setShowSuggestions(true);
+            }}
+            onBlur={() => setIsInputFocused(false)}
             placeholder="Type what you remember..."
             isSearching={activeSearch}
             autoFocus={autoFocus}

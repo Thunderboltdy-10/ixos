@@ -943,3 +943,52 @@
 - Evidence (links to /reports or output files): `scripts/verify-desktop-build-env.js`, `npm run tauri:build` PASS after patch.
 - Risks: developers may assume CI also reads these files (it should still use secrets/vars explicitly).
 - Follow-ups: document CI vs local precedence in release docs.
+
+- Decision: Increase desktop chrome/control density and reduce default window footprint for 1080p-friendly startup
+- Options considered: Keep 1920x1080 default and only enlarge icons; add global zoom/scaling hacks; resize default window + increase titlebar/sidebar target sizes
+- Why chosen: The oversized logical window and very small custom controls made desktop UX feel non-native and cramped/off on common displays.
+- Evidence (links to /reports or output files): src-tauri/tauri.conf.json, ui/src/components/layout/WindowControls.tsx, ui/src/components/layout/AppShell.tsx, ui/src/components/layout/Sidebar.tsx, ui/src/components/search/MainSearchView.tsx
+- Risks: Slightly denser layout may require additional tuning on very small displays.
+- Follow-ups: Validate final packaged app on 1366x768 and 1536x864.
+
+- Decision: Materialize `.env.local` files in release workflow and pass full Vite env set to `tauri-action`
+- Options considered: Keep env only in step-level vars; rely on local file presence in CI; generate `.env.local` for all build roots and include missing env in tauri-action
+- Why chosen: Tauri build can re-run frontend build paths; missing per-step env propagation caused packaged binaries to miss required runtime keys.
+- Evidence (links to /reports or output files): .github/workflows/release.yml
+- Risks: CI-generated env files live in runner workspace during job execution (ephemeral but should remain non-artifacted).
+- Follow-ups: Confirm next tagged release run is key-complete and update release checklist evidence.
+
+- Decision: Restore platform-native titlebar controls and remove floating control capsule UI
+- Options considered: Keep enlarged capsule; partially restyle capsule; implement OS-specific titlebar-integrated controls
+- Why chosen: User feedback and screenshot showed the capsule looked non-native and detached from app chrome; native-style header controls improve desktop legitimacy immediately.
+- Evidence (links to /reports or output files): ui/src/components/layout/WindowControls.tsx, RUNLOG.md (Entry 0XY)
+- Risks: Minor visual differences may still need per-platform fine-tuning in packaged runtime.
+- Follow-ups: Validate Windows and macOS packaged builds and tweak spacing per OS if needed.
+
+- Decision: Roll back broad desktop density scaling and keep only titlebar-control modernization
+- Options considered: Keep larger sidebar/shell spacing; partial rollback; full density rollback with control-only retention
+- Why chosen: User explicitly requested pre-change sizing feel and only asked for better top controls.
+- Evidence (links to /reports or output files): ui/src/components/layout/AppShell.tsx, ui/src/components/layout/Sidebar.tsx, ui/src/components/layout/WindowControls.tsx, RUNLOG.md (Entry 0XZ)
+- Risks: Some users on very high DPI might still prefer larger controls/content.
+- Follow-ups: Optional per-platform compact/comfortable density toggle later.
+
+- Decision: Render search dropdown menus via portal with top-layer z-index and opaque surfaces
+- Options considered: Increase local z-index only; refactor stacking contexts; portal to document body with fixed positioning
+- Why chosen: Screenshot showed chips/cards painting above dropdown panels; portal removes stacking-context conflicts reliably.
+- Evidence (links to /reports or output files): ui/src/components/search/QualitySwitcher.tsx, ui/src/components/search/ModeSwitcher.tsx, RUNLOG.md (Entry 0XZ)
+- Risks: Needs careful position syncing on scroll/resize (handled with listeners).
+- Follow-ups: Add viewport-edge collision handling for very small widths if needed.
+
+- Decision: Replace custom popover mode switchers with native themed selects
+- Options considered: Keep portal popovers; keep absolute popovers with higher z-index; use native selects styled to match app
+- Why chosen: Native selects are platform-robust and remove interaction/race/stacking bugs observed in production screenshots.
+- Evidence (links to /reports or output files): ui/src/components/search/QualitySwitcher.tsx, ui/src/components/search/ModeSwitcher.tsx, RUNLOG.md (Entry 0YA)
+- Risks: Slightly less bespoke micro-interaction than custom popovers.
+- Follow-ups: Reintroduce richer visuals later only if interaction remains deterministic.
+
+- Decision: Start main window maximized and track runtime maximize state for caption icon/corner shape
+- Options considered: Keep fixed-size startup; maximize manually after launch; set maximized in config + synchronize frontend state
+- Why chosen: User requirement is desktop-app behavior that fills available work area by default and shows correct restore/maximize affordance.
+- Evidence (links to /reports or output files): src-tauri/tauri.conf.json, ui/src/components/layout/WindowControls.tsx, ui/src/styles/globals.css, RUNLOG.md (Entry 0YA)
+- Risks: Some users may prefer restored launch size.
+- Follow-ups: Optional "launch maximized" user setting in future settings panel.

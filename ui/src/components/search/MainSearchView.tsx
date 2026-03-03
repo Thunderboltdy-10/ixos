@@ -260,7 +260,7 @@ export function MainSearchView() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
               transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-              className="h-full"
+              className="flex h-full items-center justify-center pb-10 pt-4"
             >
               <SearchIdleDashboard
                 directory={directory}

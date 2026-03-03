@@ -1,6 +1,7 @@
-import { Settings, Minus, Square, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
+import { Copy, Settings, Minus, Square, X } from 'lucide-react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { platform as getOsPlatform } from '@tauri-apps/plugin-os';
 import { useAuth } from '@clerk/clerk-react';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -15,47 +16,97 @@ const getTauriWindow = async () => {
             minimize: async () => { },
             toggleMaximize: async () => { },
             hide: async () => { },
+            isMaximized: async () => false,
+            onResized: async () => () => { },
         };
     }
 };
 
-interface WindowControlProps {
-    icon: React.ReactNode;
-    onClick: () => void;
-    variant?: 'default' | 'danger';
-}
-
-function WindowControl({ icon, onClick, variant = 'default' }: WindowControlProps) {
-    return (
-        <button
-            type="button"
-            onMouseDown={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onClick();
-            }}
-            className={cn(
-                "w-7 h-7 flex items-center justify-center rounded-md",
-                "transition-colors duration-150 cursor-pointer select-none",
-                variant === 'default'
-                    ? "text-fg-muted hover:text-porcelain hover:bg-graphite-2"
-                    : "text-fg-muted hover:text-white hover:bg-error"
-            )}
-        >
-            {icon}
-        </button>
-    );
-}
-
-
-
 export function WindowControls() {
+    const [osFamily, setOsFamily] = useState<'windows' | 'macos' | 'linux'>('windows');
+    const [isMaximized, setIsMaximized] = useState(true);
     const { isSignedIn } = useAuth();
     const { transferRequired } = useAuthStore();
     const openSettings = useUIStore(state => state.openSettings);
 
     const showSettings = isSignedIn && !transferRequired;
 
+    useEffect(() => {
+        let cancelled = false;
+
+        const resolveOs = async () => {
+            try {
+                const os = await getOsPlatform();
+                if (cancelled) return;
+                if (os === 'macos') {
+                    setOsFamily('macos');
+                    return;
+                }
+                if (os === 'linux') {
+                    setOsFamily('linux');
+                    return;
+                }
+                setOsFamily('windows');
+                return;
+            } catch {
+                // Fallback for browser/non-Tauri dev mode.
+            }
+
+            const platform = (navigator.platform || '').toLowerCase();
+            if (platform.includes('mac')) {
+                setOsFamily('macos');
+            } else if (platform.includes('linux')) {
+                setOsFamily('linux');
+            } else {
+                setOsFamily('windows');
+            }
+        };
+
+        void resolveOs();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+        let unlistenResized: (() => void) | null = null;
+
+        const syncMaximized = async () => {
+            try {
+                const window = await getTauriWindow();
+                const value = await window.isMaximized();
+                if (cancelled) return;
+                setIsMaximized(value);
+                if (typeof document !== 'undefined') {
+                    document.documentElement.dataset.windowMaximized = value ? '1' : '0';
+                }
+            } catch {
+                if (typeof document !== 'undefined') {
+                    document.documentElement.dataset.windowMaximized = '0';
+                }
+            }
+        };
+
+        const setup = async () => {
+            await syncMaximized();
+            try {
+                const window = await getTauriWindow();
+                unlistenResized = await window.onResized(() => {
+                    void syncMaximized();
+                });
+            } catch {
+                // no-op in browser mode
+            }
+        };
+
+        void setup();
+
+        return () => {
+            cancelled = true;
+            if (unlistenResized) unlistenResized();
+        };
+    }, []);
 
     const handleMinimize = async () => {
         try {
@@ -89,26 +140,119 @@ export function WindowControls() {
             {/* Invisible drag region - covers top of window */}
             <div
                 data-tauri-drag-region
-                className="fixed top-0 left-0 right-0 h-10 z-[9998] pointer-events-auto"
+                className="fixed top-0 left-0 right-0 h-10 z-[2147483000] pointer-events-auto"
                 style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
             />
 
-            {/* Window controls - absolute top-right, Z-index high to sit above everything */}
-            <div className="fixed top-2 right-3 flex items-center gap-0.5 z-[9999]">
-                {showSettings && (
-                    <>
-                        <WindowControl
-                            icon={<Settings className="w-3.5 h-3.5" />}
-                            onClick={() => openSettings('search')}
+            {osFamily === 'macos' ? (
+                <>
+                    <div className="fixed top-0 left-4 h-10 z-[2147483001] flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+                        <button
+                            type="button"
+                            title="Close"
+                            aria-label="Close"
+                            onClick={handleClose}
+                            className="h-3.5 w-3.5 rounded-full bg-[#ff5f57] ring-1 ring-black/35 transition-transform hover:scale-105"
                         />
-                        <div className="w-px h-4 bg-stroke-hairline mx-1" />
-                    </>
-                )}
+                        <button
+                            type="button"
+                            title="Minimize"
+                            aria-label="Minimize"
+                            onClick={handleMinimize}
+                            className="h-3.5 w-3.5 rounded-full bg-[#febc2e] ring-1 ring-black/35 transition-transform hover:scale-105"
+                        />
+                        <button
+                            type="button"
+                            title="Zoom"
+                            aria-label="Zoom"
+                            onClick={handleMaximize}
+                            className="h-3.5 w-3.5 rounded-full bg-[#28c840] ring-1 ring-black/35 transition-transform hover:scale-105"
+                        />
+                    </div>
 
-                <WindowControl icon={<Minus className="w-3.5 h-3.5" />} onClick={handleMinimize} />
-                <WindowControl icon={<Square className="w-3 h-3" />} onClick={handleMaximize} />
-                <WindowControl icon={<X className="w-3.5 h-3.5" />} onClick={handleClose} variant="danger" />
-            </div>
+                    {showSettings && (
+                        <div className="fixed top-0 right-3 h-10 z-[2147483001] flex items-center" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+                            <button
+                                type="button"
+                                onMouseDown={(event) => {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    openSettings('search');
+                                }}
+                                title="Settings"
+                                aria-label="Settings"
+                                className="h-7 w-7 rounded-md text-fg-muted transition-colors hover:bg-white/[0.06] hover:text-porcelain"
+                            >
+                                <Settings className="mx-auto h-3.5 w-3.5" />
+                            </button>
+                        </div>
+                    )}
+                </>
+            ) : (
+                <div className="fixed top-0 right-0 h-10 z-[2147483001] flex items-stretch" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+                    {showSettings && (
+                        <button
+                            type="button"
+                            onMouseDown={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                openSettings('search');
+                            }}
+                            title="Settings"
+                            aria-label="Settings"
+                            className="mr-1.5 h-10 w-10 text-fg-muted transition-colors hover:bg-white/[0.05] hover:text-porcelain"
+                        >
+                            <Settings className="mx-auto h-3.5 w-3.5" />
+                        </button>
+                    )}
+
+                    <button
+                        type="button"
+                        onMouseDown={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            void handleMinimize();
+                        }}
+                        title="Minimize"
+                        aria-label="Minimize"
+                        className="h-10 w-11 text-fg-muted transition-colors hover:bg-white/[0.05] hover:text-porcelain"
+                    >
+                        <Minus className="mx-auto h-3.5 w-3.5" />
+                    </button>
+
+                    <button
+                        type="button"
+                        onMouseDown={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            void handleMaximize();
+                        }}
+                        title={isMaximized ? 'Restore' : 'Maximize'}
+                        aria-label={isMaximized ? 'Restore' : 'Maximize'}
+                        className="h-10 w-11 text-fg-muted transition-colors hover:bg-white/[0.05] hover:text-porcelain"
+                    >
+                        {isMaximized ? (
+                            <Copy className="mx-auto h-3 w-3" />
+                        ) : (
+                            <Square className="mx-auto h-3 w-3" />
+                        )}
+                    </button>
+
+                    <button
+                        type="button"
+                        onMouseDown={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            void handleClose();
+                        }}
+                        title="Close"
+                        aria-label="Close"
+                        className="h-10 w-11 text-fg-muted transition-colors hover:bg-[#e81123] hover:text-white"
+                    >
+                        <X className="mx-auto h-3.5 w-3.5" />
+                    </button>
+                </div>
+            )}
         </>
     );
 }

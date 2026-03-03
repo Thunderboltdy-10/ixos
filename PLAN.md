@@ -650,3 +650,20 @@
   1. Run manual desktop QA on Windows/macOS/Linux for new search dropdown anchoring, result scroll, and context rendering.
   2. Address Tauri warnings (`com.ixos.app` identifier suffix and `__TAURI_BUNDLE_TYPE` updater patch warning) before production tagging.
   3. Record release checklist completion in a dedicated report under `/reports` and attach CI artifact links.
+
+## STATE SNAPSHOT (Desktop UX + Release Env Hardening, 2026-03-03)
+- Date: 2026-03-03
+- Current baseline numbers:
+  - Model quality/perf baseline unchanged from prior snapshot (no ranking/model pipeline changes in this pass).
+- Current best v2 numbers:
+  - Unchanged in this pass.
+- Current bottleneck ranking:
+  1. Desktop UX density consistency at 1080p across remaining views/components.
+  2. Release pipeline env consistency across all workflow variants.
+  3. Bundle size warning (`ui` chunk >500kB) still pending split work.
+- Current pass validation (2026-03-03):
+  - `npm --prefix ui run build`: PASS
+- What is next (top 3 tasks):
+  1. Run desktop visual QA at 1920x1080, 1536x864, and 1366x768 after packaging.
+  2. Verify release workflow env propagation on next tag build and capture run link/artifacts.
+  3. Continue reducing micro text density in remaining settings/search surfaces.

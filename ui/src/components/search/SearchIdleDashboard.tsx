@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Clock3, Layers, Search, Sparkles } from 'lucide-react';
+import { Clock3, Search, Sparkles } from 'lucide-react';
 import { useStarredStore, type SearchThread } from '@/stores/starredStore';
 import { useTodayStore } from '@/stores/todayStore';
 import { useWorkstreamStore } from '@/stores/workstreamStore';
@@ -46,39 +46,21 @@ export function SearchIdleDashboard({ directory, onApplyQuery, onResumeThread }:
     [threads],
   );
 
-  const pinnedThreads = useMemo(
-    () => threads.filter((thread) => thread.starred).slice(0, 3),
-    [threads],
-  );
-
   return (
     <motion.section
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-      className="h-full overflow-auto rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.035] via-white/[0.02] to-transparent p-5"
+      className="w-full max-w-[1260px] overflow-auto px-1 pb-2"
     >
-      <div className="mb-4 flex items-start justify-between gap-4">
+      <div className="mb-4">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.16em] text-fg-ghost">Search Dashboard</p>
-          <h2 className="mt-1 text-xl font-semibold text-porcelain">Ready for local evidence search</h2>
+          <h2 className="text-xl font-semibold text-porcelain">Ready for local evidence search</h2>
           <p className="mt-1 text-sm text-fg-muted">
             {directory
               ? `Target folder: ${directory}`
               : 'Choose a folder, then type a query to stream ranked results.'}
           </p>
-        </div>
-        <div className="hidden gap-2 sm:flex">
-          {STARTER_QUERIES.slice(0, 2).map((query) => (
-            <button
-              key={query}
-              type="button"
-              onClick={() => onApplyQuery(query)}
-              className="rounded-full border border-white/12 bg-white/5 px-3 py-1 text-xs text-fg-secondary hover:border-accent-teal/30 hover:text-porcelain"
-            >
-              {query}
-            </button>
-          ))}
         </div>
       </div>
 
@@ -111,38 +93,29 @@ export function SearchIdleDashboard({ directory, onApplyQuery, onResumeThread }:
           )}
         </section>
 
-        <section className="grid gap-4">
+        <section className="rounded-xl border border-white/10 bg-graphite-1/58 p-4">
           {isPro ? (
             <>
-              <div className="rounded-xl border border-accent-violet/28 bg-accent-violet/10 p-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-accent-violet" />
-                  <h3 className="text-sm font-semibold text-porcelain">Today Snapshot</h3>
-                  <span className="rounded-full border border-accent-magenta/30 bg-accent-magenta/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-accent-magenta">
-                    Pro
-                  </span>
-                </div>
-                <p className="text-xs text-fg-secondary">
-                  {todayData
-                    ? `${todayData.recentlyTouched.length} files touched, ${todayData.suggestedNext.length} suggested next.`
-                    : 'Today context will populate as you search and open files.'}
-                </p>
+              <div className="mb-2 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-accent-violet" />
+                <h3 className="text-sm font-semibold text-porcelain">Today Snapshot</h3>
+                <span className="rounded-full border border-accent-magenta/30 bg-accent-magenta/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-accent-magenta">
+                  Pro
+                </span>
               </div>
-
-              <div className="rounded-xl border border-white/10 bg-graphite-1/58 p-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <Layers className="h-4 w-4 text-accent-teal" />
-                  <h3 className="text-sm font-semibold text-porcelain">Workstreams</h3>
-                </div>
-                <p className="text-xs text-fg-secondary">
-                  {workstreams.length > 0
-                    ? `${workstreams.length} active workstreams available for resume.`
-                    : 'No clustered workstreams yet. They appear automatically after repeated activity.'}
-                </p>
-              </div>
+              <p className="text-xs text-fg-secondary leading-relaxed">
+                {todayData
+                  ? `${todayData.recentlyTouched.length} files touched, ${todayData.suggestedNext.length} suggested next.`
+                  : 'Today context will populate as you search and open files.'}
+              </p>
+              <p className="mt-3 text-xs text-fg-dim leading-relaxed">
+                {workstreams.length > 0
+                  ? `${workstreams.length} active workstreams available for resume.`
+                  : 'No clustered workstreams yet. They appear automatically after repeated activity.'}
+              </p>
             </>
           ) : (
-            <div className="rounded-xl border border-white/10 bg-graphite-1/58 p-4">
+            <>
               <div className="mb-2 flex items-center gap-2">
                 <Search className="h-4 w-4 text-accent-amber" />
                 <h3 className="text-sm font-semibold text-porcelain">Starter Queries</h3>
@@ -159,25 +132,7 @@ export function SearchIdleDashboard({ directory, onApplyQuery, onResumeThread }:
                   </button>
                 ))}
               </div>
-            </div>
-          )}
-
-          {pinnedThreads.length > 0 && (
-            <div className="rounded-xl border border-white/10 bg-graphite-1/58 p-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-fg-secondary">Starred</p>
-              <div className="space-y-2">
-                {pinnedThreads.map((thread) => (
-                  <button
-                    key={thread.id}
-                    type="button"
-                    onClick={() => onResumeThread(thread)}
-                    className="w-full rounded-md border border-accent-amber/18 bg-accent-amber/8 px-3 py-2 text-left text-xs text-accent-amber/90 hover:bg-accent-amber/12"
-                  >
-                    {thread.query}
-                  </button>
-                ))}
-              </div>
-            </div>
+            </>
           )}
         </section>
       </div>

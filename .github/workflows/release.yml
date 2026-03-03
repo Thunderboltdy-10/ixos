@@ -206,6 +206,32 @@ jobs:
             console.log('Updated package.json to ' + version);
           "
 
+      - name: Materialize .env.local for desktop build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_LEMONSQUEEZY_PRO_VARIANT_ID: ${{ vars.VITE_LEMONSQUEEZY_PRO_VARIANT_ID }}
+          IXOS_JWT_PUBLIC_KEY: ${{ secrets.IXOS_JWT_PUBLIC_KEY }}
+        run: |
+          node -e "
+            const fs = require('fs');
+            const targets = ['.env.local', 'ui/.env.local', 'src-tauri/.env.local'];
+            const keys = [
+              'VITE_API_URL',
+              'VITE_CLERK_PUBLISHABLE_KEY',
+              'VITE_LEMONSQUEEZY_PRO_VARIANT_ID',
+              'IXOS_JWT_PUBLIC_KEY',
+            ];
+            const lines = keys.map((key) => {
+              const raw = String(process.env[key] ?? '');
+              const escaped = raw.replace(/\\\\/g, '\\\\\\\\').replace(/\\r?\\n/g, '\\\\n').replace(/\"/g, '\\\\\"');
+              return key + '=\"' + escaped + '\"';
+            });
+            const content = lines.join('\\n') + '\\n';
+            for (const target of targets) fs.writeFileSync(target, content, 'utf8');
+            console.log('Wrote desktop env files for build pipeline.');
+          "
+
       - name: Build UI
         working-directory: ui
         env:
@@ -219,6 +245,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VITE_API_URL: ${{ vars.VITE_API_URL }}
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_LEMONSQUEEZY_PRO_VARIANT_ID: ${{ vars.VITE_LEMONSQUEEZY_PRO_VARIANT_ID }}
           IXOS_JWT_PUBLIC_KEY: ${{ secrets.IXOS_JWT_PUBLIC_KEY }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}

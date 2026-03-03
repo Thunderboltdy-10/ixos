@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,9 @@ import { Button } from "@/components/ui/Button";
 export function Nav() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const pathname = usePathname() || '';
+    const variantMatch = pathname.match(/^\/([1-5])(?:\/|$)/);
+    const variantPrefix = variantMatch ? `/${variantMatch[1]}` : '';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -48,24 +52,24 @@ export function Nav() {
 
                     {/* Desktop Nav */}
                     <nav className="hidden md:flex items-center gap-8">
-                        <Link href="/#how-it-works" className="text-sm font-medium hover:text-white transition-colors">
+                        <Link href={`${variantPrefix}/#how-it-works`} className="text-sm font-medium hover:text-white transition-colors">
                             How it works
                         </Link>
-                        <Link href="/pricing" className="text-sm font-medium hover:text-white transition-colors">
+                        <Link href={`${variantPrefix}/pricing`} className="text-sm font-medium hover:text-white transition-colors">
                             Pricing
                         </Link>
-                        <Link href="/docs" className="text-sm font-medium hover:text-white transition-colors">
+                        <Link href={`${variantPrefix}/docs`} className="text-sm font-medium hover:text-white transition-colors">
                             Docs
                         </Link>
                     </nav>
 
                     <div className="hidden md:flex items-center gap-4">
                         <Button variant="primary" size="sm" hasParticleMagnet asChild>
-                            <Link href="/download">Download</Link>
+                            <Link href={`${variantPrefix}/download`}>Download</Link>
                         </Button>
                         <SignedIn>
                             <Link
-                                href="/account"
+                                href={`${variantPrefix}/account`}
                                 className="p-2 rounded-md hover:bg-white/5 text-fg-muted hover:text-white transition-colors"
                             >
                                 <User className="w-5 h-5" />
@@ -73,10 +77,10 @@ export function Nav() {
                         </SignedIn>
                         <SignedOut>
                             <Button variant="ghost" size="sm" asChild>
-                                <Link href="/sign-in">Sign In</Link>
+                                <Link href={`${variantPrefix}/signin`}>Sign In</Link>
                             </Button>
                             <Button variant="secondary" size="sm" asChild>
-                                <Link href="/sign-up">Sign Up</Link>
+                                <Link href={`${variantPrefix}/signup`}>Sign Up</Link>
                             </Button>
                         </SignedOut>
                     </div>
@@ -106,20 +110,20 @@ export function Nav() {
                     </button>
 
                     <nav className="flex flex-col gap-6 text-lg">
-                        <Link href="/#how-it-works" onClick={() => setIsMobileMenuOpen(false)}>How it works</Link>
-                        <Link href="/pricing" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
-                        <Link href="/docs" onClick={() => setIsMobileMenuOpen(false)}>Docs</Link>
+                        <Link href={`${variantPrefix}/#how-it-works`} onClick={() => setIsMobileMenuOpen(false)}>How it works</Link>
+                        <Link href={`${variantPrefix}/pricing`} onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
+                        <Link href={`${variantPrefix}/docs`} onClick={() => setIsMobileMenuOpen(false)}>Docs</Link>
                         <hr className="border-white/10" />
                         <Button variant="primary" size="lg" className="w-full" asChild>
-                            <Link href="/download" onClick={() => setIsMobileMenuOpen(false)}>Download for Windows</Link>
+                            <Link href={`${variantPrefix}/download`} onClick={() => setIsMobileMenuOpen(false)}>Download for Windows</Link>
                         </Button>
                         <SignedOut>
                             <div className="pt-4 border-t border-white/10 space-y-3">
                                 <Button variant="ghost" size="lg" className="w-full" asChild>
-                                    <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
+                                    <Link href={`${variantPrefix}/signin`} onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
                                 </Button>
                                 <Button variant="secondary" size="lg" className="w-full" asChild>
-                                    <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>Sign Up</Link>
+                                    <Link href={`${variantPrefix}/signup`} onClick={() => setIsMobileMenuOpen(false)}>Sign Up</Link>
                                 </Button>
                             </div>
                         </SignedOut>

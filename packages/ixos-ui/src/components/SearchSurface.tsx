@@ -169,10 +169,10 @@ function buildContextLines(result: IxosSearchResult): MatchLine[] {
   const line = result.matchedLineNumber ?? null;
   return base.length > 0
     ? base.map((text, index) => ({
-        lineNumber: line ? line + index : null,
-        text,
-        kind: index === 0 ? 'match' as const : 'after' as const,
-      }))
+      lineNumber: line ? line + index : null,
+      text,
+      kind: index === 0 ? 'match' as const : 'after' as const,
+    }))
     : [{ lineNumber: line, text: 'No context available for this result.', kind: 'after' as const }];
 }
 
@@ -458,21 +458,31 @@ export function SearchSurface({
                   const ratio = normalizeRatio(result.score);
                   return (
                     <motion.div
-                      key={result.id}
+                      key={`${result.id}-${index}`}
                       initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        height: result.isCollapsed ? 32 : 'auto'
+                      }}
                       exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.18, delay: Math.min(index * 0.02, 0.12) }}
+                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1], delay: Math.min(index * 0.02, 0.12) }}
                       className="ixos-result-row"
                       data-selected={isSelected}
                       onClick={() => onSelectResult?.(index)}
+                      style={{
+                        marginBottom: '6px',
+                        overflow: 'hidden',
+                        cursor: result.isCollapsed ? 'pointer' : 'default',
+                        borderLeft: isSelected ? `2px solid ${theme.accent}` : '2px solid transparent'
+                      }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, height: 32 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, overflow: 'hidden' }}>
                           <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 11, color: isSelected ? theme.text : 'rgba(255,255,255,0.42)', flexShrink: 0 }}>
                             {String(index + 1).padStart(2, '0')}
                           </span>
-                          <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 15, fontWeight: 700, color: isSelected ? '#F8FAFC' : 'rgba(243,245,247,0.93)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 15, fontWeight: (isSelected || !result.isCollapsed) ? 700 : 400, color: (isSelected || !result.isCollapsed) ? '#F8FAFC' : 'rgba(243,245,247,0.7)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {result.title || result.path}
                           </span>
                         </div>
@@ -480,14 +490,25 @@ export function SearchSurface({
                           {(ratio * 100).toFixed(1)}%
                         </span>
                       </div>
-                      <div style={{ paddingLeft: 28 }}>
-                        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.52)', fontFamily: 'var(--font-ixo-mono), monospace', display: 'block', marginBottom: 5 }}>
-                          {compactPath(result.path)}{result.matchedLineNumber ? `:${result.matchedLineNumber}` : ''}
-                        </span>
-                        <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.68)', lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                          {cleanSearchText(result.snippet).replace(/\s+/g, ' ')}
-                        </p>
-                      </div>
+
+                      <AnimatePresence>
+                        {!result.isCollapsed && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.4, ease: "easeOut" }}
+                            style={{ paddingLeft: 28, paddingBottom: 10 }}
+                          >
+                            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.52)', fontFamily: 'var(--font-ixo-mono), monospace', display: 'block', marginBottom: 5 }}>
+                              {compactPath(result.path)}{result.matchedLineNumber ? `:${result.matchedLineNumber}` : ''}
+                            </span>
+                            <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.68)', lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                              {cleanSearchText(result.snippet).replace(/\s+/g, ' ')}
+                            </p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </motion.div>
                   );
                 })

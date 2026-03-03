@@ -32,6 +32,10 @@ export interface LandingContextValue {
   pulseAt: (x: number, y: number, intensity?: number) => void;
   /** Pulse from a section's ripple_origin_hint */
   pulseForSection: (section: LandingSection) => void;
+  /** Sequential reveal — highest index shown */
+  maxRevealedIndex: number;
+  /** Trigger next reveal */
+  revealNextSection: () => void;
 }
 
 const LandingCtx = createContext<LandingContextValue | null>(null);
@@ -45,10 +49,13 @@ export function useLandingContext(): LandingContextValue {
 export function LandingProvider({ children }: { children: ReactNode }) {
   const [sections, setSections] = useState<SectionEntry[]>([]);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+  const [maxRevealedIndex, setMaxRevealedIndex] = useState(0); // Start with Hero revealed
   const sectionMapRef = useRef<Map<string, SectionEntry>>(new Map());
 
   const registerSection = useCallback((id: string, el: HTMLElement | null) => {
     const existing = sectionMapRef.current.get(id);
+    if (existing && existing.element === el) return;
+
     const rect = el?.getBoundingClientRect();
     const entry: SectionEntry = {
       id,
@@ -62,11 +69,11 @@ export function LandingProvider({ children }: { children: ReactNode }) {
 
   const setSectionInView = useCallback((id: string, inView: boolean) => {
     const existing = sectionMapRef.current.get(id);
-    if (!existing) return;
+    if (!existing || existing.inView === inView) return;
+
     const updated = { ...existing, inView };
     sectionMapRef.current.set(id, updated);
-    const allSections = Array.from(sectionMapRef.current.values());
-    setSections(allSections);
+    setSections(Array.from(sectionMapRef.current.values()));
 
     // Set active to the last section that entered view
     if (inView) setActiveSectionId(id);
@@ -109,6 +116,10 @@ export function LandingProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const revealNextSection = useCallback(() => {
+    setMaxRevealedIndex((prev) => prev + 1);
+  }, []);
+
   return (
     <LandingCtx.Provider
       value={{
@@ -118,6 +129,8 @@ export function LandingProvider({ children }: { children: ReactNode }) {
         setSectionInView,
         pulseAt,
         pulseForSection,
+        maxRevealedIndex,
+        revealNextSection,
       }}
     >
       {children}

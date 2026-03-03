@@ -74,9 +74,14 @@ function Arrow({ active, color }: { active: boolean; color: string }) {
           style={{
             width: 0,
             height: 0,
-            borderTop: '5px solid transparent',
-            borderBottom: '5px solid transparent',
-            borderLeft: `8px solid`,
+            borderTopWidth: 5,
+            borderTopStyle: 'solid',
+            borderTopColor: 'transparent',
+            borderBottomWidth: 5,
+            borderBottomStyle: 'solid',
+            borderBottomColor: 'transparent',
+            borderLeftWidth: 8,
+            borderLeftStyle: 'solid',
             filter: active ? `drop-shadow(0 0 4px ${color})` : 'none',
           }}
         />
@@ -147,17 +152,20 @@ function StageCard({
           : 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 60%, rgba(0,0,0,0.1) 100%)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
-        border: `1px solid ${active ? stage.color + '55' : hovered ? 'rgba(246,185,76,0.25)' : 'rgba(255,255,255,0.07)'}`,
-        borderTop: `1px solid ${active ? stage.color + '80' : 'rgba(255,255,255,0.13)'}`,
-        borderLeft: `1px solid ${active ? stage.color + '66' : 'rgba(255,255,255,0.1)'}`,
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderRightColor: active ? stage.color + '55' : hovered ? 'rgba(246,185,76,0.25)' : 'rgba(255,255,255,0.07)',
+        borderBottomColor: active ? stage.color + '55' : hovered ? 'rgba(246,185,76,0.25)' : 'rgba(255,255,255,0.07)',
+        borderTopColor: active ? stage.color + '80' : 'rgba(255,255,255,0.13)',
+        borderLeftColor: active ? stage.color + '66' : 'rgba(255,255,255,0.1)',
         borderRadius: 16,
         padding: 24,
         boxShadow: active
           ? [
-              `-8px -8px 24px rgba(0,0,0,0.7)`,
-              `4px 4px 16px ${stage.color}18`,
-              `0 0 30px ${stage.color}22`,
-            ].join(', ')
+            `-8px -8px 24px rgba(0,0,0,0.7)`,
+            `4px 4px 16px ${stage.color}18`,
+            `0 0 30px ${stage.color}22`,
+          ].join(', ')
           : hovered
             ? `-6px -6px 18px rgba(0,0,0,0.6), 3px 3px 12px rgba(246,185,76,0.08)`
             : `-8px -8px 24px rgba(0,0,0,0.65), 4px 4px 16px rgba(246,185,76,0.04)`,

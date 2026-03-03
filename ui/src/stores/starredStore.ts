@@ -228,7 +228,7 @@ export const useStarredStore = create<StarredState>((set, get) => ({
       if (loaded?.threads) {
         const encryptedThreads = normalizeThreads(loaded.threads);
         const preferredThreads =
-          getLatestTimestamp(mirrorThreads) > getLatestTimestamp(encryptedThreads)
+          getLatestTimestamp(mirrorThreads) >= getLatestTimestamp(encryptedThreads)
             ? mirrorThreads
             : encryptedThreads;
 

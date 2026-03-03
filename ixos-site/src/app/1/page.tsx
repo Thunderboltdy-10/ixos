@@ -77,11 +77,21 @@ function SpotlightBackground() {
       const progress =
         window.scrollY /
         Math.max(1, document.body.scrollHeight - window.innerHeight);
-      const y = 10 + progress * 80;
-      const x = 40 + Math.sin(progress * Math.PI * 2) * 15;
+      const y = 10 + Math.min(progress, 0.4) * 60; // Keep spot somewhat up
+      const x = 50 + Math.sin(progress * Math.PI) * 10;
+
+      const alphaBloom = Math.max(0.015, 0.15 - progress * 0.6);
+      const alphaTop = Math.max(0.005, 0.18 - progress * 0.8);
+      const alphaMid = Math.max(0.005, 0.04 - progress * 0.3);
+      const alphaTopEllipse = Math.max(0.005, 0.22 - progress * 0.9);
+
       if (ref.current) {
         ref.current.style.setProperty("--spot-y", `${y}vh`);
         ref.current.style.setProperty("--spot-x", `${x}%`);
+        ref.current.style.setProperty("--alpha-bloom", `${alphaBloom}`);
+        ref.current.style.setProperty("--alpha-top", `${alphaTop}`);
+        ref.current.style.setProperty("--alpha-mid", `${alphaMid}`);
+        ref.current.style.setProperty("--alpha-top-ellipse", `${alphaTopEllipse}`);
       }
     };
     window.addEventListener("scroll", update, { passive: true });
@@ -92,17 +102,42 @@ function SpotlightBackground() {
   return (
     <div ref={ref} className="fixed inset-0 pointer-events-none z-0">
       {/* Noise texture overlay */}
-      <ArcNoiseBackground />
+      <ArcNoiseBackground intensity={0.5} />
       {/* Main amber bloom */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(800px circle at var(--spot-x, 50%) var(--spot-y, 15vh), rgba(246,185,76,0.07) 0%, transparent 65%)",
+            "radial-gradient(800px circle at var(--spot-x, 50%) var(--spot-y, 15vh), rgba(246,185,76,var(--alpha-bloom, 0.07)) 0%, transparent 65%)",
         }}
       />
-      {/* Conic breathing pulse — very subtle */}
+      {/* Top glow */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "100%",
+          background:
+            "linear-gradient(to bottom, rgba(246,185,76,var(--alpha-top, 0.12)) 0%, rgba(246,185,76,var(--alpha-mid, 0.03)) 40vh, transparent 100%)",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: "20%",
+          right: "20%",
+          height: "100%",
+          background:
+            "radial-gradient(ellipse at top, rgba(246,185,76,var(--alpha-top-ellipse, 0.15)) 0%, rgba(246,185,76,var(--alpha-mid, 0.02)) 40vh, transparent 100%)",
+          pointerEvents: "none",
+        }}
+      />
+      {/* Conic breathing pulse — entirely amber */}
       <div
         style={{
           position: "absolute",
@@ -113,13 +148,13 @@ function SpotlightBackground() {
           marginLeft: "-90vmax",
           marginTop: "-90vmax",
           background:
-            "conic-gradient(from 0deg, transparent 0%, rgba(246,185,76,0.03) 25%, transparent 50%, rgba(20,184,166,0.02) 75%, transparent 100%)",
+            "conic-gradient(from 0deg, transparent 0%, rgba(246,185,76,0.03) 25%, transparent 50%, rgba(246,185,76,0.02) 75%, transparent 100%)",
           animation: "amberSpin 24s linear infinite",
           opacity: 0.06,
           willChange: "transform",
         }}
       />
-      {/* Bottom teal accent gradient */}
+      {/* Bottom amber accent gradient */}
       <div
         style={{
           position: "absolute",
@@ -128,7 +163,7 @@ function SpotlightBackground() {
           right: 0,
           height: "40vh",
           background:
-            "linear-gradient(to top, rgba(20,184,166,0.03) 0%, transparent 100%)",
+            "linear-gradient(to top, rgba(246,185,76,0.025) 0%, transparent 100%)",
           animation: "glowPulse 8s ease-in-out infinite",
         }}
       />
@@ -219,13 +254,13 @@ function useDirectionalReveal(direction: RevealDirection) {
 
   const style: React.CSSProperties = inView
     ? {
-        animation: `${animName[direction]} 700ms cubic-bezier(0.16,1,0.3,1) forwards`,
-        willChange: "clip-path",
-      }
+      animation: `${animName[direction]} 700ms cubic-bezier(0.16,1,0.3,1) forwards`,
+      willChange: "clip-path",
+    }
     : {
-        clipPath: clipHidden[direction],
-        willChange: "clip-path",
-      };
+      clipPath: clipHidden[direction],
+      willChange: "clip-path",
+    };
 
   return { ref, style, inView };
 }
@@ -399,11 +434,7 @@ function KpiCard({
       transition={{ duration: 0.2 }}
     >
       <div
-        className="w-[3px] shrink-0 self-stretch rounded-full"
-        style={{
-          background: "linear-gradient(180deg, #F6B94C, #14B8A6)",
-          boxShadow: "0 0 8px rgba(246,185,76,0.4)",
-        }}
+        className="shrink-0 self-stretch"
       />
       <div>
         <div
@@ -507,7 +538,6 @@ function BentoCard({ f, i }: { f: typeof FEATURES[number]; i: number }) {
           color: f.color,
           textShadow: hovered ? `0 0 16px ${f.color}90, 0 0 32px ${f.color}40` : "none",
           transition: "text-shadow 250ms cubic-bezier(0.16,1,0.3,1)",
-          animation: hovered ? "nodeActivePulse 1.2s ease-in-out infinite" : "none",
           display: "inline-block",
         }}
       >
@@ -596,11 +626,11 @@ function HeroMockup() {
       const rect = containerRef.current.getBoundingClientRect();
       const availableH = rect.height - 40;
       const availableW = rect.width - 40;
-      
+
       const scaleX = availableW / NATURAL_W;
       const scaleY = availableH / NATURAL_H;
       // Increase minimum scale to show more of the desktop app
-      const newScale = Math.min(Math.max(Math.min(scaleX, scaleY), 0.55), 0.85);
+      const newScale = Math.min(Math.max(Math.min(scaleX, scaleY), 0.75), 1.05);
       setScale(newScale);
     };
 
@@ -683,15 +713,11 @@ function HeroMockup() {
           }}
         >
           <DemoSurface
-            initialQuery="authentication token refresh"
+            initialQuery="company policy on remote work"
             initialMode="auto"
             autoRun
-            presets={[
-              "authentication token refresh",
-              "rate limiter middleware",
-              "How does token expiry work?",
-              "database migration scripts",
-            ]}
+            autoType
+            displayMode="search-only"
             style={{ width: displayW, height: displayH - chromeH }}
           />
         </div>
@@ -789,6 +815,43 @@ const A = "#F6B94C";
 const T = "#14B8A6";
 const V = "#7C5CFF";
 
+/* ── Typewriter Text Component ─────────────────────────────────────── */
+
+function TypewriterText({ texts, color }: { texts: string[]; color: string }) {
+  const [text, setText] = useState("");
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    let isCancelled = false;
+    const target = texts[idx % texts.length];
+
+    const type = async () => {
+      // Type
+      for (let i = 0; i <= target.length; i++) {
+        if (isCancelled) return;
+        setText(target.slice(0, i));
+        await new Promise(r => setTimeout(r, 60 + Math.random() * 40));
+      }
+      // Wait
+      await new Promise(r => setTimeout(r, 3000));
+      if (isCancelled) return;
+      // Delete
+      for (let i = target.length; i >= 0; i--) {
+        if (isCancelled) return;
+        setText(target.slice(0, i));
+        await new Promise(r => setTimeout(r, 30));
+      }
+      // Next
+      setIdx(i => i + 1);
+    };
+
+    type();
+    return () => { isCancelled = true; };
+  }, [idx, texts]);
+
+  return <span style={{ color, textShadow: `0 0 30px ${color}40` }}>{text}</span>;
+}
+
 /* ── Page ──────────────────────────────────────────────────────────── */
 
 export default function Page1CommandCenter() {
@@ -832,7 +895,7 @@ export default function Page1CommandCenter() {
           <MissionTicker />
         </div>
         {/* Nav links */}
-        <div className="hidden md:flex items-center gap-5 text-[11px] tracking-widest uppercase text-white/40">
+        <div className="hidden lg:flex items-center gap-6 text-[11px] tracking-widest uppercase text-white/40">
           {NAV.map((l) => (
             <button
               key={l.id}
@@ -842,8 +905,22 @@ export default function Page1CommandCenter() {
               {l.label}
             </button>
           ))}
+          <a href="/1/docs" className="hover:text-white/80 transition-colors uppercase">Docs</a>
         </div>
-        <div className="ml-auto">
+
+        <div className="ml-auto flex items-center gap-4">
+          <a
+            href="/1/signin"
+            className="hidden md:block text-[11px] font-mono tracking-widest uppercase text-white/40 hover:text-white/80"
+          >
+            Sign In
+          </a>
+          <a
+            href="/1/signup"
+            className="hidden md:block text-[11px] font-semibold tracking-wide uppercase px-3 py-1 rounded border border-white/10 bg-white/5 hover:bg-white/10 transition-all"
+          >
+            Sign Up
+          </a>
           <button
             onClick={() => scrollTo("pricing")}
             className="text-[11px] font-semibold tracking-wide uppercase px-3 py-1 rounded"
@@ -882,10 +959,7 @@ export default function Page1CommandCenter() {
                 locally.
               </span>
               <br />
-              <span style={{ color: T, textShadow: `0 0 30px ${T}40` }}>
-                Every file{" "}
-              </span>
-              remembered.
+              <TypewriterText texts={["Every file", "Every codebase", "Every secret", "Every line"]} color={T} />
               <span
                 style={{
                   display: "inline-block",
@@ -917,9 +991,9 @@ export default function Page1CommandCenter() {
                 <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#22c55e", display: "inline-block", boxShadow: "0 0 8px #22c55e" }} />
                 ONLINE
               </span>
-              <span>|</span>
+              <span className="opacity-0">|</span>
               <span>LOCAL ONLY</span>
-              <span>|</span>
+              <span className="opacity-0">|</span>
               <span style={{ color: A }}>0 BYTES SENT</span>
             </div>
           </Reveal>
@@ -1458,12 +1532,15 @@ export default function Page1CommandCenter() {
                 boxShadow: `0 0 40px rgba(20,184,166,0.06)`,
                 background: "rgba(22,27,34,0.6)",
                 backdropFilter: "blur(8px)",
+                height: 520, // Give it an explicit height so today view looks good
               }}
             >
               <DemoSurface
                 initialView="today"
                 initialQuery="What was I working on yesterday in the auth module?"
                 autoRun={false}
+                displayMode="search-only"
+                style={{ height: '100%' }}
               />
             </div>
           </Reveal>

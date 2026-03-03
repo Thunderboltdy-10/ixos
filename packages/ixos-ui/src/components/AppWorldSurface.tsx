@@ -64,6 +64,7 @@ interface AppWorldSurfaceProps {
     sourcePath?: string;
   };
   interactive?: boolean;
+  displayMode?: 'full' | 'search-only' | 'rail-only' | 'search-results-only';
   className?: string;
   style?: CSSProperties;
 }
@@ -77,13 +78,18 @@ export function AppWorldSurface({
   today,
   workstreams,
   interactive = true,
+  displayMode = 'full',
   className,
   style,
 }: AppWorldSurfaceProps) {
+  const showRail = displayMode === 'full' || displayMode === 'rail-only';
+  const showPanel = displayMode === 'full' || displayMode === 'search-only' || displayMode === 'search-results-only';
+
   return (
-    <section className={`ixos-world ${className ?? ''}`} style={style}>
-      <div className="ixos-world-grid">
-        <aside className="ixos-world-rail">
+    <section className={`ixos-world ${className ?? ''}`} data-display-mode={displayMode} style={style}>
+      <div className="ixos-world-grid" style={{ gridTemplateColumns: showRail && showPanel ? '210px minmax(0, 1fr)' : '1fr' }}>
+        {showRail && (
+          <aside className="ixos-world-rail">
           <div style={{ display: 'grid', gap: 4, marginBottom: 18 }}>
             <strong style={{ color: '#f3f5f7', letterSpacing: '-0.02em' }}>{title}</strong>
             <p style={{ margin: 0, fontSize: 11, color: 'rgba(243,245,247,0.55)' }}>{subtitle}</p>
@@ -110,7 +116,9 @@ export function AppWorldSurface({
             <span className="ixos-chip">Context Ready</span>
           </div>
         </aside>
+        )}
 
+        {showPanel && (
         <div className="ixos-world-panel">
           {view === 'search' && (
             <SearchSurface
@@ -160,6 +168,7 @@ export function AppWorldSurface({
             />
           )}
         </div>
+        )}
       </div>
     </section>
   );

@@ -59,8 +59,6 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
   const [isOpen, setIsOpen] = useState(false);
   const [hoveredMode, setHoveredMode] = useState<SearchMode>(value);
   const containerRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
   const selectedMode = modes.find((m) => m.id === value) || modes[1];
   const SelectedIcon = selectedMode.icon;
   const hoveredDetails = useMemo(
@@ -71,29 +69,8 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
   useEffect(() => {
     if (!isOpen) {
       setHoveredMode(value);
-      setDropdownPos(null);
     }
   }, [isOpen, value]);
-
-  useEffect(() => {
-    if (!isOpen || !buttonRef.current) return;
-
-    const updatePos = () => {
-      const rect = buttonRef.current!.getBoundingClientRect();
-      setDropdownPos({
-        top: rect.bottom + 8,
-        left: rect.left,
-      });
-    };
-
-    updatePos();
-    window.addEventListener('resize', updatePos);
-    window.addEventListener('scroll', updatePos, true);
-    return () => {
-      window.removeEventListener('resize', updatePos);
-      window.removeEventListener('scroll', updatePos, true);
-    };
-  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -124,7 +101,6 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
   return (
     <div ref={containerRef} className={cn('relative w-[132px]', className)}>
       <button
-        ref={buttonRef}
         onClick={() => setIsOpen((open) => !open)}
         className={cn(
           'flex w-full items-center gap-2 px-2.5 py-1.5 rounded-md',
@@ -146,7 +122,7 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
       </button>
 
       <AnimatePresence>
-        {isOpen && dropdownPos && (
+        {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -154,15 +130,14 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
             transition={{ duration: 0.15 }}
             style={{
               position: 'absolute',
-              top: dropdownPos.top,
-              left: dropdownPos.left,
+              top: 'calc(100% + 8px)',
+              right: 0,
               zIndex: 15000,
-              pointerEvents: 'auto',
             }}
             className={cn(
               'w-[320px] max-w-[min(92vw,320px)]',
-              'bg-[#1a1d24]/[0.98] rounded-xl border border-white/14',
-              'shadow-lift overflow-visible isolate',
+              'bg-[#1a1d24] rounded-xl border border-white/14 pointer-events-auto',
+              'shadow-lift overflow-hidden isolate cursor-default',
             )}
           >
             <div className="max-h-[280px] overflow-y-auto">
@@ -175,11 +150,10 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
                     onClick={() => handleSelect(mode.id)}
                     onMouseEnter={() => setHoveredMode(mode.id)}
                     className={cn(
-                      'w-full flex items-start gap-3 px-3 py-3',
+                      'w-full flex items-start gap-3 px-3 py-3 cursor-pointer',
                       'hover:bg-graphite-3 transition-colors duration-150',
                       'text-left border-l-2',
                       mode.id === value ? `bg-graphite-3 ${mode.color} border-l-current` : 'border-l-transparent',
-                      isLocked && 'opacity-78',
                     )}
                   >
                     <Icon className={cn('mt-0.5 w-3.5 h-3.5 shrink-0', mode.color)} />

@@ -37,6 +37,12 @@ function StarField() {
           }}
         />
       )}
+      <div
+        className="absolute inset-0 z-10"
+        style={{
+          background: "linear-gradient(to bottom, transparent 20%, #000000 100%)",
+        }}
+      />
     </div>
   );
 }
@@ -106,12 +112,21 @@ function SignalNav() {
       >
         ixos
       </a>
-      <div className="flex items-center gap-8 text-[13px]" style={{ color: "rgba(255,255,255,0.45)" }}>
-        <a href="#pipeline" className="hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Engine</a>
-        <a href="#embedding" className="hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Index</a>
-        <a href="#privacy" className="hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Privacy</a>
+      <div className="flex items-center gap-6 text-[11px]" style={{ color: "rgba(255,255,255,0.45)" }}>
+        <a href="#pipeline" className="hidden lg:block hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Engine</a>
+        <a href="#embedding" className="hidden lg:block hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Index</a>
+        <a href="/2/docs" className="hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Docs</a>
+        <a href="/2/pricing" className="hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Pricing</a>
+        <div className="w-[1px] h-3 bg-white/10 mx-1 hidden sm:block" />
+        <a href="/2/signin" className="hidden sm:block hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Sign In</a>
         <a
-          href="#cta"
+          href="/2/signup"
+          className="px-4 py-1.5 rounded font-mono text-xs tracking-wider uppercase transition-all bg-white/5 border border-white/10 hover:bg-white/10"
+        >
+          Sign Up
+        </a>
+        <a
+          href="/2/download"
           className="px-4 py-1.5 rounded font-mono text-xs tracking-wider uppercase transition-all"
           style={{
             background: "rgba(20,184,166,0.1)",
@@ -284,37 +299,37 @@ function NodeScatter() {
   const nodes = [
     { x: 100, y: 64, isQuery: true },
     { x: 130, y: 88, active: true, label: "auth/token.ts" },
-    { x: 90,  y: 104, active: true, label: "middleware.ts" },
+    { x: 90, y: 104, active: true, label: "middleware.ts" },
     { x: 142, y: 62, active: true },
-    { x: 78,  y: 48, active: false },
+    { x: 78, y: 48, active: false },
     { x: 120, y: 120, active: true, label: "config/auth.ts" },
-    { x: 80,  y: 30, active: false },
+    { x: 80, y: 30, active: false },
     { x: 140, y: 105, active: false },
-    { x: 55,  y: 68, active: false },
+    { x: 55, y: 68, active: false },
     { x: 162, y: 80, active: false },
     { x: 105, y: 140, active: false },
-    { x: 60,  y: 100, active: false },
+    { x: 60, y: 100, active: false },
     { x: 150, y: 135, active: true, label: "hooks/useAuth.ts" },
-    { x: 45,  y: 45,  active: false },
-    { x: 170, y: 50,  active: false },
+    { x: 45, y: 45, active: false },
+    { x: 170, y: 50, active: false },
   ];
 
   return (
     <svg width="220" height="180" className="opacity-90">
       {/* Proximity edges */}
       <line x1="100" y1="64" x2="130" y2="88" stroke="rgba(20,184,166,0.35)" strokeWidth="1" />
-      <line x1="100" y1="64" x2="90"  y2="104" stroke="rgba(20,184,166,0.35)" strokeWidth="1" />
-      <line x1="100" y1="64" x2="142" y2="62"  stroke="rgba(20,184,166,0.25)" strokeWidth="1" />
+      <line x1="100" y1="64" x2="90" y2="104" stroke="rgba(20,184,166,0.35)" strokeWidth="1" />
+      <line x1="100" y1="64" x2="142" y2="62" stroke="rgba(20,184,166,0.25)" strokeWidth="1" />
       <line x1="130" y1="88" x2="120" y2="120" stroke="rgba(20,184,166,0.25)" strokeWidth="1" />
-      <line x1="90"  y1="104" x2="120" y2="120" stroke="rgba(20,184,166,0.2)"  strokeWidth="1" />
-      <line x1="120" y1="120" x2="150" y2="135" stroke="rgba(20,184,166,0.2)"  strokeWidth="1" />
+      <line x1="90" y1="104" x2="120" y2="120" stroke="rgba(20,184,166,0.2)" strokeWidth="1" />
+      <line x1="120" y1="120" x2="150" y2="135" stroke="rgba(20,184,166,0.2)" strokeWidth="1" />
 
       {nodes.map((node, i) => {
         if (node.isQuery) {
           return (
             <g key={i}>
-              <circle cx={node.x} cy={node.y} r="9"  fill="none" stroke="rgba(246,185,76,0.4)" strokeWidth="1.5" />
-              <circle cx={node.x} cy={node.y} r="4"  fill="#F6B94C" />
+              <circle cx={node.x} cy={node.y} r="9" fill="none" stroke="rgba(246,185,76,0.4)" strokeWidth="1.5" />
+              <circle cx={node.x} cy={node.y} r="4" fill="#F6B94C" />
               <text x={node.x + 12} y={node.y + 4} fill="rgba(246,185,76,0.75)" fontSize="8" fontFamily="monospace">
                 query
               </text>
@@ -357,17 +372,17 @@ function EmbeddingSpaceSection() {
 
   const inputDimensions = [
     { label: "TypeScript", filled: 4 },
-    { label: "Config",     filled: 3 },
-    { label: "Tests",      filled: 2 },
-    { label: "Docs",       filled: 1 },
-    { label: "Deps",       filled: 3 },
+    { label: "Config", filled: 3 },
+    { label: "Tests", filled: 2 },
+    { label: "Docs", filled: 1 },
+    { label: "Deps", filled: 3 },
   ];
 
   const neighbors = [
-    { file: "auth/token.ts",    score: 0.92 },
-    { file: "middleware.ts",    score: 0.87 },
-    { file: "config/auth.ts",  score: 0.81 },
-    { file: "hooks/useAuth.ts",score: 0.79 },
+    { file: "auth/token.ts", score: 0.92 },
+    { file: "middleware.ts", score: 0.87 },
+    { file: "config/auth.ts", score: 0.81 },
+    { file: "hooks/useAuth.ts", score: 0.79 },
   ];
 
   return (
@@ -495,61 +510,7 @@ function EmbeddingSpaceSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ODOMETER DIGIT — single rolling digit column
-   ═══════════════════════════════════════════════════════════════════════════ */
-function OdometerDigit({
-  digit,
-  glowColor,
-  digitH,
-}: {
-  digit: number;
-  glowColor: string;
-  digitH: number;
-}) {
-  // Digit strip: 0-9 repeated, we offset to the target digit
-  const ROWS = 10;
-  const translateY = -(digit * digitH);
-
-  return (
-    <div
-      style={{
-        display: "inline-block",
-        height: digitH,
-        overflow: "hidden",
-        position: "relative",
-      }}
-    >
-      <div
-        style={{
-          transform: `translateY(${translateY}px)`,
-          transition: "transform 0.7s cubic-bezier(0.23, 1, 0.32, 1)",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        {Array.from({ length: ROWS }, (_, i) => (
-          <div
-            key={i}
-            style={{
-              height: digitH,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#fff",
-              textShadow: i === digit ? `0 0 40px ${glowColor}` : "none",
-              lineHeight: 1,
-            }}
-          >
-            {i}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   ODOMETER STAT — rolls up digit by digit like a physical counter
+   ODOMETER STAT — count-up animation on scroll entry
    ═══════════════════════════════════════════════════════════════════════════ */
 function OdometerStat({
   value,
@@ -564,7 +525,7 @@ function OdometerStat({
   label: string;
   glowColor: string;
 }) {
-  const [displayValue, setDisplayValue] = useState(0);
+  const [count, setCount] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const hasRun = useRef(false);
 
@@ -575,50 +536,34 @@ function OdometerStat({
         hasRun.current = true;
         observer.disconnect();
         const start = performance.now();
-        const dur = 1800;
+        const dur = 1600;
         const tick = (now: number) => {
           const p = Math.min((now - start) / dur, 1);
-          // Ease: fast start, slow end (overshoot style)
           const ease = 1 - Math.pow(1 - p, 3);
-          setDisplayValue(Math.round(value * ease));
+          setCount(Math.round(value * ease));
           if (p < 1) requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);
       },
-      { threshold: 0.4 }
+      { threshold: 0.5 }
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, [value]);
 
-  // Split number into digits
-  const digits = String(displayValue).split("").map(Number);
-  // Font size / digit height
-  const digitH = 80; // px — matches roughly text-7xl
-
   return (
     <div ref={ref} className="relative text-center">
       <div
-        className="font-extralight tracking-tighter leading-none mb-3 flex items-center justify-center"
+        className="text-6xl md:text-7xl lg:text-8xl font-extralight tracking-tighter leading-none mb-3"
         style={{
           fontFamily: "var(--font-display)",
-          fontSize: `${digitH}px`,
-          height: `${digitH}px`,
+          color: "#fff",
+          textShadow: `0 0 60px ${glowColor}`,
         }}
       >
-        {prefix && (
-          <span style={{ color: "#fff", textShadow: `0 0 40px ${glowColor}` }}>
-            {prefix}
-          </span>
-        )}
-        {digits.map((d, i) => (
-          <OdometerDigit key={i} digit={d} glowColor={glowColor} digitH={digitH} />
-        ))}
-        {suffix && (
-          <span style={{ color: "rgba(255,255,255,0.7)", fontSize: `${digitH * 0.55}px`, marginLeft: 2 }}>
-            {suffix}
-          </span>
-        )}
+        {prefix}
+        {count}
+        {suffix}
       </div>
       <div
         className="uppercase tracking-[0.2em] text-[11px] font-mono"
@@ -679,12 +624,12 @@ function ScoreBar({
    PRIVACY ITEMS
    ═══════════════════════════════════════════════════════════════════════════ */
 const PRIVACY_ITEMS = [
-  { label: "No Cloud Index",       detail: "Index never leaves disk" },
-  { label: "HMAC-SHA256",          detail: "Cryptographic cache signing" },
-  { label: "mlock Memory",         detail: "Embeddings pinned, never paged" },
-  { label: "Timing Protection",    detail: "Opt-in constant-time search" },
-  { label: "Ephemeral Mode",       detail: "Zero persistence on exit" },
-  { label: "Local-Only",           detail: "No network calls, ever" },
+  { label: "No Cloud Index", detail: "Index never leaves disk" },
+  { label: "HMAC-SHA256", detail: "Cryptographic cache signing" },
+  { label: "mlock Memory", detail: "Embeddings pinned, never paged" },
+  { label: "Timing Protection", detail: "Opt-in constant-time search" },
+  { label: "Ephemeral Mode", detail: "Zero persistence on exit" },
+  { label: "Local-Only", detail: "No network calls, ever" },
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -717,85 +662,82 @@ export default function Page2SignalArchitecture() {
       {/* ================================================================
           1. HERO — Centered, lattice below text
           ================================================================ */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-[60px] z-10">
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-[60px] overflow-hidden z-10">
+        {/* CSS 3D Lattice as Background */}
+        <div className="absolute inset-0 z-0 opacity-80" style={{ mixBlendMode: "screen" }}>
+          <CSSLattice />
+        </div>
+
         {/* Hero text */}
         <motion.div
-          className="text-center mb-8 max-w-3xl mx-auto"
+          className="relative z-10 text-left pointer-events-none mt-20 max-w-md self-start ml-12"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
         >
-          <motion.p
-            className="text-[10px] uppercase tracking-[0.3em] mb-5 font-mono"
-            style={{ color: "rgba(20,184,166,0.7)" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            Local-first semantic search · Signal Architecture
-          </motion.p>
-
-          <motion.h1
-            className="text-5xl md:text-7xl lg:text-8xl font-light tracking-[-0.03em] leading-none mb-6"
-            style={{ fontFamily: "var(--font-display)", color: "#fff" }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-          >
-            The Local
-            <br />
-            <span style={{ color: "#14B8A6" }}>Index.</span>
-          </motion.h1>
-
-          <motion.p
-            className="text-lg md:text-xl font-light max-w-xl mx-auto leading-relaxed"
-            style={{ color: "rgba(255,255,255,0.4)" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-          >
-            A cryptographically signed vector index that never leaves your machine.
-          </motion.p>
-
-          {/* CTA row */}
-          <motion.div
-            className="flex items-center justify-center gap-4 mt-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.9 }}
-          >
-            <a
-              href="#cta"
-              className="px-6 py-3 rounded-lg text-sm font-mono font-medium transition-all"
-              style={{
-                background: "#14B8A6",
-                color: "#080c14",
-              }}
+          <div className="pointer-events-auto">
+            <motion.p
+              className="text-[10px] uppercase tracking-[0.3em] mb-5 font-mono"
+              style={{ color: "rgba(20,184,166,0.7)" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
             >
-              Download free
-            </a>
-            <a
-              href="#embedding"
-              className="px-6 py-3 rounded-lg text-sm font-mono transition-all"
-              style={{
-                background: "rgba(20,184,166,0.08)",
-                color: "#14B8A6",
-                border: "1px solid rgba(20,184,166,0.2)",
-              }}
-            >
-              See how it works
-            </a>
-          </motion.div>
-        </motion.div>
+              Local-first semantic search · Signal Architecture
+            </motion.p>
 
-        {/* CSS 3D Lattice — expanded, fills hero */}
-        <motion.div
-          className="w-full max-w-5xl mx-auto"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.4, delay: 0.9 }}
-        >
-          <CSSLattice />
+            <motion.h1
+              className="text-5xl md:text-7xl lg:text-8xl font-light tracking-[-0.03em] leading-none mb-6"
+              style={{ fontFamily: "var(--font-display)", color: "#fff" }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+            >
+              The Local
+              <br />
+              <span style={{ color: "#14B8A6" }}>Index.</span>
+            </motion.h1>
+
+            <motion.p
+              className="text-lg md:text-xl font-light max-w-xl leading-relaxed"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.7 }}
+            >
+              A cryptographically signed vector index that never leaves your machine.
+            </motion.p>
+
+            {/* CTA row */}
+            <motion.div
+              className="flex items-center gap-4 mt-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.9 }}
+            >
+              <a
+                href="#cta"
+                className="px-6 py-3 rounded-lg text-sm font-mono font-medium transition-all hover:scale-105"
+                style={{
+                  background: "#14B8A6",
+                  color: "#080c14",
+                }}
+              >
+                Download free
+              </a>
+              <a
+                href="#embedding"
+                className="px-6 py-3 rounded-lg text-sm font-mono transition-all hover:bg-teal-900/10"
+                style={{
+                  background: "rgba(20,184,166,0.08)",
+                  color: "#14B8A6",
+                  border: "1px solid rgba(20,184,166,0.2)",
+                }}
+              >
+                See how it works
+              </a>
+            </motion.div>
+          </div>
         </motion.div>
 
         {/* Scroll hint */}
@@ -905,68 +847,6 @@ export default function Page2SignalArchitecture() {
           4. EMBEDDING SPACE — Semantic understanding visualization
           ================================================================ */}
       <EmbeddingSpaceSection />
-
-      {/* ================================================================
-          4b. SEE IT IN ACTION — Full Search Interface demo
-          ================================================================ */}
-      <section className="relative py-20 md:py-28 px-6 z-10" style={{ background: "rgba(3,5,8,0.85)" }}>
-        <div className="max-w-5xl mx-auto">
-          <Reveal className="text-center mb-10">
-            <p
-              className="text-[10px] uppercase tracking-[0.25em] mb-3 font-mono"
-              style={{ color: "rgba(20,184,166,0.7)" }}
-            >
-              Full Search Interface
-            </p>
-            <h2
-              className="text-2xl md:text-3xl font-light text-white tracking-tight mb-3"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              See how results look in the actual app.
-            </h2>
-            <p className="text-sm max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.3)" }}>
-              Hybrid scoring, evidence cards, workstream tracking — all running locally on your machine.
-            </p>
-          </Reveal>
-
-          <Reveal delay={0.15}>
-            {/* Scale-down container so the full UI fits naturally */}
-            <div
-              style={{
-                position: "relative",
-                height: "420px",
-                overflow: "hidden",
-                borderRadius: "16px",
-                border: "1px solid rgba(20,184,166,0.12)",
-                background: "rgba(8,12,20,0.9)",
-                boxShadow: "0 24px 72px rgba(0,0,0,0.5), 0 0 48px rgba(20,184,166,0.04)",
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  transform: "scale(0.78)",
-                  transformOrigin: "top center",
-                  height: "538px",
-                  pointerEvents: "auto",
-                }}
-              >
-                <DemoSurface
-                  initialQuery="How does token refresh work?"
-                  autoRun
-                  presets={[
-                    "How does token refresh work?",
-                    "rate limiter middleware",
-                    "database migration scripts",
-                    "authentication flow",
-                  ]}
-                />
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
 
       {/* ================================================================
           5. SPEED METRICS — Odometer stats
@@ -1216,8 +1096,8 @@ export default function Page2SignalArchitecture() {
                     const col = tag.startsWith("exact")
                       ? "#F6B94C"
                       : tag.startsWith("semantic")
-                      ? "#14B8A6"
-                      : "#7C5CFF";
+                        ? "#14B8A6"
+                        : "#7C5CFF";
                     return (
                       <span
                         key={tag}
@@ -1436,10 +1316,10 @@ export default function Page2SignalArchitecture() {
           <Reveal delay={0.15}>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { name: "VS Code",    desc: "Extension with inline results" },
-                { name: "NeoVim",    desc: "Telescope integration" },
+                { name: "VS Code", desc: "Extension with inline results" },
+                { name: "NeoVim", desc: "Telescope integration" },
                 { name: "JetBrains", desc: "Tool window plugin" },
-                { name: "CLI",       desc: "Pipe-friendly output formats" },
+                { name: "CLI", desc: "Pipe-friendly output formats" },
               ].map((tool) => (
                 <div
                   key={tool.name}

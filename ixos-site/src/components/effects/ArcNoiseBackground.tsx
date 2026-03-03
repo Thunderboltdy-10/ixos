@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 function generateCanvasNoiseDataURL(): string {
-    const size = 200;
+    const size = 256;
     const canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;
@@ -17,62 +17,32 @@ function generateCanvasNoiseDataURL(): string {
         data[i] = v;
         data[i + 1] = v;
         data[i + 2] = v;
-        data[i + 3] = 16; // low alpha for subtle grain
+        data[i + 3] = 14; // very subtle grain
     }
     ctx.putImageData(imageData, 0, 0);
     return canvas.toDataURL("image/png");
 }
 
-export function ArcNoiseBackground() {
+export function ArcNoiseBackground({ intensity = 1.0 }: { intensity?: number }) {
     const [canvasNoise, setCanvasNoise] = useState<string | null>(null);
 
     useEffect(() => {
         setCanvasNoise(generateCanvasNoiseDataURL());
     }, []);
 
+    if (!canvasNoise) return null;
+
     return (
         <div
             className="absolute inset-0 z-[1] pointer-events-none"
             style={{
-                opacity: 0.22,
+                backgroundImage: `url(${canvasNoise})`,
+                backgroundSize: "256px 256px",
+                backgroundRepeat: "repeat",
+                opacity: 0.18 * intensity,
                 mixBlendMode: "overlay",
             }}
-        >
-            <svg
-                className="w-full h-full"
-                xmlns="http://www.w3.org/2000/svg"
-                preserveAspectRatio="none"
-            >
-                <filter id="denseNoise" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
-                    <feTurbulence
-                        type="fractalNoise"
-                        baseFrequency="0.85"
-                        numOctaves="4"
-                        stitchTiles="stitch"
-                    />
-                    <feColorMatrix
-                        type="matrix"
-                        values="1 0 0 0 0
-                        0 1 0 0 0
-                        0 0 1 0 0
-                        0 0 0 1 0"
-                    />
-                </filter>
-                <rect width="100%" height="100%" filter="url(#denseNoise)" />
-            </svg>
-
-            {/* Canvas-based grain tile for consistent browser output (including Firefox). */}
-            {canvasNoise && (
-                <div
-                    className="absolute inset-0"
-                    style={{
-                        backgroundImage: `url(${canvasNoise})`,
-                        backgroundSize: "200px 200px",
-                        backgroundRepeat: "repeat",
-                        opacity: 0.46,
-                    }}
-                />
-            )}
-        </div>
+        />
     );
 }
+

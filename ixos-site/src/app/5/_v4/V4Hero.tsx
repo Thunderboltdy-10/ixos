@@ -115,7 +115,7 @@ export function V4Hero() {
 
   const query = QUERY.slice(0, typedChars)
   const isSearching = phase === 'local' || phase === 'deep'
-  
+
   const pipelineStats = useMemo(() => {
     if (phase === 'typing') return { stage: 'waiting' }
     if (phase === 'local') return { stage: 'lexical', filesScanned: 312, candidates: 24, scanTrail: ['src/auth/session.ts', 'src/middleware/jwt.ts'] }
@@ -177,7 +177,7 @@ export function V4Hero() {
                 letterSpacing: '-0.04em',
                 color: '#F3F5F7',
                 // Amber glow on the whole headline for depth
-                filter: 'drop-shadow(0 0 24px rgba(246,185,76,0.35))',
+                filter: 'drop-shadow(0 0 24px rgba(246,185,76,0.15))',
               }}
             >
               Desktop search,{' '}
@@ -188,7 +188,7 @@ export function V4Hero() {
                   backgroundClip: 'text',
                   color: 'transparent',
                   // Extra amber glow on the accent span
-                  filter: 'drop-shadow(0 0 32px rgba(246,185,76,0.6))',
+                  filter: 'drop-shadow(0 0 32px rgba(246,185,76,0.25))',
                 }}
               >
                 fully cinematic.
@@ -223,13 +223,13 @@ export function V4Hero() {
                   padding: '14px 20px',
                   borderRadius: 12,
                   // 3D glassmorphic card — shadow displaced top-left
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 60%, rgba(0,0,0,0.1) 100%)',
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.1) 100%)',
                   backdropFilter: 'blur(6px)',
                   WebkitBackdropFilter: 'blur(6px)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderTop: '1px solid rgba(255,255,255,0.18)',
-                  borderLeft: '1px solid rgba(255,255,255,0.14)',
-                  boxShadow: '-8px -8px 24px rgba(0,0,0,0.65), 4px 4px 16px rgba(246,185,76,0.06)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderTop: '1px solid rgba(255,255,255,0.14)',
+                  borderLeft: '1px solid rgba(255,255,255,0.1)',
+                  boxShadow: '-8px -8px 24px rgba(0,0,0,0.65), 4px 4px 16px rgba(246,185,76,0.03)',
                   transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                   cursor: 'default',
                 }}
@@ -262,7 +262,7 @@ export function V4Hero() {
                 left: 24,
                 right: -24,
                 bottom: -24,
-                background: 'linear-gradient(135deg, rgba(246,185,76,0.28) 0%, rgba(124,58,237,0.14) 100%)',
+                background: 'linear-gradient(135deg, rgba(246,185,76,0.08) 0%, rgba(124,58,237,0.04) 100%)',
                 filter: 'blur(48px)',
                 borderRadius: 28,
                 zIndex: 0,
@@ -280,7 +280,7 @@ export function V4Hero() {
                 left: -16,
                 right: '40%',
                 bottom: '40%',
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 100%)',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 100%)',
                 filter: 'blur(20px)',
                 borderRadius: 28,
                 zIndex: 0,
@@ -296,18 +296,20 @@ export function V4Hero() {
               style={{
                 borderRadius: 18,
                 // Glassmorphic 3D card — shadow top-left, amber glow bottom-right
-                border: '1px solid rgba(255,255,255,0.12)',
-                borderTop: '1px solid rgba(255,255,255,0.2)',
-                borderLeft: '1px solid rgba(255,255,255,0.16)',
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 60%, rgba(0,0,0,0.12) 100%)',
+                borderWidth: 1,
+                borderStyle: 'solid',
+                borderColor: 'rgba(255,255,255,0.08)',
+                borderTopColor: 'rgba(255,255,255,0.14)',
+                borderLeftColor: 'rgba(255,255,255,0.12)',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.12) 100%)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
                 boxShadow: [
-                  '-16px -16px 48px rgba(0,0,0,0.8)',           // dark top-left shadow (3D lift)
-                  '8px 8px 32px rgba(246,185,76,0.12)',          // amber glow bottom-right
-                  '0 0 60px rgba(246,185,76,0.08)',              // ambient amber
-                  'inset 0 1px 1px rgba(255,255,255,0.08)',      // inner top highlight
-                  'inset -1px -1px 0 rgba(0,0,0,0.2)',          // inner bottom-right shadow
+                  '-16px -16px 48px rgba(0,0,0,0.5)',           // dark top-left shadow (3D lift)
+                  '8px 8px 32px rgba(246,185,76,0.03)',          // amber glow bottom-right
+                  '0 0 60px rgba(246,185,76,0.02)',              // ambient amber
+                  'inset 0 1px 1px rgba(255,255,255,0.03)',      // inner top highlight
+                  'inset -1px -1px 0 rgba(0,0,0,0.1)',          // inner bottom-right shadow
                 ].join(', '),
                 // Fixed height container — no overflow scroll in preview
                 height: 480,
@@ -318,54 +320,54 @@ export function V4Hero() {
                 zIndex: 1,
               }}
             >
-            {/* Window chrome bar */}
-            <div style={{
-              height: 40,
-              borderBottom: '1px solid rgba(255,255,255,0.08)',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              background: 'rgba(255,255,255,0.025)',
-              flexShrink: 0,
-            }}>
-              <div style={{ display: 'flex', gap: 7 }}>
-                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f56', boxShadow: '0 0 6px rgba(255,95,86,0.5)' }} />
-                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ffbd2e', boxShadow: '0 0 6px rgba(255,189,46,0.4)' }} />
-                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#27c93f', boxShadow: '0 0 6px rgba(39,201,63,0.4)' }} />
-              </div>
-              <div style={{ margin: '0 auto', fontSize: 11, fontFamily: 'var(--font-ixo-mono)', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>
-                IXOS — DESKTOP PREVIEW
-              </div>
-            </div>
-            {/* Content area — scale down to fit, clipping overflow */}
-            <div style={{
-              flex: 1,
-              overflow: 'hidden',
-              position: 'relative',
-            }}>
+              {/* Window chrome bar */}
               <div style={{
-                transform: 'scale(0.72)',
-                transformOrigin: 'top left',
-                width: `${100 / 0.72}%`,
-                height: `${100 / 0.72}%`,
-                padding: '20px 28px',
-                overflowY: 'hidden',
+                height: 40,
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 16px',
+                background: 'rgba(255,255,255,0.025)',
+                flexShrink: 0,
               }}>
-                <SearchSurface
-                  query={query}
-                  mode={quality}
-                  interactive={false}
-                  isSearching={isSearching}
-                  results={visibleRows}
-                  selectedIndex={selectedIndex}
-                  onSelectResult={setSelectedIndex}
-                  pipelineStats={pipelineStats}
-                  directoryLabel="~/projects/myapp"
-                  showInlineRunButton={false}
-                />
+                <div style={{ display: 'flex', gap: 7 }}>
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f56', boxShadow: '0 0 6px rgba(255,95,86,0.5)' }} />
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ffbd2e', boxShadow: '0 0 6px rgba(255,189,46,0.4)' }} />
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#27c93f', boxShadow: '0 0 6px rgba(39,201,63,0.4)' }} />
+                </div>
+                <div style={{ margin: '0 auto', fontSize: 11, fontFamily: 'var(--font-ixo-mono)', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>
+                  IXOS — DESKTOP PREVIEW
+                </div>
               </div>
-            </div>
-          </motion.div>
+              {/* Content area — scale down to fit, clipping overflow */}
+              <div style={{
+                flex: 1,
+                overflow: 'hidden',
+                position: 'relative',
+              }}>
+                <div style={{
+                  transform: 'scale(0.72)',
+                  transformOrigin: 'top left',
+                  width: `${100 / 0.72}%`,
+                  height: `${100 / 0.72}%`,
+                  padding: '20px 28px',
+                  overflowY: 'hidden',
+                }}>
+                  <SearchSurface
+                    query={query}
+                    mode={quality}
+                    interactive={false}
+                    isSearching={isSearching}
+                    results={visibleRows}
+                    selectedIndex={selectedIndex}
+                    onSelectResult={setSelectedIndex}
+                    pipelineStats={pipelineStats}
+                    directoryLabel="~/projects/myapp"
+                    showInlineRunButton={false}
+                  />
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>

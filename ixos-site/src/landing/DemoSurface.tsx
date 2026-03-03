@@ -23,10 +23,12 @@ interface PipelineStats {
 }
 
 const DEFAULT_PRESETS = [
+  "company policy on remote work",
+  "Q3 marketing campaign budget",
+  "How do I setup my email signature?",
   "authentication token refresh",
-  "rate limiter middleware",
-  "How does token expiry work?",
-  "database migration scripts",
+  "design system components",
+  "2025 financial projections"
 ];
 
 const TODAY_SIGNALS: IxosTodaySignal[] = [
@@ -121,10 +123,15 @@ export interface DemoSurfaceProps {
   initialMode?: SearchMode;
   presets?: string[];
   autoRun?: boolean;
+  autoType?: boolean;
   className?: string;
   style?: CSSProperties;
   viewOverride?: IxosView;
   onViewChange?: (view: IxosView) => void;
+  displayMode?: 'full' | 'search-only' | 'rail-only' | 'search-results-only';
+  maxResults?: number;
+  overrideResults?: IxosSearchResult[];
+  overrideSelectedIndex?: number;
 }
 
 export function DemoSurface({
@@ -133,10 +140,15 @@ export function DemoSurface({
   initialMode = "auto",
   presets = DEFAULT_PRESETS,
   autoRun = true,
+  autoType = false,
   className,
   style,
   viewOverride,
   onViewChange,
+  displayMode = 'full',
+  maxResults,
+  overrideResults,
+  overrideSelectedIndex,
 }: DemoSurfaceProps) {
   const [view, setView] = useState<IxosView>(initialView);
   const [query, setQuery] = useState(initialQuery);
@@ -156,12 +168,11 @@ export function DemoSurface({
 
   const cancelRef = useRef<(() => void) | null>(null);
   const hasAutoRan = useRef(false);
+  const lastInteractionRef = useRef<number>(Date.now());
 
-  useEffect(() => {
-    if (viewOverride) {
-      setView(viewOverride);
-    }
-  }, [viewOverride]);
+  const handleInteraction = useCallback(() => {
+    lastInteractionRef.current = Date.now();
+  }, []);
 
   const runSearch = useCallback(async (nextQuery: string, nextMode: SearchMode) => {
     if (!nextQuery.trim()) {
@@ -222,6 +233,62 @@ export function DemoSurface({
   }, []);
 
   useEffect(() => {
+    if (!autoType) return;
+
+    let isCancelled = false;
+    let currentPresetIndex = 0;
+
+    const startTypingLoop = async () => {
+      // initial wait before typing starts
+      await new Promise(r => setTimeout(r, 1500));
+      while (!isCancelled) {
+        if (Date.now() - lastInteractionRef.current < 5000) {
+          await new Promise(r => setTimeout(r, 1000));
+          continue;
+        }
+
+        const targetText = presets[currentPresetIndex % presets.length];
+
+        for (let i = 0; i <= targetText.length; i++) {
+          if (isCancelled || Date.now() - lastInteractionRef.current < 5000) break;
+          setQuery(targetText.slice(0, i));
+          await new Promise(r => setTimeout(r, 40 + Math.random() * 50));
+        }
+
+        if (isCancelled || Date.now() - lastInteractionRef.current < 5000) continue;
+
+        runSearch(targetText, mode);
+
+        // wait to show results
+        await new Promise(r => setTimeout(r, 4500));
+
+        if (isCancelled || Date.now() - lastInteractionRef.current < 5000) continue;
+
+        // delete text
+        for (let i = targetText.length; i >= 0; i--) {
+          if (isCancelled || Date.now() - lastInteractionRef.current < 5000) break;
+          setQuery(targetText.slice(0, i));
+          await new Promise(r => setTimeout(r, 20));
+        }
+
+        currentPresetIndex++;
+      }
+    };
+
+    startTypingLoop();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [autoType, mode, presets, runSearch]);
+
+  useEffect(() => {
+    if (viewOverride) {
+      setView(viewOverride);
+    }
+  }, [viewOverride]);
+
+  useEffect(() => {
     if (autoRun && !hasAutoRan.current) {
       hasAutoRan.current = true;
       const timer = setTimeout(() => {
@@ -233,33 +300,37 @@ export function DemoSurface({
   }, [autoRun, initialMode, initialQuery, runSearch]);
 
   const handleSubmit = useCallback(() => {
+    handleInteraction();
     runSearch(query, mode);
-  }, [mode, query, runSearch]);
+  }, [mode, query, runSearch, handleInteraction]);
 
   const handleModeChange = useCallback(
     (nextMode: SearchMode) => {
+      handleInteraction();
       setMode(nextMode);
       if (results.length > 0 || isSearching) {
         runSearch(query, nextMode);
       }
     },
-    [isSearching, query, results.length, runSearch]
+    [isSearching, query, results.length, runSearch, handleInteraction]
   );
 
   const handlePresetSelect = useCallback(
     (preset: string) => {
+      handleInteraction();
       setQuery(preset);
       runSearch(preset, mode);
     },
-    [mode, runSearch]
+    [mode, runSearch, handleInteraction]
   );
 
   const handleViewChange = useCallback(
     (nextView: IxosView) => {
+      handleInteraction();
       setView(nextView);
       onViewChange?.(nextView);
     },
-    [onViewChange]
+    [onViewChange, handleInteraction]
   );
 
   return (
@@ -269,9 +340,13 @@ export function DemoSurface({
       interactive={true}
       className={className}
       style={style}
+      displayMode={displayMode}
       search={{
         query,
-        onQueryChange: setQuery,
+        onQueryChange: (q) => {
+          handleInteraction();
+          setQuery(q);
+        },
         onSubmit: handleSubmit,
         presets: presets.length > 0 ? presets : DEFAULT_PRESETS,
         onPresetSelect: handlePresetSelect,
@@ -279,9 +354,10 @@ export function DemoSurface({
         onModeChange: handleModeChange,
         stageLabel,
         isSearching,
-        results,
-        selectedIndex,
+        results: overrideResults ?? (maxResults ? results.slice(0, maxResults) : results),
+        selectedIndex: overrideSelectedIndex ?? selectedIndex,
         onSelectResult: setSelectedIndex,
+        hideSearchChrome: displayMode === 'search-results-only',
         pipelineStats: {
           filesScanned: pipelineStats.filesScanned,
           candidates: pipelineStats.candidates,

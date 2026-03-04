@@ -1,0 +1,80 @@
+﻿
+> ixos-site@0.1.0 build
+> next build
+
+▲ Next.js 16.1.4 (Turbopack)
+- Environments: .env.local
+- Experiments (use with caution):
+  ✓ externalDir
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 4.3s
+  Skipping validation of types
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/42) ...
+  Generating static pages using 15 workers (10/42) 
+  Generating static pages using 15 workers (20/42) 
+  Generating static pages using 15 workers (31/42) 
+✓ Generating static pages using 15 workers (42/42) in 390.0ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /[variant]/account
+├ ƒ /[variant]/docs
+├ ƒ /[variant]/download
+├ ƒ /[variant]/pricing
+├ ƒ /[variant]/signin
+├ ƒ /[variant]/signup
+├ ○ /1
+├ ○ /2
+├ ○ /3
+├ ○ /4
+├ ○ /5
+├ ○ /account
+├ ƒ /api/account/subscription
+├ ƒ /api/desktop/billing
+├ ƒ /api/desktop/devices
+├ ƒ /api/desktop/devices/[deviceId]
+├ ƒ /api/desktop/devices/[deviceId]/forget
+├ ƒ /api/desktop/devices/[deviceId]/logout
+├ ƒ /api/desktop/devices/logout-all
+├ ƒ /api/desktop/devices/trusted
+├ ƒ /api/desktop/entitlement
+├ ƒ /api/desktop/entitlement-key
+├ ƒ /api/desktop/lease/claim
+├ ƒ /api/desktop/lease/refresh
+├ ƒ /api/desktop/lease/transfer/approve
+├ ƒ /api/desktop/lease/transfer/confirm
+├ ƒ /api/desktop/lease/transfer/request
+├ ƒ /api/desktop/lease/transfer/status
+├ ƒ /api/desktop/register-device
+├ ƒ /api/support/contact
+├ ƒ /api/webhooks/clerk
+├ ƒ /api/webhooks/lemonsqueezy
+├ ○ /demo
+├ ○ /docs
+├ ○ /docs/agents
+├ ○ /docs/benchmarking
+├ ○ /docs/cli-reference
+├ ○ /docs/desktop-app
+├ ○ /docs/getting-started
+├ ○ /docs/models
+├ ○ /docs/troubleshooting
+├ ○ /download
+├ ○ /pricing
+├ ○ /privacy
+├ ƒ /sign-in/[[...sign-in]]
+├ ƒ /sign-up/[[...sign-up]]
+├ ○ /signin
+├ ○ /signup
+├ ○ /support
+└ ○ /terms
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

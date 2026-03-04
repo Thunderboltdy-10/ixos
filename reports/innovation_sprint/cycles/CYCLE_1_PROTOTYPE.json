@@ -1,0 +1,1070 @@
+{
+  "summary": {
+    "cases": 15,
+    "baseline_pass": 14,
+    "baseline_fail": 1,
+    "rerank_pass": 15,
+    "rerank_fail": 0,
+    "delta_pass": 1,
+    "avg_query_latency_ms": 646.2
+  },
+  "cases": [
+    {
+      "id": "exact_anchor_results_streamed_flash",
+      "category": "exact_anchor",
+      "query": "results streamed",
+      "search_mode": "flash",
+      "top_k": 5,
+      "expanded_limit": 20,
+      "duration_ms": 640,
+      "baseline": {
+        "pass": false,
+        "failures": [
+          "missing in top-5: corpus_tiny/logs/app.log",
+          "unexpected in top-5: corpus_tiny/restricted/secret.txt"
+        ],
+        "top_paths": [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/restricted/secret.txt",
+          "corpus_tiny/docs/q1_financial_summary.txt",
+          "corpus_tiny/docs/q1_financial_report.md"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/logs/app.log",
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_summary.txt",
+          "corpus_tiny/docs/q1_financial_report.md"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.6589144468307495,
+            "adjusted_score": 0.9589144468307496,
+            "matched_terms": [
+              "results",
+              "streamed"
+            ],
+            "witness_ratio": 1.0,
+            "phrase_bonus": 0.08,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/logs/app.log"
+          },
+          {
+            "base_score": 0.7435083389282227,
+            "adjusted_score": 0.8535083389282226,
+            "matched_terms": [
+              "streamed"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/misc/changelog.txt"
+          },
+          {
+            "base_score": 0.7107937932014465,
+            "adjusted_score": 0.7107937932014465,
+            "matched_terms": [],
+            "witness_ratio": 0.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/q2_financial_report.md"
+          },
+          {
+            "base_score": 0.6978850364685059,
+            "adjusted_score": 0.6978850364685059,
+            "matched_terms": [],
+            "witness_ratio": 0.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/q1_financial_summary.txt"
+          },
+          {
+            "base_score": 0.6977779269218445,
+            "adjusted_score": 0.6977779269218445,
+            "matched_terms": [],
+            "witness_ratio": 0.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/q1_financial_report.md"
+          }
+        ]
+      }
+    },
+    {
+      "id": "exact_anchor_results_streamed_pro_control",
+      "category": "exact_anchor",
+      "query": "results streamed",
+      "search_mode": "pro",
+      "top_k": 5,
+      "expanded_limit": 20,
+      "duration_ms": 902,
+      "baseline": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/logs/app.log",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/code/watcher.py",
+          "corpus_tiny/docs/q1_financial_report.md"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/logs/app.log",
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/code/watcher.py",
+          "corpus_tiny/docs/q1_financial_report.md"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.6596984267234802,
+            "adjusted_score": 0.9596984267234803,
+            "matched_terms": [
+              "results",
+              "streamed"
+            ],
+            "witness_ratio": 1.0,
+            "phrase_bonus": 0.08,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/logs/app.log"
+          },
+          {
+            "base_score": 0.6770481467247009,
+            "adjusted_score": 0.7870481467247009,
+            "matched_terms": [
+              "streamed"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/misc/changelog.txt"
+          },
+          {
+            "base_score": 0.6591903567314148,
+            "adjusted_score": 0.6591903567314148,
+            "matched_terms": [],
+            "witness_ratio": 0.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/q2_financial_report.md"
+          },
+          {
+            "base_score": 0.6542972922325134,
+            "adjusted_score": 0.6542972922325134,
+            "matched_terms": [],
+            "witness_ratio": 0.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/code/watcher.py"
+          },
+          {
+            "base_score": 0.6493779420852661,
+            "adjusted_score": 0.6493779420852661,
+            "matched_terms": [],
+            "witness_ratio": 0.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/q1_financial_report.md"
+          }
+        ]
+      }
+    },
+    {
+      "id": "semantic_drift_results_streamed_auto_secret",
+      "category": "semantic_drift",
+      "query": "results streamed",
+      "search_mode": "auto",
+      "top_k": 5,
+      "expanded_limit": 20,
+      "duration_ms": 888,
+      "baseline": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/logs/app.log",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/docs/research_summary.txt"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/logs/app.log",
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/docs/research_summary.txt"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.7318249940872192,
+            "adjusted_score": 1.0318249940872193,
+            "matched_terms": [
+              "results",
+              "streamed"
+            ],
+            "witness_ratio": 1.0,
+            "phrase_bonus": 0.08,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/logs/app.log"
+          },
+          {
+            "base_score": 0.7416552305221558,
+            "adjusted_score": 0.8516552305221557,
+            "matched_terms": [
+              "streamed"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/misc/changelog.txt"
+          },
+          {
+            "base_score": 0.7088407874107361,
+            "adjusted_score": 0.7088407874107361,
+            "matched_terms": [],
+            "witness_ratio": 0.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/q2_financial_report.md"
+          },
+          {
+            "base_score": 0.6891752481460571,
+            "adjusted_score": 0.6891752481460571,
+            "matched_terms": [],
+            "witness_ratio": 0.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/q1_financial_report.md"
+          },
+          {
+            "base_score": 0.6833904981613159,
+            "adjusted_score": 0.6833904981613159,
+            "matched_terms": [],
+            "witness_ratio": 0.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/research_summary.txt"
+          }
+        ]
+      }
+    },
+    {
+      "id": "exact_anchor_config_json",
+      "category": "exact_anchor",
+      "query": "config json",
+      "search_mode": "flash",
+      "top_k": 5,
+      "expanded_limit": 20,
+      "duration_ms": 574,
+      "baseline": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/docs/api_reference.md",
+          "corpus_tiny/data/config.json",
+          "corpus_tiny/code/cli_flags.rs",
+          "corpus_tiny/data/users.json",
+          "corpus_tiny/data/metrics.json"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/data/config.json",
+          "corpus_tiny/docs/api_reference.md",
+          "corpus_tiny/code/cli_flags.rs",
+          "corpus_tiny/data/users.json",
+          "corpus_tiny/data/metrics.json"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.7241755723953247,
+            "adjusted_score": 0.9441755723953247,
+            "matched_terms": [
+              "config",
+              "json"
+            ],
+            "witness_ratio": 1.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/data/config.json"
+          },
+          {
+            "base_score": 0.7399164438247681,
+            "adjusted_score": 0.849916443824768,
+            "matched_terms": [
+              "config"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/api_reference.md"
+          },
+          {
+            "base_score": 0.6825910806655884,
+            "adjusted_score": 0.7925910806655884,
+            "matched_terms": [
+              "json"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/code/cli_flags.rs"
+          },
+          {
+            "base_score": 0.6698929667472839,
+            "adjusted_score": 0.7798929667472839,
+            "matched_terms": [
+              "json"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/data/users.json"
+          },
+          {
+            "base_score": 0.6464359164237976,
+            "adjusted_score": 0.7564359164237976,
+            "matched_terms": [
+              "json"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/data/metrics.json"
+          }
+        ]
+      }
+    },
+    {
+      "id": "exact_anchor_api_reference_endpoints",
+      "category": "exact_anchor",
+      "query": "endpoints /search /config /compliance",
+      "search_mode": "flash",
+      "top_k": 3,
+      "expanded_limit": 20,
+      "duration_ms": 584,
+      "baseline": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/docs/api_reference.md",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/code/search_engine.rs"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/docs/api_reference.md",
+          "corpus_tiny/code/search_engine.rs",
+          "corpus_tiny/data/config.json"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.8546938300132751,
+            "adjusted_score": 1.0196938300132752,
+            "matched_terms": [
+              "endpoints",
+              "/search",
+              "/config"
+            ],
+            "witness_ratio": 0.75,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/api_reference.md"
+          },
+          {
+            "base_score": 0.7125030755996704,
+            "adjusted_score": 0.7675030755996705,
+            "matched_terms": [
+              "/search"
+            ],
+            "witness_ratio": 0.25,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/code/search_engine.rs"
+          },
+          {
+            "base_score": 0.6982942819595337,
+            "adjusted_score": 0.7532942819595337,
+            "matched_terms": [
+              "/config"
+            ],
+            "witness_ratio": 0.25,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/data/config.json"
+          }
+        ]
+      }
+    },
+    {
+      "id": "exact_anchor_privacy_policy",
+      "category": "exact_anchor",
+      "query": "local-only no telemetry",
+      "search_mode": "flash",
+      "top_k": 3,
+      "expanded_limit": 20,
+      "duration_ms": 611,
+      "baseline": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/docs/privacy_policy.md",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/docs/privacy_policy.md",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.8134678602218628,
+            "adjusted_score": 1.0334678602218628,
+            "matched_terms": [
+              "local-only",
+              "no",
+              "telemetry"
+            ],
+            "witness_ratio": 1.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/privacy_policy.md"
+          },
+          {
+            "base_score": 0.7035012245178223,
+            "adjusted_score": 0.7768345578511556,
+            "matched_terms": [
+              "no"
+            ],
+            "witness_ratio": 0.3333,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+          },
+          {
+            "base_score": 0.6461789608001709,
+            "adjusted_score": 0.7195122941335043,
+            "matched_terms": [
+              "no"
+            ],
+            "witness_ratio": 0.3333,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unicode_anchor_nandu_notes",
+      "category": "exact_anchor",
+      "query": "\u00f1and\u00fa notes",
+      "search_mode": "flash",
+      "top_k": 5,
+      "expanded_limit": 20,
+      "duration_ms": 558,
+      "baseline": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.8548015356063843,
+            "adjusted_score": 1.0748015356063843,
+            "matched_terms": [
+              "and",
+              "notes"
+            ],
+            "witness_ratio": 1.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+          },
+          {
+            "base_score": 0.6835339069366455,
+            "adjusted_score": 0.7935339069366455,
+            "matched_terms": [
+              "notes"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ambiguous_short_notes",
+      "category": "ambiguous_short",
+      "query": "notes",
+      "search_mode": "flash",
+      "top_k": 5,
+      "expanded_limit": 20,
+      "duration_ms": 544,
+      "baseline": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.7350744009017944,
+            "adjusted_score": 1.0350744009017945,
+            "matched_terms": [
+              "notes"
+            ],
+            "witness_ratio": 1.0,
+            "phrase_bonus": 0.08,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+          },
+          {
+            "base_score": 0.7228103280067444,
+            "adjusted_score": 1.0228103280067444,
+            "matched_terms": [
+              "notes"
+            ],
+            "witness_ratio": 1.0,
+            "phrase_bonus": 0.08,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+          }
+        ]
+      }
+    },
+    {
+      "id": "exact_anchor_meeting_date",
+      "category": "exact_anchor",
+      "query": "meeting notes 2024-11-15",
+      "search_mode": "flash",
+      "top_k": 3,
+      "expanded_limit": 20,
+      "duration_ms": 572,
+      "baseline": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.9121949672698975,
+            "adjusted_score": 1.1321949672698974,
+            "matched_terms": [
+              "meeting",
+              "notes",
+              "2024-11-15"
+            ],
+            "witness_ratio": 1.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+          },
+          {
+            "base_score": 0.6978451609611511,
+            "adjusted_score": 0.7711784942944845,
+            "matched_terms": [
+              "notes"
+            ],
+            "witness_ratio": 0.3333,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+          }
+        ]
+      }
+    },
+    {
+      "id": "anchor_project_plan_milestones",
+      "category": "exact_anchor",
+      "query": "project plan milestones",
+      "search_mode": "flash",
+      "top_k": 5,
+      "expanded_limit": 20,
+      "duration_ms": 593,
+      "baseline": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.7111606597900391,
+            "adjusted_score": 0.8578273264567058,
+            "matched_terms": [
+              "project",
+              "plan"
+            ],
+            "witness_ratio": 0.6667,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/project_plan_2025.md"
+          },
+          {
+            "base_score": 0.6754012107849121,
+            "adjusted_score": 0.8220678774515788,
+            "matched_terms": [
+              "project",
+              "plan"
+            ],
+            "witness_ratio": 0.6667,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pricing_false_negative_flash",
+      "category": "semantic_drift",
+      "query": "free and pro tiers",
+      "search_mode": "flash",
+      "top_k": 5,
+      "expanded_limit": 20,
+      "duration_ms": 631,
+      "baseline": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/code/watcher.py",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/web/pricing.html"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/web/pricing.html",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/code/watcher.py"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.6768416166305542,
+            "adjusted_score": 0.9768416166305542,
+            "matched_terms": [
+              "free",
+              "and",
+              "pro",
+              "tiers"
+            ],
+            "witness_ratio": 1.0,
+            "phrase_bonus": 0.08,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/web/pricing.html"
+          },
+          {
+            "base_score": 0.7001650929450989,
+            "adjusted_score": 0.8101650929450989,
+            "matched_terms": [
+              "and",
+              "pro"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/q2_financial_report.md"
+          },
+          {
+            "base_score": 0.6674237847328186,
+            "adjusted_score": 0.7774237847328186,
+            "matched_terms": [
+              "and",
+              "pro"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/project_plan_2025.md"
+          },
+          {
+            "base_score": 0.6924125552177429,
+            "adjusted_score": 0.747412555217743,
+            "matched_terms": [
+              "and"
+            ],
+            "witness_ratio": 0.25,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/q1_financial_report.md"
+          },
+          {
+            "base_score": 0.6842768788337708,
+            "adjusted_score": 0.7392768788337708,
+            "matched_terms": [
+              "pro"
+            ],
+            "witness_ratio": 0.25,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/code/watcher.py"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pricing_control_pro",
+      "category": "exact_anchor",
+      "query": "free and pro tiers",
+      "search_mode": "pro",
+      "top_k": 5,
+      "expanded_limit": 20,
+      "duration_ms": 847,
+      "baseline": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/web/pricing.html",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/code/search_engine.rs"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/web/pricing.html",
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "corpus_tiny/code/search_engine.rs"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.8247352838516235,
+            "adjusted_score": 1.1247352838516236,
+            "matched_terms": [
+              "free",
+              "and",
+              "pro",
+              "tiers"
+            ],
+            "witness_ratio": 1.0,
+            "phrase_bonus": 0.08,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/web/pricing.html"
+          },
+          {
+            "base_score": 0.8154799938201904,
+            "adjusted_score": 0.9254799938201904,
+            "matched_terms": [
+              "and",
+              "pro"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/project_plan_2025.md"
+          },
+          {
+            "base_score": 0.8207501173019409,
+            "adjusted_score": 0.875750117301941,
+            "matched_terms": [
+              "and"
+            ],
+            "witness_ratio": 0.25,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/research_summary.txt"
+          },
+          {
+            "base_score": 0.8159841895103455,
+            "adjusted_score": 0.8709841895103455,
+            "matched_terms": [
+              "and"
+            ],
+            "witness_ratio": 0.25,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+          },
+          {
+            "base_score": 0.8107720613479614,
+            "adjusted_score": 0.8657720613479615,
+            "matched_terms": [
+              "pro"
+            ],
+            "witness_ratio": 0.25,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/code/search_engine.rs"
+          }
+        ]
+      }
+    },
+    {
+      "id": "privacy_non_request_no_secret",
+      "category": "privacy_guard",
+      "query": "roadmap phase",
+      "search_mode": "flash",
+      "top_k": 5,
+      "expanded_limit": 20,
+      "duration_ms": 569,
+      "baseline": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/markdown/roadmap.md"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/markdown/roadmap.md"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.8846167922019958,
+            "adjusted_score": 1.1046167922019958,
+            "matched_terms": [
+              "roadmap",
+              "phase"
+            ],
+            "witness_ratio": 1.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/markdown/roadmap.md"
+          }
+        ]
+      }
+    },
+    {
+      "id": "privacy_explicit_secret_request",
+      "category": "privacy_guard",
+      "query": "restricted data",
+      "search_mode": "flash",
+      "top_k": 5,
+      "expanded_limit": 20,
+      "duration_ms": 561,
+      "baseline": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/restricted/secret.txt",
+          "corpus_tiny/data/metrics.json",
+          "corpus_tiny/data/users.json",
+          "corpus_tiny/data/config.json"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/restricted/secret.txt",
+          "corpus_tiny/data/metrics.json",
+          "corpus_tiny/data/users.json",
+          "corpus_tiny/data/config.json"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.8877399563789368,
+            "adjusted_score": 1.1877399563789368,
+            "matched_terms": [
+              "restricted",
+              "data"
+            ],
+            "witness_ratio": 1.0,
+            "phrase_bonus": 0.08,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/restricted/secret.txt"
+          },
+          {
+            "base_score": 0.721391499042511,
+            "adjusted_score": 0.831391499042511,
+            "matched_terms": [
+              "data"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/data/metrics.json"
+          },
+          {
+            "base_score": 0.6829363703727722,
+            "adjusted_score": 0.7929363703727722,
+            "matched_terms": [
+              "data"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/data/users.json"
+          },
+          {
+            "base_score": 0.6796506643295288,
+            "adjusted_score": 0.7896506643295288,
+            "matched_terms": [
+              "data"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/data/config.json"
+          }
+        ]
+      }
+    },
+    {
+      "id": "anchor_search_engine_symbol",
+      "category": "exact_anchor",
+      "query": "search engine",
+      "search_mode": "flash",
+      "top_k": 5,
+      "expanded_limit": 20,
+      "duration_ms": 619,
+      "baseline": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/code/search_engine.rs",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/misc/todo.md",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/api_reference.md"
+        ]
+      },
+      "rerank": {
+        "pass": true,
+        "failures": [],
+        "top_paths": [
+          "corpus_tiny/code/search_engine.rs",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/misc/todo.md",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/api_reference.md"
+        ],
+        "top_features": [
+          {
+            "base_score": 0.817268431186676,
+            "adjusted_score": 1.037268431186676,
+            "matched_terms": [
+              "search",
+              "engine"
+            ],
+            "witness_ratio": 1.0,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/code/search_engine.rs"
+          },
+          {
+            "base_score": 0.7174997925758362,
+            "adjusted_score": 0.8274997925758362,
+            "matched_terms": [
+              "search"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/research_summary.txt"
+          },
+          {
+            "base_score": 0.7081461548805237,
+            "adjusted_score": 0.8181461548805237,
+            "matched_terms": [
+              "search"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/misc/todo.md"
+          },
+          {
+            "base_score": 0.701754629611969,
+            "adjusted_score": 0.811754629611969,
+            "matched_terms": [
+              "search"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/q2_financial_report.md"
+          },
+          {
+            "base_score": 0.681471586227417,
+            "adjusted_score": 0.791471586227417,
+            "matched_terms": [
+              "search"
+            ],
+            "witness_ratio": 0.5,
+            "phrase_bonus": 0.0,
+            "privacy_penalty": 0.0,
+            "path": "corpus_tiny/docs/api_reference.md"
+          }
+        ]
+      }
+    }
+  ]
+}

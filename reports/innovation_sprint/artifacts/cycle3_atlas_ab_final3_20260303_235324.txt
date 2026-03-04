@@ -1,0 +1,13 @@
+﻿# Cycle3 atlas A/B final3 2026-03-03T23:53:24.7816222+01:00
+
+## baseline run (flag off)
+C:\Users\pablo\Downloads\Ixos\reports\innovation_sprint\failure_atlas\results_latest.json
+C:\Users\pablo\Downloads\Ixos\reports\innovation_sprint\failure_atlas\results_latest.md
+BASE_EXIT=1
+
+## flag-on run + volatility
+C:\Users\pablo\Downloads\Ixos\reports\innovation_sprint\failure_atlas\results_latest.json
+C:\Users\pablo\Downloads\Ixos\reports\innovation_sprint\failure_atlas\results_latest.md
+C:\Users\pablo\Downloads\Ixos\reports\innovation_sprint\failure_atlas\volatility_latest.json
+C:\Users\pablo\Downloads\Ixos\reports\innovation_sprint\failure_atlas\volatility_latest.md
+FLAG_EXIT=0

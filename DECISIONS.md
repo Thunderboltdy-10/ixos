@@ -992,3 +992,9 @@
 - Evidence (links to /reports or output files): src-tauri/tauri.conf.json, ui/src/components/layout/WindowControls.tsx, ui/src/styles/globals.css, RUNLOG.md (Entry 0YA)
 - Risks: Some users may prefer restored launch size.
 - Follow-ups: Optional "launch maximized" user setting in future settings panel.
+
+## 2026-03-04 Innovation Sprint vNEXT Decisions
+- KEEP (prototype only): risk_budget_v1 controller as quality-heavy Pareto reference.
+- REJECT for shipping: synchronous Pro escalation defaults (p95 regression too large).
+- KEEP for further study: risk_budget_v2 formalized budget/risk scoring framework.
+- PIVOT: pursue trust-constrained score optimization and confidence-bound stopping instead of blocking heavy-path fallbacks.

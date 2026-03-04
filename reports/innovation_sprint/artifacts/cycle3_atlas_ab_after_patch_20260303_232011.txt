@@ -1,0 +1,25 @@
+﻿# Cycle3 atlas A/B after patch 2026-03-03T23:20:11.4260914+01:00
+
+## cargo build --bin ixos
+cargo :     Finished `dev` profile [unoptimized + debuginfo] target(s) in 
+0.46s
+At line:2 char:355
++ ... o build --bin ixos *> $null 2>&1; cargo build --bin ixos 2>&1 | 
+Out-F ...
++                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Finished `d...get(s) in 0 
+   .46s:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+## baseline run (flag off)
+C:\Users\pablo\Downloads\Ixos\reports\innovation_sprint\failure_atlas\results_latest.json
+C:\Users\pablo\Downloads\Ixos\reports\innovation_sprint\failure_atlas\results_latest.md
+BASE_EXIT=1
+
+## flag-on run + volatility
+C:\Users\pablo\Downloads\Ixos\reports\innovation_sprint\failure_atlas\results_latest.json
+C:\Users\pablo\Downloads\Ixos\reports\innovation_sprint\failure_atlas\results_latest.md
+C:\Users\pablo\Downloads\Ixos\reports\innovation_sprint\failure_atlas\volatility_latest.json
+C:\Users\pablo\Downloads\Ixos\reports\innovation_sprint\failure_atlas\volatility_latest.md
+FLAG_EXIT=1

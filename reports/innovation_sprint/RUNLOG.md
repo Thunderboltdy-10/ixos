@@ -1,0 +1,131 @@
+﻿# Sprint Runlog
+
+## 2026-03-03 21:21:23 UTC
+- Initialized reports/innovation_sprint scaffold.
+- Baseline repo state captured:
+  - `git status --short --branch`
+  - `git rev-parse HEAD`
+  - `git diff --stat`
+
+## 2026-03-03 21:40:34 UTC
+- Re-captured baseline repo state before change batch:
+  - `git status --short --branch`
+  - `git rev-parse HEAD`
+  - `git diff --stat`
+  - STOP check: `STOP_ABSENT`
+- Baseline validation matrix commands run and artifacts captured:
+  - `cargo test -q` -> `reports/innovation_sprint/artifacts/baseline_cargo_test_20260303_222844.txt`
+  - `cargo test --test settings_matrix -q` -> `reports/innovation_sprint/artifacts/baseline_settings_matrix_20260303_222908.txt`
+  - `npm --prefix ui run build` -> `reports/innovation_sprint/artifacts/baseline_ui_build_20260303_222929.txt`
+  - `npm --prefix ixos-site run build` -> `reports/innovation_sprint/artifacts/baseline_site_build_20260303_222930.txt`
+  - isolated Ralph loop:
+    - command: `python scripts/ralph_loop.py --checkpoint R2 --bench-dir . --bench-runs 3 --objective-profile harsh`
+    - output pointer file: `reports/innovation_sprint/artifacts/baseline_ralph_loop_20260303_222952.txt`
+    - generated iteration: `reports/ralph/iteration_17_20260303_212952.md`
+    - exit: `1` due `landing_audit` stale benchmark data fail
+- Quality baseline commands:
+  - `python scripts/run_golden.py` -> `reports/innovation_sprint/artifacts/baseline_golden_20260303_223058.txt` (exit `1`, `logs_streamed` mismatch)
+  - `python scripts/ixos_eval.py --suite both --only-ids ixos-flash-v2 --real-limit 120 --topk 10 ...` -> `reports/innovation_sprint/artifacts/ixos_eval_baseline_20260303_223118.{json,csv}`
+- Failure atlas scaffold + runner implemented:
+  - `reports/innovation_sprint/failure_atlas/queries.json`
+  - `reports/innovation_sprint/failure_atlas/CASE_CARDS.md`
+  - `reports/innovation_sprint/scripts/run_failure_atlas.py`
+- Failure atlas execution:
+  - `python reports/innovation_sprint/scripts/run_failure_atlas.py --volatility-runs 5`
+  - outputs:
+    - `reports/innovation_sprint/failure_atlas/results_latest.json`
+    - `reports/innovation_sprint/failure_atlas/results_latest.md`
+    - `reports/innovation_sprint/failure_atlas/volatility_latest.json`
+    - `reports/innovation_sprint/failure_atlas/volatility_latest.md`
+  - summary: 16 cases, 14 pass, 2 fail; volatility stable across 5 runs for 15 measured cases.
+
+## 2026-03-03 21:50:00 UTC
+- Cycle 1 measurement reruns:
+  - `cargo test -q` -> `reports/innovation_sprint/artifacts/cycle1_cargo_test_20260303_224520.txt` (exit 0)
+  - `cargo test --test settings_matrix -q` -> `reports/innovation_sprint/artifacts/cycle1_settings_matrix_20260303_224550.txt` (exit 0)
+  - `npm --prefix ui run build` -> `reports/innovation_sprint/artifacts/cycle1_ui_build_20260303_224610.txt` (exit 0)
+  - `npm --prefix ixos-site run build` -> `reports/innovation_sprint/artifacts/cycle1_site_build_20260303_224610.txt` (exit 0)
+  - isolated Ralph loop:
+    - `python scripts/ralph_loop.py --checkpoint R2 --bench-dir . --bench-runs 3 --objective-profile harsh`
+    - pointer: `reports/innovation_sprint/artifacts/cycle1_ralph_loop_20260303_224629.txt`
+    - generated: `reports/ralph/iteration_18_20260303_214629.md`
+    - exit: `1` (landing stale benchmark audit fail)
+- Added Cycle 1 prototype:
+  - `python reports/innovation_sprint/cycles/cycle_1_witness_guard_prototype.py`
+  - outputs:
+    - `reports/innovation_sprint/cycles/CYCLE_1_PROTOTYPE.json`
+    - `reports/innovation_sprint/cycles/CYCLE_1_PROTOTYPE.md`
+  - summary: 15-case scoped eval improved pass count `14 -> 15` (`+1`).
+
+## 2026-03-03 22:02:00 UTC
+- Cycle 2 product-path implementation (flagged):
+  - Modified: `src/ixos_rank/progressive.rs`
+  - Added witness guard functions + env gate `IXOS_EXPERIMENT_WITNESS_GUARD`
+  - Added tests:
+    - `test_apply_witness_guard_promotes_anchor_and_penalizes_sensitive_path`
+    - `test_query_sensitive_detection`
+    - `test_path_sensitive_detection`
+- Flagged atlas A/B runs:
+  - Baseline snapshot copied to:
+    - `reports/innovation_sprint/cycles/CYCLE_2_ATLAS_BASELINE.{json,md}`
+  - Initial flag run:
+    - `reports/innovation_sprint/cycles/CYCLE_2_ATLAS_FLAG_ON.{json,md}`
+  - Tuned flag run:
+    - `reports/innovation_sprint/cycles/CYCLE_2_ATLAS_FLAG_ON_v2.{json,md}`
+  - Result:
+    - baseline `14/16` pass
+    - tuned flag `15/16` pass
+    - leak case fixed; one anchor miss remains
+- Cycle 2 full matrix rerun:
+  - `cargo test -q` -> `reports/innovation_sprint/artifacts/cycle2_cargo_test_20260303_225816.txt` (exit 0)
+  - `cargo test --test settings_matrix -q` -> `reports/innovation_sprint/artifacts/cycle2_settings_matrix_20260303_225843.txt` (exit 0)
+  - `npm --prefix ui run build` -> `reports/innovation_sprint/artifacts/cycle2_ui_build_20260303_225913.txt` (exit 0)
+  - `npm --prefix ixos-site run build` -> `reports/innovation_sprint/artifacts/cycle2_site_build_20260303_225913.txt` (exit 0)
+  - isolated Ralph with guard ON:
+    - `python scripts/ralph_loop.py --checkpoint R2 --bench-dir . --bench-runs 3 --objective-profile harsh`
+    - pointer: `reports/innovation_sprint/artifacts/cycle2_ralph_loop_20260303_225945.txt`
+    - generated: `reports/ralph/iteration_19_20260303_215945.md`
+    - compare: `reports/ralph/comparison_19_20260303_215945.md`
+
+## 2026-03-03 23:01:03 UTC
+- Re-captured repo state + stop gate before Cycle 3 batch:
+  - `git status --short --branch`
+  - `git rev-parse HEAD`
+  - `git diff --stat`
+  - STOP check: `STOP_ABSENT`
+- Cycle 3 investigation + targeted tests:
+  - Root-cause trace via `--verbose`: lexical candidate generation can be empty (e.g., `results streamed`), causing pure semantic fallback truncation at low limits.
+  - Targeted test artifacts:
+    - `reports/innovation_sprint/artifacts/cycle3_targeted_tests_after_pure_overfetch_20260303_233434.txt`
+    - `reports/innovation_sprint/artifacts/cycle3_targeted_tests_after_guard_gate_fix3_20260303_234158.txt`
+    - `reports/innovation_sprint/artifacts/cycle3_targeted_tests_after_conditional_overfetch_20260303_234630.txt`
+    - `reports/innovation_sprint/artifacts/cycle3_targeted_tests_after_remove_lex_floor_20260303_235133.txt`
+- Cycle 3 atlas A/B snapshots:
+  - Final baseline: `reports/innovation_sprint/cycles/CYCLE_3_ATLAS_BASELINE_v5.{json,md}` (`14/16`)
+  - Final flag ON: `reports/innovation_sprint/cycles/CYCLE_3_ATLAS_FLAG_ON_v6.{json,md}` (`16/16`)
+  - Final volatility: `reports/innovation_sprint/cycles/CYCLE_3_VOLATILITY_FLAG_ON_v6.{json,md}` (5 runs stable)
+  - Execution artifact: `reports/innovation_sprint/artifacts/cycle3_atlas_ab_final3_20260303_235324.txt`
+- Cycle 3 full validation matrix:
+  - `cargo test -q` -> `reports/innovation_sprint/artifacts/cycle3_cargo_test_20260303_235609.txt` (exit 0)
+  - `cargo test --test settings_matrix -q` -> `reports/innovation_sprint/artifacts/cycle3_settings_matrix_20260303_235609.txt` (exit 0)
+  - `npm --prefix ui run build` -> `reports/innovation_sprint/artifacts/cycle3_ui_build_20260303_235609.txt` (exit 0)
+  - `npm --prefix ixos-site run build` -> `reports/innovation_sprint/artifacts/cycle3_site_build_20260303_235609.txt` (exit 0)
+  - Ralph loop (guard ON):
+    - `python scripts/ralph_loop.py --checkpoint R2 --bench-dir . --bench-runs 3 --objective-profile harsh`
+    - artifact: `reports/innovation_sprint/artifacts/cycle3_ralph_loop_20260303_235609.txt`
+    - generated iteration: `reports/ralph/iteration_20_20260303_225705.md`
+    - comparison: `reports/ralph/comparison_20_20260303_225705.md`
+    - exit 1 due `landing_audit` stale benchmark data
+- Cycle 3 docs written:
+  - `reports/innovation_sprint/cycles/CYCLE_3_PLAN.md`
+  - `reports/innovation_sprint/cycles/CYCLE_3_IMPLEMENTATION.md`
+  - `reports/innovation_sprint/cycles/CYCLE_3_MEASURE.md`
+  - `reports/innovation_sprint/cycles/CYCLE_3_DECISION.md`
+  - `reports/innovation_sprint/panel/CYCLE_3/*.md`
+
+## 2026-03-03 23:01:23 UTC
+- Post-cycle snapshot captured:
+  - STOP check: `STOP_ABSENT`
+  - `git rev-parse HEAD` -> `9e7cf3f93e8ef70caea84c2f0e923793f5d4417c`
+  - `git diff --stat` -> `src/ixos_rank/progressive.rs | 607 insertions, 14 deletions`
+  - `git status --short --branch` shows one tracked code change (`src/ixos_rank/progressive.rs`) and untracked report artifacts under `reports/innovation_sprint` + `reports/ralph`.

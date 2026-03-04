@@ -1,0 +1,610 @@
+{
+  "summary": {
+    "runs": 5,
+    "case_count": 15,
+    "mean_top1_flip_rate": 0.0,
+    "mean_pairwise_jaccard_topk": 1.0
+  },
+  "cases": [
+    {
+      "id": "exact_anchor_results_streamed_flash",
+      "query": "results streamed",
+      "search_mode": "flash",
+      "runs": [
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_summary.txt",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/docs/pdf_surrogate.txt"
+        ],
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_summary.txt",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/docs/pdf_surrogate.txt"
+        ],
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_summary.txt",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/docs/pdf_surrogate.txt"
+        ],
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_summary.txt",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/docs/pdf_surrogate.txt"
+        ],
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_summary.txt",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/docs/pdf_surrogate.txt"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/misc/changelog.txt"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    },
+    {
+      "id": "exact_anchor_results_streamed_pro_control",
+      "query": "results streamed",
+      "search_mode": "pro",
+      "runs": [
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/logs/app.log",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/code/watcher.py",
+          "corpus_tiny/docs/q1_financial_report.md"
+        ],
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/logs/app.log",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/code/watcher.py",
+          "corpus_tiny/docs/q1_financial_report.md"
+        ],
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/logs/app.log",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/code/watcher.py",
+          "corpus_tiny/docs/q1_financial_report.md"
+        ],
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/logs/app.log",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/code/watcher.py",
+          "corpus_tiny/docs/q1_financial_report.md"
+        ],
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/logs/app.log",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/code/watcher.py",
+          "corpus_tiny/docs/q1_financial_report.md"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/misc/changelog.txt"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    },
+    {
+      "id": "semantic_drift_results_streamed_auto_secret",
+      "query": "results streamed",
+      "search_mode": "auto",
+      "runs": [
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/docs/q1_financial_summary.txt"
+        ],
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/docs/q1_financial_summary.txt"
+        ],
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/docs/q1_financial_summary.txt"
+        ],
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/docs/q1_financial_summary.txt"
+        ],
+        [
+          "corpus_tiny/misc/changelog.txt",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/docs/q1_financial_summary.txt"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/misc/changelog.txt"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    },
+    {
+      "id": "exact_anchor_config_json",
+      "query": "config json",
+      "search_mode": "flash",
+      "runs": [
+        [
+          "corpus_tiny/docs/api_reference.md",
+          "corpus_tiny/data/config.json",
+          "corpus_tiny/code/cli_flags.rs",
+          "corpus_tiny/data/users.json",
+          "corpus_tiny/data/metrics.json"
+        ],
+        [
+          "corpus_tiny/docs/api_reference.md",
+          "corpus_tiny/data/config.json",
+          "corpus_tiny/code/cli_flags.rs",
+          "corpus_tiny/data/users.json",
+          "corpus_tiny/data/metrics.json"
+        ],
+        [
+          "corpus_tiny/docs/api_reference.md",
+          "corpus_tiny/data/config.json",
+          "corpus_tiny/code/cli_flags.rs",
+          "corpus_tiny/data/users.json",
+          "corpus_tiny/data/metrics.json"
+        ],
+        [
+          "corpus_tiny/docs/api_reference.md",
+          "corpus_tiny/data/config.json",
+          "corpus_tiny/code/cli_flags.rs",
+          "corpus_tiny/data/users.json",
+          "corpus_tiny/data/metrics.json"
+        ],
+        [
+          "corpus_tiny/docs/api_reference.md",
+          "corpus_tiny/data/config.json",
+          "corpus_tiny/code/cli_flags.rs",
+          "corpus_tiny/data/users.json",
+          "corpus_tiny/data/metrics.json"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/docs/api_reference.md"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    },
+    {
+      "id": "exact_anchor_api_reference_endpoints",
+      "query": "endpoints /search /config /compliance",
+      "search_mode": "flash",
+      "runs": [
+        [
+          "corpus_tiny/docs/api_reference.md",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/code/search_engine.rs"
+        ],
+        [
+          "corpus_tiny/docs/api_reference.md",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/code/search_engine.rs"
+        ],
+        [
+          "corpus_tiny/docs/api_reference.md",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/code/search_engine.rs"
+        ],
+        [
+          "corpus_tiny/docs/api_reference.md",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/code/search_engine.rs"
+        ],
+        [
+          "corpus_tiny/docs/api_reference.md",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/code/search_engine.rs"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/docs/api_reference.md"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    },
+    {
+      "id": "exact_anchor_privacy_policy",
+      "query": "local-only no telemetry",
+      "search_mode": "flash",
+      "runs": [
+        [
+          "corpus_tiny/docs/privacy_policy.md",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "corpus_tiny/docs/privacy_policy.md",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "corpus_tiny/docs/privacy_policy.md",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "corpus_tiny/docs/privacy_policy.md",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "corpus_tiny/docs/privacy_policy.md",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/docs/privacy_policy.md"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    },
+    {
+      "id": "unicode_anchor_nandu_notes",
+      "query": "\u00f1and\u00fa notes",
+      "search_mode": "flash",
+      "runs": [
+        [
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    },
+    {
+      "id": "ambiguous_short_notes",
+      "query": "notes",
+      "search_mode": "flash",
+      "runs": [
+        [
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    },
+    {
+      "id": "exact_anchor_meeting_date",
+      "query": "meeting notes 2024-11-15",
+      "search_mode": "flash",
+      "runs": [
+        [
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    },
+    {
+      "id": "anchor_project_plan_milestones",
+      "query": "project plan milestones",
+      "search_mode": "flash",
+      "runs": [
+        [
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/docs/project_plan_2025.md"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    },
+    {
+      "id": "pricing_false_negative_flash",
+      "query": "free and pro tiers",
+      "search_mode": "flash",
+      "runs": [
+        [
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/code/watcher.py",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/web/pricing.html"
+        ],
+        [
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/code/watcher.py",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/web/pricing.html"
+        ],
+        [
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/code/watcher.py",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/web/pricing.html"
+        ],
+        [
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/code/watcher.py",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/web/pricing.html"
+        ],
+        [
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/q1_financial_report.md",
+          "corpus_tiny/code/watcher.py",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/web/pricing.html"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/docs/q2_financial_report.md"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    },
+    {
+      "id": "pricing_control_pro",
+      "query": "free and pro tiers",
+      "search_mode": "pro",
+      "runs": [
+        [
+          "corpus_tiny/web/pricing.html",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/code/search_engine.rs"
+        ],
+        [
+          "corpus_tiny/web/pricing.html",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/code/search_engine.rs"
+        ],
+        [
+          "corpus_tiny/web/pricing.html",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/code/search_engine.rs"
+        ],
+        [
+          "corpus_tiny/web/pricing.html",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/code/search_engine.rs"
+        ],
+        [
+          "corpus_tiny/web/pricing.html",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "corpus_tiny/docs/project_plan_2025.md",
+          "corpus_tiny/code/search_engine.rs"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/web/pricing.html"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    },
+    {
+      "id": "privacy_non_request_no_secret",
+      "query": "roadmap phase",
+      "search_mode": "flash",
+      "runs": [
+        [
+          "corpus_tiny/markdown/roadmap.md"
+        ],
+        [
+          "corpus_tiny/markdown/roadmap.md"
+        ],
+        [
+          "corpus_tiny/markdown/roadmap.md"
+        ],
+        [
+          "corpus_tiny/markdown/roadmap.md"
+        ],
+        [
+          "corpus_tiny/markdown/roadmap.md"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/markdown/roadmap.md"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    },
+    {
+      "id": "privacy_explicit_secret_request",
+      "query": "restricted data",
+      "search_mode": "flash",
+      "runs": [
+        [
+          "corpus_tiny/restricted/secret.txt",
+          "corpus_tiny/data/metrics.json",
+          "corpus_tiny/data/users.json",
+          "corpus_tiny/data/config.json"
+        ],
+        [
+          "corpus_tiny/restricted/secret.txt",
+          "corpus_tiny/data/metrics.json",
+          "corpus_tiny/data/users.json",
+          "corpus_tiny/data/config.json"
+        ],
+        [
+          "corpus_tiny/restricted/secret.txt",
+          "corpus_tiny/data/metrics.json",
+          "corpus_tiny/data/users.json",
+          "corpus_tiny/data/config.json"
+        ],
+        [
+          "corpus_tiny/restricted/secret.txt",
+          "corpus_tiny/data/metrics.json",
+          "corpus_tiny/data/users.json",
+          "corpus_tiny/data/config.json"
+        ],
+        [
+          "corpus_tiny/restricted/secret.txt",
+          "corpus_tiny/data/metrics.json",
+          "corpus_tiny/data/users.json",
+          "corpus_tiny/data/config.json"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/restricted/secret.txt"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    },
+    {
+      "id": "anchor_search_engine_symbol",
+      "query": "search engine",
+      "search_mode": "flash",
+      "runs": [
+        [
+          "corpus_tiny/code/search_engine.rs",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/misc/todo.md",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/api_reference.md"
+        ],
+        [
+          "corpus_tiny/code/search_engine.rs",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/misc/todo.md",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/api_reference.md"
+        ],
+        [
+          "corpus_tiny/code/search_engine.rs",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/misc/todo.md",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/api_reference.md"
+        ],
+        [
+          "corpus_tiny/code/search_engine.rs",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/misc/todo.md",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/api_reference.md"
+        ],
+        [
+          "corpus_tiny/code/search_engine.rs",
+          "corpus_tiny/docs/research_summary.txt",
+          "corpus_tiny/misc/todo.md",
+          "corpus_tiny/docs/q2_financial_report.md",
+          "corpus_tiny/docs/api_reference.md"
+        ]
+      ],
+      "unique_top1": [
+        "corpus_tiny/code/search_engine.rs"
+      ],
+      "top1_flip_rate": 0.0,
+      "avg_pairwise_jaccard_topk": 1.0
+    }
+  ]
+}

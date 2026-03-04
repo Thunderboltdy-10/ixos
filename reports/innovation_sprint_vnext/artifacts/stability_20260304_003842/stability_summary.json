@@ -1,0 +1,28 @@
+﻿[
+    {
+        "file":  "big_bench_20260303_233904.json",
+        "cache_mode":  "Ephemeral",
+        "samples":  200,
+        "ttfr_p50_ms":  45.0,
+        "ttfr_p95_ms":  89.0,
+        "total_p50_ms":  67.0,
+        "total_p95_ms":  432.0,
+        "cold_ttfr_p50_ms":  51.0,
+        "cold_total_p95_ms":  151.0,
+        "warm_total_p95_ms":  432.0,
+        "avg_cache_hit_rate":  0.0
+    },
+    {
+        "file":  "big_bench_20260303_233915.json",
+        "cache_mode":  "NativeCache",
+        "samples":  200,
+        "ttfr_p50_ms":  45.0,
+        "ttfr_p95_ms":  91.0,
+        "total_p50_ms":  45.0,
+        "total_p95_ms":  94.0,
+        "cold_ttfr_p50_ms":  51.0,
+        "cold_total_p95_ms":  133.0,
+        "warm_total_p95_ms":  93.0,
+        "avg_cache_hit_rate":  0.95
+    }
+]

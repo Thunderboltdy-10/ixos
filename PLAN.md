@@ -667,3 +667,16 @@
   1. Run desktop visual QA at 1920x1080, 1536x864, and 1366x768 after packaging.
   2. Verify release workflow env propagation on next tag build and capture run link/artifacts.
   3. Continue reducing micro text density in remaining settings/search surfaces.
+
+## STATE SNAPSHOT (2026-03-04T00:00:00Z)
+- Baseline (atlas flash): AnchorTop1Hit@1=0.80, PlausibleWrong@k=0.1333, SensitiveLeak@k=0.0, latency p50/p95=633.57/762.57 ms.
+- Best trust point this sprint: risk_budget_v1 -> AnchorTop1Hit@1=1.00, PlausibleWrong@k=0.0333, latency p95=1725.16 ms (too slow).
+- Best speed-trust compromise tested: risk_budget_v2 budget25 -> AnchorTop1Hit@1=0.88, PlausibleWrong@k=0.1067, latency p95=1439.39 ms (still too slow).
+- Current bottleneck ranking:
+  1) synchronous Pro escalation tail cost
+  2) uncertainty calibration quality for selective escalation
+  3) top1 trust errors despite hit@k success
+- Next top-3 tasks:
+  1) implement score-level trust-constrained Lagrangian (no synchronous Pro fallback)
+  2) add confidence-sequence stop/probe for refine gate
+  3) re-benchmark atlas + 5x stability + ralph big bench for Pareto update

@@ -1,0 +1,31 @@
+﻿# Cycle3 targeted tests after guard gate fix 2026-03-03T23:40:00.2019990+01:00
+
+## cargo test -q test_apply_witness_guard_promotes_anchor_and_penalizes_sensitive_path
+
+running 1 test
+ixos_rank::progressive::tests::test_apply_witness_guard_promotes_anchor_and_penalizes_sensitive_path --- FAILED
+
+failures:
+
+---- ixos_rank::progressive::tests::test_apply_witness_guard_promotes_anchor_and_penalizes_sensitive_path stdout ----
+
+thread 'ixos_rank::progressive::tests::test_apply_witness_guard_promotes_anchor_and_penalizes_sensitive_path' (6388) panicked at src\ixos_rank\progressive.rs:2325:9:
+witness candidate should outrank penalized sensitive path
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    ixos_rank::progressive::tests::test_apply_witness_guard_promotes_anchor_and_penalizes_sensitive_path
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 490 filtered out; finished in 0.00s
+
+cargo : error: test failed, to rerun pass `--lib`
+At line:2 char:964
++ ...  -FilePath $out -Append -Encoding utf8; cargo test -q $t 2>&1 | 
+Out-F ...
++                                             ~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: test fai...un pass `-- 
+   lib`:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+FAILED_TEST=test_apply_witness_guard_promotes_anchor_and_penalizes_sensitive_path

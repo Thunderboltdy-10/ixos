@@ -680,3 +680,22 @@
   1) implement score-level trust-constrained Lagrangian (no synchronous Pro fallback)
   2) add confidence-sequence stop/probe for refine gate
   3) re-benchmark atlas + 5x stability + ralph big bench for Pareto update
+
+## STATE SNAPSHOT (Ralph v3 plateau report, 2026-03-04)
+- Date: 2026-03-04
+- Current baseline numbers:
+  - Atlas flash baseline (from innovation suite): AnchorTop1Hit@1=0.80, PlausibleWrong@k=0.1333, SensitiveLeak@k=0.0, latency p50/p95=633.57/762.57 ms.
+- Current best v2 numbers:
+  - Best trust point observed in sprint: risk_budget_v1 -> AnchorTop1Hit@1=1.00, PlausibleWrong@k=0.0333, latency p95=1725.16 ms (not ship-safe).
+- Current bottleneck ranking:
+  1. Candidate recall under capped lexical generation and timeout limits (anchor misses)
+  2. Heuristic sensitive suppression without policy-grade constraints (leak risk)
+  3. Confidence/routing calibration between Flash-first and Pro refinement (quality inversion risk)
+- Ralph v3 evidence snapshot:
+  - Stop state: NO SURVIVORS after prosecutor+gatekeeper and 3-cycle plateau.
+  - Artifacts: ralph_v3/FINAL_REPORT.md, ralph_v3/NOVELTY_MATRIX.md, ralph_v3/BANLIST.md, ralph_v3/SOURCES.md.
+- What is next (top 3 tasks):
+  1. Start a fresh Ralph cycle from the five search directions in ralph_v3/FINAL_REPORT.md and require hard falsification-first evidence.
+  2. Convert unresolved leak/anchor cases into executable regression cases in the atlas harness before new architecture claims.
+  3. Re-run targeted retrieval benchmarks only after a gatekeeper-approved survivor exists.
+

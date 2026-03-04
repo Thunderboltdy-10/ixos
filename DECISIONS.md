@@ -998,3 +998,19 @@
 - REJECT for shipping: synchronous Pro escalation defaults (p95 regression too large).
 - KEEP for further study: risk_budget_v2 formalized budget/risk scoring framework.
 - PIVOT: pursue trust-constrained score optimization and confidence-bound stopping instead of blocking heavy-path fallbacks.
+
+## 2026-03-04 Ralph v3 Decisions
+- Decision: Accept NO SURVIVORS as the valid Ralph v3 outcome for this run (plateau stop).
+- Options considered: force-select weakest survivor to continue prototyping; continue infinite search despite 3-cycle plateau; stop with evidence-saturated banlist and explicit next search directions.
+- Why chosen: forcing convergence violates Ralph anti-bias/anti-settling constraints and would reduce rigor; evidence showed repeated collapse to known prior art or gatekeeper vetoes.
+- Evidence (links to /reports or output files): ralph_v3/FINAL_REPORT.md, ralph_v3/NOVELTY_MATRIX.md, ralph_v3/BANLIST.md, ralph_v3/FAILURES.md, ralph_v3/SOURCES.md.
+- Risks: a truly novel architecture may still exist outside explored query neighborhoods.
+- Follow-ups: next cycle must start from the five new search directions and use adversarial prior-art search before any survivor promotion.
+
+- Decision: Treat control-plane documentation (ralph_v3/* + root state snapshot/log/decisions) as mandatory deliverable equal to candidate generation.
+- Options considered: keep findings only in chat; partial file logging; full durable logging for compaction resilience.
+- Why chosen: mission explicitly assumes context loss and requires resumability without chat history.
+- Evidence (links to /reports or output files): ralph_v3/EXECUTION_LOG.md, ralph_v3/TASK_QUEUE.md, PLAN.md latest snapshot.
+- Risks: documentation overhead can reduce experiment throughput.
+- Follow-ups: keep logs concise but complete; avoid deep prose when tabular entries suffice.
+

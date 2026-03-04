@@ -1,0 +1,89 @@
+{
+  "prototype": "anchor_guard_v1",
+  "suite": "innovation_failure_suite_v1",
+  "metrics": {
+    "baseline": {
+      "hit_at_k": 0.6666666666666666,
+      "banned_in_top_k_rate": 0.0,
+      "mrr": 0.16666666666666666,
+      "anchor_trust_at_k": 0.13333333333333333
+    },
+    "anchor_guard": {
+      "hit_at_k": 1.0,
+      "banned_in_top_k_rate": 0.0,
+      "mrr": 0.6666666666666666,
+      "anchor_trust_at_k": 0.20000000000000004
+    }
+  },
+  "cases": [
+    {
+      "id": "fn_flash_results_streamed",
+      "search_mode": "flash",
+      "top_k": 5,
+      "baseline_top": [
+        "corpus_tiny/misc/changelog.txt",
+        "corpus_tiny/docs/q2_financial_report.md",
+        "corpus_tiny/restricted/secret.txt",
+        "corpus_tiny/docs/q1_financial_summary.txt",
+        "corpus_tiny/docs/q1_financial_report.md"
+      ],
+      "reranked_top": [
+        "corpus_tiny/logs/app.log",
+        "corpus_tiny/misc/changelog.txt",
+        "corpus_tiny/docs/q2_financial_report.md",
+        "corpus_tiny/restricted/secret.txt",
+        "corpus_tiny/docs/q1_financial_summary.txt"
+      ],
+      "baseline_hit": false,
+      "reranked_hit": true,
+      "baseline_banned": false,
+      "reranked_banned": false
+    },
+    {
+      "id": "fp_auto_results_streamed",
+      "search_mode": "auto",
+      "top_k": 5,
+      "baseline_top": [
+        "corpus_tiny/misc/changelog.txt",
+        "corpus_tiny/logs/app.log",
+        "corpus_tiny/docs/q2_financial_report.md",
+        "corpus_tiny/docs/q1_financial_report.md",
+        "corpus_tiny/docs/research_summary.txt"
+      ],
+      "reranked_top": [
+        "corpus_tiny/logs/app.log",
+        "corpus_tiny/misc/changelog.txt",
+        "corpus_tiny/docs/q2_financial_report.md",
+        "corpus_tiny/docs/q1_financial_report.md",
+        "corpus_tiny/docs/research_summary.txt"
+      ],
+      "baseline_hit": true,
+      "reranked_hit": true,
+      "baseline_banned": false,
+      "reranked_banned": false
+    },
+    {
+      "id": "control_pro_results_streamed",
+      "search_mode": "pro",
+      "top_k": 5,
+      "baseline_top": [
+        "corpus_tiny/misc/changelog.txt",
+        "corpus_tiny/logs/app.log",
+        "corpus_tiny/docs/q2_financial_report.md",
+        "corpus_tiny/code/watcher.py",
+        "corpus_tiny/docs/q1_financial_report.md"
+      ],
+      "reranked_top": [
+        "corpus_tiny/logs/app.log",
+        "corpus_tiny/misc/changelog.txt",
+        "corpus_tiny/docs/q2_financial_report.md",
+        "corpus_tiny/code/watcher.py",
+        "corpus_tiny/docs/q1_financial_report.md"
+      ],
+      "baseline_hit": true,
+      "reranked_hit": true,
+      "baseline_banned": false,
+      "reranked_banned": false
+    }
+  ]
+}

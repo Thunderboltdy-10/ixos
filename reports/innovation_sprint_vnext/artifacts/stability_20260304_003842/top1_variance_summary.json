@@ -1,0 +1,27 @@
+{
+  "big_bench_20260303_233915.json": {
+    "queries": 40,
+    "unstable_queries": 23,
+    "stable_rate": 0.425,
+    "avg_unique_top1": 2.125,
+    "top_unstable": [
+      "entitlement manager",
+      "personal ranking",
+      "search mode pro",
+      "journalist mode",
+      "move recommendations",
+      "potion core",
+      "release check",
+      "ephemeral mode",
+      "secure timing",
+      "automation actions capability"
+    ]
+  },
+  "big_bench_20260303_233904.json": {
+    "queries": 40,
+    "unstable_queries": 0,
+    "stable_rate": 1.0,
+    "avg_unique_top1": 1.0,
+    "top_unstable": []
+  }
+}

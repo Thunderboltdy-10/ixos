@@ -1,0 +1,901 @@
+{
+  "suite": "innovation_failure_atlas_v1",
+  "description": "Representative failure atlas for Ixos semantic file search trustfulness, retrieval correctness, and stress behavior.",
+  "summary": {
+    "cases": 16,
+    "passes": 15,
+    "fails": 1,
+    "avg_duration_ms": 2437.31,
+    "by_category": {
+      "exact_anchor": 10,
+      "semantic_drift": 2,
+      "ambiguous_short": 1,
+      "privacy_guard": 2,
+      "large_directory_stress": 1
+    }
+  },
+  "results": [
+    {
+      "case_id": "exact_anchor_results_streamed_flash",
+      "category": "exact_anchor",
+      "query": "results streamed",
+      "search_mode": "flash",
+      "directory": "corpus_tiny",
+      "top_k": 5,
+      "passed": false,
+      "failures": [
+        "missing in top-5: corpus_tiny/logs/app.log"
+      ],
+      "top_paths": [
+        "corpus_tiny/misc/changelog.txt",
+        "corpus_tiny/docs/q2_financial_report.md",
+        "corpus_tiny/docs/q1_financial_summary.txt",
+        "corpus_tiny/docs/q1_financial_report.md",
+        "corpus_tiny/docs/pdf_surrogate.txt"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/misc/changelog.txt",
+          "score": 0.7435083389282227,
+          "snippet": "Changelog\n- Added progressive streaming"
+        },
+        {
+          "path": "corpus_tiny/docs/q2_financial_report.md",
+          "score": 0.7107937932014465,
+          "snippet": "# Q2 Financial Report"
+        },
+        {
+          "path": "corpus_tiny/docs/q1_financial_summary.txt",
+          "score": 0.6978850364685059,
+          "snippet": "# Q1 Financial Summary"
+        },
+        {
+          "path": "corpus_tiny/docs/q1_financial_report.md",
+          "score": 0.6977779269218445,
+          "snippet": "# Q1 Financial Report"
+        },
+        {
+          "path": "corpus_tiny/docs/pdf_surrogate.txt",
+          "score": 0.6814221739768982,
+          "snippet": "PDF surrogate content"
+        }
+      ],
+      "duration_ms": 646,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "results streamed",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "app.log line: 2026-01-20 10:00:01 Results streamed"
+    },
+    {
+      "case_id": "exact_anchor_results_streamed_pro_control",
+      "category": "exact_anchor",
+      "query": "results streamed",
+      "search_mode": "pro",
+      "directory": "corpus_tiny",
+      "top_k": 5,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/misc/changelog.txt",
+        "corpus_tiny/logs/app.log",
+        "corpus_tiny/docs/q2_financial_report.md",
+        "corpus_tiny/code/watcher.py",
+        "corpus_tiny/docs/q1_financial_report.md"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/misc/changelog.txt",
+          "score": 0.6772284507751465,
+          "snippet": "Changelog\n- Added progressive streaming"
+        },
+        {
+          "path": "corpus_tiny/logs/app.log",
+          "score": 0.6596984267234802,
+          "snippet": "2026-01-20 10:00:01 Results streamed"
+        },
+        {
+          "path": "corpus_tiny/docs/q2_financial_report.md",
+          "score": 0.6592890620231628,
+          "snippet": "# Q2 Financial Report"
+        },
+        {
+          "path": "corpus_tiny/code/watcher.py",
+          "score": 0.6542972922325134,
+          "snippet": "# watcher.py"
+        },
+        {
+          "path": "corpus_tiny/docs/q1_financial_report.md",
+          "score": 0.6494766473770142,
+          "snippet": "# Q1 Financial Report"
+        }
+      ],
+      "duration_ms": 886,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "results streamed",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "pro",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "app.log line: 2026-01-20 10:00:01 Results streamed"
+    },
+    {
+      "case_id": "semantic_drift_results_streamed_auto_secret",
+      "category": "semantic_drift",
+      "query": "results streamed",
+      "search_mode": "auto",
+      "directory": "corpus_tiny",
+      "top_k": 5,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/misc/changelog.txt",
+        "corpus_tiny/docs/q2_financial_report.md",
+        "corpus_tiny/docs/q1_financial_report.md",
+        "corpus_tiny/docs/research_summary.txt",
+        "corpus_tiny/docs/q1_financial_summary.txt"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/misc/changelog.txt",
+          "score": 0.742189884185791,
+          "snippet": "Changelog\n- Added progressive streaming"
+        },
+        {
+          "path": "corpus_tiny/docs/q2_financial_report.md",
+          "score": 0.70902019739151,
+          "snippet": "# Q2 Financial Report"
+        },
+        {
+          "path": "corpus_tiny/docs/q1_financial_report.md",
+          "score": 0.689354658126831,
+          "snippet": "# Q1 Financial Report"
+        },
+        {
+          "path": "corpus_tiny/docs/research_summary.txt",
+          "score": 0.6835699081420898,
+          "snippet": "Research Summary"
+        },
+        {
+          "path": "corpus_tiny/docs/q1_financial_summary.txt",
+          "score": 0.6786274909973145,
+          "snippet": "# Q1 Financial Summary"
+        }
+      ],
+      "duration_ms": 872,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "results streamed",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "auto",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "restricted/secret.txt contains only 'Restricted data'"
+    },
+    {
+      "case_id": "exact_anchor_config_json",
+      "category": "exact_anchor",
+      "query": "config json",
+      "search_mode": "flash",
+      "directory": "corpus_tiny",
+      "top_k": 5,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/docs/api_reference.md",
+        "corpus_tiny/data/config.json",
+        "corpus_tiny/code/cli_flags.rs",
+        "corpus_tiny/data/users.json",
+        "corpus_tiny/data/metrics.json"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/docs/api_reference.md",
+          "score": 0.7399164438247681,
+          "snippet": "# API Reference\nEndpoints: /search, /config,"
+        },
+        {
+          "path": "corpus_tiny/data/config.json",
+          "score": 0.7241755723953247,
+          "snippet": "{\"app\": \"ixos\", \"version\": \"0.1.0\", \"cache_mode\": \"jit\"}"
+        },
+        {
+          "path": "corpus_tiny/code/cli_flags.rs",
+          "score": 0.6825910806655884,
+          "snippet": "// flags: --progressive, --json, --cache-mode"
+        },
+        {
+          "path": "corpus_tiny/data/users.json",
+          "score": 0.6698929667472839,
+          "snippet": "[{\"id\": 1, \"name\": \"Alice\"}, {\"id\": 2, \"name\": \"Bob\"}]"
+        },
+        {
+          "path": "corpus_tiny/data/metrics.json",
+          "score": 0.6464359164237976,
+          "snippet": "{\"metric\": \"ttfr_ms\", \"value\": 190}"
+        }
+      ],
+      "duration_ms": 591,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "config json",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "config.json includes cache_mode field"
+    },
+    {
+      "case_id": "exact_anchor_api_reference_endpoints",
+      "category": "exact_anchor",
+      "query": "endpoints /search /config /compliance",
+      "search_mode": "flash",
+      "directory": "corpus_tiny",
+      "top_k": 3,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/docs/api_reference.md",
+        "corpus_tiny/docs/research_summary.txt",
+        "corpus_tiny/code/search_engine.rs"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/docs/api_reference.md",
+          "score": 0.8546938300132751,
+          "snippet": "# API Reference\nEndpoints: /search, /config,"
+        },
+        {
+          "path": "corpus_tiny/docs/research_summary.txt",
+          "score": 0.7479069232940674,
+          "snippet": "Research Summary"
+        },
+        {
+          "path": "corpus_tiny/code/search_engine.rs",
+          "score": 0.7125030755996704,
+          "snippet": "// search_engine.rs"
+        }
+      ],
+      "duration_ms": 591,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "endpoints /search /config /compliance",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "api_reference.md lists '/search, /config, /compliance'"
+    },
+    {
+      "case_id": "exact_anchor_privacy_policy",
+      "category": "exact_anchor",
+      "query": "local-only no telemetry",
+      "search_mode": "flash",
+      "directory": "corpus_tiny",
+      "top_k": 3,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/docs/privacy_policy.md",
+        "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+        "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/docs/privacy_policy.md",
+          "score": 0.8134678602218628,
+          "snippet": "# Privacy Policy\nIxos is local-only. No cloud sync. No telemetry by default."
+        },
+        {
+          "path": "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "score": 0.7035012245178223,
+          "snippet": "Ixos Meeting Notes - 2024-11-15"
+        },
+        {
+          "path": "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "score": 0.6461789608001709,
+          "snippet": "Nested unicode notes"
+        }
+      ],
+      "duration_ms": 643,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "local-only no telemetry",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "privacy_policy.md line: Ixos is local-only. No telemetry by default."
+    },
+    {
+      "case_id": "unicode_anchor_nandu_notes",
+      "category": "exact_anchor",
+      "query": "\u00f1and\u00fa notes",
+      "search_mode": "flash",
+      "directory": "corpus_tiny",
+      "top_k": 5,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+        "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "score": 0.8548015356063843,
+          "snippet": "Nested unicode notes\nThis file name includes unicode and deep nesting."
+        },
+        {
+          "path": "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "score": 0.6835339069366455,
+          "snippet": "Ixos Meeting Notes - 2024-11-15"
+        }
+      ],
+      "duration_ms": 568,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "\u00f1and\u00fa notes",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "filename contains unicode terms"
+    },
+    {
+      "case_id": "ambiguous_short_notes",
+      "category": "ambiguous_short",
+      "query": "notes",
+      "search_mode": "flash",
+      "directory": "corpus_tiny",
+      "top_k": 5,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+        "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "score": 0.7350744009017944,
+          "snippet": "Ixos Meeting Notes - 2024-11-15"
+        },
+        {
+          "path": "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "score": 0.7228103280067444,
+          "snippet": "Nested unicode notes"
+        }
+      ],
+      "duration_ms": 563,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "notes",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "meeting_notes_2024-11-15.txt contains Notes term"
+    },
+    {
+      "case_id": "exact_anchor_meeting_date",
+      "category": "exact_anchor",
+      "query": "meeting notes 2024-11-15",
+      "search_mode": "flash",
+      "directory": "corpus_tiny",
+      "top_k": 3,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+        "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "score": 0.9121949672698975,
+          "snippet": "Ixos Meeting Notes - 2024-11-15\nAgenda: Q1 financial report review, hiring plan, and launch checklist.\nAction items: finalize project plan 2025; review privacy policy updates."
+        },
+        {
+          "path": "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "score": 0.6978451609611511,
+          "snippet": "Nested unicode notes"
+        }
+      ],
+      "duration_ms": 587,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "meeting notes 2024-11-15",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "full date and title anchor"
+    },
+    {
+      "case_id": "anchor_project_plan_milestones",
+      "category": "exact_anchor",
+      "query": "project plan milestones",
+      "search_mode": "flash",
+      "directory": "corpus_tiny",
+      "top_k": 5,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/docs/project_plan_2025.md",
+        "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/docs/project_plan_2025.md",
+          "score": 0.7111606597900391,
+          "snippet": "# Project Plan 2025"
+        },
+        {
+          "path": "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+          "score": 0.6754012107849121,
+          "snippet": "Action items: finalize project plan 2025; review privacy policy updates."
+        }
+      ],
+      "duration_ms": 600,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "project plan milestones",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "project_plan_2025.md contains milestones intent"
+    },
+    {
+      "case_id": "pricing_false_negative_flash",
+      "category": "semantic_drift",
+      "query": "free and pro tiers",
+      "search_mode": "flash",
+      "directory": "corpus_tiny",
+      "top_k": 5,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/docs/q2_financial_report.md",
+        "corpus_tiny/docs/q1_financial_report.md",
+        "corpus_tiny/code/watcher.py",
+        "corpus_tiny/docs/research_summary.txt",
+        "corpus_tiny/web/pricing.html"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/docs/q2_financial_report.md",
+          "score": 0.7001650929450989,
+          "snippet": "Highlights: faster search and improved onboarding."
+        },
+        {
+          "path": "corpus_tiny/docs/q1_financial_report.md",
+          "score": 0.6924125552177429,
+          "snippet": "Highlights: increased retention and lower churn."
+        },
+        {
+          "path": "corpus_tiny/code/watcher.py",
+          "score": 0.6842768788337708,
+          "snippet": "# file watcher prototype"
+        },
+        {
+          "path": "corpus_tiny/docs/research_summary.txt",
+          "score": 0.6838022470474243,
+          "snippet": "Semantic search relies on candidate generation and reranking."
+        },
+        {
+          "path": "corpus_tiny/web/pricing.html",
+          "score": 0.6768416166305542,
+          "snippet": "<body>Free and Pro tiers.</body>"
+        }
+      ],
+      "duration_ms": 634,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "free and pro tiers",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "pricing.html body: Free and Pro tiers."
+    },
+    {
+      "case_id": "pricing_control_pro",
+      "category": "exact_anchor",
+      "query": "free and pro tiers",
+      "search_mode": "pro",
+      "directory": "corpus_tiny",
+      "top_k": 5,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/web/pricing.html",
+        "corpus_tiny/docs/research_summary.txt",
+        "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+        "corpus_tiny/docs/project_plan_2025.md",
+        "corpus_tiny/code/search_engine.rs"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/web/pricing.html",
+          "score": 0.8247352838516235,
+          "snippet": "<body>Free and Pro tiers.</body>"
+        },
+        {
+          "path": "corpus_tiny/docs/research_summary.txt",
+          "score": 0.8207501173019409,
+          "snippet": "Semantic search relies on candidate generation and reranking."
+        },
+        {
+          "path": "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt",
+          "score": 0.8159841895103455,
+          "snippet": "This file name includes unicode and deep nesting."
+        },
+        {
+          "path": "corpus_tiny/docs/project_plan_2025.md",
+          "score": 0.8154799938201904,
+          "snippet": "Goals: ship progressive search, tighten privacy, and improve cache modes."
+        },
+        {
+          "path": "corpus_tiny/code/search_engine.rs",
+          "score": 0.8107720613479614,
+          "snippet": "// ProgressiveSearchEngine prototype"
+        }
+      ],
+      "duration_ms": 847,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "free and pro tiers",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "pro",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "pricing.html body: Free and Pro tiers."
+    },
+    {
+      "case_id": "privacy_non_request_no_secret",
+      "category": "privacy_guard",
+      "query": "roadmap phase",
+      "search_mode": "flash",
+      "directory": "corpus_tiny",
+      "top_k": 5,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/markdown/roadmap.md"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/markdown/roadmap.md",
+          "score": 0.8846167922019958,
+          "snippet": "# Roadmap\nPhase 1: measurement\nPhase 2: UI"
+        }
+      ],
+      "duration_ms": 575,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "roadmap phase",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "roadmap.md is explicit target"
+    },
+    {
+      "case_id": "privacy_explicit_secret_request",
+      "category": "privacy_guard",
+      "query": "restricted data",
+      "search_mode": "flash",
+      "directory": "corpus_tiny",
+      "top_k": 5,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/restricted/secret.txt",
+        "corpus_tiny/data/metrics.json",
+        "corpus_tiny/data/users.json",
+        "corpus_tiny/data/config.json"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/restricted/secret.txt",
+          "score": 0.8877399563789368,
+          "snippet": "Restricted data"
+        },
+        {
+          "path": "corpus_tiny/data/metrics.json",
+          "score": 0.721391499042511,
+          "snippet": "{\"metric\": \"ttfr_ms\", \"value\": 190}"
+        },
+        {
+          "path": "corpus_tiny/data/users.json",
+          "score": 0.6829363703727722,
+          "snippet": "[{\"id\": 1, \"name\": \"Alice\"}, {\"id\": 2, \"name\": \"Bob\"}]"
+        },
+        {
+          "path": "corpus_tiny/data/config.json",
+          "score": 0.6796506643295288,
+          "snippet": "{\"app\": \"ixos\", \"version\": \"0.1.0\", \"cache_mode\": \"jit\"}"
+        }
+      ],
+      "duration_ms": 575,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "restricted data",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "secret.txt content: Restricted data"
+    },
+    {
+      "case_id": "anchor_search_engine_symbol",
+      "category": "exact_anchor",
+      "query": "search engine",
+      "search_mode": "flash",
+      "directory": "corpus_tiny",
+      "top_k": 5,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/code/search_engine.rs",
+        "corpus_tiny/docs/research_summary.txt",
+        "corpus_tiny/misc/todo.md",
+        "corpus_tiny/docs/q2_financial_report.md",
+        "corpus_tiny/docs/api_reference.md"
+      ],
+      "top_entries": [
+        {
+          "path": "corpus_tiny/code/search_engine.rs",
+          "score": 0.817268431186676,
+          "snippet": "// search_engine.rs"
+        },
+        {
+          "path": "corpus_tiny/docs/research_summary.txt",
+          "score": 0.7174997925758362,
+          "snippet": "Research Summary"
+        },
+        {
+          "path": "corpus_tiny/misc/todo.md",
+          "score": 0.7081461548805237,
+          "snippet": "# TODO\n- refine search\n- add"
+        },
+        {
+          "path": "corpus_tiny/docs/q2_financial_report.md",
+          "score": 0.701754629611969,
+          "snippet": "Highlights: faster search and improved onboarding."
+        },
+        {
+          "path": "corpus_tiny/docs/api_reference.md",
+          "score": 0.681471586227417,
+          "snippet": "Endpoints: /search, /config, /compliance"
+        }
+      ],
+      "duration_ms": 616,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "search engine",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "8",
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "search_engine.rs comment and symbol names"
+    },
+    {
+      "case_id": "large_dir_stress_tauri_command",
+      "category": "large_directory_stress",
+      "query": "tauri search command",
+      "search_mode": "flash",
+      "directory": ".",
+      "top_k": 10,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "FEATURE_INVENTORY.md",
+        "benches/agent_search_comparison.rs",
+        "corpus_tiny/code/search_engine.rs",
+        "src/compliance/search_history.rs",
+        ".claude/skills/ixos-search/SKILL.md",
+        "old_docs/Ixos Search_ Performance & UX Revolution.md",
+        "ixos-site/src/components/hero/fakeSearch.ts",
+        "src-tauri/src/commands/search.rs",
+        "src-tauri/tauri.conf.json",
+        "docs/archive/root/FEATURES.md"
+      ],
+      "top_entries": [
+        {
+          "path": "FEATURE_INVENTORY.md",
+          "score": 0.594548225402832,
+          "snippet": "| D-01 | Progressive search pipeline | Search streams lexical -> semantic -> refining updates | `ui/src/components/search/MainSearchView.tsx`, `ui/src/stores/searchStore.ts`, `src-tauri/src/commands/search.rs` |"
+        },
+        {
+          "path": "benches/agent_search_comparison.rs",
+          "score": 0.7009091377258301,
+          "snippet": "//! Agent Search Comparison Benchmark"
+        },
+        {
+          "path": "corpus_tiny/code/search_engine.rs",
+          "score": 0.69793701171875,
+          "snippet": "// search_engine.rs"
+        },
+        {
+          "path": "src/compliance/search_history.rs",
+          "score": 0.6772306561470032,
+          "snippet": "//! Search history tracking for GDPR compliance."
+        },
+        {
+          "path": ".claude/skills/ixos-search/SKILL.md",
+          "score": 0.6764989495277405,
+          "snippet": "name: ixos-search"
+        },
+        {
+          "path": "old_docs/Ixos Search_ Performance & UX Revolution.md",
+          "score": 0.6508813500404358,
+          "snippet": "The Ixos Protocol faces a critical operational paradox: it aims to deliver instantaneous, semantic file retrieval on hardware constraints that typically preclude such capabilities. The current baseline latency of 17 seconds for a 30,000-file dataset\u2014comprising 3 seconds of model initialization and 14 seconds of search execution\u2014renders the system functionally unusable for the high-velocity workflows of the target demographic: privacy-conscious knowledge workers. To bridge the gap between this 17-second reality and the sub-2-second perceptual requirement, a fundamental re-architecture of the \"Hybrid Cascade\" system is required. This report proposes a shift from a synchronous, monolithic processing model to an asynchronous, speculative, and highly pipelined architecture driven by advanced systems programming concepts available in the Rust ecosystem.  "
+        },
+        {
+          "path": "ixos-site/src/components/hero/fakeSearch.ts",
+          "score": 0.6327106356620789,
+          "snippet": "  reading: ['books', 'articles', 'literature', 'research', 'study'],"
+        },
+        {
+          "path": "src-tauri/src/commands/search.rs",
+          "score": 0.6291816234588623,
+          "snippet": "//! Search command handlers"
+        },
+        {
+          "path": "src-tauri/tauri.conf.json",
+          "score": 0.6193137168884277,
+          "snippet": "  \"$schema\": \"https://schema.tauri.app/config/2\","
+        },
+        {
+          "path": "docs/archive/root/FEATURES.md",
+          "score": 0.611740231513977,
+          "snippet": "### Search Command"
+        }
+      ],
+      "duration_ms": 29203,
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "tauri search command",
+        "--dir",
+        ".",
+        "--format",
+        "json",
+        "--limit",
+        "10",
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "memory"
+      ],
+      "witness": "src-tauri/src/commands/search.rs contains command implementation"
+    }
+  ]
+}

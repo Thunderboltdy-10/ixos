@@ -1,0 +1,330 @@
+# reports/innovation heading index
+
+## reports/innovation\RUNLOG.md
+1:# RUNLOG
+5:## 2026-03-03 19:36 UTC
+6:- Initialized `reports/innovation/` workspace files.
+7:- Command: `git status --short --branch`
+8:- Output: `## roadmap...origin/roadmap`
+10:## 2026-03-03 19:38-19:40 UTC
+11:- Command: `cargo test -q`
+12:- Result: PASS (`475 passed; 0 failed; 6 ignored`, plus integration suites)
+13:- Command: `cargo test --test settings_matrix -q`
+14:- Result: PASS (`1 passed; 0 failed`)
+15:- Command: `npm --prefix ui run build`
+16:- Result: PASS
+17:- Command: `npm --prefix ixos-site run build`
+18:- Result: PASS
+19:- Command: `python scripts/ralph_loop.py --checkpoint R2 --bench-dir . --bench-runs 3 --objective-profile harsh`
+20:- Result: FAIL gate
+21:- Artifacts:
+25:- Key metrics:
+30:## 2026-03-03 19:41-19:45 UTC
+31:- Command: `python scripts/run_golden.py`
+32:- Result: FAIL (single mismatch reported)
+33:- Manual reproduction commands:
+37:- Observation: Flash/Auto miss `app.log` in top-5; Auto includes unrelated `restricted/secret.txt`.
+39:## 2026-03-03 19:46-19:50 UTC
+40:- Added failure suite and isolated runner:
+43:- Command: `python reports/innovation/failure_suite/run_failure_suite.py`
+44:- Output artifacts:
+47:- Result: FAIL by design (both target failure modes reproduced).
+49:## 2026-03-03 19:50-19:54 UTC
+50:- Added minimal prototype:
+52:- Command: `python reports/innovation/prototypes/anchor_guard_prototype.py`
+53:- Output artifacts:
+56:- Result: PASS (prototype executed)
+57:- Key prototype deltas:
+62:## 2026-03-03 19:54-19:55 UTC (post-act measure)
+63:- Command: `cargo test -q` -> PASS
+64:- Command: `cargo test --test settings_matrix -q` -> PASS
+65:- Command: `python scripts/ralph_loop.py --checkpoint R2 --bench-dir . --bench-runs 3 --objective-profile harsh`
+66:- Result: PASS bench gate, FAIL landing audit stale-data check
+67:- Artifacts:
+71:- Key metrics:
+76:## 2026-03-03 19:56-20:02 UTC
+77:- Completed literature scan and novelty cards.
+78:- Wrote final ranked candidate report: `reports/innovation/FINAL.md`.
+79:- Updated `AGENT_PLAN.md`, `DECISIONS.md`, `IDEAS.md`, `BIBLIOGRAPHY.md`.
+
+## reports/innovation\prototypes\anchor_guard_results.md
+1:# Anchor Guard Prototype Results
+3:- Suite: `innovation_failure_suite_v1`
+5:## Metrics
+13:## Case Diff
+14:### fn_flash_results_streamed (flash)
+15:- Baseline top-5: `corpus_tiny/misc/changelog.txt; corpus_tiny/docs/q2_financial_report.md; corpus_tiny/restricted/secret.txt; corpus_tiny/docs/q1_financial_summary.txt; corpus_tiny/docs/q1_financial_report.md`
+16:- Reranked top-5: `corpus_tiny/logs/app.log; corpus_tiny/misc/changelog.txt; corpus_tiny/docs/q2_financial_report.md; corpus_tiny/restricted/secret.txt; corpus_tiny/docs/q1_financial_summary.txt`
+17:- Hit@k: baseline=False -> reranked=True; banned@k: baseline=False -> reranked=False
+18:### fp_auto_results_streamed (auto)
+19:- Baseline top-5: `corpus_tiny/misc/changelog.txt; corpus_tiny/logs/app.log; corpus_tiny/docs/q2_financial_report.md; corpus_tiny/docs/q1_financial_report.md; corpus_tiny/docs/research_summary.txt`
+20:- Reranked top-5: `corpus_tiny/logs/app.log; corpus_tiny/misc/changelog.txt; corpus_tiny/docs/q2_financial_report.md; corpus_tiny/docs/q1_financial_report.md; corpus_tiny/docs/research_summary.txt`
+21:- Hit@k: baseline=True -> reranked=True; banned@k: baseline=False -> reranked=False
+22:### control_pro_results_streamed (pro)
+23:- Baseline top-5: `corpus_tiny/misc/changelog.txt; corpus_tiny/logs/app.log; corpus_tiny/docs/q2_financial_report.md; corpus_tiny/code/watcher.py; corpus_tiny/docs/q1_financial_report.md`
+24:- Reranked top-5: `corpus_tiny/logs/app.log; corpus_tiny/misc/changelog.txt; corpus_tiny/docs/q2_financial_report.md; corpus_tiny/code/watcher.py; corpus_tiny/docs/q1_financial_report.md`
+25:- Hit@k: baseline=True -> reranked=True; banned@k: baseline=False -> reranked=False
+
+## reports/innovation\prototypes\anchor_guard_results.json
+
+## reports/innovation\prototypes\anchor_guard_prototype.py
+1:#!/usr/bin/env python3
+
+## reports/innovation\IDEAS.md
+1:# IDEAS
+3:## Idea Backlog
+4:- AARC: Anytime Auditable Recall Certificate (survivor)
+5:- DWC: Dual-Witness Consistency Ranking (survivor)
+6:- CEDR: Counterfactual Exclusion Delta Regularizer (survivor)
+7:- SVL: Semantic Volatility Ledger (survivor)
+8:- TBR-SF: Topology Bandit Router with Safety Floor (survivor)
+10:## Killed Ideas
+11:- Raise candidate limits globally
+13:- Add another dense model only
+15:- Force Pro when uncertain
+18:## Novelty Cards
+20:### 1) AARC (Anytime Auditable Recall Certificate)
+21:- Claim: each query emits a recall lower-bound certificate controlling stop/expand decisions.
+22:- New object/guarantee:
+25:- Closest prior art:
+30:- Why different:
+33:- How it could fail / kill test:
+37:### 2) DWC (Dual-Witness Consistency)
+38:- Claim: high-confidence top-k requires independent lexical and semantic witnesses.
+39:- New object/guarantee:
+42:- Closest prior art:
+47:- Why different:
+49:- How it could fail / kill test:
+53:### 3) CEDR (Counterfactual Exclusion Delta Regularizer)
+54:- Claim: down-rank results insensitive to removing mandatory query anchors.
+55:- New object/guarantee:
+58:- Closest prior art:
+62:- Why different:
+64:- How it could fail / kill test:
+68:### 4) SVL (Semantic Volatility Ledger)
+69:- Claim: confidence is modulated by ranking volatility under micro-perturbations.
+70:- New object/guarantee:
+73:- Closest prior art:
+76:- Why different:
+78:- How it could fail / kill test:
+82:### 5) TBR-SF (Topology Bandit Router with Safety Floor)
+83:- Claim: contextual bandit routes directory exploration with guaranteed global probe floor.
+84:- New object/guarantee:
+87:- Closest prior art:
+91:- Why different:
+93:- How it could fail / kill test:
+
+## reports/innovation\FINAL.md
+1:# Innovation Architecture Candidates (Final)
+5:## 0) Observations
+7:### Baseline validation
+8:- `cargo test -q`: PASS
+9:- `cargo test --test settings_matrix -q`: PASS
+10:- `npm --prefix ui run build`: PASS
+11:- `npm --prefix ixos-site run build`: PASS
+13:### Ralph loop checkpoints
+19:### Reproduced failure modes
+21:- False negative: Flash misses obvious exact-hit file `corpus_tiny/logs/app.log` in top-5 for query `results streamed`.
+22:- False positive: Auto includes unrelated `corpus_tiny/restricted/secret.txt` in top-5 for the same query.
+24:### Minimal prototype evidence
+26:- Hit@k: `0.6667 -> 1.0000`
+27:- MRR: `0.1667 -> 0.6667`
+28:- Anchor-trust@k: `0.1333 -> 0.2000`
+29:- Note: prototype is reports-only and not integrated into production path.
+31:## 1) Ranked architecture candidates (5)
+33:### #1 AARC: Anytime Auditable Recall Certificate
+34:- New object / guarantee:
+38:- Novelty argument:
+40:- Integration path:
+45:- Complexity: medium-high.
+46:- Risks: probe bias, calibration drift.
+47:- Measurement plan:
+51:- Math angle:
+55:### #2 CEDR: Counterfactual Exclusion Delta Regularizer
+56:- New object / guarantee:
+59:- Novelty argument:
+61:- Integration path:
+65:- Complexity: medium.
+66:- Risks: may hurt paraphrase recall.
+67:- Measurement plan:
+69:- Math angle:
+72:### #3 DWC: Dual-Witness Consistency Ranking
+73:- New object / guarantee:
+76:- Novelty argument:
+78:- Integration path:
+81:- Complexity: medium.
+82:- Risks: lexical-light true positives can be demoted.
+83:- Measurement plan:
+85:- Math angle:
+88:### #4 SVL: Semantic Volatility Ledger
+89:- New object / guarantee:
+92:- Novelty argument:
+94:- Integration path:
+97:- Complexity: medium.
+98:- Risks: extra compute if uncapped.
+99:- Measurement plan:
+101:- Math angle:
+104:### #5 TBR-SF: Topology Bandit Router with Safety Floor
+105:- New object / guarantee:
+108:- Novelty argument:
+110:- Integration path:
+112:- Complexity: high.
+113:- Risks: cold-start instability and tuning burden.
+114:- Measurement plan:
+116:- Math angle:
+119:## 2) EE-ready framing (top 2)
+121:### AARC
+122:- Core question: Can an anytime confidence certificate control recall risk in progressive local file search while preserving low latency?
+123:- Formal definitions:
+127:- Theorem candidate:
+129:- Evaluation:
+132:### CEDR
+133:- Core question: Does runtime counterfactual anchor sensitivity reduce semantic false positives without unacceptable recall loss?
+134:- Formal definitions:
+137:- Theorem candidate (conjecture):
+139:- Evaluation:
+142:## 3) What I tried (appendix)
+144:### Commands
+145:- `cargo test -q`
+146:- `cargo test --test settings_matrix -q`
+147:- `npm --prefix ui run build`
+148:- `npm --prefix ixos-site run build`
+149:- `python scripts/ralph_loop.py --checkpoint R2 --bench-dir . --bench-runs 3 --objective-profile harsh`
+150:- `python scripts/run_golden.py`
+151:- `python reports/innovation/failure_suite/run_failure_suite.py`
+152:- `python reports/innovation/prototypes/anchor_guard_prototype.py`
+154:### Artifacts
+155:- Failure suite:
+160:- Prototype:
+164:- Architecture map:
+167:### Diff summary
+168:- Added reports-only scripts/docs under `reports/innovation/`.
+169:- No production code changes in `src/`, `src-tauri/`, `ui/`, or `ixos-site/`.
+171:## 4) Killed ideas
+172:- Global candidate-limit inflation.
+173:- Model stacking without guarantee object.
+174:- Force-Pro fallback heuristics.
+
+## reports/innovation\failure_suite\run_failure_suite.py
+1:#!/usr/bin/env python3
+
+## reports/innovation\failure_suite\results_latest.md
+1:# Innovation Failure Suite Results
+3:- Suite: `innovation_failure_suite_v1`
+4:- Cases: `3`
+9:- `fn_flash_results_streamed`: missing in top-5: corpus_tiny/logs/app.log
+11:- `fp_auto_results_streamed`: unexpected in top-5: corpus_tiny/restricted/secret.txt
+
+## reports/innovation\failure_suite\results_latest.json
+
+## reports/innovation\failure_suite\queries.json
+
+## reports/innovation\DECISIONS.md
+1:# DECISIONS
+3:## 2026-03-03 19:36 UTC - Initialization
+4:- Decision: Use `reports/innovation/` as isolated workspace for innovation artifacts.
+5:- Options: existing root docs vs dedicated folder.
+6:- Why: reversible, explicit, and easy to audit.
+7:- Evidence: user directive requiring workspace files.
+8:- Risks: temporary duplication with root planning docs.
+9:- Follow-ups: keep final outputs consolidated in `reports/innovation/FINAL.md`.
+11:## 2026-03-03 19:45 UTC - Failure Suite Scope
+12:- Decision: Use `results streamed` on `corpus_tiny` as canonical short-loop failure seed.
+13:- Options:
+17:- Why: existing corpus reproduces both failure classes quickly.
+18:- Evidence: Flash/Auto miss `corpus_tiny/logs/app.log`; Auto includes `corpus_tiny/restricted/secret.txt`.
+19:- Risks: overfitting to one query family.
+20:- Follow-ups: grow suite to 10+ cases.
+22:## 2026-03-03 19:52 UTC - Isolation Harness
+23:- Decision: Run failure/prototype scripts in isolated temp config/data homes.
+24:- Options:
+27:- Why: removes personalization and consent-state drift.
+28:- Evidence: stable repeated suite outputs after isolation.
+29:- Risks: bootstrap overhead per run.
+30:- Follow-ups: cache temp env for batched experiments.
+32:## 2026-03-03 19:59 UTC - Prototype Positioning
+33:- Decision: Keep anchor-guard as feasibility signal only (no production merge).
+34:- Options:
+37:- Why: needed an empirical check that trustfulness constraints can shift bad rankings.
+38:- Evidence: prototype improved suite hit@k and MRR.
+39:- Risks: tiny-suite optimism.
+40:- Follow-ups: validate against broader suite before code integration.
+42:## 2026-03-03 20:00 UTC - Candidate Strategy Pivot
+43:- Decision: prioritize certificate/witness architecture principles over speed-only heuristics.
+44:- Options:
+47:- Why: reproduced failures were trust-calibration failures, not just runtime issues.
+48:- Evidence: observed false negative + false positive in top-5 under Flash/Auto.
+49:- Risks: stronger constraints may reduce semantic recall on paraphrases.
+50:- Follow-ups: evaluate trustfulness-latency-recall Pareto on expanded suite.
+
+## reports/innovation\BIBLIOGRAPHY.md
+1:# BIBLIOGRAPHY
+6:- Link: https://arxiv.org/abs/2004.12832
+7:- Summary: Introduces late interaction retrieval: query/document are encoded independently, then matched via lightweight fine-grained similarity. Shows high effectiveness with much lower query-time cost than full cross-encoders.
+8:- Why relevant: core reference for witness-style semantic evidence and efficient multi-stage retrieval.
+11:- Link: https://arxiv.org/abs/2109.10086
+12:- Summary: Learns sparse lexical/expansion representations that preserve exact-match strengths while remaining neural. Reports strong BEIR performance and efficiency/effectiveness tradeoffs.
+13:- Why relevant: key prior art for lexical witnesses and sparse+dense complementarity.
+16:- Link: https://arxiv.org/abs/2104.08663
+17:- Summary: Broad benchmark across 18 datasets, comparing lexical, dense, sparse, and late-interaction systems. Finds BM25 robust and late-interaction/rerank stronger but costlier.
+18:- Why relevant: grounding for multi-dimensional evaluation and why hybrid/witness controllers matter.
+21:- Link: https://openreview.net/forum?id=33XGfHLtZg
+22:- Summary: Generalizes conformal prediction to control expected monotone losses with finite-sample guarantees. Includes extensions for distribution shift and multiple risks.
+23:- Why relevant: mathematical basis for risk-bounded retrieval controllers and abstain/escalate policies.
+26:- Link: https://arxiv.org/abs/1808.03204
+27:- Summary: Provides anytime-valid concentration bounds for sequential decisions using supermartingales. Unifies classical inequalities in a time-uniform framework.
+28:- Why relevant: foundation for anytime recall certificates in progressive search loops.
+31:- Link: https://arxiv.org/abs/2105.04651
+32:- Summary: Adds uncertainty and calibration modeling to retrieval scores with low overhead, enabling risk-aware reranking and confidence-aware behavior.
+33:- Why relevant: direct precedent for score trustworthiness calibration.
+36:- Link: https://arxiv.org/abs/2307.04642
+37:- Summary: Uses conformal prediction for end-to-end correctness guarantees in RAG settings. Demonstrates statistical guarantees while reducing prediction-set size.
+38:- Why relevant: evidence that conformal methods can operationalize trust guarantees in retrieval pipelines.
+41:- Link: https://arxiv.org/abs/2302.09947
+42:- Summary: Evaluates many QPP methods across sparse and neural systems, showing neural IR prediction remains harder and less reliable in key settings.
+43:- Why relevant: warns against over-trusting simple confidence proxies; motivates explicit guarantees.
+46:- Link: https://arxiv.org/abs/1706.02093
+47:- Summary: Real-world multi-stage cascade optimizing relevance, latency, result size, and CPU cost at production scale.
+48:- Why relevant: strongest operational prior art for staged ranking/control in large retrieval systems.
+51:- Link: https://arxiv.org/abs/1608.04468
+52:- Summary: Counterfactual propensity-weighted framework for de-biasing click feedback and learning rankings under implicit feedback bias.
+53:- Why relevant: causal/counterfactual logic inspiring runtime counterfactual anchor-sensitivity checks.
+56:- Link: https://dblp.org/rec/conf/sigir/CormackCB09
+57:- Summary: Classic rank-fusion reference showing robust fusion behavior using reciprocal ranks.
+58:- Why relevant: baseline prior for combining retrieval channels; useful comparator against witness-consistency constraints.
+61:- Link: https://research.google/pubs/learning-to-efficiently-rank/
+62:- Summary: Early formulation of optimizing relevance-efficiency tradeoff in ranking/cascade settings.
+63:- Why relevant: foundational context for compute-aware routing and budget allocation in candidate generation.
+
+## reports/innovation\ARCHITECTURE_MAP.md
+1:# Architecture Map (Observe)
+3:## Search Pipeline (current)
+17:## Critical Constraints
+18:- Zero-index philosophy: search works without persistent mandatory index.
+19:- Ask mode must not silently override selected model.
+20:- Pro gating enforced by entitlement in Tauri backend.
+21:- Labels and actual behavior should remain aligned.
+23:## Observed Hotspots
+24:- Ralph run (2026-03-03) regressed cold TTFR gate (131ms vs harsh target 120ms).
+25:- Walk p95 jumped to 174ms in latest harsh benchmark, dominating stage regression.
+26:- Flash/Auto can miss obvious exact-hit file in top-5 on `results streamed`.
+
+## reports/innovation\AGENT_PLAN.md
+1:# AGENT PLAN
+5:## Mission
+6:- Explore and validate genuinely novel semantic file-search architectures for Ixos.
+7:- Keep experiments minimal, reversible, and evidence-linked.
+9:## Current Loop (Cycle 1 complete)
+10:- [x] Observe: map architecture + baseline metrics + failure cases.
+11:- [x] Orient: generate broad hypothesis space.
+12:- [x] Diverge: literature + prior-art scan.
+13:- [x] Converge: shortlist candidates with novelty cards.
+14:- [x] Act: minimal prototype (reports-only anchor-consistency rerank).
+15:- [x] Measure: tests + settings matrix + Ralph loop + failure suite.
+16:- [x] Document: decisions, bibliography, final ranked candidates.
+18:## State Snapshot
+19:- Baseline validation:
+24:- Ralph loop checkpoints:
+27:- Failure suite (`reports/innovation/failure_suite/results_latest.md`):
+31:- Prototype (`reports/innovation/prototypes/anchor_guard_results.md`):
+36:## Next Top 3 Tasks

@@ -1,0 +1,40 @@
+﻿# Cycle3 targeted tests after guard gate patch 2026-03-03T23:39:22.9688133+01:00
+
+## cargo test -q test_apply_witness_guard_promotes_anchor_and_penalizes_sensitive_path
+cargo : error[E0369]: binary operation `==` cannot be applied to type 
+`Vec<ixos_rank::types::SemanticMatch>`
+At line:2 char:962
++ ...  -FilePath $out -Append -Encoding utf8; cargo test -q $t 2>&1 | 
+Out-F ...
++                                             ~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error[E0369]: b...SemanticMat 
+   ch>`:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    --> src\ixos_rank\progressive.rs:2377:9
+     |
+2377 |         assert_eq!(semantic_results, original);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |         |
+     |         Vec<ixos_rank::types::SemanticMatch>
+     |         Vec<ixos_rank::types::SemanticMatch>
+     |
+note: an implementation of `PartialEq` might be missing for 
+`ixos_rank::types::SemanticMatch`
+    --> src\ixos_rank\types.rs:54:1
+     |
+  54 | pub struct SemanticMatch {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^ must implement `PartialEq`
+     = note: this error originates in the macro `assert_eq` (in Nightly 
+builds, run with -Z macro-backtrace for more info)
+help: consider annotating `ixos_rank::types::SemanticMatch` with 
+`#[derive(PartialEq)]`
+    -->  src\ixos_rank\types.rs:54:1
+     |
+  54 + #[derive(PartialEq)]
+  55 | pub struct SemanticMatch {
+     |
+
+For more information about this error, try `rustc --explain E0369`.
+error: could not compile `ixos-protocol` (lib test) due to 1 previous error
+FAILED_TEST=test_apply_witness_guard_promotes_anchor_and_penalizes_sensitive_path

@@ -1,0 +1,4923 @@
+{
+  "generated_at": "2026-03-03T23:39:15.158587800+00:00",
+  "root_dir": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset",
+  "file_count": 1036,
+  "corpus_tier": "a",
+  "objective_profile": "Standard",
+  "model": "ixos-flash-v2",
+  "cache_mode": "NativeCache",
+  "runs_per_query": 5,
+  "queries": 40,
+  "targets": {
+    "description": "Tier A (<=5k files, standard objective)",
+    "ttfr_target_ms": 60.0,
+    "total_target_ms": 400.0,
+    "cold_ttfr_target_ms": null,
+    "cold_total_target_ms": null,
+    "warm_total_target_ms": null
+  },
+  "gate": {
+    "pass": true,
+    "reasons": []
+  },
+  "summary": {
+    "samples": 200,
+    "ttfr_p50_ms": 45.0,
+    "ttfr_p95_ms": 91.0,
+    "total_p50_ms": 45.0,
+    "total_p95_ms": 94.0,
+    "cold_ttfr_p50_ms": 51.0,
+    "cold_total_p95_ms": 133.0,
+    "warm_total_p95_ms": 93.0,
+    "walk_p95_ms": 78.0,
+    "path_score_p95_ms": 0.0,
+    "ripgrep_p95_ms": 53.0,
+    "embed_p95_ms": 0.0,
+    "rank_p95_ms": 1.0,
+    "avg_cache_hit_rate": 0.95
+  },
+  "per_query": [
+    {
+      "query": "ask mode",
+      "samples": 5,
+      "ttfr_p50_ms": 54.0,
+      "total_p95_ms": 73.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "automation actions capability",
+      "samples": 5,
+      "ttfr_p50_ms": 43.0,
+      "total_p95_ms": 56.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "cache mode",
+      "samples": 5,
+      "ttfr_p50_ms": 47.0,
+      "total_p95_ms": 133.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "cache rebuild",
+      "samples": 5,
+      "ttfr_p50_ms": 41.0,
+      "total_p95_ms": 43.0,
+      "avg_results": 11.0
+    },
+    {
+      "query": "candidate generator",
+      "samples": 5,
+      "ttfr_p50_ms": 41.0,
+      "total_p95_ms": 43.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "config migration",
+      "samples": 5,
+      "ttfr_p50_ms": 43.0,
+      "total_p95_ms": 51.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "daemon status",
+      "samples": 5,
+      "ttfr_p50_ms": 42.0,
+      "total_p95_ms": 46.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "diagnostics bundle",
+      "samples": 5,
+      "ttfr_p50_ms": 41.0,
+      "total_p95_ms": 45.0,
+      "avg_results": 10.0
+    },
+    {
+      "query": "directory walk",
+      "samples": 5,
+      "ttfr_p50_ms": 41.0,
+      "total_p95_ms": 44.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "entitlement manager",
+      "samples": 5,
+      "ttfr_p50_ms": 43.0,
+      "total_p95_ms": 45.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "ephemeral mode",
+      "samples": 5,
+      "ttfr_p50_ms": 47.0,
+      "total_p95_ms": 54.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "flash quartz",
+      "samples": 5,
+      "ttfr_p50_ms": 43.0,
+      "total_p95_ms": 53.0,
+      "avg_results": 10.0
+    },
+    {
+      "query": "index directory",
+      "samples": 5,
+      "ttfr_p50_ms": 42.0,
+      "total_p95_ms": 49.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "journalist mode",
+      "samples": 5,
+      "ttfr_p50_ms": 47.0,
+      "total_p95_ms": 65.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "lexical engine",
+      "samples": 5,
+      "ttfr_p50_ms": 42.0,
+      "total_p95_ms": 45.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "lighthouse audit",
+      "samples": 5,
+      "ttfr_p50_ms": 51.0,
+      "total_p95_ms": 56.0,
+      "avg_results": 12.0
+    },
+    {
+      "query": "model download",
+      "samples": 5,
+      "ttfr_p50_ms": 44.0,
+      "total_p95_ms": 52.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "model list json",
+      "samples": 5,
+      "ttfr_p50_ms": 54.0,
+      "total_p95_ms": 58.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "model switcher",
+      "samples": 5,
+      "ttfr_p50_ms": 43.0,
+      "total_p95_ms": 57.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "move recommendations",
+      "samples": 5,
+      "ttfr_p50_ms": 49.0,
+      "total_p95_ms": 54.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "native-cache configuration",
+      "samples": 5,
+      "ttfr_p50_ms": 41.0,
+      "total_p95_ms": 42.0,
+      "avg_results": 2.0
+    },
+    {
+      "query": "passage extractor",
+      "samples": 5,
+      "ttfr_p50_ms": 39.0,
+      "total_p95_ms": 45.0,
+      "avg_results": 13.0
+    },
+    {
+      "query": "path scoring",
+      "samples": 5,
+      "ttfr_p50_ms": 42.0,
+      "total_p95_ms": 51.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "personal ranking",
+      "samples": 5,
+      "ttfr_p50_ms": 43.0,
+      "total_p95_ms": 46.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "potion core",
+      "samples": 5,
+      "ttfr_p50_ms": 42.0,
+      "total_p95_ms": 48.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "privacy compliance",
+      "samples": 5,
+      "ttfr_p50_ms": 41.0,
+      "total_p95_ms": 47.0,
+      "avg_results": 17.0
+    },
+    {
+      "query": "pro prism",
+      "samples": 5,
+      "ttfr_p50_ms": 91.0,
+      "total_p95_ms": 95.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "pro status",
+      "samples": 5,
+      "ttfr_p50_ms": 101.0,
+      "total_p95_ms": 135.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "progressive search",
+      "samples": 5,
+      "ttfr_p50_ms": 47.0,
+      "total_p95_ms": 58.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "release check",
+      "samples": 5,
+      "ttfr_p50_ms": 50.0,
+      "total_p95_ms": 61.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "ripgrep funnel",
+      "samples": 5,
+      "ttfr_p50_ms": 39.0,
+      "total_p95_ms": 39.0,
+      "avg_results": 0.0
+    },
+    {
+      "query": "search mode auto",
+      "samples": 5,
+      "ttfr_p50_ms": 55.0,
+      "total_p95_ms": 61.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "search mode flash",
+      "samples": 5,
+      "ttfr_p50_ms": 53.0,
+      "total_p95_ms": 65.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "search mode pro",
+      "samples": 5,
+      "ttfr_p50_ms": 93.0,
+      "total_p95_ms": 119.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "secure timing",
+      "samples": 5,
+      "ttfr_p50_ms": 43.0,
+      "total_p95_ms": 46.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "semantic rerank",
+      "samples": 5,
+      "ttfr_p50_ms": 40.0,
+      "total_p95_ms": 40.0,
+      "avg_results": 0.0
+    },
+    {
+      "query": "settings matrix",
+      "samples": 5,
+      "ttfr_p50_ms": 52.0,
+      "total_p95_ms": 57.0,
+      "avg_results": 13.0
+    },
+    {
+      "query": "tauri search command",
+      "samples": 5,
+      "ttfr_p50_ms": 54.0,
+      "total_p95_ms": 57.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "token claims",
+      "samples": 5,
+      "ttfr_p50_ms": 44.0,
+      "total_p95_ms": 48.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "trusted snippet",
+      "samples": 5,
+      "ttfr_p50_ms": 39.0,
+      "total_p95_ms": 46.0,
+      "avg_results": 9.0
+    }
+  ],
+  "records": [
+    {
+      "query": "cache mode",
+      "run_index": 1,
+      "warm": false,
+      "ttfr_ms": 51,
+      "total_ms": 133,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 45,
+        "embed_ms": 0,
+        "rank_ms": 82,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 45,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_98.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "native-cache configuration",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 2,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 2,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ephemeral mode",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 6,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 128,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_95.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode auto",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 52,
+      "total_ms": 61,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 9,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 259,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_88.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode pro",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 89,
+      "total_ms": 119,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 29,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 774,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_24.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode flash",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 52,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 241,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_82.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "journalist mode",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 50,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 140,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_64.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "secure timing",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 48,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\sport\\sport_66.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "progressive search",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 147,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_82.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ask mode",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 51,
+      "total_ms": 52,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 78,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_63.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "pro status",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 88,
+      "total_ms": 90,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 753,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\sport\\sport_93.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "automation actions capability",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 44,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_43.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "move recommendations",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 52,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 185,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_91.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model list json",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 52,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 67,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_40.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model switcher",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 22,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_88.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "flash quartz",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 10,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 10,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_79.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "pro prism",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 93,
+      "total_ms": 94,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 45,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 752,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_26.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "potion core",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 48,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 45,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 47,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_30.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "token claims",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 53,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_242.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "entitlement manager",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 39,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_34.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "personal ranking",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 85,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\historical\\historical_34.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "directory walk",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 33,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_100.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "candidate generator",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 20,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_52.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "path scoring",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 43,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_127.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ripgrep funnel",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 0,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 0,
+      "top1_path": null,
+      "top1_score": null
+    },
+    {
+      "query": "semantic rerank",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 0,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 0,
+      "top1_path": null,
+      "top1_score": null
+    },
+    {
+      "query": "passage extractor",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 13,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 13,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_9.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "trusted snippet",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 9,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 9,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_50.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "diagnostics bundle",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 10,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 10,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "release check",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 126,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_84.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "settings matrix",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 13,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 13,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_79.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "lighthouse audit",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 12,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 12,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_138.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "tauri search command",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 49,
+      "total_ms": 50,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 177,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_79.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "config migration",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 24,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_221.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "cache rebuild",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 11,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 11,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_42.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "index directory",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 30,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_48.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "daemon status",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 24,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_98.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "lexical engine",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 59,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_34.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model download",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 83,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_91.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "privacy compliance",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 17,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 17,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_1.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "cache mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 45,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_98.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "native-cache configuration",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 2,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 2,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ephemeral mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 128,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\historical\\historical_27.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode auto",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 55,
+      "total_ms": 56,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 259,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_88.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode pro",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 93,
+      "total_ms": 94,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 774,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_3.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode flash",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 241,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_82.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "journalist mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 140,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_75.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "secure timing",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 48,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\historical\\historical_39.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "progressive search",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 147,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_82.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ask mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 78,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\medical\\medical_413.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "pro status",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 92,
+      "total_ms": 93,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 753,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\sport\\sport_93.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "automation actions capability",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 44,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_92.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "move recommendations",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 49,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 185,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_2.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model list json",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 67,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_39.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model switcher",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 57,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 53,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 22,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_88.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "flash quartz",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 10,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 10,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_79.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "pro prism",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 91,
+      "total_ms": 92,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 752,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_26.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "potion core",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 47,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_20.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "token claims",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 53,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_81.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "entitlement manager",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 39,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_52.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "personal ranking",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 85,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_45.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "directory walk",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 33,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_100.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "candidate generator",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 20,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_52.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "path scoring",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 51,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 49,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 43,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\medical\\medical_438.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ripgrep funnel",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 0,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 0,
+      "top1_path": null,
+      "top1_score": null
+    },
+    {
+      "query": "semantic rerank",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 0,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 0,
+      "top1_path": null,
+      "top1_score": null
+    },
+    {
+      "query": "passage extractor",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 13,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 13,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_9.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "trusted snippet",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 9,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 9,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_50.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "diagnostics bundle",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 10,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 10,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "release check",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 126,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_84.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "settings matrix",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 45,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 13,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 13,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_79.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "lighthouse audit",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 55,
+      "total_ms": 55,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 54,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 12,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 12,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_138.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "tauri search command",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 55,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 46,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 177,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_4.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "config migration",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 51,
+      "total_ms": 51,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 49,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 24,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_11.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "cache rebuild",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 11,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 11,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_42.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "index directory",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 30,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_13.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "daemon status",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 24,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "lexical engine",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 59,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_49.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model download",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 83,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_91.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "privacy compliance",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 17,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 17,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_1.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "cache mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 45,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_98.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "native-cache configuration",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 2,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 2,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ephemeral mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 49,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 128,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\historical\\historical_27.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode auto",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 55,
+      "total_ms": 55,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 259,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_88.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode pro",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 94,
+      "total_ms": 96,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 774,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\medical\\medical_385.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode flash",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 64,
+      "total_ms": 65,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 46,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 241,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_82.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "journalist mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 65,
+      "total_ms": 65,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 56,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 140,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_67.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "secure timing",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 48,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\sport\\sport_14.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "progressive search",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 147,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ask mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 78,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\medical\\medical_413.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "pro status",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 133,
+      "total_ms": 135,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 58,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 753,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\sport\\sport_93.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "automation actions capability",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 56,
+      "total_ms": 56,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 53,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 44,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_92.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "move recommendations",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 185,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_19.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model list json",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 57,
+      "total_ms": 58,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 47,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 67,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_39.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model switcher",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 22,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_88.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "flash quartz",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 10,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 10,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_79.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "pro prism",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 89,
+      "total_ms": 90,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 752,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_26.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "potion core",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 47,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_9.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "token claims",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 53,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_81.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "entitlement manager",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 39,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_217.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "personal ranking",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 85,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_8.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "directory walk",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 33,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_100.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "candidate generator",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 20,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_52.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "path scoring",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 43,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\medical\\medical_438.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ripgrep funnel",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 0,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 0,
+      "top1_path": null,
+      "top1_score": null
+    },
+    {
+      "query": "semantic rerank",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 0,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 0,
+      "top1_path": null,
+      "top1_score": null
+    },
+    {
+      "query": "passage extractor",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 13,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 13,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_9.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "trusted snippet",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 46,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 9,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 9,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_50.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "diagnostics bundle",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 37,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 10,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 10,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "release check",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 57,
+      "total_ms": 58,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 49,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 126,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_8.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "settings matrix",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 57,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 56,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 13,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 13,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_79.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "lighthouse audit",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 56,
+      "total_ms": 56,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 55,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 12,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 12,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_138.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "tauri search command",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 57,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 48,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 177,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_4.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "config migration",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 24,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_11.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "cache rebuild",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 11,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 11,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_42.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "index directory",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 49,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 47,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 30,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_48.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "daemon status",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 45,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 24,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "lexical engine",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 59,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_49.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model download",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 83,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_87.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "privacy compliance",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 17,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 17,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_1.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "cache mode",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 48,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 45,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_98.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "native-cache configuration",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 2,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 2,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ephemeral mode",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 128,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\historical\\historical_71.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode auto",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 55,
+      "total_ms": 56,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 259,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_88.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode pro",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 92,
+      "total_ms": 94,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 774,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_3.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode flash",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 57,
+      "total_ms": 58,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 46,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 241,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_82.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "journalist mode",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 48,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 140,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_67.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "secure timing",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 48,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\sport\\sport_14.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "progressive search",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 46,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 147,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ask mode",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 73,
+      "total_ms": 73,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 54,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 78,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\medical\\medical_413.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "pro status",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 125,
+      "total_ms": 126,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 57,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 753,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\sport\\sport_93.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "automation actions capability",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 44,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_92.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "move recommendations",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 49,
+      "total_ms": 50,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 185,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_19.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model list json",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 55,
+      "total_ms": 55,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 67,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_39.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model switcher",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 22,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_88.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "flash quartz",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 52,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 10,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 10,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_79.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "pro prism",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 93,
+      "total_ms": 95,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 47,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 752,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_26.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "potion core",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 47,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\historical\\historical_19.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "token claims",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 53,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_81.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "entitlement manager",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 39,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_36.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "personal ranking",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 85,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_28.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "directory walk",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 33,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_100.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "candidate generator",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 20,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_52.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "path scoring",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 43,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\medical\\medical_438.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ripgrep funnel",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 0,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 0,
+      "top1_path": null,
+      "top1_score": null
+    },
+    {
+      "query": "semantic rerank",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 0,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 0,
+      "top1_path": null,
+      "top1_score": null
+    },
+    {
+      "query": "passage extractor",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 13,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 13,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_9.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "trusted snippet",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 9,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 9,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_50.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "diagnostics bundle",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 10,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 10,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "release check",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 50,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 126,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_46.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "settings matrix",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 56,
+      "total_ms": 56,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 55,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 13,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 13,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_79.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "lighthouse audit",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 51,
+      "total_ms": 51,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 50,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 12,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 12,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_138.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "tauri search command",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 177,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_4.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "config migration",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 24,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_11.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "cache rebuild",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 11,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 11,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_42.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "index directory",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 30,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_48.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "daemon status",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 24,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "lexical engine",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 59,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_49.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model download",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 52,
+      "total_ms": 52,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 46,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 83,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_91.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "privacy compliance",
+      "run_index": 4,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 46,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 17,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 17,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_1.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "cache mode",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 45,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_98.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "native-cache configuration",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 2,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 2,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ephemeral mode",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 128,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\historical\\historical_27.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode auto",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 259,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_88.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode pro",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 93,
+      "total_ms": 96,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 774,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_69.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "search mode flash",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 51,
+      "total_ms": 52,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 241,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_82.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "journalist mode",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 140,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_5.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "secure timing",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 48,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\sport\\sport_14.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "progressive search",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 57,
+      "total_ms": 58,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 47,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 147,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ask mode",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 70,
+      "total_ms": 70,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 55,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 78,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\medical\\medical_413.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "pro status",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 101,
+      "total_ms": 103,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 48,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 753,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\sport\\sport_93.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "automation actions capability",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 44,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_63.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "move recommendations",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 48,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 185,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\medical\\medical_102.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model list json",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 67,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_39.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model switcher",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 22,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_88.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "flash quartz",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 10,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 10,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_79.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "pro prism",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 90,
+      "total_ms": 92,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 752,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_26.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "potion core",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 47,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_20.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "token claims",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 48,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 53,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_3.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "entitlement manager",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 39,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_87.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "personal ranking",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 85,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_210.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "directory walk",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 33,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_92.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "candidate generator",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 20,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_52.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "path scoring",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 43,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\medical\\medical_438.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "ripgrep funnel",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 37,
+      "total_ms": 37,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 37,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 0,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 0,
+      "top1_path": null,
+      "top1_score": null
+    },
+    {
+      "query": "semantic rerank",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 0,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 0,
+      "top1_path": null,
+      "top1_score": null
+    },
+    {
+      "query": "passage extractor",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 13,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 13,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\space\\space_9.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "trusted snippet",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 9,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 9,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_50.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "diagnostics bundle",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 10,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 10,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "release check",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 61,
+      "total_ms": 61,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 53,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 126,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_93.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "settings matrix",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 52,
+      "total_ms": 52,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 51,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 13,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 13,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\entertainment\\entertainment_79.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "lighthouse audit",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 51,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 50,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 12,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 12,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\politics\\politics_138.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "tauri search command",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 56,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 46,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 177,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\historical\\historical_30.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "config migration",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 24,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\graphics\\graphics_11.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "cache rebuild",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 11,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 11,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_42.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "index directory",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 30,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_48.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "daemon status",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 24,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\food\\food_74.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "lexical engine",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 37,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 59,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\business\\business_13.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "model download",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 83,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_91.txt",
+      "top1_score": 0.0
+    },
+    {
+      "query": "privacy compliance",
+      "run_index": 5,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 78,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 17,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 17,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\technologie\\technologie_1.txt",
+      "top1_score": 0.0
+    }
+  ]
+}

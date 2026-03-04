@@ -1,0 +1,3085 @@
+{
+  "generated_at": "2026-03-03T19:40:35.098767500+00:00",
+  "root_dir": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos",
+  "file_count": 211054,
+  "corpus_tier": "c",
+  "objective_profile": "Harsh",
+  "model": "ixos-flash-v2",
+  "cache_mode": "NativeCache",
+  "runs_per_query": 3,
+  "queries": 40,
+  "targets": {
+    "description": "Tier C (100k-300k files, harsh objective)",
+    "ttfr_target_ms": null,
+    "total_target_ms": null,
+    "cold_ttfr_target_ms": 120.0,
+    "cold_total_target_ms": 6000.0,
+    "warm_total_target_ms": 2500.0
+  },
+  "gate": {
+    "pass": false,
+    "reasons": [
+      "cold ttfr_p50 131.00ms exceeds harsh target 120.00ms"
+    ]
+  },
+  "summary": {
+    "samples": 120,
+    "ttfr_p50_ms": 42.0,
+    "ttfr_p95_ms": 63.0,
+    "total_p50_ms": 44.0,
+    "total_p95_ms": 73.0,
+    "cold_ttfr_p50_ms": 131.0,
+    "cold_total_p95_ms": 578.0,
+    "warm_total_p95_ms": 66.0,
+    "walk_p95_ms": 174.0,
+    "path_score_p95_ms": 1.0,
+    "ripgrep_p95_ms": 37.0,
+    "embed_p95_ms": 5.0,
+    "rank_p95_ms": 6.0,
+    "avg_cache_hit_rate": 0.9861163757980584
+  },
+  "per_query": [
+    {
+      "query": "ask mode",
+      "samples": 3,
+      "ttfr_p50_ms": 50.0,
+      "total_p95_ms": 53.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "automation actions capability",
+      "samples": 3,
+      "ttfr_p50_ms": 34.0,
+      "total_p95_ms": 36.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "cache mode",
+      "samples": 3,
+      "ttfr_p50_ms": 52.0,
+      "total_p95_ms": 578.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "cache rebuild",
+      "samples": 3,
+      "ttfr_p50_ms": 42.0,
+      "total_p95_ms": 45.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "candidate generator",
+      "samples": 3,
+      "ttfr_p50_ms": 39.0,
+      "total_p95_ms": 44.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "config migration",
+      "samples": 3,
+      "ttfr_p50_ms": 41.0,
+      "total_p95_ms": 44.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "daemon status",
+      "samples": 3,
+      "ttfr_p50_ms": 42.0,
+      "total_p95_ms": 47.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "diagnostics bundle",
+      "samples": 3,
+      "ttfr_p50_ms": 33.0,
+      "total_p95_ms": 35.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "directory walk",
+      "samples": 3,
+      "ttfr_p50_ms": 39.0,
+      "total_p95_ms": 44.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "entitlement manager",
+      "samples": 3,
+      "ttfr_p50_ms": 34.0,
+      "total_p95_ms": 35.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "ephemeral mode",
+      "samples": 3,
+      "ttfr_p50_ms": 47.0,
+      "total_p95_ms": 64.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "flash quartz",
+      "samples": 3,
+      "ttfr_p50_ms": 38.0,
+      "total_p95_ms": 48.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "index directory",
+      "samples": 3,
+      "ttfr_p50_ms": 44.0,
+      "total_p95_ms": 54.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "journalist mode",
+      "samples": 3,
+      "ttfr_p50_ms": 50.0,
+      "total_p95_ms": 53.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "lexical engine",
+      "samples": 3,
+      "ttfr_p50_ms": 36.0,
+      "total_p95_ms": 48.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "lighthouse audit",
+      "samples": 3,
+      "ttfr_p50_ms": 34.0,
+      "total_p95_ms": 43.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "model download",
+      "samples": 3,
+      "ttfr_p50_ms": 61.0,
+      "total_p95_ms": 95.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "model list json",
+      "samples": 3,
+      "ttfr_p50_ms": 57.0,
+      "total_p95_ms": 86.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "model switcher",
+      "samples": 3,
+      "ttfr_p50_ms": 44.0,
+      "total_p95_ms": 47.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "move recommendations",
+      "samples": 3,
+      "ttfr_p50_ms": 37.0,
+      "total_p95_ms": 42.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "native-cache configuration",
+      "samples": 3,
+      "ttfr_p50_ms": 35.0,
+      "total_p95_ms": 44.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "passage extractor",
+      "samples": 3,
+      "ttfr_p50_ms": 35.0,
+      "total_p95_ms": 37.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "path scoring",
+      "samples": 3,
+      "ttfr_p50_ms": 48.0,
+      "total_p95_ms": 54.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "personal ranking",
+      "samples": 3,
+      "ttfr_p50_ms": 43.0,
+      "total_p95_ms": 53.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "potion core",
+      "samples": 3,
+      "ttfr_p50_ms": 42.0,
+      "total_p95_ms": 59.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "privacy compliance",
+      "samples": 3,
+      "ttfr_p50_ms": 37.0,
+      "total_p95_ms": 42.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "pro prism",
+      "samples": 3,
+      "ttfr_p50_ms": 54.0,
+      "total_p95_ms": 62.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "pro status",
+      "samples": 3,
+      "ttfr_p50_ms": 57.0,
+      "total_p95_ms": 66.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "progressive search",
+      "samples": 3,
+      "ttfr_p50_ms": 52.0,
+      "total_p95_ms": 56.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "release check",
+      "samples": 3,
+      "ttfr_p50_ms": 43.0,
+      "total_p95_ms": 52.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "ripgrep funnel",
+      "samples": 3,
+      "ttfr_p50_ms": 35.0,
+      "total_p95_ms": 37.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "search mode auto",
+      "samples": 3,
+      "ttfr_p50_ms": 55.0,
+      "total_p95_ms": 102.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "search mode flash",
+      "samples": 3,
+      "ttfr_p50_ms": 55.0,
+      "total_p95_ms": 73.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "search mode pro",
+      "samples": 3,
+      "ttfr_p50_ms": 63.0,
+      "total_p95_ms": 120.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "secure timing",
+      "samples": 3,
+      "ttfr_p50_ms": 38.0,
+      "total_p95_ms": 40.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "semantic rerank",
+      "samples": 3,
+      "ttfr_p50_ms": 38.0,
+      "total_p95_ms": 40.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "settings matrix",
+      "samples": 3,
+      "ttfr_p50_ms": 36.0,
+      "total_p95_ms": 37.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "tauri search command",
+      "samples": 3,
+      "ttfr_p50_ms": 53.0,
+      "total_p95_ms": 64.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "token claims",
+      "samples": 3,
+      "ttfr_p50_ms": 35.0,
+      "total_p95_ms": 38.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "trusted snippet",
+      "samples": 3,
+      "ttfr_p50_ms": 34.0,
+      "total_p95_ms": 43.0,
+      "avg_results": 20.0
+    }
+  ],
+  "records": [
+    {
+      "query": "cache mode",
+      "run_index": 1,
+      "warm": false,
+      "ttfr_ms": 131,
+      "total_ms": 578,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 109,
+        "embed_ms": 245,
+        "rank_ms": 201,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 0,
+        "misses": 451,
+        "writes": 451
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\capability-matrix.md",
+      "top1_score": 0.44489533
+    },
+    {
+      "query": "native-cache configuration",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 5,
+        "rank_ms": 3,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 144,
+        "misses": 10,
+        "writes": 10
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\cli\\config.rs",
+      "top1_score": 0.6324419
+    },
+    {
+      "query": "ephemeral mode",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 51,
+      "total_ms": 64,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 33,
+        "embed_ms": 6,
+        "rank_ms": 6,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 378,
+        "misses": 15,
+        "writes": 15
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\bench\\big_root_queries.json",
+      "top1_score": 0.33059317
+    },
+    {
+      "query": "search mode auto",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 102,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 28,
+        "rank_ms": 19,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 418,
+        "misses": 65,
+        "writes": 65
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\engineering\\SEARCH_MODE_FALLBACKS.md",
+      "top1_score": 0.45778108
+    },
+    {
+      "query": "search mode pro",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 63,
+      "total_ms": 120,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 31,
+        "embed_ms": 32,
+        "rank_ms": 24,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 493,
+        "misses": 77,
+        "writes": 77
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\bench\\big_root_queries.json",
+      "top1_score": 0.5318967
+    },
+    {
+      "query": "search mode flash",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 55,
+      "total_ms": 59,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 480,
+        "misses": 2,
+        "writes": 2
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\engineering\\SEARCH_MODE_FALLBACKS.md",
+      "top1_score": 0.5050761
+    },
+    {
+      "query": "journalist mode",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 51,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 395,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\journalist_mode.rs",
+      "top1_score": 0.3620325
+    },
+    {
+      "query": "secure timing",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 153,
+        "misses": 2,
+        "writes": 2
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_embed\\secure_embedder.rs",
+      "top1_score": 0.5570204
+    },
+    {
+      "query": "progressive search",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 344,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.4599533
+    },
+    {
+      "query": "ask mode",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 49,
+      "total_ms": 51,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 389,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\capability-matrix.md",
+      "top1_score": 0.3985387
+    },
+    {
+      "query": "pro status",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 58,
+      "total_ms": 66,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 3,
+        "rank_ms": 5,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 513,
+        "misses": 8,
+        "writes": 8
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\models\\pro-v2.md",
+      "top1_score": 0.45310834
+    },
+    {
+      "query": "automation actions capability",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 36,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 140,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\compliance\\transparency.rs",
+      "top1_score": 0.47894782
+    },
+    {
+      "query": "move recommendations",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 36,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 3,
+        "rank_ms": 3,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 187,
+        "misses": 5,
+        "writes": 5
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\security_hardening_and_recommendations_2026-02-10.md",
+      "top1_score": 0.28200355
+    },
+    {
+      "query": "model list json",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 70,
+      "total_ms": 86,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 41,
+        "embed_ms": 9,
+        "rank_ms": 6,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 437,
+        "misses": 13,
+        "writes": 13
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_embed\\model2vec.rs",
+      "top1_score": 0.3235418
+    },
+    {
+      "query": "model switcher",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 289,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_embed\\model2vec.rs",
+      "top1_score": 0.33655217
+    },
+    {
+      "query": "flash quartz",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 48,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 35,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 234,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\models\\pro-fusion.md",
+      "top1_score": 0.27193218
+    },
+    {
+      "query": "pro prism",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 60,
+      "total_ms": 62,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 33,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 509,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\models\\pro-v2.md",
+      "top1_score": 0.38503814
+    },
+    {
+      "query": "potion core",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 49,
+      "total_ms": 59,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 33,
+        "embed_ms": 4,
+        "rank_ms": 5,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 297,
+        "misses": 9,
+        "writes": 9
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\licensing\\STRATEGY.md",
+      "top1_score": 0.16875705
+    },
+    {
+      "query": "token claims",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 1,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 187,
+        "misses": 4,
+        "writes": 4
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\packages\\ui\\src\\tokens\\tokens.css",
+      "top1_score": 0.60096043
+    },
+    {
+      "query": "entitlement manager",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 106,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\ixos-site\\src\\app\\api\\desktop\\entitlement\\route.ts",
+      "top1_score": 0.2753391
+    },
+    {
+      "query": "personal ranking",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 309,
+        "misses": 2,
+        "writes": 2
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\secure_ranker.rs",
+      "top1_score": 0.33605263
+    },
+    {
+      "query": "directory walk",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 277,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\security\\sandbox.rs",
+      "top1_score": 0.4204828
+    },
+    {
+      "query": "candidate generator",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 238,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\candidate_generator\\mod.rs",
+      "top1_score": 0.23776908
+    },
+    {
+      "query": "path scoring",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 50,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 392,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\security\\sandbox.rs",
+      "top1_score": 0.22071753
+    },
+    {
+      "query": "ripgrep funnel",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 193,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\candidate_generator\\ripgrep_funnel.rs",
+      "top1_score": 0.33424568
+    },
+    {
+      "query": "semantic rerank",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 223,
+        "misses": 2,
+        "writes": 2
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\hybrid_engine.rs",
+      "top1_score": 0.45528823
+    },
+    {
+      "query": "passage extractor",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 32,
+      "total_ms": 33,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 84,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\ask_mode\\mod.rs",
+      "top1_score": 0.38006395
+    },
+    {
+      "query": "trusted snippet",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 32,
+      "total_ms": 33,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 115,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\snippet.rs",
+      "top1_score": 0.30260456
+    },
+    {
+      "query": "diagnostics bundle",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 32,
+      "total_ms": 33,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 87,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\licensing\\STRATEGY.md",
+      "top1_score": 0.36379144
+    },
+    {
+      "query": "release check",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 299,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\phase0_2_validation_2026-02-08.md",
+      "top1_score": 0.37352893
+    },
+    {
+      "query": "settings matrix",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 36,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 140,
+        "misses": 2,
+        "writes": 2
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\capability-matrix.md",
+      "top1_score": 0.3502475
+    },
+    {
+      "query": "lighthouse audit",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 36,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 134,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+      "top1_score": 0.20170696
+    },
+    {
+      "query": "tauri search command",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 63,
+      "total_ms": 64,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 428,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src-tauri\\src\\lib.rs",
+      "top1_score": 0.46434948
+    },
+    {
+      "query": "config migration",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 288,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\cli\\config.rs",
+      "top1_score": 0.5715491
+    },
+    {
+      "query": "cache rebuild",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 320,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\phase0_cli_reliability_patch_2026-02-08.md",
+      "top1_score": 0.33825707
+    },
+    {
+      "query": "index directory",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 3,
+        "rank_ms": 6,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 363,
+        "misses": 13,
+        "writes": 13
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\security\\sandbox.rs",
+      "top1_score": 0.4373642
+    },
+    {
+      "query": "daemon status",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 248,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\daemon\\mod.rs",
+      "top1_score": 0.42868653
+    },
+    {
+      "query": "lexical engine",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 48,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 37,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 211,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\lexical_engine.rs",
+      "top1_score": 0.3881313
+    },
+    {
+      "query": "model download",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 69,
+      "total_ms": 95,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 10,
+        "rank_ms": 15,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 686,
+        "misses": 41,
+        "writes": 41
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+      "top1_score": 0.49024376
+    },
+    {
+      "query": "privacy compliance",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 35,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 179,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\compliance\\mod.rs",
+      "top1_score": 0.5415834
+    },
+    {
+      "query": "cache mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 52,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 451,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\capability-matrix.md",
+      "top1_score": 0.44068497
+    },
+    {
+      "query": "native-cache configuration",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 154,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\cli\\config.rs",
+      "top1_score": 0.6344187
+    },
+    {
+      "query": "ephemeral mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 393,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\bench\\big_root_queries.json",
+      "top1_score": 0.32861233
+    },
+    {
+      "query": "search mode auto",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 55,
+      "total_ms": 56,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 483,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\engineering\\SEARCH_MODE_FALLBACKS.md",
+      "top1_score": 0.4514411
+    },
+    {
+      "query": "search mode pro",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 61,
+      "total_ms": 63,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 570,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\bench\\big_root_queries.json",
+      "top1_score": 0.52832144
+    },
+    {
+      "query": "search mode flash",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 55,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 482,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\engineering\\SEARCH_MODE_FALLBACKS.md",
+      "top1_score": 0.50137454
+    },
+    {
+      "query": "journalist mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 51,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 395,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\journalist_mode.rs",
+      "top1_score": 0.36175042
+    },
+    {
+      "query": "secure timing",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 155,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_embed\\secure_embedder.rs",
+      "top1_score": 0.55702
+    },
+    {
+      "query": "progressive search",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 56,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 37,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 344,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.4620532
+    },
+    {
+      "query": "ask mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 51,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 389,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\capability-matrix.md",
+      "top1_score": 0.3985385
+    },
+    {
+      "query": "pro status",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 57,
+      "total_ms": 59,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 521,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\models\\pro-v2.md",
+      "top1_score": 0.45310855
+    },
+    {
+      "query": "automation actions capability",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 141,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\compliance\\transparency.rs",
+      "top1_score": 0.4789458
+    },
+    {
+      "query": "move recommendations",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 37,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 192,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\security_hardening_and_recommendations_2026-02-10.md",
+      "top1_score": 0.28167763
+    },
+    {
+      "query": "model list json",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 55,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 450,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_embed\\model2vec.rs",
+      "top1_score": 0.32354113
+    },
+    {
+      "query": "model switcher",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 289,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_embed\\model2vec.rs",
+      "top1_score": 0.33655185
+    },
+    {
+      "query": "flash quartz",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 37,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 234,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\models\\pro-fusion.md",
+      "top1_score": 0.27193218
+    },
+    {
+      "query": "pro prism",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 56,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 509,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\models\\pro-v2.md",
+      "top1_score": 0.38503814
+    },
+    {
+      "query": "potion core",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 306,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\licensing\\STRATEGY.md",
+      "top1_score": 0.16875705
+    },
+    {
+      "query": "token claims",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 36,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 191,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\packages\\ui\\src\\tokens\\tokens.css",
+      "top1_score": 0.5973173
+    },
+    {
+      "query": "entitlement manager",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 106,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\ixos-site\\src\\app\\api\\desktop\\entitlement\\route.ts",
+      "top1_score": 0.2753391
+    },
+    {
+      "query": "personal ranking",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 51,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 34,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 311,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\secure_ranker.rs",
+      "top1_score": 0.33601356
+    },
+    {
+      "query": "directory walk",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 277,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\security\\sandbox.rs",
+      "top1_score": 0.42052588
+    },
+    {
+      "query": "candidate generator",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 35,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 238,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\candidate_generator\\mod.rs",
+      "top1_score": 0.23776852
+    },
+    {
+      "query": "path scoring",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 36,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 393,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\security\\sandbox.rs",
+      "top1_score": 0.22075422
+    },
+    {
+      "query": "ripgrep funnel",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 37,
+      "total_ms": 37,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 193,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\candidate_generator\\ripgrep_funnel.rs",
+      "top1_score": 0.33424574
+    },
+    {
+      "query": "semantic rerank",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 225,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\hybrid_engine.rs",
+      "top1_score": 0.4552919
+    },
+    {
+      "query": "passage extractor",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 36,
+      "total_ms": 37,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 33,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 84,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\ask_mode\\mod.rs",
+      "top1_score": 0.3799882
+    },
+    {
+      "query": "trusted snippet",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 115,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\snippet.rs",
+      "top1_score": 0.3026077
+    },
+    {
+      "query": "diagnostics bundle",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 88,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\licensing\\STRATEGY.md",
+      "top1_score": 0.36379144
+    },
+    {
+      "query": "release check",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 300,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\phase0_2_validation_2026-02-08.md",
+      "top1_score": 0.37350717
+    },
+    {
+      "query": "settings matrix",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 36,
+      "total_ms": 37,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 142,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\capability-matrix.md",
+      "top1_score": 0.3502475
+    },
+    {
+      "query": "lighthouse audit",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 34,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 135,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+      "top1_score": 0.20206988
+    },
+    {
+      "query": "tauri search command",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 55,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 428,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src-tauri\\src\\lib.rs",
+      "top1_score": 0.4643497
+    },
+    {
+      "query": "config migration",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 289,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\cli\\config.rs",
+      "top1_score": 0.5715491
+    },
+    {
+      "query": "cache rebuild",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 320,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\phase0_cli_reliability_patch_2026-02-08.md",
+      "top1_score": 0.33790377
+    },
+    {
+      "query": "index directory",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 376,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\security\\sandbox.rs",
+      "top1_score": 0.43737277
+    },
+    {
+      "query": "daemon status",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 248,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\daemon\\mod.rs",
+      "top1_score": 0.42868114
+    },
+    {
+      "query": "lexical engine",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 36,
+      "total_ms": 37,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 211,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\lexical_engine.rs",
+      "top1_score": 0.3881313
+    },
+    {
+      "query": "model download",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 61,
+      "total_ms": 63,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 727,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+      "top1_score": 0.49152565
+    },
+    {
+      "query": "privacy compliance",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 36,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 179,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\compliance\\mod.rs",
+      "top1_score": 0.5415834
+    },
+    {
+      "query": "cache mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 51,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 451,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\capability-matrix.md",
+      "top1_score": 0.44068497
+    },
+    {
+      "query": "native-cache configuration",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 154,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\cli\\config.rs",
+      "top1_score": 0.6344187
+    },
+    {
+      "query": "ephemeral mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 48,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 393,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\bench\\big_root_queries.json",
+      "top1_score": 0.3286113
+    },
+    {
+      "query": "search mode auto",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 62,
+      "total_ms": 64,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 483,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\engineering\\SEARCH_MODE_FALLBACKS.md",
+      "top1_score": 0.45140982
+    },
+    {
+      "query": "search mode pro",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 78,
+      "total_ms": 81,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 570,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\bench\\big_root_queries.json",
+      "top1_score": 0.5283197
+    },
+    {
+      "query": "search mode flash",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 71,
+      "total_ms": 73,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 482,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\engineering\\SEARCH_MODE_FALLBACKS.md",
+      "top1_score": 0.50135684
+    },
+    {
+      "query": "journalist mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 50,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 395,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\journalist_mode.rs",
+      "top1_score": 0.3617505
+    },
+    {
+      "query": "secure timing",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 155,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_embed\\secure_embedder.rs",
+      "top1_score": 0.55702
+    },
+    {
+      "query": "progressive search",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 52,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 35,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 344,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.46212667
+    },
+    {
+      "query": "ask mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 51,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 389,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\capability-matrix.md",
+      "top1_score": 0.3985385
+    },
+    {
+      "query": "pro status",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 57,
+      "total_ms": 58,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 521,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\models\\pro-v2.md",
+      "top1_score": 0.45310855
+    },
+    {
+      "query": "automation actions capability",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 34,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 141,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\compliance\\transparency.rs",
+      "top1_score": 0.4789458
+    },
+    {
+      "query": "move recommendations",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 192,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\security_hardening_and_recommendations_2026-02-10.md",
+      "top1_score": 0.2816435
+    },
+    {
+      "query": "model list json",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 57,
+      "total_ms": 59,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 450,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_embed\\model2vec.rs",
+      "top1_score": 0.32354113
+    },
+    {
+      "query": "model switcher",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 289,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_embed\\model2vec.rs",
+      "top1_score": 0.33655185
+    },
+    {
+      "query": "flash quartz",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 234,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\models\\pro-fusion.md",
+      "top1_score": 0.27193218
+    },
+    {
+      "query": "pro prism",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 56,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 509,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\models\\pro-v2.md",
+      "top1_score": 0.38503814
+    },
+    {
+      "query": "potion core",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 306,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\licensing\\STRATEGY.md",
+      "top1_score": 0.16875705
+    },
+    {
+      "query": "token claims",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 36,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 191,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\packages\\ui\\src\\tokens\\tokens.css",
+      "top1_score": 0.5965003
+    },
+    {
+      "query": "entitlement manager",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 106,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\ixos-site\\src\\app\\api\\desktop\\entitlement\\route.ts",
+      "top1_score": 0.2753391
+    },
+    {
+      "query": "personal ranking",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 311,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\secure_ranker.rs",
+      "top1_score": 0.33601135
+    },
+    {
+      "query": "directory walk",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 277,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\security\\sandbox.rs",
+      "top1_score": 0.42052594
+    },
+    {
+      "query": "candidate generator",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 238,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\candidate_generator\\mod.rs",
+      "top1_score": 0.23776852
+    },
+    {
+      "query": "path scoring",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 393,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\security\\sandbox.rs",
+      "top1_score": 0.22075424
+    },
+    {
+      "query": "ripgrep funnel",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 36,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 193,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\candidate_generator\\ripgrep_funnel.rs",
+      "top1_score": 0.33424574
+    },
+    {
+      "query": "semantic rerank",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 37,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 225,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\hybrid_engine.rs",
+      "top1_score": 0.4552918
+    },
+    {
+      "query": "passage extractor",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 84,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\ask_mode\\mod.rs",
+      "top1_score": 0.3799881
+    },
+    {
+      "query": "trusted snippet",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 36,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 115,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\snippet.rs",
+      "top1_score": 0.30260766
+    },
+    {
+      "query": "diagnostics bundle",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 33,
+      "total_ms": 34,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 88,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\licensing\\STRATEGY.md",
+      "top1_score": 0.36379144
+    },
+    {
+      "query": "release check",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 51,
+      "total_ms": 52,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 37,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 300,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\phase0_2_validation_2026-02-08.md",
+      "top1_score": 0.373558
+    },
+    {
+      "query": "settings matrix",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 36,
+      "total_ms": 37,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 142,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\capability-matrix.md",
+      "top1_score": 0.3502475
+    },
+    {
+      "query": "lighthouse audit",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 33,
+      "total_ms": 34,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 135,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+      "top1_score": 0.20207095
+    },
+    {
+      "query": "tauri search command",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 428,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src-tauri\\src\\lib.rs",
+      "top1_score": 0.4643497
+    },
+    {
+      "query": "config migration",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 1,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 289,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\cli\\config.rs",
+      "top1_score": 0.5715491
+    },
+    {
+      "query": "cache rebuild",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 320,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\phase0_cli_reliability_patch_2026-02-08.md",
+      "top1_score": 0.3376351
+    },
+    {
+      "query": "index directory",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 376,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\security\\sandbox.rs",
+      "top1_score": 0.4373728
+    },
+    {
+      "query": "daemon status",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 248,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\daemon\\mod.rs",
+      "top1_score": 0.42868114
+    },
+    {
+      "query": "lexical engine",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 36,
+      "total_ms": 37,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 211,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\ixos_rank\\lexical_engine.rs",
+      "top1_score": 0.3881313
+    },
+    {
+      "query": "model download",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 59,
+      "total_ms": 62,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 727,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+      "top1_score": 0.49181998
+    },
+    {
+      "query": "privacy compliance",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 37,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 174,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 179,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\compliance\\mod.rs",
+      "top1_score": 0.5415834
+    }
+  ]
+}

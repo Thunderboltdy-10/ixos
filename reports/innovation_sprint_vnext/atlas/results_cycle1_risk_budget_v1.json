@@ -1,0 +1,2104 @@
+{
+  "summary": {
+    "generated_at": "2026-03-03T23:50:28Z",
+    "queries_file": "reports\\innovation_sprint_vnext\\atlas\\queries.json",
+    "corpus": "corpus_tiny",
+    "search_mode": "flash",
+    "cache_mode": "memory",
+    "reference_mode": "pro",
+    "controller": "risk_budget_v1",
+    "controller_pro_mode": "pro",
+    "runs_per_case": 5,
+    "k": 10,
+    "cases": 30,
+    "controller_pro_calls": 75,
+    "controller_pro_call_rate": 0.5,
+    "overall_pass_rate": 1.0,
+    "AnchorHit_at_k": 1.0,
+    "AnchorTop1Hit_at_1": 1.0,
+    "SensitiveLeak_at_k": 0.0,
+    "PlausibleWrong_at_k": 0.0333,
+    "Jaccard_at_k_stability": 1.0,
+    "latency_ms_p50": 865.4,
+    "latency_ms_p95": 1725.16,
+    "reference_agreement_avg": 0.9044
+  },
+  "cases": [
+    {
+      "id": "A01_filename_exact_project_plan",
+      "category": "anchor_exactness",
+      "query": "\"project_plan_2025.md\"",
+      "must_include_any": [
+        "corpus_tiny/docs/project_plan_2025.md"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 610.97,
+      "latency_ms_p95": 625.94,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md"
+      ],
+      "agreement_with_reference": 0.8571,
+      "impact_if_fail": "Exact anchors should be reliable; misses make users distrust deterministic retrieval."
+    },
+    {
+      "id": "A02_flag_literal_cache_mode",
+      "category": "anchor_exactness",
+      "query": "\"--cache-mode\"",
+      "must_include_any": [
+        "corpus_tiny/code/cli_flags.rs"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1371.15,
+      "latency_ms_p95": 1403.0,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Exact anchors should be reliable; misses make users distrust deterministic retrieval."
+    },
+    {
+      "id": "A03_symbol_progressive_engine",
+      "category": "anchor_exactness",
+      "query": "\"ProgressiveSearchEngine prototype\"",
+      "must_include_any": [
+        "corpus_tiny/code/search_engine.rs"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1546.32,
+      "latency_ms_p95": 1568.84,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\embedder.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\embedder.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\embedder.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\embedder.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\embedder.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\embedder.rs",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md"
+      ],
+      "agreement_with_reference": 0.5385,
+      "impact_if_fail": "Exact anchors should be reliable; misses make users distrust deterministic retrieval."
+    },
+    {
+      "id": "A04_meeting_title_exact",
+      "category": "anchor_exactness",
+      "query": "\"Ixos Meeting Notes - 2024-11-15\"",
+      "must_include_any": [
+        "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 641.79,
+      "latency_ms_p95": 653.97,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Exact anchors should be reliable; misses make users distrust deterministic retrieval."
+    },
+    {
+      "id": "A05_filename_q1_report",
+      "category": "anchor_exactness",
+      "query": "\"q1_financial_report.md\"",
+      "must_include_any": [
+        "corpus_tiny/docs/q1_financial_report.md"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1405.51,
+      "latency_ms_p95": 1433.35,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Exact anchors should be reliable; misses make users distrust deterministic retrieval."
+    },
+    {
+      "id": "A06_filename_privacy_policy",
+      "category": "anchor_exactness",
+      "query": "\"privacy_policy.md\"",
+      "must_include_any": [
+        "corpus_tiny/docs/privacy_policy.md"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1400.89,
+      "latency_ms_p95": 1420.3,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Exact anchors should be reliable; misses make users distrust deterministic retrieval."
+    },
+    {
+      "id": "A07_unicode_deep_path",
+      "category": "anchor_exactness",
+      "query": "\"\u00f1and\u00fa_notes.txt\"",
+      "must_include_any": [
+        "corpus_tiny/nested/level1/level2/uber/nandu_notes.txt",
+        "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1422.85,
+      "latency_ms_p95": 1430.36,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\empty.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\large_log.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\license.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\restricted\\secret.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\empty.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\large_log.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\license.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\restricted\\secret.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\empty.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\large_log.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\license.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\restricted\\secret.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\empty.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\large_log.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\license.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\restricted\\secret.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\empty.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\large_log.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\license.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\restricted\\secret.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\license.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\restricted\\secret.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\empty.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\large_log.txt"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Exact anchors should be reliable; misses make users distrust deterministic retrieval."
+    },
+    {
+      "id": "A08_html_phrase_exact",
+      "category": "anchor_exactness",
+      "query": "\"Free and Pro tiers\"",
+      "must_include_any": [
+        "corpus_tiny/web/pricing.html"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1727.34,
+      "latency_ms_p95": 1890.82,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs"
+      ],
+      "agreement_with_reference": 0.25,
+      "impact_if_fail": "Exact anchors should be reliable; misses make users distrust deterministic retrieval."
+    },
+    {
+      "id": "A09_json_literal_cache_mode",
+      "category": "anchor_exactness",
+      "query": "\"cache_mode\": \"jit\"",
+      "must_include_any": [
+        "corpus_tiny/data/config.json"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1628.79,
+      "latency_ms_p95": 1694.59,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Exact anchors should be reliable; misses make users distrust deterministic retrieval."
+    },
+    {
+      "id": "A10_changelog_bullet_exact",
+      "category": "anchor_exactness",
+      "query": "\"Added progressive streaming\"",
+      "must_include_any": [
+        "corpus_tiny/misc/changelog.txt"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 688.17,
+      "latency_ms_p95": 721.12,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs"
+      ],
+      "agreement_with_reference": 0.75,
+      "impact_if_fail": "Exact anchors should be reliable; misses make users distrust deterministic retrieval."
+    },
+    {
+      "id": "S01_plan_paraphrase",
+      "category": "semantic_paraphrase",
+      "query": "2025 milestones for search privacy and cache improvements",
+      "must_include_any": [
+        "corpus_tiny/docs/project_plan_2025.md"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1714.12,
+      "latency_ms_p95": 1725.16,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs"
+      ],
+      "agreement_with_reference": 0.8182,
+      "impact_if_fail": "Paraphrase recall drives natural-language usability; misses feel 'smart but wrong'."
+    },
+    {
+      "id": "S02_endpoint_paraphrase",
+      "category": "semantic_paraphrase",
+      "query": "where are the endpoints for search config and compliance",
+      "must_include_any": [
+        "corpus_tiny/docs/api_reference.md"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 587.9,
+      "latency_ms_p95": 655.42,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Paraphrase recall drives natural-language usability; misses feel 'smart but wrong'."
+    },
+    {
+      "id": "S03_meeting_paraphrase",
+      "category": "semantic_paraphrase",
+      "query": "november meeting notes about hiring and launch checklist",
+      "must_include_any": [
+        "corpus_tiny/docs/meeting_notes_2024-11-15.txt"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 629.27,
+      "latency_ms_p95": 642.96,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Paraphrase recall drives natural-language usability; misses feel 'smart but wrong'."
+    },
+    {
+      "id": "S04_privacy_paraphrase",
+      "category": "semantic_paraphrase",
+      "query": "local only search with no default telemetry",
+      "must_include_any": [
+        "corpus_tiny/docs/privacy_policy.md"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1735.05,
+      "latency_ms_p95": 1747.74,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Paraphrase recall drives natural-language usability; misses feel 'smart but wrong'."
+    },
+    {
+      "id": "S05_q1_paraphrase",
+      "category": "semantic_paraphrase",
+      "query": "quarter one revenue retention and churn highlights",
+      "must_include_any": [
+        "corpus_tiny/docs/q1_financial_report.md",
+        "corpus_tiny/docs/q1_financial_summary.txt"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 652.28,
+      "latency_ms_p95": 673.38,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+      ],
+      "agreement_with_reference": 0.5,
+      "impact_if_fail": "Paraphrase recall drives natural-language usability; misses feel 'smart but wrong'."
+    },
+    {
+      "id": "S06_q2_paraphrase",
+      "category": "semantic_paraphrase",
+      "query": "quarter two faster search and onboarding improvements",
+      "must_include_any": [
+        "corpus_tiny/docs/q2_financial_report.md"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 686.22,
+      "latency_ms_p95": 703.41,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html"
+      ],
+      "agreement_with_reference": 0.8182,
+      "impact_if_fail": "Paraphrase recall drives natural-language usability; misses feel 'smart but wrong'."
+    },
+    {
+      "id": "S07_roadmap_paraphrase",
+      "category": "semantic_paraphrase",
+      "query": "roadmap phases for measurement and ui parity",
+      "must_include_any": [
+        "corpus_tiny/markdown/roadmap.md"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 650.57,
+      "latency_ms_p95": 678.93,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html"
+      ],
+      "agreement_with_reference": 0.9,
+      "impact_if_fail": "Paraphrase recall drives natural-language usability; misses feel 'smart but wrong'."
+    },
+    {
+      "id": "S08_pdf_surrogate_paraphrase",
+      "category": "semantic_paraphrase",
+      "query": "document that stands in for a pdf about compliance audit logs",
+      "must_include_any": [
+        "corpus_tiny/docs/pdf_surrogate.txt"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 786.62,
+      "latency_ms_p95": 814.77,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\sample.pdf",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\sample.pdf",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\sample.pdf",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\sample.pdf",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\sample.pdf",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\sample.pdf",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Paraphrase recall drives natural-language usability; misses feel 'smart but wrong'."
+    },
+    {
+      "id": "S09_watcher_paraphrase",
+      "category": "semantic_paraphrase",
+      "query": "python watcher prototype file",
+      "must_include_any": [
+        "corpus_tiny/code/watcher.py"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 633.32,
+      "latency_ms_p95": 643.6,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Paraphrase recall drives natural-language usability; misses feel 'smart but wrong'."
+    },
+    {
+      "id": "S10_embedder_paraphrase",
+      "category": "semantic_paraphrase",
+      "query": "example code that prints secure embedder",
+      "must_include_any": [
+        "corpus_tiny/code/embedder.rs"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 613.68,
+      "latency_ms_p95": 643.26,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\embedder.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\embedder.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\embedder.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\embedder.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\embedder.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\embedder.rs",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Paraphrase recall drives natural-language usability; misses feel 'smart but wrong'."
+    },
+    {
+      "id": "P01_financial_no_secret",
+      "category": "privacy_sensitive",
+      "query": "q1 financial summary",
+      "must_include_any": [
+        "corpus_tiny/docs/q1_financial_summary.txt",
+        "corpus_tiny/docs/q1_financial_report.md"
+      ],
+      "must_exclude": [
+        "corpus_tiny/restricted/secret.txt"
+      ],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 831.84,
+      "latency_ms_p95": 865.4,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Any leak of restricted content in benign queries is a trust/safety failure."
+    },
+    {
+      "id": "P02_roadmap_no_secret",
+      "category": "privacy_sensitive",
+      "query": "project roadmap phase planning",
+      "must_include_any": [
+        "corpus_tiny/markdown/roadmap.md",
+        "corpus_tiny/docs/project_plan_2025.md"
+      ],
+      "must_exclude": [
+        "corpus_tiny/restricted/secret.txt"
+      ],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 612.22,
+      "latency_ms_p95": 623.72,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\markdown\\roadmap.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Any leak of restricted content in benign queries is a trust/safety failure."
+    },
+    {
+      "id": "P03_api_no_secret",
+      "category": "privacy_sensitive",
+      "query": "api endpoint search config",
+      "must_include_any": [
+        "corpus_tiny/docs/api_reference.md"
+      ],
+      "must_exclude": [
+        "corpus_tiny/restricted/secret.txt"
+      ],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 656.7,
+      "latency_ms_p95": 676.39,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Any leak of restricted content in benign queries is a trust/safety failure."
+    },
+    {
+      "id": "P04_pricing_no_secret",
+      "category": "privacy_sensitive",
+      "query": "free and pro pricing tiers",
+      "must_include_any": [
+        "corpus_tiny/web/pricing.html"
+      ],
+      "must_exclude": [
+        "corpus_tiny/restricted/secret.txt"
+      ],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1703.02,
+      "latency_ms_p95": 1748.73,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\watcher.py",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\pricing.html",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+      ],
+      "agreement_with_reference": 0.7,
+      "impact_if_fail": "Any leak of restricted content in benign queries is a trust/safety failure."
+    },
+    {
+      "id": "P05_todo_no_secret",
+      "category": "privacy_sensitive",
+      "query": "todo list add tests",
+      "must_include_any": [
+        "corpus_tiny/misc/todo.md"
+      ],
+      "must_exclude": [
+        "corpus_tiny/restricted/secret.txt"
+      ],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 624.13,
+      "latency_ms_p95": 635.09,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Any leak of restricted content in benign queries is a trust/safety failure."
+    },
+    {
+      "id": "R01_ambiguous_report",
+      "category": "ambiguous_short",
+      "query": "report",
+      "must_include_any": [
+        "corpus_tiny/docs/q1_financial_report.md",
+        "corpus_tiny/docs/q2_financial_report.md"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1506.49,
+      "latency_ms_p95": 1532.37,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q1_financial_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Short queries stress routing; unstable or off-target top-k feels noisy and slow."
+    },
+    {
+      "id": "R02_ambiguous_plan",
+      "category": "ambiguous_short",
+      "query": "plan",
+      "must_include_any": [
+        "corpus_tiny/docs/project_plan_2025.md",
+        "corpus_tiny/markdown/roadmap.md"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 0.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 1.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1441.42,
+      "latency_ms_p95": 1463.55,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Short queries stress routing; unstable or off-target top-k feels noisy and slow."
+    },
+    {
+      "id": "R03_ambiguous_policy",
+      "category": "ambiguous_short",
+      "query": "policy",
+      "must_include_any": [
+        "corpus_tiny/docs/privacy_policy.md"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1485.93,
+      "latency_ms_p95": 1537.74,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Short queries stress routing; unstable or off-target top-k feels noisy and slow."
+    },
+    {
+      "id": "R04_ambiguous_search",
+      "category": "ambiguous_short",
+      "query": "search",
+      "must_include_any": [
+        "corpus_tiny/code/search_engine.rs",
+        "corpus_tiny/docs/project_plan_2025.md"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1496.71,
+      "latency_ms_p95": 1510.49,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\q2_financial_report.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Short queries stress routing; unstable or off-target top-k feels noisy and slow."
+    },
+    {
+      "id": "R05_ambiguous_notes",
+      "category": "ambiguous_short",
+      "query": "notes",
+      "must_include_any": [
+        "corpus_tiny/docs/meeting_notes_2024-11-15.txt",
+        "corpus_tiny/nested/level1/level2/\u00fcber/\u00f1and\u00fa_notes.txt"
+      ],
+      "must_exclude": [],
+      "passes": 5,
+      "runs": 5,
+      "pass_rate": 1.0,
+      "anchor_hit_rate": 1.0,
+      "top1_hit_rate": 1.0,
+      "sensitive_leak_rate": 0.0,
+      "plausible_wrong_rate": 0.0,
+      "jaccard_at_k_5run": 1.0,
+      "unique_top1_paths": 1,
+      "latency_ms_p50": 1454.81,
+      "latency_ms_p95": 1468.29,
+      "topk_paths_by_run": [
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ],
+        [
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+          "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt"
+        ]
+      ],
+      "reference_topk": [
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\nested\\level1\\level2\\\u00fcber\\\u00f1and\u00fa_notes.txt",
+        "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt"
+      ],
+      "agreement_with_reference": 1.0,
+      "impact_if_fail": "Short queries stress routing; unstable or off-target top-k feels noisy and slow."
+    }
+  ]
+}

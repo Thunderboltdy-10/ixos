@@ -1,0 +1,100 @@
+{
+  "suite": "innovation_failure_suite_v1",
+  "description": "Compact reproducible failure cases for semantic file-search truthfulness.",
+  "results": [
+    {
+      "id": "fn_flash_results_streamed",
+      "query": "results streamed",
+      "search_mode": "flash",
+      "top_k": 5,
+      "passed": false,
+      "failures": [
+        "missing in top-5: corpus_tiny/logs/app.log"
+      ],
+      "top_paths": [
+        "corpus_tiny/misc/changelog.txt",
+        "corpus_tiny/docs/q2_financial_report.md",
+        "corpus_tiny/restricted/secret.txt",
+        "corpus_tiny/docs/q1_financial_summary.txt",
+        "corpus_tiny/docs/q1_financial_report.md"
+      ],
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "results streamed",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "5",
+        "--search-mode",
+        "flash",
+        "--cache-mode",
+        "memory"
+      ]
+    },
+    {
+      "id": "fp_auto_results_streamed",
+      "query": "results streamed",
+      "search_mode": "auto",
+      "top_k": 5,
+      "passed": false,
+      "failures": [
+        "unexpected in top-5: corpus_tiny/restricted/secret.txt"
+      ],
+      "top_paths": [
+        "corpus_tiny/misc/changelog.txt",
+        "corpus_tiny/docs/q2_financial_report.md",
+        "corpus_tiny/docs/q1_financial_report.md",
+        "corpus_tiny/restricted/secret.txt",
+        "corpus_tiny/docs/q1_financial_summary.txt"
+      ],
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "results streamed",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "5",
+        "--search-mode",
+        "auto",
+        "--cache-mode",
+        "memory"
+      ]
+    },
+    {
+      "id": "control_pro_results_streamed",
+      "query": "results streamed",
+      "search_mode": "pro",
+      "top_k": 5,
+      "passed": true,
+      "failures": [],
+      "top_paths": [
+        "corpus_tiny/misc/changelog.txt",
+        "corpus_tiny/logs/app.log",
+        "corpus_tiny/docs/q2_financial_report.md",
+        "corpus_tiny/code/watcher.py",
+        "corpus_tiny/data/metrics.json"
+      ],
+      "command": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\debug\\ixos.exe",
+        "search",
+        "results streamed",
+        "--dir",
+        "corpus_tiny",
+        "--format",
+        "json",
+        "--limit",
+        "5",
+        "--search-mode",
+        "pro",
+        "--cache-mode",
+        "memory"
+      ]
+    }
+  ]
+}

@@ -43,6 +43,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
+use std::{fs::File, io::Read};
 
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
@@ -441,8 +442,13 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         let _total_span = search_total_span(&query);
         let _total_enter = _total_span.enter();
 
-        // Calculate how many candidates to request from lexical phase
-        let lexical_limit = self.config.max_results * self.config.candidate_multiplier;
+        // Calculate how many candidates to request from lexical phase.
+        // Witness-guard experiments need a wider candidate pool for low-limit queries.
+        let lexical_limit = semantic_candidate_limit(
+            self.config.max_results,
+            self.config.candidate_multiplier,
+            witness_guard_enabled(),
+        );
         let stream_stats = Arc::new(std::sync::Mutex::new(StreamStats {
             files_scanned: 0,
             candidates: 0,
@@ -739,6 +745,47 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             }
         };
 
+        if lexical_results.is_empty()
+            && witness_guard_enabled()
+            && !query_requests_sensitive_content(&query_terms)
+        {
+            let sensitive_in_initial_top = semantic_results
+                .iter()
+                .take(self.config.max_results.max(1))
+                .any(|item| path_is_sensitive(&item.path));
+            let widened_limit = semantic_pure_limit(self.config.max_results, true);
+
+            if sensitive_in_initial_top && widened_limit > self.config.max_results {
+                tokio::select! {
+                    biased;
+
+                    _ = cancel.cancelled() => {
+                        let _ = tx.send(SearchEvent::Cancelled).await;
+                        return Ok(());
+                    }
+
+                    result = tokio::time::timeout(
+                        self.config.semantic_timeout,
+                        primary_engine.search_pure(&semantic_query, widened_limit)
+                    ) => {
+                        match result {
+                            Ok(Ok(widened_results)) => {
+                                if widened_results.len() > semantic_results.len() {
+                                    semantic_results = widened_results;
+                                }
+                            }
+                            Ok(Err(e)) => {
+                                tracing::debug!("Witness guard pure overfetch probe failed: {}", e);
+                            }
+                            Err(_) => {
+                                tracing::debug!("Witness guard pure overfetch probe timed out");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         if lexical_results.is_empty() {
             embedded_count = semantic_results.len();
         } else {
@@ -845,6 +892,7 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                 flash_scores.as_ref(),
             );
         }
+        maybe_apply_witness_guard(&mut semantic_results, &lexical_lookup, &query_terms);
 
         // Check cancellation before ranking
         if cancel.is_cancelled() {
@@ -852,17 +900,16 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             return Ok(());
         }
 
-        let mut final_results: Vec<RankedResult> = rank_semantic_candidates(
+        let mut final_results = rank_with_optional_witness_guard(
             &query,
             &semantic_results,
             self.config.enable_secure_ranking,
             self.config.max_results,
+            self.config.min_score_threshold,
             &mut self.secure_ranker,
-        )
-        .into_iter()
-        .take(self.config.max_results)
-        .filter(|r| r.score >= self.config.min_score_threshold)
-        .collect();
+            &lexical_lookup,
+            &query_terms,
+        );
 
         // Flash-first Auto mode: publish immediately, then optionally refine top-K with Pro.
         let _ = tx
@@ -961,17 +1008,16 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                                 embedded_count = embedded_count.saturating_add(pro_candidate_count);
                                 used_pro = true;
 
-                                final_results = rank_semantic_candidates(
+                                final_results = rank_with_optional_witness_guard(
                                     &query,
                                     &semantic_results,
                                     self.config.enable_secure_ranking,
                                     self.config.max_results,
+                                    self.config.min_score_threshold,
                                     &mut self.secure_ranker,
-                                )
-                                .into_iter()
-                                .take(self.config.max_results)
-                                .filter(|r| r.score >= self.config.min_score_threshold)
-                                .collect();
+                                    &lexical_lookup,
+                                    &query_terms,
+                                );
 
                                 let _ = tx
                                     .send(SearchEvent::SemanticResults(final_results.clone()))
@@ -1271,6 +1317,59 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
     }
 }
 
+fn rank_with_optional_witness_guard(
+    query: &str,
+    semantic_results: &[SemanticMatch],
+    enable_secure_ranking: bool,
+    max_results: usize,
+    min_score_threshold: f32,
+    secure_ranker: &mut SecureRanker,
+    lexical_lookup: &std::collections::HashMap<std::path::PathBuf, LexicalMatch>,
+    query_terms: &[String],
+) -> Vec<RankedResult> {
+    let guard_on = witness_guard_enabled();
+    let ranking_limit = if guard_on {
+        max_results.saturating_mul(4).max(max_results)
+    } else {
+        max_results
+    };
+
+    let mut ranked: Vec<RankedResult> = rank_semantic_candidates(
+        query,
+        semantic_results,
+        enable_secure_ranking,
+        ranking_limit,
+        secure_ranker,
+    )
+    .into_iter()
+    .filter(|r| r.score >= min_score_threshold)
+    .collect();
+
+    if guard_on {
+        promote_witness_anchor_candidate(&mut ranked, lexical_lookup, query_terms, max_results);
+    }
+
+    ranked.truncate(max_results);
+    ranked
+}
+
+fn semantic_candidate_limit(
+    max_results: usize,
+    candidate_multiplier: usize,
+    _witness_guard_on: bool,
+) -> usize {
+    max_results.saturating_mul(candidate_multiplier.max(1))
+}
+
+fn semantic_pure_limit(max_results: usize, witness_guard_on: bool) -> usize {
+    let base = max_results.max(1);
+    if witness_guard_on {
+        base.saturating_mul(4).max(32)
+    } else {
+        base
+    }
+}
+
 fn rank_semantic_candidates(
     query: &str,
     semantic_results: &[SemanticMatch],
@@ -1303,6 +1402,71 @@ fn rank_semantic_candidates(
                 )
             })
             .collect()
+    }
+}
+
+fn witness_hit_count(
+    path: &std::path::Path,
+    lexical_lookup: &std::collections::HashMap<std::path::PathBuf, LexicalMatch>,
+    query_terms: &[String],
+) -> usize {
+    lexical_lookup
+        .get(path)
+        .map(|m| matched_terms_from_text(query_terms, &m.content_snippet).len())
+        .unwrap_or(0)
+}
+
+fn promote_witness_anchor_candidate(
+    ranked: &mut Vec<RankedResult>,
+    lexical_lookup: &std::collections::HashMap<std::path::PathBuf, LexicalMatch>,
+    query_terms: &[String],
+    top_k: usize,
+) {
+    if ranked.is_empty() || query_terms.is_empty() || top_k == 0 {
+        return;
+    }
+
+    if query_requests_sensitive_content(query_terms) {
+        return;
+    }
+
+    let mut witness_cache: std::collections::HashMap<std::path::PathBuf, usize> =
+        std::collections::HashMap::new();
+    let mut witness_hits_for = |path: &std::path::Path| -> usize {
+        if let Some(hits) = witness_cache.get(path) {
+            return *hits;
+        }
+        let lexical_hits = witness_hit_count(path, lexical_lookup, query_terms);
+        let hits = if lexical_hits > 0 {
+            lexical_hits
+        } else {
+            content_witness_hit_count(path, query_terms)
+        };
+        witness_cache.insert(path.to_path_buf(), hits);
+        hits
+    };
+
+    let top_k = top_k.min(ranked.len());
+    let top_has_strong_witness = ranked
+        .iter()
+        .take(top_k)
+        .any(|result| witness_hits_for(&result.path) >= 2);
+    if top_has_strong_witness {
+        return;
+    }
+
+    let promote_idx = ranked.iter().enumerate().skip(top_k).find_map(|(idx, result)| {
+        let hits = witness_hits_for(&result.path);
+        if hits >= 2 && !path_is_sensitive(&result.path) {
+            Some(idx)
+        } else {
+            None
+        }
+    });
+
+    if let Some(idx) = promote_idx {
+        let promoted = ranked.remove(idx);
+        ranked.insert(0, promoted);
     }
 }
 
@@ -1477,6 +1641,168 @@ fn apply_fusion(
             + lexical_weight * lexical_score
             + dir_weight * dir_score;
     }
+}
+
+fn maybe_apply_witness_guard(
+    semantic_results: &mut [SemanticMatch],
+    lexical_lookup: &std::collections::HashMap<std::path::PathBuf, LexicalMatch>,
+    query_terms: &[String],
+) {
+    if !witness_guard_enabled() {
+        return;
+    }
+    apply_witness_guard(semantic_results, lexical_lookup, query_terms);
+}
+
+fn witness_guard_enabled() -> bool {
+    std::env::var("IXOS_EXPERIMENT_WITNESS_GUARD")
+        .ok()
+        .map(|v| {
+            matches!(
+                v.trim().to_ascii_lowercase().as_str(),
+                "1" | "true" | "on" | "yes"
+            )
+        })
+        .unwrap_or(false)
+}
+
+fn apply_witness_guard(
+    semantic_results: &mut [SemanticMatch],
+    lexical_lookup: &std::collections::HashMap<std::path::PathBuf, LexicalMatch>,
+    query_terms: &[String],
+) {
+    if semantic_results.is_empty() || query_terms.is_empty() {
+        return;
+    }
+
+    let sensitive_query = query_requests_sensitive_content(query_terms);
+    if sensitive_query {
+        return;
+    }
+
+    let sensitive_paths_present = semantic_results
+        .iter()
+        .take(20)
+        .any(|item| path_is_sensitive(&item.path));
+    if !sensitive_paths_present {
+        return;
+    }
+
+    let has_strong_non_sensitive_witness = semantic_results.iter().take(10).any(|item| {
+        if path_is_sensitive(&item.path) {
+            return false;
+        }
+        let lexical_hits = lexical_lookup
+            .get(&item.path)
+            .map(|m| matched_terms_from_text(query_terms, &m.content_snippet).len())
+            .unwrap_or(0);
+        let content_hits = if lexical_hits == 0 {
+            content_witness_hit_count(&item.path, query_terms)
+        } else {
+            0
+        };
+        lexical_hits.max(content_hits) >= 2
+    });
+    if has_strong_non_sensitive_witness {
+        return;
+    }
+
+    for item in semantic_results.iter_mut() {
+        let lexical = lexical_lookup.get(&item.path);
+        let lexical_ratio = lexical
+            .map(|m| m.match_ratio().clamp(0.0, 1.0))
+            .unwrap_or(0.0);
+        let lexical_term_hits = lexical
+            .map(|m| matched_terms_from_text(query_terms, &m.content_snippet).len())
+            .unwrap_or(0);
+        let content_term_hits = if lexical_term_hits == 0 {
+            content_witness_hit_count(&item.path, query_terms)
+        } else {
+            0
+        };
+        let total_term_hits = lexical_term_hits.max(content_term_hits);
+        let exact_bonus = lexical
+            .map(|m| if m.is_exact_match() { 0.14 } else { 0.0 })
+            .unwrap_or(0.0);
+        let witness_bonus = (lexical_ratio * 0.28).min(0.28)
+            + exact_bonus
+            + if total_term_hits >= 2 {
+                0.18
+            } else if total_term_hits == 1 {
+                0.06
+            } else {
+                0.0
+            };
+
+        let sensitive_path = path_is_sensitive(&item.path);
+        let privacy_penalty = if !sensitive_query && sensitive_path && total_term_hits == 0 {
+            0.40
+        } else {
+            0.0
+        };
+
+        item.similarity = (item.similarity + witness_bonus - privacy_penalty).clamp(0.0, 1.0);
+    }
+
+    semantic_results.sort_by(|a, b| {
+        b.similarity
+            .partial_cmp(&a.similarity)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+}
+
+fn query_requests_sensitive_content(query_terms: &[String]) -> bool {
+    const SENSITIVE_TERMS: [&str; 6] = [
+        "restricted",
+        "secret",
+        "private",
+        "confidential",
+        "credential",
+        "password",
+    ];
+    query_terms.iter().any(|term| {
+        let lower = term.to_ascii_lowercase();
+        SENSITIVE_TERMS.iter().any(|needle| lower.contains(needle))
+    })
+}
+
+fn path_is_sensitive(path: &std::path::Path) -> bool {
+    const SENSITIVE_TERMS: [&str; 6] = [
+        "restricted",
+        "secret",
+        "private",
+        "confidential",
+        "credential",
+        "password",
+    ];
+
+    path.components().any(|component| {
+        let token = component.as_os_str().to_string_lossy().to_ascii_lowercase();
+        SENSITIVE_TERMS.iter().any(|needle| token.contains(needle))
+    })
+}
+
+fn content_witness_hit_count(path: &std::path::Path, query_terms: &[String]) -> usize {
+    if query_terms.is_empty() {
+        return 0;
+    }
+    let mut file = match File::open(path) {
+        Ok(f) => f,
+        Err(_) => return 0,
+    };
+    let mut buf = vec![0_u8; 16 * 1024];
+    let read = match file.read(&mut buf) {
+        Ok(n) => n,
+        Err(_) => return 0,
+    };
+    if read == 0 {
+        return 0;
+    }
+    let text = String::from_utf8_lossy(&buf[..read]).to_ascii_lowercase();
+    query_terms
+        .iter()
+        .filter(|term| text.contains(term.as_str()))
+        .count()
 }
 
 fn extract_query_terms(query: &str) -> Vec<String> {
@@ -1995,6 +2321,259 @@ mod tests {
             !should_refine(2, &lexical_results, &semantic_results, config),
             "Auto refinement should be skipped when lexical top hits strongly agree"
         );
+    }
+
+    #[test]
+    fn test_apply_witness_guard_promotes_anchor_and_penalizes_sensitive_path() {
+        use std::collections::HashMap;
+
+        let restricted_path = PathBuf::from("/repo/restricted/secret.txt");
+        let witness_path = PathBuf::from("/repo/logs/app.log");
+
+        let mut semantic_results = vec![
+            SemanticMatch::new(restricted_path.clone(), 0.70),
+            SemanticMatch::new(witness_path.clone(), 0.66),
+        ];
+
+        let mut lexical_lookup = HashMap::new();
+        lexical_lookup.insert(
+            witness_path.clone(),
+            LexicalMatch::new(witness_path.clone(), 0.5, "Streaming update".into(), 1, 2),
+        );
+
+        let query_terms = vec!["results".to_string(), "streamed".to_string()];
+        apply_witness_guard(&mut semantic_results, &lexical_lookup, &query_terms);
+
+        let restricted_score = semantic_results
+            .iter()
+            .find(|m| m.path == restricted_path)
+            .map(|m| m.similarity)
+            .unwrap_or_default();
+        let witness_score = semantic_results
+            .iter()
+            .find(|m| m.path == witness_path)
+            .map(|m| m.similarity)
+            .unwrap_or_default();
+
+        assert!(
+            witness_score > restricted_score,
+            "witness candidate should outrank penalized sensitive path"
+        );
+    }
+
+    #[test]
+    fn test_apply_witness_guard_reorders_results_after_score_shift() {
+        use std::collections::HashMap;
+
+        let temp = tempfile::NamedTempFile::new().expect("temp file");
+        std::fs::write(temp.path(), "Results streamed in log pipeline").expect("write");
+
+        let restricted_path = PathBuf::from("/repo/restricted/secret.txt");
+        let witness_path = temp.path().to_path_buf();
+        let mut semantic_results = vec![SemanticMatch::new(restricted_path.clone(), 0.75)];
+        for i in 0..9 {
+            let score = 0.39 - (i as f32 * 0.01);
+            semantic_results.push(SemanticMatch::new(
+                PathBuf::from(format!("/repo/docs/filler_{i}.txt")),
+                score,
+            ));
+        }
+        semantic_results.push(SemanticMatch::new(witness_path.clone(), 0.35));
+
+        let lexical_lookup = HashMap::new();
+        let query_terms = vec!["results".to_string(), "streamed".to_string()];
+
+        apply_witness_guard(&mut semantic_results, &lexical_lookup, &query_terms);
+
+        assert_eq!(semantic_results[0].path, witness_path);
+    }
+
+    #[test]
+    fn test_apply_witness_guard_skips_when_top_has_strong_non_sensitive_witness() {
+        use std::collections::HashMap;
+
+        let temp = tempfile::NamedTempFile::new().expect("temp file");
+        std::fs::write(temp.path(), "Results streamed in log pipeline").expect("write");
+        let witness_path = temp.path().to_path_buf();
+        let restricted_path = PathBuf::from("/repo/restricted/secret.txt");
+
+        let mut semantic_results = vec![
+            SemanticMatch::new(witness_path.clone(), 0.90),
+            SemanticMatch::new(restricted_path.clone(), 0.80),
+        ];
+
+        let mut lexical_lookup = HashMap::new();
+        lexical_lookup.insert(
+            witness_path.clone(),
+            LexicalMatch::new(witness_path.clone(), 1.0, "Results streamed".into(), 2, 2),
+        );
+
+        let query_terms = vec!["results".to_string(), "streamed".to_string()];
+        apply_witness_guard(&mut semantic_results, &lexical_lookup, &query_terms);
+
+        assert_eq!(semantic_results.len(), 2);
+        assert_eq!(semantic_results[0].path, witness_path);
+        assert_eq!(semantic_results[1].path, restricted_path);
+        assert!((semantic_results[0].similarity - 0.90).abs() < f32::EPSILON);
+        assert!((semantic_results[1].similarity - 0.80).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn test_query_sensitive_detection() {
+        let sensitive = vec!["restricted".to_string(), "data".to_string()];
+        let benign = vec!["results".to_string(), "streamed".to_string()];
+
+        assert!(query_requests_sensitive_content(&sensitive));
+        assert!(!query_requests_sensitive_content(&benign));
+    }
+
+    #[test]
+    fn test_path_sensitive_detection() {
+        let sensitive_path = PathBuf::from("/repo/restricted/secret.txt");
+        let benign_path = PathBuf::from("/repo/logs/app.log");
+
+        assert!(path_is_sensitive(&sensitive_path));
+        assert!(!path_is_sensitive(&benign_path));
+    }
+
+    #[test]
+    fn test_semantic_candidate_limit_stable_across_witness_guard_flag() {
+        assert_eq!(semantic_candidate_limit(8, 5, false), 40);
+        assert_eq!(semantic_candidate_limit(8, 5, true), 40);
+        assert_eq!(semantic_candidate_limit(30, 5, true), 150);
+        assert_eq!(semantic_candidate_limit(8, 0, false), 8);
+    }
+
+    #[test]
+    fn test_semantic_pure_limit_with_witness_guard_overfetch() {
+        assert_eq!(semantic_pure_limit(8, false), 8);
+        assert_eq!(semantic_pure_limit(8, true), 32);
+        assert_eq!(semantic_pure_limit(20, true), 80);
+        assert_eq!(semantic_pure_limit(0, false), 1);
+    }
+
+    #[test]
+    fn test_content_witness_hit_count_reads_terms() {
+        let temp = tempfile::NamedTempFile::new().expect("temp file");
+        std::fs::write(temp.path(), "Results streamed into channel").expect("write");
+        let terms = vec!["results".to_string(), "streamed".to_string()];
+        let hits = content_witness_hit_count(temp.path(), &terms);
+        assert!(hits >= 2);
+    }
+
+    #[test]
+    fn test_promote_witness_anchor_candidate_moves_anchor_into_top_window() {
+        use std::collections::HashMap;
+
+        let anchor_path = PathBuf::from("/repo/logs/app.log");
+        let weak_path = PathBuf::from("/repo/docs/weak.txt");
+        let filler_path = PathBuf::from("/repo/docs/filler.txt");
+
+        let mut ranked = vec![
+            RankedResult::new(
+                weak_path.clone(),
+                0.90,
+                true,
+                ScoreBreakdown {
+                    semantic: 0.90,
+                    integrity: 1.0,
+                    temporal: 0.5,
+                    behavior: 1.0,
+                    personal: 0.0,
+                },
+            ),
+            RankedResult::new(
+                filler_path.clone(),
+                0.89,
+                true,
+                ScoreBreakdown {
+                    semantic: 0.89,
+                    integrity: 1.0,
+                    temporal: 0.5,
+                    behavior: 1.0,
+                    personal: 0.0,
+                },
+            ),
+            RankedResult::new(
+                anchor_path.clone(),
+                0.70,
+                true,
+                ScoreBreakdown {
+                    semantic: 0.70,
+                    integrity: 1.0,
+                    temporal: 0.5,
+                    behavior: 1.0,
+                    personal: 0.0,
+                },
+            ),
+        ];
+
+        let mut lexical_lookup = HashMap::new();
+        lexical_lookup.insert(
+            anchor_path.clone(),
+            LexicalMatch::new(anchor_path.clone(), 1.0, "Results streamed".into(), 2, 2),
+        );
+
+        let query_terms = vec!["results".to_string(), "streamed".to_string()];
+        promote_witness_anchor_candidate(&mut ranked, &lexical_lookup, &query_terms, 2);
+
+        assert_eq!(ranked[0].path, anchor_path);
+    }
+
+    #[test]
+    fn test_promote_witness_anchor_candidate_uses_content_fallback_without_lexical_hit() {
+        let temp = tempfile::NamedTempFile::new().expect("temp file");
+        std::fs::write(
+            temp.path(),
+            "2026-01-20 10:00:01 Results streamed after merge operation",
+        )
+        .expect("write");
+
+        let fallback_path = temp.path().to_path_buf();
+        let mut ranked = vec![
+            RankedResult::new(
+                PathBuf::from("/repo/docs/changelog.txt"),
+                0.90,
+                true,
+                ScoreBreakdown {
+                    semantic: 0.90,
+                    integrity: 1.0,
+                    temporal: 0.5,
+                    behavior: 1.0,
+                    personal: 0.0,
+                },
+            ),
+            RankedResult::new(
+                PathBuf::from("/repo/docs/overview.md"),
+                0.89,
+                true,
+                ScoreBreakdown {
+                    semantic: 0.89,
+                    integrity: 1.0,
+                    temporal: 0.5,
+                    behavior: 1.0,
+                    personal: 0.0,
+                },
+            ),
+            RankedResult::new(
+                fallback_path.clone(),
+                0.88,
+                true,
+                ScoreBreakdown {
+                    semantic: 0.88,
+                    integrity: 1.0,
+                    temporal: 0.5,
+                    behavior: 1.0,
+                    personal: 0.0,
+                },
+            ),
+        ];
+
+        let lexical_lookup = std::collections::HashMap::new();
+        let query_terms = vec!["results".to_string(), "streamed".to_string()];
+        promote_witness_anchor_candidate(&mut ranked, &lexical_lookup, &query_terms, 2);
+
+        assert_eq!(ranked[0].path, fallback_path);
     }
 
     #[tokio::test]

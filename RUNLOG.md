@@ -1687,3 +1687,26 @@
   - UI build passes.
 - Decision: KEEP
 - Next: User validation on Windows runtime for caption icon + corner behavior in maximized/restored transitions.
+
+## 2026-03-04 Innovation Sprint vNEXT
+- Pre-edit snapshot captured:
+  - git status --short --branch
+  - git rev-parse HEAD
+  - git diff --stat
+- Baseline suite executed in isolated env:
+  - artifacts: reports/innovation_sprint_vnext/artifacts/baseline_20260304_003416/*
+  - corrected site build artifact: reports/innovation_sprint_vnext/artifacts/baseline_20260304_003416/site_build_fixed_20260304_003949.txt
+- Stability/cold-vs-mixed bench:
+  - reports/innovation_sprint_vnext/artifacts/stability_20260304_003842/stability_summary.json
+  - reports/innovation_sprint_vnext/artifacts/stability_20260304_003842/top1_variance_summary.json
+- New atlas and runner created:
+  - reports/innovation_sprint_vnext/atlas/queries.json
+  - scripts/run_innovation_atlas.py
+  - reports/innovation_sprint_vnext/atlas/results_baseline_flash.json
+- Cycle experiments:
+  - cycle1 risk_budget_v1: reports/innovation_sprint_vnext/atlas/results_cycle1_risk_budget_v1.json
+  - cycle2 risk_budget_v2(25%): reports/innovation_sprint_vnext/atlas/results_cycle2_risk_budget_v2.json
+  - cycle2 risk_budget_v2(3%): reports/innovation_sprint_vnext/atlas/results_cycle2_risk_budget_v2_budget003.json
+- Research outputs:
+  - reports/innovation_sprint_vnext/02_BIBLIOGRAPHY.md (220 sources)
+  - reports/innovation_sprint_vnext/03_NOVELTY_MATRIX.md

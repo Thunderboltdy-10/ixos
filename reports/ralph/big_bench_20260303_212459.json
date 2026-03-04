@@ -1,0 +1,3083 @@
+{
+  "generated_at": "2026-03-03T21:24:59.078289100+00:00",
+  "root_dir": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos",
+  "file_count": 211174,
+  "corpus_tier": "c",
+  "objective_profile": "Harsh",
+  "model": "ixos-flash-v2",
+  "cache_mode": "NativeCache",
+  "runs_per_query": 3,
+  "queries": 40,
+  "targets": {
+    "description": "Tier C (100k-300k files, harsh objective)",
+    "ttfr_target_ms": null,
+    "total_target_ms": null,
+    "cold_ttfr_target_ms": 120.0,
+    "cold_total_target_ms": 6000.0,
+    "warm_total_target_ms": 2500.0
+  },
+  "gate": {
+    "pass": true,
+    "reasons": []
+  },
+  "summary": {
+    "samples": 120,
+    "ttfr_p50_ms": 43.0,
+    "ttfr_p95_ms": 60.0,
+    "total_p50_ms": 44.0,
+    "total_p95_ms": 63.0,
+    "cold_ttfr_p50_ms": 60.0,
+    "cold_total_p95_ms": 170.0,
+    "warm_total_p95_ms": 62.0,
+    "walk_p95_ms": 156.0,
+    "path_score_p95_ms": 1.0,
+    "ripgrep_p95_ms": 34.0,
+    "embed_p95_ms": 0.0,
+    "rank_p95_ms": 2.0,
+    "avg_cache_hit_rate": 0.9995507331939545
+  },
+  "per_query": [
+    {
+      "query": "ask mode",
+      "samples": 3,
+      "ttfr_p50_ms": 53.0,
+      "total_p95_ms": 56.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "automation actions capability",
+      "samples": 3,
+      "ttfr_p50_ms": 35.0,
+      "total_p95_ms": 37.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "cache mode",
+      "samples": 3,
+      "ttfr_p50_ms": 54.0,
+      "total_p95_ms": 170.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "cache rebuild",
+      "samples": 3,
+      "ttfr_p50_ms": 43.0,
+      "total_p95_ms": 45.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "candidate generator",
+      "samples": 3,
+      "ttfr_p50_ms": 38.0,
+      "total_p95_ms": 40.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "config migration",
+      "samples": 3,
+      "ttfr_p50_ms": 44.0,
+      "total_p95_ms": 49.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "daemon status",
+      "samples": 3,
+      "ttfr_p50_ms": 42.0,
+      "total_p95_ms": 44.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "diagnostics bundle",
+      "samples": 3,
+      "ttfr_p50_ms": 33.0,
+      "total_p95_ms": 35.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "directory walk",
+      "samples": 3,
+      "ttfr_p50_ms": 41.0,
+      "total_p95_ms": 44.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "entitlement manager",
+      "samples": 3,
+      "ttfr_p50_ms": 32.0,
+      "total_p95_ms": 36.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "ephemeral mode",
+      "samples": 3,
+      "ttfr_p50_ms": 49.0,
+      "total_p95_ms": 51.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "flash quartz",
+      "samples": 3,
+      "ttfr_p50_ms": 39.0,
+      "total_p95_ms": 49.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "index directory",
+      "samples": 3,
+      "ttfr_p50_ms": 46.0,
+      "total_p95_ms": 49.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "journalist mode",
+      "samples": 3,
+      "ttfr_p50_ms": 50.0,
+      "total_p95_ms": 52.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "lexical engine",
+      "samples": 3,
+      "ttfr_p50_ms": 37.0,
+      "total_p95_ms": 39.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "lighthouse audit",
+      "samples": 3,
+      "ttfr_p50_ms": 34.0,
+      "total_p95_ms": 39.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "model download",
+      "samples": 3,
+      "ttfr_p50_ms": 62.0,
+      "total_p95_ms": 72.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "model list json",
+      "samples": 3,
+      "ttfr_p50_ms": 58.0,
+      "total_p95_ms": 61.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "model switcher",
+      "samples": 3,
+      "ttfr_p50_ms": 46.0,
+      "total_p95_ms": 47.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "move recommendations",
+      "samples": 3,
+      "ttfr_p50_ms": 38.0,
+      "total_p95_ms": 42.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "native-cache configuration",
+      "samples": 3,
+      "ttfr_p50_ms": 35.0,
+      "total_p95_ms": 40.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "passage extractor",
+      "samples": 3,
+      "ttfr_p50_ms": 33.0,
+      "total_p95_ms": 35.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "path scoring",
+      "samples": 3,
+      "ttfr_p50_ms": 48.0,
+      "total_p95_ms": 50.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "personal ranking",
+      "samples": 3,
+      "ttfr_p50_ms": 43.0,
+      "total_p95_ms": 46.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "potion core",
+      "samples": 3,
+      "ttfr_p50_ms": 43.0,
+      "total_p95_ms": 44.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "privacy compliance",
+      "samples": 3,
+      "ttfr_p50_ms": 35.0,
+      "total_p95_ms": 37.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "pro prism",
+      "samples": 3,
+      "ttfr_p50_ms": 56.0,
+      "total_p95_ms": 58.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "pro status",
+      "samples": 3,
+      "ttfr_p50_ms": 59.0,
+      "total_p95_ms": 62.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "progressive search",
+      "samples": 3,
+      "ttfr_p50_ms": 48.0,
+      "total_p95_ms": 52.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "release check",
+      "samples": 3,
+      "ttfr_p50_ms": 44.0,
+      "total_p95_ms": 46.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "ripgrep funnel",
+      "samples": 3,
+      "ttfr_p50_ms": 38.0,
+      "total_p95_ms": 39.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "search mode auto",
+      "samples": 3,
+      "ttfr_p50_ms": 56.0,
+      "total_p95_ms": 63.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "search mode flash",
+      "samples": 3,
+      "ttfr_p50_ms": 57.0,
+      "total_p95_ms": 61.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "search mode pro",
+      "samples": 3,
+      "ttfr_p50_ms": 64.0,
+      "total_p95_ms": 72.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "secure timing",
+      "samples": 3,
+      "ttfr_p50_ms": 35.0,
+      "total_p95_ms": 37.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "semantic rerank",
+      "samples": 3,
+      "ttfr_p50_ms": 39.0,
+      "total_p95_ms": 41.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "settings matrix",
+      "samples": 3,
+      "ttfr_p50_ms": 34.0,
+      "total_p95_ms": 37.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "tauri search command",
+      "samples": 3,
+      "ttfr_p50_ms": 53.0,
+      "total_p95_ms": 55.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "token claims",
+      "samples": 3,
+      "ttfr_p50_ms": 36.0,
+      "total_p95_ms": 40.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "trusted snippet",
+      "samples": 3,
+      "ttfr_p50_ms": 33.0,
+      "total_p95_ms": 36.0,
+      "avg_results": 20.0
+    }
+  ],
+  "records": [
+    {
+      "query": "cache mode",
+      "run_index": 1,
+      "warm": false,
+      "ttfr_ms": 60,
+      "total_ms": 170,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 37,
+        "embed_ms": 8,
+        "rank_ms": 101,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 465,
+        "misses": 16,
+        "writes": 16
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.11114013
+    },
+    {
+      "query": "native-cache configuration",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 164,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\big_bench_20260303_195514.md",
+      "top1_score": 0.41701484
+    },
+    {
+      "query": "ephemeral mode",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 49,
+      "total_ms": 51,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 420,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.21029983
+    },
+    {
+      "query": "search mode auto",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 56,
+      "total_ms": 63,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 1,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 6,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 511,
+        "misses": 2,
+        "writes": 2
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.17147528
+    },
+    {
+      "query": "search mode pro",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 64,
+      "total_ms": 72,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 33,
+        "embed_ms": 0,
+        "rank_ms": 8,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 600,
+        "misses": 2,
+        "writes": 2
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.21378687
+    },
+    {
+      "query": "search mode flash",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 59,
+      "total_ms": 61,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 1,
+        "ripgrep_ms": 34,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 512,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\docs_research_headings.txt",
+      "top1_score": 0.2699163
+    },
+    {
+      "query": "journalist mode",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 51,
+      "total_ms": 52,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 1,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 422,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.11684877
+    },
+    {
+      "query": "secure timing",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 37,
+      "total_ms": 37,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 165,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\docs_research_headings.txt",
+      "top1_score": 0.09362883
+    },
+    {
+      "query": "progressive search",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 368,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\AGENT_PLAN.md",
+      "top1_score": 0.20250535
+    },
+    {
+      "query": "ask mode",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 416,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.20963874
+    },
+    {
+      "query": "pro status",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 60,
+      "total_ms": 62,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 552,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\FINAL.md",
+      "top1_score": 0.24207653
+    },
+    {
+      "query": "automation actions capability",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 36,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 147,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\docs_research_headings.txt",
+      "top1_score": 0.093057014
+    },
+    {
+      "query": "move recommendations",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 201,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\DECISIONS.md",
+      "top1_score": 0.12136228
+    },
+    {
+      "query": "model list json",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 57,
+      "total_ms": 59,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 479,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.12190254
+    },
+    {
+      "query": "model switcher",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 309,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.19105767
+    },
+    {
+      "query": "flash quartz",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 256,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\docs_research_headings.txt",
+      "top1_score": 0.16589136
+    },
+    {
+      "query": "pro prism",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 56,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 540,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.12369771
+    },
+    {
+      "query": "potion core",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 322,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\docs\\archive\\root\\IMPLEMENTATION_SUMMARY.md",
+      "top1_score": 0.0
+    },
+    {
+      "query": "token claims",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 36,
+      "total_ms": 36,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 200,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.06404191
+    },
+    {
+      "query": "entitlement manager",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 32,
+      "total_ms": 33,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 114,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\big_bench_20260303_195514.md",
+      "top1_score": 0.011794388
+    },
+    {
+      "query": "personal ranking",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 323,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.12740779
+    },
+    {
+      "query": "directory walk",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 294,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\reports_innovation_headings.txt",
+      "top1_score": 0.03224576
+    },
+    {
+      "query": "candidate generator",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 253,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.069446445
+    },
+    {
+      "query": "path scoring",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 49,
+      "total_ms": 50,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 413,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.057186604
+    },
+    {
+      "query": "ripgrep funnel",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 1,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 206,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\full_read_line_counts.csv",
+      "top1_score": 0.05299622
+    },
+    {
+      "query": "semantic rerank",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 245,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.14990132
+    },
+    {
+      "query": "passage extractor",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 33,
+      "total_ms": 33,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 93,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.13866048
+    },
+    {
+      "query": "trusted snippet",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 32,
+      "total_ms": 33,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 123,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.103351936
+    },
+    {
+      "query": "diagnostics bundle",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 33,
+      "total_ms": 33,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 94,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\COPY_MAP.md",
+      "top1_score": 0.0
+    },
+    {
+      "query": "release check",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 325,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.26127946
+    },
+    {
+      "query": "settings matrix",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 37,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 156,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.1701732
+    },
+    {
+      "query": "lighthouse audit",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 155,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\03_NOVELTY_MATRIX.md",
+      "top1_score": 0.0026281346
+    },
+    {
+      "query": "tauri search command",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 456,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.08951311
+    },
+    {
+      "query": "config migration",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 1,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 306,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.12370651
+    },
+    {
+      "query": "cache rebuild",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 343,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\DECISIONS.md",
+      "top1_score": 0.07906085
+    },
+    {
+      "query": "index directory",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 392,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\DECISIONS.md",
+      "top1_score": 0.099318326
+    },
+    {
+      "query": "daemon status",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 269,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.106251076
+    },
+    {
+      "query": "lexical engine",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 37,
+      "total_ms": 37,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 225,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.0642617
+    },
+    {
+      "query": "model download",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 66,
+      "total_ms": 72,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 5,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 761,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.1888502
+    },
+    {
+      "query": "privacy compliance",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 189,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.08352845
+    },
+    {
+      "query": "cache mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 55,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 481,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.11231857
+    },
+    {
+      "query": "native-cache configuration",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 36,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 164,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\big_bench_20260303_195514.md",
+      "top1_score": 0.41701484
+    },
+    {
+      "query": "ephemeral mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 49,
+      "total_ms": 50,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 420,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.20867483
+    },
+    {
+      "query": "search mode auto",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 56,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 513,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.1714685
+    },
+    {
+      "query": "search mode pro",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 63,
+      "total_ms": 65,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 1,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 602,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.21378687
+    },
+    {
+      "query": "search mode flash",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 57,
+      "total_ms": 58,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 512,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\docs_research_headings.txt",
+      "top1_score": 0.26988518
+    },
+    {
+      "query": "journalist mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 50,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 422,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.11684877
+    },
+    {
+      "query": "secure timing",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 165,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\docs_research_headings.txt",
+      "top1_score": 0.09365235
+    },
+    {
+      "query": "progressive search",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 368,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\AGENT_PLAN.md",
+      "top1_score": 0.20250535
+    },
+    {
+      "query": "ask mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 56,
+      "total_ms": 56,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 35,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 416,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.20963874
+    },
+    {
+      "query": "pro status",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 59,
+      "total_ms": 60,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 553,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\FINAL.md",
+      "top1_score": 0.24484661
+    },
+    {
+      "query": "automation actions capability",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 36,
+      "total_ms": 37,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 147,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\docs_research_headings.txt",
+      "top1_score": 0.09301808
+    },
+    {
+      "query": "move recommendations",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 33,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 201,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\DECISIONS.md",
+      "top1_score": 0.12136228
+    },
+    {
+      "query": "model list json",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 60,
+      "total_ms": 61,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 34,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 479,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.12190254
+    },
+    {
+      "query": "model switcher",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 309,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.19105767
+    },
+    {
+      "query": "flash quartz",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 256,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\docs_research_headings.txt",
+      "top1_score": 0.16590577
+    },
+    {
+      "query": "pro prism",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 56,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 540,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.12369771
+    },
+    {
+      "query": "potion core",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 42,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 322,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\comparison_15_20260303_195343.md",
+      "top1_score": 0.0
+    },
+    {
+      "query": "token claims",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 200,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.06403846
+    },
+    {
+      "query": "entitlement manager",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 31,
+      "total_ms": 32,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 27,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 114,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\big_bench_20260303_195514.md",
+      "top1_score": 0.011794388
+    },
+    {
+      "query": "personal ranking",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 323,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.12740779
+    },
+    {
+      "query": "directory walk",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 40,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 294,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\reports_innovation_headings.txt",
+      "top1_score": 0.032246094
+    },
+    {
+      "query": "candidate generator",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 37,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 254,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.069446445
+    },
+    {
+      "query": "path scoring",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 413,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.057186604
+    },
+    {
+      "query": "ripgrep funnel",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 37,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 206,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\full_read_line_counts.csv",
+      "top1_score": 0.05299584
+    },
+    {
+      "query": "semantic rerank",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 41,
+      "total_ms": 41,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 245,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.14990132
+    },
+    {
+      "query": "passage extractor",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 93,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.13866013
+    },
+    {
+      "query": "trusted snippet",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 36,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 123,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.103351526
+    },
+    {
+      "query": "diagnostics bundle",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 94,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\COPY_MAP.md",
+      "top1_score": 0.0
+    },
+    {
+      "query": "release check",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 325,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.26127946
+    },
+    {
+      "query": "settings matrix",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 157,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.1701732
+    },
+    {
+      "query": "lighthouse audit",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 34,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 155,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\03_NOVELTY_MATRIX.md",
+      "top1_score": 0.0033344412
+    },
+    {
+      "query": "tauri search command",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 55,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 456,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.08951311
+    },
+    {
+      "query": "config migration",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 1,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 306,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.12370651
+    },
+    {
+      "query": "cache rebuild",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 343,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\DECISIONS.md",
+      "top1_score": 0.07906085
+    },
+    {
+      "query": "index directory",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 392,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\DECISIONS.md",
+      "top1_score": 0.099318326
+    },
+    {
+      "query": "daemon status",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 42,
+      "total_ms": 43,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 269,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.10625107
+    },
+    {
+      "query": "lexical engine",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 225,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.0642617
+    },
+    {
+      "query": "model download",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 62,
+      "total_ms": 64,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 762,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.1888502
+    },
+    {
+      "query": "privacy compliance",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 36,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 189,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.08352845
+    },
+    {
+      "query": "cache mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 55,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 481,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.11231857
+    },
+    {
+      "query": "native-cache configuration",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 164,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\big_bench_20260303_195514.md",
+      "top1_score": 0.41701484
+    },
+    {
+      "query": "ephemeral mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 420,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.20867483
+    },
+    {
+      "query": "search mode auto",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 55,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 513,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.1714685
+    },
+    {
+      "query": "search mode pro",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 64,
+      "total_ms": 65,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 33,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 602,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.21378687
+    },
+    {
+      "query": "search mode flash",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 57,
+      "total_ms": 58,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 512,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\docs_research_headings.txt",
+      "top1_score": 0.26988518
+    },
+    {
+      "query": "journalist mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 51,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 422,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.11684877
+    },
+    {
+      "query": "secure timing",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 36,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 165,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\docs_research_headings.txt",
+      "top1_score": 0.09365235
+    },
+    {
+      "query": "progressive search",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 51,
+      "total_ms": 52,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 34,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 368,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\AGENT_PLAN.md",
+      "top1_score": 0.20250535
+    },
+    {
+      "query": "ask mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 49,
+      "total_ms": 50,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 416,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.20963874
+    },
+    {
+      "query": "pro status",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 58,
+      "total_ms": 59,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 553,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\FINAL.md",
+      "top1_score": 0.24506837
+    },
+    {
+      "query": "automation actions capability",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 147,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\docs_research_headings.txt",
+      "top1_score": 0.09301808
+    },
+    {
+      "query": "move recommendations",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 37,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 201,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\DECISIONS.md",
+      "top1_score": 0.12136228
+    },
+    {
+      "query": "model list json",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 58,
+      "total_ms": 60,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 479,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.12190254
+    },
+    {
+      "query": "model switcher",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 32,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 309,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.19105767
+    },
+    {
+      "query": "flash quartz",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 34,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 256,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\docs_research_headings.txt",
+      "top1_score": 0.16590577
+    },
+    {
+      "query": "pro prism",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 57,
+      "total_ms": 58,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 540,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.12369771
+    },
+    {
+      "query": "potion core",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 322,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\big_bench_20260303_195514.md",
+      "top1_score": 0.0
+    },
+    {
+      "query": "token claims",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 200,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.06403846
+    },
+    {
+      "query": "entitlement manager",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 35,
+      "total_ms": 36,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 114,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\big_bench_20260303_195514.md",
+      "top1_score": 0.011794388
+    },
+    {
+      "query": "personal ranking",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 323,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.12740779
+    },
+    {
+      "query": "directory walk",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 294,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\reports_innovation_headings.txt",
+      "top1_score": 0.032246094
+    },
+    {
+      "query": "candidate generator",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 254,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.069446445
+    },
+    {
+      "query": "path scoring",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 413,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.057186604
+    },
+    {
+      "query": "ripgrep funnel",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 1,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 206,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\full_read_line_counts.csv",
+      "top1_score": 0.05299584
+    },
+    {
+      "query": "semantic rerank",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 39,
+      "total_ms": 40,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 245,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.14990132
+    },
+    {
+      "query": "passage extractor",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 32,
+      "total_ms": 33,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 93,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.13866013
+    },
+    {
+      "query": "trusted snippet",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 33,
+      "total_ms": 34,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 123,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.103351526
+    },
+    {
+      "query": "diagnostics bundle",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 32,
+      "total_ms": 32,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 28,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 94,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\COPY_MAP.md",
+      "top1_score": 0.0
+    },
+    {
+      "query": "release check",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 325,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.26127946
+    },
+    {
+      "query": "settings matrix",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 34,
+      "total_ms": 35,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 157,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.1701732
+    },
+    {
+      "query": "lighthouse audit",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 38,
+      "total_ms": 39,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 155,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\03_NOVELTY_MATRIX.md",
+      "top1_score": 0.003433878
+    },
+    {
+      "query": "tauri search command",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 52,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 456,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.08951311
+    },
+    {
+      "query": "config migration",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 1,
+        "ripgrep_ms": 34,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 306,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.12370651
+    },
+    {
+      "query": "cache rebuild",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 343,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\DECISIONS.md",
+      "top1_score": 0.07906085
+    },
+    {
+      "query": "index directory",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 48,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 31,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 392,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\DECISIONS.md",
+      "top1_score": 0.099318326
+    },
+    {
+      "query": "daemon status",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 43,
+      "total_ms": 44,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 33,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 269,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.10625107
+    },
+    {
+      "query": "lexical engine",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 37,
+      "total_ms": 38,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 29,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 225,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\IDEAS.md",
+      "top1_score": 0.0642617
+    },
+    {
+      "query": "model download",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 61,
+      "total_ms": 62,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 762,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation\\FINAL.md",
+      "top1_score": 0.1888502
+    },
+    {
+      "query": "privacy compliance",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 36,
+      "total_ms": 37,
+      "stage_breakdown": {
+        "walk_ms": 156,
+        "path_score_ms": 0,
+        "ripgrep_ms": 30,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 189,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\ixos_rank_embed_signatures.txt",
+      "top1_score": 0.08352845
+    }
+  ]
+}

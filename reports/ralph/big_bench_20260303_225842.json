@@ -1,0 +1,3085 @@
+{
+  "generated_at": "2026-03-03T22:58:42.342736400+00:00",
+  "root_dir": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos",
+  "file_count": 212246,
+  "corpus_tier": "c",
+  "objective_profile": "Harsh",
+  "model": "ixos-flash-v2",
+  "cache_mode": "NativeCache",
+  "runs_per_query": 3,
+  "queries": 40,
+  "targets": {
+    "description": "Tier C (100k-300k files, harsh objective)",
+    "ttfr_target_ms": null,
+    "total_target_ms": null,
+    "cold_ttfr_target_ms": 120.0,
+    "cold_total_target_ms": 6000.0,
+    "warm_total_target_ms": 2500.0
+  },
+  "gate": {
+    "pass": false,
+    "reasons": [
+      "cold ttfr_p50 197.00ms exceeds harsh target 120.00ms"
+    ]
+  },
+  "summary": {
+    "samples": 120,
+    "ttfr_p50_ms": 64.0,
+    "ttfr_p95_ms": 95.0,
+    "total_p50_ms": 65.0,
+    "total_p95_ms": 102.0,
+    "cold_ttfr_p50_ms": 197.0,
+    "cold_total_p95_ms": 381.0,
+    "warm_total_p95_ms": 101.0,
+    "walk_p95_ms": 176.0,
+    "path_score_p95_ms": 1.0,
+    "ripgrep_p95_ms": 50.0,
+    "embed_p95_ms": 0.0,
+    "rank_p95_ms": 3.0,
+    "avg_cache_hit_rate": 0.9982391590820882
+  },
+  "per_query": [
+    {
+      "query": "ask mode",
+      "samples": 3,
+      "ttfr_p50_ms": 78.0,
+      "total_p95_ms": 79.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "automation actions capability",
+      "samples": 3,
+      "ttfr_p50_ms": 49.0,
+      "total_p95_ms": 61.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "cache mode",
+      "samples": 3,
+      "ttfr_p50_ms": 83.0,
+      "total_p95_ms": 381.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "cache rebuild",
+      "samples": 3,
+      "ttfr_p50_ms": 63.0,
+      "total_p95_ms": 66.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "candidate generator",
+      "samples": 3,
+      "ttfr_p50_ms": 56.0,
+      "total_p95_ms": 61.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "config migration",
+      "samples": 3,
+      "ttfr_p50_ms": 64.0,
+      "total_p95_ms": 66.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "daemon status",
+      "samples": 3,
+      "ttfr_p50_ms": 61.0,
+      "total_p95_ms": 68.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "diagnostics bundle",
+      "samples": 3,
+      "ttfr_p50_ms": 47.0,
+      "total_p95_ms": 55.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "directory walk",
+      "samples": 3,
+      "ttfr_p50_ms": 62.0,
+      "total_p95_ms": 69.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "entitlement manager",
+      "samples": 3,
+      "ttfr_p50_ms": 46.0,
+      "total_p95_ms": 59.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "ephemeral mode",
+      "samples": 3,
+      "ttfr_p50_ms": 76.0,
+      "total_p95_ms": 81.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "flash quartz",
+      "samples": 3,
+      "ttfr_p50_ms": 59.0,
+      "total_p95_ms": 68.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "index directory",
+      "samples": 3,
+      "ttfr_p50_ms": 67.0,
+      "total_p95_ms": 76.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "journalist mode",
+      "samples": 3,
+      "ttfr_p50_ms": 75.0,
+      "total_p95_ms": 80.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "lexical engine",
+      "samples": 3,
+      "ttfr_p50_ms": 63.0,
+      "total_p95_ms": 65.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "lighthouse audit",
+      "samples": 3,
+      "ttfr_p50_ms": 50.0,
+      "total_p95_ms": 51.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "model download",
+      "samples": 3,
+      "ttfr_p50_ms": 90.0,
+      "total_p95_ms": 106.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "model list json",
+      "samples": 3,
+      "ttfr_p50_ms": 86.0,
+      "total_p95_ms": 92.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "model switcher",
+      "samples": 3,
+      "ttfr_p50_ms": 65.0,
+      "total_p95_ms": 70.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "move recommendations",
+      "samples": 3,
+      "ttfr_p50_ms": 55.0,
+      "total_p95_ms": 57.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "native-cache configuration",
+      "samples": 3,
+      "ttfr_p50_ms": 54.0,
+      "total_p95_ms": 57.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "passage extractor",
+      "samples": 3,
+      "ttfr_p50_ms": 49.0,
+      "total_p95_ms": 53.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "path scoring",
+      "samples": 3,
+      "ttfr_p50_ms": 72.0,
+      "total_p95_ms": 74.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "personal ranking",
+      "samples": 3,
+      "ttfr_p50_ms": 67.0,
+      "total_p95_ms": 84.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "potion core",
+      "samples": 3,
+      "ttfr_p50_ms": 64.0,
+      "total_p95_ms": 76.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "privacy compliance",
+      "samples": 3,
+      "ttfr_p50_ms": 53.0,
+      "total_p95_ms": 57.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "pro prism",
+      "samples": 3,
+      "ttfr_p50_ms": 88.0,
+      "total_p95_ms": 96.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "pro status",
+      "samples": 3,
+      "ttfr_p50_ms": 91.0,
+      "total_p95_ms": 112.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "progressive search",
+      "samples": 3,
+      "ttfr_p50_ms": 68.0,
+      "total_p95_ms": 70.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "release check",
+      "samples": 3,
+      "ttfr_p50_ms": 67.0,
+      "total_p95_ms": 78.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "ripgrep funnel",
+      "samples": 3,
+      "ttfr_p50_ms": 53.0,
+      "total_p95_ms": 55.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "search mode auto",
+      "samples": 3,
+      "ttfr_p50_ms": 91.0,
+      "total_p95_ms": 105.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "search mode flash",
+      "samples": 3,
+      "ttfr_p50_ms": 86.0,
+      "total_p95_ms": 90.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "search mode pro",
+      "samples": 3,
+      "ttfr_p50_ms": 99.0,
+      "total_p95_ms": 124.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "secure timing",
+      "samples": 3,
+      "ttfr_p50_ms": 51.0,
+      "total_p95_ms": 53.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "semantic rerank",
+      "samples": 3,
+      "ttfr_p50_ms": 59.0,
+      "total_p95_ms": 62.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "settings matrix",
+      "samples": 3,
+      "ttfr_p50_ms": 48.0,
+      "total_p95_ms": 53.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "tauri search command",
+      "samples": 3,
+      "ttfr_p50_ms": 76.0,
+      "total_p95_ms": 84.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "token claims",
+      "samples": 3,
+      "ttfr_p50_ms": 52.0,
+      "total_p95_ms": 63.0,
+      "avg_results": 20.0
+    },
+    {
+      "query": "trusted snippet",
+      "samples": 3,
+      "ttfr_p50_ms": 53.0,
+      "total_p95_ms": 54.0,
+      "avg_results": 20.0
+    }
+  ],
+  "records": [
+    {
+      "query": "cache mode",
+      "run_index": 1,
+      "warm": false,
+      "ttfr_ms": 197,
+      "total_ms": 381,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 153,
+        "embed_ms": 24,
+        "rank_ms": 159,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 521,
+        "misses": 51,
+        "writes": 51
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+      "top1_score": 0.278607
+    },
+    {
+      "query": "native-cache configuration",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 55,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 45,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 183,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\00_ARCH_MAP.md",
+      "top1_score": 0.49587363
+    },
+    {
+      "query": "ephemeral mode",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 73,
+      "total_ms": 77,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 3,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 506,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+      "top1_score": 0.22778834
+    },
+    {
+      "query": "search mode auto",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 91,
+      "total_ms": 105,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 45,
+        "embed_ms": 3,
+        "rank_ms": 10,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 596,
+        "misses": 8,
+        "writes": 8
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.38530016
+    },
+    {
+      "query": "search mode pro",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 96,
+      "total_ms": 124,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 46,
+        "embed_ms": 9,
+        "rank_ms": 18,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 698,
+        "misses": 23,
+        "writes": 23
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.3320631
+    },
+    {
+      "query": "search mode flash",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 86,
+      "total_ms": 87,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 46,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 606,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.36073416
+    },
+    {
+      "query": "journalist mode",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 75,
+      "total_ms": 76,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 508,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs",
+      "top1_score": 0.19965665
+    },
+    {
+      "query": "secure timing",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 51,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 186,
+        "misses": 2,
+        "writes": 2
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\panel\\CYCLE_2\\systems_perf_engineer.md",
+      "top1_score": 0.282285
+    },
+    {
+      "query": "progressive search",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 68,
+      "total_ms": 69,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 444,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.4599533
+    },
+    {
+      "query": "ask mode",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 78,
+      "total_ms": 79,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 505,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+      "top1_score": 0.24186946
+    },
+    {
+      "query": "pro status",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 108,
+      "total_ms": 112,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 55,
+        "embed_ms": 0,
+        "rank_ms": 3,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 668,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+      "top1_score": 0.2933564
+    },
+    {
+      "query": "automation actions capability",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 55,
+      "total_ms": 61,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 47,
+        "embed_ms": 3,
+        "rank_ms": 3,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 158,
+        "misses": 5,
+        "writes": 5
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\00_ARCH_MAP.md",
+      "top1_score": 0.12572096
+    },
+    {
+      "query": "move recommendations",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 55,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 251,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\cycles\\CYCLE_2_DECISION.md",
+      "top1_score": 0.07728338
+    },
+    {
+      "query": "model list json",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 89,
+      "total_ms": 92,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 45,
+        "embed_ms": 0,
+        "rank_ms": 3,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 567,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+      "top1_score": 0.16010395
+    },
+    {
+      "query": "model switcher",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 65,
+      "total_ms": 66,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 342,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\cycle3_site_build_20260303_235609.txt",
+      "top1_score": 0.16103792
+    },
+    {
+      "query": "flash quartz",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 58,
+      "total_ms": 59,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 336,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\cycles\\CYCLE_3_VOLATILITY_FLAG_ON_v3.md",
+      "top1_score": 0.10618609
+    },
+    {
+      "query": "pro prism",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 85,
+      "total_ms": 87,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 656,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\cycle3_atlas_ab_after_patch_20260303_232011.txt",
+      "top1_score": 0.1465028
+    },
+    {
+      "query": "potion core",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 64,
+      "total_ms": 66,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 391,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\cycles\\CYCLE_3_VOLATILITY_FLAG_ON_v4.json",
+      "top1_score": 0.0
+    },
+    {
+      "query": "token claims",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 52,
+      "total_ms": 55,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 220,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\panel\\CYCLE_2\\systems_perf_engineer.md",
+      "top1_score": 0.11871145
+    },
+    {
+      "query": "entitlement manager",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 129,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\big_bench_20260303_220112.md",
+      "top1_score": 0.017562926
+    },
+    {
+      "query": "personal ranking",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 61,
+      "total_ms": 63,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 377,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+      "top1_score": 0.16075183
+    },
+    {
+      "query": "directory walk",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 61,
+      "total_ms": 62,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 354,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\cycles\\CYCLE_2_PLAN.md",
+      "top1_score": 0.06625432
+    },
+    {
+      "query": "candidate generator",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 56,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 304,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+      "top1_score": 0.14384541
+    },
+    {
+      "query": "path scoring",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 72,
+      "total_ms": 74,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 497,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\cycles\\CYCLE_2_PLAN.md",
+      "top1_score": 0.03163773
+    },
+    {
+      "query": "ripgrep funnel",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 55,
+      "total_ms": 55,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 231,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\00_ARCH_MAP.md",
+      "top1_score": 0.032461226
+    },
+    {
+      "query": "semantic rerank",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 60,
+      "total_ms": 62,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 328,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+      "top1_score": 0.28488645
+    },
+    {
+      "query": "passage extractor",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 49,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 107,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\code_audit_20.md",
+      "top1_score": 0.093394816
+    },
+    {
+      "query": "trusted snippet",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 45,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 157,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\panel\\CYCLE_2\\safety_trust_red_teamer.md",
+      "top1_score": 0.06494708
+    },
+    {
+      "query": "diagnostics bundle",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 55,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 47,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 102,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\ixos-site\\SPEC_PART5_RULES.md",
+      "top1_score": 0.0
+    },
+    {
+      "query": "release check",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 75,
+      "total_ms": 78,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 52,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 382,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+      "top1_score": 0.2288004
+    },
+    {
+      "query": "settings matrix",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 51,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 178,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\cycle3_settings_matrix_20260303_235609.txt",
+      "top1_score": 0.2206032
+    },
+    {
+      "query": "lighthouse audit",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 51,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 190,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+      "top1_score": 0.20164561
+    },
+    {
+      "query": "tauri search command",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 76,
+      "total_ms": 77,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 539,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+      "top1_score": 0.35070616
+    },
+    {
+      "query": "config migration",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 65,
+      "total_ms": 66,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 378,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+      "top1_score": 0.30571792
+    },
+    {
+      "query": "cache rebuild",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 63,
+      "total_ms": 65,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 393,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+      "top1_score": 0.24234857
+    },
+    {
+      "query": "index directory",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 67,
+      "total_ms": 72,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 4,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 453,
+        "misses": 1,
+        "writes": 1
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html",
+      "top1_score": 0.25741476
+    },
+    {
+      "query": "daemon status",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 61,
+      "total_ms": 62,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 341,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\00_ARCH_MAP.md",
+      "top1_score": 0.10032117
+    },
+    {
+      "query": "lexical engine",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 56,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 304,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.25524995
+    },
+    {
+      "query": "model download",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 90,
+      "total_ms": 106,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 3,
+        "rank_ms": 12,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 888,
+        "misses": 14,
+        "writes": 14
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+      "top1_score": 0.49024376
+    },
+    {
+      "query": "privacy compliance",
+      "run_index": 1,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 260,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+      "top1_score": 0.46225023
+    },
+    {
+      "query": "cache mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 83,
+      "total_ms": 85,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 572,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+      "top1_score": 0.27489093
+    },
+    {
+      "query": "native-cache configuration",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 55,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 183,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\00_ARCH_MAP.md",
+      "top1_score": 0.49587363
+    },
+    {
+      "query": "ephemeral mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 79,
+      "total_ms": 81,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 48,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 506,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+      "top1_score": 0.22644217
+    },
+    {
+      "query": "search mode auto",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 99,
+      "total_ms": 102,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 48,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 604,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.3896388
+    },
+    {
+      "query": "search mode pro",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 110,
+      "total_ms": 113,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 51,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 721,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.33346045
+    },
+    {
+      "query": "search mode flash",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 88,
+      "total_ms": 90,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 48,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 606,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.36256313
+    },
+    {
+      "query": "journalist mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 78,
+      "total_ms": 80,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 47,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 508,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs",
+      "top1_score": 0.19908983
+    },
+    {
+      "query": "secure timing",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 50,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 188,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\panel\\CYCLE_2\\systems_perf_engineer.md",
+      "top1_score": 0.28335723
+    },
+    {
+      "query": "progressive search",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 68,
+      "total_ms": 69,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 444,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.46198827
+    },
+    {
+      "query": "ask mode",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 73,
+      "total_ms": 74,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 505,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+      "top1_score": 0.2413202
+    },
+    {
+      "query": "pro status",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 91,
+      "total_ms": 93,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 45,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 668,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+      "top1_score": 0.2932421
+    },
+    {
+      "query": "automation actions capability",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 163,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\00_ARCH_MAP.md",
+      "top1_score": 0.12572096
+    },
+    {
+      "query": "move recommendations",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 54,
+      "total_ms": 55,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 251,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\cycles\\CYCLE_2_DECISION.md",
+      "top1_score": 0.07728338
+    },
+    {
+      "query": "model list json",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 86,
+      "total_ms": 88,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 567,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+      "top1_score": 0.16049309
+    },
+    {
+      "query": "model switcher",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 69,
+      "total_ms": 70,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 47,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 342,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\cycle3_site_build_20260303_235609.txt",
+      "top1_score": 0.16103792
+    },
+    {
+      "query": "flash quartz",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 66,
+      "total_ms": 68,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 47,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 336,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\cycles\\CYCLE_3_VOLATILITY_FLAG_ON_v3.md",
+      "top1_score": 0.10618609
+    },
+    {
+      "query": "pro prism",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 93,
+      "total_ms": 96,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 48,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 656,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+      "top1_score": 0.14699756
+    },
+    {
+      "query": "potion core",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 75,
+      "total_ms": 76,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 50,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 391,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\bin\\ixos-scale-bench.rs",
+      "top1_score": 0.0
+    },
+    {
+      "query": "token claims",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 62,
+      "total_ms": 63,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 50,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 221,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\panel\\CYCLE_2\\systems_perf_engineer.md",
+      "top1_score": 0.11815851
+    },
+    {
+      "query": "entitlement manager",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 58,
+      "total_ms": 59,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 47,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 129,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\big_bench_20260303_220112.md",
+      "top1_score": 0.017562926
+    },
+    {
+      "query": "personal ranking",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 83,
+      "total_ms": 84,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 58,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 377,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+      "top1_score": 0.16087498
+    },
+    {
+      "query": "directory walk",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 68,
+      "total_ms": 69,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 48,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 354,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\cycles\\CYCLE_2_PLAN.md",
+      "top1_score": 0.06625432
+    },
+    {
+      "query": "candidate generator",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 60,
+      "total_ms": 61,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 45,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 304,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+      "top1_score": 0.14401127
+    },
+    {
+      "query": "path scoring",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 72,
+      "total_ms": 74,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 497,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\cycles\\CYCLE_2_PLAN.md",
+      "top1_score": 0.03163773
+    },
+    {
+      "query": "ripgrep funnel",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 231,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\00_ARCH_MAP.md",
+      "top1_score": 0.032461226
+    },
+    {
+      "query": "semantic rerank",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 58,
+      "total_ms": 59,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 328,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+      "top1_score": 0.28521094
+    },
+    {
+      "query": "passage extractor",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 107,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\code_audit_20.md",
+      "top1_score": 0.093394816
+    },
+    {
+      "query": "trusted snippet",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 48,
+      "total_ms": 49,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 157,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\panel\\CYCLE_2\\safety_trust_red_teamer.md",
+      "top1_score": 0.06463347
+    },
+    {
+      "query": "diagnostics bundle",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 102,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\ixos-site\\SPEC_PART5_RULES.md",
+      "top1_score": 0.0
+    },
+    {
+      "query": "release check",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 67,
+      "total_ms": 68,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 383,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+      "top1_score": 0.22905996
+    },
+    {
+      "query": "settings matrix",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 52,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 179,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\cycle3_settings_matrix_20260303_235609.txt",
+      "top1_score": 0.20054835
+    },
+    {
+      "query": "lighthouse audit",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 50,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 191,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+      "top1_score": 0.2019847
+    },
+    {
+      "query": "tauri search command",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 82,
+      "total_ms": 84,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 47,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 539,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+      "top1_score": 0.34743685
+    },
+    {
+      "query": "config migration",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 64,
+      "total_ms": 65,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 378,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+      "top1_score": 0.3058178
+    },
+    {
+      "query": "cache rebuild",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 65,
+      "total_ms": 66,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 393,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+      "top1_score": 0.24220803
+    },
+    {
+      "query": "index directory",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 74,
+      "total_ms": 76,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 454,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html",
+      "top1_score": 0.25858095
+    },
+    {
+      "query": "daemon status",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 66,
+      "total_ms": 68,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 45,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 341,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\00_ARCH_MAP.md",
+      "top1_score": 0.10032117
+    },
+    {
+      "query": "lexical engine",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 63,
+      "total_ms": 63,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 47,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 304,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.2561423
+    },
+    {
+      "query": "model download",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 95,
+      "total_ms": 97,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 45,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 902,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+      "top1_score": 0.49150476
+    },
+    {
+      "query": "privacy compliance",
+      "run_index": 2,
+      "warm": true,
+      "ttfr_ms": 56,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 260,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+      "top1_score": 0.46190977
+    },
+    {
+      "query": "cache mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 80,
+      "total_ms": 81,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 572,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+      "top1_score": 0.27447972
+    },
+    {
+      "query": "native-cache configuration",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 183,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\00_ARCH_MAP.md",
+      "top1_score": 0.49587363
+    },
+    {
+      "query": "ephemeral mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 76,
+      "total_ms": 77,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 45,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 506,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\data\\config.json",
+      "top1_score": 0.22617854
+    },
+    {
+      "query": "search mode auto",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 86,
+      "total_ms": 88,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 47,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 604,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.38994545
+    },
+    {
+      "query": "search mode pro",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 99,
+      "total_ms": 101,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 48,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 721,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.3335553
+    },
+    {
+      "query": "search mode flash",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 86,
+      "total_ms": 88,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 47,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 606,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.36268392
+    },
+    {
+      "query": "journalist mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 74,
+      "total_ms": 76,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 508,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\cli_flags.rs",
+      "top1_score": 0.19905493
+    },
+    {
+      "query": "secure timing",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 51,
+      "total_ms": 52,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 188,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\panel\\CYCLE_2\\systems_perf_engineer.md",
+      "top1_score": 0.28338316
+    },
+    {
+      "query": "progressive search",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 69,
+      "total_ms": 70,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 444,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.46214533
+    },
+    {
+      "query": "ask mode",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 78,
+      "total_ms": 79,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 505,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+      "top1_score": 0.24131101
+    },
+    {
+      "query": "pro status",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 89,
+      "total_ms": 91,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 46,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 668,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+      "top1_score": 0.2932352
+    },
+    {
+      "query": "automation actions capability",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 49,
+      "total_ms": 50,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 163,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\00_ARCH_MAP.md",
+      "top1_score": 0.12572096
+    },
+    {
+      "query": "move recommendations",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 55,
+      "total_ms": 56,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 251,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\cycles\\CYCLE_2_DECISION.md",
+      "top1_score": 0.07728338
+    },
+    {
+      "query": "model list json",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 85,
+      "total_ms": 87,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 567,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+      "top1_score": 0.16048972
+    },
+    {
+      "query": "model switcher",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 64,
+      "total_ms": 65,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 342,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\cycle3_site_build_20260303_235609.txt",
+      "top1_score": 0.16103792
+    },
+    {
+      "query": "flash quartz",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 59,
+      "total_ms": 60,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 336,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\cycles\\CYCLE_3_VOLATILITY_FLAG_ON_v3.md",
+      "top1_score": 0.10618609
+    },
+    {
+      "query": "pro prism",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 88,
+      "total_ms": 90,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 656,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+      "top1_score": 0.14736845
+    },
+    {
+      "query": "potion core",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 60,
+      "total_ms": 62,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 391,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\src\\lib.rs",
+      "top1_score": 0.0
+    },
+    {
+      "query": "token claims",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 49,
+      "total_ms": 50,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 221,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\panel\\CYCLE_2\\systems_perf_engineer.md",
+      "top1_score": 0.11813844
+    },
+    {
+      "query": "entitlement manager",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 44,
+      "total_ms": 45,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 129,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\big_bench_20260303_220112.md",
+      "top1_score": 0.017562926
+    },
+    {
+      "query": "personal ranking",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 67,
+      "total_ms": 69,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 47,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 377,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+      "top1_score": 0.16086128
+    },
+    {
+      "query": "directory walk",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 62,
+      "total_ms": 64,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 45,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 354,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\cycles\\CYCLE_2_PLAN.md",
+      "top1_score": 0.06625432
+    },
+    {
+      "query": "candidate generator",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 304,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+      "top1_score": 0.14402759
+    },
+    {
+      "query": "path scoring",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 67,
+      "total_ms": 69,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 497,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\cycles\\CYCLE_2_PLAN.md",
+      "top1_score": 0.03163773
+    },
+    {
+      "query": "ripgrep funnel",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 51,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 231,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\00_ARCH_MAP.md",
+      "top1_score": 0.032461226
+    },
+    {
+      "query": "semantic rerank",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 59,
+      "total_ms": 61,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 42,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 328,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\research_summary.txt",
+      "top1_score": 0.28519917
+    },
+    {
+      "query": "passage extractor",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 52,
+      "total_ms": 53,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 107,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\ralph\\code_audit_20.md",
+      "top1_score": 0.093394816
+    },
+    {
+      "query": "trusted snippet",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 53,
+      "total_ms": 54,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 44,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 157,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\panel\\CYCLE_2\\safety_trust_red_teamer.md",
+      "top1_score": 0.064622656
+    },
+    {
+      "query": "diagnostics bundle",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 47,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 102,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\DESKTOP_UI_AUDIT.md",
+      "top1_score": 0.0
+    },
+    {
+      "query": "release check",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 65,
+      "total_ms": 67,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 383,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\meeting_notes_2024-11-15.txt",
+      "top1_score": 0.22905296
+    },
+    {
+      "query": "settings matrix",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 45,
+      "total_ms": 46,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 37,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 179,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\artifacts\\cycle3_settings_matrix_20260303_235609.txt",
+      "top1_score": 0.20054835
+    },
+    {
+      "query": "lighthouse audit",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 46,
+      "total_ms": 47,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 37,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 191,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\pdf_surrogate.txt",
+      "top1_score": 0.20198421
+    },
+    {
+      "query": "tauri search command",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 71,
+      "total_ms": 73,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 40,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 539,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\todo.md",
+      "top1_score": 0.34647256
+    },
+    {
+      "query": "config migration",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 60,
+      "total_ms": 61,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 38,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 378,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\api_reference.md",
+      "top1_score": 0.305824
+    },
+    {
+      "query": "cache rebuild",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 59,
+      "total_ms": 60,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 393,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\project_plan_2025.md",
+      "top1_score": 0.2422086
+    },
+    {
+      "query": "index directory",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 65,
+      "total_ms": 66,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 1,
+        "ripgrep_ms": 41,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 454,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\web\\index.html",
+      "top1_score": 0.25919467
+    },
+    {
+      "query": "daemon status",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 56,
+      "total_ms": 57,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 1,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 341,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\reports\\innovation_sprint\\00_ARCH_MAP.md",
+      "top1_score": 0.10032117
+    },
+    {
+      "query": "lexical engine",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 64,
+      "total_ms": 65,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 51,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 304,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\code\\search_engine.rs",
+      "top1_score": 0.2561973
+    },
+    {
+      "query": "model download",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 88,
+      "total_ms": 91,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 43,
+        "embed_ms": 0,
+        "rank_ms": 2,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 902,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\misc\\changelog.txt",
+      "top1_score": 0.49178672
+    },
+    {
+      "query": "privacy compliance",
+      "run_index": 3,
+      "warm": true,
+      "ttfr_ms": 50,
+      "total_ms": 51,
+      "stage_breakdown": {
+        "walk_ms": 176,
+        "path_score_ms": 0,
+        "ripgrep_ms": 39,
+        "embed_ms": 0,
+        "rank_ms": 0,
+        "evidence_ms": 0
+      },
+      "cache_stats": {
+        "hits": 260,
+        "misses": 0,
+        "writes": 0
+      },
+      "result_count": 20,
+      "top1_path": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\corpus_tiny\\docs\\privacy_policy.md",
+      "top1_score": 0.46196854
+    }
+  ]
+}

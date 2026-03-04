@@ -247,24 +247,8 @@ export function AppShell({ children }: AppShellProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [searchStore, showSettings, showInfo, showPricing, setShowSettings, setShowInfo, setShowPricing, setActiveView]);
 
-  useEffect(() => {
-    if (!showSettings && !showInfo && !showPricing) return;
-
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (!target) return;
-      if (target.closest('[data-overlay-panel="true"]')) return;
-      closeOverlays();
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown, true);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown, true);
-    };
-  }, [showSettings, showInfo, showPricing]);
-
   return (
-    <div className="h-screen flex bg-graphite-0 overflow-hidden relative" data-theme="desktop">
+    <div className="desktop-window-shell h-screen flex bg-graphite-0 overflow-hidden relative" data-theme="desktop">
       {/* Background Effect */}
       <ArcNoiseBackground />
 
@@ -402,10 +386,18 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Settings Panel Overlay */}
         {showSettings && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-graphite-0/58 backdrop-blur-md pointer-events-none">
+          <div
+            className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-3 sm:p-4 bg-graphite-0/68 backdrop-blur-md pointer-events-auto"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                setShowSettings(false);
+              }
+            }}
+          >
             <div
               data-overlay-panel="true"
-              className="w-[min(95vw,1320px)] h-[min(90vh,860px)] animate-in fade-in zoom-in-95 duration-200 relative group pointer-events-auto"
+              className="relative my-auto w-[min(96vw,1280px)] h-[min(88vh,840px)] max-h-[calc(100vh-1.5rem)] min-h-[560px] overflow-hidden animate-in fade-in zoom-in-95 duration-200 group pointer-events-auto"
+              onMouseDown={(event) => event.stopPropagation()}
             >
               <button
                 type="button"
@@ -428,10 +420,18 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Info Panel Overlay */}
         {showInfo && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-graphite-0/58 backdrop-blur-md pointer-events-none">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-graphite-0/58 backdrop-blur-md pointer-events-auto"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                setShowInfo(false);
+              }
+            }}
+          >
             <div
               data-overlay-panel="true"
               className="w-full max-w-4xl h-[min(700px,88vh)] animate-in fade-in zoom-in-95 duration-200 relative group pointer-events-auto"
+              onMouseDown={(event) => event.stopPropagation()}
             >
               <button
                 type="button"
@@ -447,10 +447,18 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Pricing Panel Overlay */}
         {showPricing && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-graphite-0/58 backdrop-blur-md pointer-events-none">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-graphite-0/58 backdrop-blur-md pointer-events-auto"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                setShowPricing(false);
+              }
+            }}
+          >
             <div
               data-overlay-panel="true"
               className="w-full max-w-5xl h-[min(85vh,860px)] animate-in fade-in zoom-in-95 duration-200 relative group pointer-events-auto"
+              onMouseDown={(event) => event.stopPropagation()}
             >
               <button
                 type="button"

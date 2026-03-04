@@ -1611,3 +1611,79 @@
   1. Validate updated search UX manually on Windows/macOS/Linux runners (especially dropdown placement and context readability).
   2. Resolve Tauri warnings before tagging a production release.
   3. Publish a release checklist write-up in `/reports` that maps each checklist item to command evidence.
+
+## Entry 0XX - Desktop density + window chrome + release env materialization
+- Date/Time: 2026-03-03
+- Branch/Commit: (working tree)
+- Goal: Fix desktop UI scale/fit issues (small titlebar controls and cramped 1080p feel) and ensure release builds include required `.env.local` variables.
+- Commands run:
+  - `npm --prefix ui run build`
+  - Source edits in `ui/src/components/layout/{WindowControls,AppShell,Sidebar}.tsx`, `ui/src/components/search/MainSearchView.tsx`
+  - Source edits in `src-tauri/tauri.conf.json`
+  - Source edits in `.github/workflows/release.yml`
+- Outputs saved to:
+  - Workflow and source changes only (no benchmark artifacts in this UX/config pass)
+- Key results:
+  - Increased custom titlebar control size and added top chrome surface.
+  - Increased desktop shell spacing/sidebar density for better readability and click targets.
+  - Changed default main window size to `1440x860` (min `1100x700`) for better 1080p fit.
+  - Added CI step to materialize `.env.local` into root/UI/Tauri prior to build.
+  - Added missing `VITE_LEMONSQUEEZY_PRO_VARIANT_ID` to `tauri-action` env.
+  - UI build passes after changes.
+- Decision: KEEP
+- Next: Validate packaged installer UX at 1080p and confirm next tagged release no longer reports missing build keys.
+
+## Entry 0XY - Titlebar control UX correction (platform-native header controls)
+- Date/Time: 2026-03-03
+- Branch/Commit: (working tree)
+- Goal: Remove floating/capsule window control UI and restore native-feeling header-integrated controls for Windows/macOS.
+- Commands run:
+  - `npm --prefix ui run build`
+- Outputs saved to:
+  - Source change: `ui/src/components/layout/WindowControls.tsx`
+- Key results:
+  - Replaced boxed control group with titlebar-integrated controls.
+  - Windows/Linux now use right-aligned native-style strip (`min/max/close`, close red hover).
+  - macOS now uses left traffic-light controls and keeps settings in header without separate capsule.
+  - UI build passes.
+- Decision: KEEP
+- Next: Verify in packaged app on Windows and macOS that hit targets and alignment match native expectations.
+
+## Entry 0XZ - UX rollback + native titlebar only + dropdown portal layering fix
+- Date/Time: 2026-03-03
+- Branch/Commit: (working tree)
+- Goal: Revert oversized desktop density changes, keep only native titlebar controls, and fix dropdown overlap/translucency issues.
+- Commands run:
+  - `npm --prefix ui run build`
+- Outputs saved to:
+  - Source changes in `ui/src/components/layout/{AppShell,Sidebar,WindowControls}.tsx`
+  - Source changes in `ui/src/components/search/{QualitySwitcher,ModeSwitcher}.tsx`
+- Key results:
+  - Restored prior compact shell/sidebar/search sizing.
+  - Kept OS-style titlebar controls and removed expanded top chrome treatment.
+  - Raised titlebar controls to high z-index so they remain visible over auth/overlay layers.
+  - Reworked quality/mode dropdowns to portal-render at top layer with opaque backgrounds, eliminating chip/card overlap.
+  - UI build passes.
+- Decision: KEEP
+- Next: User visual validation pass on Windows; if needed, do a tiny final pixel-tune for button spacing only.
+
+## Entry 0YA - Dropdown hard reset + cleaner dashboard + maximized default window behavior
+- Date/Time: 2026-03-03
+- Branch/Commit: (working tree)
+- Goal: Fix broken dropdown interaction, reduce dashboard visual noise, highlight search on load, and default desktop window to maximized with proper maximize/restore affordance.
+- Commands run:
+  - `npm --prefix ui run build`
+- Outputs saved to:
+  - Source changes in `ui/src/components/search/{QualitySwitcher,ModeSwitcher,SearchInput,SearchIdleDashboard}.tsx`
+  - Source changes in `ui/src/components/layout/{WindowControls,AppShell}.tsx`
+  - Source changes in `ui/src/styles/globals.css`
+  - Source changes in `src-tauri/tauri.conf.json`
+- Key results:
+  - Replaced custom popover dropdowns with native themed selects to eliminate open/layering bugs.
+  - Search input now auto-focuses and renders explicit outline/highlight by default.
+  - Removed "Search Dashboard" parent framing and reduced idle view complexity to a cleaner two-column surface.
+  - Main window now starts maximized; caption button switches to restore icon when maximized.
+  - Added maximize-state CSS hook for straight corners when maximized and rounded corners when restored.
+  - UI build passes.
+- Decision: KEEP
+- Next: User validation on Windows runtime for caption icon + corner behavior in maximized/restored transitions.

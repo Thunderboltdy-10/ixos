@@ -1014,3 +1014,19 @@
 - Risks: documentation overhead can reduce experiment throughput.
 - Follow-ups: keep logs concise but complete; avoid deep prose when tabular entries suffice.
 
+
+## 2026-03-05 Ralph v4 Bootstrap Decisions
+- Decision: Treat v4 as active/incomplete and explicitly forbid plateau stop until hard minimum budget gates are met.
+- Options considered: keep v3 3-cycle plateau; allow early no-survivor stop after first pass; enforce v4 hard minimum budget.
+- Why chosen: user contract in `/CODEX.md` explicitly requires longer-run saturation and stronger negative-result standards.
+- Evidence (links to /reports or output files): `reports/ralph_v4/FINAL_REPORT.md`, `reports/ralph_v4/TASK_QUEUE.md`, `/CODEX.md`.
+
+- Decision: Keep only `ARCH-A01`, `ARCH-A04`, and `ARCH-B11` as provisional survivors after pass-1 prosecutor+gatekeeper.
+- Options considered: keep broader UNCLEAR set; force-select one survivor; kill all immediately.
+- Why chosen: these three have the strongest remaining differentiators while still falsifiable; others collapsed to established families or failed gatekeeper risk checks.
+- Evidence (links to /reports or output files): `reports/ralph_v4/NOVELTY_MATRIX.md`, `reports/ralph_v4/BANLIST.md`, `reports/ralph_v4/SURVIVORS.md`.
+
+- Decision: No prototype/harness coding in this pass.
+- Options considered: immediate prototype for momentum; tiny harness now; defer until survivor survives stronger prosecution.
+- Why chosen: v4 prototyping policy requires a stronger survivor signal first; current run is still in saturation stage.
+- Evidence (links to /reports or output files): `reports/ralph_v4/FINAL_REPORT.md`, `reports/ralph_v4/SURVIVORS.md`.

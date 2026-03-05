@@ -1,3 +1,0 @@
-model_id,suite,recall_at_10,mrr_at_10,latency_ms_per_1k,load_time_ms,memory_delta_mb,batch_size,candidate_cap,doc_count,query_count,difficulty,real_limit,real_queries
-ixos-flash-v2,synthetic_ambiguity_v1,1.0,0.9444,105.31,203.98,59.71,64,1500,34,30,medium,120,200
-ixos-flash-v2,real_corpus_v2,0.945,0.8763,324.47,93.07,43.41,64,1500,120,200,medium,120,200

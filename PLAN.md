@@ -699,3 +699,23 @@
   2. Convert unresolved leak/anchor cases into executable regression cases in the atlas harness before new architecture claims.
   3. Re-run targeted retrieval benchmarks only after a gatekeeper-approved survivor exists.
 
+
+## STATE SNAPSHOT (Ralph v4 bootstrap, 2026-03-05)
+- Date: 2026-03-05
+- Current baseline numbers:
+  - Atlas Flash baseline: AnchorTop1Hit@1=0.80, PlausibleWrong@k=0.1333, SensitiveLeak@k=0.0, latency p50/p95=633.57/762.57 ms.
+- Current best v2 numbers:
+  - Best trust point observed: risk_budget_v1 -> AnchorTop1Hit@1=1.00, PlausibleWrong@k=0.0333, latency p95=1725.16 ms (not ship-safe).
+- Current bottleneck ranking:
+  1. Candidate recall under lexical cap/timeout pressure and snippet-dependent anchor filtering.
+  2. Heuristic (non-formal) retrieval-time leak suppression and early lexical exposure.
+  3. Auto-mode refine under-trigger risk on ambiguous short queries.
+- Ralph v4 progress snapshot:
+  - reports/ralph_v4 initialized with mandatory artifact set.
+  - Macro-cycles counted: 1 (bootstrap + first divergence/prosecution cycle).
+  - Sources logged: 39; search batches: 8; reconciliation passes: 1.
+  - Provisional survivors: ARCH-A01, ARCH-A04, ARCH-B11.
+- What is next (top 3 tasks):
+  1. Expand saturation to >=250 sources and >=60 search batches with adversarial novelty collapse queries.
+  2. Execute cycle-based prosecutor+gatekeeper passes until either strong survivor evidence or trustworthy NO SURVIVORS.
+  3. Complete reconciliation pass #2 and only then consider any prototype/harness gating.

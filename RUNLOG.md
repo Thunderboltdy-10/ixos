@@ -1744,3 +1744,37 @@
   2. Require retrieval regression harness evidence before accepting any new survivor.
   3. Keep naming neutral until prosecutor+gatekeeper clear a candidate.
 
+
+## Entry 0YC - Ralph v4 bootstrap + blind truth + dual divergence + pass-1 prosecution
+- Date/Time: 2026-03-05
+- Branch/Commit: (working tree)
+- Goal: Start Ralph v4 per /CODEX.md with durable artifacts, blind current-system truth mapping, independent divergence batches, initial saturation, and first prosecutor/gatekeeper pass.
+- Commands run (high level):
+  - Control-plane/state reads across PLAN/RUNLOG/DECISIONS and ralph_v3 control artifacts
+  - Code-path reads for progressive/candidate/semantic/tauri search entry points
+  - Web prior-art search batches across scholar/systems/security/product streams
+  - Artifact creation and updates under `reports/ralph_v4/*`
+- Outputs saved to:
+  - `reports/ralph_v4/EXECUTION_LOG.md`
+  - `reports/ralph_v4/TASK_QUEUE.md`
+  - `reports/ralph_v4/SOURCES.md`
+  - `reports/ralph_v4/SEARCH_LOG.md`
+  - `reports/ralph_v4/IDEA_POOL.md` (`ARCH-A01..A20`, `ARCH-B01..B20`)
+  - `reports/ralph_v4/NOVELTY_MATRIX.md`
+  - `reports/ralph_v4/BANLIST.md`
+  - `reports/ralph_v4/SURVIVORS.md`
+  - `reports/ralph_v4/FAILURES.md`
+  - `reports/ralph_v4/RECONCILIATION.md`
+  - `reports/ralph_v4/CYCLE_SUMMARY.md`
+  - `reports/ralph_v4/FINAL_REPORT.md`
+- Key results:
+  - Phase 0 and Phase 1 completed with code-grounded mapping of anchor/leak/inversion risk points.
+  - 40 fresh placeholder candidates generated across two independent divergence batches.
+  - Initial saturation produced 8 logged search batches and 39 logged sources.
+  - Prosecutor + gatekeeper reduced active provisional survivors to 3 (A01, A04, B11).
+  - Plateau stop explicitly not eligible; run remains active.
+- Decision: CONTINUE (hard minimum budget not met)
+- Next:
+  1. Grow saturation to hard minimums (sources, batches, neighborhoods, cycles).
+  2. Run adversarial collapse searches on A01/A04/B11 before any prototype.
+  3. Complete reconciliation pass #2.

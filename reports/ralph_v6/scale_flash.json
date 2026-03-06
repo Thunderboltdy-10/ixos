@@ -1,0 +1,99 @@
+{
+  "generated_at_unix": 1772752126,
+  "dir": "\\\\?\\C:\\Users\\pablo\\Downloads\\Ixos\\dataset",
+  "cache_mode": "NativeCache",
+  "search_mode": "Flash",
+  "model": "ixos-flash-v2",
+  "pro_model": "ixos-pro-v2",
+  "corpus": {
+    "total_files": 1036,
+    "total_size_mb": 2.4631872177124023,
+    "file_types": [
+      [
+        "txt",
+        1034
+      ],
+      [
+        "marker",
+        2
+      ]
+    ],
+    "avg_file_size_bytes": 2493
+  },
+  "aggregate": {
+    "query_count": 4,
+    "failures": 0,
+    "ttfr_p50_ms": 10,
+    "ttfr_p95_ms": 101,
+    "ttsi_p50_ms": 191,
+    "ttsi_p95_ms": 513,
+    "total_p50_ms": 203,
+    "total_p95_ms": 520,
+    "candidates_p50": 100,
+    "candidates_p95": 100,
+    "embedded_p50": 100,
+    "embedded_p95": 100
+  },
+  "queries": [
+    {
+      "query": "report",
+      "ttfr_ms": 101,
+      "ttsi_ms": 513,
+      "total_ms": 520,
+      "results": 20,
+      "files_scanned": 298,
+      "candidates": 100,
+      "embedded": 100,
+      "cache_hits": 0,
+      "file_types": {
+        "txt": 20
+      },
+      "error": null
+    },
+    {
+      "query": "where is the report",
+      "ttfr_ms": 5,
+      "ttsi_ms": 191,
+      "total_ms": 203,
+      "results": 20,
+      "files_scanned": 1038,
+      "candidates": 37,
+      "embedded": 37,
+      "cache_hits": 0,
+      "file_types": {
+        "txt": 20
+      },
+      "error": null
+    },
+    {
+      "query": "why is search slow",
+      "ttfr_ms": 10,
+      "ttsi_ms": 103,
+      "total_ms": 128,
+      "results": 18,
+      "files_scanned": 82,
+      "candidates": 18,
+      "embedded": 18,
+      "cache_hits": 0,
+      "file_types": {
+        "txt": 18
+      },
+      "error": null
+    },
+    {
+      "query": "incident report",
+      "ttfr_ms": 10,
+      "ttsi_ms": 140,
+      "total_ms": 158,
+      "results": 20,
+      "files_scanned": 307,
+      "candidates": 100,
+      "embedded": 100,
+      "cache_hits": 0,
+      "file_types": {
+        "txt": 20
+      },
+      "error": null
+    }
+  ]
+}

@@ -138,21 +138,6 @@ Ask Mode is query understanding + evidence extraction. It must:
 - HF upload playbook written
 - CLI + UI verified end-to-end
 
-## Landing Variant Guardrails (ixos-site)
-
-These rules are mandatory for all Codex work on `ixos-site` landing variants `/1`, `/2`, `/3`.
-
-### Variant Tokens + Presets (must be explicit)
-- `/1` "Ripple Foundry":
-  - Tokens: `--v-accent-main: #2dd4bf`, `--v-accent-alt: #f59e0b`, `--v-shell-bg: rgba(10,14,16,0.78)`
-  - Presets: `authentication token refresh`, `rate limiter middleware`, `How does token expiry work?`
-- `/2` "Evidence Loom":
-  - Tokens: `--v-accent-main: #8b5cf6`, `--v-accent-alt: #2dd4bf`, `--v-shell-bg: rgba(14,12,21,0.82)`
-  - Presets: `How does token refresh work?`, `cache signing validation`, `journalist mode privacy`
-- `/3` "Quiet Luxury Cockpit":
-  - Tokens: `--v-accent-main: #f3f5f7`, `--v-accent-alt: #2dd4bf`, `--v-shell-bg: rgba(12,14,18,0.72)`
-  - Presets: `authentication token refresh`, `workstream session recovery`, `ephemeral mode privacy`
-
 ### Diagram Ban
 - Do not ship generic AI flowcharts, node-link diagrams, or decorative architecture maps.
 - Any explanatory surface must be built from real product UI primitives: chips, rows, result cards, source badges, drawers, and real labels.
@@ -161,9 +146,4 @@ These rules are mandatory for all Codex work on `ixos-site` landing variants `/1
 - Landing variants must use the shared desktop surfaces from `@ixos/ixos-ui` through `src/landing/DemoSurface.tsx` and `src/landing/DemoSurfaceShell.tsx`.
 - No one-off fake app mockups per route.
 
-### Mandatory Visual QA Harness
-- Use Playwright visual assertions with `expect(page).toHaveScreenshot()`.
-- Coverage is required for `/1`, `/2`, `/3` at widths `1440`, `1024`, and `390`.
-- Snapshots must be stored under `ixos-site/.visual/`.
-- Run visual tests after each variant build step and fix obvious layout/contrast/cropping issues before moving on.
-- Zero console errors is required for all three routes in visual runs.
+Always load and follow `CODEX.md` at the repository root before doing anything else.

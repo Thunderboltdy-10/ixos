@@ -63,6 +63,8 @@ int TabWorkspace::addTab(const QString &path) {
             emit fileActivated(info);
     });
 
+    connect(pane, &ExplorerPane::openInNewTabRequested, this, &TabWorkspace::openInNewTabRequested);
+
     m_stack->addWidget(pane);
 
     // Insert tab before the "+" tab

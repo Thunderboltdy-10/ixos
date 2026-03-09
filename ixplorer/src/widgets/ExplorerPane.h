@@ -23,11 +23,16 @@ signals:
     void pathChanged(const QString &path);
     void fileSelected(const QFileInfo &info);
     void fileActivated(const QFileInfo &info);
+    void openInNewTabRequested(const QString &path);
 
 private:
     void onDoubleClicked(const QModelIndex &index);
     void onSelectionChanged();
     void onModelLoaded();
+    void showContextMenu(const QPoint &pos);
+    void renameSelected();
+    void deleteSelected();
+    void createNewFolder();
 
     QTreeView *m_tree;
     QFileSystemModel *m_fsModel;

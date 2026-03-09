@@ -55,9 +55,9 @@ void MainWindow::setupLayout() {
     m_splitter->addWidget(m_sidebar);
     m_splitter->addWidget(m_workspace);
     m_splitter->addWidget(m_rail);
-    m_splitter->setStretchFactor(0, 0); // sidebar: fixed
-    m_splitter->setStretchFactor(1, 1); // workspace: stretch
-    m_splitter->setStretchFactor(2, 0); // rail: fixed
+    m_splitter->setStretchFactor(0, 0);
+    m_splitter->setStretchFactor(1, 1);
+    m_splitter->setStretchFactor(2, 0);
     m_splitter->setSizes({240, 920, 280});
 
     vbox->addWidget(m_splitter, 1);
@@ -67,10 +67,10 @@ void MainWindow::setupLayout() {
 }
 
 void MainWindow::setupConnections() {
-    // Sidebar → navigate
+    // Sidebar -> navigate
     connect(m_sidebar, &AppSidebar::locationSelected, this, &MainWindow::navigateTo);
 
-    // Toolbar → navigate
+    // Toolbar -> navigate
     connect(m_toolbar, &ExplorerToolbar::navigateRequested, this, &MainWindow::navigateTo);
 
     // Toolbar back/forward/up/refresh
@@ -99,17 +99,17 @@ void MainWindow::setupConnections() {
         if (pane) pane->refresh();
     });
 
-    // Workspace → sync panels
+    // Workspace -> sync panels
     connect(m_workspace, &TabWorkspace::pathChanged, this, &MainWindow::onPathChanged);
 
     connect(m_workspace, &TabWorkspace::fileSelected, this, [this](const QFileInfo &info) {
         m_rail->showFileDetails(info);
         QString selInfo;
         if (info.isDir()) {
-            selInfo = QString("Folder: %1").arg(info.fileName());
+            selInfo = info.fileName();
         } else {
             QLocale locale;
-            selInfo = QString("%1 — %2").arg(info.fileName(), locale.formattedDataSize(info.size()));
+            selInfo = QString("%1  %2").arg(info.fileName(), locale.formattedDataSize(info.size()));
         }
         m_statusStrip->setSelectionInfo(selInfo);
     });
@@ -119,29 +119,30 @@ void MainWindow::setupConnections() {
         if (pane)
             onPathChanged(pane->currentPath());
     });
+
+    // Open in new tab from context menu
+    connect(m_workspace, &TabWorkspace::openInNewTabRequested, this, [this](const QString &path) {
+        m_workspace->addTab(path);
+    });
 }
 
 void MainWindow::setupShortcuts() {
-    // Ctrl+T: new tab
     auto *newTab = new QShortcut(QKeySequence("Ctrl+T"), this);
     connect(newTab, &QShortcut::activated, this, [this]() {
         m_workspace->addTab(QDir::homePath());
     });
 
-    // Ctrl+W: close tab
     auto *closeTab = new QShortcut(QKeySequence("Ctrl+W"), this);
     connect(closeTab, &QShortcut::activated, this, [this]() {
         m_workspace->closeTab(m_workspace->currentTabIndex());
     });
 
-    // F5: refresh
     auto *refresh = new QShortcut(QKeySequence("F5"), this);
     connect(refresh, &QShortcut::activated, this, [this]() {
         auto *pane = m_workspace->currentPane();
         if (pane) pane->refresh();
     });
 
-    // Alt+Left: back
     auto *back = new QShortcut(QKeySequence("Alt+Left"), this);
     connect(back, &QShortcut::activated, this, [this]() {
         QString path = m_toolbar->goBack();
@@ -149,7 +150,6 @@ void MainWindow::setupShortcuts() {
             m_workspace->navigateCurrentTab(path);
     });
 
-    // Alt+Right: forward
     auto *forward = new QShortcut(QKeySequence("Alt+Right"), this);
     connect(forward, &QShortcut::activated, this, [this]() {
         QString path = m_toolbar->goForward();
@@ -157,7 +157,6 @@ void MainWindow::setupShortcuts() {
             m_workspace->navigateCurrentTab(path);
     });
 
-    // Alt+Up: parent directory
     auto *up = new QShortcut(QKeySequence("Alt+Up"), this);
     connect(up, &QShortcut::activated, this, [this]() {
         auto *pane = m_workspace->currentPane();

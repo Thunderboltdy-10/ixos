@@ -26,6 +26,7 @@ signals:
     void pathChanged(const QString &path);
     void fileSelected(const QFileInfo &info);
     void fileActivated(const QFileInfo &info);
+    void openInNewTabRequested(const QString &path);
 
 private:
     void onTabChanged(int index);

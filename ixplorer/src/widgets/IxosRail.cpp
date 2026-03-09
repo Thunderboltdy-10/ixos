@@ -1,6 +1,7 @@
 #include "widgets/IxosRail.h"
 
 #include <QFileIconProvider>
+#include <QFrame>
 #include <QLocale>
 #include <QScrollArea>
 #include <QVBoxLayout>
@@ -33,6 +34,14 @@ static QLabel *makeFieldLabel(const QString &text, QWidget *parent) {
     return label;
 }
 
+static QFrame *makeDivider(QWidget *parent) {
+    auto *line = new QFrame(parent);
+    line->setObjectName("RailDivider");
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Plain);
+    return line;
+}
+
 IxosRail::IxosRail(QWidget *parent)
     : QWidget(parent) {
     setObjectName("IxosRail");
@@ -49,22 +58,24 @@ IxosRail::IxosRail(QWidget *parent)
 
     auto *content = new QWidget(scroll);
     auto *layout = new QVBoxLayout(content);
-    layout->setContentsMargins(0, 8, 0, 16);
+    layout->setContentsMargins(0, 12, 0, 16);
     layout->setSpacing(0);
 
     // -- File Details section --
-    layout->addWidget(makeSectionTitle("FILE DETAILS", content));
-
     m_fileIcon = new QLabel(content);
     m_fileIcon->setObjectName("RailValueLabel");
     m_fileIcon->setAlignment(Qt::AlignCenter);
-    m_fileIcon->setFixedHeight(48);
+    m_fileIcon->setFixedHeight(64);
     layout->addWidget(m_fileIcon);
 
-    m_fileName = makeValueLabel(content);
+    m_fileName = new QLabel(content);
+    m_fileName->setObjectName("RailFileName");
     m_fileName->setAlignment(Qt::AlignCenter);
+    m_fileName->setWordWrap(true);
     layout->addWidget(m_fileName);
-    layout->addSpacing(8);
+
+    layout->addSpacing(4);
+    layout->addWidget(makeDivider(content));
 
     layout->addWidget(makeFieldLabel("Size", content));
     m_fileSize = makeValueLabel(content);
@@ -77,37 +88,40 @@ IxosRail::IxosRail(QWidget *parent)
     layout->addWidget(makeFieldLabel("Type", content));
     m_fileType = makeValueLabel(content);
     layout->addWidget(m_fileType);
-    layout->addSpacing(16);
+
+    layout->addWidget(makeDivider(content));
 
     // -- Ixos Search section --
-    layout->addWidget(makeSectionTitle("IXOS SEARCH", content));
+    layout->addWidget(makeSectionTitle("Ixos Search", content));
     m_searchInput = new QLineEdit(content);
     m_searchInput->setObjectName("SearchField");
     m_searchInput->setPlaceholderText("Semantic search...");
     m_searchInput->setEnabled(false);
     m_searchInput->setToolTip("Coming soon");
-    m_searchInput->setFixedWidth(248);
     auto *searchWrapper = new QWidget(content);
     auto *sw = new QVBoxLayout(searchWrapper);
-    sw->setContentsMargins(16, 4, 16, 4);
+    sw->setContentsMargins(16, 4, 16, 8);
     sw->addWidget(m_searchInput);
     layout->addWidget(searchWrapper);
-    layout->addSpacing(16);
+
+    layout->addWidget(makeDivider(content));
 
     // -- Related Files section --
-    layout->addWidget(makeSectionTitle("RELATED FILES", content));
+    layout->addWidget(makeSectionTitle("Related Files", content));
     m_relatedPlaceholder = makePlaceholder("Select a file to see related items", content);
     layout->addWidget(m_relatedPlaceholder);
-    layout->addSpacing(16);
+
+    layout->addWidget(makeDivider(content));
 
     // -- Context section --
-    layout->addWidget(makeSectionTitle("CONTEXT", content));
+    layout->addWidget(makeSectionTitle("Context", content));
     m_contextPlaceholder = makePlaceholder("File context will appear here", content);
     layout->addWidget(m_contextPlaceholder);
-    layout->addSpacing(16);
+
+    layout->addWidget(makeDivider(content));
 
     // -- Quick Actions section --
-    layout->addWidget(makeSectionTitle("QUICK ACTIONS", content));
+    layout->addWidget(makeSectionTitle("Quick Actions", content));
     m_actionsPlaceholder = makePlaceholder("Actions coming soon", content);
     layout->addWidget(m_actionsPlaceholder);
 
@@ -119,15 +133,12 @@ IxosRail::IxosRail(QWidget *parent)
 }
 
 void IxosRail::showFileDetails(const QFileInfo &info) {
-    // Icon
     QFileIconProvider iconProvider;
     QIcon icon = iconProvider.icon(info);
-    m_fileIcon->setPixmap(icon.pixmap(32, 32));
+    m_fileIcon->setPixmap(icon.pixmap(48, 48));
 
-    // Name
     m_fileName->setText(info.fileName());
 
-    // Size
     if (info.isDir()) {
         m_fileSize->setText("Folder");
     } else {
@@ -135,10 +146,8 @@ void IxosRail::showFileDetails(const QFileInfo &info) {
         m_fileSize->setText(locale.formattedDataSize(info.size()));
     }
 
-    // Modified
     m_fileModified->setText(info.lastModified().toString("yyyy-MM-dd hh:mm"));
 
-    // Type
     if (info.isDir()) {
         m_fileType->setText("Folder");
     } else {
@@ -150,9 +159,9 @@ void IxosRail::showFileDetails(const QFileInfo &info) {
 void IxosRail::clearDetails() {
     m_fileIcon->clear();
     m_fileName->setText("No file selected");
-    m_fileSize->setText("-");
-    m_fileModified->setText("-");
-    m_fileType->setText("-");
+    m_fileSize->setText("\xe2\x80\x94");
+    m_fileModified->setText("\xe2\x80\x94");
+    m_fileType->setText("\xe2\x80\x94");
 }
 
 } // namespace Ixplorer

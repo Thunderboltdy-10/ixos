@@ -45,7 +45,6 @@ AppSidebar::AppSidebar(QWidget *parent)
     populatePlaces();
     populateDrives();
 
-    // Wire up all section signals
     auto relay = [this](const QString &path) { emit locationSelected(path); };
     connect(m_homeSection, &SidebarSection::itemClicked, this, relay);
     connect(m_favoritesSection, &SidebarSection::itemClicked, this, relay);
@@ -62,27 +61,25 @@ void AppSidebar::highlightCurrent(const QString &path) {
 
 void AppSidebar::populatePlaces() {
     QString home = QDir::homePath();
-    m_homeSection->addItem("Home", home, "\xF0\x9F\x8F\xA0");
+    m_homeSection->addItem("Home", home);
 
     QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     if (!desktop.isEmpty())
-        m_homeSection->addItem("Desktop", desktop, "\xF0\x9F\x96\xA5");
+        m_homeSection->addItem("Desktop", desktop);
 
     QString documents = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     if (!documents.isEmpty())
-        m_homeSection->addItem("Documents", documents, "\xF0\x9F\x93\x84");
+        m_homeSection->addItem("Documents", documents);
 
     QString downloads = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
     if (!downloads.isEmpty())
-        m_homeSection->addItem("Downloads", downloads, "\xE2\xAC\x87");
+        m_homeSection->addItem("Downloads", downloads);
 
-    // Favorites: pre-populated with common locations
-    m_favoritesSection->addItem("Pictures", QStandardPaths::writableLocation(QStandardPaths::PicturesLocation), "\xF0\x9F\x96\xBC");
-    m_favoritesSection->addItem("Music", QStandardPaths::writableLocation(QStandardPaths::MusicLocation), "\xF0\x9F\x8E\xB5");
-    m_favoritesSection->addItem("Videos", QStandardPaths::writableLocation(QStandardPaths::MoviesLocation), "\xF0\x9F\x8E\xAC");
+    m_favoritesSection->addItem("Pictures", QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+    m_favoritesSection->addItem("Music", QStandardPaths::writableLocation(QStandardPaths::MusicLocation));
+    m_favoritesSection->addItem("Videos", QStandardPaths::writableLocation(QStandardPaths::MoviesLocation));
 
-    // Recents placeholder
-    m_recentsSection->addItem("(no recent locations)", "", "");
+    m_recentsSection->addItem("No recent locations", "");
 }
 
 void AppSidebar::populateDrives() {
@@ -92,8 +89,7 @@ void AppSidebar::populateDrives() {
             continue;
         QString root = vol.rootPath();
         QString name = vol.displayName().isEmpty() ? root : vol.displayName();
-        QString label = name + " (" + root + ")";
-        m_drivesSection->addItem(label, root, "\xF0\x9F\x92\xBE");
+        m_drivesSection->addItem(name, root);
     }
 }
 

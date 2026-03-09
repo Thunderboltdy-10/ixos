@@ -10,11 +10,11 @@ StatusStrip::StatusStrip(QWidget *parent)
     , m_selectionLabel(new QLabel(this))
     , m_pathLabel(new QLabel(this)) {
     setObjectName("StatusStrip");
-    setFixedHeight(24);
+    setFixedHeight(26);
 
     auto *layout = new QHBoxLayout(this);
-    layout->setContentsMargins(12, 0, 12, 0);
-    layout->setSpacing(16);
+    layout->setContentsMargins(16, 0, 16, 0);
+    layout->setSpacing(24);
 
     layout->addWidget(m_itemCountLabel);
     layout->addWidget(m_selectionLabel);

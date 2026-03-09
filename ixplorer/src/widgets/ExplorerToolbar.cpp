@@ -12,12 +12,13 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     , m_upBtn(new QPushButton(QStringLiteral("\u2191"), this))
     , m_refreshBtn(new QPushButton(QStringLiteral("\u21BB"), this))
     , m_breadcrumb(new BreadcrumbBar(this))
-    , m_searchField(new QLineEdit(this)) {
+    , m_searchField(new QLineEdit(this))
+    , m_viewModeBox(new QComboBox(this)) {
     setObjectName("ExplorerToolbar");
 
     auto *layout = new QHBoxLayout(this);
-    layout->setContentsMargins(8, 4, 8, 4);
-    layout->setSpacing(4);
+    layout->setContentsMargins(10, 4, 10, 4);
+    layout->setSpacing(6);
 
     m_backBtn->setToolTip("Back (Alt+Left)");
     m_fwdBtn->setToolTip("Forward (Alt+Right)");
@@ -32,76 +33,51 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     layout->addWidget(m_breadcrumb, 1);
     layout->addSpacing(8);
 
+    m_viewModeBox->setObjectName("ToolbarCombo");
+    m_viewModeBox->addItem("Details", 0);
+    m_viewModeBox->addItem("List", 1);
+    m_viewModeBox->setFixedWidth(96);
+    m_viewModeBox->setToolTip("Change view");
+    layout->addWidget(m_viewModeBox);
+
     m_searchField->setObjectName("SearchField");
-    m_searchField->setPlaceholderText("Search files...");
-    m_searchField->setFixedWidth(220);
+    m_searchField->setPlaceholderText("Search this folder with Ixos");
+    m_searchField->setClearButtonEnabled(true);
+    m_searchField->setFixedWidth(260);
     layout->addWidget(m_searchField);
 
     connect(m_backBtn, &QPushButton::clicked, this, &ExplorerToolbar::backRequested);
     connect(m_fwdBtn, &QPushButton::clicked, this, &ExplorerToolbar::forwardRequested);
     connect(m_upBtn, &QPushButton::clicked, this, &ExplorerToolbar::upRequested);
     connect(m_refreshBtn, &QPushButton::clicked, this, &ExplorerToolbar::refreshRequested);
-
-    connect(m_breadcrumb, &BreadcrumbBar::navigateRequested,
-            this, &ExplorerToolbar::navigateRequested);
-
+    connect(m_breadcrumb, &BreadcrumbBar::navigateRequested, this, &ExplorerToolbar::navigateRequested);
     connect(m_searchField, &QLineEdit::returnPressed, this, [this]() {
         emit searchRequested(m_searchField->text());
     });
+    connect(m_viewModeBox, &QComboBox::currentIndexChanged, this, [this](int index) {
+        emit viewModeChanged(m_viewModeBox->itemData(index).toInt());
+    });
 
-    updateNavButtons();
+    setNavigationState(false, false, false);
 }
 
 void ExplorerToolbar::setCurrentPath(const QString &path) {
     m_breadcrumb->setPath(path);
 }
 
-void ExplorerToolbar::pushHistory(const QString &path) {
-    if (m_navigating)
-        return;
-
-    // Trim forward history
-    if (m_historyIndex < m_history.size() - 1)
-        m_history = m_history.mid(0, m_historyIndex + 1);
-
-    m_history.append(path);
-    m_historyIndex = m_history.size() - 1;
-    updateNavButtons();
+void ExplorerToolbar::setNavigationState(bool canGoBack, bool canGoForward, bool canGoUp) {
+    m_backBtn->setEnabled(canGoBack);
+    m_fwdBtn->setEnabled(canGoForward);
+    m_upBtn->setEnabled(canGoUp);
 }
 
-bool ExplorerToolbar::canGoBack() const {
-    return m_historyIndex > 0;
-}
-
-bool ExplorerToolbar::canGoForward() const {
-    return m_historyIndex < m_history.size() - 1;
-}
-
-QString ExplorerToolbar::goBack() {
-    if (!canGoBack())
-        return {};
-    m_navigating = true;
-    m_historyIndex--;
-    updateNavButtons();
-    QString path = m_history[m_historyIndex];
-    m_navigating = false;
-    return path;
-}
-
-QString ExplorerToolbar::goForward() {
-    if (!canGoForward())
-        return {};
-    m_navigating = true;
-    m_historyIndex++;
-    updateNavButtons();
-    QString path = m_history[m_historyIndex];
-    m_navigating = false;
-    return path;
-}
-
-void ExplorerToolbar::updateNavButtons() {
-    m_backBtn->setEnabled(canGoBack());
-    m_fwdBtn->setEnabled(canGoForward());
+void ExplorerToolbar::setViewMode(int mode) {
+    const int index = m_viewModeBox->findData(mode);
+    if (index >= 0 && index != m_viewModeBox->currentIndex()) {
+        const bool blocked = m_viewModeBox->blockSignals(true);
+        m_viewModeBox->setCurrentIndex(index);
+        m_viewModeBox->blockSignals(blocked);
+    }
 }
 
 } // namespace Ixplorer

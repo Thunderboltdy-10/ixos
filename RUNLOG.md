@@ -1779,3 +1779,25 @@ eports/settings_matrix_2026-02-14.md).
   1. Grow saturation to hard minimums (sources, batches, neighborhoods, cycles).
   2. Run adversarial collapse searches on A01/A04/B11 before any prototype.
   3. Complete reconciliation pass #2.
+## 2026-03-09 Ixplorer major implementation pass
+- Scope:
+  - Upgraded `ixplorer/` from scaffolded explorer shell to a usable Qt workspace with per-tab navigation state, safer file actions, and a real Ixos search rail.
+- Code changes:
+  - Reworked `ixplorer/src/widgets/ExplorerPane.*` for tab-local back/forward/up history, filter-in-folder, copy/cut/paste, duplicate, open-with, reveal, properties, view-mode toggle, and multi-select status emission.
+  - Reworked `ixplorer/src/widgets/ExplorerToolbar.*`, `ixplorer/src/widgets/TabWorkspace.*`, `ixplorer/src/widgets/StatusStrip.*`, and `ixplorer/src/app/MainWindow.cpp` to sync per-tab navigation/view state, route search-hit reveals into the workspace, and surface clearer status text.
+  - Replaced `ixplorer/src/widgets/IxosRail.*` placeholder content with a real search panel backed by `ixplorer/src/search/IxosCliSearchProvider.*` and `ixplorer/src/search/SearchTypes.h`.
+  - Refined `ixplorer/resources/styles/ixplorer_dark.qss` for the new rail, results list, status strip, and toolbar controls.
+- Integration boundary:
+  - Kept Ixplorer native Qt and reused the existing local-process search boundary (`ixos search --json --progressive --show-scores --evidence`), rather than adding a new Rust FFI or service layer.
+- Command evidence:
+  - `cargo build --release`
+    - Output: `Finished 'release' profile [optimized] target(s) in 59.20s`
+  - `.\target\release\ixos.exe search MainWindow --dir .\ixplorer\src --json --progressive --show-scores --evidence --context 3 --limit 5 --search-mode auto`
+    - Output summary: streamed lexical hits, semantic hits, evidence-enriched semantic results, then `{"type":"complete"}`.
+  - `C:\Qt\Tools\CMake_64\bin\cmake.exe --build C:\Users\pablo\Downloads\Ixos\ixplorer\build`
+    - Output summary: `Linking CXX executable Ixplorer.exe` and successful deploy of Qt runtime files.
+  - Ixplorer startup smoke:
+    - Command: `Start-Process C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe ...`
+    - Output summary: process stayed alive for 4 seconds (`RUNNING:<pid>`) before intentional stop.
+- Artifacts:
+  - `reports/ixplorer_major_pass_2026-03-09.md`

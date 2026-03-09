@@ -1,3 +1,25 @@
+# STATE SNAPSHOT (Ixplorer major implementation pass, 2026-03-09)
+- Date: 2026-03-09
+- Current baseline numbers:
+  - Flash v1: MRR@10 0.8399, Recall@10 0.93, 423.09 ms/1k
+  - Pro fusion baseline: MRR@10 0.9233, Recall@10 0.97
+- Current best v2 numbers:
+  - Flash v2: MRR@10 0.8340, Recall@10 0.925, 339.76 ms/1k
+  - Pro v2 fusion: MRR@10 0.9209, Recall@10 0.97, 430.57 ms/1k
+- Current bottleneck ranking:
+  1. Ixplorer right rail is now real, but search result rendering is still widget-simple and needs richer row composition/custom delegates.
+  2. Explorer actions are solid for core local flows, but drag/drop, cut/paste edge cases, and cross-volume operations still need broader manual QA.
+  3. Automated GUI verification is still thin; this pass is validated by build/startup/CLI contract smoke rather than full interaction automation.
+- Current pass validation (2026-03-09):
+  - `cargo build --release`: PASS
+  - `.\target\release\ixos.exe search MainWindow --dir .\ixplorer\src --json --progressive --show-scores --evidence --context 3 --limit 5 --search-mode auto`: PASS
+  - `C:\Qt\Tools\CMake_64\bin\cmake.exe --build C:\Users\pablo\Downloads\Ixos\ixplorer\build`: PASS
+  - `C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe` startup smoke (launch + alive after 4s): PASS
+- What is next (top 3 tasks):
+  1. Run manual interaction QA for Ixplorer search-open-inspect loops, especially result selection reveal, rename/delete/paste, and view-mode switching.
+  2. Upgrade rail result presentation to custom row widgets/delegates with denser evidence hierarchy and keyboard navigation polish.
+  3. Add focused Qt-side tests or scripted GUI smoke coverage for search provider parsing and core file operations.
+
 # PLAN.md - Ixos Flash v2 + Pro v2 + Search vNext
 
 ## STATE SNAPSHOT (update frequently)

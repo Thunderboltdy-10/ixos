@@ -1,50 +1,87 @@
 # Ixplorer
 
-Native file explorer/workspace built with C++ and Qt 6 Widgets. Dark-themed three-column layout: sidebar, tabbed file browser, and Ixos detail rail.
+Native Windows-first file workspace built with C++ and Qt 6 Widgets. The layout stays fixed as:
+
+- top navigation/toolbar
+- left sidebar
+- center tabbed explorer workspace
+- right Ixos search rail
+- bottom status strip
+
+This pass turns the shell prototype into a usable local explorer with real Ixos search integration.
+
+## What Works
+
+- Per-tab browse history with `Back`, `Forward`, `Up`, breadcrumbs, and refresh.
+- Multi-select file browsing with rename, new folder, delete-to-trash, copy, cut, paste, duplicate, reveal, open with, and properties.
+- A real right rail backed by `ixos search --json --progressive --show-scores --evidence`.
+- Search-result actions for open, open in new tab, reveal in workspace, and copy path.
+- Sidebar recents persistence and a denser, calmer desktop UI treatment.
+
+## Search Boundary
+
+Ixplorer does not link Rust directly. It uses a small Qt-side provider:
+
+- Provider: `ixplorer/src/search/IxosCliSearchProvider.cpp`
+- Contract: `target/release/ixos.exe search <query> --dir <path> --json --progressive --show-scores --evidence --context 3 --limit <n> --search-mode <auto|flash|pro>`
+
+This keeps Ixplorer aligned with the existing Ixos search semantics and fallback behavior while keeping the UI native Qt.
 
 ## Prerequisites
 
-- **Qt 6.10.2** — installed at `C:\Qt\6.10.2\mingw_64`
-- **CMake** — at `C:\Qt\Tools\CMake_64\bin`
-- **Ninja** — at `C:\Qt\Tools\Ninja`
-- **MinGW 13.1.0** — at `C:\Qt\Tools\mingw1310_64`
+- Qt 6.10.2 at `C:\Qt\6.10.2\mingw_64`
+- CMake at `C:\Qt\Tools\CMake_64\bin`
+- Ninja at `C:\Qt\Tools\Ninja`
+- MinGW 13.1.0 at `C:\Qt\Tools\mingw1310_64`
+- A built Ixos CLI binary at `target\release\ixos.exe`
 
-## Quick Build & Run (one command)
+## Quick Build And Run
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File ixplorer\build_and_run.ps1
 ```
 
 Flags:
-- `-SkipBuild` — just launch, skip rebuild
-- `-Deploy` — run `windeployqt` to copy all Qt DLLs (first time only)
 
-The script sets PATH, CMAKE_PREFIX_PATH, builds, and runs — no manual env setup needed.
+- `-SkipBuild`: launch only
+- `-Deploy`: force `windeployqt`
 
-> **Note:** CMake is configured to auto-run `windeployqt` as a post-build step, so Qt DLLs are always copied next to the exe.
-
-## Manual Build (if needed)
+## Manual Build
 
 ```powershell
 $env:PATH = "C:\Qt\Tools\mingw1310_64\bin;C:\Qt\Tools\CMake_64\bin;C:\Qt\Tools\Ninja;C:\Qt\6.10.2\mingw_64\bin;" + $env:PATH
 $env:CMAKE_PREFIX_PATH = "C:\Qt\6.10.2\mingw_64"
+cargo build --release
 cd ixplorer
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 .\build\Ixplorer.exe
 ```
 
-## Qt Creator
-
-Open `ixplorer/CMakeLists.txt` → select MinGW 64-bit kit → Build → Run.
-
-## Keyboard Shortcuts
+## Key Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
-| Ctrl+T | New tab |
-| Ctrl+W | Close tab |
-| F5 | Refresh |
-| Alt+Left | Back |
-| Alt+Right | Forward |
-| Alt+Up | Parent directory |
+| `Ctrl+T` | New tab |
+| `Ctrl+W` | Close tab |
+| `F5` | Refresh |
+| `Alt+Left` | Back |
+| `Alt+Right` | Forward |
+| `Alt+Up` | Parent directory |
+| `F2` | Rename |
+| `Delete` | Move to trash |
+| `Ctrl+C / Ctrl+X / Ctrl+V` | Copy / cut / paste |
+| `Ctrl+D` | Duplicate |
+| `Ctrl+Shift+N` | New folder |
+| `Alt+Enter` | Properties |
+
+## Validation Notes
+
+Current validation for this pass is:
+
+- `cargo build --release`
+- Qt rebuild of `ixplorer/build`
+- CLI progressive search contract smoke
+- Ixplorer launch/startup smoke
+
+Full manual GUI interaction QA for drag/drop and edge-case clipboard flows is still pending.

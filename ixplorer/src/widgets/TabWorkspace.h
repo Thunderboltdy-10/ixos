@@ -1,9 +1,10 @@
 #pragma once
 
-#include <QWidget>
-#include <QTabBar>
-#include <QStackedWidget>
 #include <QFileInfo>
+#include <QStackedWidget>
+#include <QTabBar>
+#include <QToolButton>
+#include <QWidget>
 
 namespace Ixplorer {
 
@@ -19,14 +20,19 @@ public:
     int addTab(const QString &path);
     void closeTab(int index);
     void navigateCurrentTab(const QString &path);
+    void revealPathInCurrentTab(const QString &path);
+    void revealPathInNewTab(const QString &path);
     int currentTabIndex() const;
 
 signals:
     void currentTabChanged(int index);
     void pathChanged(const QString &path);
-    void fileSelected(const QFileInfo &info);
+    void navigationStateChanged(bool canGoBack, bool canGoForward, bool canGoUp);
+    void selectionChanged(const QFileInfo &info, int selectedCount, quint64 selectedBytes);
+    void selectionCleared();
     void fileActivated(const QFileInfo &info);
     void openInNewTabRequested(const QString &path);
+    void statusMessage(const QString &message);
 
 private:
     void onTabChanged(int index);
@@ -34,6 +40,7 @@ private:
     void onNewTabClicked();
 
     QTabBar *m_tabBar;
+    QToolButton *m_addTabButton;
     QStackedWidget *m_stack;
 };
 

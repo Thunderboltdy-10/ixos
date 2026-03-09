@@ -5,7 +5,7 @@
 
 /* ── Global ──────────────────────────────────────────────────── */
 * {
-    font-family: "Segoe UI", system-ui, sans-serif;
+    font-family: "Bahnschrift", "Segoe UI Variable", sans-serif;
     font-size: 13px;
     color: #E8EAED;
 }
@@ -58,7 +58,6 @@ QMainWindow, QWidget {
     padding: 5px 10px;
     color: #E8EAED;
     min-width: 220px;
-    max-width: 220px;
     min-height: 28px;
     font-size: 13px;
 }
@@ -71,6 +70,31 @@ QMainWindow, QWidget {
 #SearchField:disabled {
     color: #5A5E64;
     background-color: rgba(255, 255, 255, 0.02);
+}
+
+#ToolbarCombo {
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid #2D323B;
+    border-radius: 6px;
+    padding: 4px 8px;
+    min-height: 28px;
+}
+
+#ToolbarCombo:hover {
+    border-color: #3A404A;
+}
+
+#ToolbarCombo::drop-down {
+    border: none;
+    width: 20px;
+}
+
+#ToolbarCombo QAbstractItemView {
+    background-color: #1E2127;
+    border: 1px solid #2D323B;
+    selection-background-color: rgba(20, 184, 166, 0.16);
+    selection-color: #E8EAED;
+    outline: none;
 }
 
 /* ── Breadcrumb ──────────────────────────────────────────────── */
@@ -187,6 +211,22 @@ QTabBar::tab:selected {
     font-weight: 500;
 }
 
+QToolButton#TabAddButton {
+    background: transparent;
+    border: none;
+    color: #8F959C;
+    min-width: 36px;
+    max-width: 36px;
+    min-height: 36px;
+    max-height: 36px;
+    font-size: 16px;
+}
+
+QToolButton#TabAddButton:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #E8EAED;
+}
+
 QTabBar::close-button {
     image: none;
     subcontrol-position: right;
@@ -217,9 +257,9 @@ QTreeView {
 }
 
 QTreeView::item {
-    padding: 2px 8px;
+    padding: 3px 8px;
     border: none;
-    min-height: 28px;
+    min-height: 30px;
 }
 
 QTreeView::item:hover {
@@ -337,6 +377,18 @@ QMenu::icon {
     padding: 6px 16px;
 }
 
+#RailStatus {
+    color: #9DA2A8;
+    font-size: 12px;
+    padding: 4px 16px 10px 16px;
+}
+
+#RailPillRow {
+    color: #8ACCC2;
+    font-size: 11px;
+    padding: 4px 16px 8px 16px;
+}
+
 #RailDivider {
     background-color: #1E2026;
     min-height: 1px;
@@ -344,12 +396,47 @@ QMenu::icon {
     margin: 8px 16px;
 }
 
+QListWidget#RailResults {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    padding: 4px 8px 8px 8px;
+}
+
+QListWidget#RailResults::item {
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 2px 8px;
+}
+
+QListWidget#RailResults::item:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+QListWidget#RailResults::item:selected {
+    background-color: rgba(20, 184, 166, 0.10);
+    border-color: rgba(20, 184, 166, 0.22);
+}
+
+QTextEdit#RailSnippet {
+    background-color: #111318;
+    border: 1px solid #262A33;
+    border-radius: 8px;
+    color: #DCE0E5;
+    margin: 8px 16px 0 16px;
+    padding: 10px;
+    selection-background-color: rgba(20, 184, 166, 0.28);
+    line-height: 1.45;
+}
+
 /* ── Status Strip ────────────────────────────────────────────── */
 #StatusStrip {
     background-color: #15171B;
     border-top: 1px solid #1E2026;
-    min-height: 26px;
-    max-height: 26px;
+    min-height: 28px;
+    max-height: 28px;
     padding: 0 16px;
 }
 

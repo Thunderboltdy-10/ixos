@@ -1030,3 +1030,30 @@
 - Options considered: immediate prototype for momentum; tiny harness now; defer until survivor survives stronger prosecution.
 - Why chosen: v4 prototyping policy requires a stronger survivor signal first; current run is still in saturation stage.
 - Evidence (links to /reports or output files): `reports/ralph_v4/FINAL_REPORT.md`, `reports/ralph_v4/SURVIVORS.md`.
+## 2026-03-09 Ixplorer search integration boundary
+- Decision: keep Ixplorer as a native Qt Widgets app and integrate Ixos search through the existing local `ixos` CLI JSON/progressive contract.
+- Options considered:
+  - Add a brand-new Rust FFI boundary for Ixplorer.
+  - Reuse the Tauri backend command surface directly.
+  - Use the existing `ixos search --json --progressive --show-scores --evidence` process boundary.
+- Why chosen:
+  - It already exists in-repo, preserves Ixos search-mode/fallback semantics, stays robust on Windows, and is easy to debug independently from the Qt UI.
+  - It avoided duplicating search logic or creating a second native API surface for the same Rust engine.
+  - It let the biggest implementation pass focus on explorer usability and result flow instead of plumbing risk.
+- Evidence:
+  - `ixplorer/src/search/IxosCliSearchProvider.cpp`
+  - `ixplorer/src/search/SearchTypes.h`
+  - `reports/ixplorer_major_pass_2026-03-09.md`
+
+## 2026-03-09 Ixplorer explorer-core direction
+- Decision: upgrade the existing `QFileSystemModel`/`QTreeView` explorer instead of replacing the center pane with a custom file model.
+- Options considered:
+  - Rebuild the explorer center pane around a custom model/view layer.
+  - Keep Qt filesystem primitives and add the missing navigation/file-operation/state behaviors around them.
+- Why chosen:
+  - The existing Qt primitives already handle most Windows-first filesystem behavior well enough; the missing value was shell behavior and state management, not a lack of native file listing.
+  - This kept drag/drop, rename, sort, and filesystem refresh grounded in Qt rather than reimplementing them under schedule pressure.
+- Evidence:
+  - `ixplorer/src/widgets/ExplorerPane.cpp`
+  - `ixplorer/src/widgets/TabWorkspace.cpp`
+  - `reports/ixplorer_major_pass_2026-03-09.md`

@@ -2,7 +2,9 @@
 #include "widgets/SidebarSection.h"
 
 #include <QDir>
+#include <QFileInfo>
 #include <QScrollArea>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QStorageInfo>
 #include <QVBoxLayout>
@@ -59,37 +61,82 @@ void AppSidebar::highlightCurrent(const QString &path) {
     m_drivesSection->setHighlighted(path);
 }
 
+void AppSidebar::recordRecentLocation(const QString &path) {
+    const QString normalized = QDir::toNativeSeparators(path);
+    if (normalized.isEmpty() || !QFileInfo::exists(normalized)) {
+        return;
+    }
+
+    m_recentLocations.removeAll(normalized);
+    m_recentLocations.prepend(normalized);
+    while (m_recentLocations.size() > 8) {
+        m_recentLocations.removeLast();
+    }
+
+    persistRecents();
+    refreshRecents();
+}
+
 void AppSidebar::populatePlaces() {
-    QString home = QDir::homePath();
+    const QString home = QDir::homePath();
     m_homeSection->addItem("Home", home);
 
-    QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-    if (!desktop.isEmpty())
+    const QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    if (!desktop.isEmpty()) {
         m_homeSection->addItem("Desktop", desktop);
+    }
 
-    QString documents = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    if (!documents.isEmpty())
+    const QString documents = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    if (!documents.isEmpty()) {
         m_homeSection->addItem("Documents", documents);
+    }
 
-    QString downloads = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
-    if (!downloads.isEmpty())
+    const QString downloads = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    if (!downloads.isEmpty()) {
         m_homeSection->addItem("Downloads", downloads);
+    }
 
     m_favoritesSection->addItem("Pictures", QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
     m_favoritesSection->addItem("Music", QStandardPaths::writableLocation(QStandardPaths::MusicLocation));
     m_favoritesSection->addItem("Videos", QStandardPaths::writableLocation(QStandardPaths::MoviesLocation));
 
-    m_recentsSection->addItem("No recent locations", "");
+    loadRecents();
+    refreshRecents();
 }
 
 void AppSidebar::populateDrives() {
     const auto volumes = QStorageInfo::mountedVolumes();
     for (const auto &vol : volumes) {
-        if (!vol.isValid() || !vol.isReady())
+        if (!vol.isValid() || !vol.isReady()) {
             continue;
-        QString root = vol.rootPath();
-        QString name = vol.displayName().isEmpty() ? root : vol.displayName();
+        }
+        const QString root = vol.rootPath();
+        const QString name = vol.displayName().isEmpty() ? root : vol.displayName();
         m_drivesSection->addItem(name, root);
+    }
+}
+
+void AppSidebar::loadRecents() {
+    QSettings settings;
+    m_recentLocations = settings.value("sidebar/recentLocations").toStringList();
+}
+
+void AppSidebar::persistRecents() const {
+    QSettings settings;
+    settings.setValue("sidebar/recentLocations", m_recentLocations);
+}
+
+void AppSidebar::refreshRecents() {
+    m_recentsSection->clearItems();
+    if (m_recentLocations.isEmpty()) {
+        m_recentsSection->addItem("No recent locations", "");
+        return;
+    }
+
+    for (const QString &path : m_recentLocations) {
+        const QFileInfo info(path);
+        const QString label = info.fileName().isEmpty() ? path : info.fileName();
+        m_recentsSection->addItem(label, path);
     }
 }
 

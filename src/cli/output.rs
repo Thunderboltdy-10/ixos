@@ -96,6 +96,9 @@ pub struct SearchResultOutput {
     /// Score breakdown (if requested)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub score_breakdown: Option<ScoreBreakdownOutput>,
+    /// Structured context snippet when available
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub context: Option<ContextOutput>,
 }
 
 /// Score breakdown for JSON serialization
@@ -109,6 +112,30 @@ pub struct ScoreBreakdownOutput {
     pub temporal: f32,
     /// Behavior pattern score
     pub behavior: f32,
+}
+
+/// Structured context for JSON consumers.
+#[derive(Debug, Serialize)]
+pub struct ContextOutput {
+    /// 1-based line number of the first matched line
+    pub line_number: usize,
+    /// Lines before the match
+    pub before: Vec<String>,
+    /// Matched lines
+    pub matched: Vec<String>,
+    /// Lines after the match
+    pub after: Vec<String>,
+}
+
+impl From<&crate::ixos_rank::snippet::ContextSnippet> for ContextOutput {
+    fn from(snippet: &crate::ixos_rank::snippet::ContextSnippet) -> Self {
+        Self {
+            line_number: snippet.line_number,
+            before: snippet.before.clone(),
+            matched: snippet.matched.clone(),
+            after: snippet.after.clone(),
+        }
+    }
 }
 
 impl From<&ScoreBreakdown> for ScoreBreakdownOutput {
@@ -174,6 +201,9 @@ pub struct SearchResultOutputWithEvidence {
     /// Score breakdown (if requested)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub score_breakdown: Option<ScoreBreakdownOutput>,
+    /// Structured context snippet when available
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub context: Option<ContextOutput>,
     /// Evidence payload explaining why this result matched
     #[serde(skip_serializing_if = "Option::is_none")]
     pub evidence: Option<EvidenceOutput>,
@@ -397,6 +427,7 @@ impl OutputFormatter for JsonFormatter {
                 integrity_verified: false,
                 snippet: Some(r.content_snippet.clone()),
                 score_breakdown: None,
+                context: None,
             })
             .collect();
 
@@ -433,6 +464,7 @@ impl OutputFormatter for JsonFormatter {
                     } else {
                         None
                     },
+                    context: r.context_snippet.as_ref().map(ContextOutput::from),
                     evidence: r.evidence.as_ref().map(EvidenceOutput::from),
                 })
                 .collect();
@@ -462,6 +494,7 @@ impl OutputFormatter for JsonFormatter {
                     } else {
                         None
                     },
+                    context: r.context_snippet.as_ref().map(ContextOutput::from),
                 })
                 .collect();
 

@@ -1779,3 +1779,46 @@ eports/settings_matrix_2026-02-14.md).
   1. Grow saturation to hard minimums (sources, batches, neighborhoods, cycles).
   2. Run adversarial collapse searches on A01/A04/B11 before any prototype.
   3. Complete reconciliation pass #2.
+## 2026-03-09 Ixplorer major implementation pass
+- Scope:
+  - Upgraded `ixplorer/` from scaffolded explorer shell to a usable Qt workspace with per-tab navigation state, safer file actions, and a real Ixos search rail.
+- Code changes:
+  - Reworked `ixplorer/src/widgets/ExplorerPane.*` for tab-local back/forward/up history, filter-in-folder, copy/cut/paste, duplicate, open-with, reveal, properties, view-mode toggle, and multi-select status emission.
+  - Reworked `ixplorer/src/widgets/ExplorerToolbar.*`, `ixplorer/src/widgets/TabWorkspace.*`, `ixplorer/src/widgets/StatusStrip.*`, and `ixplorer/src/app/MainWindow.cpp` to sync per-tab navigation/view state, route search-hit reveals into the workspace, and surface clearer status text.
+  - Replaced `ixplorer/src/widgets/IxosRail.*` placeholder content with a real search panel backed by `ixplorer/src/search/IxosCliSearchProvider.*` and `ixplorer/src/search/SearchTypes.h`.
+  - Refined `ixplorer/resources/styles/ixplorer_dark.qss` for the new rail, results list, status strip, and toolbar controls.
+- Integration boundary:
+  - Kept Ixplorer native Qt and reused the existing local-process search boundary (`ixos search --json --progressive --show-scores --evidence`), rather than adding a new Rust FFI or service layer.
+- Command evidence:
+  - `cargo build --release`
+    - Output: `Finished 'release' profile [optimized] target(s) in 59.20s`
+  - `.\target\release\ixos.exe search MainWindow --dir .\ixplorer\src --json --progressive --show-scores --evidence --context 3 --limit 5 --search-mode auto`
+    - Output summary: streamed lexical hits, semantic hits, evidence-enriched semantic results, then `{"type":"complete"}`.
+  - `C:\Qt\Tools\CMake_64\bin\cmake.exe --build C:\Users\pablo\Downloads\Ixos\ixplorer\build`
+    - Output summary: `Linking CXX executable Ixplorer.exe` and successful deploy of Qt runtime files.
+  - Ixplorer startup smoke:
+    - Command: `Start-Process C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe ...`
+    - Output summary: process stayed alive for 4 seconds (`RUNNING:<pid>`) before intentional stop.
+- Artifacts:
+  - `reports/ixplorer_major_pass_2026-03-09.md`
+
+## 2026-03-09 Ixplorer polish + primary-search pass
+- Scope:
+  - Promoted the top toolbar search to the primary Ixos search entry point, made the right rail collapsible/default-closed, expanded result/detail presentation, and tightened explorer/file-shell polish.
+- Code changes:
+  - Reworked `ixplorer/src/widgets/ExplorerToolbar.*` to add visible Ixos search mode control, a real search CTA, and a rail toggle.
+  - Reworked `ixplorer/src/widgets/IxosRail.*` into a richer search workspace with a closable header, clearer scope/status copy, custom result cards, stronger match detail, and better action-state handling.
+  - Updated `ixplorer/src/app/MainWindow.*` to manage default-closed rail behavior, auto-open the rail for folder search, and expose search shortcuts (`Ctrl+K`, `Ctrl+F`).
+  - Extended `ixplorer/src/widgets/ExplorerPane.*` with new text-file creation, paste-from-empty-space, copy-name/path actions, and `Backspace` up-navigation.
+  - Refined `ixplorer/src/widgets/StatusStrip.cpp`, `ixplorer/src/widgets/TabWorkspace.cpp`, `ixplorer/src/widgets/SidebarSection.cpp`, and `ixplorer/resources/styles/ixplorer_dark.qss` for clearer text, state, and density.
+- Command evidence:
+  - `C:\Qt\Tools\CMake_64\bin\cmake.exe --build C:\Users\pablo\Downloads\Ixos\ixplorer\build`
+    - Output summary: build completed successfully through `Linking CXX executable Ixplorer.exe`.
+  - `cargo build --release`
+    - Output: `Finished 'release' profile [optimized] target(s) in 0.52s`
+  - `.\target\release\ixos.exe search "report" --dir dataset --json --evidence --show-scores --progressive --limit 3 --context 2`
+    - Output summary: lexical stream, semantic ranking stream, evidence-enriched semantic payloads, then `{"type":"complete"}`.
+  - Ixplorer startup smoke:
+    - Output summary: `RUNNING <pid>` after 5 seconds, then intentionally stopped.
+- Artifacts:
+  - `reports/ixplorer_major_pass_2026-03-09.md`

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <QWidget>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QWidget>
 
 namespace Ixplorer {
 
@@ -12,6 +12,7 @@ public:
     explicit SidebarSection(const QString &title, QWidget *parent = nullptr);
 
     void addItem(const QString &label, const QString &path, const QString &icon = {});
+    void clearItems();
     void setHighlighted(const QString &path);
     QVBoxLayout *bodyLayout() const { return m_body; }
 

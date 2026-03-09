@@ -12,6 +12,7 @@ set(SOURCES
     src/main.cpp
     src/app/Application.cpp
     src/app/MainWindow.cpp
+    src/search/IxosCliSearchProvider.cpp
     src/widgets/ExplorerToolbar.cpp
     src/widgets/BreadcrumbBar.cpp
     src/widgets/AppSidebar.cpp
@@ -22,11 +23,14 @@ set(SOURCES
     src/widgets/StatusStrip.cpp
     src/models/FileSystemProxyModel.cpp
     src/theme/ThemeManager.cpp
+    src/utils/FileOperations.cpp
 )
 
 set(HEADERS
     src/app/Application.h
     src/app/MainWindow.h
+    src/search/SearchTypes.h
+    src/search/IxosCliSearchProvider.h
     src/widgets/ExplorerToolbar.h
     src/widgets/BreadcrumbBar.h
     src/widgets/AppSidebar.h
@@ -41,6 +45,7 @@ set(HEADERS
     src/interfaces/ISearchProvider.h
     src/interfaces/IIpcBridge.h
     src/interfaces/ICommandRegistry.h
+    src/utils/FileOperations.h
 )
 
 qt_add_resources(RESOURCES resources/ixplorer.qrc)
@@ -55,7 +60,6 @@ add_executable(Ixplorer WIN32
 target_include_directories(Ixplorer PRIVATE src)
 target_link_libraries(Ixplorer PRIVATE Qt6::Widgets)
 
-# Auto-deploy Qt DLLs next to the exe after every build
 find_program(WINDEPLOYQT windeployqt HINTS "${Qt6_DIR}/../../../bin")
 if(WINDEPLOYQT AND WIN32)
     add_custom_command(TARGET Ixplorer POST_BUILD

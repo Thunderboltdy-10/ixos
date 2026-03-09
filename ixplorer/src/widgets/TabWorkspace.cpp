@@ -2,33 +2,53 @@
 #include "widgets/ExplorerPane.h"
 
 #include <QDir>
+#include <QFileInfo>
+#include <QHBoxLayout>
 #include <QVBoxLayout>
 
 namespace Ixplorer {
 
+namespace {
+
+QString tabLabelForPath(const QString &path) {
+    const QDir dir(path);
+    const QString name = dir.dirName();
+    return name.isEmpty() ? QDir::toNativeSeparators(path) : name;
+}
+
+} // namespace
+
 TabWorkspace::TabWorkspace(QWidget *parent)
     : QWidget(parent)
     , m_tabBar(new QTabBar(this))
+    , m_addTabButton(new QToolButton(this))
     , m_stack(new QStackedWidget(this)) {
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
+    auto *tabRow = new QHBoxLayout();
+    tabRow->setContentsMargins(0, 0, 0, 0);
+    tabRow->setSpacing(0);
+
     m_tabBar->setTabsClosable(true);
-    m_tabBar->setMovable(true);
+    m_tabBar->setMovable(false);
     m_tabBar->setExpanding(false);
     m_tabBar->setDrawBase(false);
 
-    layout->addWidget(m_tabBar);
+    m_addTabButton->setObjectName("TabAddButton");
+    m_addTabButton->setText("+");
+    m_addTabButton->setAutoRaise(true);
+    m_addTabButton->setToolTip("New tab");
+
+    tabRow->addWidget(m_tabBar, 1);
+    tabRow->addWidget(m_addTabButton);
+    layout->addLayout(tabRow);
     layout->addWidget(m_stack, 1);
 
     connect(m_tabBar, &QTabBar::currentChanged, this, &TabWorkspace::onTabChanged);
     connect(m_tabBar, &QTabBar::tabCloseRequested, this, &TabWorkspace::onTabCloseRequested);
-
-    // "+" button as the last tab
-    int plusIdx = m_tabBar->addTab("+");
-    m_tabBar->setTabButton(plusIdx, QTabBar::RightSide, nullptr);
-    // We'll handle clicks on the "+" tab via currentChanged
+    connect(m_addTabButton, &QToolButton::clicked, this, &TabWorkspace::onNewTabClicked);
 }
 
 ExplorerPane *TabWorkspace::currentPane() const {
@@ -40,48 +60,61 @@ ExplorerPane *TabWorkspace::paneAt(int index) const {
 }
 
 int TabWorkspace::addTab(const QString &path) {
-    auto *pane = new ExplorerPane(path, this);
+    const QFileInfo info(path);
+    const QString initialPath = info.exists() && info.isFile() ? info.absolutePath() : path;
+    auto *pane = new ExplorerPane(initialPath, this);
 
-    // Connect pane signals
     connect(pane, &ExplorerPane::pathChanged, this, [this, pane](const QString &p) {
-        int idx = m_stack->indexOf(pane);
+        const int idx = m_stack->indexOf(pane);
         if (idx >= 0) {
-            QDir dir(p);
-            m_tabBar->setTabText(idx, dir.dirName().isEmpty() ? p : dir.dirName());
+            m_tabBar->setTabText(idx, tabLabelForPath(p));
+            m_tabBar->setTabToolTip(idx, QDir::toNativeSeparators(p));
         }
-        if (m_stack->currentWidget() == pane)
+        if (m_stack->currentWidget() == pane) {
             emit pathChanged(p);
+        }
     });
-
-    connect(pane, &ExplorerPane::fileSelected, this, [this, pane](const QFileInfo &info) {
-        if (m_stack->currentWidget() == pane)
-            emit fileSelected(info);
+    connect(pane, &ExplorerPane::navigationStateChanged, this, [this, pane](bool back, bool forward, bool up) {
+        if (m_stack->currentWidget() == pane) {
+            emit navigationStateChanged(back, forward, up);
+        }
     });
-
-    connect(pane, &ExplorerPane::fileActivated, this, [this, pane](const QFileInfo &info) {
-        if (m_stack->currentWidget() == pane)
-            emit fileActivated(info);
+    connect(pane, &ExplorerPane::selectionChanged, this, [this, pane](const QFileInfo &selected, int count, quint64 bytes) {
+        if (m_stack->currentWidget() == pane) {
+            emit selectionChanged(selected, count, bytes);
+        }
     });
-
+    connect(pane, &ExplorerPane::selectionCleared, this, [this, pane]() {
+        if (m_stack->currentWidget() == pane) {
+            emit selectionCleared();
+        }
+    });
+    connect(pane, &ExplorerPane::fileActivated, this, [this, pane](const QFileInfo &selected) {
+        if (m_stack->currentWidget() == pane) {
+            emit fileActivated(selected);
+        }
+    });
     connect(pane, &ExplorerPane::openInNewTabRequested, this, &TabWorkspace::openInNewTabRequested);
+    connect(pane, &ExplorerPane::statusMessage, this, &TabWorkspace::statusMessage);
 
     m_stack->addWidget(pane);
 
-    // Insert tab before the "+" tab
-    int insertIdx = m_tabBar->count() - 1; // before "+"
-    QDir dir(path);
-    QString label = dir.dirName().isEmpty() ? path : dir.dirName();
-    m_tabBar->insertTab(insertIdx, label);
-    m_tabBar->setCurrentIndex(insertIdx);
+    const int insertIndex = m_tabBar->count();
+    m_tabBar->addTab(tabLabelForPath(initialPath));
+    m_tabBar->setTabToolTip(insertIndex, QDir::toNativeSeparators(initialPath));
+    m_tabBar->setCurrentIndex(insertIndex);
 
-    return insertIdx;
+    if (info.exists() && info.isFile()) {
+        pane->selectPath(info.absoluteFilePath());
+    }
+
+    return insertIndex;
 }
 
 void TabWorkspace::closeTab(int index) {
-    // Don't close the "+" tab, and keep at least one real tab
-    int realTabCount = m_tabBar->count() - 1; // exclude "+"
-    if (index >= realTabCount || realTabCount <= 1)
+    if (index < 0 || index >= m_tabBar->count() || m_tabBar->count() <= 1) {
         return;
+    }
 
     auto *pane = paneAt(index);
     m_tabBar->removeTab(index);
@@ -92,9 +125,24 @@ void TabWorkspace::closeTab(int index) {
 }
 
 void TabWorkspace::navigateCurrentTab(const QString &path) {
-    auto *pane = currentPane();
-    if (pane)
+    if (auto *pane = currentPane()) {
         pane->setPath(path);
+    }
+}
+
+void TabWorkspace::revealPathInCurrentTab(const QString &path) {
+    if (auto *pane = currentPane()) {
+        pane->selectPath(path);
+    }
+}
+
+void TabWorkspace::revealPathInNewTab(const QString &path) {
+    const QFileInfo info(path);
+    const QString directory = info.isDir() ? info.absoluteFilePath() : info.absolutePath();
+    const int index = addTab(directory);
+    if (auto *pane = paneAt(index)) {
+        pane->selectPath(path);
+    }
 }
 
 int TabWorkspace::currentTabIndex() const {
@@ -102,21 +150,13 @@ int TabWorkspace::currentTabIndex() const {
 }
 
 void TabWorkspace::onTabChanged(int index) {
-    int plusIdx = m_tabBar->count() - 1;
-    if (index == plusIdx) {
-        // Clicked the "+" tab — create new tab, then switch back
-        int newIdx = addTab(QDir::homePath());
-        m_tabBar->setCurrentIndex(newIdx);
-        return;
-    }
-
     if (index >= 0 && index < m_stack->count()) {
         m_stack->setCurrentIndex(index);
         emit currentTabChanged(index);
 
-        auto *pane = currentPane();
-        if (pane) {
+        if (auto *pane = currentPane()) {
             emit pathChanged(pane->currentPath());
+            emit navigationStateChanged(pane->canGoBack(), pane->canGoForward(), pane->canGoUp());
         }
     }
 }

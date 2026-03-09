@@ -26,6 +26,8 @@ private:
     void setupConnections();
     void setupShortcuts();
     void onPathChanged(const QString &path);
+    void setRailVisible(bool visible);
+    void toggleRailVisible();
 
     ExplorerToolbar *m_toolbar;
     AppSidebar *m_sidebar;
@@ -33,6 +35,8 @@ private:
     IxosRail *m_rail;
     StatusStrip *m_statusStrip;
     QSplitter *m_splitter;
+    int m_lastRailWidth = 360;
+    bool m_railVisible = false;
 };
 
 } // namespace Ixplorer

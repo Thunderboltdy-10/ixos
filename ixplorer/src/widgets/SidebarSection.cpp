@@ -1,7 +1,7 @@
 #include "widgets/SidebarSection.h"
 
-#include <QStyle>
 #include <QDir>
+#include <QStyle>
 
 namespace Ixplorer {
 
@@ -31,22 +31,35 @@ void SidebarSection::addItem(const QString &label, const QString &path, const QS
     auto *btn = new QPushButton(this);
     btn->setText(label);
     btn->setObjectName("SidebarItem");
-    btn->setCursor(Qt::PointingHandCursor);
+    btn->setCursor(path.isEmpty() ? Qt::ArrowCursor : Qt::PointingHandCursor);
     btn->setProperty("path", path);
+    btn->setEnabled(!path.isEmpty());
 
     connect(btn, &QPushButton::clicked, this, [this, path]() {
-        if (!path.isEmpty())
+        if (!path.isEmpty()) {
             emit itemClicked(path);
+        }
     });
 
     m_body->addWidget(btn);
+}
+
+void SidebarSection::clearItems() {
+    while (auto *item = m_body->takeAt(0)) {
+        if (item->widget()) {
+            item->widget()->deleteLater();
+        }
+        delete item;
+    }
 }
 
 void SidebarSection::setHighlighted(const QString &path) {
     m_highlightedPath = QDir::toNativeSeparators(path);
     for (int i = 0; i < m_body->count(); ++i) {
         auto *btn = qobject_cast<QPushButton *>(m_body->itemAt(i)->widget());
-        if (!btn) continue;
+        if (!btn) {
+            continue;
+        }
         QString itemPath = QDir::toNativeSeparators(btn->property("path").toString());
         btn->setObjectName(itemPath == m_highlightedPath ? "SidebarItemActive" : "SidebarItem");
         btn->style()->unpolish(btn);

@@ -931,7 +931,8 @@
   1. Execute branch CI on GitHub and confirm 3-platform release workflow stability with links.
   2. Finish internal symbol cleanup (`journalist` naming debt) where safe.
   3. Add post-release artifact smoke checks for desktop + CLI packages.
-- Update (2026-02-14): python scripts/run_settings_matrix.py PASS (eports/settings_matrix_2026-02-14.md).
+- Update (2026-02-14): python scripts/run_settings_matrix.py PASS (
+eports/settings_matrix_2026-02-14.md).
 
 ## Entry 034 - Landing/Desktop QA follow-up and CI recovery completion
 - Date/Time: 2026-02-14
@@ -1581,7 +1582,7 @@
   - `cargo build --release`
   - `cargo test`
   - `npm run tauri:build`
-  - `npx tauri icon ../ui/src/assets/ixos-icon.png -o icons` (from `src-tauri`)
+  - `npx tauri icon ../ui/src/assets/ixos-icon.png -o icons` (from `ixos-search/src-tauri`)
   - `node scripts/verify-desktop-build-env.js`
 - Outputs saved to:
   - shared surface updates: `packages/ixos-ui/src/components/SearchSurface.tsx`, `packages/ixos-ui/src/components/AmbientIxosField.tsx`, `packages/ixos-ui/src/styles.css`, `packages/ixos-ui/src/types.ts`, `packages/ixos-ui/src/components/AppWorldSurface.tsx`

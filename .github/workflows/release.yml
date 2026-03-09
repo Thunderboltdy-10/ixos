@@ -91,12 +91,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if node -e "require('./ui/node_modules/rollup/dist/native.js')"; then
+          if node -e "require('./ixos-search/ui/node_modules/rollup/dist/native.js')"; then
             echo "Rollup native package is already available."
           else
             echo "Missing Rollup native package after npm ci; installing workspace rollup fallback."
-            npm --workspace ui install --no-save --no-audit --include=optional rollup
-            node -e "require('./ui/node_modules/rollup/dist/native.js')"
+            npm --workspace ixos-search/ui install --no-save --no-audit --include=optional rollup
+            node -e "require('./ixos-search/ui/node_modules/rollup/dist/native.js')"
           fi
 
       - name: Ensure bundled model assets
@@ -196,9 +196,9 @@ jobs:
           node -e "
             const fs = require('fs');
             const version = process.env.VERSION;
-            const tauri = JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json', 'utf8'));
+            const tauri = JSON.parse(fs.readFileSync('ixos-search/src-tauri/tauri.conf.json', 'utf8'));
             tauri.version = version;
-            fs.writeFileSync('src-tauri/tauri.conf.json', JSON.stringify(tauri, null, 2) + '\n');
+            fs.writeFileSync('ixos-search/src-tauri/tauri.conf.json', JSON.stringify(tauri, null, 2) + '\n');
             console.log('Updated tauri.conf.json to ' + version);
             const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
             pkg.version = version;
@@ -215,7 +215,7 @@ jobs:
         run: |
           node -e "
             const fs = require('fs');
-            const targets = ['.env.local', 'ui/.env.local', 'src-tauri/.env.local'];
+            const targets = ['.env.local', 'ixos-search/ui/.env.local', 'ixos-search/src-tauri/.env.local'];
             const keys = [
               'VITE_API_URL',
               'VITE_CLERK_PUBLISHABLE_KEY',
@@ -233,7 +233,7 @@ jobs:
           "
 
       - name: Build UI
-        working-directory: ui
+        working-directory: ixos-search/ui
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}

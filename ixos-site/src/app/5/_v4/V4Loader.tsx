@@ -72,6 +72,7 @@ export function V4Loader({ onComplete }: { onComplete: () => void }) {
     })
 
     addTimeout(1360, () => onComplete())
+    addTimeout(2500, () => onComplete()) // Fallback guard
 
     return () => {
       timersRef.current.forEach(clearTimeout)

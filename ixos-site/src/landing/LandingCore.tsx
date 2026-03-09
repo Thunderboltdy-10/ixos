@@ -105,28 +105,52 @@ function TrackedResultNode({
           }
         }
       },
-      { threshold: 0.2, rootMargin: "0px 0px -10% 0px" }
+      { threshold: 0.05, rootMargin: "0px 0px 0px 0px" }
     );
 
     observer.observe(ref.current);
     return () => observer.disconnect();
   }, [sectionId, setSectionInView, pulseForSection, section, index, maxRevealedIndex, revealNextSection]);
 
-  // Don't render if it's too far down the pipeline
-  if (index > maxRevealedIndex + 1) return null;
-
   // IMPORTANT: The section only EXPANDS if its index is <= maxRevealedIndex
   // If index === maxRevealedIndex + 1, it's the "waiting" section (only divider shown)
   const expanded = index <= maxRevealedIndex;
+  
+  // Track previous expanded state to trigger animation
+  const wasExpanded = useRef(expanded);
+  const [justRevealed, setJustRevealed] = useState(false);
+  
+  useEffect(() => {
+    if (expanded && !wasExpanded.current) {
+      setJustRevealed(true);
+      const t = setTimeout(() => setJustRevealed(false), 600);
+      return () => clearTimeout(t);
+    }
+    wasExpanded.current = expanded;
+  }, [expanded]);
+
+  // Don't render if it's too far down the pipeline
+  if (index > maxRevealedIndex + 1) return null;
+
   return (
     <div
       ref={ref}
       data-section-id={sectionId}
+      className="relative transition-all duration-300"
       style={{
         opacity: isVisible ? 1 : (expanded ? 1 : 0.6),
-        transition: 'opacity 0.8s ease-in-out',
+        borderLeft: justRevealed ? '2px solid rgba(246,185,76,0.8)' : '2px solid transparent',
+        transition: 'opacity 0.8s ease-in-out, border-color 0.2s ease-out',
       }}
     >
+      {justRevealed && (
+        <motion.div
+          initial={{ top: 0, opacity: 0.6 }}
+          animate={{ top: "100%", opacity: 0 }}
+          transition={{ duration: 0.6, ease: "linear" }}
+          className="absolute left-0 right-0 h-1 bg-amber-400 z-50 pointer-events-none"
+        />
+      )}
       <V4ResultNode
         rank={rank}
         file={file}
@@ -160,17 +184,19 @@ function ConnectorOverlay({ Connector }: { Connector: ConnectorComponent }) {
 
 function LandingPageInner({ Connector }: { Connector: ConnectorComponent }) {
   const [loaded, setLoaded] = useState(false);
-  const { maxRevealedIndex } = useLandingContext();
+  const { maxRevealedIndex, revealNextSection } = useLandingContext();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (maxRevealedIndex === 0) {
+        revealNextSection();
+      }
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [maxRevealedIndex, revealNextSection]);
 
   return (
-    <main
-      data-theme="desktop"
-      className="min-h-screen text-white font-mono"
-      style={{ backgroundColor: "#0C0E10", overflowX: "clip" }}
-    >
-      {/* Background — preserved identically from /5 */}
-      <V4AmbientField />
-
+    <>
       {/* Loader */}
       <V4Loader onComplete={() => setLoaded(true)} />
 
@@ -185,8 +211,6 @@ function LandingPageInner({ Connector }: { Connector: ConnectorComponent }) {
             transition={{ duration: 0.5, ease: "easeOut" }}
             style={{ position: "relative", zIndex: 1 }}
           >
-            <V4Nav />
-
             <V4SpatialStage>
               {/* Section 0: Hero (always index 0) */}
               <TrackedResultNode
@@ -323,7 +347,7 @@ function LandingPageInner({ Connector }: { Connector: ConnectorComponent }) {
           </motion.div>
         )}
       </AnimatePresence>
-    </main>
+    </>
   );
 }
 

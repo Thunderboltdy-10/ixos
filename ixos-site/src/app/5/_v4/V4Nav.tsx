@@ -2,20 +2,23 @@
 
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import Link from 'next/link'
+import { useAuth, UserButton } from '@clerk/nextjs'
 import { useReducedOrLowEnd } from './hooks/useReducedOrLowEnd'
 
 export function V4Nav() {
   const [scrolled, setScrolled] = useState(false)
   const lowEnd = useReducedOrLowEnd()
   const pathname = usePathname() || ''
+  const { isSignedIn, isLoaded } = useAuth()
 
   // Detect variant prefix (e.g. /1, /4, /5)
   const variantMatch = pathname.match(/^\/([1-5])(?:\/|$)/)
   const variantPrefix = variantMatch ? `/${variantMatch[1]}` : '/5'
 
   const NAV_LINKS = [
-    { label: 'Flow', href: '#progressive' },
-    { label: 'Proof', href: '#benchmarks' },
+    { label: 'Flow', href: `${variantPrefix}#progressive` },
+    { label: 'Proof', href: `${variantPrefix}#benchmarks` },
     { label: 'Pricing', href: `${variantPrefix}/pricing` },
     { label: 'Docs', href: `${variantPrefix}/docs` },
   ] as const
@@ -46,8 +49,8 @@ export function V4Nav() {
         transition: 'background 220ms ease, border-color 220ms ease',
       }}
     >
-      <a
-        href="#hero"
+      <Link
+        href={`${variantPrefix}`}
         style={{
           textDecoration: 'none',
           display: 'inline-flex',
@@ -57,21 +60,18 @@ export function V4Nav() {
         }}
       >
         <span style={{ fontFamily: 'var(--font-ixo-mono)', fontSize: 16, fontWeight: 700, color: '#2DD4BF', letterSpacing: '-0.03em' }}>
-          IX
-        </span>
-        <span style={{ fontFamily: 'var(--font-ixo-mono)', fontSize: 16, fontWeight: 700, color: 'rgba(243,245,247,0.56)', letterSpacing: '-0.03em' }}>
-          OS
+          IXOS
         </span>
         <span style={{ fontFamily: 'var(--font-ixo-mono)', fontSize: 10, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.28)', textTransform: 'uppercase' }}>
           protocol
         </span>
-      </a>
+      </Link>
 
       <div style={{ flex: 1 }} />
 
       <div className="hidden md:flex" style={{ alignItems: 'center', gap: 26 }}>
         {NAV_LINKS.map((link) => (
-          <a
+          <Link
             key={link.label}
             href={link.href}
             className="font-mono"
@@ -84,7 +84,7 @@ export function V4Nav() {
             }}
           >
             {link.label}
-          </a>
+          </Link>
         ))}
       </div>
 
@@ -92,40 +92,62 @@ export function V4Nav() {
 
       {/* Auth & Primary Actions */}
       <div className="flex items-center gap-4">
-        <a
-          href={`${variantPrefix}/signin`}
-          className="font-mono hidden md:inline-flex"
-          style={{
-            textDecoration: 'none',
-            color: 'rgba(255,255,255,0.46)',
-            fontSize: 10,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            padding: '8px 14px',
-          }}
-        >
-          Sign In
-        </a>
+        {isLoaded && isSignedIn ? (
+          <>
+            <Link
+              href={`${variantPrefix}/account`}
+              className="font-mono hidden md:inline-flex"
+              style={{
+                textDecoration: 'none',
+                color: 'rgba(255,255,255,0.46)',
+                fontSize: 10,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                padding: '8px 14px',
+              }}
+            >
+              Account
+            </Link>
+            <UserButton afterSignOutUrl={`${variantPrefix}`} />
+          </>
+        ) : isLoaded && !isSignedIn ? (
+          <>
+            <Link
+              href={`${variantPrefix}/signin`}
+              className="font-mono hidden md:inline-flex"
+              style={{
+                textDecoration: 'none',
+                color: 'rgba(255,255,255,0.46)',
+                fontSize: 10,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                padding: '8px 14px',
+              }}
+            >
+              Sign In
+            </Link>
 
-        <a
-          href={`${variantPrefix}/signup`}
-          className="font-mono hidden md:inline-flex"
-          style={{
-            textDecoration: 'none',
-            color: 'rgba(255,255,255,0.7)',
-            fontSize: 10,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            padding: '8px 18px',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 6,
-            background: 'rgba(255,255,255,0.03)',
-          }}
-        >
-          Sign Up
-        </a>
+            <Link
+              href={`${variantPrefix}/signup`}
+              className="font-mono hidden md:inline-flex"
+              style={{
+                textDecoration: 'none',
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: 10,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                padding: '8px 18px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 6,
+                background: 'rgba(255,255,255,0.03)',
+              }}
+            >
+              Sign Up
+            </Link>
+          </>
+        ) : null}
 
-        <a
+        <Link
           href={`${variantPrefix}/download`}
           className="font-mono"
           style={{
@@ -143,7 +165,7 @@ export function V4Nav() {
           }}
         >
           Download
-        </a>
+        </Link>
       </div>
     </nav>
   )

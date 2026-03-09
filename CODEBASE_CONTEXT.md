@@ -105,7 +105,11 @@ Ixos/
 ├── Cargo.toml / Cargo.lock
 ├── package.json           # For ixos-site (Next.js)
 ├── src/                   # Core Rust library
-├── src-tauri/             # Tauri desktop app
+├── src-tauri/             # Tauri desktop app (Rust backend & bundling)
+├── ui/                    # Desktop app frontend (React + Vite)
+├── packages/              # Shared logic and UI components
+│   ├── ixos-ui/           # Core UI component library
+│   └── ui/                # Shared utilities and hooks
 ├── ixos-site/             # Next.js landing page
 ├── ixos-pro/              # Pro module
 ├── bench/                 # Benchmark suite
@@ -176,3 +180,18 @@ Repo-scale E2E (large repo, JIT): Flash avg ~16.8s, Auto avg ~15.7s
 | "What's in Pro vs Free?" | `docs/capability-matrix.md` + `docs/product/TIERS.md` |
 | "What are the perf bottlenecks?" | `reports/PERF_BOTTLENECKS.md` |
 | "How do I run benchmarks?" | `docs/engineering/BENCHMARKING.md` |
+
+---
+
+## Desktop App Build Chain
+
+The Ixos Desktop App is built using **Tauri**, which bridges the Rust backend with a web-based frontend.
+
+- **Frontend (`ui/`)**: A React + Vite application that serves as the user interface. It consumes shared components from `packages/` and communicates with the Rust backend via the Tauri IPC bridge.
+- **Backend (`src-tauri/`)**: A Rust crate that manages the native OS window, system tray, and provides access to the core Ixos library (`src/`).
+- **Build Process**:
+  1. The frontend is compiled into static assets (`npm run build` within `ui/` → `ui/dist`).
+  2. The Tauri CLI (`tauri build`) compiles the Rust backend and embeds the static assets into a native binary.
+  3. The result is a platform-specific installer (e.g., `.exe`, `.msi` on Windows) located in `src-tauri/target/release/bundle`.
+
+To add a new desktop app to the project, you would typically create a new folder for the frontend, add a corresponding `src-tauri` configuration, and register the new workspace in the root `package.json`.

@@ -85,6 +85,7 @@ export function AppFrame({ glowOpacity, scanLineOpacity, children }: AppFramePro
           <DemoSurface
             initialQuery="authentication token refresh"
             autoRun={true}
+            displayMode="search-only"
             style={{ height: '100%', overflow: 'hidden' }}
           />
         )}

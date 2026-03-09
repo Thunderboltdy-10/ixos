@@ -176,12 +176,6 @@ function ScrollDrivenProgressive() {
         <div
           className="shrink-0 flex flex-col items-center pt-10 pb-6"
         >
-          <p
-            className="font-mono uppercase mb-2"
-            style={{ fontSize: 9, letterSpacing: '0.3em', color: 'rgba(45,212,191,0.6)' }}
-          >
-            Pipeline
-          </p>
           <h2
             style={{
               fontFamily: 'var(--font-ixo-heading)',

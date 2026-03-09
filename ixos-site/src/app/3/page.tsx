@@ -3,8 +3,6 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useInView } from "framer-motion";
 import { DemoSurface } from "@/landing/DemoSurface";
-import { GridBackground } from "./GridBackground";
-import { ScanBeam } from "./ScanBeam";
 import { useDecodeEffect } from "./useDecodeEffect";
 import { CornerBrackets } from "./CornerBrackets";
 
@@ -79,7 +77,7 @@ function SignalLocked({ delay = 0 }: { delay?: number }) {
    ────────────────────────────────────────────── */
 function ScanSection({
   children,
-  threshold = 0.1,
+  threshold = 0.05,
   clipFrom = "right",
 }: {
   children: React.ReactNode;
@@ -97,7 +95,7 @@ function ScanSection({
           observer.disconnect();
         }
       },
-      { threshold }
+      { threshold, rootMargin: "0px 0px 0px 0px" }
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
@@ -565,61 +563,28 @@ function FooterCTA() {
 /* ══════════════════════════════════════════════
    PAGE
    ══════════════════════════════════════════════ */
+import { useScan } from "./ScanContext";
+
 export default function Page3PrecisionGrid() {
   const scoreRef = useRef<HTMLDivElement>(null);
   const scoreInView = useInView(scoreRef, { once: true, margin: "-100px" });
-  const [scanY, setScanY] = useState(50);
-  const handleScanProgress = useCallback((y: number) => {
-    setScanY(y);
-  }, []);
+  const { scanY } = useScan();
 
   return (
     <>
-      {/* Global keyframes for radar ping and grid pulse */}
-      <style>{`
-        @keyframes radar-ping {
-          0% {
-            transform: scale(0);
-            opacity: 0.25;
-          }
-          100% {
-            transform: scale(1);
-            opacity: 0;
-          }
-        }
-        @keyframes grid-pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 1.5; }
-        }
-      `}</style>
+      <FloatingNav />
 
-      <main
-        className="relative min-h-screen text-[#f3f5f7] font-mono selection:bg-amber-400/30"
-        style={{ backgroundColor: '#0A0D0F', overflowX: 'clip' }}
+      {/* ═══════════════════════════════════
+          1. HERO — Scan reveal
+          ═══════════════════════════════════ */}
+      <section
+        id="hero"
+        className="relative min-h-screen flex flex-col items-center justify-center pt-28 pb-16 px-6 z-10"
+        style={{
+          clipPath: `polygon(0 0, 100% 0, 100% ${Math.max(0, scanY)}vh, 0 ${Math.max(0, scanY)}vh)`,
+          transition: 'clip-path 0.1s linear'
+        }}
       >
-        <HUDNav />
-        {/* ── Background grid ── */}
-        <GridBackground scanY={scanY} />
-
-        {/* ── Scan Beam (sweeps once on load) ── */}
-        <ScanBeam onProgress={handleScanProgress} />
-
-        {/* ── Radar Ping (periodic amber circle) ── */}
-        <RadarPing scanY={scanY} />
-
-        <FloatingNav />
-
-        {/* ═══════════════════════════════════
-            1. HERO — Scan reveal
-            ═══════════════════════════════════ */}
-        <section
-          id="hero"
-          className="relative min-h-screen flex flex-col items-center justify-center pt-28 pb-16 px-6 z-10"
-          style={{
-            clipPath: `polygon(0 0, 100% 0, 100% ${Math.max(0, scanY)}vh, 0 ${Math.max(0, scanY)}vh)`,
-            transition: 'clip-path 0.1s linear'
-          }}
-        >
           {/* Subtle amber glow center */}
           <div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
@@ -1399,7 +1364,6 @@ export default function Page3PrecisionGrid() {
             14. FOOTER CTA
             ═══════════════════════════════════ */}
         <FooterCTA />
-      </main>
     </>
   );
 }

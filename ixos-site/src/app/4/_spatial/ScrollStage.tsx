@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { VoidPhase } from './VoidPhase'
 import { InsidePhase } from './InsidePhase'
-import { V4Nav } from '../../5/_v4/V4Nav'
+import { useV4Layout } from '../V4LayoutState'
 
 type Phase = 'void' | 'zoom' | 'inside'
 
@@ -27,6 +27,7 @@ export function ScrollStage() {
   const stars = useMemo(() => STARS, [])
   const rafRef = useRef<number>(0)
   const pendingScrollRef = useRef<number | null>(null)
+  const { setSidebarVisible } = useV4Layout()
 
   // Time-driven enter animation
   useEffect(() => {
@@ -45,13 +46,14 @@ export function ScrollStage() {
       } else {
         setPhase('inside')
         setEnterProgress(1)
+        setSidebarVisible(true) // Show sidebar when phase inside is reached
         return // done
       }
       rafRef.current = requestAnimationFrame(tick)
     }
     rafRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [])
+  }, [setSidebarVisible])
 
   // Scroll-driven progress for InsidePhase
   useEffect(() => {
@@ -82,7 +84,6 @@ export function ScrollStage() {
 
   return (
     <div className="relative bg-[#04050A]" style={{ minHeight: '400vh' }}>
-      <V4Nav />
       {/* ── Background: Deep void nebula ── */}
       <div
         className="fixed inset-0 z-0 pointer-events-none"

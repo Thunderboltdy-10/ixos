@@ -1801,3 +1801,24 @@ eports/settings_matrix_2026-02-14.md).
     - Output summary: process stayed alive for 4 seconds (`RUNNING:<pid>`) before intentional stop.
 - Artifacts:
   - `reports/ixplorer_major_pass_2026-03-09.md`
+
+## 2026-03-09 Ixplorer polish + primary-search pass
+- Scope:
+  - Promoted the top toolbar search to the primary Ixos search entry point, made the right rail collapsible/default-closed, expanded result/detail presentation, and tightened explorer/file-shell polish.
+- Code changes:
+  - Reworked `ixplorer/src/widgets/ExplorerToolbar.*` to add visible Ixos search mode control, a real search CTA, and a rail toggle.
+  - Reworked `ixplorer/src/widgets/IxosRail.*` into a richer search workspace with a closable header, clearer scope/status copy, custom result cards, stronger match detail, and better action-state handling.
+  - Updated `ixplorer/src/app/MainWindow.*` to manage default-closed rail behavior, auto-open the rail for folder search, and expose search shortcuts (`Ctrl+K`, `Ctrl+F`).
+  - Extended `ixplorer/src/widgets/ExplorerPane.*` with new text-file creation, paste-from-empty-space, copy-name/path actions, and `Backspace` up-navigation.
+  - Refined `ixplorer/src/widgets/StatusStrip.cpp`, `ixplorer/src/widgets/TabWorkspace.cpp`, `ixplorer/src/widgets/SidebarSection.cpp`, and `ixplorer/resources/styles/ixplorer_dark.qss` for clearer text, state, and density.
+- Command evidence:
+  - `C:\Qt\Tools\CMake_64\bin\cmake.exe --build C:\Users\pablo\Downloads\Ixos\ixplorer\build`
+    - Output summary: build completed successfully through `Linking CXX executable Ixplorer.exe`.
+  - `cargo build --release`
+    - Output: `Finished 'release' profile [optimized] target(s) in 0.52s`
+  - `.\target\release\ixos.exe search "report" --dir dataset --json --evidence --show-scores --progressive --limit 3 --context 2`
+    - Output summary: lexical stream, semantic ranking stream, evidence-enriched semantic payloads, then `{"type":"complete"}`.
+  - Ixplorer startup smoke:
+    - Output summary: `RUNNING <pid>` after 5 seconds, then intentionally stopped.
+- Artifacts:
+  - `reports/ixplorer_major_pass_2026-03-09.md`

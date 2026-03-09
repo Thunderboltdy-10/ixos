@@ -1057,3 +1057,18 @@
   - `ixplorer/src/widgets/ExplorerPane.cpp`
   - `ixplorer/src/widgets/TabWorkspace.cpp`
   - `reports/ixplorer_major_pass_2026-03-09.md`
+
+## 2026-03-09 Ixplorer search shell behavior
+- Decision: make the top toolbar search the default Ixos entry point and keep the right rail closed by default, opening it only when the user explicitly toggles it or runs a folder search.
+- Options considered:
+  - Keep the rail always visible and treat top search as a secondary shortcut.
+  - Move search into the center pane or bottom tray.
+  - Use toolbar search as the primary Ixos flow and make the rail collapsible.
+- Why chosen:
+  - It matches the requested product shape better: browse-first by default, search when needed, and no permanent right-side crowding.
+  - It preserves the right rail as a useful inspect surface without forcing the user to give up workspace width when they are just browsing files.
+  - It makes search feel native to Ixplorer instead of like a bolted-on side widget.
+- Evidence:
+  - `ixplorer/src/widgets/ExplorerToolbar.cpp`
+  - `ixplorer/src/widgets/IxosRail.cpp`
+  - `ixplorer/src/app/MainWindow.cpp`

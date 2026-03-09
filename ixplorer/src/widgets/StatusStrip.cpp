@@ -1,5 +1,6 @@
 #include "widgets/StatusStrip.h"
 
+#include <QDir>
 #include <QHBoxLayout>
 #include <QLocale>
 
@@ -57,15 +58,18 @@ void StatusStrip::setSelectionInfo(const QFileInfo &info, int selectedCount, qui
 }
 
 void StatusStrip::clearSelectionInfo() {
-    m_selectionLabel->setText("Nothing selected");
+    m_selectionLabel->setText("No selection");
 }
 
 void StatusStrip::setPath(const QString &path) {
-    m_pathLabel->setText(path);
+    const QString nativePath = QDir::toNativeSeparators(path);
+    m_pathLabel->setText(nativePath);
+    m_pathLabel->setToolTip(nativePath);
 }
 
 void StatusStrip::setStatusMessage(const QString &message) {
     m_statusLabel->setText(message);
+    m_statusLabel->setToolTip(message);
 }
 
 } // namespace Ixplorer

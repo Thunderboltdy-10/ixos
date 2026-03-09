@@ -17,10 +17,11 @@ Date: 2026-03-09
 ## Main Changes
 | Area | Before | After |
 |---|---|---|
+| Top toolbar search | Placeholder field / weak coupling | Primary Ixos folder search entry with explicit mode selector, search CTA, and shortcuts |
+| Right rail | Always-open placeholder widgets | Default-closed, toggleable Ixos panel with real search state, richer result cards, and closer-to-desktop match detail |
 | Center workspace | Basic browse shell with global toolbar history | Per-tab navigation history, folder filtering, view-mode toggle, better selection/status sync |
-| File operations | Rename/new folder/delete only | Copy, cut, paste, duplicate, open-with, reveal, properties, safer clipboard-driven flows |
-| Search rail | Placeholder widgets only | Real query input, mode selector, loading/error/empty/result states, result detail panel, actions |
-| Search -> workspace flow | None | Clicking a search result reveals it in the active workspace tab; actions can open externally or in a new tab |
+| File operations | Rename/new folder/delete only | Copy, cut, paste, duplicate, open-with, reveal, properties, copy-name/path, and new text document |
+| Search -> workspace flow | None | Toolbar search opens the rail; clicking a result can locate it in-place, open it, or open a new tab |
 | Status/toolbar coherence | Loose sync | Toolbar nav reflects current tab state; status bar shows item count, selection, and live status text |
 
 ## Validation
@@ -36,9 +37,10 @@ Date: 2026-03-09
   - App launched and remained alive for 4 seconds before intentional stop.
 
 ## Known Gaps
-- Search results still use a standard `QListWidget` row layout rather than custom delegates/widgets, so presentation is functional but not final-form polished.
 - GUI interaction coverage is still manual/smoke-level; no automated Qt test coverage was added in this pass.
 - Some edge behaviors still need direct manual QA:
   - drag/drop move semantics across folders/drives
   - cut/paste into same directory
   - open-with behavior on non-Windows platforms
+  - deep long-path and permissions edge cases
+- Search packaging still assumes a locally resolvable `ixos` binary (`target/release`, `target/debug`, app-adjacent, or PATH).

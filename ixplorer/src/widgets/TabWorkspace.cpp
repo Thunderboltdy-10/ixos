@@ -8,6 +8,16 @@
 
 namespace Ixplorer {
 
+namespace {
+
+QString tabLabelForPath(const QString &path) {
+    const QDir dir(path);
+    const QString name = dir.dirName();
+    return name.isEmpty() ? QDir::toNativeSeparators(path) : name;
+}
+
+} // namespace
+
 TabWorkspace::TabWorkspace(QWidget *parent)
     : QWidget(parent)
     , m_tabBar(new QTabBar(this))
@@ -57,8 +67,8 @@ int TabWorkspace::addTab(const QString &path) {
     connect(pane, &ExplorerPane::pathChanged, this, [this, pane](const QString &p) {
         const int idx = m_stack->indexOf(pane);
         if (idx >= 0) {
-            const QDir dir(p);
-            m_tabBar->setTabText(idx, dir.dirName().isEmpty() ? p : dir.dirName());
+            m_tabBar->setTabText(idx, tabLabelForPath(p));
+            m_tabBar->setTabToolTip(idx, QDir::toNativeSeparators(p));
         }
         if (m_stack->currentWidget() == pane) {
             emit pathChanged(p);
@@ -90,8 +100,8 @@ int TabWorkspace::addTab(const QString &path) {
     m_stack->addWidget(pane);
 
     const int insertIndex = m_tabBar->count();
-    const QDir dir(initialPath);
-    m_tabBar->addTab(dir.dirName().isEmpty() ? initialPath : dir.dirName());
+    m_tabBar->addTab(tabLabelForPath(initialPath));
+    m_tabBar->setTabToolTip(insertIndex, QDir::toNativeSeparators(initialPath));
     m_tabBar->setCurrentIndex(insertIndex);
 
     if (info.exists() && info.isFile()) {

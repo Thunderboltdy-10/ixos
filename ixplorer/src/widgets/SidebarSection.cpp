@@ -31,8 +31,9 @@ void SidebarSection::addItem(const QString &label, const QString &path, const QS
     auto *btn = new QPushButton(this);
     btn->setText(label);
     btn->setObjectName("SidebarItem");
-    btn->setCursor(Qt::PointingHandCursor);
+    btn->setCursor(path.isEmpty() ? Qt::ArrowCursor : Qt::PointingHandCursor);
     btn->setProperty("path", path);
+    btn->setEnabled(!path.isEmpty());
 
     connect(btn, &QPushButton::clicked, this, [this, path]() {
         if (!path.isEmpty()) {

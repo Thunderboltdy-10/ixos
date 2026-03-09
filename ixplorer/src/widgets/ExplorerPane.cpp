@@ -157,6 +157,9 @@ ExplorerPane::ExplorerPane(const QString &rootPath, QWidget *parent)
         onSelectionChanged();
     });
 
+    auto *goUpKey = new QShortcut(QKeySequence(Qt::Key_Backspace), m_tree);
+    connect(goUpKey, &QShortcut::activated, this, &ExplorerPane::goUp);
+
     setPath(rootPath);
     configureViewMode();
 }
@@ -349,6 +352,21 @@ void ExplorerPane::createNewFolder() {
     m_tree->edit(proxyIndex);
 }
 
+void ExplorerPane::createNewTextFile() {
+    const QString uniquePath = FileOperations::uniquePathForName(m_currentPath, "New Text Document.txt");
+    QFile file(uniquePath);
+    if (!file.open(QIODevice::WriteOnly)) {
+        emit statusMessage("Unable to create a new text file here.");
+        return;
+    }
+    file.close();
+
+    refresh();
+    selectPath(uniquePath);
+    renameSelected();
+    emit statusMessage("Created a new text file.");
+}
+
 void ExplorerPane::copySelected() {
     applyClipboard(ClipboardOperation::Copy);
 }
@@ -439,6 +457,26 @@ void ExplorerPane::showProperties() {
     QMessageBox::information(this, "Properties", propertiesText(info, selected.size(), selectedBytes));
 }
 
+void ExplorerPane::copyNameSelected() {
+    const QFileInfo info = currentInfo();
+    if (!info.exists()) {
+        return;
+    }
+
+    QApplication::clipboard()->setText(info.fileName());
+    emit statusMessage(QString("Copied \"%1\".").arg(info.fileName()));
+}
+
+void ExplorerPane::copyPathSelected() {
+    const QFileInfo info = currentInfo();
+    if (!info.exists()) {
+        return;
+    }
+
+    QApplication::clipboard()->setText(QDir::toNativeSeparators(info.absoluteFilePath()));
+    emit statusMessage("Copied path.");
+}
+
 void ExplorerPane::setViewMode(ViewMode mode) {
     if (m_viewMode == mode) {
         return;
@@ -485,6 +523,17 @@ void ExplorerPane::onModelLoaded() {
 
 void ExplorerPane::showContextMenu(const QPoint &pos) {
     QMenu menu(m_tree);
+    QAction *pasteAction = menu.addAction("Paste");
+    pasteAction->setEnabled(!pendingClipboard().paths.isEmpty());
+    connect(pasteAction, &QAction::triggered, this, &ExplorerPane::pasteIntoCurrentDirectory);
+
+    QMenu *newMenu = menu.addMenu("New");
+    QAction *newFolderAction = newMenu->addAction("Folder");
+    connect(newFolderAction, &QAction::triggered, this, &ExplorerPane::createNewFolder);
+    QAction *newTextFileAction = newMenu->addAction("Text Document");
+    connect(newTextFileAction, &QAction::triggered, this, &ExplorerPane::createNewTextFile);
+
+    menu.addSeparator();
 
     const QFileInfo info = currentInfo();
     if (info.exists()) {
@@ -509,19 +558,16 @@ void ExplorerPane::showContextMenu(const QPoint &pos) {
         QAction *cutAction = menu.addAction("Cut");
         connect(cutAction, &QAction::triggered, this, &ExplorerPane::cutSelected);
 
-        QAction *pasteAction = menu.addAction("Paste");
-        pasteAction->setEnabled(!pendingClipboard().paths.isEmpty());
-        connect(pasteAction, &QAction::triggered, this, &ExplorerPane::pasteIntoCurrentDirectory);
-
         QAction *duplicateAction = menu.addAction("Duplicate");
         connect(duplicateAction, &QAction::triggered, this, &ExplorerPane::duplicateSelected);
 
         menu.addSeparator();
 
+        QAction *copyNameAction = menu.addAction("Copy Name");
+        connect(copyNameAction, &QAction::triggered, this, &ExplorerPane::copyNameSelected);
+
         QAction *copyPathAction = menu.addAction("Copy Path");
-        connect(copyPathAction, &QAction::triggered, this, [info]() {
-            QApplication::clipboard()->setText(QDir::toNativeSeparators(info.absoluteFilePath()));
-        });
+        connect(copyPathAction, &QAction::triggered, this, &ExplorerPane::copyPathSelected);
 
         QAction *revealAction = menu.addAction("Reveal in Explorer");
         connect(revealAction, &QAction::triggered, this, &ExplorerPane::revealSelected);
@@ -539,9 +585,6 @@ void ExplorerPane::showContextMenu(const QPoint &pos) {
 
         menu.addSeparator();
     }
-
-    QAction *newFolderAction = menu.addAction("New Folder");
-    connect(newFolderAction, &QAction::triggered, this, &ExplorerPane::createNewFolder);
 
     QAction *refreshAction = menu.addAction("Refresh");
     connect(refreshAction, &QAction::triggered, this, &ExplorerPane::refresh);

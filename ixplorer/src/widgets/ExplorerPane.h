@@ -44,11 +44,14 @@ public:
     void renameSelected();
     void deleteSelected();
     void createNewFolder();
+    void createNewTextFile();
     void copySelected();
     void cutSelected();
     void pasteIntoCurrentDirectory();
     void duplicateSelected();
     void showProperties();
+    void copyNameSelected();
+    void copyPathSelected();
     void setViewMode(ViewMode mode);
     ViewMode viewMode() const { return m_viewMode; }
 

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>styles/ixplorer_dark.qss</file>
+    </qresource>
+</RCC>

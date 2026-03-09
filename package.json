@@ -13,12 +13,12 @@
     "tauri:dev:watch": "tauri dev",
     "tauri:build": "node scripts/verify-desktop-build-env.js && tauri build",
     "tauri:build:prod": "node scripts/verify-desktop-build-env.js && tauri build",
-    "dev": "cd ui && npm run dev",
-    "build": "cd ui && npm run build",
+    "dev": "cd ixos-search/ui && npm run dev",
+    "build": "cd ixos-search/ui && npm run build",
     "site:dev": "cd ixos-site && npm run dev"
   },
   "workspaces": [
-    "ui",
+    "ixos-search/ui",
     "packages/ixos-ui",
     "packages/ui",
     "ixos-site"

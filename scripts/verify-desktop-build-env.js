@@ -42,10 +42,10 @@ function hydrateFromEnvFiles() {
   const candidates = [
     path.join(root, '.env'),
     path.join(root, '.env.local'),
-    path.join(root, 'src-tauri', '.env'),
-    path.join(root, 'src-tauri', '.env.local'),
-    path.join(root, 'ui', '.env'),
-    path.join(root, 'ui', '.env.local'),
+    path.join(root, 'ixos-search', 'src-tauri', '.env'),
+    path.join(root, 'ixos-search', 'src-tauri', '.env.local'),
+    path.join(root, 'ixos-search', 'ui', '.env'),
+    path.join(root, 'ixos-search', 'ui', '.env.local'),
   ];
 
   const merged = {};

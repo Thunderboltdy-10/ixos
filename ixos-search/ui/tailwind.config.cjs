@@ -5,7 +5,7 @@ module.exports = {
     content: [
         "./index.html",
         "./src/**/*.{ts,tsx,js,jsx}",
-        "../packages/ui/src/**/*.{ts,tsx,js,jsx}",
+        "../../packages/ui/src/**/*.{ts,tsx,js,jsx}",
     ],
     safelist: [
         'border-stroke-hairline',

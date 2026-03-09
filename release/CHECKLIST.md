@@ -2,7 +2,7 @@
 
 ## Preflight
 - [ ] Working tree clean or changes understood.
-- [ ] Version bump applied (Cargo.toml, package.json, src-tauri/tauri.conf.json as needed).
+- [ ] Version bump applied (Cargo.toml, package.json, ixos-search/src-tauri/tauri.conf.json as needed).
 
 ## Required gates (must pass)
 - [ ] Registry validation

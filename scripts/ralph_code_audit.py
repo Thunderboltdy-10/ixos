@@ -36,7 +36,7 @@ def run(cmd: list[str], cwd: Path | None = None) -> dict:
 
 def count_todos(root: Path) -> int:
     scan_targets: list[str] = []
-    for candidate in ["src", "src-tauri", "ui/src", "landing", "ixos-site", "tests"]:
+    for candidate in ["src", "ixos-search/src-tauri", "ixos-search/ui/src", "landing", "ixos-site", "tests"]:
         if (root / candidate).exists():
             scan_targets.append(candidate)
     if not scan_targets:

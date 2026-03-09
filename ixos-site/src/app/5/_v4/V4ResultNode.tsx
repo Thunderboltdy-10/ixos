@@ -187,7 +187,7 @@ export function V4ResultNode({
   const nodeRef = useRef<HTMLDivElement>(null)
   const rankNum = Number(rank)
   const isInitial = rankNum <= 3
-  const inViewRaw = useInView(nodeRef, { once: true, margin: isInitial ? '0px' : '-10% 0px -15% 0px' })
+  const inViewRaw = useInView(nodeRef, { once: true, margin: isInitial ? '0px' : '-2% 0px -2% 0px' })
   const inView = isInitial || inViewRaw
   const lowEnd = useReducedOrLowEnd()
   const color = toneColor(tone)

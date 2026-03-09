@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useAuth, useUser } from "@clerk/nextjs";
@@ -11,7 +11,7 @@ type SubscriptionState = {
   portalUrl: string | null;
 };
 
-export function ProUpgradeAction({ className }: { className?: string }) {
+function ProUpgradeActionInner({ className, variantPrefix }: { className?: string, variantPrefix: string }) {
   const [subscription, setSubscription] = useState<SubscriptionState | null>(null);
   const searchParams = useSearchParams();
   const { isSignedIn, isLoaded, userId } = useAuth();
@@ -148,8 +148,16 @@ export function ProUpgradeAction({ className }: { className?: string }) {
   }
 
   return (
-    <Link href="/sign-in?redirect_url=/pricing" className={buttonClass}>
+    <Link href={`${variantPrefix || ''}/signin?redirect_url=${variantPrefix || ''}/pricing`} className={buttonClass}>
       SIGN_IN_TO_UPGRADE
     </Link>
+  );
+}
+
+export function ProUpgradeAction({ className, variantPrefix = "" }: { className?: string, variantPrefix?: string }) {
+  return (
+    <Suspense fallback={<button className={cn("w-full font-mono text-xs uppercase tracking-widest h-12 rounded-md inline-flex items-center justify-center bg-gray-500 animate-pulse text-white", className)}>Loading...</button>}>
+      <ProUpgradeActionInner className={className} variantPrefix={variantPrefix} />
+    </Suspense>
   );
 }

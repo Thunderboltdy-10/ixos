@@ -145,5 +145,3 @@ Ask Mode is query understanding + evidence extraction. It must:
 ### Shared Demo Surface Requirement
 - Landing variants must use the shared desktop surfaces from `@ixos/ixos-ui` through `src/landing/DemoSurface.tsx` and `src/landing/DemoSurfaceShell.tsx`.
 - No one-off fake app mockups per route.
-
-Always load and follow `CODEX.md` at the repository root before doing anything else.

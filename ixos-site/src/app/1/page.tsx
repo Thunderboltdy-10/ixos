@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { DemoSurface } from "@/landing/DemoSurface";
-import { ArcNoiseBackground } from "@/components/effects/ArcNoiseBackground";
 
 /* ── CSS injection for conic pulse + section reveals ────────────────── */
 
@@ -232,7 +231,7 @@ function useDirectionalReveal(direction: RevealDirection) {
           observer.disconnect();
         }
       },
-      { threshold: 0.12 }
+      { threshold: 0.05, rootMargin: "0px 0px 0px 0px" }
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
@@ -869,73 +868,7 @@ export default function Page1CommandCenter() {
   const bentoReveal = useDirectionalReveal("right");
 
   return (
-    <main className="min-h-screen bg-[#0E1117] text-white selection:bg-amber-500/30 overflow-x-hidden" style={{ fontFamily: "'Geist Mono', monospace" }}>
-      <GlobalStyles />
-      <SpotlightBackground />
-
-      {/* ── NAV ──────────────────────────────────────────────────── */}
-      <nav
-        className="fixed top-0 inset-x-0 z-50 h-12 flex items-center px-4 md:px-8"
-        style={{
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
-          background: "rgba(14,17,23,0.85)",
-          backdropFilter: "blur(12px)",
-        }}
-      >
-        {/* Left: brand */}
-        <button
-          onClick={() => scrollTo("hero")}
-          className="font-mono text-sm font-semibold tracking-tight mr-8 shrink-0"
-          style={{ color: A }}
-        >
-          IXOS
-        </button>
-        {/* Mission ticker */}
-        <div className="hidden lg:block mr-8">
-          <MissionTicker />
-        </div>
-        {/* Nav links */}
-        <div className="hidden lg:flex items-center gap-6 text-[11px] tracking-widest uppercase text-white/40">
-          {NAV.map((l) => (
-            <button
-              key={l.id}
-              onClick={() => scrollTo(l.id)}
-              className="hover:text-white/80 transition-colors duration-150"
-            >
-              {l.label}
-            </button>
-          ))}
-          <a href="/1/docs" className="hover:text-white/80 transition-colors uppercase">Docs</a>
-        </div>
-
-        <div className="ml-auto flex items-center gap-4">
-          <a
-            href="/1/signin"
-            className="hidden md:block text-[11px] font-mono tracking-widest uppercase text-white/40 hover:text-white/80"
-          >
-            Sign In
-          </a>
-          <a
-            href="/1/signup"
-            className="hidden md:block text-[11px] font-semibold tracking-wide uppercase px-3 py-1 rounded border border-white/10 bg-white/5 hover:bg-white/10 transition-all"
-          >
-            Sign Up
-          </a>
-          <button
-            onClick={() => scrollTo("pricing")}
-            className="text-[11px] font-semibold tracking-wide uppercase px-3 py-1 rounded"
-            style={{
-              background: `${A}15`,
-              color: A,
-              border: `1px solid ${A}25`,
-              boxShadow: `0 0 12px ${A}10`,
-            }}
-          >
-            Download
-          </button>
-        </div>
-      </nav>
-
+    <>
       {/* ── S1  HERO ──────────────────────────────────────────────── */}
       <section
         id="hero"
@@ -1850,6 +1783,6 @@ export default function Page1CommandCenter() {
           </div>
         </div>
       </section>
-    </main>
+    </>
   );
 }

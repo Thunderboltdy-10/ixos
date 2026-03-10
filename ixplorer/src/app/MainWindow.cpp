@@ -18,6 +18,24 @@
 
 namespace Ixplorer {
 
+namespace {
+
+QColor blendToward(const QColor &from, const QColor &to, qreal amount) {
+    const qreal mix = qBound(0.0, amount, 1.0);
+    return QColor::fromRgbF(from.redF() + ((to.redF() - from.redF()) * mix),
+                            from.greenF() + ((to.greenF() - from.greenF()) * mix),
+                            from.blueF() + ((to.blueF() - from.blueF()) * mix),
+                            1.0);
+}
+
+int colorDistance(const QColor &left, const QColor &right) {
+    return qAbs(left.red() - right.red()) +
+           qAbs(left.green() - right.green()) +
+           qAbs(left.blue() - right.blue());
+}
+
+} // namespace
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , m_toolbar(new ExplorerToolbar(this))
@@ -48,8 +66,9 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 }
 
 void MainWindow::setupLayout() {
-    auto *central = new QWidget(this);
-    auto *vbox = new QVBoxLayout(central);
+    m_shellRoot = new QWidget(this);
+    m_shellRoot->setObjectName("ShellRoot");
+    auto *vbox = new QVBoxLayout(m_shellRoot);
     vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(0);
 
@@ -70,7 +89,8 @@ void MainWindow::setupLayout() {
     vbox->addWidget(m_splitter, 1);
     vbox->addWidget(m_statusStrip);
 
-    setCentralWidget(central);
+    setCentralWidget(m_shellRoot);
+    applyShellTone(QColor(18, 20, 24));
 }
 
 void MainWindow::setupConnections() {
@@ -113,6 +133,7 @@ void MainWindow::setupConnections() {
         m_statusStrip->setStatusMessage(message);
         m_rail->setStatusMessage(message);
     });
+    connect(m_workspace, &TabWorkspace::surfaceToneChanged, this, &MainWindow::applyShellTone);
 
     connect(m_workspace, &TabWorkspace::selectionChanged, this, [this](const QFileInfo &info, int selectedCount, quint64 selectedBytes) {
         m_rail->showFileDetails(info, selectedCount, selectedBytes);
@@ -273,6 +294,35 @@ void MainWindow::onPathChanged(const QString &path) {
         m_statusStrip->setItemCount(1);
         m_toolbar->setNavigationState(false, false, m_workspace->canGoUpCurrent());
     }
+}
+
+void MainWindow::applyShellTone(const QColor &color) {
+    if (m_shellTone.isValid() && colorDistance(m_shellTone, color) < 20) {
+        return;
+    }
+    m_shellTone = color;
+
+    const QColor base = blendToward(QColor(15, 17, 21), color, 0.18);
+    const QColor chrome = blendToward(QColor(20, 22, 27), color, 0.22);
+    const QColor edge = blendToward(QColor(48, 54, 66), color, 0.14);
+    const QColor side = blendToward(chrome, QColor(8, 10, 13), 0.25);
+
+    const QString chromeCss = QStringLiteral(
+        "background: qlineargradient(x1:0,y1:0,x2:1,y2:1, stop:0 %1, stop:1 %2);"
+        "border-color:%3;")
+                                  .arg(chrome.name(QColor::HexRgb),
+                                       base.name(QColor::HexRgb),
+                                       edge.name(QColor::HexRgb));
+
+    if (m_shellRoot) {
+        m_shellRoot->setStyleSheet(QStringLiteral("#ShellRoot { background-color: %1; }")
+                                       .arg(base.name(QColor::HexRgb)));
+    }
+    m_toolbar->setStyleSheet(QStringLiteral("#ExplorerToolbar{%1 border-bottom:1px solid %2;}").arg(chromeCss, edge.name(QColor::HexRgb)));
+    m_sidebar->setStyleSheet(QStringLiteral("#AppSidebar{background:qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 %1, stop:1 %2); border-right:1px solid %3;}").arg(side.name(QColor::HexRgb), base.name(QColor::HexRgb), edge.name(QColor::HexRgb)));
+    m_rail->setStyleSheet(QStringLiteral("#IxosRail{background:qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 %1, stop:1 %2); border-left:1px solid %3;}").arg(side.name(QColor::HexRgb), base.name(QColor::HexRgb), edge.name(QColor::HexRgb)));
+    m_statusStrip->setStyleSheet(QStringLiteral("#StatusStrip{background-color:%1; border-top:1px solid %2;}").arg(chrome.name(QColor::HexRgb), edge.name(QColor::HexRgb)));
+    m_workspace->setStyleSheet(QStringLiteral("background-color:%1;").arg(base.name(QColor::HexRgb)));
 }
 
 void MainWindow::setRailVisible(bool visible) {

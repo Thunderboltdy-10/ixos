@@ -1879,3 +1879,35 @@ eports/settings_matrix_2026-02-14.md).
     - Output summary: process stayed alive for 4 seconds (`RUNNING PID=46616`) before intentional stop.
 - Artifacts:
   - `reports/ixplorer_workspace_search_pass_2026-03-10.md`
+
+## 2026-03-10 Ixplorer navigation/icon reset + host-first fallback
+- Scope:
+  - Replaced fragile icon-font navigation surfaces with native/system icon paths, rebuilt breadcrumb/tab overflow behavior, and stopped force-opening files externally on the first host failure.
+- Code changes:
+  - Reworked `ixplorer/src/widgets/SidebarSection.*`, `ixplorer/src/widgets/AppSidebar.cpp`, `ixplorer/src/widgets/ExplorerToolbar.cpp`, `ixplorer/src/widgets/BreadcrumbBar.cpp`, `ixplorer/src/widgets/TabWorkspace.cpp`, and `ixplorer/resources/styles/ixplorer_dark.qss` so core navigation uses robust icons, measured breadcrumb elision, and scrollable/elided tabs.
+  - Simplified `ixplorer/src/theme/ThemedFileIconProvider.*` back to system file icons to remove the remaining icon-font dependency in the file tree.
+  - Reworked `ixplorer/src/widgets/DocumentPane.cpp` and `ixplorer/src/utils/FileOpenPolicy.cpp` so host attempts happen first for non-denylisted files, internal text/image preview is fallback-only, and document tabs no longer auto-launch external viewers on first host miss.
+- Command evidence:
+  - `$env:PATH='C:\Qt\Tools\Ninja;' + $env:PATH; & 'C:\Qt\Tools\Ninja\ninja.exe' -C ixplorer/build`
+    - Output summary: clean rebuild of `Ixplorer.exe` after the navigation/icon reset.
+  - Ixplorer startup smoke:
+    - Command: `Start-Process C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe -PassThru`
+    - Output summary: process stayed alive for 4 seconds (`RUNNING PID=51864`) before intentional stop.
+- Artifacts:
+  - `reports/ixplorer_workspace_search_pass_2026-03-10.md`
+
+## 2026-03-10 Ixplorer host stabilization + redesign handoff
+- Scope:
+  - Stabilized the hosted-window path to reduce displacement/shaking, tightened exact-window matching to reduce false captures, and prepared a research-backed redesign handoff instead of continuing ad hoc surface tweaks.
+- Code changes:
+  - Updated `ixplorer/src/widgets/DocumentPane.cpp` so hosted-window resize updates no longer force repeated frame changes, backdrop sampling is event-driven instead of heartbeat-driven, shell tone changes are thresholded, and candidate windows are hidden before reparenting.
+  - Updated `ixplorer/src/app/MainWindow.*` so shell tint propagation is throttled instead of restyling the entire app for tiny color deltas.
+  - Updated `ixplorer/src/widgets/TabWorkspace.cpp` and `ixplorer/src/widgets/SearchResultCard.cpp` to remove remaining broken glyph-style close/integrity indicators in favor of standard icons.
+- Command evidence:
+  - `$env:PATH='C:\Qt\Tools\Ninja;' + $env:PATH; & 'C:\Qt\Tools\Ninja\ninja.exe' -C ixplorer/build`
+    - Output summary: rebuild completed successfully through `Linking CXX executable Ixplorer.exe`.
+  - Ixplorer startup smoke:
+    - Command: `Start-Process C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe -PassThru`
+    - Output summary: process stayed alive for 4 seconds (`RUNNING PID=33072`) before intentional stop.
+- Artifacts:
+  - `reports/ixplorer_workspace_search_pass_2026-03-10.md`

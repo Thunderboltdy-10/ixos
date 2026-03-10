@@ -1,6 +1,7 @@
 #include "widgets/ExplorerPane.h"
 #include "models/FileSystemProxyModel.h"
 #include "utils/FileOperations.h"
+#include "theme/ThemedFileIconProvider.h"
 
 #include <QApplication>
 #include <QClipboard>
@@ -81,6 +82,7 @@ ExplorerPane::ExplorerPane(const QString &rootPath, QWidget *parent)
     m_fsModel->setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
     m_fsModel->setNameFilterDisables(false);
     m_fsModel->setReadOnly(false);
+    m_fsModel->setIconProvider(new ThemedFileIconProvider());
 
     m_proxyModel->setSourceModel(m_fsModel);
     m_proxyModel->setSortRole(QFileSystemModel::FileNameRole);
@@ -93,7 +95,7 @@ ExplorerPane::ExplorerPane(const QString &rootPath, QWidget *parent)
     m_tree->sortByColumn(0, Qt::AscendingOrder);
     m_tree->setSelectionMode(QAbstractItemView::ExtendedSelection);
     m_tree->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_tree->setAlternatingRowColors(false);
+    m_tree->setAlternatingRowColors(true);
     m_tree->setEditTriggers(QAbstractItemView::EditKeyPressed | QAbstractItemView::SelectedClicked);
     m_tree->setIndentation(12);
     m_tree->setDragEnabled(true);

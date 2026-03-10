@@ -33,19 +33,8 @@ const QSet<QString> &externalOnlyAssociatedApps() {
         QStringLiteral("cmd.exe"),             QStringLiteral("powershell.exe"),    QStringLiteral("pwsh.exe"),
         QStringLiteral("conhost.exe"),         QStringLiteral("steam.exe"),         QStringLiteral("epicgameslauncher.exe"),
         QStringLiteral("riotclientservices.exe"), QStringLiteral("battle.net.exe"), QStringLiteral("upc.exe"),
-    };
-    return executables;
-}
-
-const QSet<QString> &hostableAssociatedApps() {
-    static const QSet<QString> executables = {
-        QStringLiteral("winword.exe"),        QStringLiteral("powerpnt.exe"),       QStringLiteral("excel.exe"),
-        QStringLiteral("onenote.exe"),        QStringLiteral("acrord32.exe"),       QStringLiteral("acrobat.exe"),
-        QStringLiteral("sumatrapdf.exe"),     QStringLiteral("foxitpdfreader.exe"), QStringLiteral("notepad.exe"),
-        QStringLiteral("notepad++.exe"),      QStringLiteral("code.exe"),           QStringLiteral("devenv.exe"),
-        QStringLiteral("mspaint.exe"),        QStringLiteral("paintdotnet.exe"),    QStringLiteral("vlc.exe"),
-        QStringLiteral("wmplayer.exe"),       QStringLiteral("potplayer64.exe"),    QStringLiteral("potplayermini64.exe"),
-        QStringLiteral("mpc-hc64.exe"),       QStringLiteral("mpc-hc.exe"),
+        QStringLiteral("applicationframehost.exe"), QStringLiteral("openwith.exe"), QStringLiteral("rundll32.exe"),
+        QStringLiteral("dllhost.exe"),
     };
     return executables;
 }
@@ -123,11 +112,6 @@ FileOpenPolicy resolveFileOpenPolicy(const QFileInfo &info) {
     if (externalOnlyAssociatedApps().contains(associatedExecutable)) {
         return makeExternalPolicy(QStringLiteral("Open externally"),
                                   QStringLiteral("%1 stays external because its default app is not a good embedded host.")
-                                      .arg(typeLabel));
-    }
-    if (!hostableAssociatedApps().contains(associatedExecutable)) {
-        return makeExternalPolicy(QStringLiteral("Open externally"),
-                                  QStringLiteral("%1 stays external until its default app is explicitly supported for stable hosting.")
                                       .arg(typeLabel));
     }
 #endif

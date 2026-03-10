@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QColor>
 #include <QFileInfo>
 #include <QStackedWidget>
 #include <QTabBar>
@@ -46,6 +47,10 @@ signals:
     void fileActivated(const QFileInfo &info);
     void openInNewTabRequested(const QString &path);
     void statusMessage(const QString &message);
+    void surfaceToneChanged(const QColor &color);
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     int addExplorerTab(const QString &path);
@@ -59,8 +64,10 @@ private:
     void onTabChanged(int index);
     void onTabCloseRequested(int index);
     void onNewTabClicked();
+    void showContextMenu(const QPoint &pos);
 
     QTabBar *m_tabBar;
+
     QToolButton *m_addTabButton;
     QStackedWidget *m_stack;
     int m_previewTabIndex = -1;

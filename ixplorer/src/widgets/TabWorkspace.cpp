@@ -8,7 +8,11 @@
 #include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
+#include <QFileIconProvider>
 #include <QHBoxLayout>
+#include <QHoverEvent>
+#include <QMenu>
+#include <QStyle>
 #include <QUrl>
 #include <QVBoxLayout>
 
@@ -35,6 +39,24 @@ void openExternally(const QString &path) {
     QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 }
 
+QToolButton *makeTabCloseButton(QTabBar *tabBar, TabWorkspace *workspace) {
+    auto *button = new QToolButton(tabBar);
+    button->setObjectName("TabCloseButton");
+    button->setIcon(tabBar->style()->standardIcon(QStyle::SP_TitleBarCloseButton));
+    button->setAutoRaise(true);
+    button->setCursor(Qt::PointingHandCursor);
+    button->hide();
+    QObject::connect(button, &QToolButton::clicked, workspace, [tabBar, workspace, button]() {
+        for (int index = 0; index < tabBar->count(); ++index) {
+            if (tabBar->tabButton(index, QTabBar::RightSide) == button) {
+                workspace->closeTab(index);
+                return;
+            }
+        }
+    });
+    return button;
+}
+
 } // namespace
 
 TabWorkspace::TabWorkspace(QWidget *parent)
@@ -54,6 +76,12 @@ TabWorkspace::TabWorkspace(QWidget *parent)
     m_tabBar->setMovable(false);
     m_tabBar->setExpanding(false);
     m_tabBar->setDrawBase(false);
+    m_tabBar->setUsesScrollButtons(true);
+    m_tabBar->setElideMode(Qt::ElideMiddle);
+    m_tabBar->setDocumentMode(true);
+    m_tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_tabBar->setAttribute(Qt::WA_Hover, true);
+    m_tabBar->installEventFilter(this);
 
     m_addTabButton->setObjectName("TabAddButton");
     m_addTabButton->setText("+");
@@ -67,6 +95,7 @@ TabWorkspace::TabWorkspace(QWidget *parent)
 
     connect(m_tabBar, &QTabBar::currentChanged, this, &TabWorkspace::onTabChanged);
     connect(m_tabBar, &QTabBar::tabCloseRequested, this, &TabWorkspace::onTabCloseRequested);
+    connect(m_tabBar, &QWidget::customContextMenuRequested, this, &TabWorkspace::showContextMenu);
     connect(m_addTabButton, &QToolButton::clicked, this, &TabWorkspace::onNewTabClicked);
 }
 
@@ -116,10 +145,6 @@ bool TabWorkspace::previewPath(const QString &path) {
 
     if (m_previewTabIndex >= 0 && m_previewTabIndex < m_stack->count()) {
         auto *pane = new DocumentPane(info.absoluteFilePath(), true, this);
-        if (!pane->isHosted()) {
-            pane->deleteLater();
-            return false;
-        }
         replaceWidgetAt(m_previewTabIndex, pane, info.absoluteFilePath());
         m_tabBar->setCurrentIndex(m_previewTabIndex);
         return true;
@@ -277,6 +302,11 @@ int TabWorkspace::addExplorerTab(const QString &path) {
     const int insertIndex = m_tabBar->count();
     m_stack->addWidget(pane);
     m_tabBar->addTab(tabLabelForPath(path));
+    
+    QFileIconProvider iconProvider;
+    m_tabBar->setTabIcon(insertIndex, iconProvider.icon(QFileIconProvider::Folder));
+    m_tabBar->setTabButton(insertIndex, QTabBar::RightSide, makeTabCloseButton(m_tabBar, this));
+    
     updateTabMetadata(insertIndex, path);
     m_tabBar->setCurrentIndex(insertIndex);
     return insertIndex;
@@ -305,19 +335,17 @@ int TabWorkspace::addDocumentTab(const QString &path, bool preview) {
     }
 
     auto *pane = new DocumentPane(path, preview, this);
-    if (!pane->isHosted()) {
-        pane->deleteLater();
-        openExternally(path);
-        emit statusMessage(QStringLiteral("Opened %1 externally because its app window could not be embedded.")
-                               .arg(QFileInfo(path).fileName()));
-        return -1;
-    }
 
     connectDocumentTab(pane);
 
     const int index = m_tabBar->count();
     m_stack->addWidget(pane);
     m_tabBar->addTab(tabLabelForPath(path));
+    
+    QFileIconProvider iconProvider;
+    m_tabBar->setTabIcon(index, iconProvider.icon(QFileInfo(path)));
+    m_tabBar->setTabButton(index, QTabBar::RightSide, makeTabCloseButton(m_tabBar, this));
+    
     updateTabMetadata(index, path);
     m_tabBar->setCurrentIndex(index);
     return index;
@@ -333,6 +361,68 @@ int TabWorkspace::findDocumentTab(const QString &path) const {
         }
     }
     return -1;
+}
+
+bool TabWorkspace::eventFilter(QObject *watched, QEvent *event) {
+    if (watched == m_tabBar) {
+        if (event->type() == QEvent::HoverMove || event->type() == QEvent::HoverEnter) {
+            auto *he = static_cast<QHoverEvent*>(event);
+            int hoverIndex = m_tabBar->tabAt(he->position().toPoint());
+            for (int i = 0; i < m_tabBar->count(); ++i) {
+                if (auto *btn = m_tabBar->tabButton(i, QTabBar::RightSide)) {
+                    btn->setVisible(i == hoverIndex);
+                } else if (auto *lbtn = m_tabBar->tabButton(i, QTabBar::LeftSide)) {
+                    lbtn->setVisible(i == hoverIndex);
+                }
+            }
+        } else if (event->type() == QEvent::HoverLeave) {
+            for (int i = 0; i < m_tabBar->count(); ++i) {
+                if (auto *btn = m_tabBar->tabButton(i, QTabBar::RightSide)) {
+                    btn->setVisible(false);
+                } else if (auto *lbtn = m_tabBar->tabButton(i, QTabBar::LeftSide)) {
+                    lbtn->setVisible(false);
+                }
+            }
+        }
+    }
+    return QWidget::eventFilter(watched, event);
+}
+
+void TabWorkspace::showContextMenu(const QPoint &pos) {
+    int index = m_tabBar->tabAt(pos);
+    if (index < 0) return;
+
+    QMenu menu(this);
+    
+    QAction *closeAction = menu.addAction("Close");
+    connect(closeAction, &QAction::triggered, this, [this, index]() { closeTab(index); });
+    
+    QAction *closeOthersAction = menu.addAction("Close Others");
+    connect(closeOthersAction, &QAction::triggered, this, [this, index]() {
+        for (int i = m_tabBar->count() - 1; i >= 0; --i) {
+            if (i != index) closeTab(i);
+        }
+    });
+    
+    QAction *closeRightAction = menu.addAction("Close Tabs to Right");
+    connect(closeRightAction, &QAction::triggered, this, [this, index]() {
+        for (int i = m_tabBar->count() - 1; i > index; --i) {
+            closeTab(i);
+        }
+    });
+    
+    menu.addSeparator();
+    
+    QAction *duplicateAction = menu.addAction("Duplicate Tab");
+    connect(duplicateAction, &QAction::triggered, this, [this, index]() {
+        if (auto *pane = paneAt(index)) {
+            addTab(pane->currentPath());
+        } else if (auto *doc = qobject_cast<DocumentPane*>(m_stack->widget(index))) {
+            addTab(doc->filePath());
+        }
+    });
+    
+    menu.exec(m_tabBar->mapToGlobal(pos));
 }
 
 void TabWorkspace::replaceWidgetAt(int index, QWidget *widget, const QString &path) {
@@ -413,6 +503,11 @@ void TabWorkspace::connectDocumentTab(DocumentPane *pane) {
         }
     });
     connect(pane, &DocumentPane::statusMessage, this, &TabWorkspace::statusMessage);
+    connect(pane, &DocumentPane::surfaceToneChanged, this, [this, pane](const QColor &color) {
+        if (m_stack->currentWidget() == pane) {
+            emit surfaceToneChanged(color);
+        }
+    });
     connect(pane, &DocumentPane::openExternallyRequested, this, [this](const QString &path) {
         openExternally(path);
         emit statusMessage(QStringLiteral("Opened %1 externally.")
@@ -424,6 +519,7 @@ void TabWorkspace::updateSignalsForCurrentWidget() {
     if (auto *pane = currentPane()) {
         emit pathChanged(pane->currentPath());
         emit navigationStateChanged(pane->canGoBack(), pane->canGoForward(), pane->canGoUp());
+        emit surfaceToneChanged(QColor(18, 20, 24));
         return;
     }
 
@@ -432,10 +528,12 @@ void TabWorkspace::updateSignalsForCurrentWidget() {
         emit pathChanged(document->displayPath());
         emit navigationStateChanged(false, false, document->canGoUp());
         emit selectionChanged(info, 1, static_cast<quint64>(info.size()));
+        emit surfaceToneChanged(document->surfaceTone());
         return;
     }
 
     emit selectionCleared();
+    emit surfaceToneChanged(QColor(18, 20, 24));
 }
 
 void TabWorkspace::updateTabMetadata(int index, const QString &path) {

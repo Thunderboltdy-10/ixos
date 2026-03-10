@@ -9,6 +9,7 @@ namespace Ixplorer {
 class ThemeManager {
 public:
     static void apply(QApplication *app);
+    static void reapply(QApplication *app);
 
 private:
     static QString loadStylesheet();

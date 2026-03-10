@@ -26,6 +26,9 @@ signals:
     void searchRequested(const QString &query);
     void commandTriggered(const QString &commandId);
 
+protected:
+    void resizeEvent(QResizeEvent* event) override;
+
 private:
     void rebuildList();
     void triggerCurrent();

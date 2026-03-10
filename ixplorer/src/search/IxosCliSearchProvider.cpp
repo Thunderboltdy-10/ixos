@@ -60,6 +60,8 @@ void IxosCliSearchProvider::startSearch(const SearchRequest &request) {
               << QStringLiteral("--evidence")
               << QStringLiteral("--show-scores")
               << QStringLiteral("--progressive")
+              << QStringLiteral("--cache-mode")
+              << QStringLiteral("native-cache")
               << QStringLiteral("--limit")
               << QString::number(qMax(1, request.limit))
               << QStringLiteral("--context")

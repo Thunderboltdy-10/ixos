@@ -16,6 +16,8 @@ set(SOURCES
     src/widgets/ExplorerToolbar.cpp
     src/widgets/BreadcrumbBar.cpp
     src/widgets/AppSidebar.cpp
+    src/widgets/CommandPalette.cpp
+    src/widgets/DocumentPane.cpp
     src/widgets/SidebarSection.cpp
     src/widgets/TabWorkspace.cpp
     src/widgets/ExplorerPane.cpp
@@ -24,6 +26,7 @@ set(SOURCES
     src/models/FileSystemProxyModel.cpp
     src/theme/ThemeManager.cpp
     src/utils/FileOperations.cpp
+    src/utils/FileOpenPolicy.cpp
 )
 
 set(HEADERS
@@ -34,6 +37,8 @@ set(HEADERS
     src/widgets/ExplorerToolbar.h
     src/widgets/BreadcrumbBar.h
     src/widgets/AppSidebar.h
+    src/widgets/CommandPalette.h
+    src/widgets/DocumentPane.h
     src/widgets/SidebarSection.h
     src/widgets/TabWorkspace.h
     src/widgets/ExplorerPane.h
@@ -46,6 +51,7 @@ set(HEADERS
     src/interfaces/IIpcBridge.h
     src/interfaces/ICommandRegistry.h
     src/utils/FileOperations.h
+    src/utils/FileOpenPolicy.h
 )
 
 qt_add_resources(RESOURCES resources/ixplorer.qrc)
@@ -59,6 +65,10 @@ add_executable(Ixplorer WIN32
 
 target_include_directories(Ixplorer PRIVATE src)
 target_link_libraries(Ixplorer PRIVATE Qt6::Widgets)
+
+if(WIN32)
+    target_link_libraries(Ixplorer PRIVATE shell32 shlwapi)
+endif()
 
 find_program(WINDEPLOYQT windeployqt HINTS "${Qt6_DIR}/../../../bin")
 if(WINDEPLOYQT AND WIN32)

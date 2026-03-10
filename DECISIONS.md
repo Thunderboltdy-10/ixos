@@ -218,6 +218,20 @@
 - Follow-ups: Add explicit in-app messaging for backend token-verify failures in packaged release QA
 
 - Decision: Make Pro fallback evaluation plan-aware in UI helper (`token.plan == pro`) instead of status-only
+
+- Decision: Introduce a capability-based workspace file policy and keep unsupported/app-like content external
+- Options considered: Keep revealing files then defer to the OS; try to embed every file type; add a narrow allowlist with preview/edit/external branches
+- Why chosen: The center pane needed real embedded value without unsafe or fake hosting. A narrow allowlist gives stable in-app editing for text/code, true preview for supported images, and explicit external handling for executables/installers/Office/PDF/app-like content.
+- Evidence (links to /reports or output files): reports/ixplorer_workspace_search_pass_2026-03-10.md, ixplorer/src/utils/FileOpenPolicy.cpp, ixplorer/src/widgets/DocumentPane.cpp, ixplorer/src/widgets/TabWorkspace.cpp
+- Risks: Preview coverage is intentionally incomplete; users may expect PDF/media support that is still external.
+- Follow-ups: Evaluate Qt PDF/media hosting separately and only extend the allowlist when the lifecycle is stable.
+
+- Decision: Reuse a single search preview tab for top-result auto-open instead of spawning a new tab on every query update
+- Options considered: Open every auto-opened result in a fresh tab; replace the current explorer tab; keep a reusable preview tab
+- Why chosen: Live search would create noisy tab churn otherwise. A reusable preview tab preserves the explorer context, keeps auto-open focused, and still lets explicit opens promote into durable document tabs.
+- Evidence (links to /reports or output files): reports/ixplorer_workspace_search_pass_2026-03-10.md, ixplorer/src/widgets/TabWorkspace.cpp, ixplorer/src/widgets/IxosRail.cpp
+- Risks: Preview-tab semantics need manual QA around promotion/edit/close flows.
+- Follow-ups: Add GUI smoke coverage for preview-tab reuse and promotion to editable tabs.
 - Options considered: Entitlement-only checks; status-only fallback; entitlement-or-(status+plan) fallback
 - Why chosen: Status reflects token liveness, not subscription tier, so status-only fallback can falsely unlock Pro for free users
 - Evidence (links to /reports or output files): ui/src/lib/proAccess.ts, ui/src/components/today/TodayTab.tsx, ui/src/components/workstreams/WorkstreamsList.tsx, RUNLOG.md (Entry 019)
@@ -1072,3 +1086,58 @@
   - `ixplorer/src/widgets/ExplorerToolbar.cpp`
   - `ixplorer/src/widgets/IxosRail.cpp`
   - `ixplorer/src/app/MainWindow.cpp`
+
+## 2026-03-10 Ixplorer native host-window strategy
+- Decision: pivot Ixplorer document tabs from internal faux previews/editors to Windows foreign-window hosting of the file’s exact associated app window whenever the association is document-like and safe to host.
+- Options considered:
+  - Keep the custom Qt preview/editor approach and broaden type coverage manually.
+  - Launch everything externally except a tiny allowlist of native Qt previews.
+  - Host the real associated app window inside the workspace, with denylist fallback for browser/terminal/installer/game-like associations.
+- Why chosen:
+  - The product requirement is that the user sees the exact app chrome they would have opened normally, not a simulated editor surface.
+  - On Windows, Qt foreign-window support plus Win32 parent/style control is the most practical path available in the current architecture without rebuilding around app-specific COM/OLE integrations.
+  - It preserves a future path toward per-app hardening while already delivering the defining UX difference for Office/PDF/image/text-style associations that cooperate.
+- Evidence:
+  - `ixplorer/src/widgets/DocumentPane.cpp`
+  - `ixplorer/src/utils/FileOpenPolicy.cpp`
+  - `reports/ixplorer_workspace_search_pass_2026-03-10.md`
+
+## 2026-03-10 Ixplorer search-open behavior
+- Decision: make rail result selection drive a single reusable center preview surface by default, keep explicit new-tab open as a separate action, and default the Qt search boundary to `native-cache`.
+- Options considered:
+  - Leave selection passive and only open on explicit button clicks.
+  - Keep auto-open only for the top result while explicit clicks created separate tabs.
+  - Reuse one preview host for result browsing and reserve new tabs for intentional multi-open workflows.
+- Why chosen:
+  - It reduces navigation drift and makes the rail behave like a focused search/browser surface instead of a disconnected launcher.
+  - Cached search is the right default for the desktop UX target here because the progressive UI already exists and cold-path waits were the visible pain point.
+- Evidence:
+  - `ixplorer/src/widgets/IxosRail.cpp`
+  - `ixplorer/src/app/MainWindow.cpp`
+  - `ixplorer/src/search/IxosCliSearchProvider.cpp`
+
+## 2026-03-10 Ixplorer supported-host policy
+- Decision: stop broad “embed whatever the associated app opens” behavior and restrict exact-window hosting to an explicit supported desktop-app set.
+- Options considered:
+  - Keep broad hosting and continue refining heuristics around it.
+  - Fall back to external open for everything except a tiny hand-built preview system.
+  - Use a capability allowlist for stable desktop apps and reject unsupported/UWP/browser/terminal-style associations up front.
+- Why chosen:
+  - The broad strategy was capturing unrelated windows and producing broken embeds for apps that do not behave like stable embeddable document hosts.
+  - The user’s core requirement is reliability and intentional behavior, not accidental “sometimes it embeds.”
+  - This keeps the exact-window differentiator where it works while making failures explicit and future-proof.
+- Evidence:
+  - `ixplorer/src/utils/FileOpenPolicy.cpp`
+  - `ixplorer/src/widgets/DocumentPane.cpp`
+
+## 2026-03-10 Ixplorer embedded-window chrome policy
+- Decision: strip top-level non-client controls from hosted windows and treat the embedded app as content inside Ixplorer rather than a draggable desktop window.
+- Options considered:
+  - Preserve the full native title bar and controls.
+  - Build custom fake chrome around the embedded app.
+  - Remove top-level non-client chrome and resize the hosted child window to the pane.
+- Why chosen:
+  - The embedded window should not expose maximize/minimize/close buttons or drag affordances that make sense only for a free desktop window.
+  - Removing that chrome reduces visual clash and makes the hosted view behave like part of the workspace.
+- Evidence:
+  - `ixplorer/src/widgets/DocumentPane.cpp`

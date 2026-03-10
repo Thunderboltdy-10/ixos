@@ -44,10 +44,11 @@ QString trimmedLine(const QString &text) {
     return text.simplified().trimmed();
 }
 
-class SearchResultCard : public QFrame {
+class SearchResultCard : public QWidget {
 public:
     explicit SearchResultCard(QWidget *parent = nullptr)
-        : QFrame(parent)
+        : QWidget(parent)
+        , m_rank(new QLabel(this))
         , m_title(new QLabel(this))
         , m_meta(new QLabel(this))
         , m_path(new QLabel(this))
@@ -55,12 +56,20 @@ public:
         setObjectName("RailResultCard");
 
         auto *layout = new QVBoxLayout(this);
-        layout->setContentsMargins(14, 12, 14, 12);
-        layout->setSpacing(4);
+        layout->setContentsMargins(14, 10, 14, 10);
+        layout->setSpacing(6);
+
+        auto *topRow = new QHBoxLayout();
+        topRow->setContentsMargins(0, 0, 0, 0);
+        topRow->setSpacing(8);
+
+        m_rank->setObjectName("RailResultRank");
+        topRow->addWidget(m_rank, 0, Qt::AlignTop);
 
         m_title->setObjectName("RailResultTitle");
         m_title->setWordWrap(true);
-        layout->addWidget(m_title);
+        topRow->addWidget(m_title, 1);
+        layout->addLayout(topRow);
 
         m_meta->setObjectName("RailResultMeta");
         m_meta->setWordWrap(true);
@@ -75,7 +84,12 @@ public:
         layout->addWidget(m_summary);
     }
 
-    void setContent(const SearchHit &item, bool semanticResults, const QString &relativePath, const QString &summary) {
+    void setContent(
+        const SearchHit &item,
+        bool semanticResults,
+        const QString &relativePath,
+        const QString &summary,
+        int rank) {
         const QString kind = semanticResults ? QStringLiteral("Ranked") : QStringLiteral("Quick");
         const QString fileType = item.hasEvidence && !item.evidence.fileType.isEmpty()
                                      ? item.evidence.fileType
@@ -83,6 +97,7 @@ public:
                                                                                 : QFileInfo(item.path).suffix().toLower());
         const QString integrity = item.integrityVerified ? QStringLiteral("verified") : QStringLiteral("unverified");
 
+        m_rank->setText(QString::number(rank));
         m_title->setText(item.filename);
         m_meta->setText(QStringLiteral("%1  %2  %3  %4")
                             .arg(formatScore(item.score), kind, fileType, integrity));
@@ -98,6 +113,7 @@ public:
     }
 
 private:
+    QLabel *m_rank;
     QLabel *m_title;
     QLabel *m_meta;
     QLabel *m_path;
@@ -108,9 +124,12 @@ private:
 
 IxosRail::IxosRail(QWidget *parent)
     : QWidget(parent)
-    , m_provider(new IxosCliSearchProvider(this)) {
+    , m_provider(new IxosCliSearchProvider(this))
+    , m_liveSearchTimer(new QTimer(this)) {
     setObjectName("IxosRail");
     setMinimumWidth(340);
+    m_liveSearchTimer->setSingleShot(true);
+    m_liveSearchTimer->setInterval(260);
 
     auto *outerLayout = new QVBoxLayout(this);
     outerLayout->setContentsMargins(0, 0, 0, 0);
@@ -144,30 +163,31 @@ IxosRail::IxosRail(QWidget *parent)
     headerLayout->addWidget(closeButton);
     outerLayout->addWidget(header);
 
-    auto *searchControls = new QWidget(this);
-    auto *searchLayout = new QHBoxLayout(searchControls);
+    m_searchControls = new QWidget(this);
+    auto *searchLayout = new QHBoxLayout(m_searchControls);
     searchLayout->setContentsMargins(18, 0, 18, 12);
     searchLayout->setSpacing(6);
 
-    m_searchInput = new QLineEdit(searchControls);
+    m_searchInput = new QLineEdit(m_searchControls);
     m_searchInput->setObjectName("SearchField");
     m_searchInput->setPlaceholderText("Search this folder");
     m_searchInput->setClearButtonEnabled(true);
 
-    m_modeBox = new QComboBox(searchControls);
+    m_modeBox = new QComboBox(m_searchControls);
     m_modeBox->setObjectName("ToolbarCombo");
     m_modeBox->addItem("Auto", static_cast<int>(SearchMode::Auto));
     m_modeBox->addItem("Fast", static_cast<int>(SearchMode::Fast));
     m_modeBox->addItem("Accurate", static_cast<int>(SearchMode::Accurate));
     m_modeBox->setFixedWidth(104);
 
-    m_searchButton = new QPushButton("Search", searchControls);
+    m_searchButton = new QPushButton("Search", m_searchControls);
     m_searchButton->setObjectName("ToolbarPrimaryButton");
 
     searchLayout->addWidget(m_searchInput, 1);
     searchLayout->addWidget(m_modeBox);
     searchLayout->addWidget(m_searchButton);
-    outerLayout->addWidget(searchControls);
+    outerLayout->addWidget(m_searchControls);
+    m_searchControls->hide();
 
     auto *scroll = new QScrollArea(this);
     scroll->setWidgetResizable(true);
@@ -193,75 +213,89 @@ IxosRail::IxosRail(QWidget *parent)
     m_resultList->setSpacing(2);
     layout->addWidget(m_resultList);
 
-    layout->addWidget(makeDivider(content));
-    layout->addWidget(makeSectionTitle("Match Detail", content));
+    layout->addWidget(makeSectionTitle("Focused Result", content));
 
-    m_matchTitle = makeValueLabel(content, "RailFileName");
-    layout->addWidget(m_matchTitle);
+    m_matchCard = new QWidget(content);
+    m_matchCard->setProperty("class", "RailDetailCard");
+    auto *matchCardLayout = new QVBoxLayout(m_matchCard);
+    matchCardLayout->setContentsMargins(0, 0, 0, 0);
+    matchCardLayout->setSpacing(0);
 
-    m_matchMeta = makeValueLabel(content, "RailLabel");
-    layout->addWidget(m_matchMeta);
+    m_matchTitle = makeValueLabel(m_matchCard, "RailFileName");
+    matchCardLayout->addWidget(m_matchTitle);
 
-    m_matchPath = makeValueLabel(content);
+    m_matchMeta = makeValueLabel(m_matchCard, "RailLabel");
+    matchCardLayout->addWidget(m_matchMeta);
+
+    m_matchPath = makeValueLabel(m_matchCard);
     m_matchPath->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    layout->addWidget(m_matchPath);
+    matchCardLayout->addWidget(m_matchPath);
 
-    m_matchExplanation = makeValueLabel(content);
-    layout->addWidget(m_matchExplanation);
+    m_matchExplanation = makeValueLabel(m_matchCard);
+    matchCardLayout->addWidget(m_matchExplanation);
 
-    m_matchEvidence = makeValueLabel(content, "RailSubtleLabel");
-    layout->addWidget(m_matchEvidence);
+    m_matchEvidence = makeValueLabel(m_matchCard, "RailSubtleLabel");
+    matchCardLayout->addWidget(m_matchEvidence);
 
-    m_matchBreakdown = makeValueLabel(content, "RailSubtleLabel");
-    layout->addWidget(m_matchBreakdown);
+    m_matchBreakdown = makeValueLabel(m_matchCard, "RailSubtleLabel");
+    matchCardLayout->addWidget(m_matchBreakdown);
 
-    m_matchTags = makeValueLabel(content, "RailPillRow");
-    layout->addWidget(m_matchTags);
+    m_matchTags = makeValueLabel(m_matchCard, "RailPillRow");
+    matchCardLayout->addWidget(m_matchTags);
 
-    m_matchSnippet = new QTextEdit(content);
+    m_matchSnippet = new QTextEdit(m_matchCard);
     m_matchSnippet->setObjectName("RailSnippet");
     m_matchSnippet->setReadOnly(true);
     m_matchSnippet->setMinimumHeight(180);
-    layout->addWidget(m_matchSnippet);
+    matchCardLayout->addWidget(m_matchSnippet);
 
-    auto *resultActions = new QWidget(content);
+    auto *resultActions = new QWidget(m_matchCard);
     auto *resultActionsLayout = new QHBoxLayout(resultActions);
-    resultActionsLayout->setContentsMargins(18, 10, 18, 8);
+    resultActionsLayout->setContentsMargins(16, 10, 16, 8);
     resultActionsLayout->setSpacing(6);
-    m_openResultButton = new QPushButton("Open", resultActions);
-    m_openInNewTabButton = new QPushButton("Open tab", resultActions);
+    m_openResultButton = new QPushButton("Open here", resultActions);
+    m_openInNewTabButton = new QPushButton("New tab", resultActions);
     m_revealResultButton = new QPushButton("Locate", resultActions);
     m_copyResultPathButton = new QPushButton("Copy path", resultActions);
     resultActionsLayout->addWidget(m_openResultButton);
     resultActionsLayout->addWidget(m_openInNewTabButton);
     resultActionsLayout->addWidget(m_revealResultButton);
     resultActionsLayout->addWidget(m_copyResultPathButton);
-    layout->addWidget(resultActions);
+    matchCardLayout->addWidget(resultActions);
+    
+    layout->addWidget(m_matchCard);
 
-    layout->addWidget(makeDivider(content));
     layout->addWidget(makeSectionTitle("Current Selection", content));
 
-    m_selectionTitle = makeValueLabel(content, "RailFileName");
-    layout->addWidget(m_selectionTitle);
+    m_selectionCard = new QWidget(content);
+    m_selectionCard->setProperty("class", "RailDetailCard");
+    auto *selectionCardLayout = new QVBoxLayout(m_selectionCard);
+    selectionCardLayout->setContentsMargins(0, 0, 0, 0);
+    selectionCardLayout->setSpacing(0);
 
-    m_selectionMeta = makeValueLabel(content, "RailLabel");
-    layout->addWidget(m_selectionMeta);
+    m_selectionTitle = makeValueLabel(m_selectionCard, "RailFileName");
+    selectionCardLayout->addWidget(m_selectionTitle);
 
-    m_selectionPath = makeValueLabel(content);
+    m_selectionMeta = makeValueLabel(m_selectionCard, "RailLabel");
+    selectionCardLayout->addWidget(m_selectionMeta);
+
+    m_selectionPath = makeValueLabel(m_selectionCard);
     m_selectionPath->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    layout->addWidget(m_selectionPath);
+    selectionCardLayout->addWidget(m_selectionPath);
 
-    auto *selectionActions = new QWidget(content);
+    auto *selectionActions = new QWidget(m_selectionCard);
     auto *selectionActionsLayout = new QHBoxLayout(selectionActions);
-    selectionActionsLayout->setContentsMargins(18, 10, 18, 8);
+    selectionActionsLayout->setContentsMargins(16, 10, 16, 8);
     selectionActionsLayout->setSpacing(6);
-    m_openSelectionButton = new QPushButton("Open", selectionActions);
+    m_openSelectionButton = new QPushButton("Open here", selectionActions);
     m_revealSelectionButton = new QPushButton("Reveal", selectionActions);
     m_copySelectionPathButton = new QPushButton("Copy path", selectionActions);
     selectionActionsLayout->addWidget(m_openSelectionButton);
     selectionActionsLayout->addWidget(m_revealSelectionButton);
     selectionActionsLayout->addWidget(m_copySelectionPathButton);
-    layout->addWidget(selectionActions);
+    selectionCardLayout->addWidget(selectionActions);
+
+    layout->addWidget(m_selectionCard);
 
     layout->addStretch();
     scroll->setWidget(content);
@@ -269,12 +303,18 @@ IxosRail::IxosRail(QWidget *parent)
 
     connect(closeButton, &QPushButton::clicked, this, &IxosRail::requestClose);
     connect(m_searchInput, &QLineEdit::returnPressed, this, &IxosRail::triggerSearch);
+    connect(m_searchInput, &QLineEdit::textChanged, this, [this]() {
+        scheduleLiveSearch();
+    });
     connect(m_searchButton, &QPushButton::clicked, this, &IxosRail::triggerSearch);
+    connect(m_modeBox, &QComboBox::currentIndexChanged, this, [this]() {
+        scheduleLiveSearch();
+    });
     connect(m_resultList, &QListWidget::currentRowChanged, this, &IxosRail::handleResultSelection);
     connect(m_resultList, &QListWidget::itemDoubleClicked, this, [this]() {
         const QString path = currentActionPath();
         if (!path.isEmpty()) {
-            emit openFileRequested(path);
+            emit openPathInNewTabRequested(path);
         }
     });
 
@@ -287,7 +327,7 @@ IxosRail::IxosRail(QWidget *parent)
         m_resultList->clear();
         m_searchSummaryLabel->setText(QStringLiteral("Searching \"%1\" in %2")
                                           .arg(request.query, QDir::toNativeSeparators(request.directory)));
-        setStatusMessage("Scanning folder and collecting quick hits...");
+        setStatusMessage("Scanning cached results and ranking matches...");
         syncDetailPanel();
     });
     connect(m_provider, &ISearchProvider::searchStateChanged, this, [this](const QString &message, bool isError) {
@@ -324,6 +364,7 @@ IxosRail::IxosRail(QWidget *parent)
                                               .arg(m_showingSemanticResults ? "ranked" : "quick")
                                               .arg(modeLabel()));
         }
+        maybeAutoOpenTopResult();
         syncDetailPanel();
     });
 
@@ -373,6 +414,23 @@ IxosRail::IxosRail(QWidget *parent)
     m_searchSummaryLabel->setText("The top search box runs Ixos search in the current folder.");
     clearDetails();
     setSearchRoot(QDir::homePath());
+    m_matchBreakdown->hide();
+    m_matchTags->hide();
+    m_openResultButton->hide();
+    m_copyResultPathButton->hide();
+    m_openSelectionButton->hide();
+    m_copySelectionPathButton->hide();
+
+    connect(m_liveSearchTimer, &QTimer::timeout, this, [this]() {
+        const QString query = m_searchInput->text().trimmed();
+        if (query.size() < 2) {
+            if (query.isEmpty()) {
+                clearSearchSession("Search the current folder with natural language or keywords.");
+            }
+            return;
+        }
+        triggerSearch();
+    });
 }
 
 void IxosRail::setSearchRoot(const QString &path) {
@@ -390,8 +448,30 @@ void IxosRail::setSearchRoot(const QString &path) {
 
 void IxosRail::submitToolbarSearch(const QString &query, int mode) {
     setSearchMode(mode);
-    m_searchInput->setText(query.trimmed());
+    const QString trimmed = query.trimmed();
+    const bool blocked = m_searchInput->blockSignals(true);
+    m_searchInput->setText(trimmed);
+    m_searchInput->blockSignals(blocked);
+    m_autoOpenEnabled = true;
+    if (trimmed.isEmpty()) {
+        clearSearchSession("Search the current folder with natural language or keywords.");
+        return;
+    }
     triggerSearch();
+}
+
+void IxosRail::submitToolbarDraft(const QString &query, int mode) {
+    setSearchMode(mode);
+    const QString trimmed = query.trimmed();
+    const bool blocked = m_searchInput->blockSignals(true);
+    m_searchInput->setText(trimmed);
+    m_searchInput->blockSignals(blocked);
+    m_autoOpenEnabled = true;
+    if (trimmed.isEmpty()) {
+        clearSearchSession("Search the current folder with natural language or keywords.");
+        return;
+    }
+    scheduleLiveSearch();
 }
 
 void IxosRail::showFileDetails(const QFileInfo &info, int selectedCount, quint64 selectedBytes) {
@@ -453,10 +533,11 @@ void IxosRail::focusSearch() {
 void IxosRail::triggerSearch() {
     const QString query = m_searchInput->text().trimmed();
     if (query.isEmpty()) {
-        setStatusMessage("Enter a query to search the current folder.");
-        m_searchSummaryLabel->setText("Type a natural-language query or keywords to search this folder.");
+        clearSearchSession("Type a natural-language query or keywords to search this folder.");
         return;
     }
+
+    m_autoOpenEnabled = true;
 
     const QString root = m_searchRoot.isEmpty() ? QDir::homePath() : m_searchRoot;
     SearchRequest request;
@@ -470,15 +551,42 @@ void IxosRail::triggerSearch() {
     m_provider->startSearch(request);
 }
 
+void IxosRail::scheduleLiveSearch() {
+    const QString query = m_searchInput->text().trimmed();
+    if (query.isEmpty()) {
+        clearSearchSession("Search the current folder with natural language or keywords.");
+        return;
+    }
+    m_autoOpenEnabled = true;
+    m_liveSearchTimer->start();
+}
+
+void IxosRail::clearSearchSession(const QString &summary) {
+    m_liveSearchTimer->stop();
+    m_provider->cancelSearch();
+    m_results.clear();
+    m_selectedResultRow = -1;
+    m_showingSemanticResults = false;
+    m_searchInFlight = false;
+    m_lastSearchFailed = false;
+    m_lastAutoOpenedPath.clear();
+    m_lastAutoOpenedQuery.clear();
+    m_resultList->clear();
+    setStatusMessage("Ixos is ready.");
+    m_searchSummaryLabel->setText(summary);
+    syncDetailPanel();
+}
+
 void IxosRail::renderResults(const QList<SearchHit> &results, bool semanticResults) {
     m_results = results;
     m_showingSemanticResults = semanticResults;
     m_resultList->clear();
 
+    int rank = 1;
     for (const SearchHit &item : results) {
         auto *listItem = new QListWidgetItem();
         auto *card = new SearchResultCard(m_resultList);
-        card->setContent(item, semanticResults, relativePathForResult(item), summaryTextForResult(item));
+        card->setContent(item, semanticResults, relativePathForResult(item), summaryTextForResult(item), rank++);
         listItem->setSizeHint(card->sizeHint());
         m_resultList->addItem(listItem);
         m_resultList->setItemWidget(listItem, card);
@@ -493,6 +601,7 @@ void IxosRail::renderResults(const QList<SearchHit> &results, bool semanticResul
         setStatusMessage("No matches in this folder.");
     }
 
+    maybeAutoOpenTopResult();
     syncDetailPanel();
 }
 
@@ -507,10 +616,22 @@ void IxosRail::handleResultSelection(int row) {
     }
 
     syncDetailPanel();
+
+    if (row >= 0 && row < m_results.size()) {
+        emit autoOpenPathRequested(m_results.at(row).path);
+    }
 }
 
 void IxosRail::syncDetailPanel() {
     const bool hasResult = m_selectedResultRow >= 0 && m_selectedResultRow < m_results.size();
+    const bool hasActiveQuery = !m_searchInput->text().trimmed().isEmpty();
+    if (m_matchCard) {
+        m_matchCard->setVisible(hasActiveQuery || hasResult || m_searchInFlight);
+    }
+    if (m_selectionCard) {
+        m_selectionCard->setVisible(!hasActiveQuery && !hasResult);
+    }
+
     if (!hasResult) {
         m_matchTitle->setText(m_searchInput->text().trimmed().isEmpty()
                                   ? "Search this folder"
@@ -520,12 +641,14 @@ void IxosRail::syncDetailPanel() {
                                  : (m_lastSearchFailed ? "Search did not complete cleanly." : m_statusMessage));
         m_matchPath->clear();
         m_matchExplanation->setText(m_results.isEmpty()
-                                        ? "Ixos will show ranked files, snippets, and why they matched."
-                                        : "Pick a result to inspect its evidence and open it from here.");
+                                        ? "Ixos will show the strongest files first and keep the center pane synced."
+                                        : "Select a result to update the center pane and inspect its strongest evidence.");
         m_matchEvidence->clear();
         m_matchBreakdown->clear();
         m_matchTags->clear();
         m_matchSnippet->clear();
+        m_matchBreakdown->hide();
+        m_matchTags->hide();
         updateActionStates();
         return;
     }
@@ -546,7 +669,7 @@ void IxosRail::syncDetailPanel() {
     }
     m_matchExplanation->setText(explanation);
     m_matchEvidence->setText(evidenceTextForResult(item));
-    m_matchBreakdown->setText(breakdownTextForResult(item));
+    m_matchBreakdown->setText(QString());
 
     QStringList tags;
     if (item.hasEvidence) {
@@ -558,6 +681,8 @@ void IxosRail::syncDetailPanel() {
     }
     m_matchTags->setText(tags.join("   "));
     m_matchSnippet->setPlainText(detailTextForResult(item));
+    m_matchBreakdown->hide();
+    m_matchTags->hide();
     updateActionStates();
 }
 
@@ -622,19 +747,19 @@ QString IxosRail::summaryTextForResult(const SearchHit &item) const {
                    : QStringLiteral("No preview available.");
     }
 
-    return trimmedLine(detail.left(180));
+    return trimmedLine(detail.left(120));
 }
 
 QString IxosRail::evidenceTextForResult(const SearchHit &item) const {
     QStringList parts;
     if (item.hasEvidence && item.evidence.lexicalHitCount >= 0) {
-        parts << QStringLiteral("Lexical hits: %1").arg(item.evidence.lexicalHitCount);
+        parts << QStringLiteral("%1 lexical hits").arg(item.evidence.lexicalHitCount);
     }
     if (item.hasEvidence && !item.evidence.fileType.isEmpty()) {
-        parts << QStringLiteral("Type: %1").arg(item.evidence.fileType);
+        parts << item.evidence.fileType;
     }
     if (item.hasEvidence && !item.evidence.matchedTerms.isEmpty()) {
-        parts << QStringLiteral("Matched terms: %1").arg(item.evidence.matchedTerms.join(", "));
+        parts << QStringLiteral("Matched: %1").arg(item.evidence.matchedTerms.join(", "));
     }
     return parts.join("  ");
 }
@@ -659,6 +784,26 @@ QString IxosRail::relativePathForResult(const SearchHit &item) const {
         return QDir::toNativeSeparators(item.path);
     }
     return QDir::toNativeSeparators(relative);
+}
+
+void IxosRail::maybeAutoOpenTopResult() {
+    if (!m_autoOpenEnabled || m_results.isEmpty()) {
+        return;
+    }
+
+    const QString currentQuery = m_searchInput->text().trimmed();
+    const SearchHit &top = m_results.first();
+    if (top.path.isEmpty()) {
+        return;
+    }
+
+    if (m_lastAutoOpenedQuery == currentQuery && m_lastAutoOpenedPath == top.path) {
+        return;
+    }
+
+    m_lastAutoOpenedQuery = currentQuery;
+    m_lastAutoOpenedPath = top.path;
+    emit autoOpenPathRequested(top.path);
 }
 
 } // namespace Ixplorer

@@ -1,3 +1,67 @@
+# STATE SNAPSHOT (Ixplorer host hardening + navigation simplification, 2026-03-10)
+- Date: 2026-03-10
+- Current baseline numbers:
+  - Broad associated-app hosting caused false-positive window capture and unstable behavior for unsupported PDF/video/UWP/browser-style associations.
+  - The rail still duplicated too much search UI and exposed more actions/detail than the main browse-open loop needed.
+- Current best v2 numbers:
+  - Hosting is now gated by an explicit supported-app capability list, candidate matching is much tighter, top-level chrome is stripped from hosted windows, and the host backdrop adapts to the dominant embedded color.
+  - The rail now hides its duplicate search controls, leans on top-bar search as primary, and reduces button clutter while keeping same-pane result browsing.
+- Current bottleneck ranking:
+  1. Manual app-by-app QA is still needed for supported hosts such as Office, Acrobat-family PDF readers, VLC, and VS Code.
+  2. UWP-style/default consumer viewers remain intentionally outside the embedded host path until there is a stable per-app strategy.
+  3. Broader navigation simplification across sidebar/tab behaviors can still go further after this pass.
+- Current pass validation (2026-03-10):
+  - `C:\Qt\Tools\Ninja\ninja.exe -C ixplorer/build` (with `C:\Qt\Tools\Ninja` on `PATH`): PASS
+  - `C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe` startup smoke (alive after 4s): PASS
+- What is next (top 3 tasks):
+  1. Manually verify supported hosts and prune/add the allowlist based on real behavior.
+  2. Simplify sidebar/tab actions and search-result affordances further so Ixplorer reads as browse-first, not search-heavy.
+  3. Decide whether unsupported PDF/video/image cases should stay external or gain dedicated app-specific embedding paths.
+
+# STATE SNAPSHOT (Ixplorer native-hosting pivot, 2026-03-10)
+- Date: 2026-03-10
+- Current baseline numbers:
+  - Ixplorer center pane used custom internal previews/editors for a narrow set of file types and sent Office/PDF/default-app flows external.
+  - Ixos rail search worked, but it rendered too much detail, default result clicks opened/focused differently from auto-open, and cached search mode was not the default on the Qt boundary.
+- Current best v2 numbers:
+  - Center-pane document tabs now attempt exact associated-app hosting on Windows by launching the default app, discovering its top-level window, and embedding that native window into the workspace.
+  - Search requests from Ixplorer now default to `--cache-mode native-cache`, top-result selection keeps a single preview surface in sync, and the rail/detail density is trimmed.
+- Current bottleneck ranking:
+  1. Foreign-window hosting is real but still depends on per-app Windows behavior; Office/PDF/manual QA needs hands-on verification.
+  2. The rail is materially cleaner, but richer action/context grouping and keyboarding can still improve.
+  3. GUI verification is still a startup smoke plus CLI boundary validation, not a scripted interaction suite.
+- Current pass validation (2026-03-10):
+  - `cargo build --release`: PASS
+  - `target\\release\\ixos.exe search 'research' --dir '.\\ixplorer\\src' --json --progressive --show-scores --evidence --context 1 --limit 3 --search-mode auto --cache-mode native-cache`: PASS
+  - `C:\Qt\Tools\Ninja\ninja.exe -C ixplorer/build` (with `C:\Qt\Tools\Ninja` on `PATH`): PASS
+  - `C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe` startup smoke (alive after 4s): PASS
+- What is next (top 3 tasks):
+  1. Manually validate Word, PowerPoint, PDF, Photos, and Notepad-hosted windows for resize, tab-switch, close, and reopen behavior.
+  2. Tighten foreign-window cleanup for apps that reuse existing processes/windows instead of launching a fresh top-level window.
+  3. Continue reducing right-rail density and add stronger keyboard navigation/open-in-place affordances.
+
+# STATE SNAPSHOT (Ixplorer workspace + search pass, 2026-03-10)
+- Date: 2026-03-10
+- Current baseline numbers:
+  - Ixplorer center pane only hosted explorer tabs; files were always opened externally.
+  - Ixos search already used the real CLI progressive JSON contract, but toolbar search only submitted explicitly and never auto-opened results.
+- Current best v2 numbers:
+  - Capability-based center-pane handling shipped for text/code edit tabs, image preview tabs, and explicit external fallback.
+  - Top-bar live search now drives the rail, the top in-app result can auto-open into a reusable preview tab, and `Ctrl+K` opens a real command palette.
+- Current bottleneck ranking:
+  1. Interactive GUI QA is still manual; search-preview-edit-close loops need hands-on validation beyond startup smoke.
+  2. In-app preview coverage is intentionally narrow today; PDF/Office/media remain external until stable native hosts are added.
+  3. Search result rows are materially better, but they still use widget composition rather than a deeper custom delegate model.
+- Current pass validation (2026-03-10):
+  - `cargo build --release`: PASS
+  - `cmake -S ixplorer -B ixplorer/build -G Ninja -DCMAKE_BUILD_TYPE=Release`: PASS
+  - `cmake --build ixplorer/build`: PASS
+  - `C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe` startup smoke (alive after 4s): PASS
+- What is next (top 3 tasks):
+  1. Manually exercise search auto-open, text edit/save, image preview resize, and preview-tab promotion flows.
+  2. Decide whether PDF/media preview should be added with additional Qt modules or remain external by policy.
+  3. Add lightweight GUI smoke coverage for core workspace open/close/search lifecycle paths.
+
 # STATE SNAPSHOT (Ixplorer major implementation pass, 2026-03-09)
 - Date: 2026-03-09
 - Current baseline numbers:

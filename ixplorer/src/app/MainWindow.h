@@ -5,11 +5,12 @@
 
 namespace Ixplorer {
 
-class ExplorerToolbar;
 class AppSidebar;
-class TabWorkspace;
+class CommandPalette;
+class ExplorerToolbar;
 class IxosRail;
 class StatusStrip;
+class TabWorkspace;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -25,6 +26,8 @@ private:
     void setupLayout();
     void setupConnections();
     void setupShortcuts();
+    void openCommandPalette();
+    void handlePaletteCommand(const QString &commandId);
     void onPathChanged(const QString &path);
     void setRailVisible(bool visible);
     void toggleRailVisible();
@@ -34,6 +37,7 @@ private:
     TabWorkspace *m_workspace;
     IxosRail *m_rail;
     StatusStrip *m_statusStrip;
+    CommandPalette *m_palette;
     QSplitter *m_splitter;
     int m_lastRailWidth = 360;
     bool m_railVisible = false;

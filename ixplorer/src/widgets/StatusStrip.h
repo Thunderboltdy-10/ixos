@@ -6,6 +6,8 @@
 
 namespace Ixplorer {
 
+class ActivityIndicator;
+
 class StatusStrip : public QWidget {
     Q_OBJECT
 public:
@@ -16,8 +18,10 @@ public:
     void clearSelectionInfo();
     void setPath(const QString &path);
     void setStatusMessage(const QString &message);
+    void setStatusState(int state);
 
 private:
+    ActivityIndicator *m_indicator;
     QLabel *m_itemCountLabel;
     QLabel *m_selectionLabel;
     QLabel *m_statusLabel;

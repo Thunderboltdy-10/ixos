@@ -1,4 +1,5 @@
 #include "widgets/CommandPalette.h"
+#include "utils/FuzzyMatch.h"
 
 #include <QEvent>
 #include <QHBoxLayout>
@@ -6,6 +7,8 @@
 #include <QLabel>
 #include <QListWidgetItem>
 #include <QVBoxLayout>
+#include <QSettings>
+#include <algorithm>
 
 namespace Ixplorer {
 
@@ -26,7 +29,6 @@ CommandPalette::CommandPalette(QWidget *parent)
     setObjectName("CommandPalette");
     setModal(true);
     setWindowFlag(Qt::FramelessWindowHint, true);
-    setFixedSize(640, 420);
 
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(18, 18, 18, 18);
@@ -57,6 +59,15 @@ CommandPalette::CommandPalette(QWidget *parent)
     m_list->installEventFilter(this);
 }
 
+void CommandPalette::resizeEvent(QResizeEvent* event) {
+    QDialog::resizeEvent(event);
+    if (parentWidget()) {
+        int w = qBound(480, parentWidget()->width() - 100, 720);
+        setFixedSize(w, 420);
+        move(parentWidget()->frameGeometry().center() - rect().center());
+    }
+}
+
 void CommandPalette::setCommands(const QVector<CommandPaletteItem> &commands) {
     m_commands = commands;
     m_input->clear();
@@ -66,24 +77,88 @@ void CommandPalette::setCommands(const QVector<CommandPaletteItem> &commands) {
 
 void CommandPalette::rebuildList() {
     const QString query = m_input->text().trimmed();
-    const QString lowered = query.toLower();
 
     m_list->clear();
 
     if (!query.isEmpty()) {
-        auto *item = new QListWidgetItem(QStringLiteral("Search \"%1\"").arg(query), m_list);
+        auto *item = new QListWidgetItem(m_list);
         item->setData(Qt::UserRole, QStringLiteral("__search__"));
         item->setToolTip(QStringLiteral("Run Ixos search in the current workspace"));
+        
+        // Custom widget for item to show shortcut right-aligned
+        auto *widget = new QWidget(m_list);
+        auto *layout = new QHBoxLayout(widget);
+        layout->setContentsMargins(8, 4, 8, 4);
+        auto *label = new QLabel(QStringLiteral("Search \"%1\"").arg(query));
+        label->setObjectName("CommandPaletteItemTitle");
+        layout->addWidget(label);
+        layout->addStretch();
+        auto *shortcut = new QLabel("Enter");
+        shortcut->setObjectName("CommandPaletteItemShortcut");
+        layout->addWidget(shortcut);
+        
+        item->setSizeHint(widget->sizeHint());
+        m_list->addItem(item);
+        m_list->setItemWidget(item, widget);
     }
 
-    for (const auto &command : m_commands) {
-        if (!lowered.isEmpty() && !haystackFor(command).contains(lowered)) {
-            continue;
-        }
+    struct ScoredCommand {
+        CommandPaletteItem item;
+        int score;
+    };
+    QVector<ScoredCommand> scored;
 
-        auto *item = new QListWidgetItem(QStringLiteral("%1\n%2").arg(command.title, command.subtitle), m_list);
-        item->setData(Qt::UserRole, command.id);
-        item->setToolTip(command.subtitle);
+    for (const auto &command : m_commands) {
+        int score = 0;
+        if (!query.isEmpty()) {
+            score = FuzzyMatch::score(query, haystackFor(command));
+            if (score < 0) continue;
+        }
+        scored.append({command, score});
+    }
+
+    std::sort(scored.begin(), scored.end(), [](const ScoredCommand& a, const ScoredCommand& b) {
+        return a.score > b.score;
+    });
+
+    for (const auto &sc : scored) {
+        auto *item = new QListWidgetItem(m_list);
+        item->setData(Qt::UserRole, sc.item.id);
+        item->setToolTip(sc.item.subtitle);
+        
+        auto *widget = new QWidget(m_list);
+        auto *layout = new QHBoxLayout(widget);
+        layout->setContentsMargins(8, 4, 8, 4);
+        
+        auto *textLayout = new QVBoxLayout();
+        auto *title = new QLabel(sc.item.title);
+        title->setObjectName("CommandPaletteItemTitle");
+        auto *subtitle = new QLabel(sc.item.subtitle);
+        subtitle->setObjectName("CommandPaletteItemSubtitle");
+        textLayout->addWidget(title);
+        textLayout->addWidget(subtitle);
+        
+        layout->addLayout(textLayout);
+        layout->addStretch();
+        
+        // Fake shortcut logic based on command ID for visual purposes
+        QString hotkey;
+        if (sc.item.id == "focus_search") hotkey = "Ctrl+F";
+        else if (sc.item.id == "toggle_rail") hotkey = "Ctrl+R";
+        else if (sc.item.id == "new_tab") hotkey = "Ctrl+T";
+        else if (sc.item.id == "close_tab") hotkey = "Ctrl+W";
+        else if (sc.item.id == "refresh") hotkey = "F5";
+        else if (sc.item.id == "go_up") hotkey = "Alt+Up";
+        
+        if (!hotkey.isEmpty()) {
+            auto *shortcut = new QLabel(hotkey);
+            shortcut->setObjectName("CommandPaletteItemShortcut");
+            layout->addWidget(shortcut);
+        }
+        
+        item->setSizeHint(widget->sizeHint());
+        m_list->addItem(item);
+        m_list->setItemWidget(item, widget);
     }
 
     if (m_list->count() == 0) {

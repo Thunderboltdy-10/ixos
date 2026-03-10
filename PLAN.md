@@ -1,3 +1,43 @@
+# STATE SNAPSHOT (Ixplorer host stabilization + redesign handoff, 2026-03-10)
+- Date: 2026-03-10
+- Current baseline numbers:
+  - Hosted-window tabs could trigger visible jitter because the embedded window geometry and the outer shell theme were being force-updated too aggressively.
+  - Window capture still had enough looseness that unrelated/reused app windows were at risk of being matched, especially under existing-process desktop apps.
+- Current best v2 numbers:
+  - Hosted-window resizing now avoids repeated frame-change churn, shell tone updates are throttled, and backdrop sampling is event-driven instead of heartbeat-driven.
+  - Window capture now requires a stronger executable match when Windows exposes one, and the host path hides the candidate window before reparenting to reduce visible popup flashes.
+- Current bottleneck ranking:
+  1. Exact embedded-host quality still depends on the associated Windows app; Office/browser-backed PDF hosts still need app-specific verification.
+  2. The visual system remains inconsistent and needs a proper redesign pass rather than more piecemeal QSS tweaks.
+  3. The search rail still needs a simpler information architecture once the redesign direction is chosen.
+- Current pass validation (2026-03-10):
+  - `C:\Qt\Tools\Ninja\ninja.exe -C ixplorer/build` (with `C:\Qt\Tools\Ninja` on `PATH`): PASS
+  - `C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe` startup smoke (alive after 4s): PASS
+- What is next (top 3 tasks):
+  1. Manually verify that hosted Office and browser-backed document windows no longer jitter/disappear during resize and tab switching.
+  2. Hand off the shell to a deeper UI redesign pass with explicit architecture/library constraints instead of incremental QSS edits.
+  3. Rework the Ixos rail/search IA after the new navigation/chrome direction is set.
+
+# STATE SNAPSHOT (Ixplorer icon/navigation reset + host-first fallback, 2026-03-10)
+- Date: 2026-03-10
+- Current baseline numbers:
+  - Core navigation relied on a fragile private-use icon-font path, which degraded into broken square glyphs and layout overlap on this machine.
+  - Document tabs auto-opened externally on first host miss, so many extensions escaped the workspace immediately even when an in-app fallback would have been better.
+- Current best v2 numbers:
+  - Sidebar, toolbar, breadcrumbs, tabs, and file-list icons now use native Qt/system icon paths instead of font glyphs, with measured breadcrumb overflow and tab elision/scroll behavior.
+  - File opening is host-first for non-denylisted content, but image/text can now remain in-app as a fallback preview instead of being forced external on first miss.
+- Current bottleneck ranking:
+  1. Full desktop-chrome tint propagation from the embedded window is still only partial; the host pane adapts, but not every app surface does yet.
+  2. Exact-window hosting still depends on the behavior of each associated Windows app and needs more per-app tuning.
+  3. Ixos result/navigation simplification can still go further once the current surface is visually stable again.
+- Current pass validation (2026-03-10):
+  - `C:\Qt\Tools\Ninja\ninja.exe -C ixplorer/build` (with `C:\Qt\Tools\Ninja` on `PATH`): PASS
+  - `C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe` startup smoke (alive after 4s): PASS
+- What is next (top 3 tasks):
+  1. Verify the rebuilt navigation surfaces visually and continue trimming unnecessary Ixos actions/states.
+  2. Improve host capture for Office/PDF/media apps that reuse existing windows.
+  3. Propagate embedded-window color hints farther into the app chrome if the current center-pane tint is still insufficient.
+
 # STATE SNAPSHOT (Ixplorer host hardening + navigation simplification, 2026-03-10)
 - Date: 2026-03-10
 - Current baseline numbers:

@@ -5,11 +5,24 @@
 #include <QFileInfo>
 #include <QScrollArea>
 #include <QSettings>
+#include <QStyle>
 #include <QStandardPaths>
 #include <QStorageInfo>
 #include <QVBoxLayout>
 
 namespace Ixplorer {
+
+namespace {
+
+QIcon standardFolderIcon(QWidget *widget) {
+    return widget->style()->standardIcon(QStyle::SP_DirIcon);
+}
+
+QIcon standardFileIcon(QWidget *widget, QStyle::StandardPixmap icon) {
+    return widget->style()->standardIcon(icon);
+}
+
+} // namespace
 
 AppSidebar::AppSidebar(QWidget *parent)
     : QWidget(parent) {
@@ -30,10 +43,10 @@ AppSidebar::AppSidebar(QWidget *parent)
     layout->setContentsMargins(0, 8, 0, 8);
     layout->setSpacing(0);
 
-    m_homeSection = new SidebarSection("Home", content);
-    m_favoritesSection = new SidebarSection("Favorites", content);
-    m_recentsSection = new SidebarSection("Recents", content);
-    m_drivesSection = new SidebarSection("This PC", content);
+    m_homeSection = new SidebarSection("Home", QIcon(), content);
+    m_favoritesSection = new SidebarSection("Favorites", QIcon(), content);
+    m_recentsSection = new SidebarSection("Recents", standardFileIcon(this, QStyle::SP_FileDialogContentsView), content);
+    m_drivesSection = new SidebarSection("This PC", standardFileIcon(this, QStyle::SP_ComputerIcon), content);
 
     layout->addWidget(m_homeSection);
     layout->addWidget(m_favoritesSection);
@@ -79,26 +92,26 @@ void AppSidebar::recordRecentLocation(const QString &path) {
 
 void AppSidebar::populatePlaces() {
     const QString home = QDir::homePath();
-    m_homeSection->addItem("Home", home);
+    m_homeSection->addItem("Home", home, standardFileIcon(this, QStyle::SP_DirHomeIcon));
 
     const QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     if (!desktop.isEmpty()) {
-        m_homeSection->addItem("Desktop", desktop);
+        m_homeSection->addItem("Desktop", desktop, standardFileIcon(this, QStyle::SP_DesktopIcon));
     }
 
     const QString documents = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     if (!documents.isEmpty()) {
-        m_homeSection->addItem("Documents", documents);
+        m_homeSection->addItem("Documents", documents, standardFolderIcon(this));
     }
 
     const QString downloads = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
     if (!downloads.isEmpty()) {
-        m_homeSection->addItem("Downloads", downloads);
+        m_homeSection->addItem("Downloads", downloads, standardFolderIcon(this));
     }
 
-    m_favoritesSection->addItem("Pictures", QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
-    m_favoritesSection->addItem("Music", QStandardPaths::writableLocation(QStandardPaths::MusicLocation));
-    m_favoritesSection->addItem("Videos", QStandardPaths::writableLocation(QStandardPaths::MoviesLocation));
+    m_favoritesSection->addItem("Pictures", QStandardPaths::writableLocation(QStandardPaths::PicturesLocation), standardFolderIcon(this));
+    m_favoritesSection->addItem("Music", QStandardPaths::writableLocation(QStandardPaths::MusicLocation), standardFolderIcon(this));
+    m_favoritesSection->addItem("Videos", QStandardPaths::writableLocation(QStandardPaths::MoviesLocation), standardFolderIcon(this));
 
     loadRecents();
     refreshRecents();
@@ -112,7 +125,7 @@ void AppSidebar::populateDrives() {
         }
         const QString root = vol.rootPath();
         const QString name = vol.displayName().isEmpty() ? root : vol.displayName();
-        m_drivesSection->addItem(name, root);
+        m_drivesSection->addItem(name, root, standardFileIcon(this, QStyle::SP_DriveHDIcon));
     }
 }
 
@@ -129,14 +142,14 @@ void AppSidebar::persistRecents() const {
 void AppSidebar::refreshRecents() {
     m_recentsSection->clearItems();
     if (m_recentLocations.isEmpty()) {
-        m_recentsSection->addItem("No recent locations", "");
+        m_recentsSection->addItem("No recent locations", "", QIcon());
         return;
     }
 
     for (const QString &path : m_recentLocations) {
         const QFileInfo info(path);
         const QString label = info.fileName().isEmpty() ? path : info.fileName();
-        m_recentsSection->addItem(label, path);
+        m_recentsSection->addItem(label, path, standardFolderIcon(this));
     }
 }
 

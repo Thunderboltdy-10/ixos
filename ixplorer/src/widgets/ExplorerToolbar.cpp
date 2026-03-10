@@ -1,44 +1,59 @@
 #include "widgets/ExplorerToolbar.h"
-
 #include "widgets/BreadcrumbBar.h"
 
 #include <QHBoxLayout>
+#include <QPixmap>
 #include <QSizePolicy>
+#include <QStyle>
 
 namespace Ixplorer {
 
 ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     : QWidget(parent)
-    , m_backBtn(new QPushButton(QStringLiteral("\u2190"), this))
-    , m_fwdBtn(new QPushButton(QStringLiteral("\u2192"), this))
-    , m_upBtn(new QPushButton(QStringLiteral("\u2191"), this))
-    , m_refreshBtn(new QPushButton(QStringLiteral("\u21BB"), this))
+    , m_navGroup(new QFrame(this))
+    , m_backBtn(new QPushButton(this))
+    , m_fwdBtn(new QPushButton(this))
+    , m_upBtn(new QPushButton(this))
+    , m_refreshBtn(new QPushButton(this))
     , m_breadcrumb(new BreadcrumbBar(this))
     , m_searchModeBox(new QComboBox(this))
     , m_searchField(new QLineEdit(this))
-    , m_searchButton(new QPushButton("Search", this))
-    , m_paletteButton(new QPushButton("Ctrl+K", this))
+    , m_searchButton(new QPushButton(this))
+    , m_paletteButton(new QPushButton(this))
     , m_viewModeBox(new QComboBox(this))
-    , m_toggleRailBtn(new QPushButton("Ixos", this)) {
+    , m_toggleRailBtn(new QPushButton(this)) {
     setObjectName("ExplorerToolbar");
 
     auto *layout = new QHBoxLayout(this);
     layout->setContentsMargins(12, 8, 12, 8);
     layout->setSpacing(8);
 
+    m_navGroup->setObjectName("ToolbarNavGroup");
+    auto *navLayout = new QHBoxLayout(m_navGroup);
+    navLayout->setContentsMargins(0, 0, 0, 0);
+    navLayout->setSpacing(0);
+
+    m_backBtn->setIcon(style()->standardIcon(QStyle::SP_ArrowBack));
+    m_fwdBtn->setIcon(style()->standardIcon(QStyle::SP_ArrowForward));
+    m_upBtn->setIcon(style()->standardIcon(QStyle::SP_ArrowUp));
+    m_refreshBtn->setIcon(style()->standardIcon(QStyle::SP_BrowserReload));
+
     m_backBtn->setToolTip("Back (Alt+Left)");
     m_fwdBtn->setToolTip("Forward (Alt+Right)");
     m_upBtn->setToolTip("Up (Alt+Up)");
     m_refreshBtn->setToolTip("Refresh (F5)");
+    
     m_backBtn->setObjectName("ToolbarNavButton");
     m_fwdBtn->setObjectName("ToolbarNavButton");
     m_upBtn->setObjectName("ToolbarNavButton");
     m_refreshBtn->setObjectName("ToolbarNavButton");
 
-    layout->addWidget(m_backBtn);
-    layout->addWidget(m_fwdBtn);
-    layout->addWidget(m_upBtn);
-    layout->addWidget(m_refreshBtn);
+    navLayout->addWidget(m_backBtn);
+    navLayout->addWidget(m_fwdBtn);
+    navLayout->addWidget(m_upBtn);
+    navLayout->addWidget(m_refreshBtn);
+
+    layout->addWidget(m_navGroup);
     layout->addSpacing(8);
 
     layout->addWidget(m_breadcrumb, 1);
@@ -52,6 +67,9 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     m_searchModeBox->setToolTip("Ixos search mode");
     layout->addWidget(m_searchModeBox);
 
+    // Search Icon rendering
+    m_searchField->addAction(style()->standardIcon(QStyle::SP_FileDialogContentsView), QLineEdit::LeadingPosition);
+
     m_searchField->setObjectName("SearchField");
     m_searchField->setPlaceholderText("Search this folder with Ixos");
     m_searchField->setClearButtonEnabled(true);
@@ -60,10 +78,14 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     layout->addWidget(m_searchField, 1);
 
     m_searchButton->setObjectName("ToolbarPrimaryButton");
+    m_searchButton->setIcon(style()->standardIcon(QStyle::SP_ArrowForward));
+    m_searchButton->setFixedWidth(38);
     m_searchButton->setToolTip("Run Ixos search in the current folder");
     layout->addWidget(m_searchButton);
 
     m_paletteButton->setObjectName("ToolbarGhostButton");
+    m_paletteButton->setIcon(style()->standardIcon(QStyle::SP_TitleBarMenuButton));
+    m_paletteButton->setFixedWidth(38);
     m_paletteButton->setToolTip("Open command palette");
     layout->addWidget(m_paletteButton);
     layout->addSpacing(8);
@@ -77,6 +99,8 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
 
     m_toggleRailBtn->setObjectName("ToolbarRailButton");
     m_toggleRailBtn->setCheckable(true);
+    m_toggleRailBtn->setIcon(style()->standardIcon(QStyle::SP_FileDialogDetailedView));
+    m_toggleRailBtn->setFixedWidth(38);
     m_toggleRailBtn->setToolTip("Show or hide the Ixos rail");
     layout->addWidget(m_toggleRailBtn);
 
@@ -163,7 +187,6 @@ void ExplorerToolbar::setSearchMode(int mode) {
 
 void ExplorerToolbar::setRailVisible(bool visible) {
     m_toggleRailBtn->setChecked(visible);
-    m_toggleRailBtn->setText(visible ? "Hide Ixos" : "Ixos");
 }
 
 void ExplorerToolbar::focusSearch() {

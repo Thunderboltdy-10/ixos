@@ -1,6 +1,8 @@
 #include "widgets/DocumentPane.h"
+#include "theme/Colors.h"
 
 #include <QCoreApplication>
+#include <QEvent>
 #include <QGuiApplication>
 #include <QDir>
 #include <QElapsedTimer>
@@ -9,12 +11,14 @@
 #include <QImage>
 #include <QLabel>
 #include <QPixmap>
+#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QScreen>
 #include <QShowEvent>
 #include <QThread>
 #include <QTimer>
+#include <QUrl>
 #include <QVBoxLayout>
 #include <QWindow>
 #include <string>
@@ -122,7 +126,7 @@ QString associatedExecutableBaseName(const QString &path) {
 }
 
 bool isTopLevelEmbeddableWindow(HWND hwnd) {
-    if (!IsWindow(hwnd) || !IsWindowVisible(hwnd)) {
+    if (!IsWindow(hwnd)) {
         return false;
     }
     if (GetAncestor(hwnd, GA_ROOT) != hwnd) {
@@ -138,6 +142,70 @@ bool isTopLevelEmbeddableWindow(HWND hwnd) {
     }
 
     return true;
+}
+
+QString associatedOpenCommand(const QString &path) {
+    const QString suffix = QFileInfo(path).suffix().trimmed().toLower();
+    const QString association = suffix.isEmpty() ? QDir::toNativeSeparators(path) : QStringLiteral(".") + suffix;
+
+    DWORD length = 0;
+    AssocQueryStringW(ASSOCF_NONE,
+                      ASSOCSTR_COMMAND,
+                      reinterpret_cast<LPCWSTR>(association.utf16()),
+                      L"open",
+                      nullptr,
+                      &length);
+    if (length == 0) {
+        return QString();
+    }
+
+    std::wstring buffer;
+    buffer.resize(length + 2);
+    if (AssocQueryStringW(ASSOCF_NONE,
+                          ASSOCSTR_COMMAND,
+                          reinterpret_cast<LPCWSTR>(association.utf16()),
+                          L"open",
+                          buffer.data(),
+                          &length) != S_OK) {
+        return QString();
+    }
+
+    return QString::fromWCharArray(buffer.c_str()).trimmed();
+}
+
+QString expandEnvironmentStrings(const QString &command) {
+    DWORD length = ExpandEnvironmentStringsW(reinterpret_cast<LPCWSTR>(command.utf16()), nullptr, 0);
+    if (length == 0) {
+        return command;
+    }
+
+    std::wstring buffer;
+    buffer.resize(length + 2);
+    if (!ExpandEnvironmentStringsW(reinterpret_cast<LPCWSTR>(command.utf16()), buffer.data(), length + 1)) {
+        return command;
+    }
+
+    return QString::fromWCharArray(buffer.c_str()).trimmed();
+}
+
+QString expandAssociationCommand(const QString &command, const QString &path) {
+    if (command.isEmpty()) {
+        return QString();
+    }
+
+    const QString nativePath = QDir::toNativeSeparators(path);
+    const QString fileUrl = QUrl::fromLocalFile(nativePath).toString();
+    QString expanded = command;
+    expanded.replace(QStringLiteral("%1"), QStringLiteral("\"%1\"").arg(nativePath), Qt::CaseInsensitive);
+    expanded.replace(QStringLiteral("%l"), QStringLiteral("\"%1\"").arg(nativePath), Qt::CaseInsensitive);
+    expanded.replace(QStringLiteral("%L"), QStringLiteral("\"%1\"").arg(nativePath), Qt::CaseInsensitive);
+    expanded.replace(QStringLiteral("%u"), QStringLiteral("\"%1\"").arg(fileUrl), Qt::CaseInsensitive);
+    expanded.replace(QStringLiteral("%U"), QStringLiteral("\"%1\"").arg(fileUrl), Qt::CaseInsensitive);
+    expanded.replace(QStringLiteral("%*"), QString(), Qt::CaseInsensitive);
+    if (!expanded.contains(nativePath, Qt::CaseInsensitive) && !expanded.contains(fileUrl, Qt::CaseInsensitive)) {
+        expanded += QStringLiteral(" \"%1\"").arg(nativePath);
+    }
+    return expandEnvironmentStrings(expanded);
 }
 
 WindowCandidate findBestWindowCandidate(
@@ -169,8 +237,15 @@ WindowCandidate findBestWindowCandidate(
             const bool pidMatches = context->launchedProcessId != 0 && pid == context->launchedProcessId;
             const bool executableMatches =
                 !context->expectedExecutableLower.isEmpty() && executable == context->expectedExecutableLower;
+            const bool isVisible = IsWindowVisible(hwnd);
 
-            if (!titleMatches && !(pidMatches && executableMatches) && !(isNew && executableMatches)) {
+            if (!titleMatches && !(pidMatches && executableMatches)) {
+                return TRUE;
+            }
+            if (!context->expectedExecutableLower.isEmpty() && !executableMatches && !pidMatches) {
+                return TRUE;
+            }
+            if (!isVisible && !pidMatches) {
                 return TRUE;
             }
 
@@ -204,13 +279,44 @@ WindowCandidate findBestWindowCandidate(
 }
 
 bool launchAssociatedAppForPath(const QString &path, HANDLE *processHandle, DWORD *processId) {
+    const QString expandedCommand = expandAssociationCommand(associatedOpenCommand(path), path);
+    if (!expandedCommand.isEmpty()) {
+        STARTUPINFOW startupInfo{};
+        startupInfo.cb = sizeof(startupInfo);
+        startupInfo.dwFlags = STARTF_USESHOWWINDOW;
+        startupInfo.wShowWindow = SW_HIDE;
+
+        PROCESS_INFORMATION processInfo{};
+        std::wstring commandLine = expandedCommand.toStdWString();
+        commandLine.push_back(L'\0');
+        if (CreateProcessW(nullptr,
+                           commandLine.data(),
+                           nullptr,
+                           nullptr,
+                           FALSE,
+                           CREATE_UNICODE_ENVIRONMENT,
+                           nullptr,
+                           nullptr,
+                           &startupInfo,
+                           &processInfo)) {
+            CloseHandle(processInfo.hThread);
+            if (processHandle) {
+                *processHandle = processInfo.hProcess;
+            }
+            if (processId) {
+                *processId = processInfo.dwProcessId;
+            }
+            return true;
+        }
+    }
+
     SHELLEXECUTEINFOW info{};
     info.cbSize = sizeof(info);
     info.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC | SEE_MASK_FLAG_NO_UI;
     info.lpVerb = L"open";
     const QString nativePath = QDir::toNativeSeparators(path);
     info.lpFile = reinterpret_cast<LPCWSTR>(nativePath.utf16());
-    info.nShow = SW_SHOWNORMAL;
+    info.nShow = SW_HIDE;
 
     if (!ShellExecuteExW(&info)) {
         return false;
@@ -239,6 +345,12 @@ bool closeHostedWindow(WId windowId, quintptr processHandle) {
     return true;
 }
 
+int colorDistance(const QColor &left, const QColor &right) {
+    return qAbs(left.red() - right.red()) +
+           qAbs(left.green() - right.green()) +
+           qAbs(left.blue() - right.blue());
+}
+
 #endif
 
 } // namespace
@@ -249,11 +361,30 @@ DocumentPane::DocumentPane(const QString &path, bool previewMode, QWidget *paren
     , m_policy(resolveFileOpenPolicy(QFileInfo(m_filePath)))
     , m_previewMode(previewMode) {
     setObjectName("DocumentPane");
+    
+    QFileInfo info(m_filePath);
+    QString suffix = info.suffix().toLower();
+    if (m_policy.opensInApp()) {
+        m_hostMode = WindowEmbed;
+    } else if (suffix == "jpg" || suffix == "png" || suffix == "gif" || suffix == "svg" || suffix == "bmp" || suffix == "webp") {
+        m_hostMode = ImagePreview;
+    } else if (suffix == "txt" || suffix == "md" || suffix == "log" || suffix == "json" || suffix == "xml" || suffix == "cpp" || suffix == "py" || suffix == "rs" || suffix == "js" || suffix == "h") {
+        m_hostMode = TextPreview;
+    } else {
+        m_hostMode = Fallback;
+    }
+
     buildUi();
 
     connect(m_hostMonitor, &QTimer::timeout, this, &DocumentPane::handleHostedWindowHeartbeat);
 
-    if (m_policy.opensInApp()) {
+    if (m_hostMode == ImagePreview) {
+        setupImagePreview();
+        m_hostedReady = true;
+    } else if (m_hostMode == TextPreview) {
+        setupTextPreview();
+        m_hostedReady = true;
+    } else if (m_hostMode == WindowEmbed) {
         m_hostedReady = startHosting();
     }
 
@@ -300,6 +431,8 @@ void DocumentPane::focusPrimaryControl() {
 
 #ifdef Q_OS_WIN
     if (m_hostedWindowId != 0 && IsWindow(reinterpret_cast<HWND>(m_hostedWindowId))) {
+        SetActiveWindow(reinterpret_cast<HWND>(m_hostedWindowId));
+        SetFocus(reinterpret_cast<HWND>(m_hostedWindowId));
         SetForegroundWindow(reinterpret_cast<HWND>(m_hostedWindowId));
     }
 #endif
@@ -319,6 +452,13 @@ void DocumentPane::hideEvent(QHideEvent *event) {
 void DocumentPane::resizeEvent(QResizeEvent *event) {
     QWidget::resizeEvent(event);
     updateHostedGeometry();
+    if (m_hostMode == WindowEmbed && m_hostedReady) {
+        QTimer::singleShot(140, this, [this]() {
+            if (m_hostMode == WindowEmbed && m_hostedReady) {
+                refreshHostedBackdrop();
+            }
+        });
+    }
 }
 
 void DocumentPane::buildUi() {
@@ -338,6 +478,7 @@ void DocumentPane::buildUi() {
     m_hostSurface->setAttribute(Qt::WA_NativeWindow);
     m_hostSurface->setAttribute(Qt::WA_NoSystemBackground, false);
     m_hostSurface->setFocusPolicy(Qt::StrongFocus);
+    m_hostSurface->installEventFilter(this);
     m_contentLayout->addWidget(m_hostSurface, 1);
     m_hostSurface->hide();
 
@@ -364,11 +505,30 @@ void DocumentPane::buildUi() {
     });
     stateLayout->addWidget(m_externalButton, 0, Qt::AlignLeft);
     stateLayout->addStretch();
+    
+    m_imageLabel = new QLabel(m_contentRoot);
+    m_imageLabel->setAlignment(Qt::AlignCenter);
+    m_contentLayout->addWidget(m_imageLabel, 1);
+    m_imageLabel->hide();
+    
+    m_textEdit = new QPlainTextEdit(m_contentRoot);
+    m_textEdit->setReadOnly(true);
+    m_textEdit->setFont(QFont(QStringLiteral("Cascadia Mono"), 10));
+    m_textEdit->installEventFilter(this);
+    m_contentLayout->addWidget(m_textEdit, 1);
+    m_textEdit->hide();
 
     m_contentLayout->addWidget(m_stateCard, 1);
 
     m_hostMonitor = new QTimer(this);
     m_hostMonitor->setInterval(650);
+    
+    m_loadingTimer = new QTimer(this);
+    m_loadingTimer->setInterval(800);
+    connect(m_loadingTimer, &QTimer::timeout, this, [this]() {
+        m_skeletonPhase = !m_skeletonPhase;
+        m_stateCard->setStyleSheet(m_skeletonPhase ? QString("background-color: %1;").arg(Colors::qc(Colors::BgElevated).name()) : QString("background-color: %1;").arg(Colors::qc(Colors::BgSurface).name()));
+    });
 }
 
 bool DocumentPane::startHosting() {
@@ -412,22 +572,43 @@ bool DocumentPane::startHosting() {
     QElapsedTimer timer;
     timer.start();
 
-    while (timer.elapsed() < 10000) {
+    while (timer.elapsed() < 18000) {
         chosen = findBestWindowCandidate(baseline, fileNameLower, fileBaseNameLower, expectedExecutable, launchedProcessId);
-        if (chosen.hwnd != nullptr && chosen.score >= 70) {
+        const int requiredScore = expectedExecutable.isEmpty() ? 80 : 95;
+        if (chosen.hwnd != nullptr && chosen.score >= requiredScore) {
             break;
         }
 
         QCoreApplication::processEvents();
-        QThread::msleep(120);
+        QThread::msleep(timer.elapsed() < 1500 ? 35 : 120);
     }
 
     if (chosen.hwnd == nullptr || !IsWindow(chosen.hwnd)) {
         if (processHandle) {
             CloseHandle(processHandle);
         }
+        const QString suffix = info.suffix().toLower();
+        if (suffix == QStringLiteral("jpg") || suffix == QStringLiteral("png") || suffix == QStringLiteral("gif") ||
+            suffix == QStringLiteral("svg") || suffix == QStringLiteral("bmp") || suffix == QStringLiteral("webp")) {
+            m_hostMode = ImagePreview;
+            setupImagePreview();
+            emit statusMessage(QStringLiteral("Previewing %1 while the native app host was unavailable.")
+                                   .arg(info.fileName()));
+            return true;
+        }
+        if (suffix == QStringLiteral("txt") || suffix == QStringLiteral("md") || suffix == QStringLiteral("log") ||
+            suffix == QStringLiteral("json") || suffix == QStringLiteral("xml") || suffix == QStringLiteral("cpp") ||
+            suffix == QStringLiteral("py") || suffix == QStringLiteral("rs") || suffix == QStringLiteral("js") ||
+            suffix == QStringLiteral("h")) {
+            m_hostMode = TextPreview;
+            setupTextPreview();
+            emit statusMessage(QStringLiteral("Previewing %1 while the native app host was unavailable.")
+                                   .arg(info.fileName()));
+            return true;
+        }
         showStateMessage(QStringLiteral("Could not host the app window"),
-                         QStringLiteral("The associated app launched, but Ixplorer could not capture a stable top-level window to embed."));
+                         QStringLiteral("Ixplorer could not capture the associated app window for %1. Use Open externally, or try again after the viewer finishes loading.")
+                             .arg(info.fileName()));
         return false;
     }
 
@@ -443,6 +624,7 @@ bool DocumentPane::startHosting() {
     const LONG_PTR hostedExStyle =
         m_originalWindowExStyle & ~static_cast<LONG_PTR>(WS_EX_APPWINDOW | WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
 
+    ShowWindow(chosen.hwnd, SW_HIDE);
     SetWindowLongPtrW(chosen.hwnd, GWL_STYLE, hostedStyle);
     SetWindowLongPtrW(chosen.hwnd, GWL_EXSTYLE, hostedExStyle);
     SetParent(chosen.hwnd, hostHwnd);
@@ -452,7 +634,7 @@ bool DocumentPane::startHosting() {
                  0,
                  qMax(1, m_hostSurface->width()),
                  qMax(1, m_hostSurface->height()),
-                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+                 SWP_NOZORDER | SWP_FRAMECHANGED);
 
     m_hostedWindowId = reinterpret_cast<WId>(chosen.hwnd);
     m_processHandle = reinterpret_cast<quintptr>(processHandle);
@@ -464,6 +646,11 @@ bool DocumentPane::startHosting() {
     updateHostedGeometry();
     setHostedWindowVisible(isVisible());
     refreshHostedBackdrop();
+    QTimer::singleShot(300, this, [this]() {
+        if (m_hostMode == WindowEmbed && m_hostedReady) {
+            refreshHostedBackdrop();
+        }
+    });
 
     emit statusMessage(QStringLiteral("Hosted %1 inside the workspace.")
                            .arg(info.fileName()));
@@ -495,6 +682,12 @@ void DocumentPane::clearHostedSurface() {
     if (m_hostSurface) {
         m_hostSurface->hide();
     }
+    if (m_imageLabel) {
+        m_imageLabel->hide();
+    }
+    if (m_textEdit) {
+        m_textEdit->hide();
+    }
 }
 
 void DocumentPane::setHostedWindowVisible(bool visible) {
@@ -519,7 +712,7 @@ void DocumentPane::updateHostedGeometry() {
                  0,
                  qMax(1, m_hostSurface->width()),
                  qMax(1, m_hostSurface->height()),
-                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS);
 #endif
 }
 
@@ -549,9 +742,6 @@ void DocumentPane::handleHostedWindowHeartbeat() {
 
     updateHostedGeometry();
     ++m_backdropRefreshTick;
-    if (m_backdropRefreshTick % 3 == 0) {
-        refreshHostedBackdrop();
-    }
 #endif
 }
 
@@ -616,6 +806,10 @@ void DocumentPane::refreshHostedBackdrop() {
 }
 
 void DocumentPane::applyHostedBackdrop(const QColor &color) {
+    if (m_surfaceTone.isValid() && colorDistance(m_surfaceTone, color) < 18) {
+        return;
+    }
+    m_surfaceTone = color;
     const QString frame = color.name(QColor::HexRgb);
     const QColor edge = color.lighter(120);
     const QString edgeHex = edge.name(QColor::HexRgb);
@@ -630,11 +824,54 @@ void DocumentPane::applyHostedBackdrop(const QColor &color) {
         " border: 1px solid %2;"
         " border-radius: 18px;"
         "}").arg(frame, edgeHex));
+    emit surfaceToneChanged(m_surfaceTone);
+}
+
+void DocumentPane::setupImagePreview() {
+    QPixmap pixmap(m_filePath);
+    if (pixmap.isNull()) {
+        m_hostMode = Fallback;
+        m_hostedReady = false;
+        return;
+    }
+    // Scale down if needed, keeping aspect ratio
+    if (pixmap.width() > 1920 || pixmap.height() > 1080) {
+        pixmap = pixmap.scaled(1920, 1080, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    }
+    m_imageLabel->setPixmap(pixmap);
+    m_imageLabel->show();
+    m_stateCard->hide();
+    m_hostSurface->hide();
+    m_textEdit->hide();
+    applyHostedBackdrop(QColor(28, 30, 34));
+}
+
+void DocumentPane::setupTextPreview() {
+    QFile file(m_filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        m_hostMode = Fallback;
+        m_hostedReady = false;
+        return;
+    }
+    // Read up to 64KB
+    QByteArray data = file.read(64 * 1024);
+    m_textEdit->setPlainText(QString::fromUtf8(data));
+    m_textEdit->show();
+    m_stateCard->hide();
+    m_hostSurface->hide();
+    m_imageLabel->hide();
+    applyHostedBackdrop(QColor(20, 22, 26));
 }
 
 void DocumentPane::showStateMessage(const QString &title, const QString &body) {
     if (m_hostSurface) {
         m_hostSurface->hide();
+    }
+    if (m_imageLabel) {
+        m_imageLabel->hide();
+    }
+    if (m_textEdit) {
+        m_textEdit->hide();
     }
     if (m_contentRoot) {
         m_contentRoot->setStyleSheet(QString());
@@ -642,6 +879,8 @@ void DocumentPane::showStateMessage(const QString &title, const QString &body) {
     m_stateTitle->setText(title);
     m_stateBody->setText(body);
     m_stateCard->show();
+    m_surfaceTone = QColor(24, 26, 30);
+    emit surfaceToneChanged(m_surfaceTone);
 }
 
 void DocumentPane::syncUiState() {
@@ -653,13 +892,33 @@ void DocumentPane::syncUiState() {
         return;
     }
 
+    if (m_hostMode == ImagePreview || m_hostMode == TextPreview) {
+        m_stateCard->hide();
+        return;
+    }
+
     if (m_policy.opensInApp()) {
         showStateMessage(
             QStringLiteral("Associated app not embedded"),
-            QStringLiteral("Ixplorer will fall back to external open if the default app window cannot be hosted reliably."));
+            QStringLiteral("Ixplorer kept this tab in-app, but the associated window has not been captured yet."));
     } else {
         showStateMessage(m_policy.summary, m_policy.detail);
     }
+}
+
+bool DocumentPane::eventFilter(QObject *watched, QEvent *event) {
+    if ((watched == m_hostSurface || watched == m_textEdit) &&
+        (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::FocusIn)) {
+#ifdef Q_OS_WIN
+        if (m_hostedWindowId != 0 && IsWindow(reinterpret_cast<HWND>(m_hostedWindowId))) {
+            SetActiveWindow(reinterpret_cast<HWND>(m_hostedWindowId));
+            SetFocus(reinterpret_cast<HWND>(m_hostedWindowId));
+            SetForegroundWindow(reinterpret_cast<HWND>(m_hostedWindowId));
+        }
+#endif
+    }
+
+    return QWidget::eventFilter(watched, event);
 }
 
 } // namespace Ixplorer

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QColor>
 #include <QMainWindow>
 #include <QSplitter>
 
@@ -29,6 +30,7 @@ private:
     void openCommandPalette();
     void handlePaletteCommand(const QString &commandId);
     void onPathChanged(const QString &path);
+    void applyShellTone(const QColor &color);
     void setRailVisible(bool visible);
     void toggleRailVisible();
 
@@ -39,6 +41,8 @@ private:
     StatusStrip *m_statusStrip;
     CommandPalette *m_palette;
     QSplitter *m_splitter;
+    QWidget *m_shellRoot = nullptr;
+    QColor m_shellTone;
     int m_lastRailWidth = 360;
     bool m_railVisible = false;
 };

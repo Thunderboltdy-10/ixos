@@ -1141,3 +1141,48 @@
   - Removing that chrome reduces visual clash and makes the hosted view behave like part of the workspace.
 - Evidence:
   - `ixplorer/src/widgets/DocumentPane.cpp`
+
+## 2026-03-10 Ixplorer navigation icon strategy
+- Decision: remove private-use font-glyph icons from core navigation surfaces and switch those surfaces back to standard Qt/system icons plus measured text overflow.
+- Options considered:
+  - Keep the current icon-font approach and try to harden the fallback font path.
+  - Bundle a custom SVG/icon asset pack immediately.
+  - Use Qt/system icons now for reliability, then revisit a custom asset language later if needed.
+- Why chosen:
+  - The current font-glyph path was the direct source of the broken square-box UI and tab/sidebar/breadcrumb instability.
+  - Core navigation needs reliable symbols first; custom icon polish can come later without risking basic usability again.
+- Evidence:
+  - `ixplorer/src/widgets/AppSidebar.cpp`
+  - `ixplorer/src/widgets/ExplorerToolbar.cpp`
+  - `ixplorer/src/widgets/BreadcrumbBar.cpp`
+  - `ixplorer/src/widgets/TabWorkspace.cpp`
+  - `ixplorer/src/theme/ThemedFileIconProvider.cpp`
+
+## 2026-03-10 Ixplorer host-failure behavior
+- Decision: stop auto-launching external viewers immediately when a host attempt misses on the first pass; keep the tab in-app and fall back to preview/state where possible.
+- Options considered:
+  - Continue external fallback immediately on any host miss.
+  - Keep the tab alive and use a preview/state fallback path for safe formats.
+  - Block the UI in a long “connecting” state until hosting succeeds or times out.
+- Why chosen:
+  - Immediate external open made the app feel broken for many extensions and prevented the user from staying in the workspace.
+  - A host-first, preview-second flow is closer to the intended product shape while still avoiding unsafe embeds.
+- Evidence:
+  - `ixplorer/src/widgets/DocumentPane.cpp`
+  - `ixplorer/src/widgets/TabWorkspace.cpp`
+  - `ixplorer/src/utils/FileOpenPolicy.cpp`
+
+## 2026-03-10 Ixplorer host stabilization policy
+- Decision: prioritize host stability over live chrome tint churn by throttling shell recoloring, avoiding repeated frame-change resizes, and tightening executable-aware window matching before any further UI polish.
+- Options considered:
+  - Keep the aggressive live backdrop sampling and full-shell restyling loop for maximum color sync.
+  - Disable shell tone propagation entirely and keep the host pane isolated.
+  - Keep tone propagation, but make it sparse and thresholded while reducing resize/style churn in the hosted window path.
+- Why chosen:
+  - The aggressive path was a likely source of the visible shaking/displacement behavior and made the app feel broken even when hosting technically succeeded.
+  - Exact-window embedding is already a fragile integration surface; stability has to come before aesthetic responsiveness.
+  - A slower, thresholded tone sync still preserves the “embedded content belongs here” goal without hammering the whole shell every few hundred milliseconds.
+- Evidence:
+  - `ixplorer/src/widgets/DocumentPane.cpp`
+  - `ixplorer/src/app/MainWindow.cpp`
+  - `ixplorer/src/widgets/TabWorkspace.cpp`

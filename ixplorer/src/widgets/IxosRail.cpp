@@ -1,4 +1,5 @@
 #include "widgets/IxosRail.h"
+#include "widgets/SearchResultCard.h"
 
 #include <QApplication>
 #include <QClipboard>
@@ -43,82 +44,6 @@ QString formatScore(double score) {
 QString trimmedLine(const QString &text) {
     return text.simplified().trimmed();
 }
-
-class SearchResultCard : public QWidget {
-public:
-    explicit SearchResultCard(QWidget *parent = nullptr)
-        : QWidget(parent)
-        , m_rank(new QLabel(this))
-        , m_title(new QLabel(this))
-        , m_meta(new QLabel(this))
-        , m_path(new QLabel(this))
-        , m_summary(new QLabel(this)) {
-        setObjectName("RailResultCard");
-
-        auto *layout = new QVBoxLayout(this);
-        layout->setContentsMargins(14, 10, 14, 10);
-        layout->setSpacing(6);
-
-        auto *topRow = new QHBoxLayout();
-        topRow->setContentsMargins(0, 0, 0, 0);
-        topRow->setSpacing(8);
-
-        m_rank->setObjectName("RailResultRank");
-        topRow->addWidget(m_rank, 0, Qt::AlignTop);
-
-        m_title->setObjectName("RailResultTitle");
-        m_title->setWordWrap(true);
-        topRow->addWidget(m_title, 1);
-        layout->addLayout(topRow);
-
-        m_meta->setObjectName("RailResultMeta");
-        m_meta->setWordWrap(true);
-        layout->addWidget(m_meta);
-
-        m_path->setObjectName("RailResultPath");
-        m_path->setWordWrap(true);
-        layout->addWidget(m_path);
-
-        m_summary->setObjectName("RailResultSummary");
-        m_summary->setWordWrap(true);
-        layout->addWidget(m_summary);
-    }
-
-    void setContent(
-        const SearchHit &item,
-        bool semanticResults,
-        const QString &relativePath,
-        const QString &summary,
-        int rank) {
-        const QString kind = semanticResults ? QStringLiteral("Ranked") : QStringLiteral("Quick");
-        const QString fileType = item.hasEvidence && !item.evidence.fileType.isEmpty()
-                                     ? item.evidence.fileType
-                                     : (QFileInfo(item.path).suffix().isEmpty() ? QStringLiteral("file")
-                                                                                : QFileInfo(item.path).suffix().toLower());
-        const QString integrity = item.integrityVerified ? QStringLiteral("verified") : QStringLiteral("unverified");
-
-        m_rank->setText(QString::number(rank));
-        m_title->setText(item.filename);
-        m_meta->setText(QStringLiteral("%1  %2  %3  %4")
-                            .arg(formatScore(item.score), kind, fileType, integrity));
-        m_path->setText(relativePath);
-        m_summary->setText(summary);
-    }
-
-    void setActive(bool active) {
-        setProperty("active", active);
-        style()->unpolish(this);
-        style()->polish(this);
-        update();
-    }
-
-private:
-    QLabel *m_rank;
-    QLabel *m_title;
-    QLabel *m_meta;
-    QLabel *m_path;
-    QLabel *m_summary;
-};
 
 } // namespace
 

@@ -22,11 +22,17 @@ set(SOURCES
     src/widgets/TabWorkspace.cpp
     src/widgets/ExplorerPane.cpp
     src/widgets/IxosRail.cpp
+    src/widgets/SearchResultCard.cpp
+    src/widgets/ActivityIndicator.cpp
     src/widgets/StatusStrip.cpp
     src/models/FileSystemProxyModel.cpp
     src/theme/ThemeManager.cpp
+    src/theme/IconFont.cpp
+    src/theme/ThemedFileIconProvider.cpp
+    src/theme/HoverAnimationFilter.cpp
     src/utils/FileOperations.cpp
     src/utils/FileOpenPolicy.cpp
+    src/utils/FuzzyMatch.cpp
 )
 
 set(HEADERS
@@ -43,15 +49,21 @@ set(HEADERS
     src/widgets/TabWorkspace.h
     src/widgets/ExplorerPane.h
     src/widgets/IxosRail.h
+    src/widgets/SearchResultCard.h
+    src/widgets/ActivityIndicator.h
     src/widgets/StatusStrip.h
     src/models/FileSystemProxyModel.h
     src/theme/ThemeManager.h
     src/theme/Colors.h
+    src/theme/IconFont.h
+    src/theme/ThemedFileIconProvider.h
+    src/theme/HoverAnimationFilter.h
     src/interfaces/ISearchProvider.h
     src/interfaces/IIpcBridge.h
     src/interfaces/ICommandRegistry.h
     src/utils/FileOperations.h
     src/utils/FileOpenPolicy.h
+    src/utils/FuzzyMatch.h
 )
 
 qt_add_resources(RESOURCES resources/ixplorer.qrc)

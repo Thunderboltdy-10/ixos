@@ -1,13 +1,39 @@
 #include "theme/ThemeManager.h"
 #include "theme/Colors.h"
+#include "theme/HoverAnimationFilter.h"
 
 #include <QFile>
 #include <QTextStream>
+#include <QFontDatabase>
+#include <QDebug>
 
 namespace Ixplorer {
 
 void ThemeManager::apply(QApplication *app) {
+    // Register custom fonts before setting palette/QSS
+    int regularId = QFontDatabase::addApplicationFont(":/fonts/GeistMono-Regular.otf");
+    if (regularId == -1) {
+        qWarning() << "Failed to load GeistMono-Regular.otf";
+    }
+    int mediumId = QFontDatabase::addApplicationFont(":/fonts/GeistMono-Medium.otf");
+    if (mediumId == -1) {
+        qWarning() << "Failed to load GeistMono-Medium.otf";
+    }
+    int semiBoldId = QFontDatabase::addApplicationFont(":/fonts/GeistMono-SemiBold.otf");
+    if (semiBoldId == -1) {
+        qWarning() << "Failed to load GeistMono-SemiBold.otf";
+    }
+
     app->setStyle("Fusion");
+    app->setPalette(buildPalette());
+    app->setStyleSheet(loadStylesheet());
+    
+    // Install HoverAnimationFilter globally for specific button types
+    auto *hoverFilter = new HoverAnimationFilter(app);
+    app->installEventFilter(hoverFilter);
+}
+
+void ThemeManager::reapply(QApplication *app) {
     app->setPalette(buildPalette());
     app->setStyleSheet(loadStylesheet());
 }
@@ -36,8 +62,8 @@ QPalette ThemeManager::buildPalette() {
     p.setColor(QPalette::ToolTipBase,     qc(BgElevated));
     p.setColor(QPalette::ToolTipText,     qc(FgPrimary));
     p.setColor(QPalette::PlaceholderText, qc(FgMuted));
-    p.setColor(QPalette::Mid,             qc(BorderHairline));
-    p.setColor(QPalette::Dark,            qc(BgBase));
+    p.setColor(QPalette::Mid,             qc(BorderSubtle));
+    p.setColor(QPalette::Dark,            qc(BgDeep));
     p.setColor(QPalette::Shadow,          QColor(0, 0, 0));
 
     // Disabled

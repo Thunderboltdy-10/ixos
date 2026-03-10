@@ -218,6 +218,26 @@
 - Outputs saved to:
   - reports/ui_docs_refresh_2026-02-06.md
   - docs/MARKDOWN_INVENTORY.md
+
+## Entry 0XX - Ixplorer capability-based workspace + search pass
+- Date/Time: 2026-03-10 17:55:12
+- Branch/Commit: (working tree)
+- Goal: Implement embedded file handling in the center pane, promote top-bar Ixos search into a live workspace flow, and add a command palette.
+- Commands run:
+  - `cargo build --release`
+  - `cmake -S ixplorer -B ixplorer/build -G Ninja -DCMAKE_BUILD_TYPE=Release`
+  - `cmake --build ixplorer/build`
+  - PowerShell startup smoke for `ixplorer/build/Ixplorer.exe`
+- Outputs saved to:
+  - `reports/ixplorer_workspace_search_pass_2026-03-10.md`
+- Key results:
+  - Added a capability-based file-open policy for edit-in-place, preview-in-place, and external-open outcomes.
+  - Added document tabs, preview-tab reuse for search auto-open, and a command palette on `Ctrl+K`.
+  - Top-bar search now feeds the right rail live and auto-opens the top in-app candidate when supported.
+  - Release CLI build, Qt build, and startup smoke all passed.
+- Decision: KEEP
+- Next:
+  - Run manual GUI QA for save/close/reopen and search-preview-edit flows.
   - docs/README.md
   - docs/getting-started/INSTALLATION.md
   - docs/product/DESKTOP_APP.md
@@ -1822,3 +1842,40 @@ eports/settings_matrix_2026-02-14.md).
     - Output summary: `RUNNING <pid>` after 5 seconds, then intentionally stopped.
 - Artifacts:
   - `reports/ixplorer_major_pass_2026-03-09.md`
+
+## 2026-03-10 Ixplorer native-hosting + cache-default pivot
+- Scope:
+  - Replaced faux in-app document rendering with Windows foreign-window hosting of the file’s exact associated app window where possible, made Ixos Qt search default to cached mode, and tightened search-result/open-in-place behavior.
+- Code changes:
+  - Reworked `ixplorer/src/widgets/DocumentPane.*` to launch the Windows-associated app, discover its real top-level window, reparent it into the center pane, keep it resized with the host surface, and recover when the hosted window closes.
+  - Reworked `ixplorer/src/utils/FileOpenPolicy.*` to prefer hosted associated-app flows broadly while still denying unsafe/app-like associations such as installers, browsers, terminals, and launcher-style executables.
+  - Updated `ixplorer/src/widgets/TabWorkspace.cpp`, `ixplorer/src/app/MainWindow.cpp`, and `ixplorer/src/widgets/IxosRail.cpp` so rail selection and auto-open reuse the same center preview surface by default, while explicit new-tab remains available.
+  - Updated `ixplorer/src/search/IxosCliSearchProvider.cpp`, `ixplorer/src/widgets/ExplorerToolbar.*`, `ixplorer/resources/styles/ixplorer_dark.qss`, and `ixplorer/CMakeLists.txt` for cached search default, context-aware toolbar behavior, differentiated controls, and Win32 host linking.
+- Command evidence:
+  - `cargo build --release`
+    - Output: `Finished 'release' profile [optimized] target(s) in 0.74s`
+  - `.\target\release\ixos.exe search 'research' --dir '.\ixplorer\src' --json --progressive --show-scores --evidence --context 1 --limit 3 --search-mode auto --cache-mode native-cache`
+    - Output summary: streamed semantic results plus evidence, then `{"type":"complete"}`
+  - `$env:PATH='C:\Qt\Tools\Ninja;' + $env:PATH; & 'C:\Qt\Tools\Ninja\ninja.exe' -C ixplorer/build`
+    - Output summary: rebuilt `Ixplorer.exe` successfully and redeployed Qt runtime files.
+  - Ixplorer startup smoke:
+    - Command: `Start-Process C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe -PassThru`
+    - Output summary: process stayed alive for 4 seconds (`RUNNING PID=29856`) before intentional stop.
+- Artifacts:
+  - `reports/ixplorer_workspace_search_pass_2026-03-10.md`
+
+## 2026-03-10 Ixplorer host hardening + rail simplification
+- Scope:
+  - Tightened exact-window hosting around explicit capability support, removed draggable/title-bar behavior from embedded windows, reduced false window capture, and simplified the Ixos rail/navigation logic.
+- Code changes:
+  - Narrowed `ixplorer/src/utils/FileOpenPolicy.cpp` to an explicit supported-app allowlist for hosting and kept unsupported/default-unsafe associations external.
+  - Hardened `ixplorer/src/widgets/DocumentPane.cpp` window discovery by requiring stronger filename/process/executable matches, stripped non-client window chrome, and added adaptive host backdrop sampling from the embedded window.
+  - Simplified `ixplorer/src/widgets/IxosRail.*` by hiding duplicate rail search controls, reducing action clutter, and showing selection/search detail more contextually.
+- Command evidence:
+  - `$env:PATH='C:\Qt\Tools\Ninja;' + $env:PATH; & 'C:\Qt\Tools\Ninja\ninja.exe' -C ixplorer/build`
+    - Output summary: rebuilt `Ixplorer.exe` successfully after the host hardening pass.
+  - Ixplorer startup smoke:
+    - Command: `Start-Process C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe -PassThru`
+    - Output summary: process stayed alive for 4 seconds (`RUNNING PID=46616`) before intentional stop.
+- Artifacts:
+  - `reports/ixplorer_workspace_search_pass_2026-03-10.md`

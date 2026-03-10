@@ -14,8 +14,10 @@ This pass turns the shell prototype into a usable local explorer with real Ixos 
 
 - Per-tab browse history with `Back`, `Forward`, `Up`, breadcrumbs, and refresh.
 - Multi-select file browsing with rename, new folder, delete-to-trash, copy, cut, paste, duplicate, reveal, open with, and properties.
+- Capability-based file opening: editable text/code tabs, in-app previews for supported files, and explicit external-open fallback for app-like content.
 - A real right rail backed by `ixos search --json --progressive --show-scores --evidence`.
-- Search-result actions for open, open in new tab, reveal in workspace, and copy path.
+- Live top-bar search that feeds the rail, auto-opens the top in-app candidate into the center pane, and keeps result actions connected to workspace tabs.
+- A command palette on `Ctrl+K` for search and primary workspace actions.
 - Sidebar recents persistence and a denser, calmer desktop UI treatment.
 
 ## Search Boundary
@@ -68,6 +70,8 @@ cmake --build build
 | `Alt+Left` | Back |
 | `Alt+Right` | Forward |
 | `Alt+Up` | Parent directory |
+| `Ctrl+F` | Focus top search |
+| `Ctrl+K` | Command palette |
 | `F2` | Rename |
 | `Delete` | Move to trash |
 | `Ctrl+C / Ctrl+X / Ctrl+V` | Copy / cut / paste |

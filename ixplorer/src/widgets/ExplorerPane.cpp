@@ -4,7 +4,6 @@
 
 #include <QApplication>
 #include <QClipboard>
-#include <QDesktopServices>
 #include <QDir>
 #include <QFile>
 #include <QHeaderView>
@@ -44,10 +43,6 @@ QString propertiesText(const QFileInfo &info, int selectedCount, quint64 selecte
     return QString("%1 items selected\nTotal size: %2")
         .arg(selectedCount)
         .arg(QLocale().formattedDataSize(selectedBytes));
-}
-
-void openPath(const QString &path) {
-    QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 }
 
 void openWithDialog(const QString &path) {
@@ -100,7 +95,7 @@ ExplorerPane::ExplorerPane(const QString &rootPath, QWidget *parent)
     m_tree->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_tree->setAlternatingRowColors(false);
     m_tree->setEditTriggers(QAbstractItemView::EditKeyPressed | QAbstractItemView::SelectedClicked);
-    m_tree->setIndentation(0);
+    m_tree->setIndentation(12);
     m_tree->setDragEnabled(true);
     m_tree->setAcceptDrops(true);
     m_tree->setDropIndicatorShown(true);
@@ -275,7 +270,6 @@ void ExplorerPane::openSelected() {
     }
 
     emit fileActivated(info);
-    openPath(info.absoluteFilePath());
 }
 
 void ExplorerPane::openSelectedWith() {
@@ -494,7 +488,6 @@ void ExplorerPane::onDoubleClicked(const QModelIndex &index) {
         navigateTo(info.absoluteFilePath(), true);
     } else {
         emit fileActivated(info);
-        openPath(info.absoluteFilePath());
     }
 }
 

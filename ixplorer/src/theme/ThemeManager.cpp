@@ -24,20 +24,20 @@ QPalette ThemeManager::buildPalette() {
     using namespace Colors;
     QPalette p;
 
-    p.setColor(QPalette::Window,          qc(BgGraphite1));
+    p.setColor(QPalette::Window,          qc(BgBase));
     p.setColor(QPalette::WindowText,      qc(FgPrimary));
-    p.setColor(QPalette::Base,            qc(BgGraphite1));
-    p.setColor(QPalette::AlternateBase,   qc(BgGraphite2));
+    p.setColor(QPalette::Base,            qc(BgSurface));
+    p.setColor(QPalette::AlternateBase,   qc(BgElevated));
     p.setColor(QPalette::Text,            qc(FgPrimary));
-    p.setColor(QPalette::Button,          qc(BgGraphite0));
+    p.setColor(QPalette::Button,          qc(BgBase));
     p.setColor(QPalette::ButtonText,      qc(FgPrimary));
-    p.setColor(QPalette::Highlight,       qc(AccentTeal));
+    p.setColor(QPalette::Highlight,       qc(AccentPrimary));
     p.setColor(QPalette::HighlightedText, qc(FgPrimary));
-    p.setColor(QPalette::ToolTipBase,     qc(BgGraphite2));
+    p.setColor(QPalette::ToolTipBase,     qc(BgElevated));
     p.setColor(QPalette::ToolTipText,     qc(FgPrimary));
     p.setColor(QPalette::PlaceholderText, qc(FgMuted));
     p.setColor(QPalette::Mid,             qc(BorderHairline));
-    p.setColor(QPalette::Dark,            qc(BgGraphite0));
+    p.setColor(QPalette::Dark,            qc(BgBase));
     p.setColor(QPalette::Shadow,          QColor(0, 0, 0));
 
     // Disabled

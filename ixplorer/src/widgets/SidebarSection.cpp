@@ -20,14 +20,14 @@ SidebarSection::SidebarSection(const QString &title, QWidget *parent)
     m_header->setProperty("title", title);
     connect(m_header, &QPushButton::clicked, this, &SidebarSection::toggleCollapse);
 
-    m_body->setContentsMargins(0, 2, 0, 6);
-    m_body->setSpacing(1);
+    m_body->setContentsMargins(0, 0, 0, 0);
+    m_body->setSpacing(0);
 
     layout->addWidget(m_header);
     layout->addWidget(m_bodyWidget);
 }
 
-void SidebarSection::addItem(const QString &label, const QString &path, const QString &) {
+void SidebarSection::addItem(const QString &label, const QString &path, const QString &/*icon*/) {
     auto *btn = new QPushButton(this);
     btn->setText(label);
     btn->setObjectName("SidebarItem");

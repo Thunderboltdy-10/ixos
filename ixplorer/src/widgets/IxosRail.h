@@ -8,6 +8,7 @@
 #include <QLineEdit>
 #include <QListWidget>
 #include <QPushButton>
+#include <QTimer>
 #include <QTextEdit>
 #include <QWidget>
 
@@ -20,6 +21,7 @@ public:
 
     void setSearchRoot(const QString &path);
     void submitToolbarSearch(const QString &query, int mode);
+    void submitToolbarDraft(const QString &query, int mode);
     void showFileDetails(const QFileInfo &info, int selectedCount = 1, quint64 selectedBytes = 0);
     void clearDetails();
     void setStatusMessage(const QString &message);
@@ -33,13 +35,17 @@ signals:
     void revealPathRequested(const QString &path);
     void requestClose();
     void searchSubmitted(const QString &query, int mode);
+    void autoOpenPathRequested(const QString &path);
 
 private:
     void triggerSearch();
+    void scheduleLiveSearch();
+    void clearSearchSession(const QString &summary);
     void renderResults(const QList<SearchHit> &results, bool semanticResults);
     void handleResultSelection(int row);
     void syncDetailPanel();
     void updateActionStates();
+    void maybeAutoOpenTopResult();
     QString currentActionPath() const;
     QString modeLabel() const;
     QString detailTextForResult(const SearchHit &item) const;
@@ -59,11 +65,15 @@ private:
     bool m_showingSemanticResults = false;
     bool m_searchInFlight = false;
     bool m_lastSearchFailed = false;
+    bool m_autoOpenEnabled = false;
+    QString m_lastAutoOpenedPath;
+    QString m_lastAutoOpenedQuery;
 
     QLabel *m_scopeLabel;
     QLabel *m_selectionTitle;
     QLabel *m_selectionMeta;
     QLabel *m_selectionPath;
+    QWidget *m_selectionCard;
     QPushButton *m_openSelectionButton;
     QPushButton *m_revealSelectionButton;
     QPushButton *m_copySelectionPathButton;
@@ -71,10 +81,13 @@ private:
     QLineEdit *m_searchInput;
     QComboBox *m_modeBox;
     QPushButton *m_searchButton;
+    QWidget *m_searchControls;
     QLabel *m_searchStateLabel;
     QLabel *m_searchSummaryLabel;
     QListWidget *m_resultList;
+    QTimer *m_liveSearchTimer;
 
+    QWidget *m_matchCard;
     QLabel *m_matchTitle;
     QLabel *m_matchMeta;
     QLabel *m_matchPath;

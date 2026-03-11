@@ -15,8 +15,23 @@ class QShowEvent;
 class QTimer;
 class QVBoxLayout;
 class QPlainTextEdit;
+class QGraphicsView;
+class QGraphicsScene;
+class QGraphicsPixmapItem;
+
+#ifdef QT_WEBENGINEWIDGETS_LIB
+class QWebEngineView;
+#endif
+
+#ifdef QT_MULTIMEDIA_LIB
+class QMediaPlayer;
+class QVideoWidget;
+class QAudioOutput;
+#endif
 
 namespace Ixplorer {
+
+class CodeViewerWidget;
 
 class DocumentPane : public QWidget {
     Q_OBJECT
@@ -24,7 +39,7 @@ public:
     explicit DocumentPane(const QString &path, bool previewMode, QWidget *parent = nullptr);
     ~DocumentPane() override;
 
-    enum HostMode { WindowEmbed, ImagePreview, TextPreview, Fallback };
+    enum HostMode { WebView, MediaPlayer, ImageViewer, CodeViewer, WindowEmbed, Fallback };
 
     QString filePath() const { return m_filePath; }
     QString displayPath() const { return m_filePath; }
@@ -35,7 +50,7 @@ public:
     bool canPromoteToEditable() const { return false; }
     bool canClose();
     bool canGoUp() const;
-    bool isHosted() const { return m_hostedReady || m_hostMode == ImagePreview || m_hostMode == TextPreview; }
+    bool isHosted() const { return m_hostedReady || m_hostMode == ImageViewer || m_hostMode == CodeViewer || m_hostMode == WebView || m_hostMode == MediaPlayer; }
 
     void setPreviewMode(bool previewMode);
     void reload();
@@ -67,8 +82,10 @@ private:
     void applyHostedBackdrop(const QColor &color);
     void showStateMessage(const QString &title, const QString &body);
     void syncUiState();
-    void setupImagePreview();
-    void setupTextPreview();
+    void setupWebView();
+    void setupMediaPlayer();
+    void setupImageViewer();
+    void setupCodeViewer();
 
     QString m_filePath;
     FileOpenPolicy m_policy;
@@ -87,6 +104,22 @@ private:
     
     QLabel *m_imageLabel = nullptr;
     QPlainTextEdit *m_textEdit = nullptr;
+    
+    QGraphicsView *m_graphicsView = nullptr;
+    QGraphicsScene *m_graphicsScene = nullptr;
+    QGraphicsPixmapItem *m_pixmapItem = nullptr;
+    CodeViewerWidget *m_codeViewer = nullptr;
+
+#ifdef QT_WEBENGINEWIDGETS_LIB
+    QWebEngineView *m_webView = nullptr;
+#endif
+
+#ifdef QT_MULTIMEDIA_LIB
+    QMediaPlayer *m_mediaPlayer = nullptr;
+    QAudioOutput *m_audioOutput = nullptr;
+    QVideoWidget *m_videoWidget = nullptr;
+#endif
+
     QTimer *m_loadingTimer = nullptr;
     bool m_skeletonPhase = false;
 

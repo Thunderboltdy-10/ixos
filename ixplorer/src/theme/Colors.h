@@ -13,6 +13,15 @@ constexpr auto BgElevated    = 0xFF2C2C2E; // cards, elevated surfaces
 constexpr auto BgOverlay     = 0xFF3A3A3C; // hover states
 constexpr auto BgActive      = 0xFF4A4A4E; // pressed
 
+// Graphite variants
+constexpr auto Graphite0     = 0xFF15171B;
+constexpr auto Graphite1     = 0xFF1B1E23;
+constexpr auto Graphite2     = 0xFF23272E;
+constexpr auto Graphite3     = 0xFF2D323B;
+
+// Porcelain
+constexpr auto Porcelain     = 0xFFF3F5F7;
+
 // Foreground
 constexpr auto FgPrimary     = 0xFFF2F2F7; // keep
 constexpr auto FgSecondary   = 0xFFA1A1A6; // slightly brighter than current #98989D
@@ -20,6 +29,7 @@ constexpr auto FgMuted       = 0xFF636366; // keep
 constexpr auto FgGhost       = 0xFF48484A; // decorative/disabled
 
 // Borders
+constexpr auto GlassBorder   = 0x33FFFFFF; // rgba(255,255,255,0.20)
 constexpr auto BorderSubtle  = 0xFF2A2A2C; // barely visible
 constexpr auto BorderDefault = 0xFF3A3A3C; // standard
 constexpr auto BorderHover   = 0xFF4C4C4E; // emphasis

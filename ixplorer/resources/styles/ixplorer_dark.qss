@@ -228,8 +228,12 @@ QTreeView::item {
 }
 
 QTreeView::item:selected {
-    background-color: rgba(10, 132, 255, 0.25);
-    color: #F2F2F7;
+    background-color: rgba(10, 132, 255, 0.15);
+    color: #FFFFFF;
+}
+
+QTreeView::item:hover:!selected {
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 /* Search Cards */
@@ -354,4 +358,55 @@ QScrollBar::handle:vertical:hover {
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
 QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
     background: none;
+}
+/* Menus and Tooltips */
+QMenu {
+    background-color: #242426;
+    border: 1px solid #3A3A3C;
+    border-radius: 8px;
+    padding: 4px;
+}
+QMenu::item {
+    padding: 6px 16px;
+    border-radius: 4px;
+    margin: 2px 4px;
+}
+QMenu::item:selected {
+    background-color: #3A3A3C;
+    color: #F2F2F7;
+}
+QMenu::separator {
+    height: 1px;
+    background-color: #3A3A3C;
+    margin: 4px 8px;
+}
+
+QToolTip {
+    background-color: #1C1C1E;
+    border: 1px solid #3A3A3C;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #F2F2F7;
+}
+
+QPushButton:pressed {
+    background-color: #4C4C4E;
+}
+QPushButton:disabled {
+    background-color: #1C1C1E;
+    color: #6C6C6E;
+    border-color: #2A2A2C;
+}
+
+#ToolbarPrimaryButton:pressed {
+    background: #0A84FF;
+}
+#ToolbarPrimaryButton:disabled {
+    background: #1C1C1E;
+    color: #6C6C6E;
+}
+
+#ToolbarGhostButton:pressed,
+#ToolbarRailButton:pressed {
+    background-color: rgba(255, 255, 255, 0.12);
 }

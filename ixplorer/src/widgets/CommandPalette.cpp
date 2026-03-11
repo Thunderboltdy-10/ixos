@@ -8,6 +8,9 @@
 #include <QListWidgetItem>
 #include <QVBoxLayout>
 #include <QSettings>
+#include <QPropertyAnimation>
+#include <QGraphicsOpacityEffect>
+#include <QShowEvent>
 #include <algorithm>
 
 namespace Ixplorer {
@@ -57,6 +60,20 @@ CommandPalette::CommandPalette(QWidget *parent)
 
     m_input->installEventFilter(this);
     m_list->installEventFilter(this);
+}
+
+void CommandPalette::showEvent(QShowEvent* event) {
+    QDialog::showEvent(event);
+    
+    auto *effect = new QGraphicsOpacityEffect(this);
+    this->setGraphicsEffect(effect);
+    
+    auto *anim = new QPropertyAnimation(effect, "opacity", this);
+    anim->setDuration(150);
+    anim->setStartValue(0.0);
+    anim->setEndValue(1.0);
+    anim->setEasingCurve(QEasingCurve::OutCubic);
+    anim->start(QPropertyAnimation::DeleteWhenStopped);
 }
 
 void CommandPalette::resizeEvent(QResizeEvent* event) {

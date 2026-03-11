@@ -1,4 +1,5 @@
 #include "widgets/SidebarSection.h"
+#include "theme/IconFont.h"
 
 #include <QEvent>
 #include <QDir>
@@ -26,7 +27,7 @@ SidebarSection::SidebarSection(const QString &title, const QIcon &sectionIcon, Q
     headerLayout->setSpacing(8);
     
     m_chevronLabel = new QLabel(m_headerWidget);
-    m_chevronLabel->setText(QStringLiteral("▾"));
+    m_chevronLabel->setPixmap(Icons::makeIconFromFont(Icons::ChevronDown, 14, QColor("#8E8E93")).pixmap(14, 14));
     headerLayout->addWidget(m_chevronLabel);
     
     if (!sectionIcon.isNull()) {
@@ -109,16 +110,20 @@ void SidebarSection::setHighlighted(const QString &path) {
 
 void SidebarSection::toggleCollapse() {
     m_collapsed = !m_collapsed;
-    m_chevronLabel->setText(m_collapsed ? QStringLiteral("▸") : QStringLiteral("▾"));
+    m_chevronLabel->setPixmap(Icons::makeIconFromFont(m_collapsed ? Icons::ChevronRight : Icons::ChevronDown, 14, QColor("#8E8E93")).pixmap(14, 14));
     
     if (m_collapsed) {
         m_collapseAnimation->setStartValue(m_bodyWidget->height());
         m_collapseAnimation->setEndValue(0);
+        m_collapseAnimation->setDuration(300); // Smoother
+        m_collapseAnimation->setEasingCurve(QEasingCurve::OutExpo); // Smoother
         m_collapseAnimation->start();
     } else {
         m_bodyWidget->setVisible(true);
         m_collapseAnimation->setStartValue(0);
         m_collapseAnimation->setEndValue(m_body->sizeHint().height());
+        m_collapseAnimation->setDuration(300); // Smoother
+        m_collapseAnimation->setEasingCurve(QEasingCurve::OutExpo); // Smoother
         m_collapseAnimation->start();
     }
 }

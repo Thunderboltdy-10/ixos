@@ -2,6 +2,7 @@
 #include "models/FileSystemProxyModel.h"
 #include "utils/FileOperations.h"
 #include "theme/ThemedFileIconProvider.h"
+#include "widgets/FileListDelegate.h"
 
 #include <QApplication>
 #include <QClipboard>
@@ -95,7 +96,8 @@ ExplorerPane::ExplorerPane(const QString &rootPath, QWidget *parent)
     m_tree->sortByColumn(0, Qt::AscendingOrder);
     m_tree->setSelectionMode(QAbstractItemView::ExtendedSelection);
     m_tree->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_tree->setAlternatingRowColors(true);
+    m_tree->setAlternatingRowColors(false);
+    m_tree->setItemDelegate(new FileListDelegate(m_tree));
     m_tree->setEditTriggers(QAbstractItemView::EditKeyPressed | QAbstractItemView::SelectedClicked);
     m_tree->setIndentation(12);
     m_tree->setDragEnabled(true);

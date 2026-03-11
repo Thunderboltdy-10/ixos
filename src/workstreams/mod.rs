@@ -17,8 +17,10 @@
 //! - Only stores aggregated metadata (not full events)
 //! - ~1KB per workstream
 
+mod graph;
 mod storage;
 
+pub use graph::{WorkstreamGraph, WorkstreamGraphEdge, WorkstreamGraphNode};
 pub use storage::{
     MemoryWorkstreamStorage, WorkstreamStorage, WorkstreamStorageConfig, WorkstreamStorageData,
     WorkstreamStorageError,
@@ -545,5 +547,31 @@ mod tests {
         // Old workstreams should be gone
         assert!(manager.get(&ws1_id).is_none());
         assert!(manager.get(&ws2_id).is_none());
+    }
+
+    #[test]
+    fn test_build_graph_returns_related_neighbor() {
+        let mut manager = WorkstreamManager::new();
+
+        let mut ws1 = Workstream::new("Alpha".to_string());
+        ws1.top_files = vec![("/project/src/main.rs".into(), 3)];
+        ws1.top_folders = vec![("/project/src".into(), 4)];
+        ws1.top_queries = vec![("query-a".into(), 2)];
+        ws1.last_active = 10_000;
+        let ws1_id = ws1.id.clone();
+        manager.add(ws1);
+
+        let mut ws2 = Workstream::new("Beta".to_string());
+        ws2.top_files = vec![("/project/src/main.rs".into(), 2)];
+        ws2.top_folders = vec![("/project/src".into(), 3)];
+        ws2.top_queries = vec![("query-a".into(), 1)];
+        ws2.last_active = 12_000;
+        manager.add(ws2);
+
+        let graph = manager.build_graph(Some(&ws1_id), 4);
+        assert_eq!(graph.focus_workstream_id.as_deref(), Some(ws1_id.as_str()));
+        assert_eq!(graph.nodes.len(), 2);
+        assert_eq!(graph.edges.len(), 1);
+        assert!(graph.edges[0].weight > 0.0);
     }
 }

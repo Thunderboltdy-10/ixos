@@ -39,6 +39,48 @@ const QSet<QString> &externalOnlyAssociatedApps() {
     return executables;
 }
 
+const QSet<QString> &codeExtensions() {
+    static const QSet<QString> extensions = {
+        QStringLiteral("c"),    QStringLiteral("cc"),   QStringLiteral("cpp"),  QStringLiteral("cxx"),
+        QStringLiteral("h"),    QStringLiteral("hpp"),  QStringLiteral("hh"),   QStringLiteral("rs"),
+        QStringLiteral("py"),   QStringLiteral("js"),   QStringLiteral("jsx"),  QStringLiteral("ts"),
+        QStringLiteral("tsx"),  QStringLiteral("json"), QStringLiteral("toml"), QStringLiteral("yaml"),
+        QStringLiteral("yml"),  QStringLiteral("md"),   QStringLiteral("txt"),  QStringLiteral("log"),
+        QStringLiteral("ini"),  QStringLiteral("cfg"),  QStringLiteral("cmake"),QStringLiteral("java"),
+        QStringLiteral("go"),   QStringLiteral("swift"),QStringLiteral("kt"),   QStringLiteral("html"),
+        QStringLiteral("css"),  QStringLiteral("scss"), QStringLiteral("xml"),  QStringLiteral("sql"),
+        QStringLiteral("ps1"),  QStringLiteral("sh"),   QStringLiteral("bat"),
+    };
+    return extensions;
+}
+
+const QSet<QString> &imageExtensions() {
+    static const QSet<QString> extensions = {
+        QStringLiteral("png"), QStringLiteral("jpg"),  QStringLiteral("jpeg"),
+        QStringLiteral("gif"), QStringLiteral("bmp"), QStringLiteral("webp"),
+        QStringLiteral("ico"), QStringLiteral("svg"),
+    };
+    return extensions;
+}
+
+const QSet<QString> &webExtensions() {
+    static const QSet<QString> extensions = {
+        QStringLiteral("pdf"),
+        QStringLiteral("htm"),
+        QStringLiteral("html"),
+    };
+    return extensions;
+}
+
+const QSet<QString> &mediaExtensions() {
+    static const QSet<QString> extensions = {
+        QStringLiteral("mp3"), QStringLiteral("wav"), QStringLiteral("m4a"),
+        QStringLiteral("mp4"), QStringLiteral("mkv"), QStringLiteral("mov"),
+        QStringLiteral("avi"), QStringLiteral("webm"),
+    };
+    return extensions;
+}
+
 #ifdef Q_OS_WIN
 QString associatedExecutableBaseName(const QString &path) {
     const QString suffix = QFileInfo(path).suffix().trimmed().toLower();
@@ -83,6 +125,23 @@ QString readableTypeLabel(const QFileInfo &info, const QMimeType &mime) {
 FileOpenPolicy makeExternalPolicy(const QString &summary, const QString &detail) {
     FileOpenPolicy policy;
     policy.action = FileOpenAction::External;
+    policy.preferredMode = FileOpenHostMode::Fallback;
+    policy.confidence = 0.95f;
+    policy.summary = summary;
+    policy.detail = detail;
+    return policy;
+}
+
+FileOpenPolicy makeInternalPolicy(
+    FileOpenAction action,
+    FileOpenHostMode preferredMode,
+    float confidence,
+    const QString &summary,
+    const QString &detail) {
+    FileOpenPolicy policy;
+    policy.action = action;
+    policy.preferredMode = preferredMode;
+    policy.confidence = confidence;
     policy.summary = summary;
     policy.detail = detail;
     return policy;
@@ -107,6 +166,47 @@ FileOpenPolicy resolveFileOpenPolicy(const QFileInfo &info) {
                                       .arg(typeLabel));
     }
 
+    if (codeExtensions().contains(extension) || mime.name().startsWith(QStringLiteral("text/"))) {
+        return makeInternalPolicy(
+            FileOpenAction::HostAssociatedApp,
+            FileOpenHostMode::AssociatedWindow,
+            0.92f,
+            QStringLiteral("Host default editor"),
+            QStringLiteral("%1 will open with the system default editor inside the workspace when possible.")
+                .arg(typeLabel));
+    }
+
+    if (imageExtensions().contains(extension) || mime.name().startsWith(QStringLiteral("image/"))) {
+        return makeInternalPolicy(
+            FileOpenAction::PreviewInApp,
+            FileOpenHostMode::ImageViewer,
+            0.94f,
+            QStringLiteral("Preview in app"),
+            QStringLiteral("%1 will open in Ixplorer's native image surface.")
+                .arg(typeLabel));
+    }
+
+    if (webExtensions().contains(extension)) {
+        return makeInternalPolicy(
+            FileOpenAction::PreviewInApp,
+            FileOpenHostMode::WebView,
+            0.82f,
+            QStringLiteral("Preview in app"),
+            QStringLiteral("%1 will open in Ixplorer's native preview surface.")
+                .arg(typeLabel));
+    }
+
+    if (mediaExtensions().contains(extension) || mime.name().startsWith(QStringLiteral("audio/")) ||
+        mime.name().startsWith(QStringLiteral("video/"))) {
+        return makeInternalPolicy(
+            FileOpenAction::PreviewInApp,
+            FileOpenHostMode::MediaPlayer,
+            0.88f,
+            QStringLiteral("Preview in app"),
+            QStringLiteral("%1 will open in Ixplorer's native media surface.")
+                .arg(typeLabel));
+    }
+
 #ifdef Q_OS_WIN
     const QString associatedExecutable = associatedExecutableBaseName(info.absoluteFilePath());
     if (externalOnlyAssociatedApps().contains(associatedExecutable)) {
@@ -116,12 +216,13 @@ FileOpenPolicy resolveFileOpenPolicy(const QFileInfo &info) {
     }
 #endif
 
-    FileOpenPolicy policy;
-    policy.action = FileOpenAction::HostAssociatedApp;
-    policy.summary = QStringLiteral("Host associated app");
-    policy.detail = QStringLiteral("%1 will be opened with its Windows-associated app inside the workspace.")
-        .arg(typeLabel);
-    return policy;
+    return makeInternalPolicy(
+        FileOpenAction::HostAssociatedApp,
+        FileOpenHostMode::AssociatedWindow,
+        0.74f,
+        QStringLiteral("Host associated app"),
+        QStringLiteral("%1 will be opened with its Windows-associated app inside the workspace.")
+            .arg(typeLabel));
 }
 
 bool shouldAutoOpenInWorkspace(const QFileInfo &info) {

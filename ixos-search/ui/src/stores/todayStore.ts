@@ -10,6 +10,7 @@ import type {
   TodayTabData,
   RecentFile,
   SuggestedFile,
+  ResumeCandidate,
   MoveRecommendation,
   PinnedItem,
   Workstream,
@@ -19,6 +20,7 @@ import * as tauri from '@/lib/tauri';
 interface TodayState {
   // Data
   data: TodayTabData | null;
+  resumeCandidates: ResumeCandidate[];
   isLoading: boolean;
   error: string | null;
 
@@ -58,6 +60,7 @@ const LAST_BRIEF_KEY = 'ixos_last_brief_date';
 export const useTodayStore = create<TodayState>((set, get) => ({
   // Initial state
   data: null,
+  resumeCandidates: [],
   isLoading: false,
   error: null,
   pinnedItems: [],
@@ -69,67 +72,41 @@ export const useTodayStore = create<TodayState>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      // Load data in parallel
-      const [recentlyTouched, workstreams, moveRecommendations] = await Promise.all([
-        tauri.getRecentlyTouched(10).catch(() => [] as RecentFile[]),
+      const [resumption, workstreams, moveRecommendations] = await Promise.all([
+        tauri.getResumptionData(10, 5).catch(() => ({
+          recentlyTouched: [] as RecentFile[],
+          resumeCandidates: [] as ResumeCandidate[],
+          suggestedNext: [] as SuggestedFile[],
+        })),
         tauri.listWorkstreams(5).catch(() => [] as Workstream[]),
         tauri.getMoveRecommendations(6, 3).catch(() => [] as MoveRecommendation[]),
       ]);
 
-      // Get most recent workstream
-      const mostRecent = workstreams.length > 0
-        ? workstreams.reduce((a, b) => a.lastActive > b.lastActive ? a : b)
-        : null;
-
-      // Get top files from most recent workstream
-      const topFiles: RecentFile[] = mostRecent
-        ? mostRecent.topFiles.slice(0, 5).map(([path, count]) => ({
-            path,
-            fileId: '', // Will be populated by backend
-            lastTouched: mostRecent.lastActive,
-            touchCount: count,
-            actions: ['file_opened'],
-          }))
-        : [];
-
-      // Generate suggestions based on co-occurrence
-      // Query co-occurrence API using the top recently touched file
-      let suggestedNext: SuggestedFile[] = [];
-      if (recentlyTouched.length > 0) {
-        try {
-          const topFilePath = recentlyTouched[0].path;
-          const coOccurrences = await tauri.getCoOccurrence(topFilePath, 30);
-          suggestedNext = coOccurrences
-            .filter((co) => co.filePath) // Only include if we have file path
-            .slice(0, 5)
-            .map((co) => ({
-              path: co.filePath!, // Use the new filePath field
-              name: co.filePath!.split(/[/\\]/).pop() || 'Unknown',
-              score: Math.min(co.count / 10, 1),
-              reason: co.reason === 'co_edit' ? 'co-edit' : co.reason === 'co_open' ? 'co-open' : 'frequent',
-              coOccurredWith: topFilePath,
-            }));
-        } catch {
-          // Silent failure - suggestions are non-critical
-        }
-      }
+      const mostRelevantWorkstream = findMostRelevantWorkstream(workstreams, resumption.resumeCandidates);
+      const topFiles: RecentFile[] = resumption.resumeCandidates.slice(0, 5).map((candidate) => ({
+        path: candidate.path,
+        fileId: candidate.fileId,
+        lastTouched: candidate.lastTouched,
+        touchCount: candidate.touchCount,
+        actions: candidate.actions,
+      }));
 
       // Get pinned items
       const pinnedItems = get().pinnedItems;
 
       const data: TodayTabData = {
         resume: {
-          workstream: mostRecent,
+          workstream: mostRelevantWorkstream,
           topFiles,
-          lastActive: mostRecent?.lastActive ?? 0,
+          lastActive: mostRelevantWorkstream?.lastActive ?? topFiles[0]?.lastTouched ?? 0,
         },
-        recentlyTouched,
-        suggestedNext,
+        recentlyTouched: resumption.recentlyTouched,
+        suggestedNext: resumption.suggestedNext,
         moveRecommendations,
         pinned: pinnedItems,
       };
 
-      set({ data, isLoading: false });
+      set({ data, resumeCandidates: resumption.resumeCandidates, isLoading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       set({ error: message, isLoading: false });
@@ -240,6 +217,7 @@ export const useTodayStore = create<TodayState>((set, get) => ({
   reset: () => {
     set({
       data: null,
+      resumeCandidates: [],
       isLoading: false,
       error: null,
       pinnedItems: [],
@@ -248,6 +226,28 @@ export const useTodayStore = create<TodayState>((set, get) => ({
     });
   },
 }));
+
+function findMostRelevantWorkstream(
+  workstreams: Workstream[],
+  resumeCandidates: ResumeCandidate[],
+): Workstream | null {
+  if (workstreams.length === 0) {
+    return null;
+  }
+
+  const resumePaths = new Set(resumeCandidates.slice(0, 5).map((candidate) => candidate.path));
+  const matching = workstreams.find((workstream) =>
+    workstream.topFiles.some(([path]) => resumePaths.has(path)),
+  );
+
+  if (matching) {
+    return matching;
+  }
+
+  return workstreams.reduce((latest, current) =>
+    current.lastActive > latest.lastActive ? current : latest,
+  );
+}
 
 // Helper: Save pinned items to localStorage
 function savePinnedItems(items: PinnedItem[]): void {

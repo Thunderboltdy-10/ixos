@@ -14,6 +14,16 @@ set(SOURCES
     src/app/Application.cpp
     src/app/MainWindow.cpp
     src/search/IxosCliSearchProvider.cpp
+    src/data/ActivityTracker.cpp
+    src/data/SessionState.cpp
+    src/data/PersonalRanker.cpp
+    src/data/WorkstreamManager.cpp
+    src/data/ResumptionEngine.cpp
+    src/data/InterruptionDetector.cpp
+    src/data/BundlePredictor.cpp
+    src/data/Orchestrator.cpp
+    src/data/TodaySection.cpp
+    src/data/RelationshipView.cpp
     src/widgets/ExplorerToolbar.cpp
     src/widgets/BreadcrumbBar.cpp
     src/widgets/AppSidebar.cpp
@@ -45,6 +55,16 @@ set(HEADERS
     src/app/MainWindow.h
     src/search/SearchTypes.h
     src/search/IxosCliSearchProvider.h
+    src/data/ActivityTracker.h
+    src/data/SessionState.h
+    src/data/PersonalRanker.h
+    src/data/WorkstreamManager.h
+    src/data/ResumptionEngine.h
+    src/data/InterruptionDetector.h
+    src/data/BundlePredictor.h
+    src/data/Orchestrator.h
+    src/data/TodaySection.h
+    src/data/RelationshipView.h
     src/widgets/ExplorerToolbar.h
     src/widgets/BreadcrumbBar.h
     src/widgets/AppSidebar.h

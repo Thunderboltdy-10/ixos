@@ -1,3 +1,54 @@
+## STATE SNAPSHOT (Ixplorer orchestration surfacing + desktop release hardening, 2026-03-11)
+- Date: 2026-03-11
+- Current baseline numbers:
+  - Ixplorer had core intelligence engines compiled in, but interruption recovery, predicted bundles, and orchestration were still mostly invisible because the right rail remained search-only in practice.
+  - Desktop packaging had improved, but local Tauri bundle output could retain stale `_up_` artifacts and release auditing still needed explicit model/env scrutiny.
+- Current best v2 numbers:
+  - Ixplorer now builds with an actual multi-purpose right-rail context surface for interrupted-session recovery, resume context, and suggested-next bundles, with explanation/details still anchored at the bottom of the same rail and top result auto-open preserved.
+  - `MainWindow` now wires `InterruptionDetector` to live session state, runs a 200 ms orchestration loop, and promotes recovery/resume/bundle suggestions into the visible shell instead of leaving them as dormant classes.
+  - Sidebar density is reduced by moving resume emphasis out of the left column and letting workstream/home/favorites/drives stay closer to a calmer File Explorer / Notion hierarchy.
+  - Desktop release build path now cleans stale Tauri outputs before packaging, validates required desktop env, bundles the expected model set, and locally produces fresh MSI + NSIS installers.
+- Current bottleneck ranking:
+  1. Embedded associated-app hosting still needs hands-on QA for VS Code / Office / PDF / browser-backed defaults; build health is good, but real window-behavior proof is still manual.
+  2. Remaining full-plan gaps are mostly UX depth gaps: richer workstream management actions, deeper relationship/workstream graph surfacing, and more explicit command coverage.
+  3. GitHub release workflow should be validated once on a real tag after these packaging/env fixes, especially on macOS/Linux runners.
+- Current pass validation (2026-03-11):
+  - `C:\Qt\Tools\CMake_64\bin\cmake.exe --build ixplorer/build --config Release` (with `C:\Qt\Tools\Ninja` on `PATH`): PASS
+  - `cargo check --manifest-path ixos-search/src-tauri/Cargo.toml`: PASS
+  - `cargo build --release`: PASS
+  - `npm run build` in `ixos-search/ui`: PASS
+  - `npm run tauri:build`: PASS
+  - `Start-Process C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe -PassThru` + 4s alive check: PASS
+- What is next (top 3 tasks):
+  1. Run focused GUI QA on hosted default-editor/default-app flows for code, Office, PDF, and browser-backed content; fix any concrete host-capture regressions found.
+  2. Surface more of the remaining plan in visible controls: workstream pin/rename flows, additional command-palette actions, and stronger relationship/workstream graph entry points.
+  3. Dry-run or tag-run the GitHub release workflow and confirm shipped payloads and env materialization behave the same off-machine as they do locally.
+
+## STATE SNAPSHOT (Ixplorer intelligence integration + embedded recovery, 2026-03-11)
+- Date: 2026-03-11
+- Current baseline numbers:
+  - Ixplorer had intelligence classes on disk but they were not coherently wired into the shell, so activity/session/workstream/today behavior was still effectively absent at runtime.
+  - Embedded documents were failing for many extensions because the host path was overused, host lifecycle recovery was weak, and rail interaction reopened/replaced hosted surfaces too aggressively.
+- Current best v2 numbers:
+  - Ixplorer now builds with activity tracking, session persistence, workstream clustering, personal ranking hooks, resume suggestions, sidebar Today/Workstreams sections, and command-palette resume/workstream actions wired into `MainWindow`.
+  - The document surface now prefers stable internal previews for code/text, images, media, and web-like content, only hosts associated windows where that still makes sense, and attempts hosted-window recovery before surfacing a closed-host error.
+  - Ixos/Ixplorer Auto search now avoids eager semantic indexing when lexical preflight already has usable hits, reducing default search latency on the CLI boundary.
+- Current bottleneck ranking:
+  1. Manual GUI QA is still needed for real Office/PDF/browser-backed hosted apps, especially resize/reopen/tab-reuse behavior.
+  2. The new intelligence layer is integrated, but rail mode orchestration, relationship view surfacing, and deeper command/context affordances still need product-level polish.
+  3. Session/workstream restore is implemented pragmatically through tab capture/restore, but finer-grained state such as scroll/history/search-result position still needs deeper restoration logic.
+- Current pass validation (2026-03-11):
+  - `cargo build --release`: PASS
+  - `C:\Qt\Tools\CMake_64\bin\cmake.exe --build ixplorer/build --config Release` (with `C:\Qt\Tools\Ninja` on `PATH`): PASS
+  - `cargo check --manifest-path ixos-search/src-tauri/Cargo.toml`: PASS
+  - `npm run build` in `ixos-search/ui`: PASS
+  - `cargo test --lib resumption_snapshot_ranks_recent_repeat_work`: PASS
+  - `cargo test --lib test_build_graph_returns_related_neighbor`: PASS
+- What is next (top 3 tasks):
+  1. Run real Ixplorer GUI QA for embedded Office/PDF/browser-backed apps and workstream/session switching, then fix behavioral regressions found there.
+  2. Expose the remaining intelligence surfaces more fully in the shell: relationship view entry points, predicted bundle rail state, and interruption recovery UI.
+  3. Tighten restore fidelity and search-context persistence so per-workstream sessions restore more than just tabs and the last query string.
+
 # STATE SNAPSHOT (Ixplorer host stabilization + redesign handoff, 2026-03-10)
 - Date: 2026-03-10
 - Current baseline numbers:

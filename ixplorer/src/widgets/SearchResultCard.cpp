@@ -13,10 +13,10 @@ SearchResultCard::SearchResultCard(QWidget *parent)
     , m_title(new QLabel(this))
     , m_path(new QLabel(this)) {
     setObjectName("RailResultCard");
-    setFixedHeight(32); // Height: ~32px (compact, file-list-like)
+    setFixedHeight(30);
 
     auto *layout = new QHBoxLayout(this);
-    layout->setContentsMargins(12, 0, 12, 0);
+    layout->setContentsMargins(10, 0, 10, 0);
     layout->setSpacing(8);
 
     m_icon->setFixedSize(18, 18);
@@ -30,8 +30,8 @@ SearchResultCard::SearchResultCard(QWidget *parent)
     layout->addWidget(m_title);
 
     m_path->setObjectName("RailResultPath");
-    QFont pathFont("Geist");
-    pathFont.setPixelSize(12);
+    QFont pathFont("Geist Mono");
+    pathFont.setPixelSize(11);
     m_path->setFont(pathFont);
     m_path->setStyleSheet("color: #8E8E93;");
     

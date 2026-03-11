@@ -378,16 +378,41 @@ DocumentPane::DocumentPane(const QString &path, bool previewMode, QWidget *paren
     , m_previewMode(previewMode) {
     setObjectName("DocumentPane");
     
-    QFileInfo info(m_filePath);
-    QString suffix = info.suffix().toLower();
-    
-    m_hostMode = m_policy.opensInApp() ? WindowEmbed : Fallback;
+    switch (m_policy.preferredMode) {
+    case FileOpenHostMode::CodeViewer:
+        m_hostMode = CodeViewer;
+        break;
+    case FileOpenHostMode::ImageViewer:
+        m_hostMode = ImageViewer;
+        break;
+    case FileOpenHostMode::MediaPlayer:
+        m_hostMode = MediaPlayer;
+        break;
+    case FileOpenHostMode::WebView:
+        m_hostMode = WebView;
+        break;
+    case FileOpenHostMode::AssociatedWindow:
+        m_hostMode = WindowEmbed;
+        break;
+    case FileOpenHostMode::Fallback:
+    default:
+        m_hostMode = Fallback;
+        break;
+    }
 
     buildUi();
 
     connect(m_hostMonitor, &QTimer::timeout, this, &DocumentPane::handleHostedWindowHeartbeat);
 
-    if (m_hostMode == WindowEmbed) {
+    if (m_hostMode == CodeViewer) {
+        setupCodeViewer();
+    } else if (m_hostMode == ImageViewer) {
+        setupImageViewer();
+    } else if (m_hostMode == MediaPlayer) {
+        setupMediaPlayer();
+    } else if (m_hostMode == WebView) {
+        setupWebView();
+    } else if (m_hostMode == WindowEmbed) {
         m_hostedReady = startHosting();
     }
 
@@ -420,7 +445,17 @@ void DocumentPane::setPreviewMode(bool previewMode) {
 
 void DocumentPane::reload() {
     clearHostedSurface();
-    m_hostedReady = startHosting();
+    if (m_hostMode == CodeViewer) {
+        setupCodeViewer();
+    } else if (m_hostMode == ImageViewer) {
+        setupImageViewer();
+    } else if (m_hostMode == MediaPlayer) {
+        setupMediaPlayer();
+    } else if (m_hostMode == WebView) {
+        setupWebView();
+    } else if (m_hostMode == WindowEmbed) {
+        m_hostedReady = startHosting();
+    }
     syncUiState();
     emit statusMessage(QStringLiteral("Reloaded %1.").arg(QFileInfo(m_filePath).fileName()));
 }
@@ -655,7 +690,7 @@ bool DocumentPane::startHosting() {
 #endif
 }
 
-void DocumentPane::clearHostedSurface() {
+void DocumentPane::clearHostedSurface(bool terminateProcess) {
     if (m_hostMonitor) {
         m_hostMonitor->stop();
     }
@@ -663,7 +698,7 @@ void DocumentPane::clearHostedSurface() {
     setHostedWindowVisible(false);
 
 #ifdef Q_OS_WIN
-    if (m_hostedWindowId != 0 || m_processHandle != 0) {
+    if (terminateProcess && (m_hostedWindowId != 0 || m_processHandle != 0)) {
         closeHostedWindow(m_hostedWindowId, m_processHandle);
     }
 #endif
@@ -725,6 +760,11 @@ void DocumentPane::handleHostedWindowHeartbeat() {
     }
 
     if (!IsWindow(reinterpret_cast<HWND>(m_hostedWindowId))) {
+        if (tryRecoverHostedWindow()) {
+            updateHostedGeometry();
+            return;
+        }
+
         if (m_processHandle != 0) {
             CloseHandle(reinterpret_cast<HANDLE>(m_processHandle));
         }
@@ -768,6 +808,69 @@ void DocumentPane::handleHostedWindowHeartbeat() {
     }
 
     ++m_backdropRefreshTick;
+#endif
+}
+
+bool DocumentPane::tryRecoverHostedWindow() {
+#ifndef Q_OS_WIN
+    return false;
+#else
+    if (m_processHandle == 0 || !m_hostSurface) {
+        return false;
+    }
+
+    HANDLE handle = reinterpret_cast<HANDLE>(m_processHandle);
+    const DWORD waitResult = WaitForSingleObject(handle, 0);
+    if (waitResult != WAIT_TIMEOUT) {
+        return false;
+    }
+
+    const DWORD processId = GetProcessId(handle);
+    if (processId == 0) {
+        return false;
+    }
+
+    const QFileInfo info(m_filePath);
+    const QString expectedExecutable = associatedExecutableBaseName(m_filePath);
+    const WindowCandidate chosen = findBestWindowCandidate(
+        {},
+        info.fileName().toLower(),
+        info.completeBaseName().toLower(),
+        expectedExecutable,
+        processId);
+
+    if (chosen.hwnd == nullptr || !IsWindow(chosen.hwnd)) {
+        return false;
+    }
+
+    const HWND hostHwnd = reinterpret_cast<HWND>(m_hostSurface->winId());
+    if (!hostHwnd) {
+        return false;
+    }
+
+    ShowWindow(chosen.hwnd, SW_HIDE);
+    SetWindowLongPtrW(chosen.hwnd,
+                      GWL_STYLE,
+                      (GetWindowLongPtrW(chosen.hwnd, GWL_STYLE) &
+                       ~static_cast<LONG_PTR>(WS_POPUP | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX |
+                                              WS_MAXIMIZEBOX | WS_SYSMENU)) |
+                          static_cast<LONG_PTR>(WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS));
+    SetWindowLongPtrW(
+        chosen.hwnd,
+        GWL_EXSTYLE,
+        GetWindowLongPtrW(chosen.hwnd, GWL_EXSTYLE) &
+            ~static_cast<LONG_PTR>(WS_EX_APPWINDOW | WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE |
+                                   WS_EX_STATICEDGE));
+    SetParent(chosen.hwnd, hostHwnd);
+    m_hostedWindowId = reinterpret_cast<WId>(chosen.hwnd);
+    m_hostedReady = true;
+    m_hostSurface->show();
+    m_stateCard->hide();
+    setHostedWindowVisible(isVisible());
+    refreshHostedBackdrop();
+    emit statusMessage(QStringLiteral("Recovered hosted window for %1.")
+                           .arg(info.fileName()));
+    return true;
 #endif
 }
 
@@ -872,6 +975,7 @@ void DocumentPane::setupImageViewer() {
         m_hostedReady = false;
         return;
     }
+    m_graphicsScene->clear();
     m_pixmapItem = m_graphicsScene->addPixmap(pixmap);
     m_graphicsScene->setSceneRect(pixmap.rect());
     m_graphicsView->fitInView(m_graphicsScene->sceneRect(), Qt::KeepAspectRatio);
@@ -968,7 +1072,7 @@ void DocumentPane::syncUiState() {
         return;
     }
 
-    if (m_policy.opensInApp()) {
+    if (m_policy.usesHostedWindow()) {
         showStateMessage(
             QStringLiteral("Associated app not embedded"),
             QStringLiteral("Ixplorer kept this tab in-app, but the associated window has not been captured yet."));

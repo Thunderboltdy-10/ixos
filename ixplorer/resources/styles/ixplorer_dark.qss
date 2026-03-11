@@ -40,8 +40,8 @@ QWidget {
 #ExplorerToolbar {
     background: qlineargradient(x1:0,y1:0,x2:1,y2:1, stop:0 #16181e, stop:1 #101217);
     border-bottom: 1px solid #2A2A2C;
-    min-height: 48px;
-    max-height: 48px;
+    min-height: 44px;
+    max-height: 44px;
 }
 
 #StatusStrip {
@@ -68,60 +68,60 @@ QWidget {
     text-transform: uppercase;
     font-weight: 600;
     text-align: left;
-    padding: 4px 8px;
+    padding: 2px 10px;
 }
 
 #SidebarItem {
     background-color: transparent;
     border: none;
-    border-left: 3px solid transparent;
-    border-radius: 4px;
+    border-left: 2px solid transparent;
+    border-radius: 6px;
     color: #F2F2F7;
     text-align: left;
-    min-height: 34px;
-    padding: 0 10px 0 14px;
+    min-height: 30px;
+    padding: 0 10px 0 12px;
 }
 
 #SidebarItemActive {
     background-color: rgba(255, 255, 255, 0.05);
-    border-left: 3px solid #0A84FF;
-    border-radius: 4px;
+    border-left: 2px solid #0A84FF;
+    border-radius: 6px;
     color: #F2F2F7;
     font-weight: 600;
     text-align: left;
-    min-height: 34px;
-    padding: 0 10px 0 14px;
+    min-height: 30px;
+    padding: 0 10px 0 12px;
 }
 
 /* Toolbar Buttons */
 #ToolbarNavGroup {
-    background-color: rgba(255, 255, 255, 0.025);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 12px;
+    background: transparent;
+    border: none;
 }
 
 #ToolbarNavButton {
     background: transparent;
-    border: none;
+    border: 1px solid transparent;
     color: #A1A1A6;
-    min-width: 30px;
-    max-width: 30px;
-    min-height: 30px;
-    max-height: 30px;
-    border-radius: 10px;
+    min-width: 28px;
+    max-width: 28px;
+    min-height: 28px;
+    max-height: 28px;
+    border-radius: 8px;
 }
 
 #ToolbarNavButton:hover {
     color: #F2F2F7;
     background-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.08);
 }
 
 #SearchField {
     background-color: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 0 14px;
-    min-height: 32px;
+    border-radius: 10px;
+    padding: 0 12px;
+    min-height: 30px;
     color: #F2F2F7;
 }
 
@@ -238,15 +238,56 @@ QTreeView::item:hover:!selected {
 
 /* Search Cards */
 #RailResultCard {
-    background-color: #2C2C2E;
-    border: 1px solid #3A3A3C;
-    border-radius: 8px;
-    margin: 4px 16px;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    margin: 0 12px;
 }
 
 #RailResultCard[active="true"] {
-    background-color: #3A3A3C;
-    border-color: #0A84FF;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(10, 132, 255, 0.2);
+}
+
+#RailDetailPane {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 rgba(255,255,255,0.02), stop:1 rgba(255,255,255,0.00));
+}
+
+#RailContextPane {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 rgba(255,255,255,0.028), stop:1 rgba(255,255,255,0.01));
+}
+
+#RailContextEyebrow {
+    color: #8E8E93;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+#RailContextTitle {
+    color: #F2F2F7;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#RailContextSubtitle {
+    color: #A1A1A6;
+    font-size: 12px;
+}
+
+QPushButton[railPrimaryAction="true"] {
+    background-color: rgba(10, 132, 255, 0.16);
+    border: 1px solid rgba(10, 132, 255, 0.28);
+    border-radius: 8px;
+    padding: 5px 10px;
+    color: #F2F2F7;
+}
+
+QPushButton[railPrimaryAction="true"]:hover {
+    background-color: rgba(10, 132, 255, 0.24);
+    border-color: rgba(10, 132, 255, 0.42);
 }
 
 /* Dropdowns */
@@ -320,9 +361,9 @@ QPushButton {
 #ToolbarRailButton {
     background-color: rgba(255, 255, 255, 0.035);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    min-width: 34px;
-    max-width: 34px;
+    border-radius: 8px;
+    min-width: 30px;
+    max-width: 30px;
     padding: 0;
 }
 

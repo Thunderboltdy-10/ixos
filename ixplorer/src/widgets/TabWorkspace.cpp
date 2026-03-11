@@ -72,11 +72,11 @@ TabWorkspace::TabWorkspace(QWidget *parent)
     , m_stack(new QStackedWidget(this)) {
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(0);
+    layout->setSpacing(6);
 
     auto *tabRow = new QHBoxLayout();
-    tabRow->setContentsMargins(0, 0, 0, 0);
-    tabRow->setSpacing(0);
+    tabRow->setContentsMargins(0, 8, 0, 0);
+    tabRow->setSpacing(6);
 
     m_tabBar->setTabsClosable(true);
     m_tabBar->setMovable(false);
@@ -110,6 +110,77 @@ TabWorkspace::TabWorkspace(QWidget *parent)
 
 void TabWorkspace::setCurrentPath(const QString &path) {
     m_breadcrumb->setPath(path);
+}
+
+int TabWorkspace::tabCount() const {
+    return m_tabBar->count();
+}
+
+QVector<TabState> TabWorkspace::captureTabState() const {
+    QVector<TabState> tabs;
+    tabs.reserve(m_stack->count());
+    for (int index = 0; index < m_stack->count(); ++index) {
+        TabState tab;
+        if (auto *pane = qobject_cast<ExplorerPane *>(m_stack->widget(index))) {
+            tab.path = pane->currentPath();
+            tab.isDocument = false;
+            tab.viewMode = static_cast<int>(pane->viewMode());
+        } else if (auto *document = qobject_cast<DocumentPane *>(m_stack->widget(index))) {
+            tab.path = document->filePath();
+            tab.isDocument = true;
+            tab.isPreview = document->isPreviewTab();
+        }
+        if (!tab.path.isEmpty()) {
+            tabs.append(tab);
+        }
+    }
+    return tabs;
+}
+
+void TabWorkspace::restoreTabState(const QVector<TabState> &tabs, int activeTabIndex) {
+    while (m_stack->count() > 0) {
+        QWidget *widget = m_stack->widget(0);
+        m_stack->removeWidget(widget);
+        if (widget != nullptr) {
+            widget->deleteLater();
+        }
+    }
+    while (m_tabBar->count() > 0) {
+        QWidget *rightButton = m_tabBar->tabButton(0, QTabBar::RightSide);
+        QWidget *leftButton = m_tabBar->tabButton(0, QTabBar::LeftSide);
+        m_tabBar->removeTab(0);
+        if (rightButton != nullptr) {
+            rightButton->deleteLater();
+        }
+        if (leftButton != nullptr) {
+            leftButton->deleteLater();
+        }
+    }
+    m_previewTabIndex = -1;
+
+    for (const TabState &tab : tabs) {
+        if (tab.path.isEmpty()) {
+            continue;
+        }
+        if (tab.isDocument) {
+            const int index = addDocumentTab(tab.path, tab.isPreview);
+            if (tab.isPreview) {
+                m_previewTabIndex = index;
+            }
+        } else {
+            const int index = addExplorerTab(tab.path);
+            if (auto *pane = paneAt(index)) {
+                pane->setViewMode(static_cast<ExplorerPane::ViewMode>(tab.viewMode));
+            }
+        }
+    }
+
+    if (m_tabBar->count() == 0) {
+        addExplorerTab(QDir::homePath());
+        return;
+    }
+
+    m_tabBar->setCurrentIndex(qBound(0, activeTabIndex, m_tabBar->count() - 1));
 }
 
 ExplorerPane *TabWorkspace::currentPane() const {

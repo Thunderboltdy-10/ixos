@@ -10,7 +10,6 @@ namespace Ixplorer {
 
 ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     : QWidget(parent)
-    , m_navGroup(new QFrame(this))
     , m_backBtn(new QPushButton(this))
     , m_fwdBtn(new QPushButton(this))
     , m_upBtn(new QPushButton(this))
@@ -20,13 +19,8 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     setObjectName("ExplorerToolbar");
 
     auto *layout = new QHBoxLayout(this);
-    layout->setContentsMargins(12, 8, 12, 8);
+    layout->setContentsMargins(14, 10, 14, 8);
     layout->setSpacing(8);
-
-    m_navGroup->setObjectName("ToolbarNavGroup");
-    auto *navLayout = new QHBoxLayout(m_navGroup);
-    navLayout->setContentsMargins(4, 0, 4, 0);
-    navLayout->setSpacing(4);
 
     QColor iconColor = Colors::qc(Colors::FgPrimary);
     QColor disabledColor = Colors::qc(Colors::FgGhost);
@@ -46,13 +40,12 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     m_upBtn->setObjectName("ToolbarNavButton");
     m_refreshBtn->setObjectName("ToolbarNavButton");
 
-    navLayout->addWidget(m_backBtn);
-    navLayout->addWidget(m_fwdBtn);
-    navLayout->addWidget(m_upBtn);
-    navLayout->addWidget(m_refreshBtn);
-
-    layout->addWidget(m_navGroup);
-    layout->addSpacing(8);
+    const QList<QPushButton *> navButtons = {m_backBtn, m_fwdBtn, m_upBtn, m_refreshBtn};
+    for (QPushButton *button : navButtons) {
+        button->setFixedSize(28, 28);
+        layout->addWidget(button);
+    }
+    layout->addSpacing(10);
 
     // Search Icon rendering
     m_searchField->addAction(Icons::makeIconFromFont(Icons::Search, 16, Colors::qc(Colors::FgMuted)), QLineEdit::LeadingPosition);
@@ -60,18 +53,14 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     m_searchField->setObjectName("SearchField");
     m_searchField->setPlaceholderText("Search this folder with Ixos");
     m_searchField->setClearButtonEnabled(true);
-    m_searchField->setMinimumWidth(360);
+    m_searchField->setMinimumWidth(460);
     m_searchField->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     layout->addWidget(m_searchField, 1);
 
     m_toggleRailBtn->setObjectName("ToolbarRailButton");
     m_toggleRailBtn->setCheckable(true);
-    m_toggleRailBtn->setIcon(Icons::makeIconFromFont(Icons::Search, 16, iconColor, disabledColor)); // Rail toggle is search related? No, actually maybe standard icon.
-    // Wait, the plan says "Rail toggle". The original used SP_FileDialogDetailedView. I'll use Settings or some other icon, or just Image. Let's use Icons::Filter for rail toggle or just a search right icon. Wait, the original was detailed view. I will use the actual rail icon or maybe Icons::Settings or a generic menu one. Wait, in 1.2 it says "search/palette/rail/searchField". Let's use Icons::Search or maybe a sidebar icon if available. I'll use Icons::Search for now. But wait, "Search" is for the search input. Let's use Icons::Filter or Icons::Search. Actually I'll use Icons::Image for now. Let's see if there is a layout icon.
-    // I added Home, Folder, Search, Chevron, Back, Forward, Up, Refresh, Close, Add, Pin, Desktop, Documents... Let's use Icons::Search for rail toggle, or a generic. "Settings"? No.
-    // Actually I'll use `Icons::Desktop` maybe? Or just use `Icons::Search`. No, wait. 
-    m_toggleRailBtn->setIcon(Icons::makeIconFromFont(Icons::Home, 16, iconColor, disabledColor)); // Temporary
-    m_toggleRailBtn->setFixedWidth(38);
+    m_toggleRailBtn->setIcon(Icons::makeIconFromFont(Icons::Filter, 16, iconColor, disabledColor));
+    m_toggleRailBtn->setFixedSize(30, 30);
     m_toggleRailBtn->setToolTip("Show or hide the Ixos rail");
     layout->addWidget(m_toggleRailBtn);
 

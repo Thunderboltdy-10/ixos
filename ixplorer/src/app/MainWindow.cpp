@@ -1,5 +1,13 @@
 #include "app/MainWindow.h"
 
+#include "data/ActivityTracker.h"
+#include "data/BundlePredictor.h"
+#include "data/InterruptionDetector.h"
+#include "data/Orchestrator.h"
+#include "data/PersonalRanker.h"
+#include "data/RelationshipView.h"
+#include "data/ResumptionEngine.h"
+#include "data/WorkstreamManager.h"
 #include "utils/FileOperations.h"
 #include "widgets/AppSidebar.h"
 #include "widgets/CommandPalette.h"
@@ -12,9 +20,11 @@
 #include "widgets/ToastNotification.h"
 
 #include <QDir>
+#include <QDialog>
 #include <QFileInfo>
 #include <QKeyEvent>
 #include <QShortcut>
+#include <QTimer>
 #include <QVBoxLayout>
 #include <QVariantAnimation>
 #include <QEasingCurve>
@@ -47,7 +57,17 @@ MainWindow::MainWindow(QWidget *parent)
     , m_rail(new IxosRail(this))
     , m_statusStrip(new StatusStrip(this))
     , m_palette(new CommandPalette(this))
-    , m_splitter(new QSplitter(Qt::Horizontal, this)) {
+    , m_splitter(new QSplitter(Qt::Horizontal, this))
+    , m_runtimeSession(new SessionState(this))
+    , m_sessionAutosaveTimer(new QTimer(this))
+    , m_orchestratorTimer(new QTimer(this))
+    , m_activityTracker(new ActivityTracker(this))
+    , m_personalRanker(new PersonalRanker())
+    , m_workstreamManager(new WorkstreamManager(this))
+    , m_resumptionEngine(new ResumptionEngine(this))
+    , m_interruptionDetector(new InterruptionDetector())
+    , m_bundlePredictor(new BundlePredictor(this))
+    , m_orchestrator(new Orchestrator(this)) {
     setWindowTitle("Ixplorer");
     resize(1440, 860);
     setMinimumSize(1100, 700);
@@ -55,13 +75,20 @@ MainWindow::MainWindow(QWidget *parent)
     setupLayout();
     setupConnections();
     setupShortcuts();
-
-    m_workspace->addTab(QDir::homePath());
-    setRailVisible(false);
+    initializeIntelligence();
+    restoreSession();
 }
 
 void MainWindow::navigateTo(const QString &path) {
     m_workspace->navigateCurrentTab(path);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    if (m_activityTracker != nullptr) {
+        m_activityTracker->logEvent(ActivityAction::SessionEnd, QString(), {}, {}, m_workstreamManager->currentWorkstreamId());
+    }
+    saveSession(true);
+    QMainWindow::closeEvent(event);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
@@ -98,15 +125,30 @@ void MainWindow::setupLayout() {
 
 void MainWindow::setupConnections() {
     connect(m_sidebar, &AppSidebar::locationSelected, this, &MainWindow::navigateTo);
+    connect(m_sidebar, &AppSidebar::resumePathSelected, this, [this](const QString &path) {
+        if (path.isEmpty()) {
+            return;
+        }
+        if (!m_workspace->previewPath(path)) {
+            m_workspace->addTab(path);
+        }
+    });
+    connect(m_sidebar, &AppSidebar::workstreamSelected, this, &MainWindow::switchWorkstream);
 
     connect(m_toolbar, &ExplorerToolbar::searchRequested, this, [this](const QString &query, int mode) {
         setRailVisible(true);
+        m_lastSearchQuery = query;
+        m_lastSearchMode = mode;
+        markSessionDirty();
         m_rail->submitToolbarSearch(query, mode);
     });
     connect(m_toolbar, &ExplorerToolbar::searchDraftChanged, this, [this](const QString &query, int mode) {
         if (!query.isEmpty()) {
             setRailVisible(true);
         }
+        m_lastSearchQuery = query;
+        m_lastSearchMode = mode;
+        markSessionDirty();
         m_rail->submitToolbarDraft(query, mode);
     });
     connect(m_toolbar, &ExplorerToolbar::toggleRailRequested, this, &MainWindow::toggleRailVisible);
@@ -125,6 +167,12 @@ void MainWindow::setupConnections() {
     });
 
     connect(m_workspace, &TabWorkspace::pathChanged, this, &MainWindow::onPathChanged);
+    connect(m_workspace, &TabWorkspace::pathChanged, this, [this](const QString &path) {
+        if (m_activityTracker != nullptr) {
+            m_activityTracker->logDirectoryChange(path, m_workstreamManager->currentWorkstreamId());
+        }
+        markSessionDirty();
+    });
     connect(m_workspace, &TabWorkspace::navigationStateChanged,
             m_toolbar, &ExplorerToolbar::setNavigationState);
     connect(m_workspace, &TabWorkspace::statusMessage, this, [this](const QString &message) {
@@ -142,24 +190,64 @@ void MainWindow::setupConnections() {
         m_statusStrip->clearSelectionInfo();
     });
     connect(m_workspace, &TabWorkspace::currentTabChanged, this, [this](int) {
+        const QString path = m_workspace->currentDocument() ? m_workspace->currentDocument()->displayPath()
+                                                            : (m_workspace->currentPane() ? m_workspace->currentPane()->currentPath()
+                                                                                          : QString());
+        if (m_activityTracker != nullptr && !path.isEmpty()) {
+            m_activityTracker->logTabSwitch(path, m_workstreamManager->currentWorkstreamId());
+        }
         onPathChanged(m_workspace->currentDocument() ? m_workspace->currentDocument()->displayPath()
                                                      : (m_workspace->currentPane() ? m_workspace->currentPane()->currentPath()
                                                                                    : QString()));
+        markSessionDirty();
+    });
+    connect(m_workspace, &TabWorkspace::surfaceToneChanged, this, [this](const QColor &color) {
+        applyShellTone(color);
+    });
+    connect(m_workspace, &TabWorkspace::fileActivated, this, [this](const QFileInfo &info) {
+        if (m_activityTracker != nullptr) {
+            m_activityTracker->logFileOpen(info.absoluteFilePath(), m_lastSearchQuery, m_workstreamManager->currentWorkstreamId());
+        }
+        if (m_personalRanker != nullptr) {
+            m_personalRanker->markOpened(info.absoluteFilePath());
+        }
+        refreshToday();
+        markSessionDirty();
     });
 
     connect(m_rail, &IxosRail::revealPathInWorkspaceRequested, this, [this](const QString &path) {
         m_workspace->revealPathInCurrentTab(path);
     });
     connect(m_rail, &IxosRail::openPathInNewTabRequested, this, [this](const QString &path) {
+        if (m_activityTracker != nullptr) {
+            m_activityTracker->logResultClick(path, m_lastSearchQuery, m_workstreamManager->currentWorkstreamId());
+        }
+        if (m_personalRanker != nullptr) {
+            m_personalRanker->markOpened(path);
+        }
         m_workspace->addTab(path);
+        markSessionDirty();
     });
     connect(m_rail, &IxosRail::openFileRequested, this, [this](const QString &path) {
+        if (m_activityTracker != nullptr) {
+            m_activityTracker->logResultClick(path, m_lastSearchQuery, m_workstreamManager->currentWorkstreamId());
+        }
+        if (m_personalRanker != nullptr) {
+            m_personalRanker->markOpened(path);
+        }
         if (!m_workspace->previewPath(path)) {
             m_workspace->addTab(path);
         }
+        refreshToday();
+        markSessionDirty();
     });
+    connect(m_rail, &IxosRail::openBundleRequested, this, &MainWindow::openPathsBundle);
     connect(m_rail, &IxosRail::autoOpenPathRequested, this, [this](const QString &path) {
+        if (m_activityTracker != nullptr) {
+            m_activityTracker->logResultClick(path, m_lastSearchQuery, m_workstreamManager->currentWorkstreamId());
+        }
         m_workspace->previewPath(path);
+        markSessionDirty();
     });
     connect(m_rail, &IxosRail::revealPathRequested, this, [](const QString &path) {
         FileOperations::revealInSystemExplorer(path);
@@ -167,9 +255,28 @@ void MainWindow::setupConnections() {
     connect(m_rail, &IxosRail::requestClose, this, [this]() {
         setRailVisible(false);
     });
+    connect(m_rail, &IxosRail::searchTelemetryChanged, this, [this](bool hasResults,
+                                                                     float topScore,
+                                                                     float scoreGap,
+                                                                     float lexicalConfidence,
+                                                                     qint64 elapsedMs,
+                                                                     qint64 maxLatencyMs,
+                                                                     bool queryActive) {
+        m_orchestrator->setSearchContext(hasResults, topScore, scoreGap, lexicalConfidence, elapsedMs, maxLatencyMs);
+        m_orchestrator->setState(queryActive ? OrchestratorState::Searching : OrchestratorState::Idle);
+        if (!queryActive) {
+            refreshIntelligenceSurface();
+        }
+    });
     connect(m_rail, &IxosRail::searchSubmitted, this, [this](const QString &query, int mode) {
         m_toolbar->setSearchText(query);
         setRailVisible(true);
+        m_lastSearchQuery = query;
+        m_lastSearchMode = mode;
+        if (m_activityTracker != nullptr) {
+            m_activityTracker->logSearch(query, activeSearchRoot(), m_workstreamManager->currentWorkstreamId());
+        }
+        markSessionDirty();
     });
 
     connect(m_palette, &CommandPalette::searchRequested, this, [this](const QString &query) {
@@ -179,6 +286,22 @@ void MainWindow::setupConnections() {
         m_rail->submitToolbarSearch(query, 1);
     });
     connect(m_palette, &CommandPalette::commandTriggered, this, &MainWindow::handlePaletteCommand);
+    connect(m_activityTracker, &ActivityTracker::activityLogged, this, [this](const ActivityEvent &) {
+        if (m_workstreamManager != nullptr) {
+            m_workstreamManager->rebuild();
+            m_workstreamManager->save();
+        }
+        refreshToday();
+    });
+    connect(m_workstreamManager, &WorkstreamManager::workstreamsChanged, this, [this]() {
+        refreshWorkstreams();
+        markSessionDirty();
+    });
+    connect(m_workstreamManager, &WorkstreamManager::currentWorkstreamChanged, this, [this](const QString &) {
+        refreshToday();
+        refreshWorkstreams();
+        markSessionDirty();
+    });
 }
 
 void MainWindow::setupShortcuts() {
@@ -222,14 +345,72 @@ void MainWindow::setupShortcuts() {
     connect(openPalette, &QShortcut::activated, this, &MainWindow::openCommandPalette);
 }
 
+void MainWindow::initializeIntelligence() {
+    m_sessionAutosaveTimer->setInterval(60000);
+    connect(m_sessionAutosaveTimer, &QTimer::timeout, this, [this]() {
+        if (m_sessionDirty) {
+            saveSession(false);
+        }
+    });
+    m_sessionAutosaveTimer->start();
+
+    m_workstreamManager->setActivityTracker(m_activityTracker);
+    m_workstreamManager->rebuild();
+
+    m_runtimeSession->setStoragePath(m_sessionStore.path());
+    m_runtimeSession->load();
+
+    m_resumptionEngine->setActivityTracker(m_activityTracker);
+    m_resumptionEngine->setSessionStateStore(&m_sessionStore);
+    m_resumptionEngine->setPersonalRanker(m_personalRanker);
+    m_resumptionEngine->setWorkstreamManager(m_workstreamManager);
+
+    m_bundlePredictor->setActivityTracker(m_activityTracker);
+    m_bundlePredictor->setPersonalRanker(m_personalRanker);
+    m_bundlePredictor->setWorkstreamManager(m_workstreamManager);
+
+    m_orchestrator->setResumptionEngine(m_resumptionEngine);
+    m_orchestrator->setBundlePredictor(m_bundlePredictor);
+    m_orchestrator->setInterruptionDetector(m_interruptionDetector);
+    m_interruptionDetector->setSessionState(m_runtimeSession);
+    m_interruptionDetector->setResumptionEngine(m_resumptionEngine);
+
+    m_orchestratorTimer->setInterval(200);
+    connect(m_orchestratorTimer, &QTimer::timeout, this, [this]() {
+        refreshIntelligenceSurface();
+    });
+    m_orchestratorTimer->start();
+
+    if (m_activityTracker != nullptr) {
+        m_activityTracker->logEvent(ActivityAction::SessionStart, QString(), {}, {}, m_workstreamManager->currentWorkstreamId());
+    }
+}
+
 void MainWindow::openCommandPalette() {
+    const QVector<Workstream> workstreams = m_workstreamManager->workstreams();
+    const bool hasWorkstreams = !workstreams.isEmpty();
+    const bool hasActiveWorkstream = !m_workstreamManager->currentWorkstreamId().isEmpty();
+    const ResumptionPacket packet = m_resumptionEngine->buildPacket(m_workstreamManager->currentWorkstreamId());
+    const bool hasResumePacket = !packet.primaryPath.isEmpty();
+    const QString activePath = m_workspace->currentDocument() != nullptr
+        ? m_workspace->currentDocument()->filePath()
+        : QString();
+    const bool hasActiveDocument = !activePath.isEmpty();
+
     QVector<CommandPaletteItem> commands = {
-        {QStringLiteral("focus_search"), QStringLiteral("Focus Ixos Search"), QStringLiteral("Jump to the top search bar"), QStringLiteral("search find ixos top bar")},
-        {QStringLiteral("toggle_rail"), QStringLiteral("Toggle Ixos Panel"), QStringLiteral("Show or hide the right search rail"), QStringLiteral("rail panel sidebar")},
-        {QStringLiteral("new_tab"), QStringLiteral("New Explorer Tab"), QStringLiteral("Open a fresh workspace tab"), QStringLiteral("tab open workspace")},
-        {QStringLiteral("close_tab"), QStringLiteral("Close Current Tab"), QStringLiteral("Close the active workspace tab"), QStringLiteral("close tab")},
-        {QStringLiteral("refresh"), QStringLiteral("Refresh Current View"), QStringLiteral("Reload the current explorer or document"), QStringLiteral("refresh reload")},
-        {QStringLiteral("go_up"), QStringLiteral("Open Parent Folder"), QStringLiteral("Go to the current tab's parent path"), QStringLiteral("parent up folder")},
+        {QStringLiteral("focus_search"), QStringLiteral("Focus Ixos Search"), QStringLiteral("Jump to the top search bar"), QStringLiteral("search find ixos top bar"), 0.92f, true},
+        {QStringLiteral("toggle_rail"), QStringLiteral("Toggle Ixos Panel"), QStringLiteral("Show or hide the right intelligence rail"), QStringLiteral("rail panel sidebar"), 0.78f, true},
+        {QStringLiteral("switch_workstream"), QStringLiteral("Switch Workstream"), QStringLiteral("Cycle to the next active workstream"), QStringLiteral("workstream context session"), hasWorkstreams ? 0.88f : 0.0f, hasWorkstreams},
+        {QStringLiteral("open_bundle"), QStringLiteral("Open Today Bundle"), QStringLiteral("Open the current resume packet and supporting files"), QStringLiteral("today resume bundle continue"), hasResumePacket ? 0.9f : 0.0f, hasResumePacket},
+        {QStringLiteral("reopen_last_packet"), QStringLiteral("Reopen Last Session"), QStringLiteral("Resume the highest-confidence recent context"), QStringLiteral("resume session packet"), hasResumePacket ? 0.86f : 0.0f, hasResumePacket},
+        {QStringLiteral("add_to_workstream"), QStringLiteral("Add To Workstream"), QStringLiteral("Attach the active file to the current workstream"), QStringLiteral("workstream pin current file context"), (hasActiveWorkstream && hasActiveDocument) ? 0.82f : 0.0f, hasActiveWorkstream && hasActiveDocument},
+        {QStringLiteral("pin_file"), QStringLiteral("Pin File"), QStringLiteral("Keep the active file in Favorites and personal signals"), QStringLiteral("favorite pin file"), hasActiveDocument ? 0.8f : 0.0f, hasActiveDocument},
+        {QStringLiteral("new_tab"), QStringLiteral("New Explorer Tab"), QStringLiteral("Open a fresh workspace tab"), QStringLiteral("tab open workspace"), 0.58f, true},
+        {QStringLiteral("close_tab"), QStringLiteral("Close Current Tab"), QStringLiteral("Close the active workspace tab"), QStringLiteral("close tab"), m_workspace->tabCount() > 1 ? 0.62f : 0.0f, m_workspace->tabCount() > 1},
+        {QStringLiteral("refresh"), QStringLiteral("Refresh Current View"), QStringLiteral("Reload the current explorer or document"), QStringLiteral("refresh reload"), 0.55f, true},
+        {QStringLiteral("go_up"), QStringLiteral("Open Parent Folder"), QStringLiteral("Go to the current tab's parent path"), QStringLiteral("parent up folder"), 0.48f, m_workspace->canGoUpCurrent()},
+        {QStringLiteral("toggle_today"), QStringLiteral("Refresh Today"), QStringLiteral("Recompute resume suggestions for the current workstream"), QStringLiteral("today resume refresh"), hasActiveWorkstream || hasResumePacket ? 0.66f : 0.25f, true},
+        {QStringLiteral("show_relationships"), QStringLiteral("Show Relationships"), QStringLiteral("Visualize files commonly used with the current document"), QStringLiteral("graph relationship co occurrence related"), activePath.isEmpty() ? 0.0f : 0.72f, !activePath.isEmpty()},
     };
 
     m_palette->setCommands(commands);
@@ -263,6 +444,135 @@ void MainWindow::handlePaletteCommand(const QString &commandId) {
     }
     if (commandId == QStringLiteral("go_up")) {
         m_workspace->goUpCurrent();
+        return;
+    }
+    if (commandId == QStringLiteral("switch_workstream")) {
+        const QVector<Workstream> workstreams = m_workstreamManager->workstreams();
+        if (workstreams.isEmpty()) {
+            return;
+        }
+        int currentIndex = -1;
+        for (int index = 0; index < workstreams.size(); ++index) {
+            if (workstreams.at(index).id == m_workstreamManager->currentWorkstreamId()) {
+                currentIndex = index;
+                break;
+            }
+        }
+        const int nextIndex = workstreams.size() == 1 ? 0 : (currentIndex + 1) % workstreams.size();
+        switchWorkstream(workstreams.at(nextIndex).id);
+        return;
+    }
+    if (commandId == QStringLiteral("open_bundle") || commandId == QStringLiteral("reopen_last_packet")) {
+        const ResumptionPacket packet = m_resumptionEngine->buildPacket(m_workstreamManager->currentWorkstreamId());
+        if (packet.primaryPath.isEmpty()) {
+            return;
+        }
+        if (!m_workspace->previewPath(packet.primaryPath)) {
+            m_workspace->addTab(packet.primaryPath);
+        }
+        for (const QString &path : packet.supportingPaths) {
+            m_workspace->addTab(path);
+        }
+        return;
+    }
+    if (commandId == QStringLiteral("add_to_workstream")) {
+        const QString activePath = m_workspace->currentDocument() != nullptr
+            ? m_workspace->currentDocument()->filePath()
+            : QString();
+        const QString currentWorkstreamId = m_workstreamManager->currentWorkstreamId();
+        if (activePath.isEmpty() || currentWorkstreamId.isEmpty()) {
+            return;
+        }
+
+        Workstream workstream = m_workstreamManager->workstreamForId(currentWorkstreamId);
+        const QString folderPath = QFileInfo(activePath).absolutePath();
+        auto bumpPair = [](QVector<QPair<QString, int>> &pairs, const QString &value) {
+            for (auto &pair : pairs) {
+                if (pair.first == value) {
+                    pair.second += 1;
+                    return;
+                }
+            }
+            pairs.prepend(qMakePair(value, 1));
+        };
+        bumpPair(workstream.topFiles, activePath);
+        if (!folderPath.isEmpty()) {
+            bumpPair(workstream.topFolders, folderPath);
+        }
+        workstream.isAuto = false;
+        if (workstream.description.isEmpty()) {
+            workstream.description = QStringLiteral("Curated from Ixplorer");
+        }
+        m_workstreamManager->upsertWorkstream(workstream);
+        m_workstreamManager->save();
+        ToastNotification::showToast(this, QStringLiteral("Added file to the current workstream."));
+        return;
+    }
+    if (commandId == QStringLiteral("pin_file")) {
+        const QString activePath = m_workspace->currentDocument() != nullptr
+            ? m_workspace->currentDocument()->filePath()
+            : QString();
+        if (activePath.isEmpty()) {
+            return;
+        }
+        m_sidebar->pinFavorite(activePath);
+        if (m_activityTracker != nullptr) {
+            m_activityTracker->logEvent(ActivityAction::FilePinned, activePath, {}, {}, m_workstreamManager->currentWorkstreamId());
+        }
+        ToastNotification::showToast(this, QStringLiteral("Pinned file to Favorites."));
+        return;
+    }
+    if (commandId == QStringLiteral("toggle_today")) {
+        refreshToday();
+        return;
+    }
+    if (commandId == QStringLiteral("show_relationships")) {
+        const QString activePath = m_workspace->currentDocument() != nullptr
+            ? m_workspace->currentDocument()->filePath()
+            : QString();
+        if (activePath.isEmpty()) {
+            return;
+        }
+
+        RelationshipGraph graph;
+        graph.title = QFileInfo(activePath).fileName();
+        graph.nodes.append(RelationshipNode{QStringLiteral("primary"), QFileInfo(activePath).fileName(), activePath, 1.0f, true});
+
+        const QVector<QPair<QString, int>> related = m_activityTracker->getCoOccurrences(activePath, 30);
+        const int maxCount = related.isEmpty() ? 1 : qMax(1, related.first().second);
+        int index = 0;
+        for (const auto &pair : related) {
+            if (pair.first.isEmpty()) {
+                continue;
+            }
+            const QString nodeId = QStringLiteral("n%1").arg(index++);
+            const QString label = QFileInfo(pair.first).fileName().isEmpty() ? pair.first : QFileInfo(pair.first).fileName();
+            const float weight = static_cast<float>(pair.second) / static_cast<float>(maxCount);
+            graph.nodes.append(RelationshipNode{nodeId, label, pair.first, weight, false});
+            graph.edges.append(RelationshipEdge{QStringLiteral("primary"), nodeId, weight});
+            if (index >= 12) {
+                break;
+            }
+        }
+
+        auto *dialog = new QDialog(this);
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+        dialog->setWindowTitle(QStringLiteral("Relationships"));
+        dialog->resize(760, 520);
+        auto *layout = new QVBoxLayout(dialog);
+        auto *view = new RelationshipView(dialog);
+        view->setGraph(graph);
+        layout->addWidget(view);
+        connect(view, &RelationshipView::pathActivated, dialog, [this, dialog](const QString &path) {
+            if (!m_workspace->previewPath(path)) {
+                m_workspace->addTab(path);
+            }
+            dialog->accept();
+        });
+        dialog->show();
+        dialog->raise();
+        dialog->activateWindow();
+        return;
     }
 }
 
@@ -285,6 +595,12 @@ void MainWindow::onPathChanged(const QString &path) {
         m_statusStrip->setItemCount(1);
         m_toolbar->setNavigationState(false, false, m_workspace->canGoUpCurrent());
     }
+
+    if (m_orchestrator != nullptr) {
+        m_orchestrator->setActivePath(info.exists() && info.isFile() ? info.absoluteFilePath() : QString());
+        m_orchestrator->setState(path.isEmpty() ? OrchestratorState::Idle : OrchestratorState::Working);
+    }
+    refreshIntelligenceSurface();
 }
 
 void MainWindow::applyShellTone(const QColor &color) {
@@ -314,6 +630,237 @@ void MainWindow::applyShellTone(const QColor &color) {
     m_rail->setStyleSheet(QStringLiteral("#IxosRail{background:qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 %1, stop:1 %2); border-left:1px solid %3;}").arg(side.name(QColor::HexRgb), base.name(QColor::HexRgb), edge.name(QColor::HexRgb)));
     m_statusStrip->setStyleSheet(QStringLiteral("#StatusStrip{background-color:%1; border-top:1px solid %2;}").arg(chrome.name(QColor::HexRgb), edge.name(QColor::HexRgb)));
     m_workspace->setStyleSheet(QStringLiteral("background-color:%1;").arg(base.name(QColor::HexRgb)));
+}
+
+void MainWindow::markSessionDirty() {
+    m_sessionDirty = true;
+}
+
+void MainWindow::saveSession(bool cleanExit) {
+    m_sessionSnapshot.tabs = m_workspace->captureTabState();
+    m_sessionSnapshot.activeTabIndex = m_workspace->currentTabIndex();
+    const QList<int> sizes = m_splitter->sizes();
+    if (sizes.size() >= 3) {
+        m_sessionSnapshot.sidebarWidth = sizes.at(0);
+        m_sessionSnapshot.railWidth = sizes.at(2);
+    }
+    m_sessionSnapshot.railVisible = m_railVisible;
+    m_sessionSnapshot.lastSearchQuery = m_lastSearchQuery;
+    m_sessionSnapshot.lastSearchRoot = activeSearchRoot();
+    m_sessionSnapshot.lastSaveTimestamp = QDateTime::currentMSecsSinceEpoch();
+    m_sessionSnapshot.hasCleanExit = cleanExit;
+    m_sessionSnapshot.activeWorkstreamId = m_workstreamManager->currentWorkstreamId();
+
+    if (!m_sessionSnapshot.activeWorkstreamId.isEmpty()) {
+        WorkstreamSessionState workstreamState;
+        workstreamState.tabs = m_sessionSnapshot.tabs;
+        workstreamState.activeTabIndex = m_sessionSnapshot.activeTabIndex;
+        workstreamState.searchQuery = m_lastSearchQuery;
+        workstreamState.searchRoot = m_sessionSnapshot.lastSearchRoot;
+        m_sessionSnapshot.workstreamStates.insert(m_sessionSnapshot.activeWorkstreamId, workstreamState);
+    }
+
+    m_sessionStore.save(m_sessionSnapshot);
+    if (m_runtimeSession != nullptr) {
+        m_runtimeSession->setSnapshot(m_sessionSnapshot);
+        m_runtimeSession->save();
+    }
+    m_sessionDirty = false;
+}
+
+void MainWindow::restoreSession() {
+    m_sessionSnapshot = m_sessionStore.load();
+
+    QVector<TabState> tabs = m_sessionSnapshot.tabs;
+    int activeTabIndex = m_sessionSnapshot.activeTabIndex;
+
+    if (!m_sessionSnapshot.activeWorkstreamId.isEmpty()) {
+        m_workstreamManager->setCurrentWorkstream(m_sessionSnapshot.activeWorkstreamId);
+        const WorkstreamSessionState scoped =
+            m_sessionSnapshot.workstreamStates.value(m_sessionSnapshot.activeWorkstreamId);
+        if (!scoped.tabs.isEmpty()) {
+            tabs = scoped.tabs;
+            activeTabIndex = scoped.activeTabIndex;
+            m_lastSearchQuery = scoped.searchQuery;
+        }
+    }
+
+    if (tabs.isEmpty()) {
+        m_workspace->addTab(QDir::homePath());
+    } else {
+        m_workspace->restoreTabState(tabs, activeTabIndex);
+    }
+
+    m_lastSearchQuery = m_sessionSnapshot.lastSearchQuery.isEmpty() ? m_lastSearchQuery : m_sessionSnapshot.lastSearchQuery;
+    if (!m_lastSearchQuery.isEmpty()) {
+        m_toolbar->setSearchText(m_lastSearchQuery);
+    }
+
+    refreshWorkstreams();
+    refreshToday();
+    if (m_runtimeSession != nullptr) {
+        m_runtimeSession->setSnapshot(m_sessionSnapshot);
+    }
+    setRailVisible(m_sessionSnapshot.railVisible);
+    if (!m_sessionSnapshot.hasCleanExit) {
+        const RecoveryPacket recovery = m_interruptionDetector->buildRecoveryPacket();
+        if (recovery.wasInterrupted && !recovery.items.isEmpty()) {
+            setRailVisible(true);
+            m_rail->showRecoverySuggestion(recovery);
+            ToastNotification::showToast(this, QStringLiteral("Recovered your last interrupted session."));
+        }
+    }
+    refreshIntelligenceSurface();
+    saveSession(false);
+}
+
+void MainWindow::refreshToday() {
+    if (m_sidebar == nullptr || m_resumptionEngine == nullptr) {
+        return;
+    }
+    const ResumptionPacket packet = m_resumptionEngine->buildPacket(m_workstreamManager->currentWorkstreamId());
+    m_sidebar->setTodayPacket(packet);
+    if (!m_rail->hasActiveQuery()) {
+        m_rail->showResumeSuggestion(packet);
+    }
+}
+
+void MainWindow::refreshWorkstreams() {
+    if (m_sidebar == nullptr || m_workstreamManager == nullptr) {
+        return;
+    }
+    m_sidebar->setWorkstreams(m_workstreamManager->workstreams(), m_workstreamManager->currentWorkstreamId());
+}
+
+void MainWindow::switchWorkstream(const QString &id) {
+    const QString previousId = m_workstreamManager->currentWorkstreamId();
+    if (id == previousId) {
+        return;
+    }
+
+    if (!previousId.isEmpty()) {
+        WorkstreamSessionState previousState;
+        previousState.tabs = m_workspace->captureTabState();
+        previousState.activeTabIndex = m_workspace->currentTabIndex();
+        previousState.searchQuery = m_lastSearchQuery;
+        previousState.searchRoot = activeSearchRoot();
+        m_sessionSnapshot.workstreamStates.insert(previousId, previousState);
+    }
+
+    if (!m_workstreamManager->setCurrentWorkstream(id)) {
+        return;
+    }
+
+    const WorkstreamSessionState scoped = m_sessionSnapshot.workstreamStates.value(id);
+    if (!scoped.tabs.isEmpty()) {
+        m_workspace->restoreTabState(scoped.tabs, scoped.activeTabIndex);
+        m_lastSearchQuery = scoped.searchQuery;
+        m_toolbar->setSearchText(m_lastSearchQuery);
+    } else {
+        const Workstream workstream = m_workstreamManager->workstreamForId(id);
+        const QString fallbackPath = !workstream.topFolders.isEmpty() ? workstream.topFolders.first().first : QDir::homePath();
+        m_workspace->restoreTabState({}, 0);
+        m_workspace->navigateCurrentTab(fallbackPath);
+        m_lastSearchQuery.clear();
+        m_toolbar->setSearchText(QString());
+    }
+
+    if (m_activityTracker != nullptr) {
+        m_activityTracker->logEvent(ActivityAction::WorkstreamSwitched, QString(), {}, {}, id);
+    }
+    refreshWorkstreams();
+    refreshToday();
+    refreshIntelligenceSurface();
+    markSessionDirty();
+}
+
+void MainWindow::refreshIntelligenceSurface() {
+    if (m_orchestrator == nullptr || m_rail == nullptr) {
+        return;
+    }
+
+    const QString activePath = m_workspace->currentDocument() != nullptr
+        ? m_workspace->currentDocument()->filePath()
+        : QString();
+    m_orchestrator->setActivePath(activePath);
+
+    if (m_rail->hasActiveQuery()) {
+        return;
+    }
+
+    const OrchestratorDecision decision = m_orchestrator->evaluate();
+    switch (decision.action) {
+    case OrchestratorDecision::Action::ShowRecovery:
+        if (decision.payload.canConvert<RecoveryPacket>()) {
+            if (decision.confidence > 0.6f) {
+                setRailVisible(true);
+            }
+            m_rail->showRecoverySuggestion(decision.payload.value<RecoveryPacket>());
+        }
+        break;
+    case OrchestratorDecision::Action::ShowPredictedBundle:
+        if (decision.payload.canConvert<BundlePrediction>()) {
+            if (decision.confidence > 0.45f) {
+                setRailVisible(true);
+            }
+            m_rail->showPredictedBundle(decision.payload.value<BundlePrediction>());
+        }
+        break;
+    case OrchestratorDecision::Action::ShowResumption:
+        if (decision.payload.canConvert<ResumptionPacket>()) {
+            if (decision.confidence > 0.45f) {
+                setRailVisible(true);
+            }
+            m_rail->showResumeSuggestion(decision.payload.value<ResumptionPacket>());
+        } else {
+            m_rail->showResumeSuggestion(m_resumptionEngine->buildPacket(m_workstreamManager->currentWorkstreamId()));
+        }
+        break;
+    default:
+        if (!activePath.isEmpty()) {
+            const BundlePrediction bundle = m_bundlePredictor->predictForPath(activePath);
+            if (!bundle.primaryPath.isEmpty()) {
+                m_rail->showPredictedBundle(bundle);
+                break;
+            }
+        }
+        m_rail->showResumeSuggestion(m_resumptionEngine->buildPacket(m_workstreamManager->currentWorkstreamId()));
+        break;
+    }
+}
+
+void MainWindow::openPathsBundle(const QStringList &paths, const QString &workstreamId) {
+    if (!workstreamId.isEmpty() && workstreamId != m_workstreamManager->currentWorkstreamId()) {
+        switchWorkstream(workstreamId);
+    }
+
+    bool openedPrimary = false;
+    for (const QString &path : paths) {
+        if (path.isEmpty()) {
+            continue;
+        }
+        if (!openedPrimary) {
+            if (!m_workspace->previewPath(path)) {
+                m_workspace->addTab(path);
+            }
+            openedPrimary = true;
+        } else {
+            m_workspace->addTab(path);
+        }
+    }
+    if (openedPrimary) {
+        setRailVisible(true);
+    }
+}
+
+QString MainWindow::activeSearchRoot() const {
+    if (m_workspace->currentDocument() != nullptr) {
+        return QFileInfo(m_workspace->currentDocument()->filePath()).absolutePath();
+    }
+    if (m_workspace->currentPane() != nullptr) {
+        return m_workspace->currentPane()->currentPath();
+    }
+    return QDir::homePath();
 }
 
 void MainWindow::setRailVisible(bool visible) {

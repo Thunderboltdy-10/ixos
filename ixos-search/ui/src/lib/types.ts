@@ -322,6 +322,14 @@ export interface RecentFile {
 }
 
 /**
+ * Ranked file candidate for resuming work.
+ */
+export interface ResumeCandidate extends RecentFile {
+  score: number;
+  reasons: string[];
+}
+
+/**
  * Activity statistics
  */
 export interface ActivityStats {
@@ -367,6 +375,57 @@ export interface WorkstreamsStats {
   pinnedCount: number;
   autoCount: number;
   isDirty: boolean;
+}
+
+/**
+ * Combined Today/resumption payload.
+ */
+export interface ResumptionData {
+  recentlyTouched: RecentFile[];
+  resumeCandidates: ResumeCandidate[];
+  suggestedNext: SuggestedFile[];
+}
+
+/**
+ * Workstream graph node.
+ */
+export interface WorkstreamGraphNode {
+  id: string;
+  name: string;
+  lastActive: number;
+  eventCount: number;
+  isPinned: boolean;
+  isAuto: boolean;
+}
+
+/**
+ * Workstream graph edge.
+ */
+export interface WorkstreamGraphEdge {
+  sourceId: string;
+  targetId: string;
+  weight: number;
+  sharedFiles: string[];
+  sharedFolders: string[];
+  sharedQueryCount: number;
+  reason: string;
+}
+
+/**
+ * Workstream relationship graph.
+ */
+export interface WorkstreamGraph {
+  focusWorkstreamId?: string | null;
+  nodes: WorkstreamGraphNode[];
+  edges: WorkstreamGraphEdge[];
+}
+
+/**
+ * Detailed workstream payload including graph data.
+ */
+export interface WorkstreamDetail {
+  workstream: Workstream;
+  graph: WorkstreamGraph;
 }
 
 /**

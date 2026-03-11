@@ -12,10 +12,13 @@ import type {
   ActivityEvent,
   ActivityStats,
   CoOccurrence,
+  ResumptionData,
   MoveRecommendation,
   RecentFile,
   TimeRange,
   Workstream,
+  WorkstreamDetail,
+  WorkstreamGraph,
   WorkstreamsStats,
 } from './types';
 
@@ -351,7 +354,18 @@ export async function getCoOccurrence(
  * Get recently touched files (today)
  */
 export async function getRecentlyTouched(limit?: number): Promise<RecentFile[]> {
-  return await invoke('get_recently_touched', { limit });
+  const payload = await invoke<ResumptionData>('get_recently_touched', { limit });
+  return payload.recentlyTouched;
+}
+
+/**
+ * Get ranked resumption data for the Today tab.
+ */
+export async function getResumptionData(
+  limit?: number,
+  suggestionLimit?: number
+): Promise<ResumptionData> {
+  return await invoke('get_recently_touched', { limit, suggestionLimit });
 }
 
 /**
@@ -410,7 +424,29 @@ export async function listWorkstreams(
  * Get a specific workstream
  */
 export async function getWorkstream(id: string): Promise<Workstream> {
-  return await invoke('get_workstream', { id });
+  const detail = await invoke<WorkstreamDetail>('get_workstream', { id });
+  return detail.workstream;
+}
+
+/**
+ * Get a workstream plus its local relationship graph.
+ */
+export async function getWorkstreamDetail(
+  id: string,
+  graphLimit?: number
+): Promise<WorkstreamDetail> {
+  return await invoke('get_workstream', { id, graphLimit });
+}
+
+/**
+ * Get the local relationship graph around a workstream.
+ */
+export async function getWorkstreamGraph(
+  id: string,
+  graphLimit?: number
+): Promise<WorkstreamGraph> {
+  const detail = await invoke<WorkstreamDetail>('get_workstream', { id, graphLimit });
+  return detail.graph;
 }
 
 /**

@@ -6,6 +6,7 @@
 //! - Merge, rename, delete operations
 //! - Persistence via encrypted storage
 
+use ixos_protocol::workstreams::{WorkstreamGraph, WorkstreamGraphEdge, WorkstreamGraphNode};
 use ixos_protocol::{Workstream, WorkstreamManager, WorkstreamStorageData};
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
@@ -164,6 +165,93 @@ impl From<&Workstream> for WorkstreamPayload {
     }
 }
 
+/// Workstream graph node payload for the frontend.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkstreamGraphNodePayload {
+    pub id: String,
+    pub name: String,
+    pub last_active: u64,
+    pub event_count: usize,
+    pub is_pinned: bool,
+    pub is_auto: bool,
+}
+
+impl From<WorkstreamGraphNode> for WorkstreamGraphNodePayload {
+    fn from(value: WorkstreamGraphNode) -> Self {
+        Self {
+            id: value.id,
+            name: value.name,
+            last_active: value.last_active,
+            event_count: value.event_count,
+            is_pinned: value.is_pinned,
+            is_auto: value.is_auto,
+        }
+    }
+}
+
+/// Workstream graph edge payload for the frontend.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkstreamGraphEdgePayload {
+    pub source_id: String,
+    pub target_id: String,
+    pub weight: f32,
+    pub shared_files: Vec<String>,
+    pub shared_folders: Vec<String>,
+    pub shared_query_count: u32,
+    pub reason: String,
+}
+
+impl From<WorkstreamGraphEdge> for WorkstreamGraphEdgePayload {
+    fn from(value: WorkstreamGraphEdge) -> Self {
+        Self {
+            source_id: value.source_id,
+            target_id: value.target_id,
+            weight: value.weight,
+            shared_files: value.shared_files,
+            shared_folders: value.shared_folders,
+            shared_query_count: value.shared_query_count,
+            reason: value.reason,
+        }
+    }
+}
+
+/// Workstream graph payload for the frontend.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkstreamGraphPayload {
+    pub focus_workstream_id: Option<String>,
+    pub nodes: Vec<WorkstreamGraphNodePayload>,
+    pub edges: Vec<WorkstreamGraphEdgePayload>,
+}
+
+impl From<WorkstreamGraph> for WorkstreamGraphPayload {
+    fn from(value: WorkstreamGraph) -> Self {
+        Self {
+            focus_workstream_id: value.focus_workstream_id,
+            nodes: value
+                .nodes
+                .into_iter()
+                .map(WorkstreamGraphNodePayload::from)
+                .collect(),
+            edges: value
+                .edges
+                .into_iter()
+                .map(WorkstreamGraphEdgePayload::from)
+                .collect(),
+        }
+    }
+}
+
+/// Workstream detail payload with a local neighborhood graph.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkstreamDetailPayload {
+    pub workstream: WorkstreamPayload,
+    pub graph: WorkstreamGraphPayload,
+}
+
 /// List all workstreams
 ///
 /// # Arguments
@@ -193,9 +281,10 @@ pub fn list_workstreams(
 #[tauri::command]
 pub fn get_workstream(
     id: String,
+    graph_limit: Option<usize>,
     workstreams_state: State<'_, WorkstreamsState>,
     app_state: State<'_, AppState>,
-) -> Result<WorkstreamPayload, String> {
+) -> Result<WorkstreamDetailPayload, String> {
     // Check Pro capability
     let manager = app_state.entitlement_manager.lock();
     if !manager.capabilities().has(Capability::TodayTab) {
@@ -203,11 +292,15 @@ pub fn get_workstream(
     }
 
     let ws_manager = workstreams_state.manager.lock();
-
-    ws_manager
+    let workstream = ws_manager
         .get(&id)
-        .map(|w| w.into())
-        .ok_or_else(|| "Workstream not found".to_string())
+        .ok_or_else(|| "Workstream not found".to_string())?;
+    let graph = ws_manager.build_graph(Some(&id), graph_limit.unwrap_or(6));
+
+    Ok(WorkstreamDetailPayload {
+        workstream: workstream.into(),
+        graph: graph.into(),
+    })
 }
 
 /// Request payload for creating a workstream

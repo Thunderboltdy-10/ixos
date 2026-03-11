@@ -23,8 +23,8 @@ SidebarSection::SidebarSection(const QString &title, const QIcon &sectionIcon, Q
     m_headerWidget->setCursor(Qt::PointingHandCursor);
     
     auto *headerLayout = new QHBoxLayout(m_headerWidget);
-    headerLayout->setContentsMargins(8, 4, 8, 4);
-    headerLayout->setSpacing(8);
+    headerLayout->setContentsMargins(10, 6, 10, 4);
+    headerLayout->setSpacing(6);
     
     m_chevronLabel = new QLabel(m_headerWidget);
     m_chevronLabel->setPixmap(Icons::makeIconFromFont(Icons::ChevronDown, 14, QColor("#8E8E93")).pixmap(14, 14));
@@ -43,7 +43,7 @@ SidebarSection::SidebarSection(const QString &title, const QIcon &sectionIcon, Q
     m_headerWidget->installEventFilter(this);
 
     m_body->setContentsMargins(0, 0, 0, 0);
-    m_body->setSpacing(0);
+    m_body->setSpacing(1);
 
     layout->addWidget(m_headerWidget);
     layout->addWidget(m_bodyWidget);

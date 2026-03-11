@@ -11,6 +11,20 @@
 ---
 
 ## Decisions
+- Decision: Move late-phase Ixplorer intelligence surfacing into the existing right rail instead of adding more sidebar/dashboard chrome
+- Options considered: Keep Today/resume emphasis in the sidebar; open separate explanation/intelligence panes; use the existing rail as the main context surface
+- Why chosen: The user explicitly wanted a neater File Explorer / Notion-style shell, and the rail is the correct place to make recovery/resume/predicted context visible without cluttering the left navigation column
+- Evidence (links to /reports or output files): reports/ixplorer_intelligence_integration_2026-03-11.md, ixplorer/src/widgets/IxosRail.cpp, ixplorer/src/app/MainWindow.cpp, ixplorer/src/widgets/AppSidebar.cpp
+- Risks: If the rail stays hidden too often, some intelligence may still feel discoverability-limited
+- Follow-ups: Add stronger entry points/toggles and more command-palette coverage for rail-context actions
+
+- Decision: Clean Tauri release output directories before local/CI desktop packaging
+- Options considered: Trust clean-checkout behavior only; inspect every `_up_` directory after build; proactively remove stale bundle/updater outputs before packaging
+- Why chosen: Local packaging showed stale bundle artifacts could coexist with fresh output and blur payload verification; explicit cleanup makes local and CI release behavior more deterministic
+- Evidence (links to /reports or output files): package.json, scripts/clean-tauri-output.js, .github/workflows/release.yml
+- Risks: Cleaning removes prior local bundle artifacts before packaging
+- Follow-ups: Validate one real GitHub tag release to confirm the workflow behaves cleanly across all runners
+
 - Decision: Establish Phase 0 tracking files and start reality check from repo docs
 - Options considered: Start with baseline measurements; start with code search only
 - Why chosen: Required by task instructions; provides compaction-safe state
@@ -1185,4 +1199,45 @@
 - Evidence:
   - `ixplorer/src/widgets/DocumentPane.cpp`
   - `ixplorer/src/app/MainWindow.cpp`
+  - `ixplorer/src/widgets/TabWorkspace.cpp`
+
+## 2026-03-11 Ixplorer Auto-search latency policy
+- Decision: keep Ixplorer/CLI default search mode on Auto, but avoid eager semantic indexing unless lexical preflight fails to produce usable hits.
+- Options considered:
+  - Keep eager semantic indexing for every Auto search.
+  - Disable semantic escalation entirely in Auto.
+  - Use lexical preflight and only pay the semantic indexing cost when lexical confidence is weak.
+- Why chosen:
+  - The user’s complaint was real latency, not a lack of semantic capability.
+  - Lexical preflight preserves the fast path while keeping semantic escalation available for weaker or ambiguous queries.
+- Evidence:
+  - `src/main.rs`
+  - `reports/ixplorer_intelligence_integration_2026-03-11.md`
+
+## 2026-03-11 Embedded-surface reliability policy
+- Decision: prefer internal viewers for code/text, images, media, and web-like documents, and reserve associated-window hosting for the file types where native embedding still adds value.
+- Options considered:
+  - Keep hosting associated apps broadly for most file types.
+  - Drop hosting entirely and rely only on internal previews/external launch.
+  - Use internal viewers for the stable/common formats and keep foreign-window hosting as a narrower capability.
+- Why chosen:
+  - The broad hosting path was the direct source of many “embedded app was closed” failures and inconsistent behavior across extensions.
+  - Internal viewers resize naturally, remove stray desktop chrome, and better satisfy the requirement that embedded content feels native inside Ixplorer.
+- Evidence:
+  - `ixplorer/src/utils/FileOpenPolicy.cpp`
+  - `ixplorer/src/widgets/DocumentPane.cpp`
+  - `reports/ixplorer_intelligence_integration_2026-03-11.md`
+
+## 2026-03-11 Ixplorer intelligence ownership
+- Decision: integrate activity/session/workstream/resumption ownership directly into `MainWindow` now instead of waiting for a larger architecture pass.
+- Options considered:
+  - Leave the intelligence files present on disk but unattached until a later shell refactor.
+  - Build a separate controller layer before any runtime integration.
+  - Wire the data layer into the current shell first, then refine architecture once runtime behavior is proven.
+- Why chosen:
+  - The user asked for working behavior, not just scaffolding.
+  - `MainWindow` already owns the relevant cross-widget lifecycle, so it is the pragmatic place to attach activity logging, session persistence, and workstream switching without blocking on a larger refactor.
+- Evidence:
+  - `ixplorer/src/app/MainWindow.cpp`
+  - `ixplorer/src/widgets/AppSidebar.cpp`
   - `ixplorer/src/widgets/TabWorkspace.cpp`

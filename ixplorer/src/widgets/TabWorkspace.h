@@ -1,5 +1,7 @@
 #pragma once
 
+#include "data/SessionState.h"
+
 #include <QColor>
 #include <QFileInfo>
 #include <QStackedWidget>
@@ -39,6 +41,9 @@ public:
     int currentViewMode() const;
     bool currentSupportsViewMode() const;
     void setCurrentPath(const QString &path);
+    int tabCount() const;
+    QVector<TabState> captureTabState() const;
+    void restoreTabState(const QVector<TabState> &tabs, int activeTabIndex);
 
 signals:
     void currentTabChanged(int index);

@@ -29,7 +29,6 @@ signals:
 private:
     void emitSearchDraft();
 
-    QFrame *m_navGroup;
     QPushButton *m_backBtn;
     QPushButton *m_fwdBtn;
     QPushButton *m_upBtn;

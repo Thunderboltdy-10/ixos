@@ -126,11 +126,17 @@ void CommandPalette::rebuildList() {
     QVector<ScoredCommand> scored;
 
     for (const auto &command : m_commands) {
-        int score = 0;
-        if (!query.isEmpty()) {
-            score = FuzzyMatch::score(query, haystackFor(command));
-            if (score < 0) continue;
+        if (!command.available) {
+            continue;
         }
+
+        int fuzzyScore = 0;
+        if (!query.isEmpty()) {
+            fuzzyScore = FuzzyMatch::score(query, haystackFor(command));
+            if (fuzzyScore < 0) continue;
+        }
+        const int contextScore = qRound(command.contextScore * 100.0f);
+        const int score = qRound(static_cast<float>(fuzzyScore) * 0.6f + static_cast<float>(contextScore) * 0.4f);
         scored.append({command, score});
     }
 

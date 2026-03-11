@@ -13,6 +13,8 @@ struct CommandPaletteItem {
     QString title;
     QString subtitle;
     QString keywords;
+    float contextScore = 0.0f;
+    bool available = true;
 };
 
 class CommandPalette : public QDialog {

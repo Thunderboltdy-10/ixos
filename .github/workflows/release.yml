@@ -159,6 +159,33 @@ jobs:
           fetch_if_missing "models/potion-base-8M-int8/tokenizer.json" \
             "https://huggingface.co/$POTION_MODEL_REPO/resolve/$POTION_MODEL_REF/tokenizer.json"
 
+          mkdir -p models/ixos-pro-v2
+          if [[ ! -s "models/ixos-pro-v2/pro_v2.json" ]]; then
+            cat > models/ixos-pro-v2/pro_v2.json <<'JSON'
+          {
+            "id": "ixos-pro-v2",
+            "type": "fusion",
+            "description": "Pro v2 cascade: potion fast pass -> flash top-K refinement -> lexical fusion",
+            "flash_model": "ixos-flash-v2",
+            "pro_model": "potion-base-8m-int8",
+            "fusion": {
+              "flash": 0.2672,
+              "pro": 0.2725,
+              "lexical": 0.4602,
+              "dir_prior": 0.0
+            },
+            "cascade": {
+              "top_k": 120,
+              "gap_threshold": 0.05,
+              "lexical_threshold": 0.15,
+              "short_query_len": 2,
+              "entropy_threshold": 0.9
+            },
+            "notes": "Potion is an internal dependency and not exposed as a user mode."
+          }
+          JSON
+          fi
+
           required=(
             "models/ixos-flash-v2/config.json"
             "models/ixos-flash-v2/model.safetensors"
@@ -166,6 +193,7 @@ jobs:
             "models/potion-base-8M-int8/config.json"
             "models/potion-base-8M-int8/model.safetensors"
             "models/potion-base-8M-int8/tokenizer.json"
+            "models/ixos-pro-v2/pro_v2.json"
           )
           for file in "${required[@]}"; do
             test -s "$file" || { echo "Required model file missing/empty: $file" >&2; exit 1; }
@@ -232,6 +260,9 @@ jobs:
             console.log('Wrote desktop env files for build pipeline.');
           "
 
+      - name: Verify desktop build env
+        run: node scripts/verify-desktop-build-env.js
+
       - name: Build UI
         working-directory: ixos-search/ui
         env:
@@ -239,6 +270,10 @@ jobs:
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
           VITE_LEMONSQUEEZY_PRO_VARIANT_ID: ${{ vars.VITE_LEMONSQUEEZY_PRO_VARIANT_ID }}
         run: npm run build
+
+      - name: Clean prior Tauri bundle outputs
+        shell: bash
+        run: node scripts/clean-tauri-output.js
 
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -256,6 +291,39 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
+      - name: Verify bundled desktop model payloads
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t up_dirs < <(find target -type d -name "_up_" | sort)
+          if [[ "${#up_dirs[@]}" -eq 0 ]]; then
+            echo "No Tauri updater payload directories were produced." >&2
+            exit 1
+          fi
+
+          for up_dir in "${up_dirs[@]}"; do
+            echo "Inspecting $up_dir"
+            test -s "$up_dir/models/ixos-flash-v2/model.safetensors" || {
+              echo "Missing ixos-flash-v2 payload in $up_dir" >&2
+              exit 1
+            }
+            test -s "$up_dir/models/potion-base-8M-int8/model.safetensors" || {
+              echo "Missing potion-base-8M-int8 payload in $up_dir" >&2
+              exit 1
+            }
+            test -s "$up_dir/models/ixos-pro-v2/pro_v2.json" || {
+              echo "Missing ixos-pro-v2 payload in $up_dir" >&2
+              exit 1
+            }
+
+            if [[ -e "$up_dir/models/ixos-flash-v1" || -e "$up_dir/models/ixos-pro-v1" || -e "$up_dir/models/lab" ]]; then
+              echo "Unexpected legacy/lab model payload detected in $up_dir" >&2
+              find "$up_dir/models" -maxdepth 2 -type f | sort >&2 || true
+              exit 1
+            fi
+          done
 
   copy-to-releases:
     needs: publish-tauri
@@ -297,12 +365,14 @@ jobs:
       - name: Prepare fixed-name artifacts
         shell: bash
         run: |
+          set -euo pipefail
+          shopt -s nullglob
           cd artifacts
           # Create fixed-name copies for stable "latest" URLs
-          find . -name "*_x64-setup.exe" -exec cp {} ixos-setup.exe \;
-          find . -name "*_aarch64.dmg" -exec cp {} ixos-aarch64.dmg \;
-          find . -name "*_x64.dmg" -exec cp {} ixos-x64.dmg \;
-          find . -name "*.AppImage" -exec cp {} ixos.AppImage \;
+          for file in ./*_x64-setup.exe; do cp "$file" ixos-setup.exe; done
+          for file in ./*_aarch64.dmg; do cp "$file" ixos-aarch64.dmg; done
+          for file in ./*_x64.dmg; do cp "$file" ixos-x64.dmg; done
+          for file in ./*.AppImage; do cp "$file" ixos.AppImage; done
           cd ..
 
       - name: Upload desktop installers to ixos-releases
@@ -320,14 +390,37 @@ jobs:
               --notes "Desktop release $TAG"
           fi
 
-          # Only upload the fixed-name installer files, not the original artifacts or scripts
+          files=()
+          for candidate in artifacts/ixos-setup.exe artifacts/ixos-aarch64.dmg artifacts/ixos-x64.dmg artifacts/ixos.AppImage; do
+            if [[ -f "$candidate" ]]; then
+              files+=("$candidate")
+            fi
+          done
+
+          while IFS= read -r -d '' candidate; do
+            files+=("$candidate")
+          done < <(find artifacts -type f \( \
+            -name "*.app.tar.gz" -o \
+            -name "*.app.tar.gz.sig" -o \
+            -name "*.AppImage.tar.gz" -o \
+            -name "*.AppImage.tar.gz.sig" -o \
+            -name "*.nsis.zip" -o \
+            -name "*.nsis.zip.sig" -o \
+            -name "*.msi.zip" -o \
+            -name "*.msi.zip.sig" \
+          \) -print0)
+
+          if [[ "${#files[@]}" -eq 0 ]]; then
+            echo "No desktop release files were prepared." >&2
+            exit 1
+          fi
+
           gh release upload "$TAG" \
             --repo "$REPO" \
             --clobber \
-            artifacts/ixos-setup.exe \
-            artifacts/ixos-aarch64.dmg \
-            artifacts/ixos-x64.dmg \
-            artifacts/ixos.AppImage
+            "${files[@]}" \
+            scripts/install.sh \
+            scripts/install.ps1
 
   generate-latest-json:
     needs: copy-to-releases

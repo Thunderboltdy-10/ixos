@@ -1,7 +1,10 @@
 #include "widgets/TabWorkspace.h"
 
+#include "theme/IconFont.h"
+#include "theme/Colors.h"
 #include "utils/FileOperations.h"
 #include "utils/FileOpenPolicy.h"
+#include "widgets/BreadcrumbBar.h"
 #include "widgets/DocumentPane.h"
 #include "widgets/ExplorerPane.h"
 
@@ -42,7 +45,9 @@ void openExternally(const QString &path) {
 QToolButton *makeTabCloseButton(QTabBar *tabBar, TabWorkspace *workspace) {
     auto *button = new QToolButton(tabBar);
     button->setObjectName("TabCloseButton");
-    button->setIcon(tabBar->style()->standardIcon(QStyle::SP_TitleBarCloseButton));
+    QColor iconColor = Colors::qc(Colors::FgMuted);
+    QColor hoverColor = Colors::qc(Colors::FgPrimary); // Not easily handled via icon overload, but the disabled color overload exists. Actually, we'll just use FgMuted.
+    button->setIcon(Icons::makeIconFromFont(Icons::Close, 12, iconColor));
     button->setAutoRaise(true);
     button->setCursor(Qt::PointingHandCursor);
     button->hide();
@@ -63,6 +68,7 @@ TabWorkspace::TabWorkspace(QWidget *parent)
     : QWidget(parent)
     , m_tabBar(new QTabBar(this))
     , m_addTabButton(new QToolButton(this))
+    , m_breadcrumb(new BreadcrumbBar(this))
     , m_stack(new QStackedWidget(this)) {
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -88,15 +94,22 @@ TabWorkspace::TabWorkspace(QWidget *parent)
     m_addTabButton->setAutoRaise(true);
     m_addTabButton->setToolTip("New tab");
 
-    tabRow->addWidget(m_tabBar, 1);
+    tabRow->addWidget(m_tabBar);
     tabRow->addWidget(m_addTabButton);
+    tabRow->addStretch(1);
     layout->addLayout(tabRow);
+    layout->addWidget(m_breadcrumb);
     layout->addWidget(m_stack, 1);
 
     connect(m_tabBar, &QTabBar::currentChanged, this, &TabWorkspace::onTabChanged);
     connect(m_tabBar, &QTabBar::tabCloseRequested, this, &TabWorkspace::onTabCloseRequested);
     connect(m_tabBar, &QWidget::customContextMenuRequested, this, &TabWorkspace::showContextMenu);
     connect(m_addTabButton, &QToolButton::clicked, this, &TabWorkspace::onNewTabClicked);
+    connect(m_breadcrumb, &BreadcrumbBar::navigateRequested, this, &TabWorkspace::navigateCurrentTab);
+}
+
+void TabWorkspace::setCurrentPath(const QString &path) {
+    m_breadcrumb->setPath(path);
 }
 
 ExplorerPane *TabWorkspace::currentPane() const {

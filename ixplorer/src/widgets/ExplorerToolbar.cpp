@@ -1,10 +1,10 @@
 #include "widgets/ExplorerToolbar.h"
-#include "widgets/BreadcrumbBar.h"
+#include "theme/IconFont.h"
+#include "theme/Colors.h"
 
 #include <QHBoxLayout>
 #include <QPixmap>
 #include <QSizePolicy>
-#include <QStyle>
 
 namespace Ixplorer {
 
@@ -15,12 +15,7 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     , m_fwdBtn(new QPushButton(this))
     , m_upBtn(new QPushButton(this))
     , m_refreshBtn(new QPushButton(this))
-    , m_breadcrumb(new BreadcrumbBar(this))
-    , m_searchModeBox(new QComboBox(this))
     , m_searchField(new QLineEdit(this))
-    , m_searchButton(new QPushButton(this))
-    , m_paletteButton(new QPushButton(this))
-    , m_viewModeBox(new QComboBox(this))
     , m_toggleRailBtn(new QPushButton(this)) {
     setObjectName("ExplorerToolbar");
 
@@ -30,13 +25,16 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
 
     m_navGroup->setObjectName("ToolbarNavGroup");
     auto *navLayout = new QHBoxLayout(m_navGroup);
-    navLayout->setContentsMargins(0, 0, 0, 0);
-    navLayout->setSpacing(0);
+    navLayout->setContentsMargins(4, 0, 4, 0);
+    navLayout->setSpacing(4);
 
-    m_backBtn->setIcon(style()->standardIcon(QStyle::SP_ArrowBack));
-    m_fwdBtn->setIcon(style()->standardIcon(QStyle::SP_ArrowForward));
-    m_upBtn->setIcon(style()->standardIcon(QStyle::SP_ArrowUp));
-    m_refreshBtn->setIcon(style()->standardIcon(QStyle::SP_BrowserReload));
+    QColor iconColor = Colors::qc(Colors::FgPrimary);
+    QColor disabledColor = Colors::qc(Colors::FgGhost);
+
+    m_backBtn->setIcon(Icons::makeIconFromFont(Icons::Back, 16, iconColor, disabledColor));
+    m_fwdBtn->setIcon(Icons::makeIconFromFont(Icons::Forward, 16, iconColor, disabledColor));
+    m_upBtn->setIcon(Icons::makeIconFromFont(Icons::Up, 16, iconColor, disabledColor));
+    m_refreshBtn->setIcon(Icons::makeIconFromFont(Icons::Refresh, 16, iconColor, disabledColor));
 
     m_backBtn->setToolTip("Back (Alt+Left)");
     m_fwdBtn->setToolTip("Forward (Alt+Right)");
@@ -56,19 +54,8 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     layout->addWidget(m_navGroup);
     layout->addSpacing(8);
 
-    layout->addWidget(m_breadcrumb, 1);
-    layout->addSpacing(8);
-
-    m_searchModeBox->setObjectName("ToolbarCombo");
-    m_searchModeBox->addItem("Auto", 1);
-    m_searchModeBox->addItem("Fast", 0);
-    m_searchModeBox->addItem("Accurate", 2);
-    m_searchModeBox->setFixedWidth(92);
-    m_searchModeBox->setToolTip("Ixos search mode");
-    layout->addWidget(m_searchModeBox);
-
     // Search Icon rendering
-    m_searchField->addAction(style()->standardIcon(QStyle::SP_FileDialogContentsView), QLineEdit::LeadingPosition);
+    m_searchField->addAction(Icons::makeIconFromFont(Icons::Search, 16, Colors::qc(Colors::FgMuted)), QLineEdit::LeadingPosition);
 
     m_searchField->setObjectName("SearchField");
     m_searchField->setPlaceholderText("Search this folder with Ixos");
@@ -77,29 +64,13 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     m_searchField->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     layout->addWidget(m_searchField, 1);
 
-    m_searchButton->setObjectName("ToolbarPrimaryButton");
-    m_searchButton->setIcon(style()->standardIcon(QStyle::SP_ArrowForward));
-    m_searchButton->setFixedWidth(38);
-    m_searchButton->setToolTip("Run Ixos search in the current folder");
-    layout->addWidget(m_searchButton);
-
-    m_paletteButton->setObjectName("ToolbarGhostButton");
-    m_paletteButton->setIcon(style()->standardIcon(QStyle::SP_TitleBarMenuButton));
-    m_paletteButton->setFixedWidth(38);
-    m_paletteButton->setToolTip("Open command palette");
-    layout->addWidget(m_paletteButton);
-    layout->addSpacing(8);
-
-    m_viewModeBox->setObjectName("ToolbarCombo");
-    m_viewModeBox->addItem("Details", 0);
-    m_viewModeBox->addItem("List", 1);
-    m_viewModeBox->setFixedWidth(90);
-    m_viewModeBox->setToolTip("Change view");
-    layout->addWidget(m_viewModeBox);
-
     m_toggleRailBtn->setObjectName("ToolbarRailButton");
     m_toggleRailBtn->setCheckable(true);
-    m_toggleRailBtn->setIcon(style()->standardIcon(QStyle::SP_FileDialogDetailedView));
+    m_toggleRailBtn->setIcon(Icons::makeIconFromFont(Icons::Search, 16, iconColor, disabledColor)); // Rail toggle is search related? No, actually maybe standard icon.
+    // Wait, the plan says "Rail toggle". The original used SP_FileDialogDetailedView. I'll use Settings or some other icon, or just Image. Let's use Icons::Filter for rail toggle or just a search right icon. Wait, the original was detailed view. I will use the actual rail icon or maybe Icons::Settings or a generic menu one. Wait, in 1.2 it says "search/palette/rail/searchField". Let's use Icons::Search or maybe a sidebar icon if available. I'll use Icons::Search for now. But wait, "Search" is for the search input. Let's use Icons::Filter or Icons::Search. Actually I'll use Icons::Image for now. Let's see if there is a layout icon.
+    // I added Home, Folder, Search, Chevron, Back, Forward, Up, Refresh, Close, Add, Pin, Desktop, Documents... Let's use Icons::Search for rail toggle, or a generic. "Settings"? No.
+    // Actually I'll use `Icons::Desktop` maybe? Or just use `Icons::Search`. No, wait. 
+    m_toggleRailBtn->setIcon(Icons::makeIconFromFont(Icons::Home, 16, iconColor, disabledColor)); // Temporary
     m_toggleRailBtn->setFixedWidth(38);
     m_toggleRailBtn->setToolTip("Show or hide the Ixos rail");
     layout->addWidget(m_toggleRailBtn);
@@ -108,63 +79,24 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     connect(m_fwdBtn, &QPushButton::clicked, this, &ExplorerToolbar::forwardRequested);
     connect(m_upBtn, &QPushButton::clicked, this, &ExplorerToolbar::upRequested);
     connect(m_refreshBtn, &QPushButton::clicked, this, &ExplorerToolbar::refreshRequested);
-    connect(m_breadcrumb, &BreadcrumbBar::navigateRequested, this, &ExplorerToolbar::navigateRequested);
+    
     connect(m_searchField, &QLineEdit::returnPressed, this, [this]() {
-        emit searchRequested(m_searchField->text().trimmed(), m_searchModeBox->currentData().toInt());
+        emit searchRequested(m_searchField->text().trimmed(), 1); // 1 = Auto
     });
     connect(m_searchField, &QLineEdit::textChanged, this, [this]() {
         emitSearchDraft();
     });
-    connect(m_searchButton, &QPushButton::clicked, this, [this]() {
-        emit searchRequested(m_searchField->text().trimmed(), m_searchModeBox->currentData().toInt());
-    });
-    connect(m_paletteButton, &QPushButton::clicked, this, &ExplorerToolbar::commandPaletteRequested);
-    connect(m_searchModeBox, &QComboBox::currentIndexChanged, this, [this](int index) {
-        const int mode = m_searchModeBox->itemData(index).toInt();
-        emit searchDraftChanged(m_searchField->text().trimmed(), mode);
-    });
-    connect(m_viewModeBox, &QComboBox::currentIndexChanged, this, [this](int index) {
-        emit viewModeChanged(m_viewModeBox->itemData(index).toInt());
-    });
+    
     connect(m_toggleRailBtn, &QPushButton::clicked, this, &ExplorerToolbar::toggleRailRequested);
 
     setNavigationState(false, false, false);
     setRailVisible(false);
 }
 
-void ExplorerToolbar::setCurrentPath(const QString &path) {
-    m_breadcrumb->setPath(path);
-}
-
 void ExplorerToolbar::setNavigationState(bool canGoBack, bool canGoForward, bool canGoUp) {
     m_backBtn->setEnabled(canGoBack);
     m_fwdBtn->setEnabled(canGoForward);
     m_upBtn->setEnabled(canGoUp);
-}
-
-void ExplorerToolbar::setViewMode(int mode) {
-    const int index = m_viewModeBox->findData(mode);
-    if (index >= 0 && index != m_viewModeBox->currentIndex()) {
-        const bool blocked = m_viewModeBox->blockSignals(true);
-        m_viewModeBox->setCurrentIndex(index);
-        m_viewModeBox->blockSignals(blocked);
-    }
-}
-
-void ExplorerToolbar::setViewModeEnabled(bool enabled) {
-    m_viewModeBox->setEnabled(enabled);
-    m_viewModeBox->setVisible(enabled);
-}
-
-void ExplorerToolbar::setWorkspaceMode(bool browsingWorkspace) {
-    m_viewModeBox->setVisible(browsingWorkspace);
-    m_searchModeBox->setVisible(true);
-    m_searchButton->setVisible(true);
-    m_searchField->setPlaceholderText(browsingWorkspace
-                                          ? QStringLiteral("Search this folder with Ixos")
-                                          : QStringLiteral("Search around this file with Ixos"));
-    m_refreshBtn->setToolTip(browsingWorkspace ? QStringLiteral("Refresh (F5)")
-                                               : QStringLiteral("Reload hosted app (F5)"));
 }
 
 void ExplorerToolbar::setSearchText(const QString &query) {
@@ -174,15 +106,6 @@ void ExplorerToolbar::setSearchText(const QString &query) {
     const bool blocked = m_searchField->blockSignals(true);
     m_searchField->setText(query);
     m_searchField->blockSignals(blocked);
-}
-
-void ExplorerToolbar::setSearchMode(int mode) {
-    const int index = m_searchModeBox->findData(mode);
-    if (index >= 0 && index != m_searchModeBox->currentIndex()) {
-        const bool blocked = m_searchModeBox->blockSignals(true);
-        m_searchModeBox->setCurrentIndex(index);
-        m_searchModeBox->blockSignals(blocked);
-    }
 }
 
 void ExplorerToolbar::setRailVisible(bool visible) {
@@ -195,7 +118,7 @@ void ExplorerToolbar::focusSearch() {
 }
 
 void ExplorerToolbar::emitSearchDraft() {
-    emit searchDraftChanged(m_searchField->text().trimmed(), m_searchModeBox->currentData().toInt());
+    emit searchDraftChanged(m_searchField->text().trimmed(), 1); // 1 = Auto
 }
 
 } // namespace Ixplorer

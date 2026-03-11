@@ -2,14 +2,13 @@
 
 #include "search/IxosCliSearchProvider.h"
 
-#include <QComboBox>
 #include <QFileInfo>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QPushButton>
-#include <QTimer>
 #include <QTextEdit>
+#include <QTimer>
 #include <QWidget>
 
 namespace Ixplorer {
@@ -43,63 +42,22 @@ private:
     void clearSearchSession(const QString &summary);
     void renderResults(const QList<SearchHit> &results, bool semanticResults);
     void handleResultSelection(int row);
-    void syncDetailPanel();
-    void updateActionStates();
-    void maybeAutoOpenTopResult();
-    QString currentActionPath() const;
-    QString modeLabel() const;
-    QString detailTextForResult(const SearchHit &item) const;
-    QString summaryTextForResult(const SearchHit &item) const;
-    QString evidenceTextForResult(const SearchHit &item) const;
-    QString breakdownTextForResult(const SearchHit &item) const;
+    void handleResultDoubleClicked(QListWidgetItem *item);
     QString relativePathForResult(const SearchHit &item) const;
 
     IxosCliSearchProvider *m_provider;
-    QFileInfo m_currentFileInfo;
-    int m_selectedCount = 0;
-    quint64 m_selectedBytes = 0;
     QString m_searchRoot;
     QString m_statusMessage;
     QList<SearchHit> m_results;
-    int m_selectedResultRow = -1;
     bool m_showingSemanticResults = false;
-    bool m_searchInFlight = false;
-    bool m_lastSearchFailed = false;
-    bool m_autoOpenEnabled = false;
-    QString m_lastAutoOpenedPath;
-    QString m_lastAutoOpenedQuery;
-
-    QLabel *m_scopeLabel;
-    QLabel *m_selectionTitle;
-    QLabel *m_selectionMeta;
-    QLabel *m_selectionPath;
-    QWidget *m_selectionCard;
-    QPushButton *m_openSelectionButton;
-    QPushButton *m_revealSelectionButton;
-    QPushButton *m_copySelectionPathButton;
 
     QLineEdit *m_searchInput;
-    QComboBox *m_modeBox;
-    QPushButton *m_searchButton;
-    QWidget *m_searchControls;
     QLabel *m_searchStateLabel;
-    QLabel *m_searchSummaryLabel;
     QListWidget *m_resultList;
     QTimer *m_liveSearchTimer;
 
-    QWidget *m_matchCard;
-    QLabel *m_matchTitle;
-    QLabel *m_matchMeta;
-    QLabel *m_matchPath;
-    QLabel *m_matchExplanation;
-    QLabel *m_matchEvidence;
-    QLabel *m_matchBreakdown;
-    QLabel *m_matchTags;
-    QTextEdit *m_matchSnippet;
-    QPushButton *m_openResultButton;
-    QPushButton *m_openInNewTabButton;
-    QPushButton *m_revealResultButton;
-    QPushButton *m_copyResultPathButton;
+    QWidget *m_detailPane = nullptr;
+    QTextEdit *m_detailText = nullptr;
 };
 
 } // namespace Ixplorer

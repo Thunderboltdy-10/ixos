@@ -10,14 +10,14 @@ FileSystemProxyModel::FileSystemProxyModel(QObject *parent)
 void FileSystemProxyModel::setShowHiddenFiles(bool show) {
     if (m_showHidden != show) {
         m_showHidden = show;
-        invalidateFilter();
+        invalidate();
     }
 }
 
 void FileSystemProxyModel::setNameFilter(const QString &filter) {
     if (m_nameFilter != filter) {
         m_nameFilter = filter;
-        invalidateFilter();
+        invalidate();
     }
 }
 

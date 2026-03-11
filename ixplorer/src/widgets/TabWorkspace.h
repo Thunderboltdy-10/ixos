@@ -11,6 +11,7 @@ namespace Ixplorer {
 
 class DocumentPane;
 class ExplorerPane;
+class BreadcrumbBar;
 
 class TabWorkspace : public QWidget {
     Q_OBJECT
@@ -37,10 +38,12 @@ public:
     void setCurrentViewMode(int mode);
     int currentViewMode() const;
     bool currentSupportsViewMode() const;
+    void setCurrentPath(const QString &path);
 
 signals:
     void currentTabChanged(int index);
     void pathChanged(const QString &path);
+    void navigateRequested(const QString &path);
     void navigationStateChanged(bool canGoBack, bool canGoForward, bool canGoUp);
     void selectionChanged(const QFileInfo &info, int selectedCount, quint64 selectedBytes);
     void selectionCleared();
@@ -69,6 +72,7 @@ private:
     QTabBar *m_tabBar;
 
     QToolButton *m_addTabButton;
+    BreadcrumbBar *m_breadcrumb;
     QStackedWidget *m_stack;
     int m_previewTabIndex = -1;
 };

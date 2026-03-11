@@ -1,4 +1,5 @@
 #include "widgets/DocumentPane.h"
+#include "widgets/CodeViewerWidget.h"
 #include "theme/Colors.h"
 
 #include <QCoreApplication>
@@ -21,7 +22,22 @@
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QWindow>
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
+#include <QWheelEvent>
+#include <QMouseEvent>
 #include <string>
+
+#ifdef QT_WEBENGINEWIDGETS_LIB
+#include <QWebEngineView>
+#endif
+
+#ifdef QT_MULTIMEDIA_LIB
+#include <QMediaPlayer>
+#include <QVideoWidget>
+#include <QAudioOutput>
+#endif
 
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
@@ -364,27 +380,14 @@ DocumentPane::DocumentPane(const QString &path, bool previewMode, QWidget *paren
     
     QFileInfo info(m_filePath);
     QString suffix = info.suffix().toLower();
-    if (m_policy.opensInApp()) {
-        m_hostMode = WindowEmbed;
-    } else if (suffix == "jpg" || suffix == "png" || suffix == "gif" || suffix == "svg" || suffix == "bmp" || suffix == "webp") {
-        m_hostMode = ImagePreview;
-    } else if (suffix == "txt" || suffix == "md" || suffix == "log" || suffix == "json" || suffix == "xml" || suffix == "cpp" || suffix == "py" || suffix == "rs" || suffix == "js" || suffix == "h") {
-        m_hostMode = TextPreview;
-    } else {
-        m_hostMode = Fallback;
-    }
+    
+    m_hostMode = m_policy.opensInApp() ? WindowEmbed : Fallback;
 
     buildUi();
 
     connect(m_hostMonitor, &QTimer::timeout, this, &DocumentPane::handleHostedWindowHeartbeat);
 
-    if (m_hostMode == ImagePreview) {
-        setupImagePreview();
-        m_hostedReady = true;
-    } else if (m_hostMode == TextPreview) {
-        setupTextPreview();
-        m_hostedReady = true;
-    } else if (m_hostMode == WindowEmbed) {
+    if (m_hostMode == WindowEmbed) {
         m_hostedReady = startHosting();
     }
 
@@ -506,17 +509,30 @@ void DocumentPane::buildUi() {
     stateLayout->addWidget(m_externalButton, 0, Qt::AlignLeft);
     stateLayout->addStretch();
     
-    m_imageLabel = new QLabel(m_contentRoot);
-    m_imageLabel->setAlignment(Qt::AlignCenter);
-    m_contentLayout->addWidget(m_imageLabel, 1);
-    m_imageLabel->hide();
+    m_graphicsScene = new QGraphicsScene(this);
+    m_graphicsView = new QGraphicsView(m_graphicsScene, m_contentRoot);
+    m_graphicsView->setDragMode(QGraphicsView::ScrollHandDrag);
+    m_graphicsView->setRenderHint(QPainter::Antialiasing);
+    m_graphicsView->setStyleSheet("background-color: transparent; border: none;");
+    m_contentLayout->addWidget(m_graphicsView, 1);
+    m_graphicsView->hide();
     
-    m_textEdit = new QPlainTextEdit(m_contentRoot);
-    m_textEdit->setReadOnly(true);
-    m_textEdit->setFont(QFont(QStringLiteral("Cascadia Mono"), 10));
-    m_textEdit->installEventFilter(this);
-    m_contentLayout->addWidget(m_textEdit, 1);
-    m_textEdit->hide();
+    m_codeViewer = new CodeViewerWidget(m_contentRoot);
+    m_contentLayout->addWidget(m_codeViewer, 1);
+    m_codeViewer->hide();
+
+#ifdef QT_WEBENGINEWIDGETS_LIB
+    m_webView = new QWebEngineView(m_contentRoot);
+    m_webView->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
+    m_contentLayout->addWidget(m_webView, 1);
+    m_webView->hide();
+#endif
+
+#ifdef QT_MULTIMEDIA_LIB
+    m_videoWidget = new QVideoWidget(m_contentRoot);
+    m_contentLayout->addWidget(m_videoWidget, 1);
+    m_videoWidget->hide();
+#endif
 
     m_contentLayout->addWidget(m_stateCard, 1);
 
@@ -586,25 +602,6 @@ bool DocumentPane::startHosting() {
     if (chosen.hwnd == nullptr || !IsWindow(chosen.hwnd)) {
         if (processHandle) {
             CloseHandle(processHandle);
-        }
-        const QString suffix = info.suffix().toLower();
-        if (suffix == QStringLiteral("jpg") || suffix == QStringLiteral("png") || suffix == QStringLiteral("gif") ||
-            suffix == QStringLiteral("svg") || suffix == QStringLiteral("bmp") || suffix == QStringLiteral("webp")) {
-            m_hostMode = ImagePreview;
-            setupImagePreview();
-            emit statusMessage(QStringLiteral("Previewing %1 while the native app host was unavailable.")
-                                   .arg(info.fileName()));
-            return true;
-        }
-        if (suffix == QStringLiteral("txt") || suffix == QStringLiteral("md") || suffix == QStringLiteral("log") ||
-            suffix == QStringLiteral("json") || suffix == QStringLiteral("xml") || suffix == QStringLiteral("cpp") ||
-            suffix == QStringLiteral("py") || suffix == QStringLiteral("rs") || suffix == QStringLiteral("js") ||
-            suffix == QStringLiteral("h")) {
-            m_hostMode = TextPreview;
-            setupTextPreview();
-            emit statusMessage(QStringLiteral("Previewing %1 while the native app host was unavailable.")
-                                   .arg(info.fileName()));
-            return true;
         }
         showStateMessage(QStringLiteral("Could not host the app window"),
                          QStringLiteral("Ixplorer could not capture the associated app window for %1. Use Open externally, or try again after the viewer finishes loading.")
@@ -682,12 +679,17 @@ void DocumentPane::clearHostedSurface() {
     if (m_hostSurface) {
         m_hostSurface->hide();
     }
-    if (m_imageLabel) {
-        m_imageLabel->hide();
-    }
-    if (m_textEdit) {
-        m_textEdit->hide();
-    }
+    if (m_graphicsView) m_graphicsView->hide();
+    if (m_codeViewer) m_codeViewer->hide();
+
+#ifdef QT_WEBENGINEWIDGETS_LIB
+    if (m_webView) m_webView->hide();
+#endif
+
+#ifdef QT_MULTIMEDIA_LIB
+    if (m_videoWidget) m_videoWidget->hide();
+    if (m_mediaPlayer) m_mediaPlayer->stop();
+#endif
 }
 
 void DocumentPane::setHostedWindowVisible(bool visible) {
@@ -740,7 +742,31 @@ void DocumentPane::handleHostedWindowHeartbeat() {
         return;
     }
 
-    updateHostedGeometry();
+    HWND hwnd = reinterpret_cast<HWND>(m_hostedWindowId);
+    LONG_PTR currentStyle = GetWindowLongPtrW(hwnd, GWL_STYLE);
+    if ((currentStyle & WS_POPUP) || !(currentStyle & WS_CHILD) || (currentStyle & WS_CAPTION) || (currentStyle & WS_THICKFRAME)) {
+        const LONG_PTR hostedStyle =
+            (m_originalWindowStyle &
+             ~static_cast<LONG_PTR>(WS_POPUP | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU)) |
+            static_cast<LONG_PTR>(WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+        SetWindowLongPtrW(hwnd, GWL_STYLE, hostedStyle);
+    }
+    
+    // Disable dragging by aggressively restoring geometry every heartbeat.
+    // Also document that scrolling to match is handled via CLI parameters.
+    // TODO: Pass line number args based on app (e.g., Code.exe --goto file:line)
+    
+    RECT rect;
+    if (GetWindowRect(hwnd, &rect)) {
+        POINT pt = {rect.left, rect.top};
+        ScreenToClient(reinterpret_cast<HWND>(m_hostSurface->winId()), &pt);
+        if (pt.x != 0 || pt.y != 0) {
+            updateHostedGeometry();
+        }
+    } else {
+        updateHostedGeometry();
+    }
+
     ++m_backdropRefreshTick;
 #endif
 }
@@ -810,69 +836,114 @@ void DocumentPane::applyHostedBackdrop(const QColor &color) {
         return;
     }
     m_surfaceTone = color;
-    const QString frame = color.name(QColor::HexRgb);
-    const QColor edge = color.lighter(120);
-    const QString edgeHex = edge.name(QColor::HexRgb);
+    
+    QColor sysBg = QGuiApplication::palette().window().color();
+    bool isDark = sysBg.lightness() < 128;
+    QColor baseBg = isDark ? QColor(10, 10, 12) : QColor(245, 245, 247);
+    
+    auto blend = [](const QColor &c1, const QColor &c2, double alpha) {
+        return QColor(
+            c1.red() * (1 - alpha) + c2.red() * alpha,
+            c1.green() * (1 - alpha) + c2.green() * alpha,
+            c1.blue() * (1 - alpha) + c2.blue() * alpha
+        );
+    };
+    
+    QColor frameBgTop = blend(baseBg, color, 0.40);
+    QColor frameBgBot = blend(baseBg, color, 0.20);
+    QColor frameBorder = blend(baseBg, color, 0.15);
+    
     m_contentRoot->setStyleSheet(QStringLiteral(
         "QWidget#DocumentHostRoot {"
-        " background-color: %1;"
-        " border: 1px solid %2;"
-        " border-radius: 18px;"
+        " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
+        " border: 1px solid %3;"
+        " border-radius: 12px;"
+        " padding: 12px;"
         "}"
         "QWidget#HostedWindowSurface {"
-        " background-color: %1;"
-        " border: 1px solid %2;"
-        " border-radius: 18px;"
-        "}").arg(frame, edgeHex));
-    emit surfaceToneChanged(m_surfaceTone);
+        " background-color: transparent;"
+        "}").arg(frameBgTop.name(QColor::HexRgb), frameBgBot.name(QColor::HexRgb), frameBorder.name(QColor::HexRgb)));
 }
 
-void DocumentPane::setupImagePreview() {
+void DocumentPane::setupImageViewer() {
     QPixmap pixmap(m_filePath);
     if (pixmap.isNull()) {
         m_hostMode = Fallback;
         m_hostedReady = false;
         return;
     }
-    // Scale down if needed, keeping aspect ratio
-    if (pixmap.width() > 1920 || pixmap.height() > 1080) {
-        pixmap = pixmap.scaled(1920, 1080, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-    m_imageLabel->setPixmap(pixmap);
-    m_imageLabel->show();
+    m_pixmapItem = m_graphicsScene->addPixmap(pixmap);
+    m_graphicsScene->setSceneRect(pixmap.rect());
+    m_graphicsView->fitInView(m_graphicsScene->sceneRect(), Qt::KeepAspectRatio);
+    m_graphicsView->show();
     m_stateCard->hide();
     m_hostSurface->hide();
-    m_textEdit->hide();
+    if (m_codeViewer) m_codeViewer->hide();
     applyHostedBackdrop(QColor(28, 30, 34));
 }
 
-void DocumentPane::setupTextPreview() {
+void DocumentPane::setupCodeViewer() {
     QFile file(m_filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         m_hostMode = Fallback;
         m_hostedReady = false;
         return;
     }
-    // Read up to 64KB
     QByteArray data = file.read(64 * 1024);
-    m_textEdit->setPlainText(QString::fromUtf8(data));
-    m_textEdit->show();
+    m_codeViewer->setPlainText(QString::fromUtf8(data));
+    m_codeViewer->show();
     m_stateCard->hide();
     m_hostSurface->hide();
-    m_imageLabel->hide();
+    if (m_graphicsView) m_graphicsView->hide();
     applyHostedBackdrop(QColor(20, 22, 26));
+}
+
+void DocumentPane::setupWebView() {
+#ifdef QT_WEBENGINEWIDGETS_LIB
+    m_webView->setUrl(QUrl::fromLocalFile(m_filePath));
+    m_webView->show();
+    m_stateCard->hide();
+    m_hostSurface->hide();
+    if (m_graphicsView) m_graphicsView->hide();
+    if (m_codeViewer) m_codeViewer->hide();
+    applyHostedBackdrop(QColor(28, 30, 34));
+#endif
+}
+
+void DocumentPane::setupMediaPlayer() {
+#ifdef QT_MULTIMEDIA_LIB
+    if (!m_mediaPlayer) {
+        m_mediaPlayer = new QMediaPlayer(this);
+        m_audioOutput = new QAudioOutput(this);
+        m_mediaPlayer->setAudioOutput(m_audioOutput);
+        m_mediaPlayer->setVideoOutput(m_videoWidget);
+    }
+    m_mediaPlayer->setSource(QUrl::fromLocalFile(m_filePath));
+    m_videoWidget->show();
+    m_stateCard->hide();
+    m_hostSurface->hide();
+    if (m_graphicsView) m_graphicsView->hide();
+    if (m_codeViewer) m_codeViewer->hide();
+    m_mediaPlayer->play();
+    applyHostedBackdrop(QColor(20, 22, 26));
+#endif
 }
 
 void DocumentPane::showStateMessage(const QString &title, const QString &body) {
     if (m_hostSurface) {
         m_hostSurface->hide();
     }
-    if (m_imageLabel) {
-        m_imageLabel->hide();
-    }
-    if (m_textEdit) {
-        m_textEdit->hide();
-    }
+    if (m_graphicsView) m_graphicsView->hide();
+    if (m_codeViewer) m_codeViewer->hide();
+
+#ifdef QT_WEBENGINEWIDGETS_LIB
+    if (m_webView) m_webView->hide();
+#endif
+
+#ifdef QT_MULTIMEDIA_LIB
+    if (m_videoWidget) m_videoWidget->hide();
+    if (m_mediaPlayer) m_mediaPlayer->stop();
+#endif
     if (m_contentRoot) {
         m_contentRoot->setStyleSheet(QString());
     }
@@ -892,7 +963,7 @@ void DocumentPane::syncUiState() {
         return;
     }
 
-    if (m_hostMode == ImagePreview || m_hostMode == TextPreview) {
+    if (m_hostMode == ImageViewer || m_hostMode == CodeViewer || m_hostMode == WebView || m_hostMode == MediaPlayer) {
         m_stateCard->hide();
         return;
     }

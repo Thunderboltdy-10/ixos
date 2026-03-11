@@ -7,6 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 OPTIONAL_COMPONENTS WebEngineWidgets Multimedia MultimediaWidgets)
 
 set(SOURCES
     src/main.cpp
@@ -16,8 +17,12 @@ set(SOURCES
     src/widgets/ExplorerToolbar.cpp
     src/widgets/BreadcrumbBar.cpp
     src/widgets/AppSidebar.cpp
+    src/widgets/FileListDelegate.cpp
+    src/widgets/AnimationHelper.cpp
     src/widgets/CommandPalette.cpp
     src/widgets/DocumentPane.cpp
+    src/widgets/CodeViewerWidget.cpp
+    src/widgets/ToastNotification.cpp
     src/widgets/SidebarSection.cpp
     src/widgets/TabWorkspace.cpp
     src/widgets/ExplorerPane.cpp
@@ -43,8 +48,12 @@ set(HEADERS
     src/widgets/ExplorerToolbar.h
     src/widgets/BreadcrumbBar.h
     src/widgets/AppSidebar.h
+    src/widgets/FileListDelegate.h
+    src/widgets/AnimationHelper.h
     src/widgets/CommandPalette.h
     src/widgets/DocumentPane.h
+    src/widgets/CodeViewerWidget.h
+    src/widgets/ToastNotification.h
     src/widgets/SidebarSection.h
     src/widgets/TabWorkspace.h
     src/widgets/ExplorerPane.h
@@ -77,6 +86,16 @@ add_executable(Ixplorer WIN32
 
 target_include_directories(Ixplorer PRIVATE src)
 target_link_libraries(Ixplorer PRIVATE Qt6::Widgets)
+
+if(TARGET Qt6::WebEngineWidgets)
+    target_link_libraries(Ixplorer PRIVATE Qt6::WebEngineWidgets)
+    target_compile_definitions(Ixplorer PRIVATE QT_WEBENGINEWIDGETS_LIB)
+endif()
+
+if(TARGET Qt6::Multimedia)
+    target_link_libraries(Ixplorer PRIVATE Qt6::Multimedia Qt6::MultimediaWidgets)
+    target_compile_definitions(Ixplorer PRIVATE QT_MULTIMEDIA_LIB)
+endif()
 
 if(WIN32)
     target_link_libraries(Ixplorer PRIVATE shell32 shlwapi)

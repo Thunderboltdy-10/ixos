@@ -9,12 +9,15 @@
 #include "widgets/IxosRail.h"
 #include "widgets/StatusStrip.h"
 #include "widgets/TabWorkspace.h"
+#include "widgets/ToastNotification.h"
 
 #include <QDir>
 #include <QFileInfo>
 #include <QKeyEvent>
 #include <QShortcut>
 #include <QVBoxLayout>
+#include <QVariantAnimation>
+#include <QEasingCurve>
 
 namespace Ixplorer {
 
@@ -84,7 +87,7 @@ void MainWindow::setupLayout() {
     m_splitter->setCollapsible(0, false);
     m_splitter->setCollapsible(1, false);
     m_splitter->setCollapsible(2, true);
-    m_splitter->setSizes({232, 930, 0});
+    m_splitter->setSizes({248, 914, 0});
 
     vbox->addWidget(m_splitter, 1);
     vbox->addWidget(m_statusStrip);
@@ -96,7 +99,6 @@ void MainWindow::setupLayout() {
 void MainWindow::setupConnections() {
     connect(m_sidebar, &AppSidebar::locationSelected, this, &MainWindow::navigateTo);
 
-    connect(m_toolbar, &ExplorerToolbar::navigateRequested, this, &MainWindow::navigateTo);
     connect(m_toolbar, &ExplorerToolbar::searchRequested, this, [this](const QString &query, int mode) {
         setRailVisible(true);
         m_rail->submitToolbarSearch(query, mode);
@@ -107,11 +109,7 @@ void MainWindow::setupConnections() {
         }
         m_rail->submitToolbarDraft(query, mode);
     });
-    connect(m_toolbar, &ExplorerToolbar::viewModeChanged, this, [this](int mode) {
-        m_workspace->setCurrentViewMode(mode);
-    });
     connect(m_toolbar, &ExplorerToolbar::toggleRailRequested, this, &MainWindow::toggleRailVisible);
-    connect(m_toolbar, &ExplorerToolbar::commandPaletteRequested, this, &MainWindow::openCommandPalette);
 
     connect(m_toolbar, &ExplorerToolbar::backRequested, this, [this]() {
         m_workspace->goBackCurrent();
@@ -132,8 +130,8 @@ void MainWindow::setupConnections() {
     connect(m_workspace, &TabWorkspace::statusMessage, this, [this](const QString &message) {
         m_statusStrip->setStatusMessage(message);
         m_rail->setStatusMessage(message);
+        ToastNotification::showToast(this, message);
     });
-    connect(m_workspace, &TabWorkspace::surfaceToneChanged, this, &MainWindow::applyShellTone);
 
     connect(m_workspace, &TabWorkspace::selectionChanged, this, [this](const QFileInfo &info, int selectedCount, quint64 selectedBytes) {
         m_rail->showFileDetails(info, selectedCount, selectedBytes);
@@ -147,9 +145,6 @@ void MainWindow::setupConnections() {
         onPathChanged(m_workspace->currentDocument() ? m_workspace->currentDocument()->displayPath()
                                                      : (m_workspace->currentPane() ? m_workspace->currentPane()->currentPath()
                                                                                    : QString()));
-        m_toolbar->setViewMode(m_workspace->currentViewMode());
-        m_toolbar->setViewModeEnabled(m_workspace->currentSupportsViewMode());
-        m_toolbar->setWorkspaceMode(m_workspace->currentSupportsViewMode());
     });
 
     connect(m_rail, &IxosRail::revealPathInWorkspaceRequested, this, [this](const QString &path) {
@@ -174,7 +169,6 @@ void MainWindow::setupConnections() {
     });
     connect(m_rail, &IxosRail::searchSubmitted, this, [this](const QString &query, int mode) {
         m_toolbar->setSearchText(query);
-        m_toolbar->setSearchMode(mode);
         setRailVisible(true);
     });
 
@@ -276,9 +270,7 @@ void MainWindow::onPathChanged(const QString &path) {
     const QFileInfo info(path);
     const QString navigationPath = info.exists() && info.isFile() ? info.absolutePath() : path;
 
-    m_toolbar->setCurrentPath(path);
-    m_toolbar->setViewModeEnabled(m_workspace->currentSupportsViewMode());
-    m_toolbar->setWorkspaceMode(m_workspace->currentSupportsViewMode());
+    m_workspace->setCurrentPath(path);
     m_sidebar->highlightCurrent(navigationPath);
     m_sidebar->recordRecentLocation(navigationPath);
     m_statusStrip->setPath(path);
@@ -289,7 +281,6 @@ void MainWindow::onPathChanged(const QString &path) {
         m_toolbar->setNavigationState(m_workspace->canGoBackCurrent(),
                                       m_workspace->canGoForwardCurrent(),
                                       m_workspace->canGoUpCurrent());
-        m_toolbar->setViewMode(m_workspace->currentViewMode());
     } else {
         m_statusStrip->setItemCount(1);
         m_toolbar->setNavigationState(false, false, m_workspace->canGoUpCurrent());
@@ -337,20 +328,41 @@ void MainWindow::setRailVisible(bool visible) {
     }
 
     m_railVisible = visible;
-    m_rail->setVisible(visible);
     m_toolbar->setRailVisible(visible);
 
+    const int totalWidth = qMax(1200, width());
+    const int sidebarWidth = currentSizes.size() >= 1 ? currentSizes.at(0) : 248;
+    const int targetRailWidth = visible ? qMax(340, m_lastRailWidth) : 0;
+    const int targetWorkspaceWidth = totalWidth - sidebarWidth - targetRailWidth;
+    
+    QList<int> startSizes = currentSizes;
+    if (startSizes.size() < 3) {
+        startSizes = {sidebarWidth, qMax(720, width() - sidebarWidth), 0};
+    }
+    QList<int> endSizes = {sidebarWidth, targetWorkspaceWidth, targetRailWidth};
+
     if (visible) {
-        const int totalWidth = qMax(1200, width());
-        const int sidebarWidth = currentSizes.size() >= 1 ? currentSizes.at(0) : 232;
-        const int railWidth = qMax(360, m_lastRailWidth);
-        const int workspaceWidth = qMax(560, totalWidth - sidebarWidth - railWidth);
-        m_splitter->setSizes({sidebarWidth, workspaceWidth, railWidth});
-        return;
+        m_rail->setVisible(true);
     }
 
-    const int sidebarWidth = currentSizes.size() >= 1 ? currentSizes.at(0) : 232;
-    m_splitter->setSizes({sidebarWidth, qMax(720, width() - sidebarWidth), 0});
+    auto *anim = new QVariantAnimation(this);
+    anim->setDuration(300);
+    anim->setEasingCurve(QEasingCurve::OutExpo);
+    anim->setStartValue(startSizes.at(2));
+    anim->setEndValue(targetRailWidth);
+
+    connect(anim, &QVariantAnimation::valueChanged, this, [this, sidebarWidth, totalWidth](const QVariant &value) {
+        int currentRailWidth = value.toInt();
+        m_splitter->setSizes({sidebarWidth, totalWidth - sidebarWidth - currentRailWidth, currentRailWidth});
+    });
+
+    connect(anim, &QVariantAnimation::finished, this, [this, visible]() {
+        if (!visible) {
+            m_rail->setVisible(false);
+        }
+    });
+
+    anim->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
 void MainWindow::toggleRailVisible() {

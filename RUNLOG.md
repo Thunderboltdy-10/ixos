@@ -258,6 +258,36 @@
 - Date/Time: 2026-02-06
 - Branch/Commit: (working tree)
 - Goal: Remove looped demo behavior during pipeline scroll, improve component diagram value, keep hero demo visible/centered from initial hero state, split docs into proper pages, and move root markdown sprawl into docs hierarchy.
+
+## Entry 0XY - Ixplorer orchestration surfacing + release-path hardening
+- Date/Time: 2026-03-11 23:40:00
+- Branch/Commit: (working tree)
+- Goal: Make the later Ixplorer intelligence phases visible in the shell, reduce sidebar clutter, and harden the desktop packaging path before tag-triggered release.
+- Commands run:
+  - `Get-Content CODEX.md`
+  - `Get-Content C:\Users\pablo\.codex\skills\frontend-design\SKILL.md`
+  - `C:\Qt\Tools\CMake_64\bin\cmake.exe --build ixplorer/build --config Release` (with `C:\Qt\Tools\Ninja` on `PATH`)
+  - `cargo check --manifest-path ixos-search/src-tauri/Cargo.toml`
+  - `cargo build --release`
+  - `npm run build` (in `ixos-search/ui`)
+  - `npm run tauri:build`
+  - Ixplorer startup smoke via `Start-Process ...Ixplorer.exe -PassThru`
+- Outputs saved to:
+  - `reports/ixplorer_intelligence_integration_2026-03-11.md`
+- Key results:
+  - Added visible right-rail context surfacing for interruption recovery, resume context, and suggested-next bundles while keeping explanation/details anchored at the bottom of the same rail.
+  - Wired `InterruptionDetector` to real session state, added a 200 ms orchestrator loop, and let the shell auto-surface meaningful context instead of leaving those systems dormant.
+  - Reduced sidebar clutter by demoting the old resume widget from the left-column hierarchy and relying on the right rail for intelligence-heavy affordances.
+  - Added command-palette actions to pin the active file into Favorites and explicitly add the active file to the current workstream.
+  - Added `scripts/clean-tauri-output.js` and integrated it into desktop packaging so fresh Tauri builds do not inherit stale bundle/output directories.
+  - Fresh local desktop packaging passed again and produced:
+    - `target/release/bundle/msi/Ixos_0.1.0_x64_en-US.msi`
+    - `target/release/bundle/nsis/Ixos_0.1.0_x64-setup.exe`
+- Decision: KEEP
+- Next:
+  - Run hands-on GUI QA for hosted default-app/editor embedding behavior.
+  - Expose remaining workstream-management and graph-centric actions more directly in Ixplorer.
+  - Validate the GitHub tag-triggered release path against the updated model/env packaging assumptions.
 - Commands run:
   - cd ixos-site; npx eslint src/components/sections/HeroPipeline.tsx src/components/hero/IxosDemoWindow.tsx src/components/hero/diagrams/QueryDecomposition.tsx src/components/hero/diagrams/VectorSpace.tsx src/components/hero/diagrams/ScoreWaterfall.tsx src/components/hero/diagrams/MemoryWipe.tsx src/components/hero/diagrams/StreamWaterfall.tsx src/app/docs/layout.tsx src/app/docs/page.tsx src/app/docs/getting-started/page.tsx src/app/docs/desktop-app/page.tsx src/app/docs/models/page.tsx src/app/docs/benchmarking/page.tsx src/app/docs/agents/page.tsx src/components/auth/AuthScreen.tsx src/components/ui/SectionDivider.tsx
   - npm --prefix ixos-site run build
@@ -1911,3 +1941,31 @@ eports/settings_matrix_2026-02-14.md).
     - Output summary: process stayed alive for 4 seconds (`RUNNING PID=33072`) before intentional stop.
 - Artifacts:
   - `reports/ixplorer_workspace_search_pass_2026-03-10.md`
+
+## 2026-03-11 Ixplorer intelligence integration + embedded recovery pass
+- Scope:
+  - Wired the new Ixplorer intelligence data layer into the running shell, accelerated default Auto search on the CLI/Ixplorer path, and stabilized embedded document behavior by preferring reliable internal previews where hosting was the source of failures.
+- Code changes:
+  - Updated `src/main.rs` so Ixplorer/CLI Auto search uses lexical preflight before eager semantic indexing.
+  - Added/validated the intelligence layer under `ixplorer/src/data/*` and integrated it in `ixplorer/src/app/MainWindow.*`.
+  - Updated `ixplorer/src/widgets/AppSidebar.*`, `ixplorer/src/widgets/TabWorkspace.*`, and `ixplorer/src/widgets/CommandPalette.*` for Today/workstream/session integration and contextual actions.
+  - Reworked `ixplorer/src/utils/FileOpenPolicy.*` and `ixplorer/src/widgets/DocumentPane.*` so code/text, image, media, and web-like formats stay in-app by default and hosted-window recovery is attempted before failure UI.
+  - Refined `ixplorer/src/widgets/IxosRail.*`, `ixplorer/src/widgets/ExplorerToolbar.cpp`, and `ixplorer/src/search/IxosCliSearchProvider.cpp` for calmer search behavior and spacing/polish.
+- Command evidence:
+  - `cargo build --release`
+    - Output: `Finished 'release' profile [optimized] target(s) in 42.82s`
+  - `$env:Path='C:\Qt\Tools\Ninja;' + $env:Path; & 'C:\Qt\Tools\CMake_64\bin\cmake.exe' --build ixplorer/build --config Release`
+    - Output summary: rebuilt and linked `Ixplorer.exe` successfully, then redeployed Qt runtime files.
+  - `cargo check --manifest-path ixos-search/src-tauri/Cargo.toml`
+    - Output: `Finished 'dev' profile [unoptimized + debuginfo] target(s) in 2.70s`
+  - `npm run build` in `ixos-search/ui`
+    - Output summary: production build completed successfully through `✓ built in 7.97s`
+  - `cargo test --lib resumption_snapshot_ranks_recent_repeat_work`
+    - Output: `ok`
+  - `cargo test --lib test_build_graph_returns_related_neighbor`
+    - Output: `ok`
+  - Ixplorer startup smoke:
+    - Command: `Start-Process C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe -PassThru`
+    - Output summary: process stayed alive for 4 seconds (`RUNNING PID=60344`) before intentional stop.
+- Artifacts:
+  - `reports/ixplorer_intelligence_integration_2026-03-11.md`

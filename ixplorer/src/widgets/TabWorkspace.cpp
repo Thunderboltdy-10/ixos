@@ -7,6 +7,7 @@
 #include "widgets/BreadcrumbBar.h"
 #include "widgets/DocumentPane.h"
 #include "widgets/ExplorerPane.h"
+#include "widgets/HomeDashboardPane.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -24,6 +25,9 @@ namespace Ixplorer {
 namespace {
 
 QString tabLabelForPath(const QString &path) {
+    if (path == QStringLiteral("ixplorer://home")) {
+        return QStringLiteral("Home");
+    }
     const QFileInfo info(path);
     if (info.exists() && info.fileName().isEmpty()) {
         return QDir::toNativeSeparators(path);
@@ -75,8 +79,8 @@ TabWorkspace::TabWorkspace(QWidget *parent)
     layout->setSpacing(0);
 
     auto *tabRow = new QHBoxLayout();
-    tabRow->setContentsMargins(0, 0, 0, 0);
-    tabRow->setSpacing(0);
+    tabRow->setContentsMargins(4, 4, 4, 0);
+    tabRow->setSpacing(4);
 
     m_tabBar->setTabsClosable(true);
     m_tabBar->setMovable(false);
@@ -112,6 +116,77 @@ void TabWorkspace::setCurrentPath(const QString &path) {
     m_breadcrumb->setPath(path);
 }
 
+int TabWorkspace::tabCount() const {
+    return m_tabBar->count();
+}
+
+QVector<TabState> TabWorkspace::captureTabState() const {
+    QVector<TabState> tabs;
+    tabs.reserve(m_stack->count());
+    for (int index = 0; index < m_stack->count(); ++index) {
+        TabState tab;
+        if (auto *pane = qobject_cast<ExplorerPane *>(m_stack->widget(index))) {
+            tab.path = pane->currentPath();
+            tab.isDocument = false;
+            tab.viewMode = static_cast<int>(pane->viewMode());
+        } else if (auto *document = qobject_cast<DocumentPane *>(m_stack->widget(index))) {
+            tab.path = document->filePath();
+            tab.isDocument = true;
+            tab.isPreview = document->isPreviewTab();
+        }
+        if (!tab.path.isEmpty()) {
+            tabs.append(tab);
+        }
+    }
+    return tabs;
+}
+
+void TabWorkspace::restoreTabState(const QVector<TabState> &tabs, int activeTabIndex) {
+    while (m_stack->count() > 0) {
+        QWidget *widget = m_stack->widget(0);
+        m_stack->removeWidget(widget);
+        if (widget != nullptr) {
+            widget->deleteLater();
+        }
+    }
+    while (m_tabBar->count() > 0) {
+        QWidget *rightButton = m_tabBar->tabButton(0, QTabBar::RightSide);
+        QWidget *leftButton = m_tabBar->tabButton(0, QTabBar::LeftSide);
+        m_tabBar->removeTab(0);
+        if (rightButton != nullptr) {
+            rightButton->deleteLater();
+        }
+        if (leftButton != nullptr) {
+            leftButton->deleteLater();
+        }
+    }
+    m_previewTabIndex = -1;
+
+    for (const TabState &tab : tabs) {
+        if (tab.path.isEmpty()) {
+            continue;
+        }
+        if (tab.isDocument) {
+            const int index = addDocumentTab(tab.path, tab.isPreview);
+            if (tab.isPreview) {
+                m_previewTabIndex = index;
+            }
+        } else {
+            const int index = addExplorerTab(tab.path);
+            if (auto *pane = paneAt(index)) {
+                pane->setViewMode(static_cast<ExplorerPane::ViewMode>(tab.viewMode));
+            }
+        }
+    }
+
+    if (m_tabBar->count() == 0) {
+        addTab("ixplorer://home");
+        return;
+    }
+
+    m_tabBar->setCurrentIndex(qBound(0, activeTabIndex, m_tabBar->count() - 1));
+}
+
 ExplorerPane *TabWorkspace::currentPane() const {
     return qobject_cast<ExplorerPane *>(m_stack->currentWidget());
 }
@@ -120,11 +195,18 @@ DocumentPane *TabWorkspace::currentDocument() const {
     return qobject_cast<DocumentPane *>(m_stack->currentWidget());
 }
 
+HomeDashboardPane *TabWorkspace::currentDashboard() const {
+    return qobject_cast<HomeDashboardPane *>(m_stack->currentWidget());
+}
+
 ExplorerPane *TabWorkspace::paneAt(int index) const {
     return qobject_cast<ExplorerPane *>(m_stack->widget(index));
 }
 
 int TabWorkspace::addTab(const QString &path) {
+    if (path == QStringLiteral("ixplorer://home") || path.isEmpty()) {
+        return addDashboardTab();
+    }
     const QFileInfo info(path);
     if (info.exists() && info.isFile()) {
         const int index = addDocumentTab(info.absoluteFilePath(), false);
@@ -306,6 +388,29 @@ int TabWorkspace::currentViewMode() const {
 
 bool TabWorkspace::currentSupportsViewMode() const {
     return currentPane() != nullptr;
+}
+
+void TabWorkspace::setIntelligence(WorkstreamManager *wm, ResumptionEngine *re, ActivityTracker *at) {
+    m_wm = wm;
+    m_re = re;
+    m_at = at;
+}
+
+int TabWorkspace::addDashboardTab() {
+    auto *pane = new HomeDashboardPane(this);
+    pane->setIntelligence(m_wm, m_re, m_at);
+    connectDashboardTab(pane);
+
+    const int insertIndex = m_tabBar->count();
+    m_stack->addWidget(pane);
+    m_tabBar->addTab("Home");
+
+    m_tabBar->setTabIcon(insertIndex, Icons::makeIconFromFont(Icons::Home, 16));
+    m_tabBar->setTabButton(insertIndex, QTabBar::RightSide, makeTabCloseButton(m_tabBar, this));
+
+    updateTabMetadata(insertIndex, "ixplorer://home");
+    m_tabBar->setCurrentIndex(insertIndex);
+    return insertIndex;
 }
 
 int TabWorkspace::addExplorerTab(const QString &path) {
@@ -528,6 +633,13 @@ void TabWorkspace::connectDocumentTab(DocumentPane *pane) {
     });
 }
 
+void TabWorkspace::connectDashboardTab(HomeDashboardPane *pane) {
+    connect(pane, &HomeDashboardPane::pathActivated, this, [this](const QString &path) {
+        addTab(path);
+    });
+    connect(pane, &HomeDashboardPane::statusMessage, this, &TabWorkspace::statusMessage);
+}
+
 void TabWorkspace::updateSignalsForCurrentWidget() {
     if (auto *pane = currentPane()) {
         emit pathChanged(pane->currentPath());
@@ -542,6 +654,13 @@ void TabWorkspace::updateSignalsForCurrentWidget() {
         emit navigationStateChanged(false, false, document->canGoUp());
         emit selectionChanged(info, 1, static_cast<quint64>(info.size()));
         emit surfaceToneChanged(document->surfaceTone());
+        return;
+    }
+    
+    if (auto *dashboard = currentDashboard()) {
+        emit pathChanged(dashboard->currentPath());
+        emit navigationStateChanged(false, false, false);
+        emit surfaceToneChanged(QColor(18, 20, 24));
         return;
     }
 
@@ -575,7 +694,7 @@ void TabWorkspace::onTabCloseRequested(int index) {
 }
 
 void TabWorkspace::onNewTabClicked() {
-    addExplorerTab(QDir::homePath());
+    addTab("ixplorer://home");
 }
 
 } // namespace Ixplorer

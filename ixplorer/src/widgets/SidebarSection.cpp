@@ -12,45 +12,44 @@ SidebarSection::SidebarSection(const QString &title, const QIcon &sectionIcon, Q
     : QWidget(parent)
     , m_bodyWidget(new QWidget(this))
     , m_body(new QVBoxLayout(m_bodyWidget)) {
-    
+
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    // Header
+    // Header - only show if title is not empty
     m_headerWidget = new QWidget(this);
     m_headerWidget->setObjectName("SidebarSectionHeader");
-    m_headerWidget->setCursor(Qt::PointingHandCursor);
-    
+
     auto *headerLayout = new QHBoxLayout(m_headerWidget);
-    headerLayout->setContentsMargins(8, 4, 8, 4);
-    headerLayout->setSpacing(8);
-    
+    headerLayout->setContentsMargins(14, 8, 10, 2);
+    headerLayout->setSpacing(4);
+
     m_chevronLabel = new QLabel(m_headerWidget);
-    m_chevronLabel->setPixmap(Icons::makeIconFromFont(Icons::ChevronDown, 14, QColor("#8E8E93")).pixmap(14, 14));
+    m_chevronLabel->setFixedSize(12, 12);
+    m_chevronLabel->setPixmap(Icons::makeIconFromFont(Icons::ChevronDown, 10, QColor("#5A5A5E")).pixmap(10, 10));
     headerLayout->addWidget(m_chevronLabel);
-    
-    if (!sectionIcon.isNull()) {
-        auto *iconLabel = new QLabel(m_headerWidget);
-        iconLabel->setPixmap(sectionIcon.pixmap(16, 16));
-        headerLayout->addWidget(iconLabel);
-    }
-    
+
     m_titleLabel = new QLabel(title, m_headerWidget);
     headerLayout->addWidget(m_titleLabel);
     headerLayout->addStretch();
-    
-    m_headerWidget->installEventFilter(this);
 
-    m_body->setContentsMargins(0, 0, 0, 0);
+    if (title.isEmpty()) {
+        m_headerWidget->hide();
+    } else {
+        m_headerWidget->setCursor(Qt::PointingHandCursor);
+        m_headerWidget->installEventFilter(this);
+    }
+
+    m_body->setContentsMargins(0, 0, 0, 2);
     m_body->setSpacing(0);
 
     layout->addWidget(m_headerWidget);
     layout->addWidget(m_bodyWidget);
-    
+
     m_collapseAnimation = new QPropertyAnimation(m_bodyWidget, "maximumHeight", this);
-    m_collapseAnimation->setDuration(200);
-    m_collapseAnimation->setEasingCurve(QEasingCurve::OutCubic);
+    m_collapseAnimation->setDuration(180);
+    m_collapseAnimation->setEasingCurve(QEasingCurve::OutQuad);
 }
 
 bool SidebarSection::eventFilter(QObject *watched, QEvent *event) {
@@ -74,7 +73,8 @@ void SidebarSection::addItem(const QString &label, const QString &path, const QI
     btn->setFlat(true);
     btn->setCheckable(false);
     btn->setIcon(icon);
-    btn->setIconSize(QSize(16, 16));
+    btn->setIconSize(QSize(14, 14));
+    btn->setFixedHeight(26);
 
     connect(btn, &QPushButton::clicked, this, [this, path]() {
         if (!path.isEmpty()) {
@@ -110,22 +110,20 @@ void SidebarSection::setHighlighted(const QString &path) {
 
 void SidebarSection::toggleCollapse() {
     m_collapsed = !m_collapsed;
-    m_chevronLabel->setPixmap(Icons::makeIconFromFont(m_collapsed ? Icons::ChevronRight : Icons::ChevronDown, 14, QColor("#8E8E93")).pixmap(14, 14));
-    
+    m_chevronLabel->setPixmap(Icons::makeIconFromFont(m_collapsed ? Icons::ChevronRight : Icons::ChevronDown, 10, QColor("#5A5A5E")).pixmap(10, 10));
+
+    m_collapseAnimation->stop();
     if (m_collapsed) {
         m_collapseAnimation->setStartValue(m_bodyWidget->height());
         m_collapseAnimation->setEndValue(0);
-        m_collapseAnimation->setDuration(300); // Smoother
-        m_collapseAnimation->setEasingCurve(QEasingCurve::OutExpo); // Smoother
-        m_collapseAnimation->start();
     } else {
         m_bodyWidget->setVisible(true);
         m_collapseAnimation->setStartValue(0);
         m_collapseAnimation->setEndValue(m_body->sizeHint().height());
-        m_collapseAnimation->setDuration(300); // Smoother
-        m_collapseAnimation->setEasingCurve(QEasingCurve::OutExpo); // Smoother
-        m_collapseAnimation->start();
     }
+    m_collapseAnimation->setDuration(180);
+    m_collapseAnimation->setEasingCurve(QEasingCurve::OutQuad);
+    m_collapseAnimation->start();
 }
 
 } // namespace Ixplorer

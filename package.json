@@ -11,8 +11,8 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev --no-watch",
     "tauri:dev:watch": "tauri dev",
-    "tauri:build": "node scripts/verify-desktop-build-env.js && tauri build",
-    "tauri:build:prod": "node scripts/verify-desktop-build-env.js && tauri build",
+    "tauri:build": "node scripts/clean-tauri-output.js && node scripts/verify-desktop-build-env.js && tauri build",
+    "tauri:build:prod": "node scripts/clean-tauri-output.js && node scripts/verify-desktop-build-env.js && tauri build",
     "dev": "cd ixos-search/ui && npm run dev",
     "build": "cd ixos-search/ui && npm run build",
     "site:dev": "cd ixos-site && npm run dev"
@@ -25,7 +25,7 @@
   ],
   "devDependencies": {
     "@neondatabase/serverless": "0.9.5",
-    "@tauri-apps/cli": "^2",
+    "@tauri-apps/cli": "^2.10.1",
     "drizzle-orm": "^0.36.4",
     "react": "19.2.3",
     "react-dom": "19.2.3"

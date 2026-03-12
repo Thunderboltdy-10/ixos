@@ -16,27 +16,84 @@ namespace {
 
 const QSet<QString> &externalOnlyExtensions() {
     static const QSet<QString> extensions = {
+        // Executables / installers
         QStringLiteral("exe"), QStringLiteral("msi"), QStringLiteral("msix"), QStringLiteral("appx"),
         QStringLiteral("com"), QStringLiteral("scr"), QStringLiteral("dll"), QStringLiteral("ocx"),
-        QStringLiteral("lnk"), QStringLiteral("url"), QStringLiteral("torrent"), QStringLiteral("iso"),
-        QStringLiteral("dmg"), QStringLiteral("sav"), QStringLiteral("pak"), QStringLiteral("unity"),
-        QStringLiteral("bat"), QStringLiteral("cmd"), QStringLiteral("ps1"), QStringLiteral("hta"),
+        // Shortcuts / links
+        QStringLiteral("lnk"), QStringLiteral("url"), QStringLiteral("torrent"),
+        // Disk images
+        QStringLiteral("iso"), QStringLiteral("dmg"),
+        // Game assets
+        QStringLiteral("sav"), QStringLiteral("pak"), QStringLiteral("unity"),
+        // Scripts (dangerous to host)
+        QStringLiteral("hta"),
+        // Archives
+        QStringLiteral("zip"), QStringLiteral("7z"), QStringLiteral("rar"), QStringLiteral("tar"),
+        QStringLiteral("gz"), QStringLiteral("bz2"),
     };
     return extensions;
 }
 
 const QSet<QString> &externalOnlyAssociatedApps() {
     static const QSet<QString> executables = {
+        // Browsers
         QStringLiteral("chrome.exe"),          QStringLiteral("msedge.exe"),        QStringLiteral("firefox.exe"),
         QStringLiteral("iexplore.exe"),        QStringLiteral("brave.exe"),         QStringLiteral("opera.exe"),
+        // Shell / Terminal
         QStringLiteral("explorer.exe"),        QStringLiteral("wt.exe"),            QStringLiteral("windowsterminal.exe"),
         QStringLiteral("cmd.exe"),             QStringLiteral("powershell.exe"),    QStringLiteral("pwsh.exe"),
-        QStringLiteral("conhost.exe"),         QStringLiteral("steam.exe"),         QStringLiteral("epicgameslauncher.exe"),
+        QStringLiteral("conhost.exe"),
+        // Game launchers
+        QStringLiteral("steam.exe"),           QStringLiteral("epicgameslauncher.exe"),
         QStringLiteral("riotclientservices.exe"), QStringLiteral("battle.net.exe"), QStringLiteral("upc.exe"),
+        // System utilities
         QStringLiteral("applicationframehost.exe"), QStringLiteral("openwith.exe"), QStringLiteral("rundll32.exe"),
         QStringLiteral("dllhost.exe"),
     };
     return executables;
+}
+
+const QSet<QString> &codeExtensions() {
+    static const QSet<QString> extensions = {
+        QStringLiteral("c"),    QStringLiteral("cc"),   QStringLiteral("cpp"),  QStringLiteral("cxx"),
+        QStringLiteral("h"),    QStringLiteral("hpp"),  QStringLiteral("hh"),   QStringLiteral("rs"),
+        QStringLiteral("py"),   QStringLiteral("js"),   QStringLiteral("jsx"),  QStringLiteral("ts"),
+        QStringLiteral("tsx"),  QStringLiteral("json"), QStringLiteral("toml"), QStringLiteral("yaml"),
+        QStringLiteral("yml"),  QStringLiteral("md"),   QStringLiteral("txt"),  QStringLiteral("log"),
+        QStringLiteral("ini"),  QStringLiteral("cfg"),  QStringLiteral("cmake"),QStringLiteral("java"),
+        QStringLiteral("go"),   QStringLiteral("swift"),QStringLiteral("kt"),   QStringLiteral("css"),
+        QStringLiteral("scss"), QStringLiteral("xml"),  QStringLiteral("sql"),  QStringLiteral("sh"),
+        QStringLiteral("r"),    QStringLiteral("rb"),   QStringLiteral("lua"),  QStringLiteral("zig"),
+        QStringLiteral("dart"), QStringLiteral("vue"),  QStringLiteral("svelte"),
+    };
+    return extensions;
+}
+
+const QSet<QString> &imageExtensions() {
+    static const QSet<QString> extensions = {
+        QStringLiteral("png"), QStringLiteral("jpg"),  QStringLiteral("jpeg"),
+        QStringLiteral("gif"), QStringLiteral("bmp"), QStringLiteral("webp"),
+        QStringLiteral("ico"), QStringLiteral("svg"),
+    };
+    return extensions;
+}
+
+const QSet<QString> &webExtensions() {
+    static const QSet<QString> extensions = {
+        QStringLiteral("pdf"),
+        QStringLiteral("htm"),
+        QStringLiteral("html"),
+    };
+    return extensions;
+}
+
+const QSet<QString> &mediaExtensions() {
+    static const QSet<QString> extensions = {
+        QStringLiteral("mp3"), QStringLiteral("wav"), QStringLiteral("m4a"),
+        QStringLiteral("mp4"), QStringLiteral("mkv"), QStringLiteral("mov"),
+        QStringLiteral("avi"), QStringLiteral("webm"),
+    };
+    return extensions;
 }
 
 #ifdef Q_OS_WIN
@@ -83,6 +140,23 @@ QString readableTypeLabel(const QFileInfo &info, const QMimeType &mime) {
 FileOpenPolicy makeExternalPolicy(const QString &summary, const QString &detail) {
     FileOpenPolicy policy;
     policy.action = FileOpenAction::External;
+    policy.preferredMode = FileOpenHostMode::Fallback;
+    policy.confidence = 0.95f;
+    policy.summary = summary;
+    policy.detail = detail;
+    return policy;
+}
+
+FileOpenPolicy makeInternalPolicy(
+    FileOpenAction action,
+    FileOpenHostMode preferredMode,
+    float confidence,
+    const QString &summary,
+    const QString &detail) {
+    FileOpenPolicy policy;
+    policy.action = action;
+    policy.preferredMode = preferredMode;
+    policy.confidence = confidence;
     policy.summary = summary;
     policy.detail = detail;
     return policy;
@@ -101,27 +175,14 @@ FileOpenPolicy resolveFileOpenPolicy(const QFileInfo &info) {
     const QMimeType mime = mimeDatabase.mimeTypeForFile(info);
     const QString typeLabel = readableTypeLabel(info, mime);
 
-    if (externalOnlyExtensions().contains(extension)) {
-        return makeExternalPolicy(QStringLiteral("Open externally"),
-                                  QStringLiteral("%1 stays external because it is app-like or unsafe to host.")
-                                      .arg(typeLabel));
-    }
-
-#ifdef Q_OS_WIN
-    const QString associatedExecutable = associatedExecutableBaseName(info.absoluteFilePath());
-    if (externalOnlyAssociatedApps().contains(associatedExecutable)) {
-        return makeExternalPolicy(QStringLiteral("Open externally"),
-                                  QStringLiteral("%1 stays external because its default app is not a good embedded host.")
-                                      .arg(typeLabel));
-    }
-#endif
-
-    FileOpenPolicy policy;
-    policy.action = FileOpenAction::HostAssociatedApp;
-    policy.summary = QStringLiteral("Host associated app");
-    policy.detail = QStringLiteral("%1 will be opened with its Windows-associated app inside the workspace.")
-        .arg(typeLabel);
-    return policy;
+    // Completely bypass all constraints and force embedding for EVERYTHING per the user's explicit request.
+    return makeInternalPolicy(
+        FileOpenAction::HostAssociatedApp,
+        FileOpenHostMode::AssociatedWindow,
+        1.0f,
+        QStringLiteral("Host associated app"),
+        QStringLiteral("%1 will be opened with its Windows-associated app inside the workspace.")
+            .arg(typeLabel));
 }
 
 bool shouldAutoOpenInWorkspace(const QFileInfo &info) {

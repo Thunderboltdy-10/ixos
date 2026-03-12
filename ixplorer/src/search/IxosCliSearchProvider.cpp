@@ -84,8 +84,11 @@ void IxosCliSearchProvider::cancelSearch() {
         return;
     }
 
-    m_process.kill();
-    m_process.waitForFinished(1000);
+    m_process.terminate();
+    if (!m_process.waitForFinished(200)) {
+        m_process.kill();
+        m_process.waitForFinished(400);
+    }
     m_stdoutBuffer.clear();
     m_stderrBuffer.clear();
     m_sawComplete = false;

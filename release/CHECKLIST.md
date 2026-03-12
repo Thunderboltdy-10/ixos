@@ -26,6 +26,7 @@
 ### Required env for `tauri:build:prod`
 - `VITE_API_URL`
 - `VITE_CLERK_PUBLISHABLE_KEY`
+- `VITE_LEMONSQUEEZY_PRO_VARIANT_ID`
 - `IXOS_JWT_PUBLIC_KEY`
 
 ## Release artifacts

@@ -13,29 +13,27 @@ SearchResultCard::SearchResultCard(QWidget *parent)
     , m_title(new QLabel(this))
     , m_path(new QLabel(this)) {
     setObjectName("RailResultCard");
-    setFixedHeight(32); // Height: ~32px (compact, file-list-like)
+    setFixedHeight(28);
 
     auto *layout = new QHBoxLayout(this);
-    layout->setContentsMargins(12, 0, 12, 0);
-    layout->setSpacing(8);
+    layout->setContentsMargins(14, 0, 10, 0);
+    layout->setSpacing(6);
 
-    m_icon->setFixedSize(18, 18);
+    m_icon->setFixedSize(16, 16);
     layout->addWidget(m_icon);
 
     m_title->setObjectName("RailResultTitle");
-    QFont titleFont("Geist");
+    QFont titleFont;
     titleFont.setPixelSize(13);
+    titleFont.setWeight(QFont::Normal);
     m_title->setFont(titleFont);
-    m_title->setStyleSheet("color: #F2F2F7;");
     layout->addWidget(m_title);
 
     m_path->setObjectName("RailResultPath");
-    QFont pathFont("Geist");
-    pathFont.setPixelSize(12);
+    QFont pathFont("Geist Mono");
+    pathFont.setPixelSize(11);
     m_path->setFont(pathFont);
-    m_path->setStyleSheet("color: #8E8E93;");
-    
-    // Elide path if it's too long
+
     QSizePolicy pathPolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_path->setSizePolicy(pathPolicy);
     layout->addWidget(m_path, 1);

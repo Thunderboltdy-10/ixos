@@ -5,6 +5,7 @@
 //! - Related Files Panel
 //! - Workstreams
 
+use ixos_protocol::activity_ledger::{ResumeCandidate, ResumptionSnapshot, SuggestedNextFile};
 use ixos_protocol::{
     create_event, ActivityAction, ActivityEvent, ActivityLedger, CoOccurrence, MoveRecommendation,
     RecentFile, TimeRange, MAX_STORAGE_BYTES,
@@ -225,6 +226,87 @@ impl From<RecentFile> for RecentFilePayload {
     }
 }
 
+/// Resumption candidate payload for the Today tab.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResumeCandidatePayload {
+    pub path: String,
+    pub file_id: String,
+    pub last_touched: u64,
+    pub touch_count: u32,
+    pub actions: Vec<ActivityAction>,
+    pub score: f32,
+    pub reasons: Vec<String>,
+}
+
+impl From<ResumeCandidate> for ResumeCandidatePayload {
+    fn from(value: ResumeCandidate) -> Self {
+        Self {
+            path: value.path,
+            file_id: value.file_id,
+            last_touched: value.last_touched,
+            touch_count: value.touch_count,
+            actions: value.actions,
+            score: value.score,
+            reasons: value.reasons,
+        }
+    }
+}
+
+/// Suggested next file payload for the Today tab.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SuggestedNextPayload {
+    pub path: String,
+    pub file_id: String,
+    pub score: f32,
+    pub reason: String,
+    pub co_occurred_with: String,
+}
+
+impl From<SuggestedNextFile> for SuggestedNextPayload {
+    fn from(value: SuggestedNextFile) -> Self {
+        Self {
+            path: value.path,
+            file_id: value.file_id,
+            score: value.score,
+            reason: value.reason,
+            co_occurred_with: value.co_occurred_with,
+        }
+    }
+}
+
+/// Combined resumption payload for the Today tab.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResumptionPayload {
+    pub recently_touched: Vec<RecentFilePayload>,
+    pub resume_candidates: Vec<ResumeCandidatePayload>,
+    pub suggested_next: Vec<SuggestedNextPayload>,
+}
+
+impl From<ResumptionSnapshot> for ResumptionPayload {
+    fn from(value: ResumptionSnapshot) -> Self {
+        Self {
+            recently_touched: value
+                .recently_touched
+                .into_iter()
+                .map(RecentFilePayload::from)
+                .collect(),
+            resume_candidates: value
+                .resume_candidates
+                .into_iter()
+                .map(ResumeCandidatePayload::from)
+                .collect(),
+            suggested_next: value
+                .suggested_next
+                .into_iter()
+                .map(SuggestedNextPayload::from)
+                .collect(),
+        }
+    }
+}
+
 /// Move recommendation payload for frontend.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -352,12 +434,14 @@ pub fn get_co_occurrence(
 #[tauri::command]
 pub fn get_recently_touched(
     limit: Option<usize>,
+    suggestion_limit: Option<usize>,
     activity_state: State<'_, ActivityState>,
-) -> Result<Vec<RecentFilePayload>, String> {
+) -> Result<ResumptionPayload, String> {
     let ledger = activity_state.ledger.lock();
-    let recent = ledger.get_recently_touched(limit.unwrap_or(20));
+    let snapshot =
+        ledger.get_resumption_snapshot(limit.unwrap_or(20), suggestion_limit.unwrap_or(5));
 
-    Ok(recent.into_iter().map(|r| r.into()).collect())
+    Ok(snapshot.into())
 }
 
 /// Get file/folder move recommendations inferred from repeated behavior.

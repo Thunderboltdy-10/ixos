@@ -5,13 +5,14 @@
  */
 
 import { create } from 'zustand';
-import type { Workstream, WorkstreamsStats } from '@/lib/types';
+import type { Workstream, WorkstreamGraph, WorkstreamsStats } from '@/lib/types';
 import * as tauri from '@/lib/tauri';
 
 interface WorkstreamState {
   // State
   workstreams: Workstream[];
   currentWorkstream: Workstream | null;
+  graph: WorkstreamGraph | null;
   stats: WorkstreamsStats | null;
   isLoading: boolean;
   error: string | null;
@@ -42,6 +43,7 @@ export const useWorkstreamStore = create<WorkstreamState>((set, get) => ({
   // Initial state
   workstreams: [],
   currentWorkstream: null,
+  graph: null,
   stats: null,
   isLoading: false,
   error: null,
@@ -65,7 +67,9 @@ export const useWorkstreamStore = create<WorkstreamState>((set, get) => ({
   // Get a specific workstream
   getWorkstream: async (id) => {
     try {
-      const workstream = await tauri.getWorkstream(id);
+      const detail = await tauri.getWorkstreamDetail(id);
+      set({ graph: detail.graph });
+      const workstream = detail.workstream;
       return workstream;
     } catch (error) {
       console.error('Failed to get workstream:', error);
@@ -121,7 +125,7 @@ export const useWorkstreamStore = create<WorkstreamState>((set, get) => ({
 
         // Clear current if it's the deleted one
         if (get().currentWorkstream?.id === id) {
-          set({ currentWorkstream: null });
+          set({ currentWorkstream: null, graph: null });
         }
       }
       return success;
@@ -208,13 +212,13 @@ export const useWorkstreamStore = create<WorkstreamState>((set, get) => ({
     const existing = get().workstreams.find((ws) => ws.id === id);
     if (existing) {
       set({ currentWorkstream: existing });
-      return;
     }
 
-    // Not in local list, fetch from backend
-    const workstream = await get().getWorkstream(id);
-    if (workstream) {
-      set({ currentWorkstream: workstream });
+    try {
+      const detail = await tauri.getWorkstreamDetail(id);
+      set({ currentWorkstream: detail.workstream, graph: detail.graph });
+    } catch (error) {
+      console.error('Failed to select workstream:', error);
     }
   },
 
@@ -233,6 +237,7 @@ export const useWorkstreamStore = create<WorkstreamState>((set, get) => ({
     set({
       workstreams: [],
       currentWorkstream: null,
+      graph: null,
       stats: null,
       isLoading: false,
       error: null,

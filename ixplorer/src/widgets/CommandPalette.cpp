@@ -34,15 +34,15 @@ CommandPalette::CommandPalette(QWidget *parent)
     setWindowFlag(Qt::FramelessWindowHint, true);
 
     auto *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(18, 18, 18, 18);
-    layout->setSpacing(12);
+    layout->setContentsMargins(14, 14, 14, 14);
+    layout->setSpacing(8);
 
-    auto *title = new QLabel(QStringLiteral("Command Palette"), this);
+    auto *title = new QLabel(QStringLiteral("COMMANDS"), this);
     title->setObjectName("CommandPaletteTitle");
     layout->addWidget(title);
 
     m_input->setObjectName("CommandPaletteInput");
-    m_input->setPlaceholderText(QStringLiteral("Search actions or type a query for Ixos"));
+    m_input->setPlaceholderText(QStringLiteral("Search actions or type an Ixos query"));
     layout->addWidget(m_input);
 
     m_list->setObjectName("CommandPaletteList");
@@ -126,11 +126,17 @@ void CommandPalette::rebuildList() {
     QVector<ScoredCommand> scored;
 
     for (const auto &command : m_commands) {
-        int score = 0;
-        if (!query.isEmpty()) {
-            score = FuzzyMatch::score(query, haystackFor(command));
-            if (score < 0) continue;
+        if (!command.available) {
+            continue;
         }
+
+        int fuzzyScore = 0;
+        if (!query.isEmpty()) {
+            fuzzyScore = FuzzyMatch::score(query, haystackFor(command));
+            if (fuzzyScore < 0) continue;
+        }
+        const int contextScore = qRound(command.contextScore * 100.0f);
+        const int score = qRound(static_cast<float>(fuzzyScore) * 0.6f + static_cast<float>(contextScore) * 0.4f);
         scored.append({command, score});
     }
 

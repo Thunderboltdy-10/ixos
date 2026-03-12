@@ -25,6 +25,7 @@ mod storage;
 pub use co_occurrence::{CoOccurrence, CoOccurrenceAnalyzer};
 pub use storage::{ActivityStorage, StorageConfig};
 
+use co_occurrence::CoOccurrenceReason;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::Path;
@@ -417,6 +418,171 @@ impl ActivityLedger {
         files
     }
 
+    /// Build a pragmatic resumption snapshot for the Today tab.
+    pub fn get_resumption_snapshot(
+        &self,
+        limit: usize,
+        suggestion_limit: usize,
+    ) -> ResumptionSnapshot {
+        let recently_touched = self.get_recently_touched(limit.max(5));
+        let resume_candidates = self.rank_resumption_candidates(limit.max(1));
+
+        let anchor_path = resume_candidates
+            .first()
+            .map(|candidate| candidate.path.as_str())
+            .or_else(|| recently_touched.first().map(|file| file.path.as_str()));
+
+        let suggested_next = anchor_path
+            .map(|path| {
+                self.get_co_occurrence(path, 45)
+                    .into_iter()
+                    .filter_map(|co| {
+                        co.file_path.map(|file_path| SuggestedNextFile {
+                            path: file_path,
+                            file_id: co.file_id,
+                            score: ((co.count as f32 / 8.0)
+                                + if co.avg_gap_ms < 5 * 60 * 1000 {
+                                    0.25
+                                } else {
+                                    0.0
+                                })
+                            .clamp(0.0, 1.0),
+                            reason: match co.reason {
+                                CoOccurrenceReason::CoEdit => "co-edit".to_string(),
+                                CoOccurrenceReason::CoOpen => "co-open".to_string(),
+                                CoOccurrenceReason::Frequent => "frequent".to_string(),
+                            },
+                            co_occurred_with: path.to_string(),
+                        })
+                    })
+                    .take(suggestion_limit.max(1))
+                    .collect()
+            })
+            .unwrap_or_default();
+
+        ResumptionSnapshot {
+            recently_touched,
+            resume_candidates,
+            suggested_next,
+        }
+    }
+
+    fn rank_resumption_candidates(&self, limit: usize) -> Vec<ResumeCandidate> {
+        #[derive(Default)]
+        struct ResumeSignals {
+            file_id: String,
+            last_touched: u64,
+            touch_count: u32,
+            weighted_actions: f32,
+            session_hits: u32,
+            query_hits: u32,
+            actions: Vec<ActivityAction>,
+        }
+
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as u64;
+        let lookback_ms = 7 * 24 * 60 * 60 * 1000;
+        let session_window_ms = 2 * 60 * 60 * 1000;
+        let cutoff = now.saturating_sub(lookback_ms);
+        let mut file_signals: HashMap<String, ResumeSignals> = HashMap::new();
+
+        for event in &self.events {
+            if event.file_path.is_empty() || event.timestamp < cutoff {
+                continue;
+            }
+
+            let action_weight = match event.action_type {
+                ActivityAction::FileOpened => 1.0,
+                ActivityAction::FileModified => 1.15,
+                ActivityAction::ResultClicked => 1.1,
+                ActivityAction::FileRevealed => 0.35,
+                ActivityAction::FilePinned => 0.9,
+                _ => continue,
+            };
+
+            let entry = file_signals.entry(event.file_path.clone()).or_default();
+            entry.file_id = event.file_id.clone();
+            entry.last_touched = entry.last_touched.max(event.timestamp);
+            entry.touch_count = entry.touch_count.saturating_add(1);
+            entry.weighted_actions += action_weight;
+            entry.query_hits = entry
+                .query_hits
+                .saturating_add(u32::from(event.query_hash.is_some()));
+
+            if now.saturating_sub(event.timestamp) <= session_window_ms {
+                entry.session_hits = entry.session_hits.saturating_add(1);
+            }
+
+            if !entry.actions.contains(&event.action_type) {
+                entry.actions.push(event.action_type);
+            }
+        }
+
+        let mut candidates: Vec<ResumeCandidate> = file_signals
+            .into_iter()
+            .map(|(path, signals)| {
+                let age_ms = now.saturating_sub(signals.last_touched);
+                let recency = if age_ms <= 3_600_000 {
+                    1.0
+                } else if age_ms <= 6 * 3_600_000 {
+                    0.9
+                } else if age_ms <= 24 * 3_600_000 {
+                    0.72
+                } else if age_ms <= 72 * 3_600_000 {
+                    0.45
+                } else {
+                    0.2
+                };
+                let frequency =
+                    ((signals.touch_count as f32 + 1.0).ln() / (8.0_f32).ln()).clamp(0.0, 1.0);
+                let activity = (signals.weighted_actions / 6.0).clamp(0.0, 1.0);
+                let continuity = (signals.session_hits as f32 / 3.0).clamp(0.0, 1.0);
+                let query_affinity = (signals.query_hits as f32 / 3.0).clamp(0.0, 1.0);
+                let score = (recency * 0.45
+                    + frequency * 0.2
+                    + activity * 0.15
+                    + continuity * 0.15
+                    + query_affinity * 0.05)
+                    .clamp(0.0, 1.0);
+
+                let mut reasons = Vec::new();
+                if continuity > 0.0 {
+                    reasons.push("active in the last 2h".to_string());
+                }
+                if signals.touch_count >= 3 {
+                    reasons.push(format!("touched {} times this week", signals.touch_count));
+                }
+                if signals.query_hits > 0 {
+                    reasons.push("revisited through search results".to_string());
+                }
+                if reasons.is_empty() {
+                    reasons.push("recently opened".to_string());
+                }
+
+                ResumeCandidate {
+                    path,
+                    file_id: signals.file_id,
+                    last_touched: signals.last_touched,
+                    touch_count: signals.touch_count,
+                    actions: signals.actions,
+                    score,
+                    reasons,
+                }
+            })
+            .collect();
+
+        candidates.sort_by(|a, b| {
+            b.score
+                .total_cmp(&a.score)
+                .then(b.last_touched.cmp(&a.last_touched))
+                .then(b.touch_count.cmp(&a.touch_count))
+        });
+        candidates.truncate(limit);
+        candidates
+    }
+
     /// Suggest file/folder reorganization opportunities from repeated behavior.
     ///
     /// One-off interactions have very low influence. Recommendations require repeated
@@ -583,6 +749,36 @@ pub struct RecentFile {
     pub last_touched: u64,
     pub touch_count: u32,
     pub actions: Vec<ActivityAction>,
+}
+
+/// Ranked file candidate for resuming work.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResumeCandidate {
+    pub path: String,
+    pub file_id: String,
+    pub last_touched: u64,
+    pub touch_count: u32,
+    pub actions: Vec<ActivityAction>,
+    pub score: f32,
+    pub reasons: Vec<String>,
+}
+
+/// Suggested next file inferred from co-occurrence around the resume anchor.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SuggestedNextFile {
+    pub path: String,
+    pub file_id: String,
+    pub score: f32,
+    pub reason: String,
+    pub co_occurred_with: String,
+}
+
+/// Combined Today/resumption snapshot built from recent activity.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResumptionSnapshot {
+    pub recently_touched: Vec<RecentFile>,
+    pub resume_candidates: Vec<ResumeCandidate>,
+    pub suggested_next: Vec<SuggestedNextFile>,
 }
 
 /// Generate SHA256 hash of a file path for privacy-preserving correlation
@@ -788,5 +984,38 @@ mod tests {
         assert_eq!(target.suggested_folder, "/project/finance");
         assert!(target.confidence > 0.0);
         assert!(target.evidence_count >= 3);
+    }
+
+    #[test]
+    fn resumption_snapshot_ranks_recent_repeat_work() {
+        let mut ledger = ActivityLedger::new();
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as u64;
+
+        let mut primary = create_event("/project/src/main.rs", ActivityAction::FileOpened, None);
+        primary.timestamp = now.saturating_sub(30 * 60 * 1000);
+        ledger.log_activity(primary);
+
+        let mut secondary = create_event(
+            "/project/src/main.rs",
+            ActivityAction::FileModified,
+            Some("resume"),
+        );
+        secondary.timestamp = now.saturating_sub(10 * 60 * 1000);
+        ledger.log_activity(secondary);
+
+        let mut other = create_event("/docs/notes.md", ActivityAction::FileOpened, None);
+        other.timestamp = now.saturating_sub(2 * 24 * 60 * 60 * 1000);
+        ledger.log_activity(other);
+
+        let snapshot = ledger.get_resumption_snapshot(5, 5);
+        assert!(!snapshot.resume_candidates.is_empty());
+        assert_eq!(snapshot.resume_candidates[0].path, "/project/src/main.rs");
+        if let Some(second) = snapshot.resume_candidates.get(1) {
+            assert!(snapshot.resume_candidates[0].score >= second.score);
+        }
+        assert!(!snapshot.recently_touched.is_empty());
     }
 }

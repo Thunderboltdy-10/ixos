@@ -74,10 +74,11 @@ protected:
 private:
     void buildUi();
     bool startHosting();
-    void clearHostedSurface();
+    void clearHostedSurface(bool terminateProcess = true);
     void setHostedWindowVisible(bool visible);
     void updateHostedGeometry();
     void handleHostedWindowHeartbeat();
+    bool tryRecoverHostedWindow();
     void refreshHostedBackdrop();
     void applyHostedBackdrop(const QColor &color);
     void showStateMessage(const QString &title, const QString &body);

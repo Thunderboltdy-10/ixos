@@ -22,8 +22,8 @@ use ixos_protocol::cli::{
 use ixos_protocol::compliance::{ComplianceManager, DeletionScope};
 use ixos_protocol::ixos_embed::ModelType;
 use ixos_protocol::ixos_rank::{
-    CandidateLexicalEngine, IntentDetector, ProgressiveSearchConfig, ProgressiveSearchEngine,
-    SearchEvent, StubSemanticEngine,
+    CandidateLexicalEngine, IntentDetector, LexicalEngine, ProgressiveSearchConfig,
+    ProgressiveSearchEngine, SearchEvent, StubSemanticEngine,
 };
 use ixos_protocol::telemetry::{install_crash_handler, TelemetryConfig};
 
@@ -203,6 +203,16 @@ fn parse_runtime_cache_mode(raw: &str) -> anyhow::Result<ixos_protocol::CacheMod
             "Invalid cache mode '{invalid}'. Use local/native-cache or memory/ephemeral."
         )),
     }
+}
+
+fn should_eager_index_semantic(
+    search_mode: ixos_protocol::ixos_rank::progressive::SearchMode,
+    lexical_probe_is_empty: bool,
+) -> bool {
+    matches!(
+        search_mode,
+        ixos_protocol::ixos_rank::progressive::SearchMode::Pro
+    ) || lexical_probe_is_empty
 }
 
 async fn handle_search(
@@ -422,12 +432,36 @@ async fn handle_search(
         };
     }
 
-    if let Err(e) = semantic.index_directory(&search_dir).await {
-        tracing::warn!("Failed to index for semantic search: {}", e);
+    let lexical_probe_is_empty = if matches!(
+        resolved_search_mode,
+        ixos_protocol::ixos_rank::progressive::SearchMode::Pro
+    ) || ask_mode_auto_intent
+    {
+        false
+    } else {
+        match lexical.search(query, 1).await {
+            Ok(results) => results.is_empty(),
+            Err(e) => {
+                tracing::warn!(
+                    "Lexical preflight failed, enabling semantic eager indexing fallback: {}",
+                    e
+                );
+                true
+            }
+        }
+    };
+
+    if should_eager_index_semantic(resolved_search_mode, lexical_probe_is_empty) {
+        if let Err(e) = semantic.index_directory(&search_dir).await {
+            tracing::warn!("Failed to index for semantic search: {}", e);
+        }
+    } else {
+        tracing::debug!(
+            "Skipping eager semantic index for low-latency lexical-first CLI flow (lexical preflight had hits)"
+        );
     }
+
     if let Some(engine) = pro_engine.as_mut() {
-        // Auto mode reranks top-K lexical candidates and does not require a full
-        // pro index upfront. Eager indexing here made Auto pay near-Pro startup cost.
         if matches!(
             resolved_search_mode,
             ixos_protocol::ixos_rank::progressive::SearchMode::Pro

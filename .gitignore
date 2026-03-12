@@ -27,11 +27,11 @@ dataset/
 
 # Local config
 .env
-.env.local
 .env.*.local
 !.env.example
 !.env.production
 !.env.demo
+!.env.local
 
 # Coverage
 /coverage/

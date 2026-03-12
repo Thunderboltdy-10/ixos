@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Desktop release tag (e.g. v0.1.6)'
+        description: 'Desktop release tag (e.g. v0.1.15)'
         required: true
         type: string
       publish_source_release:
@@ -14,7 +14,119 @@ on:
         type: boolean
 
 jobs:
+  copy-to-releases:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifacts from source repo draft release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ inputs.release_tag }}"
+          SOURCE_REPO="${{ github.repository }}"
+
+          if ! gh release view "$TAG" --repo "$SOURCE_REPO" >/dev/null 2>&1; then
+            echo "ERROR: No release/draft found for $TAG in $SOURCE_REPO" >&2
+            echo "The main release workflow must have run and tauri-action must have uploaded at least some assets." >&2
+            exit 1
+          fi
+
+          asset_count="$(gh release view "$TAG" --repo "$SOURCE_REPO" --json assets --jq '.assets | length' 2>/dev/null || echo 0)"
+          if [[ "$asset_count" -eq 0 ]]; then
+            echo "ERROR: Release $TAG exists in $SOURCE_REPO but has no assets." >&2
+            exit 1
+          fi
+          echo "Found $asset_count assets in $SOURCE_REPO $TAG — downloading..."
+
+          gh release download "$TAG" \
+            --repo "$SOURCE_REPO" \
+            --dir artifacts \
+            --clobber
+
+          echo "Downloaded files:"
+          ls -1 artifacts/
+
+      - name: Prepare fixed-name copies (skips any missing platform)
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          cd artifacts
+
+          # Each loop runs only if a matching file exists (nullglob); silently skips otherwise.
+          for f in ./*_x64-setup.exe;   do cp "$f" ixos-setup.exe    && echo "Windows installer -> ixos-setup.exe";    done
+          for f in ./*_aarch64.dmg;     do cp "$f" ixos-aarch64.dmg  && echo "macOS aarch64 DMG -> ixos-aarch64.dmg";  done
+          for f in ./*_x64.dmg;         do cp "$f" ixos-x64.dmg      && echo "macOS x64 DMG    -> ixos-x64.dmg";      done
+          for f in ./*.AppImage;         do cp "$f" ixos.AppImage     && echo "Linux AppImage   -> ixos.AppImage";     done
+
+          echo "Final artifact list:"
+          ls -1
+
+      - name: Upload to ixos-releases (skip already-uploaded files with --clobber)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_PAT }}
+        run: |
+          set -euo pipefail
+          TAG="${{ inputs.release_tag }}"
+          REPO="IxosProtocol/ixos-releases"
+
+          if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --repo "$REPO" \
+              --title "Ixos $TAG" \
+              --notes "Desktop release $TAG"
+            echo "Created release $TAG in $REPO"
+          else
+            echo "Release $TAG already exists in $REPO — uploading/overwriting assets"
+          fi
+
+          # Collect fixed-name installer files that actually exist
+          files=()
+          for candidate in \
+            artifacts/ixos-setup.exe \
+            artifacts/ixos-aarch64.dmg \
+            artifacts/ixos-x64.dmg \
+            artifacts/ixos.AppImage; do
+            [[ -f "$candidate" ]] && files+=("$candidate") && echo "Queued: $candidate"
+          done
+
+          # Collect updater bundles (.tar.gz, .zip) and their .sig files
+          while IFS= read -r -d '' f; do
+            files+=("$f")
+            echo "Queued: $f"
+          done < <(find artifacts -maxdepth 1 -type f \( \
+            -name "*.app.tar.gz"      -o \
+            -name "*.app.tar.gz.sig"  -o \
+            -name "*.AppImage.tar.gz"     -o \
+            -name "*.AppImage.tar.gz.sig" -o \
+            -name "*.nsis.zip"        -o \
+            -name "*.nsis.zip.sig"    -o \
+            -name "*.msi.zip"         -o \
+            -name "*.msi.zip.sig"     \
+          \) -print0)
+
+          if [[ "${#files[@]}" -eq 0 ]]; then
+            echo "ERROR: No uploadable desktop artifacts found." >&2
+            exit 1
+          fi
+
+          gh release upload "$TAG" \
+            --repo "$REPO" \
+            --clobber \
+            "${files[@]}" \
+            scripts/install.sh \
+            scripts/install.ps1
+
+          echo "Upload complete (${#files[@]} artifact(s) + install scripts)"
+
   generate-latest-json:
+    needs: copy-to-releases
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,48 +144,18 @@ jobs:
           TAG="${{ inputs.release_tag }}"
           REPO="IxosProtocol/ixos-releases"
 
-          # Check if release exists at all
           if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
             echo "ERROR: Release $TAG not found in $REPO" >&2
-            echo "Make sure the release workflow has completed successfully first." >&2
-            echo "Available releases:" >&2
-            gh release list --repo "$REPO" --limit 5 || true
             exit 1
           fi
-
-          # Wait for assets with extended timeout
-          for attempt in $(seq 1 18); do
-            asset_count="$(gh release view "$TAG" --repo "$REPO" --json assets --jq '.assets | length' 2>/dev/null || echo 0)"
-            if [[ "$asset_count" -gt 0 ]]; then
-              echo "Found release $TAG in $REPO with $asset_count assets"
-              break
-            fi
-            if [[ "$attempt" -eq 18 ]]; then
-              echo "Release $TAG exists but has no assets in $REPO after waiting." >&2
-              exit 1
-            fi
-            echo "Waiting for $REPO release assets (attempt $attempt/18)..."
-            sleep 10
-          done
 
           gh release download "$TAG" \
             --repo "$REPO" \
             --dir artifacts \
             --clobber
 
-      - name: Upload installer scripts to release tag
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.RELEASES_PAT }}
-        run: |
-          set -euo pipefail
-          TAG="${{ inputs.release_tag }}"
-          REPO="IxosProtocol/ixos-releases"
-          gh release upload "$TAG" \
-            --repo "$REPO" \
-            --clobber \
-            scripts/install.sh \
-            scripts/install.ps1
+          echo "Downloaded artifacts:"
+          ls -1 artifacts/
 
       - name: Generate and upload latest.json
         env:
@@ -84,6 +166,7 @@ jobs:
 
   publish-source-release:
     if: ${{ inputs.publish_source_release }}
+    needs: copy-to-releases
     runs-on: ubuntu-latest
     steps:
       - name: Publish source repo draft if present
@@ -96,6 +179,7 @@ jobs:
 
           if gh release view "$TAG" --repo "$SOURCE_REPO" >/dev/null 2>&1; then
             gh release edit "$TAG" --draft=false --repo "$SOURCE_REPO"
+            echo "Published draft release $TAG in $SOURCE_REPO"
           else
-            echo "No private release $TAG found in $SOURCE_REPO; skipping."
+            echo "No release $TAG found in $SOURCE_REPO; skipping."
           fi

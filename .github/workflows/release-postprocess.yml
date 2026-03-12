@@ -168,6 +168,8 @@ jobs:
     if: ${{ inputs.publish_source_release }}
     needs: copy-to-releases
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Publish source repo draft if present
         env:

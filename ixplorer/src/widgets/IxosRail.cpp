@@ -31,7 +31,7 @@ IxosRail::IxosRail(QWidget *parent)
     headerLayout->setContentsMargins(16, 10, 12, 8);
     headerLayout->setSpacing(8);
 
-    auto *title = new QLabel("IXOS", header);
+    auto *title = new QLabel("", header);
     title->setObjectName("RailHeaderTitle");
     QFont titleFont("Geist Mono");
     titleFont.setPixelSize(11);
@@ -48,23 +48,7 @@ IxosRail::IxosRail(QWidget *parent)
     headerLayout->addWidget(closeButton);
     mainLayout->addWidget(header);
 
-    auto *searchContainer = new QWidget(this);
-    auto *searchLayout = new QVBoxLayout(searchContainer);
-    searchLayout->setContentsMargins(14, 0, 14, 8);
-    searchLayout->setSpacing(4);
-
-    m_searchInput = new QLineEdit(searchContainer);
-    m_searchInput->setObjectName("SearchField");
-    m_searchInput->setPlaceholderText("Search this folder");
-    m_searchInput->setClearButtonEnabled(true);
-    searchLayout->addWidget(m_searchInput);
-
-    m_searchStateLabel = new QLabel(searchContainer);
-    m_searchStateLabel->setObjectName("RailStatus");
-    m_searchStateLabel->setWordWrap(true);
-    searchLayout->addWidget(m_searchStateLabel);
-
-    mainLayout->addWidget(searchContainer);
+    // Removed the inline rail search box and status label
 
     m_contextPane = new QWidget(this);
     m_contextPane->setObjectName("RailContextPane");
@@ -118,10 +102,6 @@ IxosRail::IxosRail(QWidget *parent)
     mainLayout->addWidget(m_detailPane, 0);
 
     connect(closeButton, &QPushButton::clicked, this, &IxosRail::requestClose);
-    connect(m_searchInput, &QLineEdit::returnPressed, this, &IxosRail::triggerSearch);
-    connect(m_searchInput, &QLineEdit::textChanged, this, [this]() {
-        scheduleLiveSearch();
-    });
     connect(m_resultList, &QListWidget::currentRowChanged, this, &IxosRail::handleResultSelection);
     connect(m_resultList, &QListWidget::itemDoubleClicked, this, &IxosRail::handleResultDoubleClicked);
     connect(m_resultList, &QListWidget::itemActivated, this, [this]() {
@@ -187,9 +167,8 @@ IxosRail::IxosRail(QWidget *parent)
     setSearchRoot(QDir::homePath());
 
     connect(m_liveSearchTimer, &QTimer::timeout, this, [this]() {
-        const QString query = m_searchInput->text().trimmed();
-        if (query.size() < 2) {
-            if (query.isEmpty()) {
+        if (m_currentQuery.size() < 2) {
+            if (m_currentQuery.isEmpty()) {
                 clearSearchSession("Ready to search.");
             }
             return;
@@ -200,16 +179,11 @@ IxosRail::IxosRail(QWidget *parent)
 
 void IxosRail::setSearchRoot(const QString &path) {
     m_searchRoot = path;
-    const QString folderName = QFileInfo(path).fileName();
-    const QString readableFolder = folderName.isEmpty() ? QDir::toNativeSeparators(path) : folderName;
-    m_searchInput->setPlaceholderText(QStringLiteral("Search %1").arg(readableFolder));
 }
 
 void IxosRail::submitToolbarSearch(const QString &query, int) {
     const QString trimmed = query.trimmed();
-    const bool blocked = m_searchInput->blockSignals(true);
-    m_searchInput->setText(trimmed);
-    m_searchInput->blockSignals(blocked);
+    m_currentQuery = trimmed;
     if (trimmed.isEmpty()) {
         clearSearchSession("Ready to search.");
         return;
@@ -219,9 +193,7 @@ void IxosRail::submitToolbarSearch(const QString &query, int) {
 
 void IxosRail::submitToolbarDraft(const QString &query, int) {
     const QString trimmed = query.trimmed();
-    const bool blocked = m_searchInput->blockSignals(true);
-    m_searchInput->setText(trimmed);
-    m_searchInput->blockSignals(blocked);
+    m_currentQuery = trimmed;
     if (trimmed.isEmpty()) {
         clearSearchSession("Ready to search.");
         return;
@@ -268,7 +240,6 @@ void IxosRail::clearDetails() {
 
 void IxosRail::setStatusMessage(const QString &message) {
     m_statusMessage = message;
-    m_searchStateLabel->setText(message);
 }
 
 void IxosRail::setSearchMode(int mode) {
@@ -294,36 +265,33 @@ IxosRail::SearchAction IxosRail::classifyTopResultAction() const {
 }
 
 void IxosRail::focusSearch() {
-    m_searchInput->setFocus();
-    m_searchInput->selectAll();
+    // Search is now purely driven by the toolbar
 }
 
 bool IxosRail::hasActiveQuery() const {
-    return !m_searchInput->text().trimmed().isEmpty();
+    return !m_currentQuery.isEmpty();
 }
 
 void IxosRail::triggerSearch() {
-    const QString query = m_searchInput->text().trimmed();
-    if (query.isEmpty()) {
+    if (m_currentQuery.isEmpty()) {
         clearSearchSession("Ready to search.");
         return;
     }
 
     const QString root = m_searchRoot.isEmpty() ? QDir::homePath() : m_searchRoot;
     SearchRequest request;
-    request.query = query;
+    request.query = m_currentQuery;
     request.directory = QDir::fromNativeSeparators(root);
     request.mode = static_cast<SearchMode>(m_searchMode);
     request.limit = 24;
     request.contextLines = 3;
 
-    emit searchSubmitted(query, static_cast<int>(request.mode));
+    emit searchSubmitted(m_currentQuery, static_cast<int>(request.mode));
     m_provider->startSearch(request);
 }
 
 void IxosRail::scheduleLiveSearch() {
-    const QString query = m_searchInput->text().trimmed();
-    if (query.isEmpty()) {
+    if (m_currentQuery.isEmpty()) {
         clearSearchSession("Ready to search.");
         return;
     }
@@ -363,7 +331,7 @@ void IxosRail::renderResults(const QList<SearchHit> &results, bool semanticResul
         if (m_resultList->currentRow() < 0 && m_resultList->count() > 0) {
             m_resultList->setCurrentRow(0);
         }
-    } else if (!m_searchInput->text().trimmed().isEmpty()) {
+    } else if (!m_currentQuery.isEmpty()) {
         setStatusMessage("No matches in this folder.");
     }
     rebuildContextPane();
@@ -463,18 +431,21 @@ void IxosRail::rebuildContextPane() {
     QString eyebrow;
     QString title;
     QString subtitle;
+    bool hasAction = false;
 
     if (m_recoveryPacket.wasInterrupted && !m_recoveryPacket.items.isEmpty()) {
-        eyebrow = QStringLiteral("RECOVERY");
-        title = QStringLiteral("Resume interrupted session");
-        subtitle = m_recoveryPacket.reason;
+        eyebrow = QStringLiteral("SESSION");
+        title = QStringLiteral("Restore previous session");
+        subtitle = m_recoveryPacket.reason.isEmpty()
+            ? QStringLiteral("%1 items are ready to reopen.").arg(m_recoveryPacket.items.size())
+            : m_recoveryPacket.reason;
 
         QStringList bundlePaths;
         for (const RecoveryItem &item : std::as_const(m_recoveryPacket.items)) {
             bundlePaths.append(item.path);
         }
 
-        auto *resumeButton = new QPushButton(QStringLiteral("Resume (%1)").arg(bundlePaths.size()), m_contextActions);
+        auto *resumeButton = new QPushButton(QStringLiteral("Restore set (%1)").arg(bundlePaths.size()), m_contextActions);
         resumeButton->setProperty("railPrimaryAction", true);
         resumeButton->setCursor(Qt::PointingHandCursor);
         resumeButton->setMaximumHeight(26);
@@ -482,13 +453,14 @@ void IxosRail::rebuildContextPane() {
             emit openBundleRequested(bundlePaths, m_recoveryPacket.workstreamId);
         });
         m_contextActionsLayout->addWidget(resumeButton);
+        hasAction = true;
     } else if (!m_bundlePrediction.primaryPath.isEmpty()) {
-        eyebrow = QStringLiteral("PREDICTED");
+        eyebrow = QStringLiteral("SUGGESTED");
         title = displayNameForPath(m_bundlePrediction.primaryPath);
         subtitle = m_bundlePrediction.reason;
 
         QStringList bundlePaths{m_bundlePrediction.primaryPath};
-        auto *openBundle = new QPushButton(QStringLiteral("Open"), m_contextActions);
+        auto *openBundle = new QPushButton(QStringLiteral("Open suggested set"), m_contextActions);
         openBundle->setProperty("railPrimaryAction", true);
         openBundle->setCursor(Qt::PointingHandCursor);
         openBundle->setMaximumHeight(26);
@@ -499,15 +471,14 @@ void IxosRail::rebuildContextPane() {
             emit openBundleRequested(bundlePaths, m_bundlePrediction.workstreamId);
         });
         m_contextActionsLayout->addWidget(openBundle);
+        hasAction = true;
     } else if (!m_resumePacket.primaryPath.isEmpty()) {
-        eyebrow = QStringLiteral("CONTINUE");
+        eyebrow = QStringLiteral("READY");
         title = displayNameForPath(m_resumePacket.primaryPath);
-        subtitle = m_resumePacket.lastQuery.isEmpty()
-            ? m_resumePacket.reason
-            : QStringLiteral("Last: \"%1\"").arg(m_resumePacket.lastQuery);
+        subtitle = m_resumePacket.reason;
 
         QStringList bundlePaths{m_resumePacket.primaryPath};
-        auto *openBundle = new QPushButton(QStringLiteral("Open"), m_contextActions);
+        auto *openBundle = new QPushButton(QStringLiteral("Open resume set"), m_contextActions);
         openBundle->setProperty("railPrimaryAction", true);
         openBundle->setCursor(Qt::PointingHandCursor);
         openBundle->setMaximumHeight(26);
@@ -518,12 +489,31 @@ void IxosRail::rebuildContextPane() {
             emit openBundleRequested(bundlePaths, m_resumePacket.workstreamId);
         });
         m_contextActionsLayout->addWidget(openBundle);
+        hasAction = true;
     } else {
-        m_contextPane->hide();
-        return;
+        eyebrow = QStringLiteral("INTELLIGENCE");
+        title = QStringLiteral("Active Workstreams & Context");
+        subtitle = QStringLiteral("Ixos automatically clusters your recent activity into workstreams and learns your personal file rankings. Use search to find files, or explore your graph.");
+
+        auto *workstreamsBtn = new QPushButton(QStringLiteral("View Workstreams"), m_contextActions);
+        workstreamsBtn->setProperty("railPrimaryAction", true);
+        workstreamsBtn->setCursor(Qt::PointingHandCursor);
+        workstreamsBtn->setMaximumHeight(26);
+        m_contextActionsLayout->addWidget(workstreamsBtn);
+
+        auto *focusButton = new QPushButton(QStringLiteral("Focus Search"), m_contextActions);
+        focusButton->setCursor(Qt::PointingHandCursor);
+        focusButton->setMaximumHeight(26);
+        connect(focusButton, &QPushButton::clicked, this, [this]() {
+            focusSearch();
+        });
+        m_contextActionsLayout->addWidget(focusButton);
+        hasAction = true;
     }
 
-    m_contextActionsLayout->addStretch(1);
+    if (hasAction) {
+        m_contextActionsLayout->addStretch(1);
+    }
     m_contextEyebrow->setText(eyebrow);
     m_contextTitle->setText(title);
     m_contextSubtitle->setText(subtitle);

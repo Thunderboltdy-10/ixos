@@ -1969,3 +1969,119 @@ eports/settings_matrix_2026-02-14.md).
     - Output summary: process stayed alive for 4 seconds (`RUNNING PID=60344`) before intentional stop.
 - Artifacts:
   - `reports/ixplorer_intelligence_integration_2026-03-11.md`
+
+## 2026-03-12 Ixplorer embedded-pane stability + file-open policy correction
+- Scope:
+  - Fixed pane-level embedded window stability regressions (window stealing/ghost outlines/reopen instability), restored a sane file-open classifier, and enabled draggable top-tab pane ordering.
+- Code changes:
+  - Updated `ixplorer/src/widgets/DocumentPane.*`:
+    - Added pane-owned hosted-window claim tracking to prevent one HWND being reused across multiple panes.
+    - Required fresh top-level capture for hosted apps and added VS Code-family `--new-window` launch path.
+    - Hardened heartbeat parent/style enforcement to keep hosted windows pinned as child windows.
+    - Restored/detached hosted window state before teardown and closed process handles safely.
+    - Added host-failure fallback for text-like files to in-app code viewer.
+    - Added `HostedWindowFrame` wrapper for rounded border + blended gradient/fade edge treatment.
+  - Updated `ixplorer/src/utils/FileOpenPolicy.cpp`:
+    - Removed forced “embed everything” behavior.
+    - Reintroduced reliability-first classification: external-only unsafe formats, stable in-app image/media/web, embedded associated app for code/text and remaining embeddable types.
+  - Updated `ixplorer/src/widgets/TabWorkspace.*`:
+    - Enabled top-tab drag (`QTabBar::setMovable(true)`) and implemented stack reordering via `onTabMoved`.
+  - Updated `ixplorer/src/app/MainWindow.cpp`:
+    - Explicit opens now create/open full panes (`addTab`) instead of preview-replacement behavior.
+- Command evidence:
+  - `cmake --build build --config Release` (in `ixplorer/`)
+    - Output summary: failed in this environment because `cmake` is not installed/available on PATH.
+- Artifacts:
+  - Code-level patch set only in this pass; no new report artifact generated yet.
+
+## 2026-03-12 Ixplorer fallback-first pane behavior + visibility wiring fix
+- Scope:
+  - Addressed persistent “Associated app not embedded” dead state by pivoting to a fallback-first pane strategy and fixed missing feature visibility wiring (Today/Home).
+- Code changes:
+  - `ixplorer/src/utils/FileOpenPolicy.cpp`:
+    - Code/text now default to in-app code viewer panes for deterministic behavior.
+    - Image/media/web remain in stable in-app paths; unknowns still attempt associated app embedding.
+  - `ixplorer/src/widgets/DocumentPane.*`:
+    - Added hard fallback rendering for host failures (no dead state card loop).
+    - Added optional PDF viewer path (`QPdfDocument` + `QPdfView`) behind `QT_PDF_LIB` compile guard.
+    - Kept associated-window hosting as best-effort for unsupported formats.
+  - `ixplorer/CMakeLists.txt`:
+    - Added optional Qt PDF components (`Pdf`, `PdfWidgets`) with compile guard define.
+  - `ixplorer/src/widgets/AppSidebar.cpp`:
+    - Fixed Today section being hidden immediately after packet update.
+  - `ixplorer/src/app/MainWindow.cpp` + `ixplorer/src/widgets/TabWorkspace.*`:
+    - Ensure a Home pane is opened on restore when active tab is not Home.
+    - Wired Home dashboard workstream/search signals into main shell routing.
+  - `ixplorer/src/widgets/SidebarSection.cpp` + `ixplorer/resources/styles/ixplorer_dark.qss`:
+    - Sidebar section body transparency/parenting cleanup to reduce odd background blocks in Home/Favorites groups.
+- Research evidence:
+  - Qt docs: `QWidget::createWindowContainer()` known limitations (stacking/focus/perf) and native-child behavior.
+  - Win32 docs: `SetParent` remarks on style handling and DPI-awareness cross-process pitfalls.
+- Command evidence:
+  - No successful local compile in this shell due missing `cmake` binary.
+- Artifacts:
+  - `reports/ixplorer_embedded_window_stabilization_2026-03-12.md` (updated behavior scope applies).
+
+## 2026-03-12 Ixplorer hosted-app-first embedding correction + rail/sidebar cleanup
+- Scope:
+  - Corrected the previous fallback-heavy direction and restored true associated-app embedding as the default pane behavior for normal files.
+  - Hardened launch/capture logic for Office/VSCode/browser classes and reduced recovery/resume UI noise in rail/sidebar.
+- Code changes:
+  - `ixplorer/src/utils/FileOpenPolicy.cpp`:
+    - Default now routes normal file types to `HostAssociatedApp` (associated-window embedding).
+    - Kept external-only safety denylist for binaries/archives/system-hostile app associations.
+  - `ixplorer/src/widgets/DocumentPane.*`:
+    - Added explicit hosted-process ownership (`m_ownsHostedProcess`) to avoid closing user-owned windows.
+    - Reworked launch path to prefer direct associated executable + app-specific args:
+      - VS Code family: `--new-window --wait`
+      - Word: `/n`
+      - Excel: `/x`
+      - PowerPoint: `/n`
+      - Browsers: `--new-window`
+    - Reduced launch flash by minimizing/hiding capture candidates before reparent.
+    - Tightened window candidate selection and ownership claim checks.
+    - Removed code-view fallback conversion on host failure; now shows embed-state guidance instead.
+  - `ixplorer/src/widgets/AppSidebar.cpp`:
+    - Removed Favorites highlight syncing from current path.
+  - `ixplorer/src/data/TodaySection.cpp`:
+    - Renamed Continue copy to Resume-oriented phrasing.
+  - `ixplorer/src/widgets/IxosRail.cpp`:
+    - Reframed context panel copy/actions (`RECOVERY/CONTINUE` -> calmer `SESSION/SUGGESTED/READY`).
+    - Added idle non-search context state with simple `Focus search` action.
+  - `ixplorer/src/app/MainWindow.cpp`:
+    - Rail status text now updates from workspace status only while search is active (prevents noisy “file closed” rail messages).
+  - `ixplorer/resources/styles/ixplorer_dark.qss`:
+    - Neutralized amber-heavy context/button/sidebar-active styling while keeping existing theme feel.
+- Command evidence:
+  - `cmake --version`
+    - Output: command not found in this environment (`cmake` unavailable), so no local build verification possible in this shell.
+  - CODEX parity audit was run via explorer subagent; findings captured for graph/CLI/runtime gaps.
+
+## 2026-03-12 Ixplorer host-loop correction from user runtime feedback (flash + resize + extension failures)
+- Trigger:
+  - User reported visible plain-sight external window before embed, poor fit-to-pane sizing, and broad host failures for non-docx extensions.
+- Corrections:
+  - Reduced invasive style mutation during hosting/recovery (kept app window style mostly intact, rely on parent/geometry control).
+  - Added aggressive pre-hide loop (`hideVisibleCandidateWindows`) during launch/capture to suppress visible pop-in.
+  - Relaxed staged capture thresholds over time while keeping a minimum confidence floor.
+  - Increased host geometry heartbeat frequency and switched to `MoveWindow + RedrawWindow` for stronger fit-to-pane updates.
+  - Allowed UWP-host path attempts by removing `applicationframehost.exe` from hard external denylist.
+- Files:
+  - `ixplorer/src/widgets/DocumentPane.cpp`
+  - `ixplorer/src/utils/FileOpenPolicy.cpp`
+- Verification:
+  - No local compile possible here (`cmake` missing in shell), so runtime behavior must be validated on user machine.
+
+## 2026-03-13 Ixplorer host capture retune (user QA follow-up)
+- Trigger:
+  - User reported: VSCode files not embedding, image host closing instantly, docx/pdf opening externally in background, and visible wrong-size pre-embed flash.
+- Changes:
+  - Relaxed candidate matching to allow PID-first capture when title is not ready yet.
+  - Lowered acceptance thresholds and staged score requirements to reduce false negatives across app types.
+  - Kept initial hosted window hidden until geometry pass completes (removed immediate show flag in first host placement).
+  - Added UWP-aware style handling (`ApplicationFrameWindow`) to avoid style mutations that can kill hosted frames.
+  - Added process-alive guard in heartbeat: if window is temporarily missing but process is alive, wait/retry instead of immediate "Hosted app closed".
+- Files:
+  - `ixplorer/src/widgets/DocumentPane.cpp`
+- Verification:
+  - No local compile/test in this shell (`cmake` unavailable); requires runtime validation on user machine.

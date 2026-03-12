@@ -72,6 +72,7 @@ private:
     IxosCliSearchProvider *m_provider;
     QString m_searchRoot;
     QString m_statusMessage;
+    QString m_currentQuery;
     QString m_lastAutoOpenedPath;
     QList<SearchHit> m_results;
     bool m_showingSemanticResults = false;
@@ -84,8 +85,7 @@ private:
     BundlePrediction m_bundlePrediction;
     RecoveryPacket m_recoveryPacket;
 
-    QLineEdit *m_searchInput;
-    QLabel *m_searchStateLabel;
+    // Removed m_searchInput and m_searchStateLabel
     QWidget *m_contextPane = nullptr;
     QLabel *m_contextEyebrow = nullptr;
     QLabel *m_contextTitle = nullptr;

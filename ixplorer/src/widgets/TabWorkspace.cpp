@@ -54,7 +54,6 @@ QToolButton *makeTabCloseButton(QTabBar *tabBar, TabWorkspace *workspace) {
     button->setIcon(Icons::makeIconFromFont(Icons::Close, 12, iconColor));
     button->setAutoRaise(true);
     button->setCursor(Qt::PointingHandCursor);
-    button->hide();
     QObject::connect(button, &QToolButton::clicked, workspace, [tabBar, workspace, button]() {
         for (int index = 0; index < tabBar->count(); ++index) {
             if (tabBar->tabButton(index, QTabBar::RightSide) == button) {
@@ -83,7 +82,7 @@ TabWorkspace::TabWorkspace(QWidget *parent)
     tabRow->setSpacing(4);
 
     m_tabBar->setTabsClosable(true);
-    m_tabBar->setMovable(false);
+    m_tabBar->setMovable(true);
     m_tabBar->setExpanding(false);
     m_tabBar->setDrawBase(false);
     m_tabBar->setUsesScrollButtons(true);
@@ -92,6 +91,28 @@ TabWorkspace::TabWorkspace(QWidget *parent)
     m_tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
     m_tabBar->setAttribute(Qt::WA_Hover, true);
     m_tabBar->installEventFilter(this);
+
+    m_tabBar->setStyleSheet(
+        "QTabBar::tab {"
+        "  background: transparent;"
+        "  color: #A0A0A5;"
+        "  padding: 6px 12px;"
+        "  margin-top: 4px;"
+        "  border: 1px solid transparent;"
+        "  border-bottom: none;"
+        "  border-top-left-radius: 6px;"
+        "  border-top-right-radius: 6px;"
+        "}"
+        "QTabBar::tab:selected {"
+        "  background: #1C1E23;"
+        "  color: #F0F0F5;"
+        "  border: 1px solid #333640;"
+        "  border-bottom: none;"
+        "}"
+        "QTabBar::tab:hover:!selected {"
+        "  background: #1E2026;"
+        "}"
+    );
 
     m_addTabButton->setObjectName("TabAddButton");
     m_addTabButton->setText("+");
@@ -106,6 +127,7 @@ TabWorkspace::TabWorkspace(QWidget *parent)
     layout->addWidget(m_stack, 1);
 
     connect(m_tabBar, &QTabBar::currentChanged, this, &TabWorkspace::onTabChanged);
+    connect(m_tabBar, &QTabBar::tabMoved, this, &TabWorkspace::onTabMoved);
     connect(m_tabBar, &QTabBar::tabCloseRequested, this, &TabWorkspace::onTabCloseRequested);
     connect(m_tabBar, &QWidget::customContextMenuRequested, this, &TabWorkspace::showContextMenu);
     connect(m_addTabButton, &QToolButton::clicked, this, &TabWorkspace::onNewTabClicked);
@@ -482,27 +504,6 @@ int TabWorkspace::findDocumentTab(const QString &path) const {
 }
 
 bool TabWorkspace::eventFilter(QObject *watched, QEvent *event) {
-    if (watched == m_tabBar) {
-        if (event->type() == QEvent::HoverMove || event->type() == QEvent::HoverEnter) {
-            auto *he = static_cast<QHoverEvent*>(event);
-            int hoverIndex = m_tabBar->tabAt(he->position().toPoint());
-            for (int i = 0; i < m_tabBar->count(); ++i) {
-                if (auto *btn = m_tabBar->tabButton(i, QTabBar::RightSide)) {
-                    btn->setVisible(i == hoverIndex);
-                } else if (auto *lbtn = m_tabBar->tabButton(i, QTabBar::LeftSide)) {
-                    lbtn->setVisible(i == hoverIndex);
-                }
-            }
-        } else if (event->type() == QEvent::HoverLeave) {
-            for (int i = 0; i < m_tabBar->count(); ++i) {
-                if (auto *btn = m_tabBar->tabButton(i, QTabBar::RightSide)) {
-                    btn->setVisible(false);
-                } else if (auto *lbtn = m_tabBar->tabButton(i, QTabBar::LeftSide)) {
-                    lbtn->setVisible(false);
-                }
-            }
-        }
-    }
     return QWidget::eventFilter(watched, event);
 }
 
@@ -637,6 +638,12 @@ void TabWorkspace::connectDashboardTab(HomeDashboardPane *pane) {
     connect(pane, &HomeDashboardPane::pathActivated, this, [this](const QString &path) {
         addTab(path);
     });
+    connect(pane, &HomeDashboardPane::workstreamActivated, this, [this](const QString &id) {
+        emit workstreamActivated(id);
+    });
+    connect(pane, &HomeDashboardPane::searchRequested, this, [this](const QString &query) {
+        emit searchRequested(query);
+    });
     connect(pane, &HomeDashboardPane::statusMessage, this, &TabWorkspace::statusMessage);
 }
 
@@ -687,6 +694,34 @@ void TabWorkspace::onTabChanged(int index) {
             document->focusPrimaryControl();
         }
     }
+}
+
+void TabWorkspace::onTabMoved(int from, int to) {
+    if (from == to || from < 0 || to < 0 || from >= m_stack->count() || to >= m_stack->count()) {
+        return;
+    }
+
+    QWidget *widget = m_stack->widget(from);
+    if (!widget) {
+        return;
+    }
+
+    const int currentIndex = m_tabBar->currentIndex();
+    m_stack->removeWidget(widget);
+    m_stack->insertWidget(to, widget);
+    if (currentIndex >= 0 && currentIndex < m_stack->count()) {
+        m_stack->setCurrentIndex(currentIndex);
+    }
+
+    if (m_previewTabIndex == from) {
+        m_previewTabIndex = to;
+    } else if (m_previewTabIndex > from && m_previewTabIndex <= to) {
+        --m_previewTabIndex;
+    } else if (m_previewTabIndex < from && m_previewTabIndex >= to) {
+        ++m_previewTabIndex;
+    }
+
+    updateSignalsForCurrentWidget();
 }
 
 void TabWorkspace::onTabCloseRequested(int index) {

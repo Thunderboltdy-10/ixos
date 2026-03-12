@@ -916,3 +916,88 @@
   1. Manually QA the updated Ixplorer shell on real folders: toolbar search, rail toggle, open/reveal/new-tab, new file/folder, paste, duplicate, and delete flows.
   2. Package or explicitly ship the `ixos` binary with Ixplorer so search works outside repo/dev layouts.
   3. Replace the remaining standard rail/result widgets with a more purpose-built desktop result surface if polish still feels insufficient after manual QA.
+
+## STATE SNAPSHOT (Ixplorer embedded-pane stabilization, 2026-03-12)
+- Date: 2026-03-12
+- Current baseline numbers:
+  - Model benchmark baseline unchanged in this pass.
+- Current best v2 numbers:
+  - Unchanged in this pass.
+- Current bottleneck ranking:
+  1. Embedded foreign-window capture can still fail for certain associated apps that do not expose a fresh top-level window.
+  2. Full local verification is blocked in this shell because `cmake` is not available on PATH.
+  3. UX overload concerns remain in sidebar/rail density and need a dedicated cleanup pass after host stability is validated.
+- Current pass focus/result:
+  - Stabilized Ixplorer pane hosting lifecycle and pane/tab behavior with minimal theme changes.
+- What is next (top 3 tasks):
+  1. Run Windows manual QA against VS Code reopen/reparent ghost scenarios using this build.
+  2. Validate extension matrix (code/image/media/pdf/office/binary) and record pass/fail in reports.
+  3. Do a targeted navigation-density cleanup pass once host reliability is confirmed.
+
+## STATE SNAPSHOT (Ixplorer fallback-first pane reliability pass, 2026-03-12T2)
+- Date: 2026-03-12
+- Current baseline numbers:
+  - Model benchmark baseline unchanged in this pass.
+- Current best v2 numbers:
+  - Unchanged in this pass.
+- Current bottleneck ranking:
+  1. Cross-process native window embedding remains platform-fragile (Qt/Win32 limitations).
+  2. Local build/runtime validation in this shell remains blocked by missing `cmake`.
+  3. Remaining CODEX.md visibility gap depends on broader UX surfacing beyond workstreams.
+- Current pass focus/result:
+  - Shifted to fallback-first file panes (avoid dead embed state), fixed hidden Today section wiring, added startup Home-pane guarantee, and improved sidebar section rendering.
+- What is next (top 3 tasks):
+  1. Validate runtime on user machine for txt/pdf/media/open-reopen flows.
+  2. Capture a visibility checklist for CODEX.md features in Home/Today/Rail/Palette.
+  3. Decide whether to keep experimental associated-app hosting behind a toggle.
+
+## STATE SNAPSHOT (Ixplorer hosted-app first reliability pass, 2026-03-12T3)
+- Date: 2026-03-12
+- Current baseline numbers:
+  - Model benchmark baseline unchanged in this pass.
+- Current best v2 numbers:
+  - Unchanged in this pass.
+- Current bottleneck ranking:
+  1. Windows foreign-window capture still depends on associated app behavior and title matching.
+  2. Local compile/runtime verification remains blocked in this shell because `cmake` is unavailable.
+  3. CODEX.md feature parity still has structural gaps (graph workstreams/CLI bridge/runtime wiring) beyond UI polish.
+- Current pass focus/result:
+  - Re-centered Ixplorer on true associated-app embedding for supported files, with safer launch/capture ownership and reduced UI clutter in sidebar/rail.
+- What is next (top 3 tasks):
+  1. Run manual matrix QA on Office/PDF/VSCode/browser embedding with reopen + multi-pane scenarios.
+  2. Tune app-specific launch switches if any extension still opens externally or fails capture.
+  3. Execute a dedicated CODEX.md parity sprint for graph workstreams + CLI bridge wiring.
+
+## STATE SNAPSHOT (Ixplorer host-loop correction after runtime QA feedback, 2026-03-12T4)
+- Date: 2026-03-12
+- Current baseline numbers:
+  - Model benchmark baseline unchanged in this pass.
+- Current best v2 numbers:
+  - Unchanged in this pass.
+- Current bottleneck ranking:
+  1. App-specific hosting compatibility still depends on real runtime validation per extension/default-app combination.
+  2. Flash suppression is improved in code path but needs visual confirmation on target machine.
+  3. Build verification remains blocked in this shell by missing `cmake`.
+- Current pass focus/result:
+  - Reworked host loop for hide-first capture, lower style mutation, and stronger geometry adaptation.
+- What is next (top 3 tasks):
+  1. Validate Word/Excel/PDF/image/code/json open-reopen in live app and capture outcomes.
+  2. Add per-app fallback launch tuning for any remaining failing associations.
+  3. Continue CODEX.md parity work after embedding path is stable.
+
+## STATE SNAPSHOT (Ixplorer host capture tolerance retune, 2026-03-13)
+- Date: 2026-03-13
+- Current baseline numbers:
+  - Model benchmark baseline unchanged in this pass.
+- Current best v2 numbers:
+  - Unchanged in this pass.
+- Current bottleneck ranking:
+  1. Extension-default-app variance still requires per-app runtime tuning (especially Office/browser/UWP combos).
+  2. No local build/runtime verification available in this shell due missing `cmake`.
+  3. CODEX.md parity gaps remain outside embedding path (graph/CLI/runtime architecture).
+- Current pass focus/result:
+  - Retuned host capture to be less brittle (PID-first matching, staged thresholds, UWP-safe style handling, process-alive retry before closed-state).
+- What is next (top 3 tasks):
+  1. Run real-machine matrix check for `.json`, code, image, `.pdf`, `.docx` with default-app list recorded.
+  2. Add explicit per-app launch templates for any remaining failing associations.
+  3. Continue CODEX.md parity implementation once host path is stable.

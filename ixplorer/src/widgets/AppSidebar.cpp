@@ -39,17 +39,16 @@ AppSidebar::AppSidebar(QWidget *parent)
     layout->setSpacing(2);
 
     m_homeSection = new SidebarSection("Home", QIcon(), content);
-    m_todaySectionWidget = new TodaySection(content);
     m_recentsSection = new SidebarSection("Recents", QIcon(), content);
     m_favoritesSection = new SidebarSection("Favorites", QIcon(), content);
     m_workstreamsSection = new SidebarSection("Workstreams", QIcon(), content);
     m_drivesSection = new SidebarSection("This PC", QIcon(), content);
 
     layout->addWidget(m_homeSection);
-    layout->addWidget(m_todaySectionWidget);
-    layout->addWidget(m_recentsSection);
+    // layout->addWidget(m_todaySectionWidget); // Removed as per request
+    layout->addWidget(m_workstreamsSection); // Moved up for better notion-like UI
     layout->addWidget(m_favoritesSection);
-    layout->addWidget(m_workstreamsSection);
+    layout->addWidget(m_recentsSection);
     layout->addWidget(m_drivesSection);
     layout->addStretch();
 
@@ -67,19 +66,12 @@ AppSidebar::AppSidebar(QWidget *parent)
     connect(m_workstreamsSection, &SidebarSection::itemClicked, this, [this](const QString &id) {
         emit workstreamSelected(id);
     });
-    connect(m_todaySectionWidget, &TodaySection::resumeRequested, this, [this](const QString &path) {
-        emit resumePathSelected(path);
-    });
-    connect(m_todaySectionWidget, &TodaySection::supportingPathRequested, this, [this](const QString &path) {
-        emit resumePathSelected(path);
-    });
-    m_todaySectionWidget->hide();
 }
 
 void AppSidebar::highlightCurrent(const QString &path) {
-    // Only highlight in navigation sections, not workstreams
+    // Keep highlights minimal: navigation only, no recents/favorites emphasis.
     m_homeSection->setHighlighted(path);
-    m_favoritesSection->setHighlighted(path);
+    m_favoritesSection->setHighlighted(QString());
     m_recentsSection->setHighlighted(QString());
     m_drivesSection->setHighlighted(path);
 }
@@ -100,13 +92,8 @@ void AppSidebar::recordRecentLocation(const QString &path) {
     refreshRecents();
 }
 
-void AppSidebar::setTodayPacket(const ResumptionPacket &packet) {
-    if (packet.primaryPath.isEmpty()) {
-        m_todaySectionWidget->clearPacket();
-        return;
-    }
-    m_todaySectionWidget->setPacket(packet);
-    m_todaySectionWidget->hide();
+void AppSidebar::setTodayPacket(const ResumptionPacket &) {
+    // Feature disabled
 }
 
 void AppSidebar::setWorkstreams(const QVector<Workstream> &workstreams, const QString &currentId) {

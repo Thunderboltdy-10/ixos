@@ -9,7 +9,7 @@ namespace Ixplorer {
 
 TodaySection::TodaySection(QWidget *parent)
     : QWidget(parent)
-    , m_titleLabel(new QLabel(QStringLiteral("Continue"), this))
+    , m_titleLabel(new QLabel(QStringLiteral("Resume"), this))
     , m_reasonLabel(new QLabel(this))
     , m_primaryButton(new QPushButton(this))
     , m_supportingContainer(new QWidget(this))
@@ -73,9 +73,9 @@ void TodaySection::setPacket(const ResumptionPacket &packet) {
 
 void TodaySection::clearPacket() {
     m_packet = ResumptionPacket();
-    m_primaryButton->setText(QStringLiteral("Nothing to resume"));
+    m_primaryButton->setText(QStringLiteral("No recent session"));
     m_primaryButton->setToolTip(QString());
-    m_reasonLabel->setText(QStringLiteral("Open a few files and searches to build resumption history."));
+    m_reasonLabel->setText(QStringLiteral("Open files and searches to build quick resume context."));
     rebuildSupportingButtons();
     setVisible(false);
 }

@@ -129,9 +129,7 @@ void MainWindow::setupConnections() {
         if (path.isEmpty()) {
             return;
         }
-        if (!m_workspace->previewPath(path)) {
-            m_workspace->addTab(path);
-        }
+        m_workspace->addTab(path);
     });
     connect(m_sidebar, &AppSidebar::workstreamSelected, this, &MainWindow::switchWorkstream);
 
@@ -177,7 +175,9 @@ void MainWindow::setupConnections() {
             m_toolbar, &ExplorerToolbar::setNavigationState);
     connect(m_workspace, &TabWorkspace::statusMessage, this, [this](const QString &message) {
         m_statusStrip->setStatusMessage(message);
-        m_rail->setStatusMessage(message);
+        if (m_rail->hasActiveQuery()) {
+            m_rail->setStatusMessage(message);
+        }
         ToastNotification::showToast(this, message);
     });
 
@@ -203,6 +203,14 @@ void MainWindow::setupConnections() {
     });
     connect(m_workspace, &TabWorkspace::surfaceToneChanged, this, [this](const QColor &color) {
         applyShellTone(color);
+    });
+    connect(m_workspace, &TabWorkspace::workstreamActivated, this, [this](const QString &id) {
+        switchWorkstream(id);
+    });
+    connect(m_workspace, &TabWorkspace::searchRequested, this, [this](const QString &query) {
+        setRailVisible(true);
+        m_toolbar->setSearchText(query);
+        m_rail->submitToolbarSearch(query, 1);
     });
     connect(m_workspace, &TabWorkspace::fileActivated, this, [this](const QFileInfo &info) {
         if (m_activityTracker != nullptr) {
@@ -235,9 +243,7 @@ void MainWindow::setupConnections() {
         if (m_personalRanker != nullptr) {
             m_personalRanker->markOpened(path);
         }
-        if (!m_workspace->previewPath(path)) {
-            m_workspace->addTab(path);
-        }
+        m_workspace->addTab(path);
         refreshToday();
         markSessionDirty();
     });
@@ -469,9 +475,7 @@ void MainWindow::handlePaletteCommand(const QString &commandId) {
         if (packet.primaryPath.isEmpty()) {
             return;
         }
-        if (!m_workspace->previewPath(packet.primaryPath)) {
-            m_workspace->addTab(packet.primaryPath);
-        }
+        m_workspace->addTab(packet.primaryPath);
         for (const QString &path : packet.supportingPaths) {
             m_workspace->addTab(path);
         }
@@ -566,9 +570,7 @@ void MainWindow::handlePaletteCommand(const QString &commandId) {
         view->setGraph(graph);
         layout->addWidget(view);
         connect(view, &RelationshipView::pathActivated, dialog, [this, dialog](const QString &path) {
-            if (!m_workspace->previewPath(path)) {
-                m_workspace->addTab(path);
-            }
+            m_workspace->addTab(path);
             dialog->accept();
         });
         dialog->show();
@@ -684,6 +686,9 @@ void MainWindow::restoreSession() {
         m_workspace->addTab("ixplorer://home");
     } else {
         m_workspace->restoreTabState(tabs, activeTabIndex);
+        if (m_workspace->currentDashboard() == nullptr) {
+            m_workspace->addTab("ixplorer://home");
+        }
     }
 
     m_lastSearchQuery = m_sessionSnapshot.lastSearchQuery.isEmpty() ? m_lastSearchQuery : m_sessionSnapshot.lastSearchQuery;
@@ -835,9 +840,7 @@ void MainWindow::openPathsBundle(const QStringList &paths, const QString &workst
             continue;
         }
         if (!openedPrimary) {
-            if (!m_workspace->previewPath(path)) {
-                m_workspace->addTab(path);
-            }
+            m_workspace->addTab(path);
             openedPrimary = true;
         } else {
             m_workspace->addTab(path);
@@ -886,8 +889,18 @@ void MainWindow::setRailVisible(bool visible) {
     anim->setEndValue(targetRailWidth);
 
     connect(anim, &QVariantAnimation::valueChanged, this, [this](const QVariant &value) {
-        m_rail->setMaximumWidth(value.toInt());
-        m_rail->setMinimumWidth(value.toInt());
+        const int w = value.toInt();
+        m_rail->setMaximumWidth(w);
+        m_rail->setMinimumWidth(w);
+        
+        auto sizes = m_splitter->sizes();
+        if (sizes.size() >= 3) {
+            // explicitly shrink the middle workspace pane
+            int total = m_splitter->width() - m_splitter->handleWidth() * 2;
+            sizes[2] = w;
+            sizes[1] = qMax(0, total - sizes[0] - w);
+            m_splitter->setSizes(sizes);
+        }
     });
 
     connect(anim, &QVariantAnimation::finished, this, [this, visible, targetRailWidth]() {

@@ -7,16 +7,20 @@
 #include <QGuiApplication>
 #include <QDir>
 #include <QElapsedTimer>
+#include <QFile>
 #include <QFileInfo>
 #include <QHideEvent>
 #include <QImage>
 #include <QLabel>
+#include <QLocale>
+#include <QMimeDatabase>
 #include <QPixmap>
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QScreen>
 #include <QShowEvent>
+#include <QStringList>
 #include <QThread>
 #include <QTimer>
 #include <QUrl>
@@ -25,6 +29,7 @@
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
+#include <QSet>
 #include <QWheelEvent>
 #include <QMouseEvent>
 #include <string>
@@ -37,6 +42,11 @@
 #include <QMediaPlayer>
 #include <QVideoWidget>
 #include <QAudioOutput>
+#endif
+
+#ifdef QT_PDF_LIB
+#include <QPdfDocument>
+#include <QPdfView>
 #endif
 
 #ifdef Q_OS_WIN
@@ -54,10 +64,13 @@ namespace {
 struct WindowCandidate {
     HWND hwnd = nullptr;
     int score = -1;
+    bool isNew = false;
 };
 
 struct CandidateSearchContext {
     const QSet<quintptr> *baseline = nullptr;
+    const QSet<WId> *claimedWindows = nullptr;
+    WId allowedClaimedWindow = 0;
     QString fileNameLower;
     QString fileBaseNameLower;
     QString expectedExecutableLower;
@@ -160,78 +173,29 @@ bool isTopLevelEmbeddableWindow(HWND hwnd) {
     return true;
 }
 
-QString associatedOpenCommand(const QString &path) {
-    const QString suffix = QFileInfo(path).suffix().trimmed().toLower();
-    const QString association = suffix.isEmpty() ? QDir::toNativeSeparators(path) : QStringLiteral(".") + suffix;
-
-    DWORD length = 0;
-    AssocQueryStringW(ASSOCF_NONE,
-                      ASSOCSTR_COMMAND,
-                      reinterpret_cast<LPCWSTR>(association.utf16()),
-                      L"open",
-                      nullptr,
-                      &length);
-    if (length == 0) {
-        return QString();
+bool isUwpFrameWindow(HWND hwnd) {
+    wchar_t className[256];
+    if (GetClassNameW(hwnd, className, 256) <= 0) {
+        return false;
     }
-
-    std::wstring buffer;
-    buffer.resize(length + 2);
-    if (AssocQueryStringW(ASSOCF_NONE,
-                          ASSOCSTR_COMMAND,
-                          reinterpret_cast<LPCWSTR>(association.utf16()),
-                          L"open",
-                          buffer.data(),
-                          &length) != S_OK) {
-        return QString();
-    }
-
-    return QString::fromWCharArray(buffer.c_str()).trimmed();
+    return wcscmp(className, L"ApplicationFrameWindow") == 0;
 }
 
-QString expandEnvironmentStrings(const QString &command) {
-    DWORD length = ExpandEnvironmentStringsW(reinterpret_cast<LPCWSTR>(command.utf16()), nullptr, 0);
-    if (length == 0) {
-        return command;
-    }
-
-    std::wstring buffer;
-    buffer.resize(length + 2);
-    if (!ExpandEnvironmentStringsW(reinterpret_cast<LPCWSTR>(command.utf16()), buffer.data(), length + 1)) {
-        return command;
-    }
-
-    return QString::fromWCharArray(buffer.c_str()).trimmed();
+QSet<WId> &claimedHostedWindows() {
+    static QSet<WId> windows;
+    return windows;
 }
 
-QString expandAssociationCommand(const QString &command, const QString &path) {
-    if (command.isEmpty()) {
-        return QString();
-    }
-
-    const QString nativePath = QDir::toNativeSeparators(path);
-    const QString fileUrl = QUrl::fromLocalFile(nativePath).toString();
-    QString expanded = command;
-    expanded.replace(QStringLiteral("%1"), QStringLiteral("\"%1\"").arg(nativePath), Qt::CaseInsensitive);
-    expanded.replace(QStringLiteral("%l"), QStringLiteral("\"%1\"").arg(nativePath), Qt::CaseInsensitive);
-    expanded.replace(QStringLiteral("%L"), QStringLiteral("\"%1\"").arg(nativePath), Qt::CaseInsensitive);
-    expanded.replace(QStringLiteral("%u"), QStringLiteral("\"%1\"").arg(fileUrl), Qt::CaseInsensitive);
-    expanded.replace(QStringLiteral("%U"), QStringLiteral("\"%1\"").arg(fileUrl), Qt::CaseInsensitive);
-    expanded.replace(QStringLiteral("%*"), QString(), Qt::CaseInsensitive);
-    if (!expanded.contains(nativePath, Qt::CaseInsensitive) && !expanded.contains(fileUrl, Qt::CaseInsensitive)) {
-        expanded += QStringLiteral(" \"%1\"").arg(nativePath);
-    }
-    return expandEnvironmentStrings(expanded);
-}
-
-WindowCandidate findBestWindowCandidate(
-    const QSet<quintptr> &baseline,
-    const QString &fileNameLower,
-    const QString &fileBaseNameLower,
-    const QString &expectedExecutableLower,
-    DWORD launchedProcessId) {
+WindowCandidate findBestWindowCandidate(const QSet<quintptr> &baseline,
+                                        const QSet<WId> &claimedWindows,
+                                        WId allowedClaimedWindow,
+                                        const QString &fileNameLower,
+                                        const QString &fileBaseNameLower,
+                                        const QString &expectedExecutableLower,
+                                        DWORD launchedProcessId) {
     WindowCandidate best;
-    CandidateSearchContext context{&baseline, fileNameLower, fileBaseNameLower, expectedExecutableLower, launchedProcessId, &best};
+    CandidateSearchContext context{
+        &baseline, &claimedWindows, allowedClaimedWindow, fileNameLower, fileBaseNameLower, expectedExecutableLower, launchedProcessId, &best};
 
     EnumWindows(
         [](HWND hwnd, LPARAM lParam) -> BOOL {
@@ -243,6 +207,10 @@ WindowCandidate findBestWindowCandidate(
 
             DWORD pid = 0;
             GetWindowThreadProcessId(hwnd, &pid);
+            const WId candidateId = reinterpret_cast<WId>(hwnd);
+            if (context->claimedWindows->contains(candidateId) && candidateId != context->allowedClaimedWindow) {
+                return TRUE;
+            }
 
             const QString title = windowTitle(hwnd).toLower();
             const QString executable = processExecutableBaseName(pid);
@@ -253,30 +221,22 @@ WindowCandidate findBestWindowCandidate(
             const bool pidMatches = context->launchedProcessId != 0 && pid == context->launchedProcessId;
             const bool executableMatches =
                 !context->expectedExecutableLower.isEmpty() && executable == context->expectedExecutableLower;
-            const bool isVisible = IsWindowVisible(hwnd);
-
-            if (!titleMatches && !(pidMatches && executableMatches)) {
-                return TRUE;
-            }
-            if (!context->expectedExecutableLower.isEmpty() && !executableMatches && !pidMatches && !titleMatches) {
-                return TRUE;
-            }
-            if (!isVisible && !pidMatches) {
+            if (!titleMatches && !pidMatches) {
                 return TRUE;
             }
 
             int score = 0;
-            if (isNew) {
-                score += 50;
-            }
             if (titleMatches) {
-                score += 70;
+                score += 85;
             }
             if (pidMatches) {
-                score += 45;
+                score += 60;
             }
             if (executableMatches) {
-                score += 25;
+                score += 15;
+            }
+            if (isNew) {
+                score += 10;
             }
             if (!title.isEmpty()) {
                 score += 10;
@@ -285,6 +245,7 @@ WindowCandidate findBestWindowCandidate(
             if (score > context->best->score) {
                 context->best->hwnd = hwnd;
                 context->best->score = score;
+                context->best->isNew = isNew;
             }
 
             return TRUE;
@@ -294,16 +255,143 @@ WindowCandidate findBestWindowCandidate(
     return best;
 }
 
-bool launchAssociatedAppForPath(const QString &path, HANDLE *processHandle, DWORD *processId) {
-    const QString expandedCommand = expandAssociationCommand(associatedOpenCommand(path), path);
-    if (!expandedCommand.isEmpty()) {
+void hideVisibleCandidateWindows(const QString &fileNameLower,
+                                 const QString &fileBaseNameLower,
+                                 const QString &expectedExecutableLower,
+                                 DWORD launchedProcessId) {
+    WindowCandidate dummyBest;
+    CandidateSearchContext context{
+        nullptr,
+        nullptr,
+        0,
+        fileNameLower,
+        fileBaseNameLower,
+        expectedExecutableLower,
+        launchedProcessId,
+        &dummyBest};
+
+    EnumWindows(
+        [](HWND hwnd, LPARAM lParam) -> BOOL {
+            auto *context = reinterpret_cast<CandidateSearchContext *>(lParam);
+            if (!isTopLevelEmbeddableWindow(hwnd)) {
+                return TRUE;
+            }
+
+            DWORD pid = 0;
+            GetWindowThreadProcessId(hwnd, &pid);
+            const QString title = windowTitle(hwnd).toLower();
+            const QString executable = processExecutableBaseName(pid);
+
+            const bool titleMatches =
+                (!context->fileNameLower.isEmpty() && title.contains(context->fileNameLower)) ||
+                (!context->fileBaseNameLower.isEmpty() && title.contains(context->fileBaseNameLower));
+            const bool executableMatches =
+                !context->expectedExecutableLower.isEmpty() && executable == context->expectedExecutableLower;
+            const bool pidMatches = context->launchedProcessId != 0 && pid == context->launchedProcessId;
+
+            if ((pidMatches || (titleMatches && executableMatches)) && IsWindowVisible(hwnd)) {
+                ShowWindow(hwnd, SW_HIDE);
+            }
+            return TRUE;
+        },
+        reinterpret_cast<LPARAM>(&context));
+}
+
+QString associatedExecutablePath(const QString &path) {
+    const QString suffix = QFileInfo(path).suffix().trimmed().toLower();
+    const QString association = suffix.isEmpty() ? QDir::toNativeSeparators(path) : QStringLiteral(".") + suffix;
+
+    DWORD length = 0;
+    AssocQueryStringW(ASSOCF_NONE,
+                      ASSOCSTR_EXECUTABLE,
+                      reinterpret_cast<LPCWSTR>(association.utf16()),
+                      L"open",
+                      nullptr,
+                      &length);
+    if (length == 0) {
+        return QString();
+    }
+
+    std::wstring buffer;
+    buffer.resize(length + 2);
+    if (AssocQueryStringW(ASSOCF_NONE,
+                          ASSOCSTR_EXECUTABLE,
+                          reinterpret_cast<LPCWSTR>(association.utf16()),
+                          L"open",
+                          buffer.data(),
+                          &length) != S_OK) {
+        return QString();
+    }
+
+    return QString::fromWCharArray(buffer.c_str()).trimmed();
+}
+
+QStringList launchArgumentsForExecutable(const QString &executableLower, const QString &nativePath) {
+    if (executableLower == QStringLiteral("code.exe") ||
+        executableLower == QStringLiteral("code-insiders.exe") ||
+        executableLower == QStringLiteral("codium.exe")) {
+        return {QStringLiteral("--new-window"), QStringLiteral("--wait"), nativePath};
+    }
+
+    if (executableLower == QStringLiteral("winword.exe")) {
+        return {QStringLiteral("/n"), nativePath};
+    }
+    if (executableLower == QStringLiteral("excel.exe")) {
+        return {QStringLiteral("/x"), nativePath};
+    }
+    if (executableLower == QStringLiteral("powerpnt.exe")) {
+        return {QStringLiteral("/n"), nativePath};
+    }
+
+    if (executableLower == QStringLiteral("chrome.exe") ||
+        executableLower == QStringLiteral("msedge.exe") ||
+        executableLower == QStringLiteral("brave.exe") ||
+        executableLower == QStringLiteral("opera.exe") ||
+        executableLower == QStringLiteral("firefox.exe")) {
+        return {QStringLiteral("--new-window"), nativePath};
+    }
+
+    return {nativePath};
+}
+
+QString quotedCommandLine(const QString &executablePath, const QStringList &arguments) {
+    QString command = QStringLiteral("\"%1\"").arg(QDir::toNativeSeparators(executablePath));
+    for (const QString &arg : arguments) {
+        QString quoted = arg;
+        quoted.replace(QLatin1Char('"'), QStringLiteral("\\\""));
+        command += QStringLiteral(" \"%1\"").arg(quoted);
+    }
+    return command;
+}
+
+bool launchAssociatedAppForPath(const QString &path,
+                                const QString &expectedExecutable,
+                                HANDLE *processHandle,
+                                DWORD *processId,
+                                bool *ownsProcess) {
+    const QString nativePath = QDir::toNativeSeparators(path);
+    if (processHandle) {
+        *processHandle = nullptr;
+    }
+    if (processId) {
+        *processId = 0;
+    }
+    if (ownsProcess) {
+        *ownsProcess = false;
+    }
+
+    const QString executablePath = associatedExecutablePath(path);
+    const QString executableLower = expectedExecutable.trimmed().toLower();
+    if (!executablePath.isEmpty()) {
+        const QStringList args = launchArgumentsForExecutable(executableLower, nativePath);
+        const QString command = quotedCommandLine(executablePath, args);
         STARTUPINFOW startupInfo{};
         startupInfo.cb = sizeof(startupInfo);
         startupInfo.dwFlags = STARTF_USESHOWWINDOW;
-        startupInfo.wShowWindow = SW_HIDE;
+        startupInfo.wShowWindow = SW_SHOWMINNOACTIVE;
 
         PROCESS_INFORMATION processInfo{};
-        std::wstring commandLine = expandedCommand.toStdWString();
+        std::wstring commandLine = command.toStdWString();
         commandLine.push_back(L'\0');
         if (CreateProcessW(nullptr,
                            commandLine.data(),
@@ -322,6 +410,9 @@ bool launchAssociatedAppForPath(const QString &path, HANDLE *processHandle, DWOR
             if (processId) {
                 *processId = processInfo.dwProcessId;
             }
+            if (ownsProcess) {
+                *ownsProcess = true;
+            }
             return true;
         }
     }
@@ -330,9 +421,8 @@ bool launchAssociatedAppForPath(const QString &path, HANDLE *processHandle, DWOR
     info.cbSize = sizeof(info);
     info.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC | SEE_MASK_FLAG_NO_UI;
     info.lpVerb = L"open";
-    const QString nativePath = QDir::toNativeSeparators(path);
     info.lpFile = reinterpret_cast<LPCWSTR>(nativePath.utf16());
-    info.nShow = SW_HIDE;
+    info.nShow = SW_SHOWMINNOACTIVE;
 
     if (!ShellExecuteExW(&info)) {
         return false;
@@ -344,17 +434,24 @@ bool launchAssociatedAppForPath(const QString &path, HANDLE *processHandle, DWOR
     if (processId) {
         *processId = info.hProcess ? GetProcessId(info.hProcess) : 0;
     }
+    if (ownsProcess) {
+        *ownsProcess = false;
+    }
     return true;
 }
 
-bool closeHostedWindow(WId windowId, quintptr processHandle) {
+bool closeHostedWindow(WId windowId, quintptr processHandle, bool ownsProcess) {
     if (windowId != 0 && IsWindow(reinterpret_cast<HWND>(windowId))) {
-        PostMessageW(reinterpret_cast<HWND>(windowId), WM_CLOSE, 0, 0);
+        if (ownsProcess) {
+            PostMessageW(reinterpret_cast<HWND>(windowId), WM_CLOSE, 0, 0);
+        }
     }
 
     if (processHandle != 0) {
         HANDLE handle = reinterpret_cast<HANDLE>(processHandle);
-        WaitForSingleObject(handle, 1500);
+        if (ownsProcess) {
+            WaitForSingleObject(handle, 1500);
+        }
         CloseHandle(handle);
     }
 
@@ -389,19 +486,24 @@ DocumentPane::DocumentPane(const QString &path, bool previewMode, QWidget *paren
         m_hostMode = MediaPlayer;
         break;
     case FileOpenHostMode::WebView:
+    {
+        const QString ext = QFileInfo(m_filePath).suffix().toLower();
+        if (ext == QStringLiteral("pdf")) {
+#ifdef QT_PDF_LIB
+            m_hostMode = PdfViewer;
+#elif defined(QT_WEBENGINEWIDGETS_LIB)
+            m_hostMode = WebView;
+#else
+            m_hostMode = WindowEmbed;
+#endif
+            break;
+        }
 #ifdef QT_WEBENGINEWIDGETS_LIB
         m_hostMode = WebView;
 #else
-        // WebEngine unavailable — fall back to external for PDF, or CodeViewer for HTML
-        {
-            const QString ext = QFileInfo(m_filePath).suffix().toLower();
-            if (ext == QStringLiteral("pdf")) {
-                m_hostMode = Fallback;
-            } else {
-                m_hostMode = CodeViewer;
-            }
-        }
+        m_hostMode = CodeViewer;
 #endif
+    }
         break;
     case FileOpenHostMode::AssociatedWindow:
         m_hostMode = WindowEmbed;
@@ -426,6 +528,9 @@ DocumentPane::DocumentPane(const QString &path, bool previewMode, QWidget *paren
         QTimer::singleShot(50, this, [this]() {
             m_loadingTimer->stop();
             m_hostedReady = startHosting();
+            if (!m_hostedReady) {
+                setupHostFailureFallback();
+            }
             syncUiState();
         });
     } else if (m_hostMode == CodeViewer) {
@@ -434,6 +539,8 @@ DocumentPane::DocumentPane(const QString &path, bool previewMode, QWidget *paren
         setupImageViewer();
     } else if (m_hostMode == MediaPlayer) {
         setupMediaPlayer();
+    } else if (m_hostMode == PdfViewer) {
+        setupPdfViewer();
     } else if (m_hostMode == WebView) {
         setupWebView();
     }
@@ -467,16 +574,24 @@ void DocumentPane::setPreviewMode(bool previewMode) {
 
 void DocumentPane::reload() {
     clearHostedSurface();
+    if (m_policy.usesHostedWindow() && m_hostMode == CodeViewer) {
+        m_hostMode = WindowEmbed;
+    }
     if (m_hostMode == CodeViewer) {
         setupCodeViewer();
     } else if (m_hostMode == ImageViewer) {
         setupImageViewer();
     } else if (m_hostMode == MediaPlayer) {
         setupMediaPlayer();
+    } else if (m_hostMode == PdfViewer) {
+        setupPdfViewer();
     } else if (m_hostMode == WebView) {
         setupWebView();
     } else if (m_hostMode == WindowEmbed) {
         m_hostedReady = startHosting();
+        if (!m_hostedReady) {
+            setupHostFailureFallback();
+        }
     }
     syncUiState();
     emit statusMessage(QStringLiteral("Reloaded %1.").arg(QFileInfo(m_filePath).fileName()));
@@ -533,13 +648,21 @@ void DocumentPane::buildUi() {
     m_contentLayout->setSpacing(0);
     layout->addWidget(m_contentRoot, 1);
 
-    m_hostSurface = new QWidget(m_contentRoot);
+    m_hostFrame = new QWidget(m_contentRoot);
+    m_hostFrame->setObjectName("HostedWindowFrame");
+    auto *hostFrameLayout = new QVBoxLayout(m_hostFrame);
+    hostFrameLayout->setContentsMargins(1, 1, 1, 1);
+    hostFrameLayout->setSpacing(0);
+    m_contentLayout->addWidget(m_hostFrame, 1);
+    m_hostFrame->hide();
+
+    m_hostSurface = new QWidget(m_hostFrame);
     m_hostSurface->setObjectName("HostedWindowSurface");
     m_hostSurface->setAttribute(Qt::WA_NativeWindow);
     m_hostSurface->setAttribute(Qt::WA_NoSystemBackground, false);
     m_hostSurface->setFocusPolicy(Qt::StrongFocus);
     m_hostSurface->installEventFilter(this);
-    m_contentLayout->addWidget(m_hostSurface, 1);
+    hostFrameLayout->addWidget(m_hostSurface, 1);
     m_hostSurface->hide();
 
     m_stateCard = new QWidget(m_contentRoot);
@@ -585,6 +708,16 @@ void DocumentPane::buildUi() {
     m_webView->hide();
 #endif
 
+#ifdef QT_PDF_LIB
+    m_pdfDocument = new QPdfDocument(this);
+    m_pdfView = new QPdfView(m_contentRoot);
+    m_pdfView->setDocument(m_pdfDocument);
+    m_pdfView->setPageMode(QPdfView::MultiPage);
+    m_pdfView->setZoomMode(QPdfView::FitToWidth);
+    m_contentLayout->addWidget(m_pdfView, 1);
+    m_pdfView->hide();
+#endif
+
 #ifdef QT_MULTIMEDIA_LIB
     m_videoWidget = new QVideoWidget(m_contentRoot);
     m_contentLayout->addWidget(m_videoWidget, 1);
@@ -594,7 +727,7 @@ void DocumentPane::buildUi() {
     m_contentLayout->addWidget(m_stateCard, 1);
 
     m_hostMonitor = new QTimer(this);
-    m_hostMonitor->setInterval(650);
+    m_hostMonitor->setInterval(180);
     
     m_loadingTimer = new QTimer(this);
     m_loadingTimer->setInterval(600);
@@ -634,11 +767,14 @@ bool DocumentPane::startHosting() {
 
     HANDLE processHandle = nullptr;
     DWORD launchedProcessId = 0;
-    if (!launchAssociatedAppForPath(m_filePath, &processHandle, &launchedProcessId)) {
+    bool ownsProcess = false;
+    if (!launchAssociatedAppForPath(m_filePath, expectedExecutable, &processHandle, &launchedProcessId, &ownsProcess)) {
         showStateMessage(QStringLiteral("Could not launch associated app"),
                          QStringLiteral("Windows could not open the default app for this file."));
         return false;
     }
+
+    hideVisibleCandidateWindows(fileNameLower, fileBaseNameLower, expectedExecutable, launchedProcessId);
 
     if (processHandle) {
         WaitForInputIdle(processHandle, 2500);
@@ -653,18 +789,33 @@ bool DocumentPane::startHosting() {
         if (processHandle != nullptr && WaitForSingleObject(processHandle, 0) != WAIT_TIMEOUT) {
             currentPid = 0; // Process exited, search broadly
         }
-        
-        chosen = findBestWindowCandidate(baseline, fileNameLower, fileBaseNameLower, expectedExecutable, currentPid);
-        const int requiredScore = expectedExecutable.isEmpty() ? 50 : 70;
+
+        hideVisibleCandidateWindows(fileNameLower, fileBaseNameLower, expectedExecutable, currentPid);
+
+        chosen = findBestWindowCandidate(
+            baseline, claimedHostedWindows(), 0, fileNameLower, fileBaseNameLower, expectedExecutable, currentPid);
+        if (chosen.hwnd != nullptr && IsWindow(chosen.hwnd)) {
+            ShowWindow(chosen.hwnd, SW_HIDE);
+        }
+
+        const qint64 elapsed = timer.elapsed();
+        int requiredScore = expectedExecutable.isEmpty() ? 40 : 55;
+        if (elapsed > 3500) {
+            requiredScore -= 10;
+        }
+        if (elapsed > 9000) {
+            requiredScore -= 10;
+        }
         if (chosen.hwnd != nullptr && chosen.score >= requiredScore) {
             break;
         }
 
         QCoreApplication::processEvents();
-        QThread::msleep(timer.elapsed() < 1500 ? 35 : 120);
+        QThread::msleep(timer.elapsed() < 1800 ? 20 : 80);
     }
 
-    if (chosen.hwnd == nullptr || !IsWindow(chosen.hwnd)) {
+    const int minimumAcceptableScore = expectedExecutable.isEmpty() ? 20 : 30;
+    if (chosen.hwnd == nullptr || !IsWindow(chosen.hwnd) || chosen.score < minimumAcceptableScore) {
         if (processHandle) {
             CloseHandle(processHandle);
         }
@@ -678,26 +829,13 @@ bool DocumentPane::startHosting() {
     m_originalWindowStyle = GetWindowLongPtrW(chosen.hwnd, GWL_STYLE);
     m_originalWindowExStyle = GetWindowLongPtrW(chosen.hwnd, GWL_EXSTYLE);
 
-    wchar_t className[256];
-    GetClassNameW(chosen.hwnd, className, 256);
-    const bool isUwp = wcscmp(className, L"ApplicationFrameWindow") == 0;
-
-    // Strip top-level non-client chrome so the hosted app feels embedded rather than draggable.
-    // For UWP apps, stripping WS_CAPTION or WS_POPUP completely breaks rendering.
-    LONG_PTR hostedStyle = m_originalWindowStyle;
-    if (!isUwp) {
-        hostedStyle &= ~static_cast<LONG_PTR>(WS_POPUP | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
-    }
-    hostedStyle |= static_cast<LONG_PTR>(WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-
-    LONG_PTR hostedExStyle = m_originalWindowExStyle;
-    if (!isUwp) {
-        hostedExStyle &= ~static_cast<LONG_PTR>(WS_EX_APPWINDOW | WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
-    }
-
     ShowWindow(chosen.hwnd, SW_HIDE);
-    SetWindowLongPtrW(chosen.hwnd, GWL_STYLE, hostedStyle);
-    SetWindowLongPtrW(chosen.hwnd, GWL_EXSTYLE, hostedExStyle);
+    if (!isUwpFrameWindow(chosen.hwnd)) {
+        LONG_PTR hostedStyle = m_originalWindowStyle;
+        hostedStyle &= ~static_cast<LONG_PTR>(WS_POPUP);
+        hostedStyle |= static_cast<LONG_PTR>(WS_CHILD);
+        SetWindowLongPtrW(chosen.hwnd, GWL_STYLE, hostedStyle);
+    }
     SetParent(chosen.hwnd, hostHwnd);
     SetWindowPos(chosen.hwnd,
                  nullptr,
@@ -705,12 +843,19 @@ bool DocumentPane::startHosting() {
                  0,
                  qMax(1, m_hostSurface->width()),
                  qMax(1, m_hostSurface->height()),
-                 SWP_NOZORDER | SWP_FRAMECHANGED);
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+    RedrawWindow(chosen.hwnd, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 
     m_hostedWindowId = reinterpret_cast<WId>(chosen.hwnd);
     m_processHandle = reinterpret_cast<quintptr>(processHandle);
+    m_ownsHostedProcess = ownsProcess;
+    claimedHostedWindows().insert(m_hostedWindowId);
+    m_hostedWindowClaimed = true;
     m_hostedReady = true;
 
+    if (m_hostFrame) {
+        m_hostFrame->show();
+    }
     m_hostSurface->show();
     m_stateCard->hide();
     m_hostMonitor->start();
@@ -729,6 +874,23 @@ bool DocumentPane::startHosting() {
 #endif
 }
 
+bool DocumentPane::setupHostFailureFallback() {
+    if (m_hostMode != WindowEmbed) {
+        return false;
+    }
+
+    const QFileInfo info(m_filePath);
+    if (!info.exists() || !info.isFile()) {
+        return false;
+    }
+
+    showStateMessage(QStringLiteral("Associated app not embedded"),
+                     QStringLiteral("Ixplorer could not capture %1 yet. Retry reload or open externally.")
+                         .arg(info.fileName()));
+    emit statusMessage(QStringLiteral("Embedded capture failed for %1.").arg(info.fileName()));
+    return false;
+}
+
 void DocumentPane::clearHostedSurface(bool terminateProcess) {
     if (m_hostMonitor) {
         m_hostMonitor->stop();
@@ -737,19 +899,48 @@ void DocumentPane::clearHostedSurface(bool terminateProcess) {
     setHostedWindowVisible(false);
 
 #ifdef Q_OS_WIN
+    if (m_hostedWindowId != 0 && m_hostedWindowClaimed) {
+        claimedHostedWindows().remove(m_hostedWindowId);
+        m_hostedWindowClaimed = false;
+    }
+
+    if (m_hostedWindowId != 0 && IsWindow(reinterpret_cast<HWND>(m_hostedWindowId))) {
+        HWND hwnd = reinterpret_cast<HWND>(m_hostedWindowId);
+        SetParent(hwnd, reinterpret_cast<HWND>(m_originalWindowParent));
+        if (m_originalWindowStyle != 0) {
+            SetWindowLongPtrW(hwnd, GWL_STYLE, m_originalWindowStyle);
+        }
+        if (m_originalWindowExStyle != 0) {
+            SetWindowLongPtrW(hwnd, GWL_EXSTYLE, m_originalWindowExStyle);
+        }
+        SetWindowPos(hwnd,
+                     nullptr,
+                     0,
+                     0,
+                     0,
+                     0,
+                     SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOACTIVATE);
+    }
+
     if (terminateProcess && (m_hostedWindowId != 0 || m_processHandle != 0)) {
-        closeHostedWindow(m_hostedWindowId, m_processHandle);
+        closeHostedWindow(m_hostedWindowId, m_processHandle, m_ownsHostedProcess);
+    } else if (m_processHandle != 0) {
+        CloseHandle(reinterpret_cast<HANDLE>(m_processHandle));
     }
 #endif
 
     m_hostedWindowId = 0;
     m_processHandle = 0;
+    m_ownsHostedProcess = false;
     m_originalWindowParent = 0;
     m_originalWindowStyle = 0;
     m_originalWindowExStyle = 0;
     m_hostedReady = false;
     m_backdropRefreshTick = 0;
 
+    if (m_hostFrame) {
+        m_hostFrame->hide();
+    }
     if (m_hostSurface) {
         m_hostSurface->hide();
     }
@@ -758,6 +949,11 @@ void DocumentPane::clearHostedSurface(bool terminateProcess) {
 
 #ifdef QT_WEBENGINEWIDGETS_LIB
     if (m_webView) m_webView->hide();
+#endif
+
+#ifdef QT_PDF_LIB
+    if (m_pdfView) m_pdfView->hide();
+    if (m_pdfDocument) m_pdfDocument->close();
 #endif
 
 #ifdef QT_MULTIMEDIA_LIB
@@ -782,13 +978,23 @@ void DocumentPane::updateHostedGeometry() {
         return;
     }
 
-    SetWindowPos(reinterpret_cast<HWND>(m_hostedWindowId),
+    HWND hwnd = reinterpret_cast<HWND>(m_hostedWindowId);
+    const HWND hostHwnd = reinterpret_cast<HWND>(m_hostSurface->winId());
+    if (hostHwnd && GetParent(hwnd) != hostHwnd) {
+        SetParent(hwnd, hostHwnd);
+    }
+
+    const int targetWidth = qMax(1, m_hostSurface->width());
+    const int targetHeight = qMax(1, m_hostSurface->height());
+    MoveWindow(hwnd, 0, 0, targetWidth, targetHeight, TRUE);
+    SetWindowPos(hwnd,
                  nullptr,
                  0,
                  0,
-                 qMax(1, m_hostSurface->width()),
-                 qMax(1, m_hostSurface->height()),
-                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS);
+                 targetWidth,
+                 targetHeight,
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
+    RedrawWindow(hwnd, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 #endif
 }
 
@@ -799,8 +1005,18 @@ void DocumentPane::handleHostedWindowHeartbeat() {
     }
 
     if (!IsWindow(reinterpret_cast<HWND>(m_hostedWindowId))) {
+        if (m_hostedWindowClaimed) {
+            claimedHostedWindows().remove(m_hostedWindowId);
+            m_hostedWindowClaimed = false;
+        }
+        const bool launchedProcessStillAlive =
+            m_processHandle != 0 &&
+            WaitForSingleObject(reinterpret_cast<HANDLE>(m_processHandle), 0) == WAIT_TIMEOUT;
         if (tryRecoverHostedWindow()) {
             updateHostedGeometry();
+            return;
+        }
+        if (launchedProcessStillAlive) {
             return;
         }
 
@@ -809,6 +1025,7 @@ void DocumentPane::handleHostedWindowHeartbeat() {
         }
         m_hostedWindowId = 0;
         m_processHandle = 0;
+        m_ownsHostedProcess = false;
         m_originalWindowParent = 0;
         m_originalWindowStyle = 0;
         m_originalWindowExStyle = 0;
@@ -822,35 +1039,21 @@ void DocumentPane::handleHostedWindowHeartbeat() {
     }
 
     HWND hwnd = reinterpret_cast<HWND>(m_hostedWindowId);
-    LONG_PTR currentStyle = GetWindowLongPtrW(hwnd, GWL_STYLE);
-    if ((currentStyle & WS_POPUP) || !(currentStyle & WS_CHILD) || (currentStyle & WS_CAPTION) || (currentStyle & WS_THICKFRAME)) {
-        wchar_t className[256];
-        GetClassNameW(hwnd, className, 256);
-        const bool isUwp = wcscmp(className, L"ApplicationFrameWindow") == 0;
+    const HWND hostHwnd = m_hostSurface ? reinterpret_cast<HWND>(m_hostSurface->winId()) : nullptr;
+    if (hostHwnd && GetParent(hwnd) != hostHwnd) {
+        SetParent(hwnd, hostHwnd);
+    }
 
-        LONG_PTR hostedStyle = m_originalWindowStyle;
-        if (!isUwp) {
-            hostedStyle &= ~static_cast<LONG_PTR>(WS_POPUP | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
-        }
-        hostedStyle |= static_cast<LONG_PTR>(WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-        
+    LONG_PTR currentStyle = GetWindowLongPtrW(hwnd, GWL_STYLE);
+    if (!isUwpFrameWindow(hwnd) && ((currentStyle & WS_POPUP) || !(currentStyle & WS_CHILD))) {
+        LONG_PTR hostedStyle = currentStyle;
+        hostedStyle &= ~static_cast<LONG_PTR>(WS_POPUP);
+        hostedStyle |= static_cast<LONG_PTR>(WS_CHILD);
         SetWindowLongPtrW(hwnd, GWL_STYLE, hostedStyle);
     }
-    
-    // Disable dragging by aggressively restoring geometry every heartbeat.
-    // Also document that scrolling to match is handled via CLI parameters.
-    // TODO: Pass line number args based on app (e.g., Code.exe --goto file:line)
-    
-    RECT rect;
-    if (GetWindowRect(hwnd, &rect)) {
-        POINT pt = {rect.left, rect.top};
-        ScreenToClient(reinterpret_cast<HWND>(m_hostSurface->winId()), &pt);
-        if (pt.x != 0 || pt.y != 0) {
-            updateHostedGeometry();
-        }
-    } else {
-        updateHostedGeometry();
-    }
+
+    updateHostedGeometry();
+    setHostedWindowVisible(isVisible());
 
     ++m_backdropRefreshTick;
 #endif
@@ -877,6 +1080,8 @@ bool DocumentPane::tryRecoverHostedWindow() {
 
     const WindowCandidate chosen = findBestWindowCandidate(
         {},
+        claimedHostedWindows(),
+        m_hostedWindowId,
         info.fileName().toLower(),
         info.completeBaseName().toLower(),
         expectedExecutable,
@@ -891,22 +1096,27 @@ bool DocumentPane::tryRecoverHostedWindow() {
         return false;
     }
 
+    m_originalWindowParent = reinterpret_cast<quintptr>(GetParent(chosen.hwnd));
+    m_originalWindowStyle = GetWindowLongPtrW(chosen.hwnd, GWL_STYLE);
+    m_originalWindowExStyle = GetWindowLongPtrW(chosen.hwnd, GWL_EXSTYLE);
+
     ShowWindow(chosen.hwnd, SW_HIDE);
-    SetWindowLongPtrW(chosen.hwnd,
-                      GWL_STYLE,
-                      (GetWindowLongPtrW(chosen.hwnd, GWL_STYLE) &
-                       ~static_cast<LONG_PTR>(WS_POPUP | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX |
-                                              WS_MAXIMIZEBOX | WS_SYSMENU)) |
-                          static_cast<LONG_PTR>(WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS));
-    SetWindowLongPtrW(
-        chosen.hwnd,
-        GWL_EXSTYLE,
-        GetWindowLongPtrW(chosen.hwnd, GWL_EXSTYLE) &
-            ~static_cast<LONG_PTR>(WS_EX_APPWINDOW | WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE |
-                                   WS_EX_STATICEDGE));
+    if (!isUwpFrameWindow(chosen.hwnd)) {
+        LONG_PTR hostedStyle = m_originalWindowStyle;
+        hostedStyle &= ~static_cast<LONG_PTR>(WS_POPUP);
+        hostedStyle |= static_cast<LONG_PTR>(WS_CHILD);
+        SetWindowLongPtrW(chosen.hwnd, GWL_STYLE, hostedStyle);
+    }
     SetParent(chosen.hwnd, hostHwnd);
+    MoveWindow(chosen.hwnd, 0, 0, qMax(1, m_hostSurface->width()), qMax(1, m_hostSurface->height()), TRUE);
+    RedrawWindow(chosen.hwnd, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
     m_hostedWindowId = reinterpret_cast<WId>(chosen.hwnd);
+    claimedHostedWindows().insert(m_hostedWindowId);
+    m_hostedWindowClaimed = true;
     m_hostedReady = true;
+    if (m_hostFrame) {
+        m_hostFrame->show();
+    }
     m_hostSurface->show();
     m_stateCard->hide();
     setHostedWindowVisible(isVisible());
@@ -995,20 +1205,34 @@ void DocumentPane::applyHostedBackdrop(const QColor &color) {
         );
     };
     
-    QColor frameBgTop = blend(baseBg, color, 0.40);
-    QColor frameBgBot = blend(baseBg, color, 0.20);
-    QColor frameBorder = blend(baseBg, color, 0.15);
-    
+    QColor frameBgTop = blend(baseBg, color, 0.34);
+    QColor frameBgBot = blend(baseBg, color, 0.14);
+    QColor shellEdge = blend(baseBg, color, 0.11);
+    QColor frameOuter = blend(baseBg, color, 0.22);
+    QColor frameInner = blend(baseBg, color, 0.30);
+
     m_contentRoot->setStyleSheet(QStringLiteral(
         "QWidget#DocumentHostRoot {"
-        " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:1 %2);"
-        " border: 1px solid %3;"
+        " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %1, stop:0.62 %2, stop:1 %3);"
+        " border: 1px solid %4;"
         " border-radius: 12px;"
-        " padding: 12px;"
+        " padding: 10px;"
+        "}"
+        "QWidget#HostedWindowFrame {"
+        " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %5, stop:1 %6);"
+        " border: 1px solid rgba(255,255,255,0.10);"
+        " border-radius: 10px;"
         "}"
         "QWidget#HostedWindowSurface {"
-        " background-color: transparent;"
-        "}").arg(frameBgTop.name(QColor::HexRgb), frameBgBot.name(QColor::HexRgb), frameBorder.name(QColor::HexRgb)));
+        " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255,255,255,0.07), stop:0.38 rgba(255,255,255,0.03), stop:1 rgba(0,0,0,0.12));"
+        " border-radius: 9px;"
+        "}")
+                                   .arg(frameBgTop.name(QColor::HexRgb),
+                                        frameBgBot.name(QColor::HexRgb),
+                                        baseBg.name(QColor::HexRgb),
+                                        shellEdge.name(QColor::HexRgb),
+                                        frameOuter.name(QColor::HexRgb),
+                                        frameInner.name(QColor::HexRgb)));
 }
 
 void DocumentPane::setupImageViewer() {
@@ -1024,8 +1248,12 @@ void DocumentPane::setupImageViewer() {
     m_graphicsView->fitInView(m_graphicsScene->sceneRect(), Qt::KeepAspectRatio);
     m_graphicsView->show();
     m_stateCard->hide();
+    if (m_hostFrame) m_hostFrame->hide();
     m_hostSurface->hide();
     if (m_codeViewer) m_codeViewer->hide();
+#ifdef QT_PDF_LIB
+    if (m_pdfView) m_pdfView->hide();
+#endif
     applyHostedBackdrop(QColor(28, 30, 34));
 }
 
@@ -1040,9 +1268,41 @@ void DocumentPane::setupCodeViewer() {
     m_codeViewer->setPlainText(QString::fromUtf8(data));
     m_codeViewer->show();
     m_stateCard->hide();
+    if (m_hostFrame) m_hostFrame->hide();
     m_hostSurface->hide();
     if (m_graphicsView) m_graphicsView->hide();
+#ifdef QT_PDF_LIB
+    if (m_pdfView) m_pdfView->hide();
+#endif
     applyHostedBackdrop(QColor(20, 22, 26));
+}
+
+void DocumentPane::setupPdfViewer() {
+#ifdef QT_PDF_LIB
+    if (!m_pdfDocument || !m_pdfView) {
+        m_hostMode = Fallback;
+        m_hostedReady = false;
+        return;
+    }
+    if (m_pdfDocument->load(m_filePath) != QPdfDocument::NoError) {
+        m_hostMode = WindowEmbed;
+        m_hostedReady = false;
+        return;
+    }
+    m_pdfView->show();
+    m_stateCard->hide();
+    if (m_hostFrame) m_hostFrame->hide();
+    m_hostSurface->hide();
+    if (m_graphicsView) m_graphicsView->hide();
+    if (m_codeViewer) m_codeViewer->hide();
+#ifdef QT_WEBENGINEWIDGETS_LIB
+    if (m_webView) m_webView->hide();
+#endif
+#ifdef QT_MULTIMEDIA_LIB
+    if (m_videoWidget) m_videoWidget->hide();
+#endif
+    applyHostedBackdrop(QColor(24, 26, 30));
+#endif
 }
 
 void DocumentPane::setupWebView() {
@@ -1050,9 +1310,13 @@ void DocumentPane::setupWebView() {
     m_webView->setUrl(QUrl::fromLocalFile(m_filePath));
     m_webView->show();
     m_stateCard->hide();
+    if (m_hostFrame) m_hostFrame->hide();
     m_hostSurface->hide();
     if (m_graphicsView) m_graphicsView->hide();
     if (m_codeViewer) m_codeViewer->hide();
+#ifdef QT_PDF_LIB
+    if (m_pdfView) m_pdfView->hide();
+#endif
     applyHostedBackdrop(QColor(28, 30, 34));
 #endif
 }
@@ -1068,20 +1332,30 @@ void DocumentPane::setupMediaPlayer() {
     m_mediaPlayer->setSource(QUrl::fromLocalFile(m_filePath));
     m_videoWidget->show();
     m_stateCard->hide();
+    if (m_hostFrame) m_hostFrame->hide();
     m_hostSurface->hide();
     if (m_graphicsView) m_graphicsView->hide();
     if (m_codeViewer) m_codeViewer->hide();
+#ifdef QT_PDF_LIB
+    if (m_pdfView) m_pdfView->hide();
+#endif
     m_mediaPlayer->play();
     applyHostedBackdrop(QColor(20, 22, 26));
 #endif
 }
 
 void DocumentPane::showStateMessage(const QString &title, const QString &body) {
+    if (m_hostFrame) {
+        m_hostFrame->hide();
+    }
     if (m_hostSurface) {
         m_hostSurface->hide();
     }
     if (m_graphicsView) m_graphicsView->hide();
     if (m_codeViewer) m_codeViewer->hide();
+#ifdef QT_PDF_LIB
+    if (m_pdfView) m_pdfView->hide();
+#endif
 
 #ifdef QT_WEBENGINEWIDGETS_LIB
     if (m_webView) m_webView->hide();
@@ -1103,6 +1377,9 @@ void DocumentPane::showStateMessage(const QString &title, const QString &body) {
 
 void DocumentPane::syncUiState() {
     if (m_hostedReady) {
+        if (m_hostFrame) {
+            m_hostFrame->show();
+        }
         if (m_hostSurface) {
             m_hostSurface->show();
         }
@@ -1110,7 +1387,10 @@ void DocumentPane::syncUiState() {
         return;
     }
 
-    if (m_hostMode == ImageViewer || m_hostMode == CodeViewer || m_hostMode == WebView || m_hostMode == MediaPlayer) {
+    if (m_hostMode == ImageViewer || m_hostMode == CodeViewer || m_hostMode == WebView || m_hostMode == MediaPlayer || m_hostMode == PdfViewer) {
+        if (m_hostFrame) {
+            m_hostFrame->hide();
+        }
         m_stateCard->hide();
         return;
     }

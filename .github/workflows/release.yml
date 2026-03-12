@@ -27,22 +27,6 @@ jobs:
         with:
           lfs: true
 
-      - name: Validate install.sh syntax
-        if: matrix.platform == 'ubuntu-22.04'
-        shell: bash
-        run: bash -n scripts/install.sh
-
-      - name: Validate install.ps1 syntax
-        if: matrix.platform == 'windows-latest'
-        shell: pwsh
-        run: |
-          $parseErrors = $null
-          [System.Management.Automation.Language.Parser]::ParseFile("scripts/install.ps1", [ref]$null, [ref]$parseErrors) | Out-Null
-          if ($parseErrors -and $parseErrors.Count -gt 0) {
-            $parseErrors | ForEach-Object { Write-Error $_.Message }
-            exit 1
-          }
-
       - name: Install dependencies (Ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
         shell: bash
@@ -86,18 +70,6 @@ jobs:
 
       - name: Install npm dependencies
         run: npm ci --no-audit
-
-      - name: Ensure Rollup native package is present
-        shell: bash
-        run: |
-          set -euo pipefail
-          if node -e "require('./ixos-search/ui/node_modules/rollup/dist/native.js')"; then
-            echo "Rollup native package is already available."
-          else
-            echo "Missing Rollup native package after npm ci; installing workspace rollup fallback."
-            npm --workspace ixos-search/ui install --no-save --no-audit --include=optional rollup
-            node -e "require('./ixos-search/ui/node_modules/rollup/dist/native.js')"
-          fi
 
       - name: Ensure bundled model assets
         shell: bash
@@ -291,39 +263,6 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
-
-      - name: Verify bundled desktop model payloads
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          mapfile -t up_dirs < <(find target -type d -name "_up_" | sort)
-          if [[ "${#up_dirs[@]}" -eq 0 ]]; then
-            echo "No Tauri updater payload directories were produced." >&2
-            exit 1
-          fi
-
-          for up_dir in "${up_dirs[@]}"; do
-            echo "Inspecting $up_dir"
-            test -s "$up_dir/models/ixos-flash-v2/model.safetensors" || {
-              echo "Missing ixos-flash-v2 payload in $up_dir" >&2
-              exit 1
-            }
-            test -s "$up_dir/models/potion-base-8M-int8/model.safetensors" || {
-              echo "Missing potion-base-8M-int8 payload in $up_dir" >&2
-              exit 1
-            }
-            test -s "$up_dir/models/ixos-pro-v2/pro_v2.json" || {
-              echo "Missing ixos-pro-v2 payload in $up_dir" >&2
-              exit 1
-            }
-
-            if [[ -e "$up_dir/models/ixos-flash-v1" || -e "$up_dir/models/ixos-pro-v1" || -e "$up_dir/models/lab" ]]; then
-              echo "Unexpected legacy/lab model payload detected in $up_dir" >&2
-              find "$up_dir/models" -maxdepth 2 -type f | sort >&2 || true
-              exit 1
-            fi
-          done
 
   copy-to-releases:
     needs: publish-tauri

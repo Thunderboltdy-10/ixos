@@ -13,7 +13,11 @@ namespace Ixplorer {
 
 class DocumentPane;
 class ExplorerPane;
+class HomeDashboardPane;
 class BreadcrumbBar;
+class WorkstreamManager;
+class ResumptionEngine;
+class ActivityTracker;
 
 class TabWorkspace : public QWidget {
     Q_OBJECT
@@ -22,6 +26,7 @@ public:
 
     ExplorerPane *currentPane() const;
     DocumentPane *currentDocument() const;
+    HomeDashboardPane *currentDashboard() const;
     ExplorerPane *paneAt(int index) const;
     int addTab(const QString &path);
     bool previewPath(const QString &path);
@@ -44,6 +49,7 @@ public:
     int tabCount() const;
     QVector<TabState> captureTabState() const;
     void restoreTabState(const QVector<TabState> &tabs, int activeTabIndex);
+    void setIntelligence(WorkstreamManager *wm, ResumptionEngine *re, ActivityTracker *at);
 
 signals:
     void currentTabChanged(int index);
@@ -63,16 +69,22 @@ protected:
 private:
     int addExplorerTab(const QString &path);
     int addDocumentTab(const QString &path, bool preview);
+    int addDashboardTab();
     int findDocumentTab(const QString &path) const;
     void replaceWidgetAt(int index, QWidget *widget, const QString &path);
     void connectExplorerTab(ExplorerPane *pane);
     void connectDocumentTab(DocumentPane *pane);
+    void connectDashboardTab(HomeDashboardPane *pane);
     void updateSignalsForCurrentWidget();
     void updateTabMetadata(int index, const QString &path);
     void onTabChanged(int index);
     void onTabCloseRequested(int index);
     void onNewTabClicked();
     void showContextMenu(const QPoint &pos);
+
+    WorkstreamManager *m_wm = nullptr;
+    ResumptionEngine *m_re = nullptr;
+    ActivityTracker *m_at = nullptr;
 
     QTabBar *m_tabBar;
 

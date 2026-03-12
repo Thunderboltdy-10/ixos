@@ -18,7 +18,6 @@ IxosRail::IxosRail(QWidget *parent)
     , m_provider(new IxosCliSearchProvider(this))
     , m_liveSearchTimer(new QTimer(this)) {
     setObjectName("IxosRail");
-    setMinimumWidth(340);
     m_liveSearchTimer->setSingleShot(true);
     m_liveSearchTimer->setInterval(380);
 
@@ -29,30 +28,30 @@ IxosRail::IxosRail(QWidget *parent)
     auto *header = new QWidget(this);
     header->setObjectName("RailHeader");
     auto *headerLayout = new QHBoxLayout(header);
-    headerLayout->setContentsMargins(18, 14, 18, 12);
-    headerLayout->setSpacing(10);
+    headerLayout->setContentsMargins(16, 10, 12, 8);
+    headerLayout->setSpacing(8);
 
-    auto *title = new QLabel("Ixos", header);
+    auto *title = new QLabel("IXOS", header);
     title->setObjectName("RailHeaderTitle");
     QFont titleFont("Geist Mono");
-    titleFont.setPixelSize(14);
+    titleFont.setPixelSize(11);
     titleFont.setBold(true);
+    titleFont.setLetterSpacing(QFont::AbsoluteSpacing, 1.2);
     title->setFont(titleFont);
-    title->setStyleSheet("color: #E8A317;"); // AccentAmber
     headerLayout->addWidget(title, 1);
 
     auto *closeButton = new QPushButton(header);
     closeButton->setObjectName("RailHeaderButton");
-    closeButton->setIcon(Icons::makeIconFromFont(Icons::Close, 16));
+    closeButton->setIcon(Icons::makeIconFromFont(Icons::Close, 12, QColor(0x6E, 0x6E, 0x73)));
     closeButton->setFlat(true);
-    closeButton->setFixedSize(24, 24);
+    closeButton->setFixedSize(22, 22);
     headerLayout->addWidget(closeButton);
     mainLayout->addWidget(header);
 
     auto *searchContainer = new QWidget(this);
     auto *searchLayout = new QVBoxLayout(searchContainer);
-    searchLayout->setContentsMargins(18, 0, 18, 12);
-    searchLayout->setSpacing(6);
+    searchLayout->setContentsMargins(14, 0, 14, 8);
+    searchLayout->setSpacing(4);
 
     m_searchInput = new QLineEdit(searchContainer);
     m_searchInput->setObjectName("SearchField");
@@ -63,7 +62,6 @@ IxosRail::IxosRail(QWidget *parent)
     m_searchStateLabel = new QLabel(searchContainer);
     m_searchStateLabel->setObjectName("RailStatus");
     m_searchStateLabel->setWordWrap(true);
-    m_searchStateLabel->setStyleSheet("color: #8E8E93; font-size: 12px;");
     searchLayout->addWidget(m_searchStateLabel);
 
     mainLayout->addWidget(searchContainer);
@@ -71,8 +69,8 @@ IxosRail::IxosRail(QWidget *parent)
     m_contextPane = new QWidget(this);
     m_contextPane->setObjectName("RailContextPane");
     auto *contextLayout = new QVBoxLayout(m_contextPane);
-    contextLayout->setContentsMargins(18, 4, 18, 12);
-    contextLayout->setSpacing(6);
+    contextLayout->setContentsMargins(14, 8, 14, 10);
+    contextLayout->setSpacing(4);
 
     m_contextEyebrow = new QLabel(m_contextPane);
     m_contextEyebrow->setObjectName("RailContextEyebrow");
@@ -90,8 +88,8 @@ IxosRail::IxosRail(QWidget *parent)
 
     m_contextActions = new QWidget(m_contextPane);
     m_contextActionsLayout = new QHBoxLayout(m_contextActions);
-    m_contextActionsLayout->setContentsMargins(0, 2, 0, 0);
-    m_contextActionsLayout->setSpacing(6);
+    m_contextActionsLayout->setContentsMargins(0, 4, 0, 0);
+    m_contextActionsLayout->setSpacing(4);
     contextLayout->addWidget(m_contextActions);
     m_contextPane->hide();
     mainLayout->addWidget(m_contextPane, 0);
@@ -107,19 +105,14 @@ IxosRail::IxosRail(QWidget *parent)
     m_detailPane->setObjectName("RailDetailPane");
     m_detailPane->hide();
     auto *detailLayout = new QVBoxLayout(m_detailPane);
-    detailLayout->setContentsMargins(18, 14, 18, 16);
-    detailLayout->setSpacing(8);
-    
-    auto *detailTitle = new QLabel("Match Details", m_detailPane);
-    detailTitle->setObjectName("RailHeaderTitle");
-    detailTitle->setStyleSheet("color: #E8A317; font-weight: 600; font-size: 12px;");
-    detailLayout->addWidget(detailTitle);
-    
+    detailLayout->setContentsMargins(14, 10, 14, 12);
+    detailLayout->setSpacing(6);
+
     m_detailText = new QTextEdit(m_detailPane);
     m_detailText->setObjectName("RailDetailText");
     m_detailText->setReadOnly(true);
-    m_detailText->setMinimumHeight(128);
-    m_detailText->setStyleSheet("background: transparent; border: none; color: #A1A1A6; font-size: 12px;");
+    m_detailText->setMinimumHeight(100);
+    m_detailText->setFrameShape(QFrame::NoFrame);
     detailLayout->addWidget(m_detailText, 1);
     
     mainLayout->addWidget(m_detailPane, 0);
@@ -266,6 +259,9 @@ void IxosRail::showFileDetails(const QFileInfo &, int, quint64) {
 }
 
 void IxosRail::clearDetails() {
+    if (!m_results.isEmpty() && m_resultList->currentRow() >= 0) {
+        return;
+    }
     m_detailPane->hide();
     m_detailText->clear();
 }
@@ -384,25 +380,33 @@ void IxosRail::handleResultSelection(int row) {
     if (row >= 0 && row < m_results.size()) {
         const SearchHit &hit = m_results.at(row);
 
-        QString html = QStringLiteral("<div style='line-height:1.45'>");
-        html += QStringLiteral("<div style='margin-bottom:6px; color:#F2F2F7; font-weight:600;'>%1</div>")
+        QString html = QStringLiteral(
+            "<div style='line-height:1.5; font-family: \"Segoe UI Variable Text\", \"Segoe UI\", sans-serif;'>");
+        html += QStringLiteral(
+            "<div style='margin-bottom:4px; color:#E8E8ED; font-weight:500; font-size:13px;'>%1</div>")
                     .arg(hit.filename.toHtmlEscaped());
-        html += QStringLiteral("<div style='margin-bottom:10px; color:#8E8E93; font-family:\"Geist Mono\",\"Consolas\",monospace;'>%1</div>")
+        html += QStringLiteral(
+            "<div style='margin-bottom:8px; color:#6E6E73; font-family:\"Geist Mono\",monospace; font-size:11px;'>%1</div>")
                     .arg(relativePathForResult(hit).toHtmlEscaped());
         if (hit.hasScoreBreakdown) {
-            html += QStringLiteral("<b>Match</b> %1%<br>").arg(static_cast<int>(hit.score * 100.0));
-            html += QStringLiteral("<span style='color:#8E8E93'>semantic %1 • integrity %2</span><br><br>")
+            html += QStringLiteral(
+                "<div style='color:#D4993D; font-size:12px; margin-bottom:2px;'>%1%% match</div>")
+                    .arg(static_cast<int>(hit.score * 100.0));
+            html += QStringLiteral(
+                "<div style='color:#5A5A5E; font-size:11px; margin-bottom:8px;'>"
+                "semantic %1 &middot; integrity %2</div>")
                         .arg(hit.scoreBreakdown.semantic, 0, 'f', 2)
                         .arg(hit.scoreBreakdown.integrity, 0, 'f', 2);
         }
         if (hit.hasEvidence) {
-            html += QStringLiteral("<b>Explanation</b><br>%1").arg(hit.evidence.explanation.toHtmlEscaped());
+            html += QStringLiteral(
+                "<div style='color:#8B8B90; font-size:12px;'>%1</div>")
+                    .arg(hit.evidence.explanation.toHtmlEscaped());
             if (!hit.evidence.matchedTerms.isEmpty()) {
-                html += QStringLiteral("<br><br><span style='color:#8E8E93'><b>Terms</b> %1</span>")
-                            .arg(hit.evidence.matchedTerms.join(QStringLiteral(", ")).toHtmlEscaped());
+                html += QStringLiteral(
+                    "<div style='color:#5A5A5E; font-size:11px; margin-top:6px;'>%1</div>")
+                            .arg(hit.evidence.matchedTerms.join(QStringLiteral(" &middot; ")).toHtmlEscaped());
             }
-        } else {
-            html += QStringLiteral("<span style='color:#8E8E93'>Top result is opened by default. Press Enter to reopen, or double-click another result to open it in a new tab.</span>");
         }
         html += QStringLiteral("</div>");
         m_detailText->setHtml(html);
@@ -445,6 +449,7 @@ void IxosRail::rebuildContextPane() {
         button->setProperty("railPrimaryAction", primary);
         button->setFlat(!primary);
         button->setToolTip(path);
+        button->setMaximumHeight(26);
         connect(button, &QPushButton::clicked, this, [this, path, primary]() {
             if (primary) {
                 emit openFileRequested(path);
@@ -460,8 +465,8 @@ void IxosRail::rebuildContextPane() {
     QString subtitle;
 
     if (m_recoveryPacket.wasInterrupted && !m_recoveryPacket.items.isEmpty()) {
-        eyebrow = QStringLiteral("Recovered Session");
-        title = QStringLiteral("Resume where you left off");
+        eyebrow = QStringLiteral("RECOVERY");
+        title = QStringLiteral("Resume interrupted session");
         subtitle = m_recoveryPacket.reason;
 
         QStringList bundlePaths;
@@ -469,26 +474,24 @@ void IxosRail::rebuildContextPane() {
             bundlePaths.append(item.path);
         }
 
-        auto *resumeButton = new QPushButton(QStringLiteral("Open %1 items").arg(bundlePaths.size()), m_contextActions);
+        auto *resumeButton = new QPushButton(QStringLiteral("Resume (%1)").arg(bundlePaths.size()), m_contextActions);
         resumeButton->setProperty("railPrimaryAction", true);
         resumeButton->setCursor(Qt::PointingHandCursor);
+        resumeButton->setMaximumHeight(26);
         connect(resumeButton, &QPushButton::clicked, this, [this, bundlePaths]() {
             emit openBundleRequested(bundlePaths, m_recoveryPacket.workstreamId);
         });
         m_contextActionsLayout->addWidget(resumeButton);
-
-        for (const RecoveryItem &item : std::as_const(m_recoveryPacket.items)) {
-            m_contextActionsLayout->addWidget(makeAction(displayNameForPath(item.path), item.path, false));
-        }
     } else if (!m_bundlePrediction.primaryPath.isEmpty()) {
-        eyebrow = QStringLiteral("Suggested Next");
+        eyebrow = QStringLiteral("PREDICTED");
         title = displayNameForPath(m_bundlePrediction.primaryPath);
         subtitle = m_bundlePrediction.reason;
 
         QStringList bundlePaths{m_bundlePrediction.primaryPath};
-        auto *openBundle = new QPushButton(QStringLiteral("Open bundle"), m_contextActions);
+        auto *openBundle = new QPushButton(QStringLiteral("Open"), m_contextActions);
         openBundle->setProperty("railPrimaryAction", true);
         openBundle->setCursor(Qt::PointingHandCursor);
+        openBundle->setMaximumHeight(26);
         connect(openBundle, &QPushButton::clicked, this, [this, bundlePaths]() mutable {
             for (const BundleItem &item : std::as_const(m_bundlePrediction.items)) {
                 bundlePaths.append(item.path);
@@ -496,21 +499,18 @@ void IxosRail::rebuildContextPane() {
             emit openBundleRequested(bundlePaths, m_bundlePrediction.workstreamId);
         });
         m_contextActionsLayout->addWidget(openBundle);
-        m_contextActionsLayout->addWidget(makeAction(displayNameForPath(m_bundlePrediction.primaryPath), m_bundlePrediction.primaryPath, false));
-        for (const BundleItem &item : std::as_const(m_bundlePrediction.items)) {
-            m_contextActionsLayout->addWidget(makeAction(displayNameForPath(item.path), item.path, false));
-        }
     } else if (!m_resumePacket.primaryPath.isEmpty()) {
-        eyebrow = QStringLiteral("Continue");
+        eyebrow = QStringLiteral("CONTINUE");
         title = displayNameForPath(m_resumePacket.primaryPath);
         subtitle = m_resumePacket.lastQuery.isEmpty()
             ? m_resumePacket.reason
-            : QStringLiteral("Last search: \"%1\"").arg(m_resumePacket.lastQuery);
+            : QStringLiteral("Last: \"%1\"").arg(m_resumePacket.lastQuery);
 
         QStringList bundlePaths{m_resumePacket.primaryPath};
-        auto *openBundle = new QPushButton(QStringLiteral("Open bundle"), m_contextActions);
+        auto *openBundle = new QPushButton(QStringLiteral("Open"), m_contextActions);
         openBundle->setProperty("railPrimaryAction", true);
         openBundle->setCursor(Qt::PointingHandCursor);
+        openBundle->setMaximumHeight(26);
         connect(openBundle, &QPushButton::clicked, this, [this, bundlePaths]() mutable {
             for (const QString &path : std::as_const(m_resumePacket.supportingPaths)) {
                 bundlePaths.append(path);
@@ -518,10 +518,6 @@ void IxosRail::rebuildContextPane() {
             emit openBundleRequested(bundlePaths, m_resumePacket.workstreamId);
         });
         m_contextActionsLayout->addWidget(openBundle);
-        m_contextActionsLayout->addWidget(makeAction(displayNameForPath(m_resumePacket.primaryPath), m_resumePacket.primaryPath, false));
-        for (const QString &path : std::as_const(m_resumePacket.supportingPaths)) {
-            m_contextActionsLayout->addWidget(makeAction(displayNameForPath(path), path, false));
-        }
     } else {
         m_contextPane->hide();
         return;

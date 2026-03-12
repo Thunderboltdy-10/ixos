@@ -36,6 +36,7 @@ set(SOURCES
     src/widgets/SidebarSection.cpp
     src/widgets/TabWorkspace.cpp
     src/widgets/ExplorerPane.cpp
+    src/widgets/HomeDashboardPane.cpp
     src/widgets/IxosRail.cpp
     src/widgets/SearchResultCard.cpp
     src/widgets/ActivityIndicator.cpp
@@ -77,6 +78,7 @@ set(HEADERS
     src/widgets/SidebarSection.h
     src/widgets/TabWorkspace.h
     src/widgets/ExplorerPane.h
+    src/widgets/HomeDashboardPane.h
     src/widgets/IxosRail.h
     src/widgets/SearchResultCard.h
     src/widgets/ActivityIndicator.h

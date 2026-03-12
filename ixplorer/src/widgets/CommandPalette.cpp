@@ -34,15 +34,15 @@ CommandPalette::CommandPalette(QWidget *parent)
     setWindowFlag(Qt::FramelessWindowHint, true);
 
     auto *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(18, 18, 18, 18);
-    layout->setSpacing(12);
+    layout->setContentsMargins(14, 14, 14, 14);
+    layout->setSpacing(8);
 
-    auto *title = new QLabel(QStringLiteral("Command Palette"), this);
+    auto *title = new QLabel(QStringLiteral("COMMANDS"), this);
     title->setObjectName("CommandPaletteTitle");
     layout->addWidget(title);
 
     m_input->setObjectName("CommandPaletteInput");
-    m_input->setPlaceholderText(QStringLiteral("Search actions or type a query for Ixos"));
+    m_input->setPlaceholderText(QStringLiteral("Search actions or type an Ixos query"));
     layout->addWidget(m_input);
 
     m_list->setObjectName("CommandPaletteList");

@@ -84,7 +84,7 @@ void MainWindow::navigateTo(const QString &path) {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-    if (m_activityTracker != nullptr) {
+    if (m_activityTracker != nullptr && m_workstreamManager != nullptr) {
         m_activityTracker->logEvent(ActivityAction::SessionEnd, QString(), {}, {}, m_workstreamManager->currentWorkstreamId());
     }
     saveSession(true);
@@ -104,7 +104,7 @@ void MainWindow::setupLayout() {
 
     vbox->addWidget(m_toolbar);
 
-    m_splitter->setHandleWidth(1);
+    m_splitter->setHandleWidth(8);
     m_splitter->addWidget(m_sidebar);
     m_splitter->addWidget(m_workspace);
     m_splitter->addWidget(m_rail);
@@ -114,7 +114,7 @@ void MainWindow::setupLayout() {
     m_splitter->setCollapsible(0, false);
     m_splitter->setCollapsible(1, false);
     m_splitter->setCollapsible(2, true);
-    m_splitter->setSizes({248, 914, 0});
+    m_splitter->setSizes({220, 880, 0});
 
     vbox->addWidget(m_splitter, 1);
     vbox->addWidget(m_statusStrip);
@@ -307,7 +307,7 @@ void MainWindow::setupConnections() {
 void MainWindow::setupShortcuts() {
     auto *newTab = new QShortcut(QKeySequence("Ctrl+T"), this);
     connect(newTab, &QShortcut::activated, this, [this]() {
-        m_workspace->addTab(QDir::homePath());
+        m_workspace->addTab("ixplorer://home");
     });
 
     auto *closeTab = new QShortcut(QKeySequence("Ctrl+W"), this);
@@ -374,6 +374,8 @@ void MainWindow::initializeIntelligence() {
     m_orchestrator->setInterruptionDetector(m_interruptionDetector);
     m_interruptionDetector->setSessionState(m_runtimeSession);
     m_interruptionDetector->setResumptionEngine(m_resumptionEngine);
+
+    m_workspace->setIntelligence(m_workstreamManager, m_resumptionEngine, m_activityTracker);
 
     m_orchestratorTimer->setInterval(200);
     connect(m_orchestratorTimer, &QTimer::timeout, this, [this]() {
@@ -604,32 +606,23 @@ void MainWindow::onPathChanged(const QString &path) {
 }
 
 void MainWindow::applyShellTone(const QColor &color) {
-    if (m_shellTone.isValid() && colorDistance(m_shellTone, color) < 20) {
+    if (m_shellTone.isValid() && colorDistance(m_shellTone, color) < 25) {
         return;
     }
     m_shellTone = color;
 
-    const QColor base = blendToward(QColor(15, 17, 21), color, 0.18);
-    const QColor chrome = blendToward(QColor(20, 22, 27), color, 0.22);
-    const QColor edge = blendToward(QColor(48, 54, 66), color, 0.14);
-    const QColor side = blendToward(chrome, QColor(8, 10, 13), 0.25);
-
-    const QString chromeCss = QStringLiteral(
-        "background: qlineargradient(x1:0,y1:0,x2:1,y2:1, stop:0 %1, stop:1 %2);"
-        "border-color:%3;")
-                                  .arg(chrome.name(QColor::HexRgb),
-                                       base.name(QColor::HexRgb),
-                                       edge.name(QColor::HexRgb));
+    // Subtle tint from hosted content — keep the shell mostly neutral
+    const QColor base = blendToward(QColor(25, 27, 31), color, 0.08);
+    const QColor chrome = blendToward(QColor(30, 32, 37), color, 0.06);
+    const QColor edge = QColor(255, 255, 255, 15); // rgba(255,255,255,0.06)
 
     if (m_shellRoot) {
         m_shellRoot->setStyleSheet(QStringLiteral("#ShellRoot { background-color: %1; }")
                                        .arg(base.name(QColor::HexRgb)));
     }
-    m_toolbar->setStyleSheet(QStringLiteral("#ExplorerToolbar{%1 border-bottom:1px solid %2;}").arg(chromeCss, edge.name(QColor::HexRgb)));
-    m_sidebar->setStyleSheet(QStringLiteral("#AppSidebar{background:qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 %1, stop:1 %2); border-right:1px solid %3;}").arg(side.name(QColor::HexRgb), base.name(QColor::HexRgb), edge.name(QColor::HexRgb)));
-    m_rail->setStyleSheet(QStringLiteral("#IxosRail{background:qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 %1, stop:1 %2); border-left:1px solid %3;}").arg(side.name(QColor::HexRgb), base.name(QColor::HexRgb), edge.name(QColor::HexRgb)));
-    m_statusStrip->setStyleSheet(QStringLiteral("#StatusStrip{background-color:%1; border-top:1px solid %2;}").arg(chrome.name(QColor::HexRgb), edge.name(QColor::HexRgb)));
-    m_workspace->setStyleSheet(QStringLiteral("background-color:%1;").arg(base.name(QColor::HexRgb)));
+    // Don't override widget stylesheets aggressively — let the QSS theme handle it.
+    // Only set the workspace background to blend with hosted content.
+    m_workspace->setStyleSheet(QStringLiteral("background-color: %1;").arg(base.name(QColor::HexRgb)));
 }
 
 void MainWindow::markSessionDirty() {
@@ -649,7 +642,9 @@ void MainWindow::saveSession(bool cleanExit) {
     m_sessionSnapshot.lastSearchRoot = activeSearchRoot();
     m_sessionSnapshot.lastSaveTimestamp = QDateTime::currentMSecsSinceEpoch();
     m_sessionSnapshot.hasCleanExit = cleanExit;
-    m_sessionSnapshot.activeWorkstreamId = m_workstreamManager->currentWorkstreamId();
+    if (m_workstreamManager != nullptr) {
+        m_sessionSnapshot.activeWorkstreamId = m_workstreamManager->currentWorkstreamId();
+    }
 
     if (!m_sessionSnapshot.activeWorkstreamId.isEmpty()) {
         WorkstreamSessionState workstreamState;
@@ -686,7 +681,7 @@ void MainWindow::restoreSession() {
     }
 
     if (tabs.isEmpty()) {
-        m_workspace->addTab(QDir::homePath());
+        m_workspace->addTab("ixplorer://home");
     } else {
         m_workspace->restoreTabState(tabs, activeTabIndex);
     }
@@ -758,7 +753,7 @@ void MainWindow::switchWorkstream(const QString &id) {
         m_toolbar->setSearchText(m_lastSearchQuery);
     } else {
         const Workstream workstream = m_workstreamManager->workstreamForId(id);
-        const QString fallbackPath = !workstream.topFolders.isEmpty() ? workstream.topFolders.first().first : QDir::homePath();
+        const QString fallbackPath = !workstream.topFolders.isEmpty() ? workstream.topFolders.first().first : QStringLiteral("ixplorer://home");
         m_workspace->restoreTabState({}, 0);
         m_workspace->navigateCurrentTab(fallbackPath);
         m_lastSearchQuery.clear();
@@ -877,35 +872,36 @@ void MainWindow::setRailVisible(bool visible) {
     m_railVisible = visible;
     m_toolbar->setRailVisible(visible);
 
-    const int totalWidth = qMax(1200, width());
-    const int sidebarWidth = currentSizes.size() >= 1 ? currentSizes.at(0) : 248;
-    const int targetRailWidth = visible ? qMax(340, m_lastRailWidth) : 0;
-    const int targetWorkspaceWidth = totalWidth - sidebarWidth - targetRailWidth;
-    
-    QList<int> startSizes = currentSizes;
-    if (startSizes.size() < 3) {
-        startSizes = {sidebarWidth, qMax(720, width() - sidebarWidth), 0};
-    }
-    QList<int> endSizes = {sidebarWidth, targetWorkspaceWidth, targetRailWidth};
+    const int targetRailWidth = visible ? qMax(320, m_lastRailWidth) : 0;
+    const int startRailWidth = m_rail->width();
 
     if (visible) {
         m_rail->setVisible(true);
     }
 
     auto *anim = new QVariantAnimation(this);
-    anim->setDuration(300);
+    anim->setDuration(220);
     anim->setEasingCurve(QEasingCurve::OutExpo);
-    anim->setStartValue(startSizes.at(2));
+    anim->setStartValue(startRailWidth);
     anim->setEndValue(targetRailWidth);
 
-    connect(anim, &QVariantAnimation::valueChanged, this, [this, sidebarWidth, totalWidth](const QVariant &value) {
-        int currentRailWidth = value.toInt();
-        m_splitter->setSizes({sidebarWidth, totalWidth - sidebarWidth - currentRailWidth, currentRailWidth});
+    connect(anim, &QVariantAnimation::valueChanged, this, [this](const QVariant &value) {
+        m_rail->setMaximumWidth(value.toInt());
+        m_rail->setMinimumWidth(value.toInt());
     });
 
-    connect(anim, &QVariantAnimation::finished, this, [this, visible]() {
+    connect(anim, &QVariantAnimation::finished, this, [this, visible, targetRailWidth]() {
         if (!visible) {
             m_rail->setVisible(false);
+        } else {
+            m_rail->setMinimumWidth(320); // Restore minimum width for resizing
+            m_rail->setMaximumWidth(16777215); // Unbound maximum width
+            // ensure splitter sizes are correct after unbound
+            auto sizes = m_splitter->sizes();
+            if (sizes.size() >= 3) {
+                sizes[2] = targetRailWidth;
+                m_splitter->setSizes(sizes);
+            }
         }
     });
 

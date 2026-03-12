@@ -19,22 +19,22 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     setObjectName("ExplorerToolbar");
 
     auto *layout = new QHBoxLayout(this);
-    layout->setContentsMargins(14, 10, 14, 8);
-    layout->setSpacing(8);
+    layout->setContentsMargins(10, 0, 10, 0);
+    layout->setSpacing(2);
 
-    QColor iconColor = Colors::qc(Colors::FgPrimary);
-    QColor disabledColor = Colors::qc(Colors::FgGhost);
+    QColor iconColor(0x8B, 0x8B, 0x90);
+    QColor disabledColor(0x3A, 0x3A, 0x3E);
 
-    m_backBtn->setIcon(Icons::makeIconFromFont(Icons::Back, 16, iconColor, disabledColor));
-    m_fwdBtn->setIcon(Icons::makeIconFromFont(Icons::Forward, 16, iconColor, disabledColor));
-    m_upBtn->setIcon(Icons::makeIconFromFont(Icons::Up, 16, iconColor, disabledColor));
-    m_refreshBtn->setIcon(Icons::makeIconFromFont(Icons::Refresh, 16, iconColor, disabledColor));
+    m_backBtn->setIcon(Icons::makeIconFromFont(Icons::Back, 14, iconColor, disabledColor));
+    m_fwdBtn->setIcon(Icons::makeIconFromFont(Icons::Forward, 14, iconColor, disabledColor));
+    m_upBtn->setIcon(Icons::makeIconFromFont(Icons::Up, 14, iconColor, disabledColor));
+    m_refreshBtn->setIcon(Icons::makeIconFromFont(Icons::Refresh, 14, iconColor, disabledColor));
 
     m_backBtn->setToolTip("Back (Alt+Left)");
     m_fwdBtn->setToolTip("Forward (Alt+Right)");
     m_upBtn->setToolTip("Up (Alt+Up)");
     m_refreshBtn->setToolTip("Refresh (F5)");
-    
+
     m_backBtn->setObjectName("ToolbarNavButton");
     m_fwdBtn->setObjectName("ToolbarNavButton");
     m_upBtn->setObjectName("ToolbarNavButton");
@@ -42,26 +42,27 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
 
     const QList<QPushButton *> navButtons = {m_backBtn, m_fwdBtn, m_upBtn, m_refreshBtn};
     for (QPushButton *button : navButtons) {
-        button->setFixedSize(28, 28);
+        button->setFixedSize(26, 26);
         layout->addWidget(button);
     }
-    layout->addSpacing(10);
+    layout->addSpacing(8);
 
-    // Search Icon rendering
-    m_searchField->addAction(Icons::makeIconFromFont(Icons::Search, 16, Colors::qc(Colors::FgMuted)), QLineEdit::LeadingPosition);
+    m_searchField->addAction(Icons::makeIconFromFont(Icons::Search, 14, QColor(0x5A, 0x5A, 0x5E)), QLineEdit::LeadingPosition);
 
     m_searchField->setObjectName("SearchField");
     m_searchField->setPlaceholderText("Search this folder with Ixos");
     m_searchField->setClearButtonEnabled(true);
-    m_searchField->setMinimumWidth(460);
+    m_searchField->setMinimumWidth(320);
     m_searchField->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     layout->addWidget(m_searchField, 1);
 
+    layout->addSpacing(4);
+
     m_toggleRailBtn->setObjectName("ToolbarRailButton");
     m_toggleRailBtn->setCheckable(true);
-    m_toggleRailBtn->setIcon(Icons::makeIconFromFont(Icons::Filter, 16, iconColor, disabledColor));
-    m_toggleRailBtn->setFixedSize(30, 30);
-    m_toggleRailBtn->setToolTip("Show or hide the Ixos rail");
+    m_toggleRailBtn->setIcon(Icons::makeIconFromFont(Icons::Filter, 14, iconColor, disabledColor));
+    m_toggleRailBtn->setFixedSize(28, 28);
+    m_toggleRailBtn->setToolTip("Toggle Ixos panel");
     layout->addWidget(m_toggleRailBtn);
 
     connect(m_backBtn, &QPushButton::clicked, this, &ExplorerToolbar::backRequested);

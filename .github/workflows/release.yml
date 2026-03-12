@@ -243,7 +243,7 @@ jobs:
         run: |
           node -e "
             const fs = require('fs');
-            const targets = ['.env.local', 'ixos-search/ui/.env.local', 'ixos-search/src-tauri/.env.local'];
+            const targets = ['ixos-search/ui/.env.local', 'ixos-search/src-tauri/.env.local'];
             const keys = [
               'VITE_API_URL',
               'VITE_CLERK_PUBLISHABLE_KEY',

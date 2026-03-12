@@ -258,7 +258,7 @@ WindowCandidate findBestWindowCandidate(
             if (!titleMatches && !(pidMatches && executableMatches)) {
                 return TRUE;
             }
-            if (!context->expectedExecutableLower.isEmpty() && !executableMatches && !pidMatches) {
+            if (!context->expectedExecutableLower.isEmpty() && !executableMatches && !pidMatches && !titleMatches) {
                 return TRUE;
             }
             if (!isVisible && !pidMatches) {
@@ -389,7 +389,19 @@ DocumentPane::DocumentPane(const QString &path, bool previewMode, QWidget *paren
         m_hostMode = MediaPlayer;
         break;
     case FileOpenHostMode::WebView:
+#ifdef QT_WEBENGINEWIDGETS_LIB
         m_hostMode = WebView;
+#else
+        // WebEngine unavailable — fall back to external for PDF, or CodeViewer for HTML
+        {
+            const QString ext = QFileInfo(m_filePath).suffix().toLower();
+            if (ext == QStringLiteral("pdf")) {
+                m_hostMode = Fallback;
+            } else {
+                m_hostMode = CodeViewer;
+            }
+        }
+#endif
         break;
     case FileOpenHostMode::AssociatedWindow:
         m_hostMode = WindowEmbed;
@@ -404,7 +416,19 @@ DocumentPane::DocumentPane(const QString &path, bool previewMode, QWidget *paren
 
     connect(m_hostMonitor, &QTimer::timeout, this, &DocumentPane::handleHostedWindowHeartbeat);
 
-    if (m_hostMode == CodeViewer) {
+    // Show a loading state first, then set up the viewer
+    if (m_hostMode == WindowEmbed) {
+        showStateMessage(QStringLiteral("Opening..."),
+                         QStringLiteral("Launching the associated application for %1.")
+                             .arg(QFileInfo(m_filePath).fileName()));
+        m_loadingTimer->start();
+        // Defer hosting to let the UI paint the loading state first
+        QTimer::singleShot(50, this, [this]() {
+            m_loadingTimer->stop();
+            m_hostedReady = startHosting();
+            syncUiState();
+        });
+    } else if (m_hostMode == CodeViewer) {
         setupCodeViewer();
     } else if (m_hostMode == ImageViewer) {
         setupImageViewer();
@@ -412,8 +436,6 @@ DocumentPane::DocumentPane(const QString &path, bool previewMode, QWidget *paren
         setupMediaPlayer();
     } else if (m_hostMode == WebView) {
         setupWebView();
-    } else if (m_hostMode == WindowEmbed) {
-        m_hostedReady = startHosting();
     }
 
     syncUiState();
@@ -501,8 +523,8 @@ void DocumentPane::resizeEvent(QResizeEvent *event) {
 
 void DocumentPane::buildUi() {
     auto *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(12, 10, 12, 12);
-    layout->setSpacing(10);
+    layout->setContentsMargins(8, 6, 8, 8);
+    layout->setSpacing(0);
 
     m_contentRoot = new QWidget(this);
     m_contentRoot->setObjectName("DocumentHostRoot");
@@ -575,10 +597,13 @@ void DocumentPane::buildUi() {
     m_hostMonitor->setInterval(650);
     
     m_loadingTimer = new QTimer(this);
-    m_loadingTimer->setInterval(800);
+    m_loadingTimer->setInterval(600);
     connect(m_loadingTimer, &QTimer::timeout, this, [this]() {
         m_skeletonPhase = !m_skeletonPhase;
-        m_stateCard->setStyleSheet(m_skeletonPhase ? QString("background-color: %1;").arg(Colors::qc(Colors::BgElevated).name()) : QString("background-color: %1;").arg(Colors::qc(Colors::BgSurface).name()));
+        const int alpha = m_skeletonPhase ? 8 : 3;
+        m_stateCard->setStyleSheet(
+            QStringLiteral("background-color: rgba(255, 255, 255, %1); border-radius: 8px;")
+                .arg(alpha * 0.01, 0, 'f', 2));
     });
 }
 
@@ -624,8 +649,13 @@ bool DocumentPane::startHosting() {
     timer.start();
 
     while (timer.elapsed() < 18000) {
-        chosen = findBestWindowCandidate(baseline, fileNameLower, fileBaseNameLower, expectedExecutable, launchedProcessId);
-        const int requiredScore = expectedExecutable.isEmpty() ? 80 : 95;
+        DWORD currentPid = launchedProcessId;
+        if (processHandle != nullptr && WaitForSingleObject(processHandle, 0) != WAIT_TIMEOUT) {
+            currentPid = 0; // Process exited, search broadly
+        }
+        
+        chosen = findBestWindowCandidate(baseline, fileNameLower, fileBaseNameLower, expectedExecutable, currentPid);
+        const int requiredScore = expectedExecutable.isEmpty() ? 50 : 70;
         if (chosen.hwnd != nullptr && chosen.score >= requiredScore) {
             break;
         }
@@ -648,13 +678,22 @@ bool DocumentPane::startHosting() {
     m_originalWindowStyle = GetWindowLongPtrW(chosen.hwnd, GWL_STYLE);
     m_originalWindowExStyle = GetWindowLongPtrW(chosen.hwnd, GWL_EXSTYLE);
 
+    wchar_t className[256];
+    GetClassNameW(chosen.hwnd, className, 256);
+    const bool isUwp = wcscmp(className, L"ApplicationFrameWindow") == 0;
+
     // Strip top-level non-client chrome so the hosted app feels embedded rather than draggable.
-    const LONG_PTR hostedStyle =
-        (m_originalWindowStyle &
-         ~static_cast<LONG_PTR>(WS_POPUP | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU)) |
-        static_cast<LONG_PTR>(WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-    const LONG_PTR hostedExStyle =
-        m_originalWindowExStyle & ~static_cast<LONG_PTR>(WS_EX_APPWINDOW | WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+    // For UWP apps, stripping WS_CAPTION or WS_POPUP completely breaks rendering.
+    LONG_PTR hostedStyle = m_originalWindowStyle;
+    if (!isUwp) {
+        hostedStyle &= ~static_cast<LONG_PTR>(WS_POPUP | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+    }
+    hostedStyle |= static_cast<LONG_PTR>(WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+
+    LONG_PTR hostedExStyle = m_originalWindowExStyle;
+    if (!isUwp) {
+        hostedExStyle &= ~static_cast<LONG_PTR>(WS_EX_APPWINDOW | WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+    }
 
     ShowWindow(chosen.hwnd, SW_HIDE);
     SetWindowLongPtrW(chosen.hwnd, GWL_STYLE, hostedStyle);
@@ -785,10 +824,16 @@ void DocumentPane::handleHostedWindowHeartbeat() {
     HWND hwnd = reinterpret_cast<HWND>(m_hostedWindowId);
     LONG_PTR currentStyle = GetWindowLongPtrW(hwnd, GWL_STYLE);
     if ((currentStyle & WS_POPUP) || !(currentStyle & WS_CHILD) || (currentStyle & WS_CAPTION) || (currentStyle & WS_THICKFRAME)) {
-        const LONG_PTR hostedStyle =
-            (m_originalWindowStyle &
-             ~static_cast<LONG_PTR>(WS_POPUP | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU)) |
-            static_cast<LONG_PTR>(WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+        wchar_t className[256];
+        GetClassNameW(hwnd, className, 256);
+        const bool isUwp = wcscmp(className, L"ApplicationFrameWindow") == 0;
+
+        LONG_PTR hostedStyle = m_originalWindowStyle;
+        if (!isUwp) {
+            hostedStyle &= ~static_cast<LONG_PTR>(WS_POPUP | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+        }
+        hostedStyle |= static_cast<LONG_PTR>(WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+        
         SetWindowLongPtrW(hwnd, GWL_STYLE, hostedStyle);
     }
     
@@ -815,23 +860,21 @@ bool DocumentPane::tryRecoverHostedWindow() {
 #ifndef Q_OS_WIN
     return false;
 #else
-    if (m_processHandle == 0 || !m_hostSurface) {
-        return false;
-    }
-
-    HANDLE handle = reinterpret_cast<HANDLE>(m_processHandle);
-    const DWORD waitResult = WaitForSingleObject(handle, 0);
-    if (waitResult != WAIT_TIMEOUT) {
-        return false;
-    }
-
-    const DWORD processId = GetProcessId(handle);
-    if (processId == 0) {
+    if (!m_hostSurface) {
         return false;
     }
 
     const QFileInfo info(m_filePath);
     const QString expectedExecutable = associatedExecutableBaseName(m_filePath);
+    
+    DWORD processId = 0;
+    if (m_processHandle != 0) {
+        HANDLE handle = reinterpret_cast<HANDLE>(m_processHandle);
+        if (WaitForSingleObject(handle, 0) == WAIT_TIMEOUT) {
+            processId = GetProcessId(handle);
+        }
+    }
+
     const WindowCandidate chosen = findBestWindowCandidate(
         {},
         info.fileName().toLower(),

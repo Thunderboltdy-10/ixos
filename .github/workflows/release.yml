@@ -207,6 +207,11 @@ jobs:
           "
 
       - name: Verify desktop build env
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_LEMONSQUEEZY_PRO_VARIANT_ID: ${{ vars.VITE_LEMONSQUEEZY_PRO_VARIANT_ID }}
+          IXOS_JWT_PUBLIC_KEY: ${{ secrets.IXOS_JWT_PUBLIC_KEY }}
         run: node scripts/verify-desktop-build-env.js
 
       - name: Build UI

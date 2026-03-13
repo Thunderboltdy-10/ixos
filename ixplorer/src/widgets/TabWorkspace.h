@@ -60,6 +60,8 @@ signals:
     void selectionCleared();
     void fileActivated(const QFileInfo &info);
     void openInNewTabRequested(const QString &path);
+    void workstreamActivated(const QString &id);
+    void searchRequested(const QString &query);
     void statusMessage(const QString &message);
     void surfaceToneChanged(const QColor &color);
 
@@ -78,6 +80,7 @@ private:
     void updateSignalsForCurrentWidget();
     void updateTabMetadata(int index, const QString &path);
     void onTabChanged(int index);
+    void onTabMoved(int from, int to);
     void onTabCloseRequested(int index);
     void onNewTabClicked();
     void showContextMenu(const QPoint &pos);

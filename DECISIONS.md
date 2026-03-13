@@ -1241,3 +1241,134 @@
   - `ixplorer/src/app/MainWindow.cpp`
   - `ixplorer/src/widgets/AppSidebar.cpp`
   - `ixplorer/src/widgets/TabWorkspace.cpp`
+
+## 2026-03-12 Ixplorer embedded-window ownership policy
+- Decision: enforce one hosted top-level foreign window per Ixplorer pane and reject/avoid recapturing already-hosted HWNDs.
+- Options considered:
+  - Allow recapture of any matching window title/process and reparent freely.
+  - Force unique hosted-window ownership per pane and require fresh captures.
+- Why chosen:
+  - Reparenting the same external HWND across panes was the direct cause of grouped files, ghost outlines, and crash-prone reopen behavior.
+  - Per-pane ownership gives deterministic lifecycle and prevents pane content theft.
+- Evidence:
+  - `ixplorer/src/widgets/DocumentPane.cpp`
+  - `ixplorer/src/widgets/DocumentPane.h`
+
+## 2026-03-12 File-open policy rollback from "embed everything"
+- Decision: replace forced associated-window embedding for all extensions with a type-aware reliability-first classifier.
+- Options considered:
+  - Keep global force-embed behavior.
+  - Fully abandon embedding and always external-open.
+  - Use mixed strategy: in-app stable renderers + embedded associated apps for code/text + external-only denylist.
+- Why chosen:
+  - Global force-embed caused broad extension failures and unstable hosted-window behavior.
+  - Mixed strategy keeps the intended embedded-editor experience while restoring predictable behavior across common file types.
+- Evidence:
+  - `ixplorer/src/utils/FileOpenPolicy.cpp`
+
+## 2026-03-12 Pane navigation interaction policy
+- Decision: allow pane dragging via tab bar only, with synchronized widget-stack reorder.
+- Options considered:
+  - Keep non-movable tabs.
+  - Enable tab drag visuals only (without stack reorder).
+  - Enable drag + synchronize actual pane stack indices.
+- Why chosen:
+  - User-requested pane drag from tab navigation is satisfied only if both tab order and backing content order move together.
+- Evidence:
+  - `ixplorer/src/widgets/TabWorkspace.cpp`
+  - `ixplorer/src/widgets/TabWorkspace.h`
+
+## 2026-03-12 Fallback-first pane policy for Ixplorer
+- Decision: prioritize guaranteed in-app pane content over fragile cross-process embedding for common file classes.
+- Options considered:
+  - Keep associated-app embedding as the default for all editable types.
+  - Disable associated-app embedding entirely.
+  - Keep associated-app embedding as best-effort for edge formats, but default common formats to deterministic in-app renderers.
+- Why chosen:
+  - Runtime behavior showed repeated host-capture failure and dead panes; user-visible reliability was unacceptable.
+  - Qt documents hard limitations for embedded foreign windows (stacking/focus/performance), and Win32 `SetParent` documents cross-process/DPI pitfalls.
+- Evidence:
+  - `ixplorer/src/utils/FileOpenPolicy.cpp`
+  - `ixplorer/src/widgets/DocumentPane.cpp`
+  - [Qt QWidget docs](https://doc.qt.io/qt-6.5/qwidget.html)
+  - [Win32 SetParent docs](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setparent)
+
+## 2026-03-12 CODEX visibility wiring decision
+- Decision: treat feature surfacing bugs as functional incompleteness and wire Home/Today signals before additional visual polish.
+- Options considered:
+  - Keep current hidden/partial surfacing and focus only on host embedding.
+  - Fix visibility wiring now (Today section hide bug, Home startup routing, dashboard signal bridging).
+- Why chosen:
+  - User feedback confirms perceived absence of features beyond workstreams.
+  - Surfacing and interaction wiring is required for features to be considered implemented in practice.
+- Evidence:
+  - `ixplorer/src/widgets/AppSidebar.cpp`
+  - `ixplorer/src/app/MainWindow.cpp`
+  - `ixplorer/src/widgets/TabWorkspace.cpp`
+
+## 2026-03-12 Hosted-app-first open policy (Ixplorer)
+- Decision: default regular files back to associated-app embedding (hosted desktop UI) instead of internal renderers.
+- Options considered:
+  - Keep fallback-first in-app renderers for most types.
+  - Host associated app by default with explicit external-only denylist.
+- Why chosen:
+  - User requirement is explicit: preserve exact external app/editor UI in pane, not a custom Ixplorer renderer.
+  - Fallback-first solved dead panes but violated product intent and expected UX.
+- Evidence:
+  - `ixplorer/src/utils/FileOpenPolicy.cpp`
+  - `ixplorer/src/widgets/DocumentPane.cpp`
+
+## 2026-03-12 Hosted process ownership + app-specific launch args
+- Decision: track ownership of launched hosted processes and use app-specific launch args for multi-pane reliability.
+- Options considered:
+  - Generic association command launch only.
+  - Direct executable launch with known per-app flags and ownership tracking.
+- Why chosen:
+  - Generic association commands (notably Office/DDE paths) can produce file-open errors and ambiguous capture.
+  - Ownership tracking prevents closing unrelated user windows and reduces cross-pane ghost/reuse issues.
+- Evidence:
+  - `ixplorer/src/widgets/DocumentPane.h`
+  - `ixplorer/src/widgets/DocumentPane.cpp`
+
+## 2026-03-12 Context panel de-clutter policy
+- Decision: de-emphasize recovery/resume chrome and keep right rail useful in idle mode.
+- Options considered:
+  - Keep RECOVERY/CONTINUE framing and hide panel when no suggestion.
+  - Use calmer framing + idle guidance action when not searching.
+- Why chosen:
+  - User feedback identified current framing as overwhelming and visually noisy.
+  - Reduced attention cost while preserving access to recovery/resume actions.
+- Evidence:
+  - `ixplorer/src/widgets/IxosRail.cpp`
+  - `ixplorer/resources/styles/ixplorer_dark.qss`
+  - `ixplorer/src/data/TodaySection.cpp`
+
+## 2026-03-12 Hosting strategy adjustment: less style mutation, more capture control
+- Decision: stop aggressively rewriting hosted window styles on heartbeat/recovery and prioritize parent+geometry control with fast redraw.
+- Why chosen:
+  - User-observed failures (non-docx host close/not-embedded, bad size adaptation) are consistent with fragile cross-process style surgery.
+  - Keeping native app styles closer to original preserves exact app UI intent and improves compatibility.
+- Evidence:
+  - `ixplorer/src/widgets/DocumentPane.cpp`
+
+## 2026-03-12 Capture UX policy: hide-first during discovery
+- Decision: proactively hide candidate windows while capture is still resolving.
+- Why chosen:
+  - User explicitly rejected visible top-level app flash before embedding.
+  - Better to show loading state in pane than expose the temporary external window.
+- Evidence:
+  - `ixplorer/src/widgets/DocumentPane.cpp`
+
+## 2026-03-13 Host detection policy update: PID-first tolerance for slow-title apps
+- Decision: accept candidate windows when launched PID matches even if title match is late.
+- Why chosen:
+  - Many apps (Office/browser/UWP wrappers) do not expose final file-title immediately, causing strict title-gated capture to fail.
+- Evidence:
+  - `ixplorer/src/widgets/DocumentPane.cpp`
+
+## 2026-03-13 UWP safety rule in style mutation
+- Decision: skip WS_POPUP/WS_CHILD style rewriting for `ApplicationFrameWindow` candidates.
+- Why chosen:
+  - User reported instant close behavior on image host path consistent with UWP frame breakage when style-mutated.
+- Evidence:
+  - `ixplorer/src/widgets/DocumentPane.cpp`

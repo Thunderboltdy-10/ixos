@@ -28,41 +28,43 @@ function PricingV1() {
 
   return (
     <div className="max-w-5xl mx-auto py-24 px-6 text-[#E2E8F0] font-mono pt-32 relative">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#F6B94C]/5 blur-[100px] pointer-events-none rounded-full" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#F6B94C]/10 blur-[120px] pointer-events-none rounded-full" />
       
-      <div className="mb-16 border-b border-[#F6B94C]/20 pb-6 relative z-10 text-center md:text-left">
-        <h1 className="text-3xl font-bold mb-4 uppercase tracking-widest text-[#F6B94C] flex items-center justify-center md:justify-start gap-3">
-          <Terminal className="w-8 h-8" /> SYSTEM_ACCESS_LEVELS
-        </h1>
-        <p className="text-[#94A3B8] max-w-xl mx-auto md:mx-0">Deploy Ixos locally. Escalate privileges for Pro embeddings and untraceable Journalist Mode.</p>
-      </div>
-
-      <div className="flex justify-center mb-12 relative z-10">
-        <div className="inline-flex items-center p-1 bg-[#0F172A] border border-[#334155]">
-          <button 
-            onClick={() => setBilling("monthly")}
-            className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${billing === "monthly" ? "bg-[#F6B94C] text-[#0F172A]" : "text-[#94A3B8] hover:text-white"}`}
-          >
-            Monthly
-          </button>
-          <button 
-            onClick={() => setBilling("annual")}
-            className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 ${billing === "annual" ? "bg-[#F6B94C] text-[#0F172A]" : "text-[#94A3B8] hover:text-white"}`}
-          >
-            Annual <span className={billing === "annual" ? "text-[#0F172A]/70" : "text-[#F6B94C]"}>(-20%)</span>
-          </button>
+      <div className="mb-16 border-b border-[#F6B94C]/30 pb-6 relative z-10 text-center md:text-left flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-4 uppercase tracking-widest text-[#F6B94C] flex items-center justify-center md:justify-start gap-3 drop-shadow-[0_0_15px_rgba(246,185,76,0.6)]">
+            <Terminal className="w-8 h-8" /> SYSTEM_ACCESS_LEVELS
+          </h1>
+          <p className="text-[#94A3B8] max-w-xl mx-auto md:mx-0">Deploy Ixos locally. Escalate privileges for Pro embeddings and untraceable Journalist Mode.</p>
+        </div>
+        
+        <div className="flex justify-center md:justify-end relative z-10">
+          <div className="inline-flex items-center p-1 bg-[#0F172A] border border-[#F6B94C]/30 shadow-[0_0_15px_rgba(246,185,76,0.1)]">
+            <button 
+              onClick={() => setBilling("monthly")}
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${billing === "monthly" ? "bg-[#F6B94C] text-[#0F172A] shadow-[0_0_10px_rgba(246,185,76,0.5)]" : "text-[#94A3B8] hover:text-[#F6B94C]"}`}
+            >
+              Monthly
+            </button>
+            <button 
+              onClick={() => setBilling("annual")}
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 ${billing === "annual" ? "bg-[#F6B94C] text-[#0F172A] shadow-[0_0_10px_rgba(246,185,76,0.5)]" : "text-[#94A3B8] hover:text-[#F6B94C]"}`}
+            >
+              Annual <span className={billing === "annual" ? "text-[#0F172A]/70" : "text-[#F6B94C]"}>(-20%)</span>
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-8 relative z-10">
         <motion.div 
           whileHover={{ y: -5 }}
-          className="flex-1 p-8 border border-[#334155] bg-[#0F172A]/90 backdrop-blur-md flex flex-col relative"
+          className="flex-1 p-8 border border-[#334155] bg-[#0F172A]/90 backdrop-blur-md flex flex-col relative group"
         >
-          <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#94A3B8]" />
-          <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[#94A3B8]" />
-          <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#94A3B8]" />
-          <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#94A3B8]" />
+          <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#94A3B8] group-hover:border-[#F6B94C] transition-colors" />
+          <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[#94A3B8] group-hover:border-[#F6B94C] transition-colors" />
+          <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#94A3B8] group-hover:border-[#F6B94C] transition-colors" />
+          <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#94A3B8] group-hover:border-[#F6B94C] transition-colors" />
           
           <h3 className="text-xl font-bold mb-2 uppercase tracking-wider text-[#94A3B8] flex items-center gap-2">
             <Unlock className="w-5 h-5" /> Base Protocol
@@ -70,30 +72,31 @@ function PricingV1() {
           <div className="text-4xl font-bold mb-8 text-[#E2E8F0]">$0<span className="text-sm text-[#64748B] font-normal ml-2 uppercase">/mo</span></div>
           <ul className="space-y-4 mb-10 text-sm flex-1">
             {FREE_FEATURES.map(f => (
-              <li key={f} className="flex items-start gap-3 text-[#94A3B8]">
-                <span className="text-[#F6B94C] mt-0.5">■</span> {f}
+              <li key={f} className="flex items-start gap-3 text-[#94A3B8] group-hover:text-[#E2E8F0] transition-colors">
+                <span className="text-[#F6B94C] mt-0.5 opacity-50 group-hover:opacity-100 transition-opacity">■</span> {f}
               </li>
             ))}
           </ul>
-          <Link href="/1/download" className="block text-center w-full py-4 bg-[#1E293B] border border-[#334155] text-[#94A3B8] hover:bg-[#334155] hover:text-[#E2E8F0] uppercase tracking-widest text-xs font-bold transition-all shadow-[0_0_0_0_rgba(246,185,76,0)] hover:shadow-[0_0_15px_rgba(246,185,76,0.15)]">
+          <Link href="/1/download" className="block text-center w-full py-4 bg-[#1E293B] border border-[#334155] text-[#94A3B8] hover:bg-[#F6B94C]/10 hover:border-[#F6B94C]/50 hover:text-[#F6B94C] uppercase tracking-widest text-xs font-bold transition-all shadow-[0_0_0_0_rgba(246,185,76,0)] hover:shadow-[0_0_15px_rgba(246,185,76,0.2)]">
             Download Client
           </Link>
         </motion.div>
 
         <motion.div 
           whileHover={{ y: -5 }}
-          className="flex-1 p-8 border border-[#F6B94C] bg-[#1E293B]/90 backdrop-blur-md flex flex-col relative shadow-[0_0_30px_rgba(246,185,76,0.1)]"
+          className="flex-1 p-8 border border-[#F6B94C] bg-[#1E293B]/90 backdrop-blur-md flex flex-col relative shadow-[0_0_40px_rgba(246,185,76,0.15)] overflow-hidden"
         >
+          <div className="absolute inset-0 bg-gradient-to-b from-[#F6B94C]/10 to-transparent pointer-events-none" />
           <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#F6B94C]" />
           <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#F6B94C]" />
           <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#F6B94C]" />
           <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#F6B94C]" />
           
-          <div className="absolute top-0 right-8 bg-[#F6B94C] text-[#0F172A] text-[10px] font-bold px-3 py-1 uppercase tracking-widest flex items-center gap-2">
+          <div className="absolute top-0 right-8 bg-[#F6B94C] text-[#0F172A] text-[10px] font-bold px-3 py-1 uppercase tracking-widest flex items-center gap-2 shadow-[0_0_15px_rgba(246,185,76,0.5)]">
             <Shield className="w-3 h-3" /> Recommended
           </div>
 
-          <h3 className="text-xl font-bold mb-2 uppercase tracking-wider text-[#F6B94C] flex items-center gap-2">
+          <h3 className="text-xl font-bold mb-2 uppercase tracking-wider text-[#F6B94C] drop-shadow-[0_0_8px_rgba(246,185,76,0.6)] flex items-center gap-2">
             <Lock className="w-5 h-5" /> Pro Escalation
           </h3>
           <div className="flex items-end gap-2 mb-8 h-10">
@@ -103,22 +106,22 @@ function PricingV1() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                className="text-4xl font-bold text-[#E2E8F0]"
+                className="text-4xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]"
               >
                 ${billing === "monthly" ? "12" : "10"}
               </motion.div>
             </AnimatePresence>
-            <span className="text-sm text-[#64748B] font-normal mb-1 uppercase">/mo</span>
+            <span className="text-sm text-[#F6B94C]/60 font-normal mb-1 uppercase">/mo</span>
           </div>
           
-          <ul className="space-y-4 mb-10 text-sm flex-1">
+          <ul className="space-y-4 mb-10 text-sm flex-1 relative z-10">
             {PRO_FEATURES.map(f => (
-              <li key={f} className="flex items-start gap-3 text-[#CBD5E1]">
-                <span className="text-[#F6B94C] mt-0.5">■</span> {f}
+              <li key={f} className="flex items-start gap-3 text-white">
+                <span className="text-[#F6B94C] mt-0.5 drop-shadow-[0_0_5px_rgba(246,185,76,0.8)]">■</span> {f}
               </li>
             ))}
           </ul>
-          <div className="w-full [&>button]:w-full [&>button]:py-4 [&>button]:bg-[#F6B94C] [&>button]:text-[#0F172A] [&>button]:font-bold [&>button]:text-xs [&>button]:uppercase [&>button]:tracking-widest [&>button]:hover:bg-[#FCD34D] [&>button]:transition-all [&>button]:shadow-[0_0_15px_rgba(246,185,76,0.3)] [&>a]:w-full [&>a]:py-4 [&>a]:bg-[#F6B94C] [&>a]:text-[#0F172A] [&>a]:font-bold [&>a]:text-xs [&>a]:uppercase [&>a]:tracking-widest [&>a]:hover:bg-[#FCD34D] [&>a]:transition-all [&>a]:shadow-[0_0_15px_rgba(246,185,76,0.3)] [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center">
+          <div className="w-full relative z-10 [&>button]:w-full [&>button]:py-4 [&>button]:bg-[#F6B94C] [&>button]:text-[#0F172A] [&>button]:font-bold [&>button]:text-xs [&>button]:uppercase [&>button]:tracking-widest [&>button]:hover:bg-[#FCD34D] [&>button]:transition-all [&>button]:shadow-[0_0_20px_rgba(246,185,76,0.4)] [&>a]:w-full [&>a]:py-4 [&>a]:bg-[#F6B94C] [&>a]:text-[#0F172A] [&>a]:font-bold [&>a]:text-xs [&>a]:uppercase [&>a]:tracking-widest [&>a]:hover:bg-[#FCD34D] [&>a]:transition-all [&>a]:shadow-[0_0_20px_rgba(246,185,76,0.4)] [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center">
             <ProUpgradeAction variantPrefix="/1" />
           </div>
         </motion.div>
@@ -132,53 +135,75 @@ function PricingV2() {
   const [billing, setBilling] = useState<"monthly" | "annual">("annual");
 
   return (
-    <div className="max-w-5xl mx-auto py-24 px-6 text-[#F1F5F9] font-sans pt-32">
-      <div className="text-center mb-16">
-        <h1 className="text-5xl font-extrabold tracking-tight mb-6 text-[#E2E8F0]">Compute Allocation</h1>
+    <div className="max-w-5xl mx-auto py-24 px-6 text-[#F1F5F9] font-sans pt-32 relative">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#38BDF8]/5 blur-[120px] pointer-events-none rounded-full" />
+      
+      <div className="text-center mb-16 relative z-10">
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6 text-[#E2E8F0] drop-shadow-[0_0_15px_rgba(56,189,248,0.3)]">Compute Allocation.</h1>
         <p className="text-[#94A3B8] text-lg max-w-2xl mx-auto mb-10">Select the vector compute capability that matches your workload velocity. Transparent pricing, local execution.</p>
         
-        <div className="inline-flex bg-[#0F172A] p-1.5 rounded-lg border border-[#334155]">
+        <div className="inline-flex bg-[#080C14]/80 backdrop-blur-md p-1.5 rounded-xl border border-[#334155]/60 shadow-[0_0_20px_rgba(56,189,248,0.05)]">
           <button 
             onClick={() => setBilling("monthly")}
-            className={`px-8 py-2.5 rounded-md font-semibold text-sm transition-all ${billing === "monthly" ? "bg-[#38BDF8] text-[#0F172A] shadow-lg" : "text-[#94A3B8] hover:text-white"}`}
+            className={`px-8 py-2.5 rounded-lg font-semibold text-sm transition-all ${billing === "monthly" ? "bg-[#38BDF8] text-[#080C14] shadow-[0_0_15px_rgba(56,189,248,0.4)]" : "text-[#94A3B8] hover:text-white hover:bg-white/5"}`}
           >
             Monthly
           </button>
           <button 
             onClick={() => setBilling("annual")}
-            className={`px-8 py-2.5 rounded-md font-semibold text-sm transition-all flex items-center gap-2 ${billing === "annual" ? "bg-[#38BDF8] text-[#0F172A] shadow-lg" : "text-[#94A3B8] hover:text-white"}`}
+            className={`px-8 py-2.5 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 ${billing === "annual" ? "bg-[#38BDF8] text-[#080C14] shadow-[0_0_15px_rgba(56,189,248,0.4)]" : "text-[#94A3B8] hover:text-white hover:bg-white/5"}`}
           >
-            Annual <span className={`text-xs ${billing === "annual" ? "text-[#0F172A]/70" : "text-[#38BDF8]"}`}>Save 20%</span>
+            Annual <span className={`text-xs ml-1 ${billing === "annual" ? "text-[#080C14]/70" : "text-[#38BDF8]"}`}>Save 20%</span>
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start relative z-10">
         <motion.div 
           whileHover={{ y: -8 }}
           transition={{ duration: 0.3 }}
-          className="p-10 bg-[#0F172A] rounded-2xl border border-[#334155] shadow-xl"
+          className="p-10 bg-[#080C14]/90 backdrop-blur-xl rounded-2xl border border-[#334155]/60 shadow-xl relative overflow-hidden group"
         >
-          <h3 className="text-2xl font-bold mb-2 text-[#E2E8F0]">Community Node</h3>
-          <div className="text-5xl font-extrabold mb-4 text-[#E2E8F0]">$0<span className="text-lg text-[#64748B] font-normal ml-2">/mo</span></div>
-          <p className="text-[#94A3B8] mb-8 h-12">Core search engine for standard local repos.</p>
-          <ul className="space-y-5 mb-10 text-[#CBD5E1]">
+          <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#94A3B8]/30 to-transparent group-hover:via-[#38BDF8]/50 transition-colors duration-500" />
+          
+          <div className="w-12 h-12 rounded-xl bg-[#38BDF8]/10 flex items-center justify-center mb-6 border border-[#38BDF8]/20 group-hover:border-[#38BDF8]/40 transition-colors">
+            <Box className="w-6 h-6 text-[#38BDF8]/70 group-hover:text-[#38BDF8] transition-colors" />
+          </div>
+          
+          <h3 className="text-xl font-bold mb-2 text-[#E2E8F0]">Community Node</h3>
+          <div className="text-5xl font-extrabold mb-4 text-[#E2E8F0] tracking-tight">$0<span className="text-lg text-[#64748B] font-normal ml-2">/mo</span></div>
+          <p className="text-[#94A3B8] mb-8 h-12 text-sm leading-relaxed">Core search engine for standard local repos.</p>
+          
+          <div className="h-[1px] w-full bg-[#1E293B] mb-8" />
+          
+          <ul className="space-y-4 mb-10 text-[#CBD5E1] text-sm flex-1">
             {FREE_FEATURES.map(f => (
-              <li key={f} className="flex items-start gap-3"><Check className="w-5 h-5 text-[#38BDF8] shrink-0 mt-0.5" /> <span>{f}</span></li>
+              <li key={f} className="flex items-start gap-3"><Check className="w-4 h-4 text-[#38BDF8] shrink-0 mt-0.5 opacity-70 group-hover:opacity-100 transition-opacity" /> <span>{f}</span></li>
             ))}
           </ul>
-          <Link href="/2/download" className="block text-center w-full py-4 rounded-xl border-2 border-[#334155] text-[#E2E8F0] hover:border-[#38BDF8] hover:bg-[#38BDF8]/5 font-bold transition-all">Install Node</Link>
+          
+          <Link href="/2/download" className="block text-center w-full py-3.5 rounded-xl border border-[#334155] text-[#94A3B8] hover:text-[#E2E8F0] hover:border-[#38BDF8]/50 hover:bg-[#38BDF8]/5 font-semibold transition-all">
+            Install Node
+          </Link>
         </motion.div>
 
         <motion.div 
           whileHover={{ y: -8 }}
           transition={{ duration: 0.3 }}
-          className="p-10 bg-[#0F172A] rounded-2xl border-2 border-[#38BDF8] shadow-[0_20px_50px_rgba(56,189,248,0.1)] relative overflow-hidden"
+          className="p-10 bg-[#080C14]/95 backdrop-blur-xl rounded-2xl border border-[#38BDF8]/40 shadow-[0_20px_50px_rgba(56,189,248,0.15)] relative overflow-hidden"
         >
-          <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-[#38BDF8] to-[#818CF8]" />
-          <div className="absolute top-6 right-6 bg-[#38BDF8]/10 text-[#38BDF8] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide border border-[#38BDF8]/30">Pro Compute</div>
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-[#38BDF8] via-[#818CF8] to-[#38BDF8]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#38BDF8]/5 to-transparent pointer-events-none" />
           
-          <h3 className="text-2xl font-bold mb-2 text-[#38BDF8]">Pro Compute</h3>
+          <div className="absolute top-6 right-6 bg-[#38BDF8]/10 text-[#38BDF8] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-[#38BDF8]/30 flex items-center gap-1.5 shadow-[0_0_15px_rgba(56,189,248,0.2)]">
+            <Zap className="w-3 h-3" /> Pro Compute
+          </div>
+          
+          <div className="w-12 h-12 rounded-xl bg-[#38BDF8]/20 flex items-center justify-center mb-6 border border-[#38BDF8]/40 shadow-[0_0_15px_rgba(56,189,248,0.3)]">
+            <Zap className="w-6 h-6 text-[#38BDF8]" />
+          </div>
+          
+          <h3 className="text-xl font-bold mb-2 text-[#E2E8F0]">Pro Compute</h3>
           <div className="flex items-baseline mb-4 h-[48px]">
             <AnimatePresence mode="wait">
               <motion.div 
@@ -186,22 +211,24 @@ function PricingV2() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="text-5xl font-extrabold text-[#E2E8F0]"
+                className="text-5xl font-extrabold text-white tracking-tight drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]"
               >
                 ${billing === "monthly" ? "12" : "10"}
               </motion.div>
             </AnimatePresence>
             <span className="text-lg text-[#64748B] font-normal ml-2">/mo</span>
           </div>
-          <p className="text-[#94A3B8] mb-8 h-12">JIT models and unlimited workflows for heavy environments.</p>
+          <p className="text-[#94A3B8] mb-8 h-12 text-sm leading-relaxed">JIT models and unlimited workflows for heavy environments.</p>
           
-          <ul className="space-y-5 mb-10 text-[#F1F5F9]">
+          <div className="h-[1px] w-full bg-gradient-to-r from-[#1E293B] via-[#38BDF8]/20 to-[#1E293B] mb-8" />
+          
+          <ul className="space-y-4 mb-10 text-[#F1F5F9] text-sm flex-1 relative z-10">
             {PRO_FEATURES.map(f => (
-              <li key={f} className="flex items-start gap-3"><Check className="w-5 h-5 text-[#38BDF8] shrink-0 mt-0.5" /> <span>{f}</span></li>
+              <li key={f} className="flex items-start gap-3"><Check className="w-4 h-4 text-[#38BDF8] shrink-0 mt-0.5 drop-shadow-[0_0_5px_rgba(56,189,248,0.6)]" /> <span>{f}</span></li>
             ))}
           </ul>
           
-          <div className="w-full [&>button]:w-full [&>button]:py-4 [&>button]:rounded-xl [&>button]:bg-[#38BDF8] [&>button]:text-[#0F172A] [&>button]:font-bold [&>button]:text-lg [&>button]:hover:bg-[#7DD3FC] [&>button]:transition-colors [&>a]:w-full [&>a]:py-4 [&>a]:rounded-xl [&>a]:bg-[#38BDF8] [&>a]:text-[#0F172A] [&>a]:font-bold [&>a]:text-lg [&>a]:hover:bg-[#7DD3FC] [&>a]:transition-colors [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_30px_rgba(56,189,248,0.5)] transition-shadow rounded-xl">
+          <div className="w-full relative z-10 [&>button]:w-full [&>button]:py-3.5 [&>button]:rounded-xl [&>button]:bg-[#38BDF8] [&>button]:text-[#080C14] [&>button]:font-bold [&>button]:text-sm [&>button]:hover:bg-[#7DD3FC] [&>button]:transition-colors [&>a]:w-full [&>a]:py-3.5 [&>a]:rounded-xl [&>a]:bg-[#38BDF8] [&>a]:text-[#080C14] [&>a]:font-bold [&>a]:text-sm [&>a]:hover:bg-[#7DD3FC] [&>a]:transition-colors [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center shadow-[0_0_20px_rgba(56,189,248,0.25)] hover:shadow-[0_0_30px_rgba(56,189,248,0.4)] transition-shadow">
             <ProUpgradeAction variantPrefix="/2" />
           </div>
         </motion.div>
@@ -215,86 +242,114 @@ function PricingV3() {
   const [billing, setBilling] = useState<"monthly" | "annual">("annual");
 
   return (
-    <div className="max-w-5xl mx-auto py-24 px-6 text-[#F3F5F7] font-mono pt-32">
-      <div className="mb-16 border-l-2 border-[#14B8A6] pl-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+    <div className="max-w-5xl mx-auto py-24 px-6 text-[#F3F5F7] font-mono pt-32 relative">
+      <div className="mb-16 border-l-2 border-amber-400 pl-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 relative z-10">
         <div>
-          <h1 className="text-3xl font-bold mb-2 tracking-tight text-[#14B8A6]">LICENSING_MATRIX</h1>
-          <p className="text-sm text-white/40 max-w-lg">Select operational tier for local vector resolution. Authorize nodes securely.</p>
+          <div className="text-xs font-mono tracking-[0.3em] uppercase mb-4 text-amber-400/60">
+            ▸ LICENSING_MATRIX
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight text-white" style={{ letterSpacing: "-0.02em" }}>
+            Select operational tier.
+          </h1>
+          <p className="text-sm text-white/50 max-w-lg leading-relaxed">
+            Deploy local vector resolution. Authorize nodes securely with instant propagation.
+          </p>
         </div>
-        <div className="flex gap-2 bg-black border border-white/10 p-1">
+        <div className="flex gap-0 bg-[#0A0D0F] border border-amber-400/20 p-1 shadow-[0_0_20px_rgba(246,185,76,0.05)]">
           <button 
             onClick={() => setBilling("monthly")}
-            className={`px-6 py-2 text-xs transition-colors ${billing === "monthly" ? "bg-[#14B8A6] text-black font-bold" : "text-white/50 hover:text-white"}`}
+            className={`px-6 py-2.5 text-xs tracking-widest transition-colors ${billing === "monthly" ? "bg-amber-400 text-[#0A0D0F] font-bold" : "text-white/50 hover:text-white"}`}
           >
             MONTHLY
           </button>
           <button 
             onClick={() => setBilling("annual")}
-            className={`px-6 py-2 text-xs transition-colors flex gap-2 ${billing === "annual" ? "bg-[#14B8A6] text-black font-bold" : "text-white/50 hover:text-white"}`}
+            className={`px-6 py-2.5 text-xs tracking-widest transition-colors flex items-center gap-2 ${billing === "annual" ? "bg-amber-400 text-[#0A0D0F] font-bold" : "text-white/50 hover:text-white"}`}
           >
-            ANNUAL <span className={billing === "annual" ? "text-black/60" : "text-[#14B8A6]"}>[-20%]</span>
+            ANNUAL <span className={billing === "annual" ? "text-[#0A0D0F]/70" : "text-amber-400"}>[-20%]</span>
           </button>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-12 relative">
-        <div className="flex-1 p-8 border border-white/10 relative hover:border-white/30 transition-colors group">
-          <div className="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-white/50 group-hover:border-[#14B8A6] transition-colors" />
-          <div className="absolute -top-1 -right-1 w-2 h-2 border-t border-r border-white/50 group-hover:border-[#14B8A6] transition-colors" />
-          <div className="absolute -bottom-1 -left-1 w-2 h-2 border-b border-l border-white/50 group-hover:border-[#14B8A6] transition-colors" />
-          <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-white/50 group-hover:border-[#14B8A6] transition-colors" />
+      <div className="flex flex-col md:flex-row gap-8 relative z-10">
+        <div className="flex-1 p-8 border border-amber-400/10 bg-[#0A0D0F]/90 shadow-2xl relative group">
+          <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-amber-400/30 group-hover:border-amber-400 transition-colors" />
+          <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-amber-400/30 group-hover:border-amber-400 transition-colors" />
+          <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-amber-400/30 group-hover:border-amber-400 transition-colors" />
+          <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-amber-400/30 group-hover:border-amber-400 transition-colors" />
           
-          <div className="text-xs text-white/30 mb-2 font-bold tracking-widest">{'>>'} [TIER 0]</div>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-1.5 h-1.5 bg-white/30 rounded-full" />
+            <div className="text-[10px] text-white/40 font-bold tracking-widest uppercase">
+              {'['} TIER 0 {']'}
+            </div>
+          </div>
+
           <h3 className="text-2xl font-bold mb-6 text-white tracking-wider">COMMUNITY</h3>
-          <div className="text-4xl mb-8">$0.00 <span className="text-xs text-white/40">USD/MO</span></div>
+          <div className="text-5xl font-light mb-8 font-sans tracking-tight">$0.00 <span className="text-xs text-white/40 font-mono tracking-widest ml-1">USD/MO</span></div>
           
-          <div className="space-y-4 text-sm text-white/60 mb-12 min-h-[220px]">
+          <div className="h-px w-full bg-amber-400/10 mb-8" />
+          
+          <div className="space-y-5 text-sm text-white/60 mb-12 min-h-[200px]">
             {FREE_FEATURES.map(f => (
-              <div key={f} className="flex gap-3">
-                <span className="text-[#14B8A6]/50">+</span> {f}
+              <div key={f} className="flex gap-4 items-start group-hover:text-white/80 transition-colors">
+                <span className="text-amber-400/50 mt-0.5 tracking-tighter">{'//'}</span> <span className="leading-relaxed">{f}</span>
               </div>
             ))}
           </div>
           
-          <Link href="/3/download" className="block text-center py-4 border border-white/20 text-white hover:bg-white hover:text-black uppercase tracking-widest text-sm font-bold transition-colors">ACQUIRE_FREE</Link>
+          <Link href="/3/download" className="block text-center py-4 border border-amber-400/20 text-white hover:bg-amber-400/5 hover:border-amber-400/50 uppercase tracking-[0.2em] text-xs font-bold transition-all group-hover:shadow-[0_0_15px_rgba(246,185,76,0.1)]">
+            ACQUIRE_FREE
+          </Link>
         </div>
 
-        <div className="flex-1 p-8 border border-[#14B8A6] bg-[#14B8A6]/[0.03] relative shadow-[0_0_30px_rgba(20,184,166,0.05)]">
-          <div className="absolute -top-1 -left-1 w-2 h-2 border-t-2 border-l-2 border-[#14B8A6]" />
-          <div className="absolute -top-1 -right-1 w-2 h-2 border-t-2 border-r-2 border-[#14B8A6]" />
-          <div className="absolute -bottom-1 -left-1 w-2 h-2 border-b-2 border-l-2 border-[#14B8A6]" />
-          <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b-2 border-r-2 border-[#14B8A6]" />
+        <div className="flex-1 p-8 border border-teal-400/30 bg-[#0A0D0F] relative shadow-[0_0_40px_rgba(20,184,166,0.1)] overflow-hidden group">
+          <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-teal-400" />
+          <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-teal-400" />
+          <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-teal-400" />
+          <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-teal-400" />
           
-          <div className="absolute top-0 right-0 px-4 py-1.5 bg-[#14B8A6] text-black text-[10px] font-bold tracking-widest flex items-center gap-2">
-            <Zap className="w-3 h-3" /> OPTIMAL
+          {/* Subtle teal background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-teal-400/[0.05] to-transparent pointer-events-none" />
+          
+          <div className="absolute top-0 right-6 px-4 py-1.5 bg-teal-400/10 border-b border-x border-teal-400/30 text-teal-400 text-[10px] font-bold tracking-widest flex items-center gap-2 shadow-[0_0_15px_rgba(20,184,166,0.2)]">
+            <Zap className="w-3 h-3 text-teal-400" /> OPTIMAL
           </div>
           
-          <div className="text-xs text-[#14B8A6]/80 mb-2 font-bold tracking-widest">{'>>'} [TIER 1]</div>
-          <h3 className="text-2xl font-bold mb-6 text-[#14B8A6] tracking-wider">PRO_LICENSE</h3>
-          <div className="flex items-end gap-2 mb-8 h-10">
+          <div className="flex items-center gap-2 mb-4 relative z-10">
+            <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.8)]" />
+            <div className="text-[10px] text-teal-400 font-bold tracking-widest uppercase">
+              {'['} TIER 1 {']'}
+            </div>
+          </div>
+
+          <h3 className="text-2xl font-bold mb-6 text-teal-400 tracking-wider relative z-10">PRO_LICENSE</h3>
+          <div className="flex items-end gap-2 mb-8 h-12 relative z-10">
             <AnimatePresence mode="wait">
               <motion.div 
                 key={billing}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 10 }}
-                className="text-4xl text-white font-bold"
+                className="text-5xl font-light text-white font-sans tracking-tight"
               >
                 ${billing === "monthly" ? "12.00" : "10.00"}
               </motion.div>
             </AnimatePresence>
-            <span className="text-xs text-[#14B8A6]/60 mb-1">USD/MO</span>
+            <span className="text-xs text-teal-400/60 mb-2 font-mono tracking-widest">USD/MO</span>
           </div>
           
-          <div className="space-y-4 text-sm text-white/90 mb-12 min-h-[220px]">
+          <div className="h-px w-full bg-teal-400/20 mb-8 relative z-10" />
+          
+          <div className="space-y-5 text-sm text-white/90 mb-12 min-h-[200px] relative z-10">
             {PRO_FEATURES.map(f => (
-              <div key={f} className="flex gap-3 items-start">
-                <span className="text-[#14B8A6] font-bold">{'>'}</span> {f}
+              <div key={f} className="flex gap-4 items-start group/feature">
+                <span className="text-teal-400 mt-0.5 tracking-tighter shadow-[0_0_5px_rgba(20,184,166,0.6)]">{'//'}</span> <span className="leading-relaxed group-hover/feature:text-white transition-colors">{f}</span>
               </div>
             ))}
           </div>
           
-          <div className="w-full [&>button]:w-full [&>button]:py-4 [&>button]:bg-[#14B8A6] [&>button]:text-[#0A0D0F] [&>button]:font-bold [&>button]:text-sm [&>button]:uppercase [&>button]:tracking-widest [&>button]:hover:bg-white [&>button]:transition-colors [&>a]:w-full [&>a]:py-4 [&>a]:bg-[#14B8A6] [&>a]:text-[#0A0D0F] [&>a]:font-bold [&>a]:text-sm [&>a]:uppercase [&>a]:tracking-widest [&>a]:hover:bg-white [&>a]:transition-colors [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center">
+          <div className="w-full relative z-10 [&>button]:w-full [&>button]:py-4 [&>button]:bg-teal-400 [&>button]:text-[#0A0D0F] [&>button]:font-bold [&>button]:text-xs [&>button]:uppercase [&>button]:tracking-[0.2em] [&>button]:hover:bg-teal-300 [&>button]:transition-all [&>button]:shadow-[0_0_20px_rgba(20,184,166,0.3)] [&>button]:hover:shadow-[0_0_30px_rgba(20,184,166,0.5)] [&>a]:w-full [&>a]:py-4 [&>a]:bg-teal-400 [&>a]:text-[#0A0D0F] [&>a]:font-bold [&>a]:text-xs [&>a]:uppercase [&>a]:tracking-[0.2em] [&>a]:hover:bg-teal-300 [&>a]:transition-all [&>a]:shadow-[0_0_20px_rgba(20,184,166,0.3)] [&>a]:hover:shadow-[0_0_30px_rgba(20,184,166,0.5)] [&>a]:inline-flex [&>a]:items-center [&>a]:justify-center">
             <ProUpgradeAction variantPrefix="/3" />
           </div>
         </div>

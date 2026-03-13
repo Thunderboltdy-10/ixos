@@ -102,71 +102,8 @@ void HomeDashboardPane::refresh() {
 }
 
 void HomeDashboardPane::updateResumeSection() {
-    QLayoutItem *child;
-    while ((child = m_resumeGrid->takeAt(0)) != nullptr) {
-        delete child->widget();
-        delete child;
-    }
-
-    if (!m_re || !m_wm) {
-        m_resumeSection->hide();
-        return;
-    }
-
-    ResumptionPacket packet = m_re->buildPacket(m_wm->currentWorkstreamId());
-    if (packet.primaryPath.isEmpty()) {
-        m_resumeSection->hide();
-        return;
-    }
-    
-    m_resumeSection->show();
-    
-    auto createCard = [this](const QString &path, int row, int col) {
-        QFileInfo info(path);
-        if (!info.exists()) return;
-        
-        auto *btn = new QPushButton(m_resumeSection);
-        btn->setProperty("dashboardCard", true);
-        btn->setCursor(Qt::PointingHandCursor);
-        btn->setMinimumHeight(70);
-        
-        auto *layout = new QHBoxLayout(btn);
-        layout->setContentsMargins(16, 12, 16, 12);
-        layout->setSpacing(12);
-        
-        ThemedFileIconProvider provider;
-        auto *iconLabel = new QLabel(btn);
-        iconLabel->setPixmap(provider.icon(info).pixmap(24, 24));
-        layout->addWidget(iconLabel);
-        
-        auto *textLayout = new QVBoxLayout();
-        textLayout->setContentsMargins(0, 0, 0, 0);
-        textLayout->setSpacing(2);
-        
-        auto *titleLabel = new QLabel(info.fileName(), btn);
-        titleLabel->setStyleSheet("font-size: 14px; font-weight: 500; color: #F0F0F5;");
-        textLayout->addWidget(titleLabel);
-        
-        auto *pathLabel = new QLabel(QDir::toNativeSeparators(info.absolutePath()), btn);
-        pathLabel->setStyleSheet("font-size: 11px; color: #6E6E73; font-family: 'Geist Mono', monospace;");
-        pathLabel->setWordWrap(true);
-        textLayout->addWidget(pathLabel);
-        
-        layout->addLayout(textLayout, 1);
-        
-        connect(btn, &QPushButton::clicked, this, [this, path]() {
-            emit pathActivated(path);
-        });
-        
-        m_resumeGrid->addWidget(btn, row, col);
-    };
-
-    createCard(packet.primaryPath, 0, 0);
-    int col = 1;
-    for (const QString &path : packet.supportingPaths) {
-        if (col > 2) break; // Limit to 3 items in a row
-        createCard(path, 0, col++);
-    }
+    m_resumeSection->hide();
+    return;
 }
 
 void HomeDashboardPane::updateWorkstreamsSection() {

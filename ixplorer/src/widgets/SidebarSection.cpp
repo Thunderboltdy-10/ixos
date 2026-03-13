@@ -12,6 +12,8 @@ SidebarSection::SidebarSection(const QString &title, const QIcon &sectionIcon, Q
     : QWidget(parent)
     , m_bodyWidget(new QWidget(this))
     , m_body(new QVBoxLayout(m_bodyWidget)) {
+    m_bodyWidget->setObjectName("SidebarSectionBody");
+    m_bodyWidget->setAttribute(Qt::WA_StyledBackground, true);
 
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -64,7 +66,7 @@ bool SidebarSection::eventFilter(QObject *watched, QEvent *event) {
 }
 
 void SidebarSection::addItem(const QString &label, const QString &path, const QIcon &icon) {
-    auto *btn = new QPushButton(this);
+    auto *btn = new QPushButton(m_bodyWidget);
     btn->setObjectName("SidebarItem");
     btn->setCursor(path.isEmpty() ? Qt::ArrowCursor : Qt::PointingHandCursor);
     btn->setProperty("path", path);
@@ -101,8 +103,8 @@ void SidebarSection::setHighlighted(const QString &path) {
         if (!btn) {
             continue;
         }
-        QString itemPath = QDir::toNativeSeparators(btn->property("path").toString());
-        btn->setObjectName(itemPath == m_highlightedPath ? "SidebarItemActive" : "SidebarItem");
+        // Disabled active state changing to remove permanent amber background.
+        btn->setObjectName("SidebarItem");
         btn->style()->unpolish(btn);
         btn->style()->polish(btn);
     }

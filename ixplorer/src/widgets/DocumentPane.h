@@ -29,6 +29,11 @@ class QVideoWidget;
 class QAudioOutput;
 #endif
 
+#ifdef QT_PDF_LIB
+class QPdfDocument;
+class QPdfView;
+#endif
+
 namespace Ixplorer {
 
 class CodeViewerWidget;
@@ -39,7 +44,7 @@ public:
     explicit DocumentPane(const QString &path, bool previewMode, QWidget *parent = nullptr);
     ~DocumentPane() override;
 
-    enum HostMode { WebView, MediaPlayer, ImageViewer, CodeViewer, WindowEmbed, Fallback };
+    enum HostMode { WebView, MediaPlayer, ImageViewer, CodeViewer, PdfViewer, WindowEmbed, Fallback };
 
     QString filePath() const { return m_filePath; }
     QString displayPath() const { return m_filePath; }
@@ -50,7 +55,7 @@ public:
     bool canPromoteToEditable() const { return false; }
     bool canClose();
     bool canGoUp() const;
-    bool isHosted() const { return m_hostedReady || m_hostMode == ImageViewer || m_hostMode == CodeViewer || m_hostMode == WebView || m_hostMode == MediaPlayer; }
+    bool isHosted() const { return m_hostedReady || m_hostMode == ImageViewer || m_hostMode == CodeViewer || m_hostMode == WebView || m_hostMode == MediaPlayer || m_hostMode == PdfViewer; }
 
     void setPreviewMode(bool previewMode);
     void reload();
@@ -74,6 +79,7 @@ protected:
 private:
     void buildUi();
     bool startHosting();
+    bool setupHostFailureFallback();
     void clearHostedSurface(bool terminateProcess = true);
     void setHostedWindowVisible(bool visible);
     void updateHostedGeometry();
@@ -84,6 +90,7 @@ private:
     void showStateMessage(const QString &title, const QString &body);
     void syncUiState();
     void setupWebView();
+    void setupPdfViewer();
     void setupMediaPlayer();
     void setupImageViewer();
     void setupCodeViewer();
@@ -97,6 +104,7 @@ private:
 
     QWidget *m_contentRoot = nullptr;
     QVBoxLayout *m_contentLayout = nullptr;
+    QWidget *m_hostFrame = nullptr;
     QWidget *m_hostSurface = nullptr;
     QWidget *m_stateCard = nullptr;
     QLabel *m_stateTitle = nullptr;
@@ -121,15 +129,22 @@ private:
     QVideoWidget *m_videoWidget = nullptr;
 #endif
 
+#ifdef QT_PDF_LIB
+    QPdfDocument *m_pdfDocument = nullptr;
+    QPdfView *m_pdfView = nullptr;
+#endif
+
     QTimer *m_loadingTimer = nullptr;
     bool m_skeletonPhase = false;
 
     QTimer *m_hostMonitor = nullptr;
     WId m_hostedWindowId = 0;
     quintptr m_processHandle = 0;
+    bool m_ownsHostedProcess = false;
     quintptr m_originalWindowParent = 0;
     qintptr m_originalWindowStyle = 0;
     qintptr m_originalWindowExStyle = 0;
+    bool m_hostedWindowClaimed = false;
     int m_backdropRefreshTick = 0;
 };
 

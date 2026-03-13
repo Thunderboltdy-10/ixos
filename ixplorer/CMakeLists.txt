@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
-find_package(Qt6 OPTIONAL_COMPONENTS WebEngineWidgets Multimedia MultimediaWidgets)
+find_package(Qt6 OPTIONAL_COMPONENTS WebEngineWidgets Multimedia MultimediaWidgets Pdf PdfWidgets)
 
 set(SOURCES
     src/main.cpp
@@ -117,6 +117,11 @@ endif()
 if(TARGET Qt6::Multimedia)
     target_link_libraries(Ixplorer PRIVATE Qt6::Multimedia Qt6::MultimediaWidgets)
     target_compile_definitions(Ixplorer PRIVATE QT_MULTIMEDIA_LIB)
+endif()
+
+if(TARGET Qt6::Pdf AND TARGET Qt6::PdfWidgets)
+    target_link_libraries(Ixplorer PRIVATE Qt6::Pdf Qt6::PdfWidgets)
+    target_compile_definitions(Ixplorer PRIVATE QT_PDF_LIB)
 endif()
 
 if(WIN32)

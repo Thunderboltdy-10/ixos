@@ -100,6 +100,11 @@ QWidget {
     letter-spacing: 0.3px;
 }
 
+#SidebarSectionBody {
+    background-color: transparent;
+    border: none;
+}
+
 #SidebarItem {
     background-color: transparent;
     border: none;
@@ -119,10 +124,16 @@ QWidget {
     color: #E8E8ED;
 }
 
+#SidebarItem:disabled {
+    background-color: transparent;
+    color: #5A5A5E;
+    border: none;
+}
+
 #SidebarItemActive {
     background-color: rgba(255, 255, 255, 0.05);
     border: none;
-    border-left: 2px solid #D4993D;
+    border-left: 2px solid rgba(255, 255, 255, 0.38);
     border-radius: 0px;
     color: #F0F0F5;
     font-weight: 500;
@@ -424,11 +435,11 @@ QHeaderView::section:last {
 
 #RailContextPane {
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    background-color: rgba(212, 153, 61, 0.025);
+    background-color: rgba(255, 255, 255, 0.012);
 }
 
 #RailContextEyebrow {
-    color: #D4993D;
+    color: #8B8B90;
     font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
@@ -449,24 +460,24 @@ QHeaderView::section:last {
 
 /* ─── Rail: Action Buttons ─── */
 QPushButton[railPrimaryAction="true"] {
-    background-color: rgba(212, 153, 61, 0.12);
-    border: 1px solid rgba(212, 153, 61, 0.20);
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 5px;
     padding: 4px 10px;
-    color: #D4993D;
+    color: #E8E8ED;
     font-size: 12px;
     font-weight: 500;
     min-height: 24px;
 }
 
 QPushButton[railPrimaryAction="true"]:hover {
-    background-color: rgba(212, 153, 61, 0.18);
-    border-color: rgba(212, 153, 61, 0.35);
-    color: #E8B84E;
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #F0F0F5;
 }
 
 QPushButton[railPrimaryAction="true"]:pressed {
-    background-color: rgba(212, 153, 61, 0.25);
+    background-color: rgba(255, 255, 255, 0.11);
 }
 
 /* ─── Dropdowns ─── */

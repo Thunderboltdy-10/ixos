@@ -36,64 +36,18 @@ const QSet<QString> &externalOnlyExtensions() {
 
 const QSet<QString> &externalOnlyAssociatedApps() {
     static const QSet<QString> executables = {
-        // Browsers
-        QStringLiteral("chrome.exe"),          QStringLiteral("msedge.exe"),        QStringLiteral("firefox.exe"),
-        QStringLiteral("iexplore.exe"),        QStringLiteral("brave.exe"),         QStringLiteral("opera.exe"),
         // Shell / Terminal
-        QStringLiteral("explorer.exe"),        QStringLiteral("wt.exe"),            QStringLiteral("windowsterminal.exe"),
-        QStringLiteral("cmd.exe"),             QStringLiteral("powershell.exe"),    QStringLiteral("pwsh.exe"),
+        QStringLiteral("explorer.exe"), QStringLiteral("wt.exe"), QStringLiteral("windowsterminal.exe"),
+        QStringLiteral("cmd.exe"), QStringLiteral("powershell.exe"), QStringLiteral("pwsh.exe"),
         QStringLiteral("conhost.exe"),
         // Game launchers
-        QStringLiteral("steam.exe"),           QStringLiteral("epicgameslauncher.exe"),
+        QStringLiteral("steam.exe"), QStringLiteral("epicgameslauncher.exe"),
         QStringLiteral("riotclientservices.exe"), QStringLiteral("battle.net.exe"), QStringLiteral("upc.exe"),
         // System utilities
-        QStringLiteral("applicationframehost.exe"), QStringLiteral("openwith.exe"), QStringLiteral("rundll32.exe"),
+        QStringLiteral("openwith.exe"), QStringLiteral("rundll32.exe"),
         QStringLiteral("dllhost.exe"),
     };
     return executables;
-}
-
-const QSet<QString> &codeExtensions() {
-    static const QSet<QString> extensions = {
-        QStringLiteral("c"),    QStringLiteral("cc"),   QStringLiteral("cpp"),  QStringLiteral("cxx"),
-        QStringLiteral("h"),    QStringLiteral("hpp"),  QStringLiteral("hh"),   QStringLiteral("rs"),
-        QStringLiteral("py"),   QStringLiteral("js"),   QStringLiteral("jsx"),  QStringLiteral("ts"),
-        QStringLiteral("tsx"),  QStringLiteral("json"), QStringLiteral("toml"), QStringLiteral("yaml"),
-        QStringLiteral("yml"),  QStringLiteral("md"),   QStringLiteral("txt"),  QStringLiteral("log"),
-        QStringLiteral("ini"),  QStringLiteral("cfg"),  QStringLiteral("cmake"),QStringLiteral("java"),
-        QStringLiteral("go"),   QStringLiteral("swift"),QStringLiteral("kt"),   QStringLiteral("css"),
-        QStringLiteral("scss"), QStringLiteral("xml"),  QStringLiteral("sql"),  QStringLiteral("sh"),
-        QStringLiteral("r"),    QStringLiteral("rb"),   QStringLiteral("lua"),  QStringLiteral("zig"),
-        QStringLiteral("dart"), QStringLiteral("vue"),  QStringLiteral("svelte"),
-    };
-    return extensions;
-}
-
-const QSet<QString> &imageExtensions() {
-    static const QSet<QString> extensions = {
-        QStringLiteral("png"), QStringLiteral("jpg"),  QStringLiteral("jpeg"),
-        QStringLiteral("gif"), QStringLiteral("bmp"), QStringLiteral("webp"),
-        QStringLiteral("ico"), QStringLiteral("svg"),
-    };
-    return extensions;
-}
-
-const QSet<QString> &webExtensions() {
-    static const QSet<QString> extensions = {
-        QStringLiteral("pdf"),
-        QStringLiteral("htm"),
-        QStringLiteral("html"),
-    };
-    return extensions;
-}
-
-const QSet<QString> &mediaExtensions() {
-    static const QSet<QString> extensions = {
-        QStringLiteral("mp3"), QStringLiteral("wav"), QStringLiteral("m4a"),
-        QStringLiteral("mp4"), QStringLiteral("mkv"), QStringLiteral("mov"),
-        QStringLiteral("avi"), QStringLiteral("webm"),
-    };
-    return extensions;
 }
 
 #ifdef Q_OS_WIN
@@ -175,14 +129,26 @@ FileOpenPolicy resolveFileOpenPolicy(const QFileInfo &info) {
     const QMimeType mime = mimeDatabase.mimeTypeForFile(info);
     const QString typeLabel = readableTypeLabel(info, mime);
 
-    // Completely bypass all constraints and force embedding for EVERYTHING per the user's explicit request.
-    return makeInternalPolicy(
-        FileOpenAction::HostAssociatedApp,
-        FileOpenHostMode::AssociatedWindow,
-        1.0f,
-        QStringLiteral("Host associated app"),
-        QStringLiteral("%1 will be opened with its Windows-associated app inside the workspace.")
-            .arg(typeLabel));
+    if (externalOnlyExtensions().contains(extension)) {
+        return makeExternalPolicy(QStringLiteral("Open externally"),
+                                  QStringLiteral("%1 is safer to open outside the embedded workspace.")
+                                      .arg(typeLabel));
+    }
+
+#ifdef Q_OS_WIN
+    const QString associatedExecutable = associatedExecutableBaseName(info.absoluteFilePath());
+    if (!associatedExecutable.isEmpty() && externalOnlyAssociatedApps().contains(associatedExecutable)) {
+        return makeExternalPolicy(QStringLiteral("Open externally"),
+                                  QStringLiteral("This file type uses a system app that is not embeddable."));
+    }
+#endif
+
+    return makeInternalPolicy(FileOpenAction::HostAssociatedApp,
+                              FileOpenHostMode::AssociatedWindow,
+                              0.88f,
+                              QStringLiteral("Embedded associated app"),
+                              QStringLiteral("%1 will open in its associated desktop app inside this pane when possible.")
+                                  .arg(typeLabel));
 }
 
 bool shouldAutoOpenInWorkspace(const QFileInfo &info) {

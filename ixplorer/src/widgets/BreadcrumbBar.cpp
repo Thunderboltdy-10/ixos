@@ -15,8 +15,8 @@ namespace Ixplorer {
 namespace {
 
 QLabel *makeSeparator(QWidget *parent) {
-    auto *sep = new QLabel(QStringLiteral("›"), parent);
-    sep->setStyleSheet("color: " + Colors::qc(Colors::FgGhost).name() + "; padding: 0 6px;");
+    auto *sep = new QLabel(QStringLiteral("/"), parent);
+    sep->setStyleSheet("color: #5A5A5E; padding: 0 4px; font-weight: 600; font-size: 13px;");
     return sep;
 }
 
@@ -31,8 +31,15 @@ BreadcrumbBar::BreadcrumbBar(QWidget *parent)
     , m_layout(new QHBoxLayout(this))
     , m_editLine(new QLineEdit(this)) {
     setObjectName("BreadcrumbBar");
-    m_layout->setContentsMargins(4, 2, 4, 2);
-    m_layout->setSpacing(0);
+    m_layout->setContentsMargins(12, 6, 12, 6);
+    m_layout->setSpacing(2);
+    
+    setStyleSheet(
+        "#BreadcrumbBar { background: #1C1E23; border-bottom: 1px solid #2B2D35; border-top: 1px solid #2B2D35; }"
+        "#BreadcrumbButton { border: none; background: transparent; color: #8B8B90; padding: 4px 8px; border-radius: 4px; font-size: 13px; }"
+        "#BreadcrumbButton:hover { background: #2A2C33; color: #E8E8ED; }"
+        "#BreadcrumbCurrent { color: #E8E8ED; font-weight: 500; padding: 4px 8px; font-size: 13px; }"
+    );
     
     m_editLine->setObjectName("BreadcrumbEdit");
     m_editLine->hide();

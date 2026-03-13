@@ -37,7 +37,6 @@ private:
     void refreshRecents();
     void refreshFavorites();
 
-    TodaySection *m_todaySectionWidget = nullptr;
     SidebarSection *m_workstreamsSection;
     SidebarSection *m_homeSection;
     SidebarSection *m_favoritesSection;

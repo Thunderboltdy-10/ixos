@@ -137,7 +137,7 @@ function V3LayoutInner({ children }: { children: React.ReactNode }) {
         }
       `}</style>
 
-      <HUDNav />
+      {pathname !== "/3" && <HUDNav />}
       
       {/* Background elements */}
       <GridBackground scanY={scanY} />

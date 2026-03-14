@@ -9,14 +9,15 @@
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QTimer>
+#include <QKeyEvent>
 
 namespace Ixplorer {
 
 namespace {
 
 QLabel *makeSeparator(QWidget *parent) {
-    auto *sep = new QLabel(QStringLiteral("/"), parent);
-    sep->setStyleSheet("color: #5A5A5E; padding: 0 4px; font-weight: 600; font-size: 13px;");
+    auto *sep = new QLabel(QStringLiteral(" \\ "), parent); // Backslash for Windows native feel
+    sep->setStyleSheet("color: rgba(255,255,255,0.1); padding: 0 4px; font-weight: 400; font-size: 11px;");
     return sep;
 }
 
@@ -31,20 +32,13 @@ BreadcrumbBar::BreadcrumbBar(QWidget *parent)
     , m_layout(new QHBoxLayout(this))
     , m_editLine(new QLineEdit(this)) {
     setObjectName("BreadcrumbBar");
-    m_layout->setContentsMargins(12, 6, 12, 6);
-    m_layout->setSpacing(2);
-    
-    setStyleSheet(
-        "#BreadcrumbBar { background: #1C1E23; border-bottom: 1px solid #2B2D35; border-top: 1px solid #2B2D35; }"
-        "#BreadcrumbButton { border: none; background: transparent; color: #8B8B90; padding: 4px 8px; border-radius: 4px; font-size: 13px; }"
-        "#BreadcrumbButton:hover { background: #2A2C33; color: #E8E8ED; }"
-        "#BreadcrumbCurrent { color: #E8E8ED; font-weight: 500; padding: 4px 8px; font-size: 13px; }"
-    );
-    
+    m_layout->setContentsMargins(8, 0, 8, 0);
+    m_layout->setSpacing(0);
+
     m_editLine->setObjectName("BreadcrumbEdit");
     m_editLine->hide();
     m_editLine->installEventFilter(this);
-    
+
     connect(m_editLine, &QLineEdit::returnPressed, this, [this]() {
         exitEditMode(true);
     });
@@ -56,16 +50,18 @@ void BreadcrumbBar::setPath(const QString &path) {
     QString normalized = QDir::toNativeSeparators(path);
     if (normalized == m_path)
         return;
-    m_path = normalized;
-    if (!m_editMode) {
-        rebuild();
+
+    if (m_editMode) {
+        exitEditMode(false); // Force exit edit mode on external path change (tab switch)
     }
+
+    m_path = normalized;
+    rebuild();
 }
 
 void BreadcrumbBar::resizeEvent(QResizeEvent *event) {
     QWidget::resizeEvent(event);
     if (!m_editMode && event->size().width() != event->oldSize().width()) {
-        // Debounce rebuild slightly for performance
         QTimer::singleShot(10, this, [this]() {
             if (!m_editMode) rebuild();
         });
@@ -77,6 +73,16 @@ void BreadcrumbBar::mouseDoubleClickEvent(QMouseEvent *event) {
         enterEditMode();
     }
     QWidget::mouseDoubleClickEvent(event);
+}
+
+void BreadcrumbBar::mouseReleaseEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton && !m_editMode) {
+        // If clicked on empty area, enter edit mode
+        if (childAt(event->pos()) == nullptr) {
+            enterEditMode();
+        }
+    }
+    QWidget::mouseReleaseEvent(event);
 }
 
 bool BreadcrumbBar::eventFilter(QObject *watched, QEvent *event) {
@@ -146,7 +152,6 @@ void BreadcrumbBar::rebuild() {
     QString normalized = QDir::fromNativeSeparators(m_path);
     QStringList parts;
     QStringList paths;
-    QString accumulated;
 
 #ifdef Q_OS_WIN
     if (normalized.length() >= 2 && normalized[1] == ':') {
@@ -163,32 +168,31 @@ void BreadcrumbBar::rebuild() {
     }
 #endif
 
-    QStringList segments = normalized.split('/', Qt::SkipEmptyParts);
+    QStringList segments = normalized.split(QDir::separator(), Qt::SkipEmptyParts);
     parts.append(segments);
     
     QString runningPath = paths.isEmpty() ? "" : paths[0];
     for (int i = (paths.isEmpty() ? 0 : 1); i < parts.size(); ++i) {
-        if (!runningPath.endsWith('/')) runningPath += '/';
+        if (!runningPath.isEmpty() && !runningPath.endsWith(QDir::separator())) runningPath += QDir::separator();
         runningPath += parts[i];
         paths << runningPath;
     }
     
     const QFontMetrics metrics(font());
-    const int availableWidth = qMax(220, width() - 32);
+    const int availableWidth = qMax(200, width() - 40);
     QVector<int> visibleIndexes;
-    visibleIndexes.reserve(parts.size());
     visibleIndexes.push_back(0);
     if (parts.size() > 1) {
         visibleIndexes.push_back(parts.size() - 1);
     }
 
-    int usedWidth = metrics.horizontalAdvance(parts.first()) + 24;
+    int usedWidth = metrics.horizontalAdvance(parts.first()) + 20;
     if (parts.size() > 1) {
-        usedWidth += metrics.horizontalAdvance(parts.last()) + 28;
+        usedWidth += metrics.horizontalAdvance(parts.last()) + 20;
     }
 
     for (int i = parts.size() - 2; i >= 1; --i) {
-        const int segmentWidth = metrics.horizontalAdvance(parts[i]) + 28;
+        const int segmentWidth = metrics.horizontalAdvance(parts[i]) + 24;
         if (usedWidth + segmentWidth > availableWidth) {
             break;
         }
@@ -221,8 +225,7 @@ void BreadcrumbBar::rebuild() {
         }
 
         const bool isLast = (partIndex == parts.size() - 1);
-        const int maxSegmentWidth = partIndex == 0 ? 120 : qMax(90, availableWidth / qMax(3, visibleIndexes.size()));
-        const QString segmentText = elideSegmentText(metrics, parts[partIndex], maxSegmentWidth);
+        const QString segmentText = parts[partIndex];
         if (isLast) {
             auto *label = new QLabel(segmentText, this);
             label->setObjectName("BreadcrumbCurrent");

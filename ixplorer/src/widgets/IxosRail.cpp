@@ -56,55 +56,63 @@ IxosRail::IxosRail(QWidget *parent)
 
     auto *header = new QWidget(this);
     header->setObjectName("RailHeader");
+    header->setFixedHeight(48);
     auto *headerLayout = new QHBoxLayout(header);
-    headerLayout->setContentsMargins(16, 10, 12, 8);
+    headerLayout->setContentsMargins(16, 0, 8, 0);
     headerLayout->setSpacing(8);
 
-    auto *title = new QLabel("", header);
+    auto *title = new QLabel("Details", header);
     title->setObjectName("RailHeaderTitle");
-    QFont titleFont("Geist Mono");
-    titleFont.setPixelSize(11);
-    titleFont.setBold(true);
-    titleFont.setLetterSpacing(QFont::AbsoluteSpacing, 1.2);
-    title->setFont(titleFont);
     headerLayout->addWidget(title, 1);
 
     auto *closeButton = new QPushButton(header);
     closeButton->setObjectName("RailHeaderButton");
-    closeButton->setIcon(Icons::makeIconFromFont(Icons::Close, 12, QColor(0x6E, 0x6E, 0x73)));
-    closeButton->setFlat(true);
-    closeButton->setFixedSize(22, 22);
+    closeButton->setIcon(Icons::makeIconFromFont(Icons::Close, 14, QColor(0xFA, 0xFA, 0xFA)));
+    closeButton->setFixedSize(32, 32);
     headerLayout->addWidget(closeButton);
     mainLayout->addWidget(header);
 
-    // Removed the inline rail search box and status label
-
+    // Context / Intelligence Preview Area
     m_contextPane = new QWidget(this);
     m_contextPane->setObjectName("RailContextPane");
     auto *contextLayout = new QVBoxLayout(m_contextPane);
-    contextLayout->setContentsMargins(14, 8, 14, 10);
-    contextLayout->setSpacing(4);
+    contextLayout->setContentsMargins(16, 16, 16, 16);
+    contextLayout->setSpacing(12);
+
+    // Icon / Preview placeholder
+    auto *previewPlaceholder = new QWidget(m_contextPane);
+    previewPlaceholder->setObjectName("RailPreviewPlaceholder");
+    previewPlaceholder->setFixedSize(80, 80);
+    auto *previewLayout = new QVBoxLayout(previewPlaceholder);
+    auto *previewIcon = new QLabel(previewPlaceholder);
+    previewIcon->setPixmap(Icons::makeIconFromFont(Icons::Document, 48, QColor(0x71, 0x71, 0x7A)).pixmap(48, 48));
+    previewIcon->setAlignment(Qt::AlignCenter);
+    previewLayout->addWidget(previewIcon);
+    contextLayout->addWidget(previewPlaceholder, 0, Qt::AlignCenter);
 
     m_contextEyebrow = new QLabel(m_contextPane);
     m_contextEyebrow->setObjectName("RailContextEyebrow");
+    m_contextEyebrow->setAlignment(Qt::AlignCenter);
     contextLayout->addWidget(m_contextEyebrow);
 
     m_contextTitle = new QLabel(m_contextPane);
     m_contextTitle->setObjectName("RailContextTitle");
+    m_contextTitle->setAlignment(Qt::AlignCenter);
     m_contextTitle->setWordWrap(true);
     contextLayout->addWidget(m_contextTitle);
 
     m_contextSubtitle = new QLabel(m_contextPane);
     m_contextSubtitle->setObjectName("RailContextSubtitle");
+    m_contextSubtitle->setAlignment(Qt::AlignCenter);
     m_contextSubtitle->setWordWrap(true);
     contextLayout->addWidget(m_contextSubtitle);
 
     m_contextActions = new QWidget(m_contextPane);
-    m_contextActionsLayout = new QHBoxLayout(m_contextActions);
-    m_contextActionsLayout->setContentsMargins(0, 4, 0, 0);
-    m_contextActionsLayout->setSpacing(4);
+    m_contextActionsLayout = new QVBoxLayout(m_contextActions);
+    m_contextActionsLayout->setContentsMargins(0, 8, 0, 0);
+    m_contextActionsLayout->setSpacing(8);
     contextLayout->addWidget(m_contextActions);
-    m_contextPane->hide();
+    
     mainLayout->addWidget(m_contextPane, 0);
 
     m_resultList = new QListWidget(this);
@@ -152,8 +160,8 @@ IxosRail::IxosRail(QWidget *parent)
     makeDetailAction(QStringLiteral("Open Here"), 0, 0, [this](const QString &path) { emit openFileRequested(path); });
     makeDetailAction(QStringLiteral("Open Beside"), 0, 1, [this](const QString &path) { emit openPathInNewTabRequested(path); });
     makeDetailAction(QStringLiteral("Add To Workstream"), 1, 0, [this](const QString &path) { emit addPathToWorkstreamRequested(path); });
-    makeDetailAction(QStringLiteral("Compare"), 1, 1, [this](const QString &path) { emit compareWithCurrentRequested(path); });
-    makeDetailAction(QStringLiteral("Reveal Graph"), 2, 0, [this](const QString &path) { emit revealRelationshipRequested(path); });
+    makeDetailAction(QStringLiteral("Visual Graph"), 1, 1, [this](const QString &path) { emit revealRelationshipRequested(path); });
+    makeDetailAction(QStringLiteral("Compare"), 2, 0, [this](const QString &path) { emit compareWithCurrentRequested(path); });
     makeDetailAction(QStringLiteral("Copy Path"), 2, 1, [this](const QString &path) { emit copyPathRequested(path); });
     makeDetailAction(QStringLiteral("Pin For Today"), 3, 0, [this](const QString &path) { emit pinForTodayRequested(path); });
     detailLayout->addWidget(m_detailActions, 0);
@@ -440,7 +448,7 @@ void IxosRail::renderResults(const QList<SearchHit> &results, bool semanticResul
         auto *listItem = new QListWidgetItem();
         auto *card = new SearchResultCard(m_resultList);
         card->setContent(item, semanticResults, relativePathForResult(item), "", rank++);
-        listItem->setSizeHint(QSize(0, 32)); // Height: ~32px
+        listItem->setSizeHint(QSize(0, 36)); // Height: 36px
         m_resultList->addItem(listItem);
         m_resultList->setItemWidget(listItem, card);
     }
@@ -528,10 +536,10 @@ void IxosRail::rebuildContextPane() {
 
     const bool hasSelection = !m_results.isEmpty() && m_resultList->currentRow() >= 0;
     RailPrimaryState state = RailPrimaryState::WorkstreamContext;
-    if (hasActiveQuery()) {
-        state = RailPrimaryState::SearchResults;
-    } else if (!m_relationshipItems.isEmpty()) {
+    if (!m_relationshipItems.isEmpty()) {
         state = RailPrimaryState::RelationshipView;
+    } else if (hasActiveQuery()) {
+        state = RailPrimaryState::SearchResults;
     } else if (hasSelection) {
         state = RailPrimaryState::SelectionDetail;
     }
@@ -560,35 +568,46 @@ void IxosRail::rebuildContextPane() {
     QString subtitle;
     bool hasAction = false;
 
+    // Determine eyebrow accent color before content population
+    const char *eyebrowColor = "#FFFFFF"; // monochrome baseline
+
     if (state == RailPrimaryState::RelationshipView) {
         eyebrow = QStringLiteral("RELATIONSHIPS");
+        eyebrowColor = "#FFFFFF"; // monochrome relationship
         const QString primary = m_relationshipSeedPath.isEmpty()
             ? (m_relationshipItems.isEmpty() ? QString() : m_relationshipItems.first().path)
             : m_relationshipSeedPath;
         title = primary.isEmpty() ? QStringLiteral("Related Files") : displayNameForPath(primary);
-        subtitle = QStringLiteral("Edges are scored from co-open frequency, temporal proximity, session reuse, query overlap, and pin affinity.");
+        subtitle = QStringLiteral("Edges scored by co-open frequency, temporal proximity, session reuse, query overlap, and pin affinity.");
 
         const int maxButtons = qMin(5, m_relationshipItems.size());
         for (int index = 0; index < maxButtons; ++index) {
             const RailRelationshipItem &item = m_relationshipItems.at(index);
-            auto *button = new QPushButton(
-                QStringLiteral("%1 (%2%)")
-                    .arg(relationLabel(item.path))
-                    .arg(static_cast<int>(item.score * 100.0f)),
-                m_contextActions);
-            button->setCursor(Qt::PointingHandCursor);
-            button->setToolTip(item.reason);
-            button->setMaximumHeight(26);
-            connect(button, &QPushButton::clicked, this, [this, item]() {
+            const int scorePct = static_cast<int>(item.score * 100.0f);
+            // Two-line chip: filename (bold) + reason + score (muted)
+            auto *chip = new QPushButton(m_contextActions);
+            chip->setProperty("railChip", true);
+            chip->setCursor(Qt::PointingHandCursor);
+            chip->setToolTip(item.reason);
+            chip->setFixedHeight(52);
+            chip->setText(QStringLiteral("%1\n%2 · %3%")
+                .arg(relationLabel(item.path))
+                .arg(item.reason.left(32))
+                .arg(scorePct));
+            chip->setStyleSheet(QStringLiteral(
+                "QPushButton { text-align: left; padding: 6px 10px; font-size: 12px; }"
+                "QPushButton::first-line { font-weight: 600; color: #F2F2F7; }"
+            ));
+            connect(chip, &QPushButton::clicked, this, [this, item]() {
                 emit openFileRequested(item.path);
             });
-            m_contextActionsLayout->addWidget(button);
+            m_contextActionsLayout->addWidget(chip);
             hasAction = true;
         }
 
-        auto *clearButton = new QPushButton(QStringLiteral("Back To Context"), m_contextActions);
+        auto *clearButton = new QPushButton(QStringLiteral("← Back to Context"), m_contextActions);
         clearButton->setCursor(Qt::PointingHandCursor);
-        clearButton->setMaximumHeight(26);
+        clearButton->setFixedHeight(36);
         connect(clearButton, &QPushButton::clicked, this, [this]() {
             clearRelationshipContext();
         });
@@ -596,6 +615,7 @@ void IxosRail::rebuildContextPane() {
         hasAction = true;
     } else if (m_recoveryPacket.wasInterrupted && !m_recoveryPacket.items.isEmpty()) {
         eyebrow = QStringLiteral("SESSION");
+        eyebrowColor = "#FFFFFF"; // monochrome session
         title = QStringLiteral("Restore previous session");
         subtitle = m_recoveryPacket.reason.isEmpty()
             ? QStringLiteral("%1 items are ready to reopen.").arg(m_recoveryPacket.items.size())
@@ -609,7 +629,7 @@ void IxosRail::rebuildContextPane() {
         auto *resumeButton = new QPushButton(QStringLiteral("Restore set (%1)").arg(bundlePaths.size()), m_contextActions);
         resumeButton->setProperty("railPrimaryAction", true);
         resumeButton->setCursor(Qt::PointingHandCursor);
-        resumeButton->setMaximumHeight(26);
+        resumeButton->setFixedHeight(36);
         connect(resumeButton, &QPushButton::clicked, this, [this, bundlePaths]() {
             emit openBundleRequested(bundlePaths, m_recoveryPacket.workstreamId);
         });
@@ -618,14 +638,15 @@ void IxosRail::rebuildContextPane() {
     } else if (!m_bundlePrediction.primaryPath.isEmpty()) {
         eyebrow = QStringLiteral("SUGGESTED");
         title = displayNameForPath(m_bundlePrediction.primaryPath);
-        subtitle = QStringLiteral("%1 - confidence %2")
-            .arg(m_bundlePrediction.reason, QString::number(m_bundlePrediction.confidence, 'f', 2));
+        subtitle = QStringLiteral("%1 · %2% confidence")
+            .arg(m_bundlePrediction.reason)
+            .arg(static_cast<int>(m_bundlePrediction.confidence * 100.0f));
 
         QStringList bundlePaths{m_bundlePrediction.primaryPath};
         auto *openBundle = new QPushButton(QStringLiteral("Open suggested set"), m_contextActions);
         openBundle->setProperty("railPrimaryAction", true);
         openBundle->setCursor(Qt::PointingHandCursor);
-        openBundle->setMaximumHeight(26);
+        openBundle->setFixedHeight(36);
         connect(openBundle, &QPushButton::clicked, this, [this, bundlePaths]() mutable {
             for (const BundleItem &item : std::as_const(m_bundlePrediction.items)) {
                 bundlePaths.append(item.path);
@@ -637,8 +658,9 @@ void IxosRail::rebuildContextPane() {
     } else if (!m_resumePacket.primaryPath.isEmpty()) {
         eyebrow = QStringLiteral("READY");
         title = displayNameForPath(m_resumePacket.primaryPath);
-        subtitle = QStringLiteral("%1 - confidence %2")
-            .arg(m_resumePacket.reason, QString::number(m_resumePacket.confidence, 'f', 2));
+        subtitle = QStringLiteral("%1 · %2% confidence")
+            .arg(m_resumePacket.reason)
+            .arg(static_cast<int>(m_resumePacket.confidence * 100.0f));
         if (!m_resumePacket.likelyNextActions.isEmpty()) {
             subtitle.append(QStringLiteral("\nNext: %1").arg(m_resumePacket.likelyNextActions.first()));
         }
@@ -647,7 +669,7 @@ void IxosRail::rebuildContextPane() {
         auto *openBundle = new QPushButton(QStringLiteral("Open resume set"), m_contextActions);
         openBundle->setProperty("railPrimaryAction", true);
         openBundle->setCursor(Qt::PointingHandCursor);
-        openBundle->setMaximumHeight(26);
+        openBundle->setFixedHeight(36);
         connect(openBundle, &QPushButton::clicked, this, [this, bundlePaths]() mutable {
             for (const QString &path : std::as_const(m_resumePacket.supportingPaths)) {
                 bundlePaths.append(path);
@@ -664,15 +686,28 @@ void IxosRail::rebuildContextPane() {
         auto *workstreamsBtn = new QPushButton(QStringLiteral("View Workstreams"), m_contextActions);
         workstreamsBtn->setProperty("railPrimaryAction", true);
         workstreamsBtn->setCursor(Qt::PointingHandCursor);
-        workstreamsBtn->setMaximumHeight(26);
+        workstreamsBtn->setFixedHeight(32);
         connect(workstreamsBtn, &QPushButton::clicked, this, [this]() {
             emit viewWorkstreamsRequested();
         });
         m_contextActionsLayout->addWidget(workstreamsBtn);
 
+        auto *graphBtn = new QPushButton(QStringLiteral("Visual Graph"), m_contextActions);
+        graphBtn->setCursor(Qt::PointingHandCursor);
+        graphBtn->setFixedHeight(32);
+        connect(graphBtn, &QPushButton::clicked, this, [this]() {
+            const int row = m_resultList->currentRow();
+            if (row >= 0 && row < m_results.size()) {
+                emit revealRelationshipRequested(m_results.at(row).path);
+            } else {
+                emit revealRelationshipRequested(m_searchRoot);
+            }
+        });
+        m_contextActionsLayout->addWidget(graphBtn);
+
         auto *focusButton = new QPushButton(QStringLiteral("Focus Search"), m_contextActions);
         focusButton->setCursor(Qt::PointingHandCursor);
-        focusButton->setMaximumHeight(26);
+        focusButton->setFixedHeight(32);
         connect(focusButton, &QPushButton::clicked, this, [this]() {
             focusSearch();
         });
@@ -683,6 +718,10 @@ void IxosRail::rebuildContextPane() {
     if (hasAction) {
         m_contextActionsLayout->addStretch(1);
     }
+
+    // Apply eyebrow accent color
+    m_contextEyebrow->setStyleSheet(QStringLiteral("color: %1; font-family: 'Geist Mono', 'Consolas', monospace; font-size: 10px; font-weight: 600; letter-spacing: 1.5px;").arg(eyebrowColor));
+
     m_contextEyebrow->setText(eyebrow);
     m_contextTitle->setText(title);
     m_contextSubtitle->setText(subtitle);
@@ -713,7 +752,7 @@ void IxosRail::appendSearchTrace(SearchAction action) {
 
     const QString topPath = m_results.isEmpty() ? QString() : m_results.first().path;
     const QString signature = QStringLiteral("%1|%2|%3|%4|%5")
-        .arg(m_currentQuery.trimmed().toLower(),
+        .arg(m_currentQuery.trimmed(),
              topPath,
              QString::number(m_lastSearchElapsedMs),
              QString::number(static_cast<int>(action)),
@@ -796,6 +835,7 @@ float IxosRail::stabilityPenaltyForTopResult() const {
         return 0.0f;
     }
 
+    const int decimalPlaces = 2;
     const int delta = qAbs(currentQuery.size() - previousQuery.size());
     const bool nearQuery = delta <= 2 &&
         (currentQuery.startsWith(previousQuery.left(qMin(4, previousQuery.size()))) ||

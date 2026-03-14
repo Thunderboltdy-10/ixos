@@ -68,7 +68,7 @@ QString normalizedPath(const QString &path) {
     }
     const QFileInfo info(path);
     const QString absolutePath = info.exists() ? info.absoluteFilePath() : QDir::cleanPath(path);
-    return QDir::fromNativeSeparators(absolutePath).toLower();
+    return QDir::fromNativeSeparators(absolutePath);
 }
 
 bool isFileInteraction(const ActivityEvent &event) {
@@ -304,10 +304,8 @@ QString relationshipReason(const RelationshipSignal &signal) {
 
 QString buildGraphSignature(const QVector<Workstream> &workstreams,
                            const QHash<QString, QVector<RelationshipSignal>> &relatedCache,
-                           qint64 rebuildTimestamp,
                            int sourceEventCount) {
     QStringList rows;
-    rows.append(QStringLiteral("rebuild:%1").arg(QString::number(rebuildTimestamp)));
     rows.append(QStringLiteral("events:%1").arg(QString::number(sourceEventCount)));
 
     QVector<Workstream> sortedWorkstreams = workstreams;
@@ -468,7 +466,7 @@ void WorkstreamManager::rebuild() {
         m_relatedCache.clear();
         m_pathWorkstreamCache.clear();
         m_workstreams = manualWorkstreams;
-        m_graphSignature = buildGraphSignature(m_workstreams, m_relatedCache, now, 0);
+        m_graphSignature = buildGraphSignature(m_workstreams, m_relatedCache, 0);
         m_replaySourceEventCount = 0;
         m_lastRebuildTimestamp = now;
         m_dirty = true;
@@ -828,6 +826,20 @@ void WorkstreamManager::rebuild() {
         rebuilt.append(workstream);
     }
 
+    // Disambiguate auto workstreams that share a name
+    QHash<QString, int> nameCounts;
+    for (const Workstream &ws : std::as_const(rebuilt)) {
+        if (ws.isAuto) nameCounts[ws.name]++;
+    }
+    QHash<QString, int> nameOrdinal;
+    for (Workstream &ws : rebuilt) {
+        if (!ws.isAuto || nameCounts.value(ws.name) <= 1) continue;
+        const QString disc = ws.topFolders.isEmpty()
+            ? QString::number(++nameOrdinal[ws.name])
+            : QFileInfo(ws.topFolders.first().first).fileName();
+        ws.name = QStringLiteral("%1 (%2)").arg(ws.name, disc);
+    }
+
     rebuilt.append(manualWorkstreams);
     std::sort(rebuilt.begin(), rebuilt.end(), [](const Workstream &lhs, const Workstream &rhs) {
         if (lhs.isPinned != rhs.isPinned) {
@@ -860,7 +872,7 @@ void WorkstreamManager::rebuild() {
     if (m_currentWorkstreamId.isEmpty() && !m_workstreams.isEmpty()) {
         m_currentWorkstreamId = m_workstreams.first().id;
     }
-    m_graphSignature = buildGraphSignature(m_workstreams, m_relatedCache, now, sourceEventCount);
+    m_graphSignature = buildGraphSignature(m_workstreams, m_relatedCache, sourceEventCount);
     m_replaySourceEventCount = sourceEventCount;
     m_lastRebuildTimestamp = now;
     m_dirty = true;
@@ -882,7 +894,10 @@ Workstream WorkstreamManager::workstreamForId(const QString &id) const {
 
 QVector<Workstream> WorkstreamManager::workstreamsForPath(const QString &path) const {
     QVector<Workstream> matches;
-    const QString normalized = normalizedPath(path);
+    QString normalized = normalizedPath(path);
+#ifdef Q_OS_WIN
+    normalized = normalized.toLower();
+#endif
     const QString mappedId = m_pathWorkstreamCache.value(normalized);
     for (const Workstream &workstream : m_workstreams) {
         if (!mappedId.isEmpty() && workstream.id == mappedId) {
@@ -908,7 +923,10 @@ QVector<RelationshipSignal> WorkstreamManager::relatedForPath(
     int limit,
     const QString &workstreamId) const {
     QVector<RelationshipSignal> related;
-    const QString normalized = normalizedPath(path);
+    QString normalized = normalizedPath(path);
+#ifdef Q_OS_WIN
+    normalized = normalized.toLower();
+#endif
     if (normalized.isEmpty()) {
         return related;
     }

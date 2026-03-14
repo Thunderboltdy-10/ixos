@@ -222,14 +222,14 @@ function PixelWaveCanvas() {
 
         p.brightness *= 0.96
 
-        // Reduced baseline visibility and alpha for more controlled look
-        const alpha = Math.max(0.02, p.brightness * 0.3)
+        // Increased baseline visibility and alpha for more cinematic presence
+        const alpha = Math.max(0.22, p.brightness * 0.8)
         const [r, g, b] = hueToRGB(p.hue)
 
-        // Subtle glow only for very bright squares
-        if (p.brightness > 0.2) {
-          ctx.shadowBlur = p.size * 2
-          ctx.shadowColor = `rgba(${r},${g},${b},${p.brightness * 0.15})`
+        // Much broader and more intense glow
+        if (p.brightness > 0.05) {
+          ctx.shadowBlur = p.size * 10.0
+          ctx.shadowColor = `rgba(${r},${g},${b},${Math.max(0.3, p.brightness * 0.7)})`
         } else {
           ctx.shadowBlur = 0
         }
@@ -291,10 +291,10 @@ function StaticAmbient() {
         zIndex: 0,
         background: '#0C0E10',
         backgroundImage: `
-          radial-gradient(circle, rgba(45,212,191,0.02) 1px, transparent 1px),
-          radial-gradient(circle, rgba(124,58,237,0.015) 1px, transparent 1px)
+          radial-gradient(circle, rgba(45,212,191,0.05) 1.5px, transparent 1.5px),
+          radial-gradient(circle, rgba(124,58,237,0.04) 1.5px, transparent 1.5px)
         `,
-        backgroundSize: '24px 24px, 48px 48px',
+        backgroundSize: '32px 32px, 64px 64px',
       }}
     />
   )

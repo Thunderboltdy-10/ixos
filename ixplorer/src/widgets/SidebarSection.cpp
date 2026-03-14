@@ -19,20 +19,21 @@ SidebarSection::SidebarSection(const QString &title, const QIcon &sectionIcon, Q
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    // Header - only show if title is not empty
+    // Header
     m_headerWidget = new QWidget(this);
     m_headerWidget->setObjectName("SidebarSectionHeader");
 
     auto *headerLayout = new QHBoxLayout(m_headerWidget);
-    headerLayout->setContentsMargins(14, 8, 10, 2);
-    headerLayout->setSpacing(4);
+    headerLayout->setContentsMargins(12, 12, 10, 4); // Increased vertical margin
+    headerLayout->setSpacing(6);
 
     m_chevronLabel = new QLabel(m_headerWidget);
     m_chevronLabel->setFixedSize(12, 12);
-    m_chevronLabel->setPixmap(Icons::makeIconFromFont(Icons::ChevronDown, 10, QColor("#5A5A5E")).pixmap(10, 10));
+    m_chevronLabel->setPixmap(Icons::makeIconFromFont(Icons::ChevronDown, 10, QColor("#A1A1AA")).pixmap(10, 10));
     headerLayout->addWidget(m_chevronLabel);
 
     m_titleLabel = new QLabel(title, m_headerWidget);
+    m_titleLabel->setStyleSheet("font-weight: 700; color: #A1A1AA; font-size: 11px; letter-spacing: 0.5px;");
     headerLayout->addWidget(m_titleLabel);
     headerLayout->addStretch();
 
@@ -43,8 +44,8 @@ SidebarSection::SidebarSection(const QString &title, const QIcon &sectionIcon, Q
         m_headerWidget->installEventFilter(this);
     }
 
-    m_body->setContentsMargins(0, 0, 0, 2);
-    m_body->setSpacing(0);
+    m_body->setContentsMargins(0, 0, 0, 8);
+    m_body->setSpacing(2); // Spacing between items
 
     layout->addWidget(m_headerWidget);
     layout->addWidget(m_bodyWidget);
@@ -68,15 +69,15 @@ bool SidebarSection::eventFilter(QObject *watched, QEvent *event) {
 void SidebarSection::addItem(const QString &label, const QString &path, const QIcon &icon) {
     auto *btn = new QPushButton(m_bodyWidget);
     btn->setObjectName("SidebarItem");
+    btn->setAttribute(Qt::WA_Hover); // Ensure hover events are handled
     btn->setCursor(path.isEmpty() ? Qt::ArrowCursor : Qt::PointingHandCursor);
     btn->setProperty("path", path);
     btn->setEnabled(!path.isEmpty());
     btn->setText(label);
     btn->setFlat(true);
-    btn->setCheckable(false);
     btn->setIcon(icon);
-    btn->setIconSize(QSize(14, 14));
-    btn->setFixedHeight(26);
+    btn->setIconSize(QSize(18, 18)); // Slightly larger icons
+    btn->setFixedHeight(34); // Better height
 
     connect(btn, &QPushButton::clicked, this, [this, path]() {
         if (!path.isEmpty()) {
@@ -103,8 +104,8 @@ void SidebarSection::setHighlighted(const QString &path) {
         if (!btn) {
             continue;
         }
-        // Disabled active state changing to remove permanent amber background.
-        btn->setObjectName("SidebarItem");
+        bool isCurrent = (QDir::toNativeSeparators(btn->property("path").toString()) == m_highlightedPath);
+        btn->setProperty("current", isCurrent);
         btn->style()->unpolish(btn);
         btn->style()->polish(btn);
     }
@@ -112,7 +113,7 @@ void SidebarSection::setHighlighted(const QString &path) {
 
 void SidebarSection::toggleCollapse() {
     m_collapsed = !m_collapsed;
-    m_chevronLabel->setPixmap(Icons::makeIconFromFont(m_collapsed ? Icons::ChevronRight : Icons::ChevronDown, 10, QColor("#5A5A5E")).pixmap(10, 10));
+    m_chevronLabel->setPixmap(Icons::makeIconFromFont(m_collapsed ? Icons::ChevronRight : Icons::ChevronDown, 10, QColor("#A1A1AA")).pixmap(10, 10));
 
     m_collapseAnimation->stop();
     if (m_collapsed) {

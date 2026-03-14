@@ -118,6 +118,74 @@ FileOpenPolicy makeInternalPolicy(
 
 } // namespace
 
+namespace {
+
+const QSet<QString> &codeTextExtensions() {
+    static const QSet<QString> extensions = {
+        // C/C++
+        QStringLiteral("c"), QStringLiteral("cpp"), QStringLiteral("cc"), QStringLiteral("cxx"),
+        QStringLiteral("h"), QStringLiteral("hpp"), QStringLiteral("hh"),
+        // Rust / Go / Swift / Kotlin / Java
+        QStringLiteral("rs"), QStringLiteral("go"), QStringLiteral("swift"), QStringLiteral("kt"),
+        QStringLiteral("java"), QStringLiteral("scala"),
+        // Web
+        QStringLiteral("js"), QStringLiteral("jsx"), QStringLiteral("ts"), QStringLiteral("tsx"),
+        QStringLiteral("html"), QStringLiteral("htm"), QStringLiteral("css"), QStringLiteral("scss"),
+        QStringLiteral("less"), QStringLiteral("vue"), QStringLiteral("svelte"),
+        // Scripts
+        QStringLiteral("py"), QStringLiteral("rb"), QStringLiteral("php"), QStringLiteral("lua"),
+        QStringLiteral("sh"), QStringLiteral("bash"), QStringLiteral("zsh"), QStringLiteral("fish"),
+        QStringLiteral("ps1"), QStringLiteral("bat"), QStringLiteral("cmd"),
+        // Data / Config
+        QStringLiteral("json"), QStringLiteral("yaml"), QStringLiteral("yml"), QStringLiteral("toml"),
+        QStringLiteral("xml"), QStringLiteral("csv"), QStringLiteral("ini"), QStringLiteral("cfg"),
+        QStringLiteral("env"), QStringLiteral("conf"), QStringLiteral("properties"),
+        // Docs / Markup
+        QStringLiteral("md"), QStringLiteral("markdown"), QStringLiteral("rst"), QStringLiteral("txt"),
+        QStringLiteral("log"), QStringLiteral("diff"), QStringLiteral("patch"),
+        // Build
+        QStringLiteral("cmake"), QStringLiteral("makefile"), QStringLiteral("mk"),
+        QStringLiteral("gradle"), QStringLiteral("bazel"),
+        // Other text
+        QStringLiteral("sql"), QStringLiteral("graphql"), QStringLiteral("proto"),
+        QStringLiteral("r"), QStringLiteral("m"), QStringLiteral("tex"),
+    };
+    return extensions;
+}
+
+const QSet<QString> &imageExtensions() {
+    static const QSet<QString> extensions = {
+        QStringLiteral("png"), QStringLiteral("jpg"), QStringLiteral("jpeg"),
+        QStringLiteral("gif"), QStringLiteral("bmp"), QStringLiteral("tiff"),
+        QStringLiteral("tif"), QStringLiteral("webp"), QStringLiteral("ico"),
+        QStringLiteral("svg"), QStringLiteral("svgz"),
+    };
+    return extensions;
+}
+
+const QSet<QString> &mediaExtensions() {
+    static const QSet<QString> extensions = {
+        QStringLiteral("mp4"), QStringLiteral("mkv"), QStringLiteral("avi"),
+        QStringLiteral("mov"), QStringLiteral("wmv"), QStringLiteral("flv"),
+        QStringLiteral("webm"), QStringLiteral("m4v"),
+        QStringLiteral("mp3"), QStringLiteral("flac"), QStringLiteral("aac"),
+        QStringLiteral("ogg"), QStringLiteral("wav"), QStringLiteral("m4a"),
+        QStringLiteral("wma"), QStringLiteral("opus"),
+    };
+    return extensions;
+}
+
+const QSet<QString> &officeExtensions() {
+    static const QSet<QString> extensions = {
+        QStringLiteral("docx"), QStringLiteral("doc"),
+        QStringLiteral("xlsx"), QStringLiteral("xls"),
+        QStringLiteral("pptx"), QStringLiteral("ppt"),
+    };
+    return extensions;
+}
+
+} // anonymous namespace
+
 FileOpenPolicy resolveFileOpenPolicy(const QFileInfo &info) {
     if (!info.exists() || !info.isFile()) {
         return makeExternalPolicy(QStringLiteral("Open externally"),
@@ -135,6 +203,56 @@ FileOpenPolicy resolveFileOpenPolicy(const QFileInfo &info) {
                                       .arg(typeLabel));
     }
 
+    // Native code/text viewer
+    if (codeTextExtensions().contains(extension)
+        || mime.name().startsWith(QStringLiteral("text/"))
+        || mime.inherits(QStringLiteral("text/plain"))) {
+        return makeInternalPolicy(FileOpenAction::PreviewInApp,
+                                  FileOpenHostMode::CodeViewer,
+                                  0.97f,
+                                  QStringLiteral("Code viewer"),
+                                  QStringLiteral("%1 will open in the built-in code viewer.").arg(typeLabel));
+    }
+
+    // Native image viewer
+    if (imageExtensions().contains(extension)
+        || mime.name().startsWith(QStringLiteral("image/"))) {
+        return makeInternalPolicy(FileOpenAction::PreviewInApp,
+                                  FileOpenHostMode::ImageViewer,
+                                  0.97f,
+                                  QStringLiteral("Image viewer"),
+                                  QStringLiteral("%1 will open in the built-in image viewer.").arg(typeLabel));
+    }
+
+    // Native media player
+    if (mediaExtensions().contains(extension)
+        || mime.name().startsWith(QStringLiteral("audio/"))
+        || mime.name().startsWith(QStringLiteral("video/"))) {
+        return makeInternalPolicy(FileOpenAction::PreviewInApp,
+                                  FileOpenHostMode::MediaPlayer,
+                                  0.97f,
+                                  QStringLiteral("Media player"),
+                                  QStringLiteral("%1 will open in the built-in media player.").arg(typeLabel));
+    }
+
+    // PDF (WebView / Qt PDF module path)
+    if (extension == QStringLiteral("pdf")) {
+        return makeInternalPolicy(FileOpenAction::PreviewInApp,
+                                  FileOpenHostMode::WebView,
+                                  0.97f,
+                                  QStringLiteral("PDF viewer"),
+                                  QStringLiteral("PDF will open in the built-in viewer."));
+    }
+
+    // Office COM embed (requires Office installed on Windows)
+    if (officeExtensions().contains(extension)) {
+        return makeInternalPolicy(FileOpenAction::HostAssociatedApp,
+                                  FileOpenHostMode::OfficeEmbed,
+                                  0.85f,
+                                  QStringLiteral("Office embed"),
+                                  QStringLiteral("%1 will open via Office COM embedding.").arg(typeLabel));
+    }
+
 #ifdef Q_OS_WIN
     const QString associatedExecutable = associatedExecutableBaseName(info.absoluteFilePath());
     if (!associatedExecutable.isEmpty() && externalOnlyAssociatedApps().contains(associatedExecutable)) {
@@ -143,9 +261,10 @@ FileOpenPolicy resolveFileOpenPolicy(const QFileInfo &info) {
     }
 #endif
 
+    // Everything else: try to embed the associated app window
     return makeInternalPolicy(FileOpenAction::HostAssociatedApp,
                               FileOpenHostMode::AssociatedWindow,
-                              0.88f,
+                              0.75f,
                               QStringLiteral("Embedded associated app"),
                               QStringLiteral("%1 will open in its associated desktop app inside this pane when possible.")
                                   .arg(typeLabel));

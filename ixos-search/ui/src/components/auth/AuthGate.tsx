@@ -526,9 +526,12 @@ function AuthGateInner({ children }: AuthGateProps) {
       logLease('bootstrap_start', { userId: user.id });
 
       try {
-        const deviceId = await getMachineId();
-        const deviceLabel = await getDeviceLabel();
-        const devicePublicKey = await invoke<string>('get_device_public_key').catch(() => null);
+        // Parallelize device info — on Mac, hardware crypto ops can take 5-10s each
+        const [deviceId, deviceLabel, devicePublicKey] = await Promise.all([
+          getMachineId(),
+          getDeviceLabel(),
+          invoke<string>('get_device_public_key').catch((): null => null),
+        ]);
         setDevice(deviceId, deviceLabel);
         setUser({ id: user.id, email: userEmail ?? user.id });
 
@@ -589,7 +592,7 @@ function AuthGateInner({ children }: AuthGateProps) {
           console.log('[Auth] Registering device...');
           await withTimeout(
             registerDevice(clerkToken, deviceId, deviceLabel, devicePublicKey),
-            12000,
+            20000,
             'REGISTER_DEVICE'
           );
           console.log('[Auth] Device registered successfully');
@@ -606,7 +609,7 @@ function AuthGateInner({ children }: AuthGateProps) {
           console.log('[Auth] Attempting to claim lease...');
           const claimResult = await withTimeout(
             claimLease(clerkToken, deviceId, devicePublicKey),
-            12000,
+            20000,
             'LEASE_CLAIM'
           );
           console.log('[Auth] Lease claim response:', claimResult);
@@ -645,7 +648,7 @@ function AuthGateInner({ children }: AuthGateProps) {
             try {
               const entitlementResult = await withTimeout(
                 fetchEntitlement(clerkToken, deviceId),
-                12000,
+                20000,
                 'ENTITLEMENT_FETCH'
               );
               console.log('[Auth] Entitlement response:', entitlementResult);
@@ -687,7 +690,7 @@ function AuthGateInner({ children }: AuthGateProps) {
         logLease('bootstrap_timeout');
         setBootError('Startup verification timed out. You can continue, but lease status may be stale.');
         setBootstrapped(true);
-      }, 25000);
+      }, 60000);
       bootstrap().finally(() => {
         if (bootstrapGuard) clearTimeout(bootstrapGuard);
       });
@@ -777,7 +780,7 @@ function AuthGateInner({ children }: AuthGateProps) {
         const devicePublicKey = await invoke<string>('get_device_public_key').catch(() => null);
         const refreshResult = await withTimeout(
           refreshLease(token, deviceId, devicePublicKey, { silent: true }),
-          12000,
+          20000,
           'LEASE_REFRESH'
         );
         if (refreshResult?.token) {

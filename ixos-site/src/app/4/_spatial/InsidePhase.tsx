@@ -63,17 +63,18 @@ export function InsidePhase({ scrollProgress }: { scrollProgress: number }) {
   const chapterIndex = Math.floor(chapterProgress)
   const chapter = CHAPTERS[chapterIndex]
 
-  // Results visible in DemoSurface grow as chapters are visited
-  // We show current revealed ones + the NEXT one as a "divider"
-  const overrideResults = CHAPTERS.slice(0, Math.min(chapterIndex + 2, chaptersCount)).map((ch, i) => ({
-    id: ch.id,
-    title: ch.highlight,
-    path: `ixos-protocol/phase_0${i + 1}/${ch.id}.md`,
-    snippet: ch.content,
-    score: 0.99 - i * 0.02,
-    rationale: `${ch.statLabel}: ${ch.stat}`,
-    isCollapsed: i > chapterIndex, // Only reveal content if we've reached this chapter
-  }))
+  // Results visible in DemoSurface strictly match the current chapter to avoid "creeping" future results
+  const overrideResults = [
+    {
+      id: chapter.id,
+      title: chapter.highlight,
+      path: `ixos-protocol/phase_0${chapterIndex + 1}/${chapter.id}.md`,
+      snippet: chapter.content,
+      score: 0.99 - chapterIndex * 0.02,
+      rationale: `${chapter.statLabel}: ${chapter.stat}`,
+      isCollapsed: false,
+    }
+  ]
 
   return (
     <div className="relative">

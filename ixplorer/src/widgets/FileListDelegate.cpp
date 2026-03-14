@@ -14,7 +14,7 @@ FileListDelegate::FileListDelegate(QObject *parent)
 
 QSize FileListDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const {
     QSize size = QStyledItemDelegate::sizeHint(option, index);
-    size.setHeight(30); // Row height: 30px
+    size.setHeight(22); // Ultra dense height
     return size;
 }
 
@@ -27,9 +27,9 @@ void FileListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
     // Background
     bool isSelected = opt.state & QStyle::State_Selected;
     if (isSelected) {
-        painter->fillRect(opt.rect, QColor(10, 132, 255, 25)); // ~0.1 opacity
+        painter->fillRect(opt.rect, QColor(0, 120, 215, 40)); // Windows Blue selection
     } else if (opt.state & QStyle::State_MouseOver) {
-        painter->fillRect(opt.rect, QColor(255, 255, 255, 10)); // ~0.04 opacity
+        painter->fillRect(opt.rect, QColor(255, 255, 255, 12)); // Subtle hover
     }
 
     QRect rect = opt.rect;
@@ -49,32 +49,23 @@ void FileListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
             // Icon
             ThemedFileIconProvider provider;
             QIcon icon = provider.icon(info);
-            QRect iconRect(rect.left() + 4, rect.top() + 6, 18, 18);
+            QRect iconRect(rect.left() + 6, rect.top() + 5, 18, 18);
             icon.paint(painter, iconRect);
 
             // Filename
             QRect textRect = rect;
-            textRect.setLeft(iconRect.right() + 8);
+            textRect.setLeft(iconRect.right() + 10);
             
-            QFont font("Geist");
-            font.setPixelSize(13);
-            painter->setFont(font);
-            painter->setPen(isSelected ? QColor(255, 255, 255) : QColor(242, 242, 247)); // Pure white if selected
-            
-            QString text = opt.text;
-            painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, text);
+            painter->setPen(QColor(255, 255, 255));
+            painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, opt.text);
         } else {
             QStyledItemDelegate::paint(painter, opt, index);
         }
     } else {
         // Metadata columns
-        QFont font("Geist");
-        font.setPixelSize(12);
-        painter->setFont(font);
-        painter->setPen(isSelected ? QColor(200, 200, 205) : QColor(142, 142, 147)); // Slightly brighter if selected
-        
+        painter->setPen(QColor(161, 161, 170)); // Muted text for metadata
         QRect textRect = rect;
-        textRect.setLeft(textRect.left() + 4);
+        textRect.setLeft(textRect.left() + 6);
         painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, opt.text);
     }
 

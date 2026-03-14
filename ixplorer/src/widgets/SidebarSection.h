@@ -18,6 +18,7 @@ public:
     void addItem(const QString &label, const QString &path, const QIcon &icon = QIcon());
     void clearItems();
     void setHighlighted(const QString &path);
+    void toggleCollapse();
     QVBoxLayout *bodyLayout() const { return m_body; }
 
 protected:
@@ -27,8 +28,6 @@ signals:
     void itemClicked(const QString &path);
 
 private:
-    void toggleCollapse();
-
     QWidget *m_headerWidget;
     QLabel *m_chevronLabel;
     QLabel *m_titleLabel;

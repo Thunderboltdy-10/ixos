@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { DemoSurface } from "@/landing/DemoSurface";
+import { ResultDivider } from "@/components/ui/ResultDivider";
 
 /* ── CSS injection for conic pulse + section reveals ────────────────── */
 
@@ -53,6 +54,10 @@ const GLOBAL_STYLES = `
   0%   { background-position: 0% 50%; }
   100% { background-position: 200% 50%; }
 }
+@keyframes streamVertical {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
 `;
 
 function GlobalStyles() {
@@ -64,6 +69,32 @@ function GlobalStyles() {
     document.head.appendChild(el);
   }, []);
   return null;
+}
+
+function DataStreamOverlay() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.03]">
+      <div 
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `linear-gradient(90deg, rgba(246,185,76,0.1) 1px, transparent 1px), linear-gradient(0deg, rgba(246,185,76,0.1) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px',
+        }}
+      />
+      <div 
+        className="absolute top-0 left-1/4 w-px h-64 bg-gradient-to-b from-transparent via-[#F6B94C] to-transparent"
+        style={{ animation: 'streamVertical 8s linear infinite' }}
+      />
+      <div 
+        className="absolute top-0 left-1/2 w-px h-96 bg-gradient-to-b from-transparent via-[#F6B94C] to-transparent"
+        style={{ animation: 'streamVertical 12s linear infinite', animationDelay: '2s' }}
+      />
+      <div 
+        className="absolute top-0 left-3/4 w-px h-48 bg-gradient-to-b from-transparent via-[#F6B94C] to-transparent"
+        style={{ animation: 'streamVertical 10s linear infinite', animationDelay: '5s' }}
+      />
+    </div>
+  );
 }
 
 /* ── Scroll-driven amber spotlight (enhanced) ────────────────────────── */
@@ -79,10 +110,10 @@ function SpotlightBackground() {
       const y = 10 + Math.min(progress, 0.4) * 60; // Keep spot somewhat up
       const x = 50 + Math.sin(progress * Math.PI) * 10;
 
-      const alphaBloom = Math.max(0.015, 0.15 - progress * 0.6);
-      const alphaTop = Math.max(0.005, 0.18 - progress * 0.8);
-      const alphaMid = Math.max(0.005, 0.04 - progress * 0.3);
-      const alphaTopEllipse = Math.max(0.005, 0.22 - progress * 0.9);
+      const alphaBloom = Math.max(0.12, 0.25 - progress * 0.6);
+      const alphaTop = Math.max(0.10, 0.30 - progress * 0.8);
+      const alphaMid = Math.max(0.08, 0.10 - progress * 0.3);
+      const alphaTopEllipse = Math.max(0.10, 0.35 - progress * 0.9);
 
       if (ref.current) {
         ref.current.style.setProperty("--spot-y", `${y}vh`);
@@ -108,7 +139,7 @@ function SpotlightBackground() {
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(800px circle at var(--spot-x, 50%) var(--spot-y, 15vh), rgba(246,185,76,var(--alpha-bloom, 0.07)) 0%, transparent 65%)",
+            "radial-gradient(1000px circle at var(--spot-x, 50%) var(--spot-y, 15vh), rgba(246,185,76,var(--alpha-bloom, 0.07)) 0%, transparent 70%)",
         }}
       />
       {/* Top glow */}
@@ -120,7 +151,7 @@ function SpotlightBackground() {
           right: 0,
           height: "100%",
           background:
-            "linear-gradient(to bottom, rgba(246,185,76,var(--alpha-top, 0.12)) 0%, rgba(246,185,76,var(--alpha-mid, 0.03)) 40vh, transparent 100%)",
+            "linear-gradient(to bottom, rgba(246,185,76,var(--alpha-top, 0.12)) 0%, rgba(246,185,76,var(--alpha-mid, 0.03)) 50vh, transparent 100%)",
           pointerEvents: "none",
         }}
       />
@@ -128,11 +159,11 @@ function SpotlightBackground() {
         style={{
           position: "absolute",
           top: 0,
-          left: "20%",
-          right: "20%",
+          left: "15%",
+          right: "15%",
           height: "100%",
           background:
-            "radial-gradient(ellipse at top, rgba(246,185,76,var(--alpha-top-ellipse, 0.15)) 0%, rgba(246,185,76,var(--alpha-mid, 0.02)) 40vh, transparent 100%)",
+            "radial-gradient(ellipse at top, rgba(246,185,76,var(--alpha-top-ellipse, 0.15)) 0%, rgba(246,185,76,var(--alpha-mid, 0.02)) 50vh, transparent 100%)",
           pointerEvents: "none",
         }}
       />
@@ -147,9 +178,9 @@ function SpotlightBackground() {
           marginLeft: "-90vmax",
           marginTop: "-90vmax",
           background:
-            "conic-gradient(from 0deg, transparent 0%, rgba(246,185,76,0.03) 25%, transparent 50%, rgba(246,185,76,0.02) 75%, transparent 100%)",
-          animation: "amberSpin 24s linear infinite",
-          opacity: 0.06,
+            "conic-gradient(from 0deg, transparent 0%, rgba(246,185,76,0.04) 25%, transparent 50%, rgba(246,185,76,0.03) 75%, transparent 100%)",
+          animation: "amberSpin 20s linear infinite",
+          opacity: 0.08,
           willChange: "transform",
         }}
       />
@@ -160,10 +191,10 @@ function SpotlightBackground() {
           bottom: 0,
           left: 0,
           right: 0,
-          height: "40vh",
+          height: "50vh",
           background:
-            "linear-gradient(to top, rgba(246,185,76,0.025) 0%, transparent 100%)",
-          animation: "glowPulse 8s ease-in-out infinite",
+            "linear-gradient(to top, rgba(246,185,76,0.04) 0%, transparent 100%)",
+          animation: "glowPulse 6s ease-in-out infinite",
         }}
       />
     </div>
@@ -990,8 +1021,19 @@ export default function Page1CommandCenter() {
         </StaggerGroup>
       </section>
 
+      <ResultDivider 
+        query="performance benchmarks"
+        resultTitle="Ixos Performance Audit"
+        resultPath="bench/results/2026-02-14.json"
+        resultSnippet="[scan] 1,247 files in 7ms. [lexical] 89 candidates scored. [semantic] 24 embedded (19 cache hits). [locked] 8 results in 312ms."
+        score={98}
+        accentColor={A}
+        variant="1"
+      />
+
       {/* ── S3  PIPELINE 1: Lexical Scan ─────────────────────────── */}
       <section id="pipeline" className="relative z-10 py-28 md:py-36 px-5 md:px-10">
+        <DataStreamOverlay />
         <div
           ref={pipelineReveal.ref}
           style={pipelineReveal.style}
@@ -1332,8 +1374,19 @@ export default function Page1CommandCenter() {
         </div>
       </section>
 
+      <ResultDivider 
+        query="search modes and depth"
+        resultTitle="Ixos Engine Configurations"
+        resultPath="src/ixos_rank/modes.rs"
+        resultSnippet="Flash mode for pure lexical speed. Auto mode for adaptive hybrid search. Pro mode for deep semantic reasoning using the Fusion model."
+        score={94}
+        accentColor={T}
+        variant="1"
+      />
+
       {/* ── S8  MODES / QUALITY ───────────────────────────────────── */}
       <section id="modes" className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}>
+        <DataStreamOverlay />
         <div
           ref={modesReveal.ref}
           style={modesReveal.style}

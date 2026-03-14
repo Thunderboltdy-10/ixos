@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useInView } from "framer-motion";
 import { DemoSurface } from "@/landing/DemoSurface";
+import { ResultDivider } from "@/components/ui/ResultDivider";
 import { useDecodeEffect } from "./useDecodeEffect";
 import { CornerBrackets } from "./CornerBrackets";
 
@@ -19,6 +21,33 @@ function SectionKicker({
   return (
     <div className={`text-xs font-mono tracking-[0.3em] uppercase mb-4 ${color}`}>
       ▸ {label}
+    </div>
+  );
+}
+
+function GridOverlay() {
+  return (
+    <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+      <div 
+        className="absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage: `linear-gradient(rgba(246,185,76,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(246,185,76,0.2) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px',
+        }}
+      />
+      <div 
+        className="absolute inset-0 opacity-[0.08]"
+        style={{
+          backgroundImage: `linear-gradient(rgba(246,185,76,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(246,185,76,0.3) 1px, transparent 1px)`,
+          backgroundSize: '200px 200px',
+        }}
+      />
+      {/* Moving scan line */}
+      <motion.div 
+        className="absolute left-0 right-0 h-px bg-amber-400/20 z-10"
+        animate={{ top: ['-10%', '110%'] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+      />
     </div>
   );
 }
@@ -233,14 +262,15 @@ function FloatingNav() {
   const [activeSection, setActiveSection] = useState("hero");
 
   const links = [
-    { label: "Speed", href: "#speed" },
-    { label: "Privacy", href: "#privacy" },
-    { label: "Pipeline", href: "#pipeline" },
-    { label: "CLI", href: "#cli" },
+    { label: "Speed", href: "#speed", type: "anchor" },
+    { label: "Privacy", href: "#privacy", type: "anchor" },
+    { label: "Pipeline", href: "#pipeline", type: "anchor" },
+    { label: "Pricing", href: "/3/pricing", type: "link" },
+    { label: "Docs", href: "/3/docs", type: "link" },
   ];
 
   useEffect(() => {
-    const sections = ["hero", "speed", "privacy", "pipeline", "cli"];
+    const sections = ["hero", "speed", "privacy", "pipeline"];
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -261,63 +291,56 @@ function FloatingNav() {
   }, []);
 
   const scrollTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    e.preventDefault();
-    const id = href.replace('#', '');
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+    if (href.startsWith('#')) {
+      e.preventDefault();
+      const id = href.replace('#', '');
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
   return (
-    <nav className="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-2 py-1.5 rounded-full border border-amber-400/10 bg-[#0A0D0F]/80 backdrop-blur-xl shadow-lg shadow-black/40">
+    <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 px-3 py-2 rounded-full border border-amber-400/30 bg-[#0A0D0F]/95 backdrop-blur-3xl shadow-[0_0_40px_rgba(0,0,0,0.8)] ring-1 ring-white/10">
+      {/* Brand */}
       <a
         href="#hero"
         onClick={(e) => scrollTo(e, "#hero")}
-        className={`flex items-center gap-2 px-3 py-1.5 text-sm font-mono font-semibold tracking-tight transition-colors ${activeSection === 'hero' ? 'text-amber-400' : 'text-white/40 hover:text-white/80'}`}
+        className="flex items-center gap-2 px-3 py-1.5 mr-2 group"
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="shrink-0">
-          <path
-            d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        IXOS
+        <div className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(246,185,76,0.8)] group-hover:scale-125 transition-transform" />
+        <span className="font-mono text-sm font-bold tracking-tighter text-white">IXOS</span>
       </a>
-      <div className="w-px h-5 bg-amber-400/10 mx-1" />
-      {links.map((l) => {
-        const isActive = activeSection === l.href.replace('#', '');
-        return (
+
+      {/* Internal Links */}
+      <div className="hidden lg:flex items-center gap-1 border-x border-white/10 px-3">
+        {links.map((link) => (
           <a
-            key={l.href}
-            href={l.href}
-            onClick={(e) => scrollTo(e, l.href)}
-            className={`relative px-3 py-1.5 text-[13px] font-mono rounded-full transition-colors duration-300 flex items-center justify-center ${isActive
-              ? 'text-amber-400 font-semibold'
-              : 'text-white/40 hover:text-amber-400/80 hover:bg-amber-400/5'
-              }`}
+            key={link.label}
+            href={link.href}
+            onClick={(e) => link.type === "anchor" && scrollTo(e, link.href)}
+            className={`px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest transition-all ${
+              (link.type === "anchor" && activeSection === link.href.replace('#', '')) 
+                ? 'text-amber-400 bg-amber-400/10 rounded-full shadow-[inset_0_0_10px_rgba(246,185,76,0.1)]' 
+                : 'text-white/40 hover:text-white/80 hover:bg-white/5 rounded-full'
+            }`}
           >
-            {isActive && (
-              <motion.div
-                layoutId="active-pill-v3"
-                className="absolute inset-0 bg-amber-400/20 rounded-full"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-            )}
-            <span className="relative z-10">{l.label}</span>
+            {link.label}
           </a>
-        );
-      })}
-      <a
-        href="#download"
-        onClick={(e) => scrollTo(e, "#download")}
-        className="ml-1 px-4 py-1.5 text-[13px] font-mono font-semibold rounded-full bg-amber-400 text-[#0A0D0F] hover:bg-amber-300 transition-colors"
-      >
-        Download
-      </a>
+        ))}
+      </div>
+
+      {/* Auth & Action */}
+      <div className="flex items-center gap-1 ml-2">
+        <a href="/3/signin" className="px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-white/40 hover:text-white/80 transition-colors">Sign In</a>
+        <a
+          href="/3/download"
+          className="px-5 py-2 bg-amber-400 text-[#0A0D0F] font-mono font-bold text-[10px] tracking-widest uppercase rounded-full hover:bg-amber-300 transition-all shadow-[0_0_20px_rgba(246,185,76,0.4)] hover:scale-105 active:scale-95"
+        >
+          Download
+        </a>
+      </div>
     </nav>
   );
 }
@@ -659,12 +682,12 @@ export default function Page3PrecisionGrid() {
             transition={{ delay: 1.4 }}
             className="relative z-10 flex flex-wrap justify-center gap-4 mt-10"
           >
-            <a
-              href="#download"
+            <Link
+              href="/3/download"
               className="px-8 py-3.5 bg-amber-400 text-[#0A0D0F] font-mono font-semibold text-sm hover:bg-amber-300 transition-colors"
             >
               ▸ Download Ixos
-            </a>
+            </Link>
             <a
               href="#pipeline"
               className="px-8 py-3.5 border border-amber-400/20 text-amber-400/60 font-mono text-sm hover:bg-amber-400/5 transition-colors"
@@ -678,7 +701,8 @@ export default function Page3PrecisionGrid() {
             2. SPEED — Metrics
             ═══════════════════════════════════ */}
         <ScanSection clipFrom="right">
-          <section id="speed" className="relative z-10 py-28 px-6">
+          <section id="speed" className="relative z-10 py-28 px-6 overflow-hidden">
+            <GridOverlay />
             <div className="max-w-5xl mx-auto relative">
               <CornerBrackets size={20} color="rgba(246,185,76,0.12)" />
               <div className="p-8">
@@ -736,11 +760,22 @@ export default function Page3PrecisionGrid() {
           </section>
         </ScanSection>
 
+        <ResultDivider 
+          query="local performance metrics"
+          resultTitle="Ixos Zero-Cloud Audit"
+          resultPath="docs/security/AUDIT.md"
+          resultSnippet="Confirmed: 0 bytes sent to external networks. All embedding generation and cosine similarity ranking performed on-device via Rayon-parallelized Rust engine."
+          score={99}
+          accentColor="#F6B94C"
+          variant="3"
+        />
+
         {/* ═══════════════════════════════════
             3. PRIVACY — Zero-trust
             ═══════════════════════════════════ */}
         <ScanSection clipFrom="left">
-          <section id="privacy" className="relative z-10 py-28 px-6">
+          <section id="privacy" className="relative z-10 py-28 px-6 overflow-hidden">
+            <GridOverlay />
             <div className="max-w-5xl mx-auto relative">
               <CornerBrackets size={20} color="rgba(20,184,166,0.15)" />
               <div className="p-8">
@@ -798,11 +833,22 @@ export default function Page3PrecisionGrid() {
           </section>
         </ScanSection>
 
+        <ResultDivider 
+          query="cryptographic cache integrity"
+          resultTitle="HMAC-SHA256 Verification"
+          resultPath="src/storage/cache.rs"
+          resultSnippet="Each cache entry is signed with a machine-unique key. Stale or tampered embeddings are automatically rejected, ensuring results match the current file state."
+          score={96}
+          accentColor="#14B8A6"
+          variant="3"
+        />
+
         {/* ═══════════════════════════════════
             4. PIPELINE — 4-stage HUD
             ═══════════════════════════════════ */}
         <ScanSection clipFrom="right">
-          <section id="pipeline" className="relative z-10 py-28 px-6">
+          <section id="pipeline" className="relative z-10 py-28 px-6 overflow-hidden">
+            <GridOverlay />
             <div className="max-w-5xl mx-auto relative">
               <div className="text-center mb-14">
                 <SectionKicker label="Pipeline" />
@@ -1336,12 +1382,12 @@ export default function Page3PrecisionGrid() {
                           ))}
                         </ul>
                       </div>
-                      <a
-                        href="#download"
+                      <Link
+                        href="/3/download"
                         className="inline-block px-8 py-3 bg-amber-400 text-[#0A0D0F] font-mono font-semibold text-sm hover:bg-amber-300 transition-colors"
                       >
                         ▸ Start Free Trial
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </div>

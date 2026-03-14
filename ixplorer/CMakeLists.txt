@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
-find_package(Qt6 OPTIONAL_COMPONENTS WebEngineWidgets Multimedia MultimediaWidgets Pdf PdfWidgets)
+find_package(Qt6 OPTIONAL_COMPONENTS WebEngineWidgets Multimedia MultimediaWidgets Pdf PdfWidgets AxContainer)
 
 set(SOURCES
     src/main.cpp
@@ -128,6 +128,11 @@ endif()
 
 if(WIN32)
     target_link_libraries(Ixplorer PRIVATE shell32 shlwapi)
+endif()
+
+if(TARGET Qt6::AxContainer)
+    target_link_libraries(Ixplorer PRIVATE Qt6::AxContainer)
+    target_compile_definitions(Ixplorer PRIVATE QT_AXCONTAINER_LIB)
 endif()
 
 find_program(WINDEPLOYQT windeployqt HINTS "${Qt6_DIR}/../../../bin")

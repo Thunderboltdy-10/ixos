@@ -176,8 +176,8 @@ export function V4Hero() {
                 lineHeight: 1.05,
                 letterSpacing: '-0.04em',
                 color: '#F3F5F7',
-                // Amber glow on the whole headline for depth
-                filter: 'drop-shadow(0 0 24px rgba(246,185,76,0.15))',
+                // Subtle amber glow on the whole headline
+                filter: 'drop-shadow(0 0 12px rgba(246,185,76,0.1))',
               }}
             >
               Desktop search,{' '}
@@ -187,8 +187,8 @@ export function V4Hero() {
                   WebkitBackgroundClip: 'text',
                   backgroundClip: 'text',
                   color: 'transparent',
-                  // Extra amber glow on the accent span
-                  filter: 'drop-shadow(0 0 32px rgba(246,185,76,0.25))',
+                  // Refined glow for accent
+                  filter: 'drop-shadow(0 0 16px rgba(246,185,76,0.15))',
                 }}
               >
                 fully cinematic.
@@ -223,12 +223,14 @@ export function V4Hero() {
                   padding: '14px 20px',
                   borderRadius: 12,
                   // 3D glassmorphic card — shadow displaced top-left
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.1) 100%)',
-                  backdropFilter: 'blur(6px)',
-                  WebkitBackdropFilter: 'blur(6px)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderTop: '1px solid rgba(255,255,255,0.14)',
-                  borderLeft: '1px solid rgba(255,255,255,0.1)',
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 60%, rgba(0,0,0,0.1) 100%)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  borderWidth: 1,
+                  borderStyle: 'solid',
+                  borderColor: 'rgba(255,255,255,0.08)',
+                  borderTopColor: 'rgba(255,255,255,0.14)',
+                  borderLeftColor: 'rgba(255,255,255,0.1)',
                   boxShadow: '-8px -8px 24px rgba(0,0,0,0.65), 4px 4px 16px rgba(246,185,76,0.03)',
                   transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                   cursor: 'default',
@@ -298,18 +300,16 @@ export function V4Hero() {
                 // Glassmorphic 3D card — shadow top-left, amber glow bottom-right
                 borderWidth: 1,
                 borderStyle: 'solid',
-                borderColor: 'rgba(255,255,255,0.08)',
-                borderTopColor: 'rgba(255,255,255,0.14)',
-                borderLeftColor: 'rgba(255,255,255,0.12)',
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.12) 100%)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
+                borderColor: 'rgba(255,255,255,0.04)',
+                borderTopColor: 'rgba(255,255,255,0.08)',
+                borderLeftColor: 'rgba(255,255,255,0.06)',
+                background: '#111316',
                 boxShadow: [
-                  '-16px -16px 48px rgba(0,0,0,0.5)',           // dark top-left shadow (3D lift)
-                  '8px 8px 32px rgba(246,185,76,0.03)',          // amber glow bottom-right
-                  '0 0 60px rgba(246,185,76,0.02)',              // ambient amber
-                  'inset 0 1px 1px rgba(255,255,255,0.03)',      // inner top highlight
-                  'inset -1px -1px 0 rgba(0,0,0,0.1)',          // inner bottom-right shadow
+                  '-16px -16px 48px rgba(0,0,0,0.3)',           // dark top-left shadow (3D lift)
+                  '8px 8px 32px rgba(246,185,76,0.01)',          // amber glow bottom-right
+                  '0 0 60px rgba(246,185,76,0.01)',              // ambient amber
+                  'inset 0 1px 1px rgba(255,255,255,0.02)',      // inner top highlight
+                  'inset -1px -1px 0 rgba(0,0,0,0.05)',          // inner bottom-right shadow
                 ].join(', '),
                 // Fixed height container — no overflow scroll in preview
                 height: 480,

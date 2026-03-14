@@ -59,6 +59,10 @@
 #include <shlwapi.h>
 #endif
 
+#if defined(Q_OS_WIN) && defined(QT_AXCONTAINER_LIB)
+#include <QAxWidget>
+#endif
+
 namespace Ixplorer {
 
 namespace {
@@ -545,11 +549,12 @@ int colorDistance(const QColor &left, const QColor &right) {
 
 } // namespace
 
-DocumentPane::DocumentPane(const QString &path, bool previewMode, QWidget *parent)
+DocumentPane::DocumentPane(const QString &path, bool previewMode, QWidget *parent, bool launchDeferred)
     : QWidget(parent)
     , m_filePath(QFileInfo(path).absoluteFilePath())
     , m_policy(resolveFileOpenPolicy(QFileInfo(m_filePath)))
-    , m_previewMode(previewMode) {
+    , m_previewMode(previewMode)
+    , m_launchDeferred(launchDeferred) {
     setObjectName("DocumentPane");
     
     switch (m_policy.preferredMode) {
@@ -585,6 +590,9 @@ DocumentPane::DocumentPane(const QString &path, bool previewMode, QWidget *paren
     case FileOpenHostMode::AssociatedWindow:
         m_hostMode = WindowEmbed;
         break;
+    case FileOpenHostMode::OfficeEmbed:
+        m_hostMode = OfficeEmbed;
+        break;
     case FileOpenHostMode::Fallback:
     default:
         m_hostMode = Fallback;
@@ -597,19 +605,48 @@ DocumentPane::DocumentPane(const QString &path, bool previewMode, QWidget *paren
 
     // Show a loading state first, then set up the viewer
     if (m_hostMode == WindowEmbed) {
-        showStateMessage(QStringLiteral("Opening..."),
-                         QStringLiteral("Launching the associated application for %1.")
-                             .arg(QFileInfo(m_filePath).fileName()));
-        m_loadingTimer->start();
-        // Defer hosting to let the UI paint the loading state first
-        QTimer::singleShot(50, this, [this]() {
-            m_loadingTimer->stop();
-            m_hostedReady = startHosting();
-            if (!m_hostedReady) {
-                setupHostFailureFallback();
+        if (m_launchDeferred) {
+            // Session restore: show a "Click to reopen" prompt instead of auto-launching
+            showStateMessage(QStringLiteral("Click to reopen"),
+                             QStringLiteral("Click to launch the associated application for %1.")
+                                 .arg(QFileInfo(m_filePath).fileName()));
+            if (m_externalButton) {
+                QPushButton *reopenBtn = new QPushButton(QStringLiteral("Reopen"), m_stateCard);
+                reopenBtn->setObjectName("ReopenButton");
+                connect(reopenBtn, &QPushButton::clicked, this, [this]() {
+                    m_launchDeferred = false;
+                    showStateMessage(QStringLiteral("Opening..."),
+                                     QStringLiteral("Launching the associated application for %1.")
+                                         .arg(QFileInfo(m_filePath).fileName()));
+                    m_loadingTimer->start();
+                    QTimer::singleShot(50, this, [this]() {
+                        m_loadingTimer->stop();
+                        m_hostedReady = startHosting();
+                        if (!m_hostedReady) {
+                            setupHostFailureFallback();
+                        }
+                        syncUiState();
+                    });
+                });
+                if (m_stateCard->layout()) {
+                    m_stateCard->layout()->addWidget(reopenBtn);
+                }
             }
-            syncUiState();
-        });
+        } else {
+            showStateMessage(QStringLiteral("Opening..."),
+                             QStringLiteral("Launching the associated application for %1.")
+                                 .arg(QFileInfo(m_filePath).fileName()));
+            m_loadingTimer->start();
+            // Defer hosting to let the UI paint the loading state first
+            QTimer::singleShot(50, this, [this]() {
+                m_loadingTimer->stop();
+                m_hostedReady = startHosting();
+                if (!m_hostedReady) {
+                    setupHostFailureFallback();
+                }
+                syncUiState();
+            });
+        }
     } else if (m_hostMode == CodeViewer) {
         setupCodeViewer();
     } else if (m_hostMode == ImageViewer) {
@@ -620,6 +657,8 @@ DocumentPane::DocumentPane(const QString &path, bool previewMode, QWidget *paren
         setupPdfViewer();
     } else if (m_hostMode == WebView) {
         setupWebView();
+    } else if (m_hostMode == OfficeEmbed) {
+        setupOfficeEmbed();
     }
 
     syncUiState();
@@ -669,6 +708,8 @@ void DocumentPane::reload() {
         if (!m_hostedReady) {
             setupHostFailureFallback();
         }
+    } else if (m_hostMode == OfficeEmbed) {
+        setupOfficeEmbed();
     }
     syncUiState();
     emit statusMessage(QStringLiteral("Reloaded %1.").arg(QFileInfo(m_filePath).fileName()));
@@ -1488,6 +1529,57 @@ void DocumentPane::setupMediaPlayer() {
 #endif
 }
 
+void DocumentPane::setupOfficeEmbed() {
+#if defined(Q_OS_WIN) && defined(QT_AXCONTAINER_LIB)
+    const QString ext = QFileInfo(m_filePath).suffix().toLower();
+    QString progId;
+    if (ext == QStringLiteral("docx") || ext == QStringLiteral("doc")) {
+        progId = QStringLiteral("Word.Document");
+    } else if (ext == QStringLiteral("xlsx") || ext == QStringLiteral("xls")) {
+        progId = QStringLiteral("Excel.Sheet");
+    } else if (ext == QStringLiteral("pptx") || ext == QStringLiteral("ppt")) {
+        progId = QStringLiteral("PowerPoint.Show");
+    }
+    if (!progId.isEmpty()) {
+        if (!m_axWidget) {
+            m_axWidget = new QAxWidget(m_contentRoot);
+            if (m_contentLayout) {
+                m_contentLayout->addWidget(m_axWidget, 1);
+            }
+        }
+        m_axWidget->setControl(progId);
+        m_axWidget->dynamicCall("Open(QString)", m_filePath);
+        m_axWidget->show();
+        m_stateCard->hide();
+        if (m_hostFrame) m_hostFrame->hide();
+        m_hostSurface->hide();
+        if (m_graphicsView) m_graphicsView->hide();
+        if (m_codeViewer) m_codeViewer->hide();
+        return;
+    }
+#endif
+    // Office not installed or AxContainer unavailable — fall back to WindowEmbed
+    m_hostMode = WindowEmbed;
+    if (m_launchDeferred) {
+        showStateMessage(QStringLiteral("Click to reopen"),
+                         QStringLiteral("Click to launch the associated application for %1.")
+                             .arg(QFileInfo(m_filePath).fileName()));
+    } else {
+        showStateMessage(QStringLiteral("Opening..."),
+                         QStringLiteral("Launching the associated application for %1.")
+                             .arg(QFileInfo(m_filePath).fileName()));
+        m_loadingTimer->start();
+        QTimer::singleShot(50, this, [this]() {
+            m_loadingTimer->stop();
+            m_hostedReady = startHosting();
+            if (!m_hostedReady) {
+                setupHostFailureFallback();
+            }
+            syncUiState();
+        });
+    }
+}
+
 void DocumentPane::showStateMessage(const QString &title, const QString &body) {
     if (m_hostFrame) {
         m_hostFrame->hide();
@@ -1509,6 +1601,11 @@ void DocumentPane::showStateMessage(const QString &title, const QString &body) {
     if (m_videoWidget) m_videoWidget->hide();
     if (m_mediaPlayer) m_mediaPlayer->stop();
 #endif
+
+#if defined(Q_OS_WIN) && defined(QT_AXCONTAINER_LIB)
+    if (m_axWidget) m_axWidget->hide();
+#endif
+
     if (m_contentRoot) {
         m_contentRoot->setStyleSheet(QString());
     }

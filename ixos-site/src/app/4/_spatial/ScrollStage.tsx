@@ -83,7 +83,7 @@ export function ScrollStage() {
   }, [])
 
   return (
-    <div className="relative bg-[#04050A]" style={{ minHeight: '400vh' }}>
+    <div className="relative bg-[#04050A]" style={{ minHeight: '600vh' }}>
       {/* ── Background: Deep void nebula ── */}
       <div
         className="fixed inset-0 z-0 pointer-events-none"
@@ -149,16 +149,17 @@ export function ScrollStage() {
       )}
 
       {/* ── Inside phase: layered below, fades in fully at phase inside ── */}
-      <div
-        className="relative z-20"
-        style={{
-          opacity: enterProgress > 0.7 ? (enterProgress - 0.7) * 3.33 : 0, // fade in at the very end
-          transform: `scale(${enterProgress > 0.7 ? 0.9 + ((enterProgress - 0.7) * 3.33) * 0.1 : 0.9})`, // scale from 0.9 to 1.0
-          pointerEvents: phase === 'inside' ? 'auto' : 'none',
-        }}
-      >
-        <InsidePhase scrollProgress={scrollProgress} />
-      </div>
+      {phase === 'inside' && (
+        <div
+          className="relative z-20"
+          style={{
+            opacity: enterProgress > 0.7 ? (enterProgress - 0.7) * 3.33 : 0, // fade in at the very end
+            transform: `scale(${enterProgress > 0.7 ? 0.9 + ((enterProgress - 0.7) * 3.33) * 0.1 : 0.9})`, // scale from 0.9 to 1.0
+          }}
+        >
+          <InsidePhase scrollProgress={scrollProgress} />
+        </div>
+      )}
     </div>
   )
 }

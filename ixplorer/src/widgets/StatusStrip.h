@@ -3,6 +3,7 @@
 #include <QFileInfo>
 #include <QLabel>
 #include <QWidget>
+#include <QToolButton>
 
 namespace Ixplorer {
 
@@ -19,6 +20,10 @@ public:
     void setPath(const QString &path);
     void setStatusMessage(const QString &message);
     void setStatusState(int state);
+    void setRailVisible(bool visible);
+
+signals:
+    void toggleRailRequested();
 
 private:
     ActivityIndicator *m_indicator;
@@ -26,6 +31,7 @@ private:
     QLabel *m_selectionLabel;
     QLabel *m_statusLabel;
     QLabel *m_pathLabel;
+    QToolButton *m_toggleRailBtn;
 };
 
 } // namespace Ixplorer

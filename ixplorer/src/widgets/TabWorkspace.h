@@ -52,6 +52,9 @@ public:
     void restoreTabState(const QVector<TabState> &tabs, int activeTabIndex);
     void setIntelligence(WorkstreamManager *wm, ResumptionEngine *re, ActivityTracker *at);
 
+    QTabBar *tabBar() const { return m_tabBar; }
+    QToolButton *addTabButton() const { return m_addTabButton; }
+
 signals:
     void currentTabChanged(int index);
     void pathChanged(const QString &path);
@@ -71,7 +74,7 @@ protected:
 
 private:
     int addExplorerTab(const QString &path);
-    int addDocumentTab(const QString &path, bool preview);
+    int addDocumentTab(const QString &path, bool preview, bool launchDeferred = false);
     int addDashboardTab();
     int findDocumentTab(const QString &path) const;
     void replaceWidgetAt(int index, QWidget *widget, const QString &path);

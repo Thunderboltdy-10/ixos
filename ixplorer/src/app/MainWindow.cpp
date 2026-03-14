@@ -11,6 +11,7 @@
 #include "data/WorkstreamManager.h"
 #include "utils/FileOperations.h"
 #include "widgets/AppSidebar.h"
+#include "widgets/BreadcrumbBar.h"
 #include "widgets/CommandPalette.h"
 #include "widgets/DocumentPane.h"
 #include "widgets/ExplorerPane.h"
@@ -107,9 +108,34 @@ void MainWindow::setupLayout() {
     vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(0);
 
-    vbox->addWidget(m_toolbar);
+    // Top container: Tabs + Toolbar
+    m_topContainer = new QWidget(m_shellRoot);
+    m_topContainer->setObjectName("TopContainer");
+    auto *topLayout = new QVBoxLayout(m_topContainer);
+    topLayout->setContentsMargins(0, 0, 0, 0);
+    topLayout->setSpacing(0);
 
-    m_splitter->setHandleWidth(8);
+    // Tab row
+    m_tabRowWidget = new QWidget(m_topContainer);
+    m_tabRowWidget->setObjectName("TabBarRow");
+    m_tabRowWidget->setStyleSheet("#TabBarRow { border-bottom: 1px solid rgba(255,255,255,0.08); }");
+    auto *tabRow = new QHBoxLayout(m_tabRowWidget);
+    tabRow->setContentsMargins(8, 4, 8, 0);
+    tabRow->setSpacing(4);
+    
+    m_workspace->tabBar()->setParent(m_tabRowWidget);
+    m_workspace->addTabButton()->setParent(m_tabRowWidget);
+    
+    tabRow->addWidget(m_workspace->tabBar());
+    tabRow->addWidget(m_workspace->addTabButton());
+    tabRow->addStretch(1);
+    
+    topLayout->addWidget(m_tabRowWidget);
+    topLayout->addWidget(m_toolbar);
+    
+    vbox->addWidget(m_topContainer);
+
+    m_splitter->setHandleWidth(1); 
     m_splitter->addWidget(m_sidebar);
     m_splitter->addWidget(m_workspace);
     m_splitter->addWidget(m_rail);
@@ -119,13 +145,13 @@ void MainWindow::setupLayout() {
     m_splitter->setCollapsible(0, false);
     m_splitter->setCollapsible(1, false);
     m_splitter->setCollapsible(2, true);
-    m_splitter->setSizes({220, 880, 0});
+    m_splitter->setSizes({240, 840, 0}); 
 
     vbox->addWidget(m_splitter, 1);
     vbox->addWidget(m_statusStrip);
 
     setCentralWidget(m_shellRoot);
-    applyShellTone(QColor(18, 20, 24));
+    applyShellTone(QColor(32, 32, 32));
 }
 
 void MainWindow::setupConnections() {
@@ -154,8 +180,10 @@ void MainWindow::setupConnections() {
         markSessionDirty();
         m_rail->submitToolbarDraft(query, mode);
     });
-    connect(m_toolbar, &ExplorerToolbar::toggleRailRequested, this, &MainWindow::toggleRailVisible);
-
+    
+    connect(m_statusStrip, &StatusStrip::toggleRailRequested, this, &MainWindow::toggleRailVisible);
+    
+    connect(m_toolbar, &ExplorerToolbar::navigateRequested, this, &MainWindow::navigateTo);
     connect(m_toolbar, &ExplorerToolbar::backRequested, this, [this]() {
         m_workspace->goBackCurrent();
     });
@@ -201,9 +229,7 @@ void MainWindow::setupConnections() {
         if (m_activityTracker != nullptr && !path.isEmpty()) {
             m_activityTracker->logTabSwitch(path, m_workstreamManager->currentWorkstreamId());
         }
-        onPathChanged(m_workspace->currentDocument() ? m_workspace->currentDocument()->displayPath()
-                                                     : (m_workspace->currentPane() ? m_workspace->currentPane()->currentPath()
-                                                                                   : QString()));
+        onPathChanged(path);
         markSessionDirty();
     });
     connect(m_workspace, &TabWorkspace::surfaceToneChanged, this, [this](const QColor &color) {
@@ -781,7 +807,7 @@ void MainWindow::onPathChanged(const QString &path) {
     const QFileInfo info(path);
     const QString navigationPath = info.exists() && info.isFile() ? info.absolutePath() : path;
 
-    m_workspace->setCurrentPath(path);
+    m_toolbar->breadcrumb()->setPath(path);
     m_sidebar->highlightCurrent(navigationPath);
     m_sidebar->recordRecentLocation(navigationPath);
     m_statusStrip->setPath(path);
@@ -811,16 +837,12 @@ void MainWindow::applyShellTone(const QColor &color) {
     m_shellTone = color;
 
     // Subtle tint from hosted content - keep the shell mostly neutral
-    const QColor base = blendToward(QColor(25, 27, 31), color, 0.08);
-    const QColor chrome = blendToward(QColor(30, 32, 37), color, 0.06);
-    const QColor edge = QColor(255, 255, 255, 15); // rgba(255,255,255,0.06)
+    const QColor base = blendToward(QColor(32, 32, 32), color, 0.08);
 
     if (m_shellRoot) {
         m_shellRoot->setStyleSheet(QStringLiteral("#ShellRoot { background-color: %1; }")
                                        .arg(base.name(QColor::HexRgb)));
     }
-    // Don't override widget stylesheets aggressively - let the QSS theme handle it.
-    // Only set the workspace background to blend with hosted content.
     m_workspace->setStyleSheet(QStringLiteral("background-color: %1;").arg(base.name(QColor::HexRgb)));
 }
 
@@ -1065,7 +1087,7 @@ QString MainWindow::activeSearchRoot() const {
 
 void MainWindow::setRailVisible(bool visible) {
     if (m_railVisible == visible) {
-        m_toolbar->setRailVisible(visible);
+        m_statusStrip->setRailVisible(visible);
         return;
     }
 
@@ -1075,7 +1097,7 @@ void MainWindow::setRailVisible(bool visible) {
     }
 
     m_railVisible = visible;
-    m_toolbar->setRailVisible(visible);
+    m_statusStrip->setRailVisible(visible);
 
     const int targetRailWidth = visible ? qMax(320, m_lastRailWidth) : 0;
     const int startRailWidth = m_rail->width();
@@ -1097,7 +1119,6 @@ void MainWindow::setRailVisible(bool visible) {
         
         auto sizes = m_splitter->sizes();
         if (sizes.size() >= 3) {
-            // explicitly shrink the middle workspace pane
             int total = m_splitter->width() - m_splitter->handleWidth() * 2;
             sizes[2] = w;
             sizes[1] = qMax(0, total - sizes[0] - w);
@@ -1109,9 +1130,8 @@ void MainWindow::setRailVisible(bool visible) {
         if (!visible) {
             m_rail->setVisible(false);
         } else {
-            m_rail->setMinimumWidth(320); // Restore minimum width for resizing
-            m_rail->setMaximumWidth(16777215); // Unbound maximum width
-            // ensure splitter sizes are correct after unbound
+            m_rail->setMinimumWidth(320);
+            m_rail->setMaximumWidth(16777215);
             auto sizes = m_splitter->sizes();
             if (sizes.size() >= 3) {
                 sizes[2] = targetRailWidth;

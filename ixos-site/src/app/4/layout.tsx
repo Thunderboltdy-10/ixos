@@ -4,102 +4,88 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth, UserButton } from "@clerk/nextjs";
-import { V4LayoutProvider, useV4Layout } from "./V4LayoutState";
 
-function V4Sidebar() {
-  const { isSidebarVisible } = useV4Layout();
-  const { isSignedIn } = useAuth();
+// Beautiful, airy navbar with soft drop shadows and clean typography
+function V4Navbar({ isLanding }: { isLanding: boolean }) {
+  const { isSignedIn, isLoaded } = useAuth();
+  
+  const landingClasses = "bg-black/20 backdrop-blur-md border-white/5 text-white shadow-none";
+  const subpageClasses = "bg-white/80 backdrop-blur-xl border-gray-200/50 shadow-sm text-[#0D1117]";
 
   return (
-    <motion.aside
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ 
-        opacity: isSidebarVisible ? 1 : 0, 
-        x: isSidebarVisible ? 0 : -20 
-      }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed top-0 left-0 bottom-0 w-[240px] z-50 flex flex-col border-r border-white/5 bg-[#0C0E10]/80 backdrop-blur-xl"
-      style={{ pointerEvents: isSidebarVisible ? 'auto' : 'none' }}
-    >
-      <div className="p-6">
+    <nav className={`fixed top-0 inset-x-0 z-50 h-16 flex items-center justify-between px-6 md:px-12 border-b transition-all ${isLanding ? landingClasses : subpageClasses}`}>
+      <div className="flex items-center gap-8">
         <Link href="/4" className="flex items-center gap-2">
-          <span className="font-mono font-bold text-teal-400 text-lg tracking-tight">IXOS</span>
-          <span className="font-mono text-[10px] text-white/30 uppercase tracking-widest mt-1">protocol</span>
+          <span className={`font-sans font-extrabold text-xl tracking-tight ${isLanding ? 'text-white' : 'text-[#0D1117]'}`}>IXOS</span>
+          <span className="font-mono text-[10px] text-blue-500 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded-full">Pro</span>
         </Link>
+        <div className="hidden md:flex items-center gap-6">
+          {[
+            { label: "Platform", href: "/4/docs" },
+            { label: "Pricing", href: "/4/pricing" },
+            { label: "Download", href: "/4/download" },
+          ].map((link) => (
+            <Link
+              key={link.label}
+              href={link.href}
+              className={`font-sans text-sm font-medium transition-colors ${isLanding ? 'text-white/60 hover:text-white' : 'text-gray-600 hover:text-blue-600'}`}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
       </div>
 
-      <nav className="flex-1 px-4 py-6 flex flex-col gap-2">
-        {[
-          { label: "Home", href: "/4" },
-          { label: "Pricing", href: "/4/pricing" },
-          { label: "Docs", href: "/4/docs" },
-          { label: "Download", href: "/4/download" },
-        ].map((link) => (
-          <Link
-            key={link.label}
-            href={link.href}
-            className="px-4 py-2 rounded-md font-mono text-xs text-white/50 uppercase tracking-widest hover:text-white/90 hover:bg-white/5 transition-colors"
-          >
-            {link.label}
-          </Link>
-        ))}
-      </nav>
-
-      <div className="p-6 border-t border-white/5">
-        {isSignedIn ? (
-          <div className="flex items-center justify-between">
-            <Link 
-              href="/4/account" 
-              className="font-mono text-xs text-white/50 hover:text-white/90 uppercase tracking-widest"
-            >
-              Account
-            </Link>
+      <div className="flex items-center gap-4">
+        {isLoaded && isSignedIn ? (
+          <>
+            <Link href="/4/account" className={`font-sans text-sm font-medium hidden sm:block ${isLanding ? 'text-white/60 hover:text-white' : 'text-gray-600 hover:text-blue-600'}`}>Account</Link>
             <UserButton afterSignOutUrl="/4" />
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            <Link
-              href="/4/signin"
-              className="px-4 py-2 font-mono text-xs text-center text-white/50 uppercase tracking-widest hover:text-white/90 bg-white/5 rounded-md transition-colors"
-            >
-              Sign In
-            </Link>
+          </>
+        ) : isLoaded && !isSignedIn ? (
+          <>
+            <Link href="/4/signin" className={`font-sans text-sm font-medium hidden sm:block ${isLanding ? 'text-white/60 hover:text-white' : 'text-gray-600 hover:text-blue-600'}`}>Sign In</Link>
             <Link
               href="/4/signup"
-              className="px-4 py-2 font-mono text-xs text-center text-[#0C0E10] bg-teal-400 uppercase tracking-widest font-bold hover:bg-teal-300 rounded-md transition-colors shadow-[0_0_15px_rgba(45,212,191,0.2)]"
+              className="px-5 py-2 rounded-full font-sans text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] transition-all"
             >
-              Sign Up
+              Get Started
             </Link>
-          </div>
-        )}
+          </>
+        ) : null}
       </div>
-    </motion.aside>
-  );
-}
-
-function V4LayoutInner({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const { isSidebarVisible } = useV4Layout();
-  const isRoot = pathname === "/4";
-
-  return (
-    <div className="min-h-screen bg-[#080A0C] text-[#F3F5F7] selection:bg-teal-500/30 font-sans">
-      <div 
-        className="transition-all duration-700 ease-out min-h-screen"
-        style={{ paddingLeft: 0 }}
-      >
-        <main>
-          {children}
-        </main>
-      </div>
-    </div>
+    </nav>
   );
 }
 
 export default function V4Layout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isLanding = pathname === "/4" || pathname === "/4/";
+
   return (
-    <V4LayoutProvider>
-      <V4LayoutInner>{children}</V4LayoutInner>
-    </V4LayoutProvider>
+    <div className={`min-h-screen font-sans overflow-x-hidden selection:bg-blue-100 transition-colors duration-500 ${isLanding ? 'bg-[#05070A] text-white' : 'bg-gray-50 text-[#0D1117]'}`}>
+      {/* Soft pastel gradient mesh background - only for subpages */}
+      {!isLanding && (
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+          <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-cyan-100/40 to-blue-200/40 blur-[120px]" />
+          <div className="absolute top-[30%] -right-[20%] w-[60%] h-[80%] rounded-full bg-gradient-to-tl from-purple-100/40 to-magenta-100/40 blur-[150px]" />
+          <div className="absolute bottom-[0%] left-[20%] w-[80%] h-[50%] rounded-full bg-gradient-to-tr from-emerald-50/50 to-cyan-100/40 blur-[100px]" />
+        </div>
+      )}
+
+      {/* For landing page, we want a more tactical deep theme */}
+      {isLanding && (
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_20%_20%,#0A1A2F_0%,transparent_50%)] opacity-40" />
+          <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_80%_80%,#0D1117_0%,transparent_50%)] opacity-40" />
+        </div>
+      )}
+
+      <V4Navbar isLanding={isLanding} />
+
+      <main className={`relative z-10 ${isLanding ? '' : 'pt-16'}`}>
+        {children}
+      </main>
+    </div>
   );
 }

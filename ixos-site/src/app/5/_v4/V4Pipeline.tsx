@@ -68,23 +68,14 @@ function Arrow({ active, color }: { active: boolean; color: string }) {
             />
           )}
         </div>
-        <motion.div
-          animate={{ borderLeftColor: active ? color : 'rgba(255,255,255,0.2)' }}
+        <motion.svg
+          width="8" height="10" viewBox="0 0 8 10" fill="none" xmlns="http://www.w3.org/2000/svg"
+          animate={{ fill: active ? color : 'rgba(255,255,255,0.2)' }}
           transition={{ duration: 0.4 }}
-          style={{
-            width: 0,
-            height: 0,
-            borderTopWidth: 5,
-            borderTopStyle: 'solid',
-            borderTopColor: 'transparent',
-            borderBottomWidth: 5,
-            borderBottomStyle: 'solid',
-            borderBottomColor: 'transparent',
-            borderLeftWidth: 8,
-            borderLeftStyle: 'solid',
-            filter: active ? `drop-shadow(0 0 4px ${color})` : 'none',
-          }}
-        />
+          style={{ filter: active ? `drop-shadow(0 0 4px ${color})` : 'none' }}
+        >
+          <path d="M0 0L8 5L0 10V0Z" />
+        </motion.svg>
       </motion.div>
     </div>
   )
@@ -169,7 +160,7 @@ function StageCard({
           : hovered
             ? `-6px -6px 18px rgba(0,0,0,0.6), 3px 3px 12px rgba(246,185,76,0.08)`
             : `-8px -8px 24px rgba(0,0,0,0.65), 4px 4px 16px rgba(246,185,76,0.04)`,
-        transition: 'border 0.25s ease, box-shadow 0.25s ease, background 0.25s ease',
+        transition: 'border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease',
         position: 'relative',
         overflow: 'hidden',
         transformStyle: 'preserve-3d',
@@ -201,7 +192,9 @@ function StageCard({
             width: 36,
             height: 36,
             borderRadius: '50%',
-            border: `1px solid ${active ? stage.color : 'rgba(255,255,255,0.1)'}`,
+            borderWidth: 1,
+            borderStyle: 'solid',
+            borderColor: active ? stage.color : 'rgba(255,255,255,0.1)',
             background: active ? `${stage.color}20` : 'rgba(255,255,255,0.02)',
             fontSize: 13,
             color: active ? stage.color : 'rgba(255,255,255,0.4)',
@@ -265,7 +258,9 @@ function FinalResult({ visible }: { visible: boolean }) {
         className="inline-flex items-center gap-4 font-mono"
         style={{
           background: 'rgba(45,212,191,0.06)',
-          border: '1px solid rgba(45,212,191,0.25)',
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderColor: 'rgba(45,212,191,0.25)',
           borderRadius: 8,
           padding: '12px 20px',
         }}
@@ -334,7 +329,7 @@ export function V4Pipeline() {
       id="pipeline"
       ref={sectionRef}
       onMouseEnter={handleMouseEnter}
-      style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
+      style={{ borderTopWidth: 1, borderTopStyle: 'solid', borderTopColor: 'rgba(255,255,255,0.04)' }}
     >
       <section
         className="py-28 md:py-36 overflow-hidden"

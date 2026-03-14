@@ -133,7 +133,7 @@ private:
     QLabel *m_contextTitle = nullptr;
     QLabel *m_contextSubtitle = nullptr;
     QWidget *m_contextActions = nullptr;
-    QHBoxLayout *m_contextActionsLayout = nullptr;
+    QVBoxLayout *m_contextActionsLayout = nullptr;
     QListWidget *m_resultList;
     QTimer *m_liveSearchTimer;
 

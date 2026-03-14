@@ -17,8 +17,6 @@ export function V4Nav() {
   const variantPrefix = variantMatch ? `/${variantMatch[1]}` : '/5'
 
   const NAV_LINKS = [
-    { label: 'Flow', href: `${variantPrefix}#progressive` },
-    { label: 'Proof', href: `${variantPrefix}#benchmarks` },
     { label: 'Pricing', href: `${variantPrefix}/pricing` },
     { label: 'Docs', href: `${variantPrefix}/docs` },
   ] as const

@@ -18,6 +18,7 @@ enum class FileOpenHostMode {
     MediaPlayer,
     ImageViewer,
     CodeViewer,
+    OfficeEmbed,
     Fallback,
 };
 

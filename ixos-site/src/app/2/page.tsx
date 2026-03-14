@@ -527,6 +527,23 @@ const PRIVACY_ITEMS = [
 /* ═══════════════════════════════════════════════════════════════════════════
    MAIN PAGE
    ═══════════════════════════════════════════════════════════════════════════ */
+function SignalGlowBackground() {
+  return (
+    <div className="fixed inset-0 pointer-events-none z-0">
+      <div className="absolute top-0 left-0 w-full h-full bg-[#080C14]" />
+      <div 
+        className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full opacity-20 blur-[120px]"
+        style={{ background: 'radial-gradient(circle, #38BDF8 0%, transparent 70%)' }}
+      />
+      <div 
+        className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full opacity-10 blur-[120px]"
+        style={{ background: 'radial-gradient(circle, #14B8A6 0%, transparent 70%)' }}
+      />
+      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#38BDF8 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+    </div>
+  );
+}
+
 export default function Page2SignalArchitecture() {
   const [pipelineActive, setPipelineActive] = useState(false);
   const pipelineRef = useRef<HTMLDivElement>(null);
@@ -544,13 +561,14 @@ export default function Page2SignalArchitecture() {
   }, []);
 
   return (
-    <>
+    <div className="relative min-h-screen text-[#F1F5F9] font-sans selection:bg-[#38BDF8]/30">
+      <SignalGlowBackground />
       {/* ================================================================
           1. HERO — Centered, lattice below text
           ================================================================ */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-[60px] overflow-hidden z-10">
         {/* CSS 3D Lattice as Background */}
-        <div className="absolute inset-0 z-0 opacity-80" style={{ mixBlendMode: "screen" }}>
+        <div className="absolute inset-0 z-0 opacity-70" style={{ mixBlendMode: "screen" }}>
           <CSSLattice />
         </div>
 
@@ -1383,6 +1401,6 @@ export default function Page2SignalArchitecture() {
           </p>
         </div>
       </section>
-    </>
+    </div>
   );
 }

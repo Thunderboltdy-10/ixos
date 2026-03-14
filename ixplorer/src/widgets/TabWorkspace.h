@@ -46,6 +46,7 @@ public:
     int currentViewMode() const;
     bool currentSupportsViewMode() const;
     void setCurrentPath(const QString &path);
+    void showHomeDashboard();
     int tabCount() const;
     QVector<TabState> captureTabState() const;
     void restoreTabState(const QVector<TabState> &tabs, int activeTabIndex);

@@ -23,6 +23,26 @@ QString haystackFor(const CommandPaletteItem &item) {
         .toLower();
 }
 
+const CommandPaletteItem *findCommandByToken(const QVector<CommandPaletteItem> &commands, const QString &token) {
+    for (const CommandPaletteItem &command : commands) {
+        if (command.id.compare(token, Qt::CaseInsensitive) == 0) {
+            return &command;
+        }
+    }
+    for (const CommandPaletteItem &command : commands) {
+        if (command.id.startsWith(token, Qt::CaseInsensitive)) {
+            return &command;
+        }
+    }
+    for (const CommandPaletteItem &command : commands) {
+        const QString titleToken = command.title.simplified().toLower().replace(' ', '_');
+        if (titleToken.startsWith(token)) {
+            return &command;
+        }
+    }
+    return nullptr;
+}
+
 } // namespace
 
 CommandPalette::CommandPalette(QWidget *parent)
@@ -97,9 +117,47 @@ void CommandPalette::rebuildList() {
 
     m_list->clear();
 
+    QString typedCommandId;
+    QString typedArguments;
+    const bool hasTypedCommand = tryParseTypedCommand(query, &typedCommandId, &typedArguments);
+    if (hasTypedCommand) {
+        const CommandPaletteItem *typedCommand = findCommandByToken(m_commands, typedCommandId);
+        if (typedCommand != nullptr && typedCommand->available) {
+            auto *item = new QListWidgetItem(m_list);
+            item->setData(Qt::UserRole, typedCommand->id);
+            item->setData(Qt::UserRole + 1, typedArguments);
+            item->setToolTip(QStringLiteral("Run command with arguments"));
+
+            auto *widget = new QWidget(m_list);
+            auto *layout = new QHBoxLayout(widget);
+            layout->setContentsMargins(8, 4, 8, 4);
+
+            auto *textLayout = new QVBoxLayout();
+            auto *title = new QLabel(QStringLiteral("Run %1").arg(typedCommand->title));
+            title->setObjectName("CommandPaletteItemTitle");
+            auto *subtitle = new QLabel(typedArguments.isEmpty()
+                ? QStringLiteral("Typed command route")
+                : QStringLiteral("Arguments: %1").arg(typedArguments));
+            subtitle->setObjectName("CommandPaletteItemSubtitle");
+            textLayout->addWidget(title);
+            textLayout->addWidget(subtitle);
+
+            layout->addLayout(textLayout);
+            layout->addStretch();
+            auto *shortcut = new QLabel("Enter");
+            shortcut->setObjectName("CommandPaletteItemShortcut");
+            layout->addWidget(shortcut);
+
+            item->setSizeHint(widget->sizeHint());
+            m_list->addItem(item);
+            m_list->setItemWidget(item, widget);
+        }
+    }
+
     if (!query.isEmpty()) {
         auto *item = new QListWidgetItem(m_list);
         item->setData(Qt::UserRole, QStringLiteral("__search__"));
+        item->setData(Qt::UserRole + 1, query);
         item->setToolTip(QStringLiteral("Run Ixos search in the current workspace"));
         
         // Custom widget for item to show shortcut right-aligned
@@ -199,12 +257,48 @@ void CommandPalette::triggerCurrent() {
     }
 
     const QString id = item->data(Qt::UserRole).toString();
+    const QString arguments = item->data(Qt::UserRole + 1).toString();
     if (id == QStringLiteral("__search__")) {
-        emit searchRequested(m_input->text().trimmed());
+        const QString query = arguments.isEmpty() ? m_input->text().trimmed() : arguments;
+        emit searchRequested(query);
     } else if (!id.isEmpty()) {
-        emit commandTriggered(id);
+        if (!arguments.isEmpty()) {
+            emit commandTriggeredWithArgs(id, arguments);
+        } else {
+            emit commandTriggered(id);
+        }
     }
     accept();
+}
+
+bool CommandPalette::tryParseTypedCommand(const QString &input, QString *commandId, QString *arguments) const {
+    if (commandId == nullptr || arguments == nullptr) {
+        return false;
+    }
+    const QString trimmed = input.trimmed();
+    if (trimmed.size() < 2) {
+        return false;
+    }
+    const QChar prefix = trimmed.at(0);
+    if (prefix != QChar('/') && prefix != QChar(':')) {
+        return false;
+    }
+
+    const QString payload = trimmed.mid(1).trimmed();
+    if (payload.isEmpty()) {
+        return false;
+    }
+
+    const int split = payload.indexOf(' ');
+    if (split < 0) {
+        *commandId = payload.toLower();
+        arguments->clear();
+        return true;
+    }
+
+    *commandId = payload.left(split).trimmed().toLower();
+    *arguments = payload.mid(split + 1).trimmed();
+    return !commandId->isEmpty();
 }
 
 bool CommandPalette::eventFilter(QObject *watched, QEvent *event) {

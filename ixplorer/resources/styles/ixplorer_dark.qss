@@ -105,6 +105,23 @@ QWidget {
     border: none;
 }
 
+#SidebarTodaySection {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 8px;
+    margin: 4px 12px 8px 12px;
+}
+
+#SidebarTodaySection QPushButton {
+    border: none;
+    background: transparent;
+    padding: 2px 0;
+}
+
+#SidebarTodaySection QPushButton:hover {
+    color: #F0F0F5;
+}
+
 #SidebarItem {
     background-color: transparent;
     border: none;
@@ -790,4 +807,24 @@ QToolTip {
     max-width: 6px;
     min-height: 6px;
     max-height: 6px;
+}
+
+/* Rail action surface */
+#RailDetailAction {
+    background-color: rgba(143, 169, 219, 0.11);
+    border: 1px solid rgba(143, 169, 219, 0.28);
+    border-radius: 6px;
+    color: #D6E4FF;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+}
+
+#RailDetailAction:hover {
+    background-color: rgba(143, 169, 219, 0.22);
+    border-color: rgba(175, 201, 255, 0.45);
+}
+
+#RailDetailAction:pressed {
+    background-color: rgba(143, 169, 219, 0.28);
 }

@@ -2,6 +2,7 @@
 
 #include "data/ActivityTracker.h"
 #include "data/BundlePredictor.h"
+#include "data/CommandTelemetry.h"
 #include "data/InterruptionDetector.h"
 #include "data/Orchestrator.h"
 #include "data/PersonalRanker.h"
@@ -21,7 +22,10 @@
 
 #include <QDir>
 #include <QDialog>
+#include <QClipboard>
+#include <QElapsedTimer>
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QKeyEvent>
 #include <QShortcut>
 #include <QTimer>
@@ -57,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_rail(new IxosRail(this))
     , m_statusStrip(new StatusStrip(this))
     , m_palette(new CommandPalette(this))
+    , m_commandTelemetry(new CommandTelemetry(this))
     , m_splitter(new QSplitter(Qt::Horizontal, this))
     , m_runtimeSession(new SessionState(this))
     , m_sessionAutosaveTimer(new QTimer(this))
@@ -248,6 +253,78 @@ void MainWindow::setupConnections() {
         markSessionDirty();
     });
     connect(m_rail, &IxosRail::openBundleRequested, this, &MainWindow::openPathsBundle);
+    connect(m_rail, &IxosRail::viewWorkstreamsRequested, this, [this]() {
+        setRailVisible(false);
+        m_workspace->showHomeDashboard();
+        refreshWorkstreams();
+        markSessionDirty();
+    });
+    connect(m_rail, &IxosRail::addPathToWorkstreamRequested, this, [this](const QString &path) {
+        const QString currentWorkstreamId = m_workstreamManager->currentWorkstreamId();
+        if (path.isEmpty() || currentWorkstreamId.isEmpty()) {
+            return;
+        }
+
+        Workstream workstream = m_workstreamManager->workstreamForId(currentWorkstreamId);
+        const QString folderPath = QFileInfo(path).absolutePath();
+        auto bumpPair = [](QVector<QPair<QString, int>> &pairs, const QString &value) {
+            for (auto &pair : pairs) {
+                if (pair.first == value) {
+                    pair.second += 1;
+                    return;
+                }
+            }
+            pairs.prepend(qMakePair(value, 1));
+        };
+        bumpPair(workstream.topFiles, path);
+        if (!folderPath.isEmpty()) {
+            bumpPair(workstream.topFolders, folderPath);
+        }
+        workstream.isAuto = false;
+        if (workstream.description.isEmpty()) {
+            workstream.description = QStringLiteral("Curated from Ixplorer actions");
+        }
+        m_workstreamManager->upsertWorkstream(workstream);
+        m_workstreamManager->save();
+        ToastNotification::showToast(this, QStringLiteral("Added to current workstream."));
+    });
+    connect(m_rail, &IxosRail::compareWithCurrentRequested, this, [this](const QString &path) {
+        if (path.isEmpty()) {
+            return;
+        }
+        const QString activePath = m_workspace->currentDocument() != nullptr
+            ? m_workspace->currentDocument()->filePath()
+            : QString();
+        if (activePath.isEmpty() || activePath == path) {
+            m_workspace->addTab(path);
+            return;
+        }
+        m_workspace->addTab(path);
+        ToastNotification::showToast(this, QStringLiteral("Opened candidate beside current file for comparison."));
+    });
+    connect(m_rail, &IxosRail::revealRelationshipRequested, this, [this](const QString &path) {
+        revealRelationshipNeighborhood(path, false);
+    });
+    connect(m_rail, &IxosRail::pinForTodayRequested, this, [this](const QString &path) {
+        if (path.isEmpty()) {
+            return;
+        }
+        m_personalRanker->pin(path, true);
+        m_sidebar->pinFavorite(path);
+        if (m_activityTracker != nullptr) {
+            m_activityTracker->logEvent(ActivityAction::FilePinned, path, {}, {}, m_workstreamManager->currentWorkstreamId());
+        }
+        refreshToday();
+        ToastNotification::showToast(this, QStringLiteral("Pinned for Today and Favorites."));
+    });
+    connect(m_rail, &IxosRail::copyPathRequested, this, [](const QString &path) {
+        if (path.isEmpty()) {
+            return;
+        }
+        if (auto *clipboard = QGuiApplication::clipboard(); clipboard != nullptr) {
+            clipboard->setText(QDir::toNativeSeparators(path));
+        }
+    });
     connect(m_rail, &IxosRail::autoOpenPathRequested, this, [this](const QString &path) {
         if (m_activityTracker != nullptr) {
             m_activityTracker->logResultClick(path, m_lastSearchQuery, m_workstreamManager->currentWorkstreamId());
@@ -265,10 +342,19 @@ void MainWindow::setupConnections() {
                                                                      float topScore,
                                                                      float scoreGap,
                                                                      float lexicalConfidence,
+                                                                     float witnessStrength,
+                                                                     float stabilityPenalty,
                                                                      qint64 elapsedMs,
                                                                      qint64 maxLatencyMs,
                                                                      bool queryActive) {
-        m_orchestrator->setSearchContext(hasResults, topScore, scoreGap, lexicalConfidence, elapsedMs, maxLatencyMs);
+        m_orchestrator->setSearchContext(hasResults,
+                                         topScore,
+                                         scoreGap,
+                                         lexicalConfidence,
+                                         witnessStrength,
+                                         stabilityPenalty,
+                                         elapsedMs,
+                                         maxLatencyMs);
         m_orchestrator->setState(queryActive ? OrchestratorState::Searching : OrchestratorState::Idle);
         if (!queryActive) {
             refreshIntelligenceSurface();
@@ -290,8 +376,18 @@ void MainWindow::setupConnections() {
         m_toolbar->setSearchText(query);
         m_toolbar->focusSearch();
         m_rail->submitToolbarSearch(query, 1);
+        if (m_commandTelemetry != nullptr) {
+            m_commandTelemetry->recordInvocation(
+                QStringLiteral("search_query"),
+                query,
+                !query.trimmed().isEmpty(),
+                0,
+                activeSearchRoot(),
+                m_workstreamManager->currentWorkstreamId());
+        }
     });
     connect(m_palette, &CommandPalette::commandTriggered, this, &MainWindow::handlePaletteCommand);
+    connect(m_palette, &CommandPalette::commandTriggeredWithArgs, this, &MainWindow::handlePaletteCommandWithArgs);
     connect(m_activityTracker, &ActivityTracker::activityLogged, this, [this](const ActivityEvent &) {
         if (m_workstreamManager != nullptr) {
             m_workstreamManager->rebuild();
@@ -407,6 +503,7 @@ void MainWindow::openCommandPalette() {
 
     QVector<CommandPaletteItem> commands = {
         {QStringLiteral("focus_search"), QStringLiteral("Focus Ixos Search"), QStringLiteral("Jump to the top search bar"), QStringLiteral("search find ixos top bar"), 0.92f, true},
+        {QStringLiteral("search_current_folder"), QStringLiteral("Search Current Folder"), QStringLiteral("Run search scoped to the active folder"), QStringLiteral("search current folder local scope"), 0.90f, true},
         {QStringLiteral("toggle_rail"), QStringLiteral("Toggle Ixos Panel"), QStringLiteral("Show or hide the right intelligence rail"), QStringLiteral("rail panel sidebar"), 0.78f, true},
         {QStringLiteral("switch_workstream"), QStringLiteral("Switch Workstream"), QStringLiteral("Cycle to the next active workstream"), QStringLiteral("workstream context session"), hasWorkstreams ? 0.88f : 0.0f, hasWorkstreams},
         {QStringLiteral("open_bundle"), QStringLiteral("Open Today Bundle"), QStringLiteral("Open the current resume packet and supporting files"), QStringLiteral("today resume bundle continue"), hasResumePacket ? 0.9f : 0.0f, hasResumePacket},
@@ -418,7 +515,9 @@ void MainWindow::openCommandPalette() {
         {QStringLiteral("refresh"), QStringLiteral("Refresh Current View"), QStringLiteral("Reload the current explorer or document"), QStringLiteral("refresh reload"), 0.55f, true},
         {QStringLiteral("go_up"), QStringLiteral("Open Parent Folder"), QStringLiteral("Go to the current tab's parent path"), QStringLiteral("parent up folder"), 0.48f, m_workspace->canGoUpCurrent()},
         {QStringLiteral("toggle_today"), QStringLiteral("Refresh Today"), QStringLiteral("Recompute resume suggestions for the current workstream"), QStringLiteral("today resume refresh"), hasActiveWorkstream || hasResumePacket ? 0.66f : 0.25f, true},
+        {QStringLiteral("compare_related"), QStringLiteral("Compare With Related"), QStringLiteral("Open best related file for side-by-side comparison"), QStringLiteral("compare related graph bundle"), activePath.isEmpty() ? 0.0f : 0.74f, !activePath.isEmpty()},
         {QStringLiteral("show_relationships"), QStringLiteral("Show Relationships"), QStringLiteral("Visualize files commonly used with the current document"), QStringLiteral("graph relationship co occurrence related"), activePath.isEmpty() ? 0.0f : 0.72f, !activePath.isEmpty()},
+        {QStringLiteral("reveal_neighborhood"), QStringLiteral("Reveal Neighborhood"), QStringLiteral("Open relationship context in the right rail"), QStringLiteral("neighborhood relation explain why"), activePath.isEmpty() ? 0.0f : 0.77f, !activePath.isEmpty()},
     };
 
     m_palette->setCommands(commands);
@@ -429,155 +528,253 @@ void MainWindow::openCommandPalette() {
 }
 
 void MainWindow::handlePaletteCommand(const QString &commandId) {
+    QElapsedTimer timer;
+    timer.start();
+
+    bool success = false;
+    QString telemetryArguments;
+    const QString activePath = m_workspace->currentDocument() != nullptr
+        ? m_workspace->currentDocument()->filePath()
+        : QString();
+    QString telemetryContextPath = activePath;
+    if (telemetryContextPath.isEmpty()) {
+        telemetryContextPath = activeSearchRoot();
+    }
+
     if (commandId == QStringLiteral("focus_search")) {
         setRailVisible(true);
         m_toolbar->focusSearch();
-        return;
-    }
-    if (commandId == QStringLiteral("toggle_rail")) {
+        success = true;
+    } else if (commandId == QStringLiteral("search_current_folder")) {
+        setRailVisible(true);
+        m_toolbar->focusSearch();
+        m_rail->setSearchRoot(activeSearchRoot());
+        success = true;
+    } else if (commandId == QStringLiteral("toggle_rail")) {
         toggleRailVisible();
-        return;
-    }
-    if (commandId == QStringLiteral("new_tab")) {
+        success = true;
+    } else if (commandId == QStringLiteral("new_tab")) {
         m_workspace->addTab(QDir::homePath());
-        return;
-    }
-    if (commandId == QStringLiteral("close_tab")) {
-        m_workspace->closeTab(m_workspace->currentTabIndex());
-        return;
-    }
-    if (commandId == QStringLiteral("refresh")) {
+        success = true;
+    } else if (commandId == QStringLiteral("close_tab")) {
+        if (m_workspace->tabCount() > 1) {
+            m_workspace->closeTab(m_workspace->currentTabIndex());
+            success = true;
+        }
+    } else if (commandId == QStringLiteral("refresh")) {
         m_workspace->refreshCurrent();
-        return;
-    }
-    if (commandId == QStringLiteral("go_up")) {
-        m_workspace->goUpCurrent();
-        return;
-    }
-    if (commandId == QStringLiteral("switch_workstream")) {
+        success = true;
+    } else if (commandId == QStringLiteral("go_up")) {
+        if (m_workspace->canGoUpCurrent()) {
+            m_workspace->goUpCurrent();
+            success = true;
+        }
+    } else if (commandId == QStringLiteral("switch_workstream")) {
         const QVector<Workstream> workstreams = m_workstreamManager->workstreams();
-        if (workstreams.isEmpty()) {
-            return;
-        }
-        int currentIndex = -1;
-        for (int index = 0; index < workstreams.size(); ++index) {
-            if (workstreams.at(index).id == m_workstreamManager->currentWorkstreamId()) {
-                currentIndex = index;
-                break;
-            }
-        }
-        const int nextIndex = workstreams.size() == 1 ? 0 : (currentIndex + 1) % workstreams.size();
-        switchWorkstream(workstreams.at(nextIndex).id);
-        return;
-    }
-    if (commandId == QStringLiteral("open_bundle") || commandId == QStringLiteral("reopen_last_packet")) {
-        const ResumptionPacket packet = m_resumptionEngine->buildPacket(m_workstreamManager->currentWorkstreamId());
-        if (packet.primaryPath.isEmpty()) {
-            return;
-        }
-        m_workspace->addTab(packet.primaryPath);
-        for (const QString &path : packet.supportingPaths) {
-            m_workspace->addTab(path);
-        }
-        return;
-    }
-    if (commandId == QStringLiteral("add_to_workstream")) {
-        const QString activePath = m_workspace->currentDocument() != nullptr
-            ? m_workspace->currentDocument()->filePath()
-            : QString();
-        const QString currentWorkstreamId = m_workstreamManager->currentWorkstreamId();
-        if (activePath.isEmpty() || currentWorkstreamId.isEmpty()) {
-            return;
-        }
-
-        Workstream workstream = m_workstreamManager->workstreamForId(currentWorkstreamId);
-        const QString folderPath = QFileInfo(activePath).absolutePath();
-        auto bumpPair = [](QVector<QPair<QString, int>> &pairs, const QString &value) {
-            for (auto &pair : pairs) {
-                if (pair.first == value) {
-                    pair.second += 1;
-                    return;
+        if (!workstreams.isEmpty()) {
+            int currentIndex = -1;
+            for (int index = 0; index < workstreams.size(); ++index) {
+                if (workstreams.at(index).id == m_workstreamManager->currentWorkstreamId()) {
+                    currentIndex = index;
+                    break;
                 }
             }
-            pairs.prepend(qMakePair(value, 1));
-        };
-        bumpPair(workstream.topFiles, activePath);
-        if (!folderPath.isEmpty()) {
-            bumpPair(workstream.topFolders, folderPath);
+            const int nextIndex = workstreams.size() == 1 ? 0 : (currentIndex + 1) % workstreams.size();
+            switchWorkstream(workstreams.at(nextIndex).id);
+            success = true;
         }
-        workstream.isAuto = false;
-        if (workstream.description.isEmpty()) {
-            workstream.description = QStringLiteral("Curated from Ixplorer");
-        }
-        m_workstreamManager->upsertWorkstream(workstream);
-        m_workstreamManager->save();
-        ToastNotification::showToast(this, QStringLiteral("Added file to the current workstream."));
-        return;
-    }
-    if (commandId == QStringLiteral("pin_file")) {
-        const QString activePath = m_workspace->currentDocument() != nullptr
-            ? m_workspace->currentDocument()->filePath()
-            : QString();
-        if (activePath.isEmpty()) {
-            return;
-        }
-        m_sidebar->pinFavorite(activePath);
-        if (m_activityTracker != nullptr) {
-            m_activityTracker->logEvent(ActivityAction::FilePinned, activePath, {}, {}, m_workstreamManager->currentWorkstreamId());
-        }
-        ToastNotification::showToast(this, QStringLiteral("Pinned file to Favorites."));
-        return;
-    }
-    if (commandId == QStringLiteral("toggle_today")) {
-        refreshToday();
-        return;
-    }
-    if (commandId == QStringLiteral("show_relationships")) {
-        const QString activePath = m_workspace->currentDocument() != nullptr
-            ? m_workspace->currentDocument()->filePath()
-            : QString();
-        if (activePath.isEmpty()) {
-            return;
-        }
-
-        RelationshipGraph graph;
-        graph.title = QFileInfo(activePath).fileName();
-        graph.nodes.append(RelationshipNode{QStringLiteral("primary"), QFileInfo(activePath).fileName(), activePath, 1.0f, true});
-
-        const QVector<QPair<QString, int>> related = m_activityTracker->getCoOccurrences(activePath, 30);
-        const int maxCount = related.isEmpty() ? 1 : qMax(1, related.first().second);
-        int index = 0;
-        for (const auto &pair : related) {
-            if (pair.first.isEmpty()) {
-                continue;
+    } else if (commandId == QStringLiteral("open_bundle") || commandId == QStringLiteral("reopen_last_packet")) {
+        const ResumptionPacket packet = m_resumptionEngine->buildPacket(m_workstreamManager->currentWorkstreamId());
+        if (!packet.primaryPath.isEmpty()) {
+            m_workspace->addTab(packet.primaryPath);
+            for (const QString &path : packet.supportingPaths) {
+                m_workspace->addTab(path);
             }
-            const QString nodeId = QStringLiteral("n%1").arg(index++);
-            const QString label = QFileInfo(pair.first).fileName().isEmpty() ? pair.first : QFileInfo(pair.first).fileName();
-            const float weight = static_cast<float>(pair.second) / static_cast<float>(maxCount);
-            graph.nodes.append(RelationshipNode{nodeId, label, pair.first, weight, false});
-            graph.edges.append(RelationshipEdge{QStringLiteral("primary"), nodeId, weight});
-            if (index >= 12) {
+            telemetryArguments = packet.primaryPath;
+            success = true;
+        }
+    } else if (commandId == QStringLiteral("add_to_workstream")) {
+        const QString currentWorkstreamId = m_workstreamManager->currentWorkstreamId();
+        if (!activePath.isEmpty() && !currentWorkstreamId.isEmpty()) {
+            Workstream workstream = m_workstreamManager->workstreamForId(currentWorkstreamId);
+            const QString folderPath = QFileInfo(activePath).absolutePath();
+            auto bumpPair = [](QVector<QPair<QString, int>> &pairs, const QString &value) {
+                for (auto &pair : pairs) {
+                    if (pair.first == value) {
+                        pair.second += 1;
+                        return;
+                    }
+                }
+                pairs.prepend(qMakePair(value, 1));
+            };
+            bumpPair(workstream.topFiles, activePath);
+            if (!folderPath.isEmpty()) {
+                bumpPair(workstream.topFolders, folderPath);
+            }
+            workstream.isAuto = false;
+            if (workstream.description.isEmpty()) {
+                workstream.description = QStringLiteral("Curated from Ixplorer");
+            }
+            m_workstreamManager->upsertWorkstream(workstream);
+            m_workstreamManager->save();
+            ToastNotification::showToast(this, QStringLiteral("Added file to the current workstream."));
+            telemetryArguments = activePath;
+            success = true;
+        }
+    } else if (commandId == QStringLiteral("pin_file")) {
+        if (!activePath.isEmpty()) {
+            m_sidebar->pinFavorite(activePath);
+            if (m_activityTracker != nullptr) {
+                m_activityTracker->logEvent(ActivityAction::FilePinned, activePath, {}, {}, m_workstreamManager->currentWorkstreamId());
+            }
+            ToastNotification::showToast(this, QStringLiteral("Pinned file to Favorites."));
+            telemetryArguments = activePath;
+            success = true;
+        }
+    } else if (commandId == QStringLiteral("toggle_today")) {
+        refreshToday();
+        success = true;
+    } else if (commandId == QStringLiteral("compare_related")) {
+        if (!activePath.isEmpty()) {
+            const QVector<RelationshipSignal> related = m_workstreamManager->relatedForPath(activePath, 1, m_workstreamManager->currentWorkstreamId());
+            if (!related.isEmpty() && !related.first().path.isEmpty()) {
+                m_workspace->addTab(related.first().path);
+                ToastNotification::showToast(this, QStringLiteral("Opened related file for comparison."));
+                telemetryArguments = related.first().path;
+                success = true;
+            } else {
+                ToastNotification::showToast(this, QStringLiteral("No high-confidence related file available."));
+            }
+        }
+    } else if (commandId == QStringLiteral("show_relationships")) {
+        success = revealRelationshipNeighborhood(activePath, true);
+    } else if (commandId == QStringLiteral("reveal_neighborhood")) {
+        success = revealRelationshipNeighborhood(activePath, false);
+    }
+
+    if (m_commandTelemetry != nullptr) {
+        m_commandTelemetry->recordInvocation(
+            commandId,
+            telemetryArguments,
+            success,
+            static_cast<int>(timer.elapsed()),
+            telemetryContextPath,
+            m_workstreamManager->currentWorkstreamId());
+    }
+}
+
+void MainWindow::handlePaletteCommandWithArgs(const QString &commandId, const QString &arguments) {
+    const QString args = arguments.trimmed();
+    if (args.isEmpty()) {
+        handlePaletteCommand(commandId);
+        return;
+    }
+
+    QElapsedTimer timer;
+    timer.start();
+    bool success = false;
+
+    if (commandId == QStringLiteral("focus_search") || commandId == QStringLiteral("search_current_folder")) {
+        setRailVisible(true);
+        m_toolbar->setSearchText(args);
+        m_toolbar->focusSearch();
+        m_rail->setSearchRoot(activeSearchRoot());
+        m_rail->submitToolbarSearch(args, m_lastSearchMode);
+        success = true;
+    } else if (commandId == QStringLiteral("switch_workstream")) {
+        const QVector<Workstream> workstreams = m_workstreamManager->workstreams();
+        for (const Workstream &workstream : workstreams) {
+            if (workstream.name.contains(args, Qt::CaseInsensitive) ||
+                workstream.id.contains(args, Qt::CaseInsensitive)) {
+                switchWorkstream(workstream.id);
+                success = true;
                 break;
             }
         }
-
-        auto *dialog = new QDialog(this);
-        dialog->setAttribute(Qt::WA_DeleteOnClose);
-        dialog->setWindowTitle(QStringLiteral("Relationships"));
-        dialog->resize(760, 520);
-        auto *layout = new QVBoxLayout(dialog);
-        auto *view = new RelationshipView(dialog);
-        view->setGraph(graph);
-        layout->addWidget(view);
-        connect(view, &RelationshipView::pathActivated, dialog, [this, dialog](const QString &path) {
-            m_workspace->addTab(path);
-            dialog->accept();
-        });
-        dialog->show();
-        dialog->raise();
-        dialog->activateWindow();
+    } else {
+        handlePaletteCommand(commandId);
         return;
     }
+
+    if (m_commandTelemetry != nullptr) {
+        m_commandTelemetry->recordInvocation(
+            commandId,
+            args,
+            success,
+            static_cast<int>(timer.elapsed()),
+            activeSearchRoot(),
+            m_workstreamManager->currentWorkstreamId());
+    }
+}
+
+bool MainWindow::revealRelationshipNeighborhood(const QString &path, bool openDialog) {
+    if (path.isEmpty()) {
+        return false;
+    }
+
+    const QVector<RelationshipSignal> related = m_workstreamManager->relatedForPath(
+        path,
+        12,
+        m_workstreamManager->currentWorkstreamId());
+    if (related.isEmpty()) {
+        ToastNotification::showToast(this, QStringLiteral("No relationship neighborhood available yet."));
+        return false;
+    }
+
+    QVector<RailRelationshipItem> items;
+    items.reserve(related.size());
+    for (const RelationshipSignal &signal : related) {
+        if (signal.path.isEmpty()) {
+            continue;
+        }
+        items.append(RailRelationshipItem{signal.path, signal.reason, signal.score});
+    }
+    if (items.isEmpty()) {
+        ToastNotification::showToast(this, QStringLiteral("No relationship neighborhood available yet."));
+        return false;
+    }
+
+    setRailVisible(true);
+    m_rail->showRelationshipContext(path, items);
+
+    if (!openDialog) {
+        return true;
+    }
+
+    RelationshipGraph graph;
+    graph.title = QFileInfo(path).fileName();
+    graph.nodes.append(RelationshipNode{QStringLiteral("primary"), QFileInfo(path).fileName(), path, 1.0f, true});
+
+    int index = 0;
+    for (const RelationshipSignal &signal : related) {
+        if (signal.path.isEmpty()) {
+            continue;
+        }
+        const QString nodeId = QStringLiteral("n%1").arg(index++);
+        const QString label = QFileInfo(signal.path).fileName().isEmpty() ? signal.path : QFileInfo(signal.path).fileName();
+        graph.nodes.append(RelationshipNode{nodeId, label, signal.path, signal.score, false});
+        graph.edges.append(RelationshipEdge{QStringLiteral("primary"), nodeId, signal.score, QStringLiteral("Workstream-local relation"), signal.reason, signal.score});
+        if (index >= 12) {
+            break;
+        }
+    }
+
+    auto *dialog = new QDialog(this);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->setWindowTitle(QStringLiteral("Relationships"));
+    dialog->resize(820, 560);
+    auto *layout = new QVBoxLayout(dialog);
+    auto *view = new RelationshipView(dialog);
+    view->setGraph(graph);
+    layout->addWidget(view);
+    connect(view, &RelationshipView::pathActivated, dialog, [this, dialog](const QString &selectedPath) {
+        m_workspace->addTab(selectedPath);
+        dialog->accept();
+    });
+    dialog->show();
+    dialog->raise();
+    dialog->activateWindow();
+    return true;
 }
 
 void MainWindow::onPathChanged(const QString &path) {
@@ -613,7 +810,7 @@ void MainWindow::applyShellTone(const QColor &color) {
     }
     m_shellTone = color;
 
-    // Subtle tint from hosted content — keep the shell mostly neutral
+    // Subtle tint from hosted content - keep the shell mostly neutral
     const QColor base = blendToward(QColor(25, 27, 31), color, 0.08);
     const QColor chrome = blendToward(QColor(30, 32, 37), color, 0.06);
     const QColor edge = QColor(255, 255, 255, 15); // rgba(255,255,255,0.06)
@@ -622,7 +819,7 @@ void MainWindow::applyShellTone(const QColor &color) {
         m_shellRoot->setStyleSheet(QStringLiteral("#ShellRoot { background-color: %1; }")
                                        .arg(base.name(QColor::HexRgb)));
     }
-    // Don't override widget stylesheets aggressively — let the QSS theme handle it.
+    // Don't override widget stylesheets aggressively - let the QSS theme handle it.
     // Only set the workspace background to blend with hosted content.
     m_workspace->setStyleSheet(QStringLiteral("background-color: %1;").arg(base.name(QColor::HexRgb)));
 }
@@ -682,14 +879,19 @@ void MainWindow::restoreSession() {
         }
     }
 
-    if (tabs.isEmpty()) {
-        m_workspace->addTab("ixplorer://home");
-    } else {
-        m_workspace->restoreTabState(tabs, activeTabIndex);
-        if (m_workspace->currentDashboard() == nullptr) {
-            m_workspace->addTab("ixplorer://home");
+    bool hasHomeTab = false;
+    for (const TabState &tab : tabs) {
+        if (QDir::fromNativeSeparators(tab.path) == QStringLiteral("ixplorer://home")) {
+            hasHomeTab = true;
+            break;
         }
     }
+    if (!hasHomeTab) {
+        TabState homeTab;
+        homeTab.path = QStringLiteral("ixplorer://home");
+        tabs.append(homeTab);
+    }
+    m_workspace->restoreTabState(tabs, activeTabIndex);
 
     m_lastSearchQuery = m_sessionSnapshot.lastSearchQuery.isEmpty() ? m_lastSearchQuery : m_sessionSnapshot.lastSearchQuery;
     if (!m_lastSearchQuery.isEmpty()) {

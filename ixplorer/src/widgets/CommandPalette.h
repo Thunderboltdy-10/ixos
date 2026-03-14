@@ -27,12 +27,14 @@ public:
 signals:
     void searchRequested(const QString &query);
     void commandTriggered(const QString &commandId);
+    void commandTriggeredWithArgs(const QString &commandId, const QString &arguments);
 
 protected:
     void showEvent(QShowEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
 
 private:
+    bool tryParseTypedCommand(const QString &input, QString *commandId, QString *arguments) const;
     void rebuildList();
     void triggerCurrent();
     bool eventFilter(QObject *watched, QEvent *event) override;

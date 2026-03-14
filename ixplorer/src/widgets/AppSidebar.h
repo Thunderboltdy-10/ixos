@@ -37,11 +37,12 @@ private:
     void refreshRecents();
     void refreshFavorites();
 
-    SidebarSection *m_workstreamsSection;
-    SidebarSection *m_homeSection;
-    SidebarSection *m_favoritesSection;
-    SidebarSection *m_recentsSection;
-    SidebarSection *m_drivesSection;
+    SidebarSection *m_workstreamsSection = nullptr;
+    TodaySection *m_todaySectionWidget = nullptr;
+    SidebarSection *m_homeSection = nullptr;
+    SidebarSection *m_favoritesSection = nullptr;
+    SidebarSection *m_recentsSection = nullptr;
+    SidebarSection *m_drivesSection = nullptr;
     QStringList m_recentLocations;
     QStringList m_pinnedFavorites;
 };

@@ -22,6 +22,7 @@ set(SOURCES
     src/data/InterruptionDetector.cpp
     src/data/BundlePredictor.cpp
     src/data/Orchestrator.cpp
+    src/data/CommandTelemetry.cpp
     src/data/TodaySection.cpp
     src/data/RelationshipView.cpp
     src/widgets/ExplorerToolbar.cpp
@@ -64,6 +65,7 @@ set(HEADERS
     src/data/InterruptionDetector.h
     src/data/BundlePredictor.h
     src/data/Orchestrator.h
+    src/data/CommandTelemetry.h
     src/data/TodaySection.h
     src/data/RelationshipView.h
     src/widgets/ExplorerToolbar.h

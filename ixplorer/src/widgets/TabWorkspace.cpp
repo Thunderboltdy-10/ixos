@@ -138,6 +138,16 @@ void TabWorkspace::setCurrentPath(const QString &path) {
     m_breadcrumb->setPath(path);
 }
 
+void TabWorkspace::showHomeDashboard() {
+    for (int index = 0; index < m_stack->count(); ++index) {
+        if (qobject_cast<HomeDashboardPane *>(m_stack->widget(index)) != nullptr) {
+            m_tabBar->setCurrentIndex(index);
+            return;
+        }
+    }
+    addTab(QStringLiteral("ixplorer://home"));
+}
+
 int TabWorkspace::tabCount() const {
     return m_tabBar->count();
 }
@@ -155,6 +165,9 @@ QVector<TabState> TabWorkspace::captureTabState() const {
             tab.path = document->filePath();
             tab.isDocument = true;
             tab.isPreview = document->isPreviewTab();
+        } else if (qobject_cast<HomeDashboardPane *>(m_stack->widget(index)) != nullptr) {
+            tab.path = QStringLiteral("ixplorer://home");
+            tab.isDocument = false;
         }
         if (!tab.path.isEmpty()) {
             tabs.append(tab);
@@ -194,7 +207,7 @@ void TabWorkspace::restoreTabState(const QVector<TabState> &tabs, int activeTabI
                 m_previewTabIndex = index;
             }
         } else {
-            const int index = addExplorerTab(tab.path);
+            const int index = addTab(tab.path);
             if (auto *pane = paneAt(index)) {
                 pane->setViewMode(static_cast<ExplorerPane::ViewMode>(tab.viewMode));
             }

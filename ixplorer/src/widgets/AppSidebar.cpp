@@ -39,14 +39,16 @@ AppSidebar::AppSidebar(QWidget *parent)
     layout->setSpacing(2);
 
     m_homeSection = new SidebarSection("Home", QIcon(), content);
+    m_todaySectionWidget = new TodaySection(content);
+    m_todaySectionWidget->setObjectName("SidebarTodaySection");
     m_recentsSection = new SidebarSection("Recents", QIcon(), content);
     m_favoritesSection = new SidebarSection("Favorites", QIcon(), content);
     m_workstreamsSection = new SidebarSection("Workstreams", QIcon(), content);
     m_drivesSection = new SidebarSection("This PC", QIcon(), content);
 
     layout->addWidget(m_homeSection);
-    // layout->addWidget(m_todaySectionWidget); // Removed as per request
-    layout->addWidget(m_workstreamsSection); // Moved up for better notion-like UI
+    layout->addWidget(m_todaySectionWidget);
+    layout->addWidget(m_workstreamsSection);
     layout->addWidget(m_favoritesSection);
     layout->addWidget(m_recentsSection);
     layout->addWidget(m_drivesSection);
@@ -63,6 +65,12 @@ AppSidebar::AppSidebar(QWidget *parent)
     connect(m_favoritesSection, &SidebarSection::itemClicked, this, relay);
     connect(m_recentsSection, &SidebarSection::itemClicked, this, relay);
     connect(m_drivesSection, &SidebarSection::itemClicked, this, relay);
+    connect(m_todaySectionWidget, &TodaySection::resumeRequested, this, [this](const QString &path) {
+        emit resumePathSelected(path);
+    });
+    connect(m_todaySectionWidget, &TodaySection::supportingPathRequested, this, [this](const QString &path) {
+        emit resumePathSelected(path);
+    });
     connect(m_workstreamsSection, &SidebarSection::itemClicked, this, [this](const QString &id) {
         emit workstreamSelected(id);
     });
@@ -92,8 +100,15 @@ void AppSidebar::recordRecentLocation(const QString &path) {
     refreshRecents();
 }
 
-void AppSidebar::setTodayPacket(const ResumptionPacket &) {
-    // Feature disabled
+void AppSidebar::setTodayPacket(const ResumptionPacket &packet) {
+    if (m_todaySectionWidget == nullptr) {
+        return;
+    }
+    if (packet.primaryPath.isEmpty()) {
+        m_todaySectionWidget->clearPacket();
+        return;
+    }
+    m_todaySectionWidget->setPacket(packet);
 }
 
 void AppSidebar::setWorkstreams(const QVector<Workstream> &workstreams, const QString &currentId) {
@@ -105,7 +120,11 @@ void AppSidebar::setWorkstreams(const QVector<Workstream> &workstreams, const QS
 
     int shown = 0;
     for (const Workstream &workstream : workstreams) {
-        const QString subtitle = workstream.name.isEmpty() ? QStringLiteral("Recent work") : workstream.name;
+        QString subtitle = workstream.name.isEmpty() ? QStringLiteral("Recent work") : workstream.name;
+        if (!workstream.topQueries.isEmpty() && !workstream.topQueries.first().first.isEmpty()) {
+            subtitle = QStringLiteral("%1 - %2")
+                .arg(subtitle, workstream.topQueries.first().first.left(26));
+        }
         m_workstreamsSection->addItem(subtitle, workstream.id, Icons::makeIconFromFont(Icons::Folder, 16, QColor(0xF6, 0xCA, 0x56)));
         ++shown;
         if (shown >= 4) {

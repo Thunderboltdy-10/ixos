@@ -3,15 +3,43 @@
 #include "theme/IconFont.h"
 
 #include <QDir>
+#include <QDateTime>
 #include <QFileInfo>
+#include <QFile>
 #include <QHBoxLayout>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QStandardPaths>
 #include <QVBoxLayout>
 #include <QListWidgetItem>
 #include <QStyle>
 #include <QTextEdit>
+#include <algorithm>
+#include <functional>
 #include <utility>
 
 namespace Ixplorer {
+
+namespace {
+
+QString ensureAppDataDir() {
+    QString dir = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    if (dir.isEmpty()) {
+        dir = QDir::homePath() + QStringLiteral("/.ixplorer");
+    }
+    QDir().mkpath(dir);
+    return dir;
+}
+
+QString relationLabel(const QString &path) {
+    const QFileInfo info(path);
+    if (!info.fileName().isEmpty()) {
+        return info.fileName();
+    }
+    return QDir::toNativeSeparators(path);
+}
+
+} // namespace
 
 IxosRail::IxosRail(QWidget *parent)
     : QWidget(parent)
@@ -20,6 +48,7 @@ IxosRail::IxosRail(QWidget *parent)
     setObjectName("IxosRail");
     m_liveSearchTimer->setSingleShot(true);
     m_liveSearchTimer->setInterval(380);
+    m_searchTracePath = ensureAppDataDir() + QStringLiteral("/search_trace_v1.jsonl");
 
     auto *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -98,6 +127,36 @@ IxosRail::IxosRail(QWidget *parent)
     m_detailText->setMinimumHeight(100);
     m_detailText->setFrameShape(QFrame::NoFrame);
     detailLayout->addWidget(m_detailText, 1);
+
+    m_detailActions = new QWidget(m_detailPane);
+    m_detailActionsLayout = new QGridLayout(m_detailActions);
+    m_detailActionsLayout->setContentsMargins(0, 0, 0, 0);
+    m_detailActionsLayout->setHorizontalSpacing(6);
+    m_detailActionsLayout->setVerticalSpacing(4);
+
+    auto makeDetailAction = [this](const QString &title, int row, int column, const std::function<void(const QString &)> &callback) {
+        auto *button = new QPushButton(title, m_detailActions);
+        button->setObjectName("RailDetailAction");
+        button->setCursor(Qt::PointingHandCursor);
+        button->setMaximumHeight(24);
+        connect(button, &QPushButton::clicked, this, [this, callback]() {
+            const int row = m_resultList->currentRow();
+            if (row < 0 || row >= m_results.size()) {
+                return;
+            }
+            callback(m_results.at(row).path);
+        });
+        m_detailActionsLayout->addWidget(button, row, column);
+    };
+
+    makeDetailAction(QStringLiteral("Open Here"), 0, 0, [this](const QString &path) { emit openFileRequested(path); });
+    makeDetailAction(QStringLiteral("Open Beside"), 0, 1, [this](const QString &path) { emit openPathInNewTabRequested(path); });
+    makeDetailAction(QStringLiteral("Add To Workstream"), 1, 0, [this](const QString &path) { emit addPathToWorkstreamRequested(path); });
+    makeDetailAction(QStringLiteral("Compare"), 1, 1, [this](const QString &path) { emit compareWithCurrentRequested(path); });
+    makeDetailAction(QStringLiteral("Reveal Graph"), 2, 0, [this](const QString &path) { emit revealRelationshipRequested(path); });
+    makeDetailAction(QStringLiteral("Copy Path"), 2, 1, [this](const QString &path) { emit copyPathRequested(path); });
+    makeDetailAction(QStringLiteral("Pin For Today"), 3, 0, [this](const QString &path) { emit pinForTodayRequested(path); });
+    detailLayout->addWidget(m_detailActions, 0);
     
     mainLayout->addWidget(m_detailPane, 0);
 
@@ -140,25 +199,32 @@ IxosRail::IxosRail(QWidget *parent)
     });
     connect(m_provider, &ISearchProvider::searchFinished, this, [this]() {
         m_lastSearchElapsedMs = m_searchElapsed.isValid() ? m_searchElapsed.elapsed() : m_lastSearchElapsedMs;
+        SearchAction action = SearchAction::Silent;
         if (m_results.isEmpty()) {
             setStatusMessage("No matches in this folder.");
         } else {
             if (m_resultList->count() > 0) {
                 m_resultList->setCurrentRow(0);
             }
-            const QString path = m_results.first().path;
-            if (path != m_lastAutoOpenedPath) {
-                m_lastAutoOpenedPath = path;
-                emit autoOpenPathRequested(path);
+            action = classifyTopResultAction();
+            if (action == SearchAction::AutoOpen) {
+                const QString path = m_results.first().path;
+                if (path != m_lastAutoOpenedPath) {
+                    m_lastAutoOpenedPath = path;
+                    emit autoOpenPathRequested(path);
+                }
             }
-
-            const SearchAction action = classifyTopResultAction();
             const QString guidance = action == SearchAction::Suggest
-                ? QStringLiteral(" Top result is selected and opened by default.")
+                ? QStringLiteral(" Top result is selected; confirm with Enter.")
                 : QString();
             setStatusMessage(QStringLiteral("%1 results ready.%2")
                                  .arg(m_results.size())
                                  .arg(guidance));
+        }
+        appendSearchTrace(action);
+        if (!m_results.isEmpty()) {
+            m_lastCompletedQuery = m_currentQuery;
+            m_lastTopPath = m_results.first().path;
         }
         emitSearchTelemetry();
     });
@@ -188,6 +254,10 @@ void IxosRail::submitToolbarSearch(const QString &query, int) {
         clearSearchSession("Ready to search.");
         return;
     }
+    if (!m_relationshipItems.isEmpty()) {
+        m_relationshipItems.clear();
+        m_relationshipSeedPath.clear();
+    }
     triggerSearch();
 }
 
@@ -197,6 +267,10 @@ void IxosRail::submitToolbarDraft(const QString &query, int) {
     if (trimmed.isEmpty()) {
         clearSearchSession("Ready to search.");
         return;
+    }
+    if (!m_relationshipItems.isEmpty()) {
+        m_relationshipItems.clear();
+        m_relationshipSeedPath.clear();
     }
     scheduleLiveSearch();
 }
@@ -213,6 +287,18 @@ void IxosRail::showPredictedBundle(const BundlePrediction &bundle) {
 
 void IxosRail::showRecoverySuggestion(const RecoveryPacket &packet) {
     m_recoveryPacket = packet;
+    rebuildContextPane();
+}
+
+void IxosRail::showRelationshipContext(const QString &seedPath, const QVector<RailRelationshipItem> &items) {
+    m_relationshipSeedPath = seedPath;
+    m_relationshipItems = items;
+    rebuildContextPane();
+}
+
+void IxosRail::clearRelationshipContext() {
+    m_relationshipSeedPath.clear();
+    m_relationshipItems.clear();
     rebuildContextPane();
 }
 
@@ -254,14 +340,45 @@ IxosRail::SearchAction IxosRail::classifyTopResultAction() const {
     const double topScore = m_results.first().score;
     const double secondScore = m_results.size() > 1 ? m_results.at(1).score : 0.0;
     const double gap = topScore - secondScore;
+    const double witness = witnessStrengthForTopResult();
+    const double stabilityPenalty = stabilityPenaltyForTopResult();
 
-    if (m_showingSemanticResults && topScore > 0.85 && gap > 0.15) {
+    if (m_showingSemanticResults &&
+        topScore > 0.82 &&
+        gap > 0.13 &&
+        witness > 0.58 &&
+        stabilityPenalty < 0.35) {
         return SearchAction::AutoOpen;
     }
-    if (m_showingSemanticResults && topScore > 0.70 && gap > 0.10) {
+    if (m_showingSemanticResults &&
+        topScore > 0.66 &&
+        gap > 0.08 &&
+        witness > 0.32) {
         return SearchAction::Suggest;
     }
     return SearchAction::ShowInRail;
+}
+
+QString IxosRail::railStateName(RailPrimaryState state) const {
+    switch (state) {
+    case RailPrimaryState::SearchResults:
+        return QStringLiteral("search_results");
+    case RailPrimaryState::WorkstreamContext:
+        return QStringLiteral("workstream_context");
+    case RailPrimaryState::RelationshipView:
+        return QStringLiteral("relationship_view");
+    case RailPrimaryState::SelectionDetail:
+        return QStringLiteral("selection_detail");
+    }
+    return QStringLiteral("workstream_context");
+}
+
+void IxosRail::setPrimaryState(RailPrimaryState state) {
+    if (m_primaryState == state) {
+        return;
+    }
+    m_primaryState = state;
+    emit railStateChanged(railStateName(state));
 }
 
 void IxosRail::focusSearch() {
@@ -306,6 +423,7 @@ void IxosRail::clearSearchSession(const QString &summary) {
     m_lastAutoOpenedPath.clear();
     m_lastLexicalConfidence = 0.0f;
     m_lastSearchElapsedMs = 0;
+    m_lastSearchTraceSignature.clear();
     m_resultList->clear();
     setStatusMessage(summary);
     rebuildContextPane();
@@ -379,7 +497,10 @@ void IxosRail::handleResultSelection(int row) {
         html += QStringLiteral("</div>");
         m_detailText->setHtml(html);
         m_detailPane->show();
+    } else {
+        m_detailPane->hide();
     }
+    rebuildContextPane();
 }
 
 void IxosRail::handleResultDoubleClicked(QListWidgetItem *item) {
@@ -405,35 +526,75 @@ void IxosRail::rebuildContextPane() {
         delete item;
     }
 
-    const bool hideForActiveSearch = hasActiveQuery();
-    if (hideForActiveSearch) {
+    const bool hasSelection = !m_results.isEmpty() && m_resultList->currentRow() >= 0;
+    RailPrimaryState state = RailPrimaryState::WorkstreamContext;
+    if (hasActiveQuery()) {
+        state = RailPrimaryState::SearchResults;
+    } else if (!m_relationshipItems.isEmpty()) {
+        state = RailPrimaryState::RelationshipView;
+    } else if (hasSelection) {
+        state = RailPrimaryState::SelectionDetail;
+    }
+    setPrimaryState(state);
+
+    m_resultList->setVisible(state == RailPrimaryState::SearchResults || state == RailPrimaryState::SelectionDetail);
+    if (state == RailPrimaryState::SearchResults) {
         m_contextPane->hide();
+        if (!hasSelection) {
+            m_detailPane->hide();
+        }
+        return;
+    }
+    if (state == RailPrimaryState::SelectionDetail) {
+        m_contextPane->hide();
+        if (hasSelection) {
+            m_detailPane->show();
+        }
         return;
     }
 
-    auto makeAction = [this](const QString &label, const QString &path, bool primary) {
-        auto *button = new QPushButton(label, m_contextActions);
-        button->setCursor(Qt::PointingHandCursor);
-        button->setProperty("railPrimaryAction", primary);
-        button->setFlat(!primary);
-        button->setToolTip(path);
-        button->setMaximumHeight(26);
-        connect(button, &QPushButton::clicked, this, [this, path, primary]() {
-            if (primary) {
-                emit openFileRequested(path);
-            } else {
-                emit openPathInNewTabRequested(path);
-            }
-        });
-        return button;
-    };
+    m_detailPane->hide();
 
     QString eyebrow;
     QString title;
     QString subtitle;
     bool hasAction = false;
 
-    if (m_recoveryPacket.wasInterrupted && !m_recoveryPacket.items.isEmpty()) {
+    if (state == RailPrimaryState::RelationshipView) {
+        eyebrow = QStringLiteral("RELATIONSHIPS");
+        const QString primary = m_relationshipSeedPath.isEmpty()
+            ? (m_relationshipItems.isEmpty() ? QString() : m_relationshipItems.first().path)
+            : m_relationshipSeedPath;
+        title = primary.isEmpty() ? QStringLiteral("Related Files") : displayNameForPath(primary);
+        subtitle = QStringLiteral("Edges are scored from co-open frequency, temporal proximity, session reuse, query overlap, and pin affinity.");
+
+        const int maxButtons = qMin(5, m_relationshipItems.size());
+        for (int index = 0; index < maxButtons; ++index) {
+            const RailRelationshipItem &item = m_relationshipItems.at(index);
+            auto *button = new QPushButton(
+                QStringLiteral("%1 (%2%)")
+                    .arg(relationLabel(item.path))
+                    .arg(static_cast<int>(item.score * 100.0f)),
+                m_contextActions);
+            button->setCursor(Qt::PointingHandCursor);
+            button->setToolTip(item.reason);
+            button->setMaximumHeight(26);
+            connect(button, &QPushButton::clicked, this, [this, item]() {
+                emit openFileRequested(item.path);
+            });
+            m_contextActionsLayout->addWidget(button);
+            hasAction = true;
+        }
+
+        auto *clearButton = new QPushButton(QStringLiteral("Back To Context"), m_contextActions);
+        clearButton->setCursor(Qt::PointingHandCursor);
+        clearButton->setMaximumHeight(26);
+        connect(clearButton, &QPushButton::clicked, this, [this]() {
+            clearRelationshipContext();
+        });
+        m_contextActionsLayout->addWidget(clearButton);
+        hasAction = true;
+    } else if (m_recoveryPacket.wasInterrupted && !m_recoveryPacket.items.isEmpty()) {
         eyebrow = QStringLiteral("SESSION");
         title = QStringLiteral("Restore previous session");
         subtitle = m_recoveryPacket.reason.isEmpty()
@@ -457,7 +618,8 @@ void IxosRail::rebuildContextPane() {
     } else if (!m_bundlePrediction.primaryPath.isEmpty()) {
         eyebrow = QStringLiteral("SUGGESTED");
         title = displayNameForPath(m_bundlePrediction.primaryPath);
-        subtitle = m_bundlePrediction.reason;
+        subtitle = QStringLiteral("%1 - confidence %2")
+            .arg(m_bundlePrediction.reason, QString::number(m_bundlePrediction.confidence, 'f', 2));
 
         QStringList bundlePaths{m_bundlePrediction.primaryPath};
         auto *openBundle = new QPushButton(QStringLiteral("Open suggested set"), m_contextActions);
@@ -475,7 +637,11 @@ void IxosRail::rebuildContextPane() {
     } else if (!m_resumePacket.primaryPath.isEmpty()) {
         eyebrow = QStringLiteral("READY");
         title = displayNameForPath(m_resumePacket.primaryPath);
-        subtitle = m_resumePacket.reason;
+        subtitle = QStringLiteral("%1 - confidence %2")
+            .arg(m_resumePacket.reason, QString::number(m_resumePacket.confidence, 'f', 2));
+        if (!m_resumePacket.likelyNextActions.isEmpty()) {
+            subtitle.append(QStringLiteral("\nNext: %1").arg(m_resumePacket.likelyNextActions.first()));
+        }
 
         QStringList bundlePaths{m_resumePacket.primaryPath};
         auto *openBundle = new QPushButton(QStringLiteral("Open resume set"), m_contextActions);
@@ -493,12 +659,15 @@ void IxosRail::rebuildContextPane() {
     } else {
         eyebrow = QStringLiteral("INTELLIGENCE");
         title = QStringLiteral("Active Workstreams & Context");
-        subtitle = QStringLiteral("Ixos automatically clusters your recent activity into workstreams and learns your personal file rankings. Use search to find files, or explore your graph.");
+        subtitle = QStringLiteral("Ixos clusters activity into workstreams and learns personal ranking priors. Use search to find files or inspect the relationship neighborhood.");
 
         auto *workstreamsBtn = new QPushButton(QStringLiteral("View Workstreams"), m_contextActions);
         workstreamsBtn->setProperty("railPrimaryAction", true);
         workstreamsBtn->setCursor(Qt::PointingHandCursor);
         workstreamsBtn->setMaximumHeight(26);
+        connect(workstreamsBtn, &QPushButton::clicked, this, [this]() {
+            emit viewWorkstreamsRequested();
+        });
         m_contextActionsLayout->addWidget(workstreamsBtn);
 
         auto *focusButton = new QPushButton(QStringLiteral("Focus Search"), m_contextActions);
@@ -524,13 +693,124 @@ void IxosRail::emitSearchTelemetry() {
     const float topScore = m_results.isEmpty() ? 0.0f : static_cast<float>(m_results.first().score);
     const float secondScore = m_results.size() > 1 ? static_cast<float>(m_results.at(1).score) : 0.0f;
     const float gap = topScore - secondScore;
+    const float witness = witnessStrengthForTopResult();
+    const float stabilityPenalty = stabilityPenaltyForTopResult();
     emit searchTelemetryChanged(!m_results.isEmpty(),
                                 topScore,
                                 gap,
                                 m_lastLexicalConfidence,
+                                witness,
+                                stabilityPenalty,
                                 m_lastSearchElapsedMs,
                                 m_maxSearchLatencyMs,
                                 hasActiveQuery());
+}
+
+void IxosRail::appendSearchTrace(SearchAction action) {
+    if (m_currentQuery.trimmed().isEmpty()) {
+        return;
+    }
+
+    const QString topPath = m_results.isEmpty() ? QString() : m_results.first().path;
+    const QString signature = QStringLiteral("%1|%2|%3|%4|%5")
+        .arg(m_currentQuery.trimmed().toLower(),
+             topPath,
+             QString::number(m_lastSearchElapsedMs),
+             QString::number(static_cast<int>(action)),
+             QString::number(m_results.size()));
+    if (signature == m_lastSearchTraceSignature) {
+        return;
+    }
+    m_lastSearchTraceSignature = signature;
+
+    const QString actionLabel =
+        action == SearchAction::AutoOpen ? QStringLiteral("auto_open") :
+        action == SearchAction::Suggest ? QStringLiteral("suggest") :
+        action == SearchAction::ShowInRail ? QStringLiteral("show_in_rail") :
+        QStringLiteral("silent");
+
+    const QJsonObject trace{
+        {QStringLiteral("timestamp_ms"), QString::number(QDateTime::currentMSecsSinceEpoch())},
+        {QStringLiteral("query"), m_currentQuery.trimmed()},
+        {QStringLiteral("result_count"), m_results.size()},
+        {QStringLiteral("top_path"), topPath},
+        {QStringLiteral("top_score"), m_results.isEmpty() ? 0.0 : m_results.first().score},
+        {QStringLiteral("second_score"), m_results.size() > 1 ? m_results.at(1).score : 0.0},
+        {QStringLiteral("witness_strength"), witnessStrengthForTopResult()},
+        {QStringLiteral("stability_penalty"), stabilityPenaltyForTopResult()},
+        {QStringLiteral("lexical_confidence"), m_lastLexicalConfidence},
+        {QStringLiteral("elapsed_ms"), m_lastSearchElapsedMs},
+        {QStringLiteral("action"), actionLabel},
+        {QStringLiteral("state"), railStateName(m_primaryState)},
+    };
+
+    QFileInfo info(m_searchTracePath);
+    QDir().mkpath(info.absolutePath());
+    QFile file(m_searchTracePath);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Append)) {
+        file.write(QJsonDocument(trace).toJson(QJsonDocument::Compact));
+        file.write("\n");
+    }
+}
+
+float IxosRail::witnessStrengthForTopResult() const {
+    if (m_results.isEmpty()) {
+        return 0.0f;
+    }
+
+    const SearchHit &top = m_results.first();
+    float witness = 0.0f;
+    if (top.hasEvidence) {
+        if (!top.evidence.explanation.trimmed().isEmpty()) {
+            witness += 0.35f;
+        }
+        if (top.evidence.matchedTerms.size() >= 2) {
+            witness += 0.25f;
+        } else if (top.evidence.matchedTerms.size() == 1) {
+            witness += 0.12f;
+        }
+        if (!top.evidence.pathTags.isEmpty()) {
+            witness += 0.18f;
+        }
+        if (!top.evidence.semanticPassage.trimmed().isEmpty()) {
+            witness += 0.14f;
+        }
+        if (top.evidence.lexicalHitCount >= 2) {
+            witness += 0.08f;
+        }
+    }
+    if (!top.snippet.trimmed().isEmpty()) {
+        witness += 0.06f;
+    }
+    return std::clamp(witness, 0.0f, 1.0f);
+}
+
+float IxosRail::stabilityPenaltyForTopResult() const {
+    if (m_results.isEmpty() || m_lastCompletedQuery.isEmpty() || m_lastTopPath.isEmpty()) {
+        return 0.0f;
+    }
+    const SearchHit &top = m_results.first();
+    const QString currentQuery = m_currentQuery.trimmed().toLower();
+    const QString previousQuery = m_lastCompletedQuery.trimmed().toLower();
+    if (currentQuery.isEmpty() || previousQuery.isEmpty()) {
+        return 0.0f;
+    }
+
+    const int delta = qAbs(currentQuery.size() - previousQuery.size());
+    const bool nearQuery = delta <= 2 &&
+        (currentQuery.startsWith(previousQuery.left(qMin(4, previousQuery.size()))) ||
+         previousQuery.startsWith(currentQuery.left(qMin(4, currentQuery.size()))));
+    if (!nearQuery) {
+        return 0.0f;
+    }
+    if (top.path == m_lastTopPath) {
+        return 0.0f;
+    }
+
+    const float scoreGap = m_results.size() > 1
+        ? static_cast<float>(m_results.first().score - m_results.at(1).score)
+        : static_cast<float>(m_results.first().score);
+    return std::clamp(0.55f - scoreGap * 0.8f, 0.0f, 0.55f);
 }
 
 QString IxosRail::displayNameForPath(const QString &path) const {

@@ -1,3 +1,67 @@
+## STATE SNAPSHOT (Ixplorer completion pass: Today sidebar reintegration + workstream replay metadata, 2026-03-13)
+- Date: 2026-03-13
+- Current baseline numbers:
+  - Prior to this pass, Today sidebar wiring was disabled and workstream persistence lacked explicit replay metadata.
+- Current best v2 numbers:
+  - Today/resumption packets are now surfaced in sidebar, Home dashboard, and rail with live open actions.
+  - Workstream persistence now includes replay metadata (`graph_signature`, `source_event_count`, `last_rebuild_at`) and the eval harness reports these signals.
+  - Command telemetry, rail state machine, orchestrator decision logging, and lease reliability hardening are integrated and verified in one batch.
+- Current bottleneck ranking:
+  1. Advanced online feedback reweighting for bundle predictor (`IXP-302`) remains a follow-up.
+  2. Formal confidence-sequence controller (`IXP-603`) remains a follow-up beyond heuristic risk utility.
+  3. Full cross-app embed QA matrix (`IXP-803`) needs extended manual runtime validation.
+- Current pass validation (2026-03-13):
+  - `C:\Qt\Tools\CMake_64\bin\cmake.exe --build ixplorer/build --config Release` (with `C:\Qt\Tools\Ninja` on `PATH`): PASS
+  - Ixplorer startup smoke (`Ixplorer.exe` alive after 4s): PASS
+  - `cargo check --manifest-path ixos-search/src-tauri/Cargo.toml -p ixos-app`: PASS
+  - `npm --prefix ixos-search/ui run build`: PASS
+  - `python scripts/ixplorer_eval.py --output reports/ixplorer_eval_2026-03-13.md`: PASS
+- What is next (top 3 tasks):
+  1. Collect real telemetry samples and tune risk gates/bundle thresholds from measured wrong-path and resume-latency deltas.
+  2. Implement adaptive online reweight loop for bundle prediction from accepted/rejected suggestion outcomes.
+  3. Execute a documented manual app-family matrix for embed compatibility (Office/PDF/VS Code/browser/UWP).
+## STATE SNAPSHOT (Ixplorer deep integration pass: graph workstreams + multi-timescale resumption + risk-aware rail/orchestrator, 2026-03-13)
+- Date: 2026-03-13
+- Current baseline numbers:
+  - Workstreams previously relied on session slicing; resumption and bundles used lighter heuristics.
+  - Rail lacked direct result action surface and used weaker top-hit gating.
+- Current best v2 numbers:
+  - Workstream manager now computes decayed relation edges (co-open/temporal/same-session/query/pin) and incremental clusters with cohesion/confidence.
+  - Resumption packets now use short/medium/long temporal scoring and carry richer packet schema (`lastMeaningfulActions`, `recentSearches`, `likelyNextActions`, `groupingEvidence`).
+  - Bundle prediction now blends transition/co-open/frecency/workstream priors/personal boosts and outputs scored explanatory items.
+  - Rail now exposes direct actions (open here/beside, add to workstream, compare, reveal graph, copy path, pin today) and witness+stability-aware top1 gating.
+  - Orchestrator now consumes witness/stability telemetry and uses risk-adjusted decision utilities.
+- Current bottleneck ranking:
+  1. Embedded host reliability matrix + targeted per-app fixes (`IXP-003`) remains open.
+  2. Replay/evaluation harness for resumption/risk/stability (`IXP-203`, `IXP-602`, `IXP-703`) remains open.
+  3. Rail finite-state dominance and command telemetry (`IXP-900+`, `IXP-552`) remain partial.
+- Current pass validation (2026-03-13):
+  - `C:\Qt\Tools\CMake_64\bin\cmake.exe --build ixplorer/build --config Release` (with `C:\Qt\Tools\Ninja` on `PATH`): PASS
+  - `Start-Process C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe -PassThru` + 4s alive check: PASS
+- What is next (top 3 tasks):
+  1. Implement explicit replay/eval harness for resumption and risk-gate behavior.
+  2. Complete embed reliability matrix and first app-specific compatibility fixes.
+  3. Formalize right-rail finite-state dominance and command telemetry.
+## STATE SNAPSHOT (Ixplorer execution tracker bootstrap + foundational shell fixes, 2026-03-13)
+- Date: 2026-03-13
+- Current baseline numbers:
+  - Prior to this batch, `View Workstreams` in the intelligence rail was a dead CTA and session restore could append Home based on active-tab type, leading to unwanted Home insertion/focus theft.
+  - Workstream/resumption/bundle/orchestration infrastructure existed, but execution tracking for the new Ixplorer direction was not centralized in `CODEX.md`.
+- Current best v2 numbers:
+  - `CODEX.md` is now a live subsystem tracker with issue/new-implementation items, explicit status (`TODO/PARTIAL/BLOCKED/DONE`), and verification requirements.
+  - Home dashboard tabs now round-trip in session capture/restore (`ixplorer://home` serialized), and fallback Home injection is now presence-based across restored tabs.
+  - Rail `View Workstreams` CTA is now wired to a concrete action path (`IxosRail` signal -> `MainWindow` -> focus/open Home dashboard).
+- Current bottleneck ranking:
+  1. Embedded host reliability (`IXP-003`) still needs reproducible matrix + targeted fixes for associated app classes.
+  2. Workstream engine foundation (`IXP-100`/`IXP-101`) is still unimplemented as a temporal heterogeneous graph with decayed edge maintenance.
+  3. Resumption packet rigor (`IXP-200+`) and predictive bundle baselines (`IXP-300+`) still need schema + measured ranking pipelines.
+- Current pass validation (2026-03-13):
+  - `C:\Qt\Tools\CMake_64\bin\cmake.exe --build ixplorer/build --config Release` (with `C:\Qt\Tools\Ninja` on `PATH`): PASS
+  - `Start-Process C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe -PassThru` + 4s alive check: PASS
+- What is next (top 3 tasks):
+  1. Build `IXP-003` embed reliability repro/compatibility matrix and land first concrete host-behavior fixes.
+  2. Implement `IXP-100` graph schema + `IXP-101` decayed weighted-edge updater.
+  3. Implement `IXP-200` resumption packet schema and multi-timescale feature extraction baseline.
 ## STATE SNAPSHOT (Ixplorer orchestration surfacing + desktop release hardening, 2026-03-11)
 - Date: 2026-03-11
 - Current baseline numbers:
@@ -1001,3 +1065,6 @@
   1. Run real-machine matrix check for `.json`, code, image, `.pdf`, `.docx` with default-app list recorded.
   2. Add explicit per-app launch templates for any remaining failing associations.
   3. Continue CODEX.md parity implementation once host path is stable.
+
+
+

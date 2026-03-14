@@ -59,7 +59,7 @@ interface AuthState {
   registerDevice: (authToken: string, deviceId: string, deviceLabel: string, devicePublicKey?: string | null) => Promise<void>;
   fetchEntitlement: (authToken: string, deviceId: string) => Promise<EntitlementInfo | null>;
   claimLease: (authToken: string, deviceId: string, devicePublicKey?: string | null) => Promise<{ token?: string | null }>;
-  refreshLease: (authToken: string, deviceId: string, devicePublicKey?: string | null) => Promise<{ token?: string | null }>;
+  refreshLease: (authToken: string, deviceId: string, devicePublicKey?: string | null, options?: { silent?: boolean }) => Promise<{ token?: string | null }>;
   requestTransfer: (authToken: string, deviceId: string, transferToken?: string) => Promise<void>;
   confirmTransfer: (authToken: string, deviceId: string, code: string) => Promise<{ token?: string | null }>;
   logoutDevice: (authToken: string, deviceId: string) => Promise<void>;
@@ -189,42 +189,55 @@ export const useAuthStore = create<AuthState>((set) => ({
     return { token: data?.token ?? null };
   },
 
-   refreshLease: async (authToken, deviceId, devicePublicKey) => {
-     set({ isLoading: true, error: null });
+   refreshLease: async (authToken, deviceId, devicePublicKey, options) => {
+     const silent = options?.silent ?? false;
+     if (!silent) {
+       set({ isLoading: true, error: null });
+     } else {
+       set({ error: null });
+     }
+
      const res = await apiRequest('/api/desktop/lease/refresh', authToken, {
        method: 'POST',
        body: JSON.stringify({ deviceId, devicePublicKey }),
      });
      if (res.status === 409) {
        const data = await res.json().catch(() => null);
-       set({
-         isLoading: false,
+       set((state) => ({
+         isLoading: silent ? state.isLoading : false,
          transferRequired: true,
          transferToken: data?.transferToken ?? null,
          activeDeviceId: data?.activeDeviceId ?? null,
-       });
+       }));
        return {};
      }
      if (!res.ok) {
        if (res.status === 401) {
          console.warn('Lease refresh unauthorized (401) - authentication token may be expired');
-         set({ isLoading: false, error: 'Session expired. Please sign in again.' });
+         set((state) => ({
+           isLoading: silent ? state.isLoading : false,
+           error: 'Session expired. Please sign in again.',
+         }));
          throw new Error('SESSION_EXPIRED');
        }
        const text = await res.text();
-       set({ isLoading: false, error: text || 'Lease refresh failed' });
+       if (!silent) {
+         set({ isLoading: false, error: text || 'Lease refresh failed' });
+       } else {
+         console.warn('[Auth] Silent lease refresh failed:', text || 'Lease refresh failed');
+       }
        throw new Error(text || 'Lease refresh failed');
      }
      const data = await res.json();
      if (data?.plan && data?.lease) {
-       set({
+       set((state) => ({
          entitlement: { ...data, ui: { showUpgrade: data.plan !== 'pro' } },
-         isLoading: false,
+         isLoading: silent ? state.isLoading : false,
          transferRequired: false,
          transferToken: null,
          activeDeviceId: null,
-       });
-     } else {
+       }));
+     } else if (!silent) {
        set({ isLoading: false });
      }
      return { token: data?.token ?? null };

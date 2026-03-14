@@ -2085,3 +2085,74 @@ eports/settings_matrix_2026-02-14.md).
   - `ixplorer/src/widgets/DocumentPane.cpp`
 - Verification:
   - No local compile/test in this shell (`cmake` unavailable); requires runtime validation on user machine.
+
+## Entry 130 - Ixplorer tracker bootstrap + foundational shell fixes
+- Date/Time: 2026-03-13
+- Branch/Commit: Ixplore / cef0193 (working tree dirty)
+- Goal: Bootstrap `CODEX.md` as live Ixplorer execution tracker and land non-negotiable shell fixes (Home restore fallback + View Workstreams CTA wiring)
+- Commands run:
+  - `git grep -n "View Workstreams" -- ixplorer ixos-search src ui`
+  - `git grep -n "ixplorer://home" -- ixplorer/src`
+  - `Get-Content` inspections for `ixplorer/src/app/MainWindow.cpp`, `ixplorer/src/widgets/IxosRail.{h,cpp}`, `ixplorer/src/widgets/TabWorkspace.{h,cpp}`
+  - `C:\Qt\Tools\CMake_64\bin\cmake.exe --build ixplorer/build --config Release` (with `C:\Qt\Tools\Ninja` on `PATH`)
+  - `Start-Process C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe -PassThru` + 4s alive check
+- Outputs saved to:
+  - `CODEX.md`
+  - `reports/ixplorer_foundation_bootstrap_2026-03-13.md`
+  - `PLAN.md` (new snapshot)
+- Key results:
+  - Restored session logic now checks for Home tab presence across restored state and only appends fallback when missing.
+  - Home dashboard tabs are now serialized/restored via `captureTabState`/`restoreTabState` using `ixplorer://home`.
+  - Rail `View Workstreams` CTA is wired to concrete behavior (focus/open Home dashboard via `MainWindow`).
+  - Build and startup smoke checks passed.
+- Decision: KEEP
+- Next: Start `IXP-003` embed reliability investigation and implement `IXP-100`/`IXP-101` workstream graph foundations.
+
+## Entry 131 - Ixplorer deep integration pass (graph workstreams + multi-timescale packets + risk-aware rail)
+- Date/Time: 2026-03-13
+- Branch/Commit: Ixplore / cef0193 (working tree dirty)
+- Goal: Implement core subsystem integration from the Ixplorer prompt with real algorithms and direct UI wiring
+- Commands run:
+  - `Get-Content` audits on `ixplorer/src/data/*`, `ixplorer/src/widgets/*`, `ixplorer/src/app/MainWindow.cpp`
+  - `C:\Qt\Tools\CMake_64\bin\cmake.exe --build ixplorer/build --config Release` (with `C:\Qt\Tools\Ninja` on `PATH`)
+  - `Start-Process C:\Users\pablo\Downloads\Ixos\ixplorer\build\Ixplorer.exe -PassThru` + 4s alive check
+- Outputs saved to:
+  - `reports/ixplorer_integration_batch_2026-03-13.md`
+  - `CODEX.md` (status reconciliation)
+  - `PLAN.md` (new state snapshot)
+- Key results:
+  - Workstream engine upgraded to decayed relation graph + incremental clustering (`WorkstreamManager`).
+  - Resumption engine upgraded to multi-timescale ranking and richer packet schema.
+  - Bundle predictor upgraded to blended baseline model with explanations.
+  - Relationship graph upgraded to semantic/evidence/confidence edges.
+  - Rail now provides direct result action surface and witness/stability-gated top1 behavior.
+  - Orchestrator now applies risk-adjusted utility gates with witness/stability telemetry.
+  - Home dashboard now renders richer resumption/workstream context and visual hierarchy.
+- Decision: KEEP
+- Next: close replay/eval harness + embed reliability matrix + formal rail-state policy.
+
+## Entry 132 - Ixplorer completion reconciliation (Today sidebar + replay metadata + full verification)
+- Date/Time: 2026-03-13
+- Branch/Commit: Ixplore / working tree dirty
+- Goal: Close remaining integration gaps against the full Ixplorer implementation spec and reconcile trackers/evidence
+- Commands run:
+  - `C:\Qt\Tools\CMake_64\bin\cmake.exe --build ixplorer/build --config Release` (with `C:\Qt\Tools\Ninja` on `PATH`)
+  - Ixplorer smoke launch (`Start-Process ...Ixplorer.exe -PassThru` + 4s liveness check)
+  - `cargo check --manifest-path ixos-search/src-tauri/Cargo.toml -p ixos-app`
+  - `npm --prefix ixos-search/ui run build`
+  - `python scripts/ixplorer_eval.py --output reports/ixplorer_eval_2026-03-13.md`
+- Outputs saved to:
+  - `reports/ixplorer_eval_2026-03-13.md`
+  - `CODEX.md`
+  - `PLAN.md`
+  - `RUNLOG.md`
+  - `DECISIONS.md`
+- Key results:
+  - Restored sidebar Today/resumption wiring (`AppSidebar::setTodayPacket`) and connected resume/support actions to workspace open flow.
+  - Added workstream replay metadata persistence (`graph_signature`, `source_event_count`, `last_rebuild_at`) and eval harness reporting.
+  - Full Ixplorer/ixos-search build checks passed in this batch.
+- Decision: KEEP
+- Next:
+  - Gather live telemetry to tune risk gates and bundle scoring.
+  - Add adaptive online bundle reweight loop.
+  - Run manual embed compatibility QA matrix.

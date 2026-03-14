@@ -146,6 +146,9 @@ private:
     qintptr m_originalWindowExStyle = 0;
     bool m_hostedWindowClaimed = false;
     int m_backdropRefreshTick = 0;
+    int m_recoveryAttempts = 0;
+    qint64 m_nextRecoveryAttemptMs = 0;
+    QString m_hostedExecutable;
 };
 
 } // namespace Ixplorer

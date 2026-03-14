@@ -235,6 +235,29 @@ function LoadingScreen({ message }: { message: string }) {
   );
 }
 
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      reject(new Error(`${label}_TIMEOUT`));
+    }, timeoutMs);
+  });
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+function logLease(event: string, details: Record<string, unknown> = {}) {
+  const payload = {
+    ts: new Date().toISOString(),
+    event,
+    ...details,
+  };
+  console.log('[Lease]', JSON.stringify(payload));
+}
+
 function TransferScreen({
   onRequest,
   onSignOut,
@@ -495,9 +518,12 @@ function AuthGateInner({ children }: AuthGateProps) {
 
   useEffect(() => {
     let cancelled = false;
+    let bootstrapGuard: ReturnType<typeof setTimeout> | null = null;
 
     async function bootstrap() {
       if (!isLoaded || !isSignedIn || !user?.id) return;
+      const bootstrapStartedAt = Date.now();
+      logLease('bootstrap_start', { userId: user.id });
 
       try {
         const deviceId = await getMachineId();
@@ -561,10 +587,16 @@ function AuthGateInner({ children }: AuthGateProps) {
         // Register device - this is critical for lease/entitlement to work
         try {
           console.log('[Auth] Registering device...');
-          await registerDevice(clerkToken, deviceId, deviceLabel, devicePublicKey);
+          await withTimeout(
+            registerDevice(clerkToken, deviceId, deviceLabel, devicePublicKey),
+            12000,
+            'REGISTER_DEVICE'
+          );
           console.log('[Auth] Device registered successfully');
+          logLease('register_device_ok', { deviceId });
         } catch (err) {
           console.error('[Auth] Device registration failed:', err);
+          logLease('register_device_failed', { reason: String(err) });
           // Continue anyway - entitlement endpoint might still work
         }
 
@@ -572,10 +604,15 @@ function AuthGateInner({ children }: AuthGateProps) {
         let gotToken = false;
         try {
           console.log('[Auth] Attempting to claim lease...');
-          const claimResult = await claimLease(clerkToken, deviceId, devicePublicKey);
+          const claimResult = await withTimeout(
+            claimLease(clerkToken, deviceId, devicePublicKey),
+            12000,
+            'LEASE_CLAIM'
+          );
           console.log('[Auth] Lease claim response:', claimResult);
           if (claimResult?.token) {
             console.log('[Auth] Lease claimed successfully');
+            logLease('lease_claim_ok', { deviceId });
             setEntitlementToken(claimResult.token);
             await storeEntitlementToken(claimResult.token).catch((e) => console.warn('[Auth] Failed to store token:', e));
             try {
@@ -592,10 +629,12 @@ function AuthGateInner({ children }: AuthGateProps) {
             const { transferRequired: needsTransfer } = useAuthStore.getState();
             if (needsTransfer) {
               console.log('[Auth] Transfer required, skipping entitlement fetch');
+              logLease('lease_claim_transfer_required', { deviceId });
             }
           }
         } catch (err) {
           console.warn('[Auth] Lease claim failed:', err);
+          logLease('lease_claim_failed', { deviceId, reason: String(err) });
         }
 
         // If lease claim didn't get a token, try entitlement endpoint as fallback
@@ -604,10 +643,15 @@ function AuthGateInner({ children }: AuthGateProps) {
           if (!needsTransfer) {
             console.log('[Auth] Trying entitlement fetch as fallback...');
             try {
-              const entitlementResult = await fetchEntitlement(clerkToken, deviceId);
+              const entitlementResult = await withTimeout(
+                fetchEntitlement(clerkToken, deviceId),
+                12000,
+                'ENTITLEMENT_FETCH'
+              );
               console.log('[Auth] Entitlement response:', entitlementResult);
               if (entitlementResult?.token) {
                 console.log('[Auth] Got token from entitlement endpoint');
+                logLease('entitlement_fetch_ok', { deviceId });
                 setEntitlementToken(entitlementResult.token);
                 await storeEntitlementToken(entitlementResult.token).catch((e) => console.warn('[Auth] Failed to store token:', e));
                 try {
@@ -618,23 +662,35 @@ function AuthGateInner({ children }: AuthGateProps) {
                 }
               } else {
                 console.warn('[Auth] Entitlement endpoint returned no token');
+                logLease('entitlement_fetch_empty', { deviceId });
               }
             } catch (err) {
               console.error('[Auth] Entitlement fetch failed:', err);
+              logLease('entitlement_fetch_failed', { deviceId, reason: String(err) });
             }
           }
         }
       } catch (error) {
         console.error('Auth bootstrap error:', error);
+        logLease('bootstrap_failed', { reason: String(error) });
         setBootError(error instanceof Error ? error.message : 'Bootstrap failed');
       } finally {
+        logLease('bootstrap_done', { durationMs: Date.now() - bootstrapStartedAt });
         if (!cancelled) setBootstrapped(true);
       }
     }
 
     if (isSignedIn) {
       setBootError(null);
-      bootstrap();
+      bootstrapGuard = setTimeout(() => {
+        if (cancelled) return;
+        logLease('bootstrap_timeout');
+        setBootError('Startup verification timed out. You can continue, but lease status may be stale.');
+        setBootstrapped(true);
+      }, 25000);
+      bootstrap().finally(() => {
+        if (bootstrapGuard) clearTimeout(bootstrapGuard);
+      });
     } else {
       setBootstrapped(false);
       setBootError(null);
@@ -643,6 +699,7 @@ function AuthGateInner({ children }: AuthGateProps) {
 
     return () => {
       cancelled = true;
+      if (bootstrapGuard) clearTimeout(bootstrapGuard);
     };
   }, [
     isLoaded,
@@ -665,41 +722,98 @@ function AuthGateInner({ children }: AuthGateProps) {
   useEffect(() => {
     if (!isSignedIn || !bootstrapped) return;
     let cancelled = false;
-    const interval = setInterval(async () => {
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+    let inFlight = false;
+    let failureCount = 0;
+
+    const schedule = (delayMs: number) => {
       if (cancelled) return;
+      if (timerId) clearTimeout(timerId);
+      const jitter = Math.floor(delayMs * (Math.random() * 0.2 - 0.1));
+      timerId = setTimeout(() => {
+        void tick();
+      }, Math.max(10000, delayMs + jitter));
+    };
+
+    const computeNextDelay = (hadError: boolean): number => {
+      if (hadError) {
+        const backoff = 30_000 * Math.pow(2, Math.min(failureCount, 5));
+        return Math.min(15 * 60 * 1000, Math.floor(backoff));
+      }
+
+      const entitlement = useAuthStore.getState().entitlement;
+      const expiresAtRaw = entitlement?.lease?.expiresAt;
+      if (expiresAtRaw) {
+        const expiresAt = Date.parse(expiresAtRaw);
+        if (Number.isFinite(expiresAt)) {
+          const msUntilExpiry = expiresAt - Date.now();
+          if (msUntilExpiry < 5 * 60 * 1000) return 45 * 1000;
+          if (msUntilExpiry < 30 * 60 * 1000) return 90 * 1000;
+        }
+      }
+      return 4 * 60 * 1000;
+    };
+
+    const tick = async () => {
+      if (cancelled || inFlight) return;
+      inFlight = true;
+
       const deviceId = useAuthStore.getState().deviceId;
       const transferNeeded = useAuthStore.getState().transferRequired;
-      if (transferNeeded) return;
-      if (!deviceId) return;
-      const token = await getToken();
-      if (!token) return;
+      if (transferNeeded || !deviceId || document.visibilityState === 'hidden') {
+        inFlight = false;
+        schedule(4 * 60 * 1000);
+        return;
+      }
+
       try {
+        const token = await getToken();
+        if (!token) {
+          inFlight = false;
+          schedule(4 * 60 * 1000);
+          return;
+        }
+
         const devicePublicKey = await invoke<string>('get_device_public_key').catch(() => null);
-        const refreshResult = await refreshLease(token, deviceId, devicePublicKey);
+        const refreshResult = await withTimeout(
+          refreshLease(token, deviceId, devicePublicKey, { silent: true }),
+          12000,
+          'LEASE_REFRESH'
+        );
         if (refreshResult?.token) {
           setEntitlementToken(refreshResult.token);
           await storeEntitlementToken(refreshResult.token).catch(() => { });
           try {
             await applyEntitlementTokenToBackend(refreshResult.token, token);
           } catch {
-            // Ignore
+            // Ignore backend sync failures during background refresh.
           }
         }
+        failureCount = 0;
+        logLease('refresh_ok', { deviceId });
+        inFlight = false;
+        schedule(computeNextDelay(false));
       } catch (error) {
+        failureCount += 1;
         const msg = error instanceof Error ? error.message : String(error);
         if (msg === 'SESSION_EXPIRED') {
-          console.log('Session expired - user needs to re-authenticate');
-          // The error is already set in authStore by refreshLease
-          // Clerk will handle token refresh automatically on next action
+          logLease('refresh_session_expired', { deviceId });
+          setEntitlementToken(null);
+          await clearEntitlementToken().catch(() => {});
+          await invoke('clear_entitlement_token').catch(() => {});
         } else {
-          console.warn('Entitlement refresh failed (non-fatal):', error);
+          logLease('refresh_failed', { deviceId, failureCount, reason: msg });
         }
+        inFlight = false;
+        schedule(computeNextDelay(true));
       }
-    }, 30000);
+    };
+
+    void tick();
 
     return () => {
       cancelled = true;
-      clearInterval(interval);
+      if (timerId) clearTimeout(timerId);
     };
   }, [isSignedIn, bootstrapped, getToken, refreshLease, setEntitlementToken, applyEntitlementTokenToBackend]);
 

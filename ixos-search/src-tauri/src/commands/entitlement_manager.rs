@@ -55,6 +55,12 @@ impl EntitlementManager {
             persist: true,
         };
         manager.hydrate_from_cache();
+        tracing::info!(
+            has_token = manager.cache.entitlement_token.is_some(),
+            time_suspect = manager.cache.time_suspect,
+            last_seen = manager.cache.last_seen_wall_time.unwrap_or_default(),
+            "Entitlement manager initialized"
+        );
         manager
     }
 
@@ -234,9 +240,16 @@ fn load_cache_from_store() -> Result<EntitlementCache, String> {
     let raw =
         SecureStore::load(ENTITLEMENT_SERVICE, ENTITLEMENT_ACCOUNT).map_err(|e| e.to_string())?;
     if let Some(bytes) = raw {
-        let cache =
-            serde_json::from_slice::<EntitlementCache>(&bytes).map_err(|e| e.to_string())?;
-        Ok(cache)
+        match serde_json::from_slice::<EntitlementCache>(&bytes) {
+            Ok(cache) => Ok(cache),
+            Err(err) => {
+                tracing::warn!("Corrupted entitlement cache detected; clearing store: {}", err);
+                if let Err(delete_err) = SecureStore::delete(ENTITLEMENT_SERVICE, ENTITLEMENT_ACCOUNT) {
+                    tracing::warn!("Failed to clear corrupted entitlement cache: {}", delete_err);
+                }
+                Ok(EntitlementCache::default())
+            }
+        }
     } else {
         Ok(EntitlementCache::default())
     }

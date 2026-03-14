@@ -20,6 +20,9 @@ struct RelationshipEdge {
     QString sourceId;
     QString targetId;
     float weight = 0.0f;
+    QString semantic;
+    QString evidence;
+    float confidence = 0.0f;
 };
 
 struct RelationshipGraph {

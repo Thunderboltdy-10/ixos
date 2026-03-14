@@ -54,6 +54,8 @@ public:
         float topScore,
         float scoreGap,
         float lexicalConfidence,
+        float witnessStrength,
+        float stabilityPenalty,
         qint64 elapsedMs,
         qint64 maxLatencyMs);
 
@@ -63,6 +65,11 @@ signals:
     void actionDecided(const Ixplorer::OrchestratorDecision &decision);
 
 private:
+    void logDecision(const OrchestratorDecision &decision,
+                     float utility,
+                     float searchConfidence,
+                     float escalateUtility) const;
+
     ResumptionEngine *m_resumptionEngine = nullptr;
     BundlePredictor *m_bundlePredictor = nullptr;
     InterruptionDetector *m_interruptionDetector = nullptr;
@@ -72,8 +79,12 @@ private:
     float m_topScore = 0.0f;
     float m_scoreGap = 0.0f;
     float m_lexicalConfidence = 0.0f;
+    float m_witnessStrength = 0.0f;
+    float m_stabilityPenalty = 0.0f;
     qint64 m_elapsedMs = 0;
     qint64 m_maxLatencyMs = 1000;
+    QString m_decisionLogPath;
+    mutable QString m_lastDecisionSignature;
 };
 
 } // namespace Ixplorer

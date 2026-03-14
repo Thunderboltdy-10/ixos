@@ -68,8 +68,16 @@ void RelationshipView::rebuildScene() {
         if (!positions.contains(edge.sourceId) || !positions.contains(edge.targetId)) {
             continue;
         }
+        if (edge.weight < 0.10f) {
+            continue;
+        }
         const QColor edgeColor(101, 119, 134, static_cast<int>(80 + edge.weight * 120.0f));
-        m_scene->addLine(QLineF(positions.value(edge.sourceId), positions.value(edge.targetId)), QPen(edgeColor, 1.0 + edge.weight * 2.0));
+        auto *line = m_scene->addLine(QLineF(positions.value(edge.sourceId), positions.value(edge.targetId)),
+                                      QPen(edgeColor, 1.0 + edge.weight * 2.0));
+        const QString semantic = edge.semantic.isEmpty() ? QStringLiteral("Related usage") : edge.semantic;
+        const QString evidence = edge.evidence.isEmpty() ? QStringLiteral("No additional evidence available") : edge.evidence;
+        line->setToolTip(QStringLiteral("%1\n%2\nconfidence: %3")
+                             .arg(semantic, evidence, QString::number(edge.confidence > 0.0f ? edge.confidence : edge.weight, 'f', 2)));
     }
 
     for (const RelationshipNode &node : std::as_const(m_graph.nodes)) {

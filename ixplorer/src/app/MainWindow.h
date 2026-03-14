@@ -13,6 +13,7 @@ namespace Ixplorer {
 class ActivityTracker;
 class AppSidebar;
 class BundlePredictor;
+class CommandTelemetry;
 class CommandPalette;
 class ExplorerToolbar;
 class InterruptionDetector;
@@ -42,6 +43,7 @@ private:
     void initializeIntelligence();
     void openCommandPalette();
     void handlePaletteCommand(const QString &commandId);
+    void handlePaletteCommandWithArgs(const QString &commandId, const QString &arguments);
     void onPathChanged(const QString &path);
     void applyShellTone(const QColor &color);
     void setRailVisible(bool visible);
@@ -54,6 +56,7 @@ private:
     void refreshIntelligenceSurface();
     void switchWorkstream(const QString &id);
     void openPathsBundle(const QStringList &paths, const QString &workstreamId);
+    bool revealRelationshipNeighborhood(const QString &path, bool openDialog);
     QString activeSearchRoot() const;
 
     ExplorerToolbar *m_toolbar;
@@ -62,6 +65,7 @@ private:
     IxosRail *m_rail;
     StatusStrip *m_statusStrip;
     CommandPalette *m_palette;
+    CommandTelemetry *m_commandTelemetry = nullptr;
     QSplitter *m_splitter;
     QWidget *m_shellRoot = nullptr;
     QColor m_shellTone;

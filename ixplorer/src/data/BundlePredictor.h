@@ -14,6 +14,11 @@ struct BundleItem {
     QString path;
     float score = 0.0f;
     int supportCount = 0;
+    float frecency = 0.0f;
+    float transition = 0.0f;
+    float workstreamPrior = 0.0f;
+    float coOpen = 0.0f;
+    QString reason;
 };
 
 struct BundlePrediction {

@@ -1372,3 +1372,72 @@
   - User reported instant close behavior on image host path consistent with UWP frame breakage when style-mutated.
 - Evidence:
   - `ixplorer/src/widgets/DocumentPane.cpp`
+
+- Decision: Bootstrap Ixplorer implementation governance in `CODEX.md` and treat it as the live source of truth for subsystem-level work tracking
+- Options considered: Keep tracking split only across PLAN/RUNLOG; create ad-hoc per-feature notes; centralize subsystem execution status in CODEX + keep PLAN/RUNLOG/DECISIONS for experiment/state continuity
+- Why chosen: The implementation scope is multi-part and long-running; subsystem grouping with explicit `DONE/PARTIAL/BLOCKED/TODO` prevents vague progress claims and keeps non-negotiables visible
+- Evidence (links to /reports or output files): CODEX.md, reports/ixplorer_foundation_bootstrap_2026-03-13.md
+- Risks: Tracker drift if not updated after each batch
+- Follow-ups: Enforce updates to CODEX.md in every Ixplorer batch
+
+- Decision: Fix Home restore behavior by checking full restored tab set for Home presence and persisting dashboard tabs in tab snapshots
+- Options considered: Keep current `currentDashboard()` post-restore check; remove Home fallback entirely; include Home in capture/restore and only append fallback when missing
+- Why chosen: Current behavior could append unnecessary Home tabs and steal focus; presence-based fallback with snapshot round-trip addresses root cause directly
+- Evidence (links to /reports or output files): ixplorer/src/app/MainWindow.cpp, ixplorer/src/widgets/TabWorkspace.cpp, reports/ixplorer_foundation_bootstrap_2026-03-13.md
+- Risks: Session migration edge cases for older snapshots
+- Follow-ups: Add regression tests for mixed dashboard/document restore scenarios
+
+- Decision: Wire rail "View Workstreams" CTA to open/focus Home dashboard immediately
+- Options considered: Leave CTA inert; remove CTA; connect CTA to concrete shell navigation path
+- Why chosen: Dead CTA harms trust; immediate actionable routing is required even before richer workstream management is implemented
+- Evidence (links to /reports or output files): ixplorer/src/widgets/IxosRail.{h,cpp}, ixplorer/src/app/MainWindow.cpp, reports/ixplorer_foundation_bootstrap_2026-03-13.md
+- Risks: Home dashboard is an interim action surface, not final dedicated workstream panel
+- Follow-ups: Replace/augment with dedicated Workstreams view as `IXP-104` lands
+
+- Decision: Replace session-only workstream grouping with decayed relation graph + incremental clustering in Ixplorer runtime
+- Options considered: Keep fixed session slicing; add small heuristics only; implement weighted edge graph with temporal decay and cluster extraction
+- Why chosen: The product requires workstreams as evolving task structure across files/folders/searches/actions, which needs edge scoring and cluster updates rather than static lists
+- Evidence (links to /reports or output files): ixplorer/src/data/WorkstreamManager.{h,cpp}, reports/ixplorer_integration_batch_2026-03-13.md
+- Risks: Cluster quality depends on event signal richness and thresholds
+- Follow-ups: Add replay/eval harness and threshold tuning support
+
+- Decision: Gate top-hit auto-open via witness + stability + risk budget instead of score-gap alone
+- Options considered: Keep score-gap heuristic; disable auto-open entirely; add calibrated risk-aware gate with witness/stability telemetry
+- Why chosen: Improves trust and reduces wrong-path auto-opens while preserving fast confident paths
+- Evidence (links to /reports or output files): ixplorer/src/widgets/IxosRail.{h,cpp}, ixplorer/src/data/Orchestrator.{h,cpp}, reports/ixplorer_integration_batch_2026-03-13.md
+- Risks: Conservative thresholds may suppress useful auto-open in some workflows
+- Follow-ups: Add replay metrics and tune thresholds against task traces
+
+- Decision: Expand resumption packet and predictive bundle schemas to include explanatory/context fields
+- Options considered: Keep minimal path-only packets; add richer schema with timescale-aware scoring and explicit next actions
+- Why chosen: Resumption quality and explainability are central product wedge; richer schema is required for reliable Today/bundle surfaces
+- Evidence (links to /reports or output files): ixplorer/src/data/ResumptionEngine.{h,cpp}, ixplorer/src/data/BundlePredictor.{h,cpp}, reports/ixplorer_integration_batch_2026-03-13.md
+- Risks: More fields increase UI complexity if not curated
+- Follow-ups: add packet/bundle acceptance metrics and prune low-value fields if needed
+
+## 2026-03-13 Sidebar Today reintegration decision
+- Decision: re-enable Today/resumption as a live sidebar surface instead of leaving `setTodayPacket` disabled.
+- Options considered:
+  - Keep Today disabled in sidebar and rely only on Home/rail.
+  - Re-enable Today in sidebar with direct resume/support path actions.
+- Why chosen:
+  - The product wedge is resumption + predictive bundles + workstreams; disabling Today in a primary navigation surface undercuts that wedge.
+  - Sidebar Today now complements (not duplicates) Home and rail context.
+- Evidence:
+  - `ixplorer/src/widgets/AppSidebar.cpp`
+  - `ixplorer/src/widgets/AppSidebar.h`
+  - `ixplorer/resources/styles/ixplorer_dark.qss`
+
+## 2026-03-13 Workstream replay metadata decision
+- Decision: persist deterministic replay metadata with each workstream snapshot and surface it in the eval harness.
+- Options considered:
+  - Keep only workstream list JSON without rebuild provenance.
+  - Persist graph/rebuild metadata and include in replay metrics reports.
+- Why chosen:
+  - Workstream clustering is temporal and incremental; replay/debug requires explicit signatures and source-event accounting.
+  - This gives a low-cost deterministic trace baseline before heavier replay tooling.
+- Evidence:
+  - `ixplorer/src/data/WorkstreamManager.h`
+  - `ixplorer/src/data/WorkstreamManager.cpp`
+  - `scripts/ixplorer_eval.py`
+  - `reports/ixplorer_eval_2026-03-13.md`

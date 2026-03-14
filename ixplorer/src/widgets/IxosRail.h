@@ -7,6 +7,7 @@
 
 #include <QElapsedTimer>
 #include <QFileInfo>
+#include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
@@ -17,6 +18,12 @@
 #include <QWidget>
 
 namespace Ixplorer {
+
+struct RailRelationshipItem {
+    QString path;
+    QString reason;
+    float score = 0.0f;
+};
 
 class IxosRail : public QWidget {
     Q_OBJECT
@@ -29,6 +36,8 @@ public:
     void showResumeSuggestion(const ResumptionPacket &packet);
     void showPredictedBundle(const BundlePrediction &bundle);
     void showRecoverySuggestion(const RecoveryPacket &packet);
+    void showRelationshipContext(const QString &seedPath, const QVector<RailRelationshipItem> &items);
+    void clearRelationshipContext();
     void clearContextSuggestions();
     void showFileDetails(const QFileInfo &info, int selectedCount = 1, quint64 selectedBytes = 0);
     void clearDetails();
@@ -43,10 +52,25 @@ signals:
     void openPathInNewTabRequested(const QString &path);
     void revealPathRequested(const QString &path);
     void openBundleRequested(const QStringList &paths, const QString &workstreamId);
+    void viewWorkstreamsRequested();
+    void addPathToWorkstreamRequested(const QString &path);
+    void compareWithCurrentRequested(const QString &path);
+    void revealRelationshipRequested(const QString &path);
+    void pinForTodayRequested(const QString &path);
+    void copyPathRequested(const QString &path);
     void requestClose();
     void searchSubmitted(const QString &query, int mode);
     void autoOpenPathRequested(const QString &path);
-    void searchTelemetryChanged(bool hasResults, float topScore, float scoreGap, float lexicalConfidence, qint64 elapsedMs, qint64 maxLatencyMs, bool queryActive);
+    void searchTelemetryChanged(bool hasResults,
+                                float topScore,
+                                float scoreGap,
+                                float lexicalConfidence,
+                                float witnessStrength,
+                                float stabilityPenalty,
+                                qint64 elapsedMs,
+                                qint64 maxLatencyMs,
+                                bool queryActive);
+    void railStateChanged(const QString &stateName);
 
 private:
     enum class SearchAction {
@@ -55,8 +79,17 @@ private:
         ShowInRail,
         Silent,
     };
+    enum class RailPrimaryState {
+        SearchResults,
+        WorkstreamContext,
+        RelationshipView,
+        SelectionDetail,
+    };
 
     SearchAction classifyTopResultAction() const;
+    QString railStateName(RailPrimaryState state) const;
+    void setPrimaryState(RailPrimaryState state);
+    void appendSearchTrace(SearchAction action);
     void triggerSearch();
     void scheduleLiveSearch();
     void clearSearchSession(const QString &summary);
@@ -66,6 +99,8 @@ private:
     void activateCurrentResult();
     void rebuildContextPane();
     void emitSearchTelemetry();
+    float witnessStrengthForTopResult() const;
+    float stabilityPenaltyForTopResult() const;
     QString displayNameForPath(const QString &path) const;
     QString relativePathForResult(const SearchHit &item) const;
 
@@ -81,9 +116,16 @@ private:
     float m_lastLexicalConfidence = 0.0f;
     qint64 m_lastSearchElapsedMs = 0;
     const qint64 m_maxSearchLatencyMs = 1200;
+    QString m_lastCompletedQuery;
+    QString m_lastTopPath;
+    RailPrimaryState m_primaryState = RailPrimaryState::WorkstreamContext;
+    QString m_searchTracePath;
+    QString m_lastSearchTraceSignature;
     ResumptionPacket m_resumePacket;
     BundlePrediction m_bundlePrediction;
     RecoveryPacket m_recoveryPacket;
+    QString m_relationshipSeedPath;
+    QVector<RailRelationshipItem> m_relationshipItems;
 
     // Removed m_searchInput and m_searchStateLabel
     QWidget *m_contextPane = nullptr;
@@ -97,6 +139,8 @@ private:
 
     QWidget *m_detailPane = nullptr;
     QTextEdit *m_detailText = nullptr;
+    QWidget *m_detailActions = nullptr;
+    QGridLayout *m_detailActionsLayout = nullptr;
 };
 
 } // namespace Ixplorer

@@ -3,6 +3,7 @@
 #include "theme/Colors.h"
 
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QEvent>
 #include <QGuiApplication>
 #include <QDir>
@@ -12,6 +13,8 @@
 #include <QHideEvent>
 #include <QImage>
 #include <QLabel>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QLocale>
 #include <QMimeDatabase>
 #include <QPixmap>
@@ -26,6 +29,7 @@
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QWindow>
+#include <QStandardPaths>
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
@@ -458,6 +462,79 @@ bool closeHostedWindow(WId windowId, quintptr processHandle, bool ownsProcess) {
     return true;
 }
 
+struct HostingProfile {
+    int captureTimeoutMs = 18000;
+    int inputIdleTimeoutMs = 2500;
+    int heartbeatIntervalMs = 180;
+    bool mutateWindowStyle = true;
+};
+
+HostingProfile hostingProfileForExecutable(const QString &executableLower) {
+    HostingProfile profile;
+
+    if (executableLower == QStringLiteral("winword.exe") ||
+        executableLower == QStringLiteral("excel.exe") ||
+        executableLower == QStringLiteral("powerpnt.exe") ||
+        executableLower == QStringLiteral("acrord32.exe") ||
+        executableLower == QStringLiteral("outlook.exe")) {
+        profile.captureTimeoutMs = 23000;
+        profile.inputIdleTimeoutMs = 3500;
+        profile.heartbeatIntervalMs = 240;
+        profile.mutateWindowStyle = false;
+        return profile;
+    }
+
+    if (executableLower == QStringLiteral("code.exe") ||
+        executableLower == QStringLiteral("code-insiders.exe") ||
+        executableLower == QStringLiteral("codium.exe") ||
+        executableLower == QStringLiteral("notepad++.exe") ||
+        executableLower == QStringLiteral("sublime_text.exe")) {
+        profile.captureTimeoutMs = 12000;
+        profile.inputIdleTimeoutMs = 1200;
+        profile.heartbeatIntervalMs = 150;
+        profile.mutateWindowStyle = true;
+        return profile;
+    }
+
+    if (executableLower == QStringLiteral("photos.exe") ||
+        executableLower == QStringLiteral("mspaint.exe")) {
+        profile.captureTimeoutMs = 20000;
+        profile.inputIdleTimeoutMs = 3000;
+        profile.heartbeatIntervalMs = 260;
+        profile.mutateWindowStyle = false;
+        return profile;
+    }
+
+    return profile;
+}
+
+QString embedDiagnosticsPath() {
+    QString dir = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    if (dir.isEmpty()) {
+        dir = QDir::homePath() + QStringLiteral("/.ixplorer");
+    }
+    QDir().mkpath(dir);
+    return dir + QStringLiteral("/embed_hosting_v1.jsonl");
+}
+
+void logEmbedEvent(const QString &stage, const QString &path, const QJsonObject &extra = {}) {
+    QJsonObject event{
+        {QStringLiteral("timestamp_ms"), QString::number(QDateTime::currentMSecsSinceEpoch())},
+        {QStringLiteral("stage"), stage},
+        {QStringLiteral("path"), path},
+    };
+    for (auto it = extra.begin(); it != extra.end(); ++it) {
+        event.insert(it.key(), it.value());
+    }
+
+    const QString logPath = embedDiagnosticsPath();
+    QFile file(logPath);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Append)) {
+        file.write(QJsonDocument(event).toJson(QJsonDocument::Compact));
+        file.write("\n");
+    }
+}
+
 int colorDistance(const QColor &left, const QColor &right) {
     return qAbs(left.red() - right.red()) +
            qAbs(left.green() - right.green()) +
@@ -752,16 +829,22 @@ bool DocumentPane::startHosting() {
                          QStringLiteral("This file is no longer available on disk."));
         return false;
     }
+    logEmbedEvent(QStringLiteral("host_start"), m_filePath);
 
     const HWND hostHwnd = reinterpret_cast<HWND>(m_hostSurface->winId());
     if (!hostHwnd) {
         showStateMessage(QStringLiteral("Host surface unavailable"),
                          QStringLiteral("Ixplorer could not create a native host surface for this file."));
+        logEmbedEvent(QStringLiteral("host_surface_missing"), m_filePath);
         return false;
     }
 
     const QSet<quintptr> baseline = snapshotTopLevelWindows();
     const QString expectedExecutable = associatedExecutableBaseName(m_filePath);
+    const HostingProfile profile = hostingProfileForExecutable(expectedExecutable);
+    if (m_hostMonitor != nullptr) {
+        m_hostMonitor->setInterval(profile.heartbeatIntervalMs);
+    }
     const QString fileNameLower = info.fileName().toLower();
     const QString fileBaseNameLower = info.completeBaseName().toLower();
 
@@ -771,20 +854,27 @@ bool DocumentPane::startHosting() {
     if (!launchAssociatedAppForPath(m_filePath, expectedExecutable, &processHandle, &launchedProcessId, &ownsProcess)) {
         showStateMessage(QStringLiteral("Could not launch associated app"),
                          QStringLiteral("Windows could not open the default app for this file."));
+        logEmbedEvent(QStringLiteral("launch_failed"), m_filePath, QJsonObject{
+            {QStringLiteral("expected_executable"), expectedExecutable},
+        });
         return false;
     }
 
+    logEmbedEvent(QStringLiteral("launch_ok"), m_filePath, QJsonObject{
+        {QStringLiteral("expected_executable"), expectedExecutable},
+        {QStringLiteral("process_id"), static_cast<qint64>(launchedProcessId)},
+    });
     hideVisibleCandidateWindows(fileNameLower, fileBaseNameLower, expectedExecutable, launchedProcessId);
 
     if (processHandle) {
-        WaitForInputIdle(processHandle, 2500);
+        WaitForInputIdle(processHandle, profile.inputIdleTimeoutMs);
     }
 
     WindowCandidate chosen;
     QElapsedTimer timer;
     timer.start();
 
-    while (timer.elapsed() < 18000) {
+    while (timer.elapsed() < profile.captureTimeoutMs) {
         DWORD currentPid = launchedProcessId;
         if (processHandle != nullptr && WaitForSingleObject(processHandle, 0) != WAIT_TIMEOUT) {
             currentPid = 0; // Process exited, search broadly
@@ -822,6 +912,11 @@ bool DocumentPane::startHosting() {
         showStateMessage(QStringLiteral("Could not host the app window"),
                          QStringLiteral("Ixplorer could not capture the associated app window for %1. Use Open externally, or try again after the viewer finishes loading.")
                              .arg(info.fileName()));
+        logEmbedEvent(QStringLiteral("capture_failed"), m_filePath, QJsonObject{
+            {QStringLiteral("expected_executable"), expectedExecutable},
+            {QStringLiteral("candidate_score"), chosen.score},
+            {QStringLiteral("elapsed_ms"), timer.elapsed()},
+        });
         return false;
     }
 
@@ -830,7 +925,7 @@ bool DocumentPane::startHosting() {
     m_originalWindowExStyle = GetWindowLongPtrW(chosen.hwnd, GWL_EXSTYLE);
 
     ShowWindow(chosen.hwnd, SW_HIDE);
-    if (!isUwpFrameWindow(chosen.hwnd)) {
+    if (profile.mutateWindowStyle && !isUwpFrameWindow(chosen.hwnd)) {
         LONG_PTR hostedStyle = m_originalWindowStyle;
         hostedStyle &= ~static_cast<LONG_PTR>(WS_POPUP);
         hostedStyle |= static_cast<LONG_PTR>(WS_CHILD);
@@ -852,6 +947,9 @@ bool DocumentPane::startHosting() {
     claimedHostedWindows().insert(m_hostedWindowId);
     m_hostedWindowClaimed = true;
     m_hostedReady = true;
+    m_hostedExecutable = expectedExecutable;
+    m_recoveryAttempts = 0;
+    m_nextRecoveryAttemptMs = 0;
 
     if (m_hostFrame) {
         m_hostFrame->show();
@@ -870,6 +968,11 @@ bool DocumentPane::startHosting() {
 
     emit statusMessage(QStringLiteral("Hosted %1 inside the workspace.")
                            .arg(info.fileName()));
+    logEmbedEvent(QStringLiteral("capture_ok"), m_filePath, QJsonObject{
+        {QStringLiteral("expected_executable"), expectedExecutable},
+        {QStringLiteral("candidate_score"), chosen.score},
+        {QStringLiteral("elapsed_ms"), timer.elapsed()},
+    });
     return true;
 #endif
 }
@@ -888,6 +991,7 @@ bool DocumentPane::setupHostFailureFallback() {
                      QStringLiteral("Ixplorer could not capture %1 yet. Retry reload or open externally.")
                          .arg(info.fileName()));
     emit statusMessage(QStringLiteral("Embedded capture failed for %1.").arg(info.fileName()));
+    logEmbedEvent(QStringLiteral("fallback_state"), m_filePath);
     return false;
 }
 
@@ -937,6 +1041,9 @@ void DocumentPane::clearHostedSurface(bool terminateProcess) {
     m_originalWindowExStyle = 0;
     m_hostedReady = false;
     m_backdropRefreshTick = 0;
+    m_recoveryAttempts = 0;
+    m_nextRecoveryAttemptMs = 0;
+    m_hostedExecutable.clear();
 
     if (m_hostFrame) {
         m_hostFrame->hide();
@@ -960,6 +1067,7 @@ void DocumentPane::clearHostedSurface(bool terminateProcess) {
     if (m_videoWidget) m_videoWidget->hide();
     if (m_mediaPlayer) m_mediaPlayer->stop();
 #endif
+    logEmbedEvent(QStringLiteral("host_clear"), m_filePath);
 }
 
 void DocumentPane::setHostedWindowVisible(bool visible) {
@@ -1009,14 +1117,30 @@ void DocumentPane::handleHostedWindowHeartbeat() {
             claimedHostedWindows().remove(m_hostedWindowId);
             m_hostedWindowClaimed = false;
         }
+        const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
+        if (nowMs < m_nextRecoveryAttemptMs) {
+            return;
+        }
         const bool launchedProcessStillAlive =
             m_processHandle != 0 &&
             WaitForSingleObject(reinterpret_cast<HANDLE>(m_processHandle), 0) == WAIT_TIMEOUT;
         if (tryRecoverHostedWindow()) {
+            m_recoveryAttempts = 0;
+            m_nextRecoveryAttemptMs = 0;
             updateHostedGeometry();
             return;
         }
         if (launchedProcessStillAlive) {
+            m_recoveryAttempts += 1;
+            const int exponent = qMin(5, m_recoveryAttempts);
+            const qint64 backoffMs = static_cast<qint64>(250) << exponent;
+            m_nextRecoveryAttemptMs = nowMs + qMin<qint64>(5000, backoffMs);
+            if (m_recoveryAttempts % 4 == 0) {
+                logEmbedEvent(QStringLiteral("recover_retry"), m_filePath, QJsonObject{
+                    {QStringLiteral("attempt"), m_recoveryAttempts},
+                    {QStringLiteral("next_retry_ms"), m_nextRecoveryAttemptMs},
+                });
+            }
             return;
         }
 
@@ -1032,6 +1156,9 @@ void DocumentPane::handleHostedWindowHeartbeat() {
         m_hostedReady = false;
         m_hostMonitor->stop();
         syncUiState();
+        logEmbedEvent(QStringLiteral("host_lost"), m_filePath, QJsonObject{
+            {QStringLiteral("attempts"), m_recoveryAttempts},
+        });
         showStateMessage(QStringLiteral("Hosted app closed"),
                          QStringLiteral("The embedded app window was closed. Reload the tab to relaunch it here, or open it externally."));
         emit statusMessage(QStringLiteral("%1 was closed.").arg(QFileInfo(m_filePath).fileName()));
@@ -1056,6 +1183,8 @@ void DocumentPane::handleHostedWindowHeartbeat() {
     setHostedWindowVisible(isVisible());
 
     ++m_backdropRefreshTick;
+    m_recoveryAttempts = 0;
+    m_nextRecoveryAttemptMs = 0;
 #endif
 }
 
@@ -1069,6 +1198,8 @@ bool DocumentPane::tryRecoverHostedWindow() {
 
     const QFileInfo info(m_filePath);
     const QString expectedExecutable = associatedExecutableBaseName(m_filePath);
+    const QString executableLower = m_hostedExecutable.isEmpty() ? expectedExecutable : m_hostedExecutable;
+    const HostingProfile profile = hostingProfileForExecutable(executableLower);
     
     DWORD processId = 0;
     if (m_processHandle != 0) {
@@ -1084,15 +1215,20 @@ bool DocumentPane::tryRecoverHostedWindow() {
         m_hostedWindowId,
         info.fileName().toLower(),
         info.completeBaseName().toLower(),
-        expectedExecutable,
+        executableLower,
         processId);
 
     if (chosen.hwnd == nullptr || !IsWindow(chosen.hwnd)) {
+        logEmbedEvent(QStringLiteral("recover_candidate_missing"), m_filePath, QJsonObject{
+            {QStringLiteral("expected_executable"), executableLower},
+            {QStringLiteral("process_id"), static_cast<qint64>(processId)},
+        });
         return false;
     }
 
     const HWND hostHwnd = reinterpret_cast<HWND>(m_hostSurface->winId());
     if (!hostHwnd) {
+        logEmbedEvent(QStringLiteral("recover_surface_missing"), m_filePath);
         return false;
     }
 
@@ -1101,7 +1237,7 @@ bool DocumentPane::tryRecoverHostedWindow() {
     m_originalWindowExStyle = GetWindowLongPtrW(chosen.hwnd, GWL_EXSTYLE);
 
     ShowWindow(chosen.hwnd, SW_HIDE);
-    if (!isUwpFrameWindow(chosen.hwnd)) {
+    if (profile.mutateWindowStyle && !isUwpFrameWindow(chosen.hwnd)) {
         LONG_PTR hostedStyle = m_originalWindowStyle;
         hostedStyle &= ~static_cast<LONG_PTR>(WS_POPUP);
         hostedStyle |= static_cast<LONG_PTR>(WS_CHILD);
@@ -1121,6 +1257,14 @@ bool DocumentPane::tryRecoverHostedWindow() {
     m_stateCard->hide();
     setHostedWindowVisible(isVisible());
     refreshHostedBackdrop();
+    m_hostedExecutable = executableLower;
+    if (m_hostMonitor != nullptr) {
+        m_hostMonitor->setInterval(profile.heartbeatIntervalMs);
+    }
+    logEmbedEvent(QStringLiteral("recover_ok"), m_filePath, QJsonObject{
+        {QStringLiteral("expected_executable"), executableLower},
+        {QStringLiteral("score"), chosen.score},
+    });
     emit statusMessage(QStringLiteral("Recovered hosted window for %1.")
                            .arg(info.fileName()));
     return true;

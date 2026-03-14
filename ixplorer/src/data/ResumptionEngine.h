@@ -14,6 +14,9 @@ class WorkstreamManager;
 struct ResumptionCandidate {
     QString path;
     float score = 0.0f;
+    float shortTerm = 0.0f;
+    float mediumTerm = 0.0f;
+    float longTerm = 0.0f;
     float recency = 0.0f;
     float unfinishedness = 0.0f;
     float frequency = 0.0f;
@@ -29,6 +32,10 @@ struct ResumptionCandidate {
 struct ResumptionPacket {
     QString primaryPath;
     QVector<QString> supportingPaths;
+    QVector<QString> lastMeaningfulActions;
+    QVector<QString> recentSearches;
+    QVector<QString> likelyNextActions;
+    QVector<QString> groupingEvidence;
     QString lastQuery;
     QString workstreamId;
     float confidence = 0.0f;

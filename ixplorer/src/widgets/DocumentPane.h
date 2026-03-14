@@ -34,6 +34,10 @@ class QPdfDocument;
 class QPdfView;
 #endif
 
+#ifdef Q_OS_WIN
+class QAxWidget;
+#endif
+
 namespace Ixplorer {
 
 class CodeViewerWidget;
@@ -41,10 +45,10 @@ class CodeViewerWidget;
 class DocumentPane : public QWidget {
     Q_OBJECT
 public:
-    explicit DocumentPane(const QString &path, bool previewMode, QWidget *parent = nullptr);
+    explicit DocumentPane(const QString &path, bool previewMode, QWidget *parent = nullptr, bool launchDeferred = false);
     ~DocumentPane() override;
 
-    enum HostMode { WebView, MediaPlayer, ImageViewer, CodeViewer, PdfViewer, WindowEmbed, Fallback };
+    enum HostMode { WebView, MediaPlayer, ImageViewer, CodeViewer, PdfViewer, WindowEmbed, OfficeEmbed, Fallback };
 
     QString filePath() const { return m_filePath; }
     QString displayPath() const { return m_filePath; }
@@ -55,7 +59,7 @@ public:
     bool canPromoteToEditable() const { return false; }
     bool canClose();
     bool canGoUp() const;
-    bool isHosted() const { return m_hostedReady || m_hostMode == ImageViewer || m_hostMode == CodeViewer || m_hostMode == WebView || m_hostMode == MediaPlayer || m_hostMode == PdfViewer; }
+    bool isHosted() const { return m_hostedReady || m_hostMode == ImageViewer || m_hostMode == CodeViewer || m_hostMode == WebView || m_hostMode == MediaPlayer || m_hostMode == PdfViewer || m_hostMode == OfficeEmbed; }
 
     void setPreviewMode(bool previewMode);
     void reload();
@@ -94,11 +98,13 @@ private:
     void setupMediaPlayer();
     void setupImageViewer();
     void setupCodeViewer();
+    void setupOfficeEmbed();
 
     QString m_filePath;
     FileOpenPolicy m_policy;
     QColor m_surfaceTone = QColor(24, 26, 30);
     bool m_previewMode = false;
+    bool m_launchDeferred = false;
     bool m_hostedReady = false;
     HostMode m_hostMode = Fallback;
 
@@ -132,6 +138,10 @@ private:
 #ifdef QT_PDF_LIB
     QPdfDocument *m_pdfDocument = nullptr;
     QPdfView *m_pdfView = nullptr;
+#endif
+
+#ifdef Q_OS_WIN
+    QAxWidget *m_axWidget = nullptr;
 #endif
 
     QTimer *m_loadingTimer = nullptr;

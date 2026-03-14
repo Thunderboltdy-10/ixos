@@ -1,5 +1,4 @@
 #include "widgets/AppSidebar.h"
-#include "data/TodaySection.h"
 #include "widgets/SidebarSection.h"
 #include "theme/IconFont.h"
 #include "theme/ThemedFileIconProvider.h"
@@ -14,6 +13,7 @@
 #include <QStandardPaths>
 #include <QStorageInfo>
 #include <QVBoxLayout>
+#include <QPushButton>
 #include <utility>
 
 namespace Ixplorer {
@@ -35,19 +35,19 @@ AppSidebar::AppSidebar(QWidget *parent)
 
     auto *content = new QWidget(scroll);
     auto *layout = new QVBoxLayout(content);
-    layout->setContentsMargins(0, 10, 0, 10);
-    layout->setSpacing(2);
+    layout->setContentsMargins(0, 4, 0, 10);
+    layout->setSpacing(0);
+
+    // Build resume card
+    buildResumeCard(content, layout);
 
     m_homeSection = new SidebarSection("Home", QIcon(), content);
-    m_todaySectionWidget = new TodaySection(content);
-    m_todaySectionWidget->setObjectName("SidebarTodaySection");
-    m_recentsSection = new SidebarSection("Recents", QIcon(), content);
-    m_favoritesSection = new SidebarSection("Favorites", QIcon(), content);
     m_workstreamsSection = new SidebarSection("Workstreams", QIcon(), content);
+    m_favoritesSection = new SidebarSection("Favorites", QIcon(), content);
+    m_recentsSection = new SidebarSection("Recent", QIcon(), content);
     m_drivesSection = new SidebarSection("This PC", QIcon(), content);
 
     layout->addWidget(m_homeSection);
-    layout->addWidget(m_todaySectionWidget);
     layout->addWidget(m_workstreamsSection);
     layout->addWidget(m_favoritesSection);
     layout->addWidget(m_recentsSection);
@@ -65,19 +65,12 @@ AppSidebar::AppSidebar(QWidget *parent)
     connect(m_favoritesSection, &SidebarSection::itemClicked, this, relay);
     connect(m_recentsSection, &SidebarSection::itemClicked, this, relay);
     connect(m_drivesSection, &SidebarSection::itemClicked, this, relay);
-    connect(m_todaySectionWidget, &TodaySection::resumeRequested, this, [this](const QString &path) {
-        emit resumePathSelected(path);
-    });
-    connect(m_todaySectionWidget, &TodaySection::supportingPathRequested, this, [this](const QString &path) {
-        emit resumePathSelected(path);
-    });
     connect(m_workstreamsSection, &SidebarSection::itemClicked, this, [this](const QString &id) {
         emit workstreamSelected(id);
     });
 }
 
 void AppSidebar::highlightCurrent(const QString &path) {
-    // Keep highlights minimal: navigation only, no recents/favorites emphasis.
     m_homeSection->setHighlighted(path);
     m_favoritesSection->setHighlighted(QString());
     m_recentsSection->setHighlighted(QString());
@@ -101,14 +94,22 @@ void AppSidebar::recordRecentLocation(const QString &path) {
 }
 
 void AppSidebar::setTodayPacket(const ResumptionPacket &packet) {
-    if (m_todaySectionWidget == nullptr) {
-        return;
-    }
+    if (!m_resumeCard) return;
     if (packet.primaryPath.isEmpty()) {
-        m_todaySectionWidget->clearPacket();
+        m_resumeCard->hide();
         return;
     }
-    m_todaySectionWidget->setPacket(packet);
+    
+    m_resumePacket = packet;
+    m_resumeCardTitle->setText(QFileInfo(packet.primaryPath).fileName());
+    
+    const int pct = static_cast<int>(packet.confidence * 100.0f);
+    const QString bodyText = packet.reason.isEmpty()
+        ? QStringLiteral("%1% confidence").arg(pct)
+        : QStringLiteral("%1 · %2%").arg(packet.reason.left(60)).arg(pct);
+    m_resumeCardBody->setText(bodyText);
+    
+    m_resumeCard->show();
 }
 
 void AppSidebar::setWorkstreams(const QVector<Workstream> &workstreams, const QString &currentId) {
@@ -121,10 +122,6 @@ void AppSidebar::setWorkstreams(const QVector<Workstream> &workstreams, const QS
     int shown = 0;
     for (const Workstream &workstream : workstreams) {
         QString subtitle = workstream.name.isEmpty() ? QStringLiteral("Recent work") : workstream.name;
-        if (!workstream.topQueries.isEmpty() && !workstream.topQueries.first().first.isEmpty()) {
-            subtitle = QStringLiteral("%1 - %2")
-                .arg(subtitle, workstream.topQueries.first().first.left(26));
-        }
         m_workstreamsSection->addItem(subtitle, workstream.id, Icons::makeIconFromFont(Icons::Folder, 16, QColor(0xF6, 0xCA, 0x56)));
         ++shown;
         if (shown >= 4) {
@@ -151,21 +148,21 @@ void AppSidebar::pinFavorite(const QString &path) {
 
 void AppSidebar::populatePlaces() {
     const QString home = QDir::homePath();
-    m_homeSection->addItem("Home", home, Icons::makeIconFromFont(Icons::Home, 16, QColor(0x8C, 0x99, 0xB2)));
+    m_homeSection->addItem("Home", home, Icons::makeIconFromFont(Icons::Home, 18, QColor(0x8C, 0x99, 0xB2)));
 
     const QString desktop = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     if (!desktop.isEmpty()) {
-        m_homeSection->addItem("Desktop", desktop, Icons::makeIconFromFont(Icons::Desktop, 16, QColor(0x3B, 0x86, 0xCB)));
+        m_homeSection->addItem("Desktop", desktop, Icons::makeIconFromFont(Icons::Desktop, 18, QColor(0x3B, 0x86, 0xCB)));
     }
 
     const QString documents = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     if (!documents.isEmpty()) {
-        m_homeSection->addItem("Documents", documents, Icons::makeIconFromFont(Icons::Document, 16, QColor(0x40, 0xA0, 0xDB)));
+        m_homeSection->addItem("Documents", documents, Icons::makeIconFromFont(Icons::Document, 18, QColor(0x40, 0xA0, 0xDB)));
     }
 
     const QString downloads = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
     if (!downloads.isEmpty()) {
-        m_homeSection->addItem("Downloads", downloads, Icons::makeIconFromFont(Icons::Download, 16, QColor(0x68, 0xB7, 0x82)));
+        m_homeSection->addItem("Downloads", downloads, Icons::makeIconFromFont(Icons::Download, 18, QColor(0x68, 0xB7, 0x82)));
     }
 
     loadPinnedFavorites();
@@ -182,8 +179,61 @@ void AppSidebar::populateDrives() {
         }
         const QString root = vol.rootPath();
         const QString name = vol.displayName().isEmpty() ? root : vol.displayName();
-        m_drivesSection->addItem(name, root, Icons::makeIconFromFont(Icons::Device, 16, QColor(0xA0, 0xA0, 0xA5)));
+        m_drivesSection->addItem(name, root, Icons::makeIconFromFont(Icons::Device, 18, QColor(0xA0, 0xA0, 0xA5)));
     }
+}
+
+void AppSidebar::buildResumeCard(QWidget *parent, QVBoxLayout *layout) {
+    m_resumeCard = new QWidget(parent);
+    m_resumeCard->setObjectName("SidebarResumeCard");
+    m_resumeCard->setAttribute(Qt::WA_StyledBackground, true);
+    m_resumeCard->hide();
+
+    auto *cardLayout = new QVBoxLayout(m_resumeCard);
+    cardLayout->setContentsMargins(12, 10, 12, 10);
+    cardLayout->setSpacing(6);
+
+    auto *topRow = new QHBoxLayout();
+    auto *eyebrow = new QLabel(QStringLiteral("RESUME"), m_resumeCard);
+    eyebrow->setObjectName("ResumeCardEyebrow");
+    topRow->addWidget(eyebrow);
+    topRow->addStretch();
+    
+    auto *dismiss = new QPushButton(m_resumeCard);
+    dismiss->setObjectName("ResumeCardDismiss");
+    dismiss->setIcon(Icons::makeIconFromFont(Icons::Close, 10, QColor("#A1A1AA")));
+    dismiss->setFixedSize(16, 16);
+    dismiss->setFlat(true);
+    dismiss->setCursor(Qt::PointingHandCursor);
+    connect(dismiss, &QPushButton::clicked, m_resumeCard, &QWidget::hide);
+    topRow->addWidget(dismiss);
+    cardLayout->addLayout(topRow);
+
+    m_resumeCardTitle = new QLabel(m_resumeCard);
+    m_resumeCardTitle->setObjectName("ResumeCardTitle");
+    m_resumeCardTitle->setWordWrap(true);
+    cardLayout->addWidget(m_resumeCardTitle);
+
+    m_resumeCardBody = new QLabel(m_resumeCard);
+    m_resumeCardBody->setObjectName("ResumeCardBody");
+    m_resumeCardBody->setWordWrap(true);
+    cardLayout->addWidget(m_resumeCardBody);
+
+    auto *btnRow = new QHBoxLayout();
+    m_resumeCardBtn = new QPushButton(QStringLiteral("Continue work"), m_resumeCard);
+    m_resumeCardBtn->setObjectName("ResumeCardButton");
+    m_resumeCardBtn->setCursor(Qt::PointingHandCursor);
+    m_resumeCardBtn->setFixedHeight(28);
+    connect(m_resumeCardBtn, &QPushButton::clicked, this, [this]() {
+        if (!m_resumePacket.primaryPath.isEmpty()) {
+            emit resumePathSelected(m_resumePacket.primaryPath);
+        }
+    });
+    btnRow->addWidget(m_resumeCardBtn);
+    btnRow->addStretch();
+    cardLayout->addLayout(btnRow);
+
+    layout->insertWidget(0, m_resumeCard);
 }
 
 void AppSidebar::loadRecents() {
@@ -213,28 +263,27 @@ void AppSidebar::refreshFavorites() {
     for (const QString &path : std::as_const(m_pinnedFavorites)) {
         const QFileInfo info(path);
         const QString label = info.fileName().isEmpty() ? path : info.fileName();
-        const QIcon icon = info.exists() ? iconProvider.icon(info) : Icons::makeIconFromFont(Icons::Document, 16, QColor(0xA0, 0xA0, 0xA5));
+        const QIcon icon = info.exists() ? iconProvider.icon(info) : Icons::makeIconFromFont(Icons::Document, 18, QColor(0xA0, 0xA0, 0xA5));
         m_favoritesSection->addItem(label, path, icon);
     }
 
     const QString pictures = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
     if (!pictures.isEmpty()) {
-        m_favoritesSection->addItem("Pictures", pictures, Icons::makeIconFromFont(Icons::Image, 16, QColor(0x68, 0xB7, 0x82)));
+        m_favoritesSection->addItem("Pictures", pictures, Icons::makeIconFromFont(Icons::Image, 18, QColor(0x68, 0xB7, 0x82)));
     }
     const QString music = QStandardPaths::writableLocation(QStandardPaths::MusicLocation);
     if (!music.isEmpty()) {
-        m_favoritesSection->addItem("Music", music, Icons::makeIconFromFont(Icons::Music, 16, QColor(0xE5, 0x6B, 0x9A)));
+        m_favoritesSection->addItem("Music", music, Icons::makeIconFromFont(Icons::Music, 18, QColor(0xE5, 0x6B, 0x9A)));
     }
     const QString videos = QStandardPaths::writableLocation(QStandardPaths::MoviesLocation);
     if (!videos.isEmpty()) {
-        m_favoritesSection->addItem("Videos", videos, Icons::makeIconFromFont(Icons::Video, 16, QColor(0xAC, 0x7B, 0xE3)));
+        m_favoritesSection->addItem("Videos", videos, Icons::makeIconFromFont(Icons::Video, 18, QColor(0xAC, 0x7B, 0xE3)));
     }
 }
 
 void AppSidebar::refreshRecents() {
     m_recentsSection->clearItems();
     if (m_recentLocations.isEmpty()) {
-        m_recentsSection->addItem("No recent locations", "", QIcon());
         return;
     }
 
@@ -242,7 +291,7 @@ void AppSidebar::refreshRecents() {
     for (const QString &path : m_recentLocations) {
         const QFileInfo info(path);
         const QString label = info.fileName().isEmpty() ? path : info.fileName();
-        const QIcon icon = info.exists() ? iconProvider.icon(info) : Icons::makeIconFromFont(Icons::History, 16, QColor(0xA0, 0xA0, 0xA5));
+        const QIcon icon = info.exists() ? iconProvider.icon(info) : Icons::makeIconFromFont(Icons::History, 18, QColor(0xA0, 0xA0, 0xA5));
         m_recentsSection->addItem(label, path, icon);
     }
 }

@@ -13,6 +13,7 @@ struct TabState {
     QString path;
     bool isDocument = false;
     bool isPreview = false;
+    bool launchDeferred = false;
     int scrollPosition = 0;
     int viewMode = 0;
     QStringList history;

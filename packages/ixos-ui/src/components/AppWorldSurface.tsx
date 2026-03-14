@@ -89,33 +89,97 @@ export function AppWorldSurface({
     <section className={`ixos-world ${className ?? ''}`} data-display-mode={displayMode} style={style}>
       <div className="ixos-world-grid" style={{ gridTemplateColumns: showRail && showPanel ? '210px minmax(0, 1fr)' : '1fr' }}>
         {showRail && (
-          <aside className="ixos-world-rail">
-          <div style={{ display: 'grid', gap: 4, marginBottom: 18 }}>
-            <strong style={{ color: '#f3f5f7', letterSpacing: '-0.02em' }}>{title}</strong>
-            <p style={{ margin: 0, fontSize: 11, color: 'rgba(243,245,247,0.55)' }}>{subtitle}</p>
-          </div>
+          <aside className="ixos-world-rail" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '20px 14px' }}>
+            {/* Header: Logo & New Button */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, padding: '0 4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 20, height: 20, background: '#2DD4BF', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ color: '#0F1115', fontWeight: 900, fontSize: 12 }}>I</span>
+                </div>
+                <strong style={{ color: '#f3f5f7', fontSize: 14, letterSpacing: '-0.01em' }}>Ixos</strong>
+              </div>
+              <button
+                type="button"
+                className="ixos-nav-btn-mini"
+                title="New Search (Ctrl+N)"
+                style={{
+                  width: 24, height: 24, borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.03)',
+                  color: 'rgba(255,255,255,0.6)', cursor: 'pointer'
+                }}
+              >
+                +
+              </button>
+            </div>
 
-          <nav style={{ display: 'grid', gap: 6 }}>
-            <button type="button" className="ixos-nav-btn" data-active={view === 'search'} onClick={() => onViewChange?.('search')}>
-              <Search size={14} />
-              Search
-            </button>
-            <button type="button" className="ixos-nav-btn" data-active={view === 'today'} onClick={() => onViewChange?.('today')}>
-              <Calendar size={14} />
-              Today
-            </button>
-            <button type="button" className="ixos-nav-btn" data-active={view === 'workstreams'} onClick={() => onViewChange?.('workstreams')}>
-              <Layers size={14} />
-              Workstreams
-            </button>
-          </nav>
+            {/* Main Nav */}
+            <nav style={{ display: 'grid', gap: 2, marginBottom: 28 }}>
+              <button type="button" className="ixos-nav-link" data-active={view === 'search'} onClick={() => onViewChange?.('search')}>
+                <Search size={14} />
+                <span>Search</span>
+              </button>
+              <button type="button" className="ixos-nav-link" data-active={view === 'today'} onClick={() => onViewChange?.('today')}>
+                <Calendar size={14} />
+                <span>Today</span>
+              </button>
+              <button type="button" className="ixos-nav-link" data-active={view === 'workstreams'} onClick={() => onViewChange?.('workstreams')}>
+                <Layers size={14} />
+                <span>Workstreams</span>
+              </button>
+            </nav>
 
-          <div style={{ marginTop: 18, display: 'grid', gap: 7 }}>
-            <span className="ixos-chip">No Cloud Index</span>
-            <span className="ixos-chip">Progressive Stream</span>
-            <span className="ixos-chip">Context Ready</span>
-          </div>
-        </aside>
+            {/* Workspace Sections */}
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div>
+                <h3 style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(243,245,247,0.3)', marginBottom: 10, padding: '0 10px' }}>
+                  Recent
+                </h3>
+                <div style={{ display: 'grid', gap: 1 }}>
+                  {workstreams.rows.slice(0, 4).map(row => (
+                    <button
+                      key={row.id}
+                      type="button"
+                      className="ixos-nav-link-sub"
+                      data-active={workstreams.selectedId === row.id}
+                      onClick={() => {
+                        onViewChange?.('workstreams');
+                        workstreams.onSelectRow?.(row.id);
+                      }}
+                    >
+                      <span style={{ opacity: 0.4 }}>#</span>
+                      <span style={{ truncate: true }}>{row.title}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(243,245,247,0.3)', marginBottom: 10, padding: '0 10px' }}>
+                  Starred
+                </h3>
+                <div style={{ padding: '0 10px', fontSize: 11, color: 'rgba(243,245,247,0.2)' }}>
+                  No starred items
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{ marginTop: 'auto', paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <button
+                type="button"
+                className="ixos-nav-link"
+                style={{ justifyContent: 'space-between', padding: '8px 10px' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #2DD4BF, #7C5CFF)', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff' }}>
+                    P
+                  </div>
+                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>Pablo</span>
+                </div>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#2DD4BF' }} />
+              </button>
+            </div>
+          </aside>
         )}
 
         {showPanel && (

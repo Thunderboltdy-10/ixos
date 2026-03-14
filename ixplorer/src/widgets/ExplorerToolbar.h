@@ -7,6 +7,8 @@
 
 namespace Ixplorer {
 
+class BreadcrumbBar;
+
 class ExplorerToolbar : public QWidget {
     Q_OBJECT
 public:
@@ -16,15 +18,16 @@ public:
     void setSearchText(const QString &query);
     void setRailVisible(bool visible);
     void focusSearch();
+    BreadcrumbBar *breadcrumb() const { return m_breadcrumb; }
 
 signals:
     void searchRequested(const QString &query, int mode); // Mode is always Auto (1)
     void searchDraftChanged(const QString &query, int mode);
+    void navigateRequested(const QString &path);
     void backRequested();
     void forwardRequested();
     void upRequested();
     void refreshRequested();
-    void toggleRailRequested();
 
 private:
     void emitSearchDraft();
@@ -33,6 +36,7 @@ private:
     QPushButton *m_fwdBtn;
     QPushButton *m_upBtn;
     QPushButton *m_refreshBtn;
+    BreadcrumbBar *m_breadcrumb;
     QLineEdit *m_searchField;
     QPushButton *m_toggleRailBtn;
 };

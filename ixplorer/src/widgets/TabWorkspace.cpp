@@ -77,40 +77,42 @@ TabWorkspace::TabWorkspace(QWidget *parent)
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    auto *tabRow = new QHBoxLayout();
-    tabRow->setContentsMargins(4, 4, 4, 0);
-    tabRow->setSpacing(4);
-
     m_tabBar->setTabsClosable(true);
     m_tabBar->setMovable(true);
     m_tabBar->setExpanding(false);
     m_tabBar->setDrawBase(false);
     m_tabBar->setUsesScrollButtons(true);
-    m_tabBar->setElideMode(Qt::ElideMiddle);
+    m_tabBar->setElideMode(Qt::ElideRight);
     m_tabBar->setDocumentMode(true);
     m_tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
     m_tabBar->setAttribute(Qt::WA_Hover, true);
     m_tabBar->installEventFilter(this);
 
     m_tabBar->setStyleSheet(
+        "QTabBar {"
+        "  background: transparent;"
+        "}"
         "QTabBar::tab {"
         "  background: transparent;"
-        "  color: #A0A0A5;"
-        "  padding: 6px 12px;"
+        "  color: #A1A1AA;"
+        "  padding: 8px 20px;"
         "  margin-top: 4px;"
+        "  margin-right: 2px;"
         "  border: 1px solid transparent;"
-        "  border-bottom: none;"
-        "  border-top-left-radius: 6px;"
-        "  border-top-right-radius: 6px;"
+        "  border-top-left-radius: 8px;"
+        "  border-top-right-radius: 8px;"
+        "  font-size: 12px;"
         "}"
         "QTabBar::tab:selected {"
-        "  background: #1C1E23;"
-        "  color: #F0F0F5;"
-        "  border: 1px solid #333640;"
-        "  border-bottom: none;"
+        "  background: #272727;"
+        "  color: #FFFFFF;"
+        "  border: 1px solid rgba(255,255,255,0.1);"
+        "  border-bottom: 2px solid #272727;" /* Merges with content below */
+        "  margin-bottom: -1px;"
         "}"
         "QTabBar::tab:hover:!selected {"
-        "  background: #1E2026;"
+        "  background: rgba(255,255,255,0.05);"
+        "  color: #FFFFFF;"
         "}"
     );
 
@@ -119,11 +121,6 @@ TabWorkspace::TabWorkspace(QWidget *parent)
     m_addTabButton->setAutoRaise(true);
     m_addTabButton->setToolTip("New tab");
 
-    tabRow->addWidget(m_tabBar);
-    tabRow->addWidget(m_addTabButton);
-    tabRow->addStretch(1);
-    layout->addLayout(tabRow);
-    layout->addWidget(m_breadcrumb);
     layout->addWidget(m_stack, 1);
 
     connect(m_tabBar, &QTabBar::currentChanged, this, &TabWorkspace::onTabChanged);
@@ -202,7 +199,7 @@ void TabWorkspace::restoreTabState(const QVector<TabState> &tabs, int activeTabI
             continue;
         }
         if (tab.isDocument) {
-            const int index = addDocumentTab(tab.path, tab.isPreview);
+            const int index = addDocumentTab(tab.path, tab.isPreview, true);
             if (tab.isPreview) {
                 m_previewTabIndex = index;
             }
@@ -465,7 +462,7 @@ int TabWorkspace::addExplorerTab(const QString &path) {
     return insertIndex;
 }
 
-int TabWorkspace::addDocumentTab(const QString &path, bool preview) {
+int TabWorkspace::addDocumentTab(const QString &path, bool preview, bool launchDeferred) {
     const int existingIndex = findDocumentTab(path);
     if (existingIndex >= 0) {
         if (!preview) {
@@ -487,7 +484,7 @@ int TabWorkspace::addDocumentTab(const QString &path, bool preview) {
         return currentTabIndex();
     }
 
-    auto *pane = new DocumentPane(path, preview, this);
+    auto *pane = new DocumentPane(path, preview, this, launchDeferred);
 
     connectDocumentTab(pane);
 

@@ -68,6 +68,8 @@ private:
     CommandTelemetry *m_commandTelemetry = nullptr;
     QSplitter *m_splitter;
     QWidget *m_shellRoot = nullptr;
+    QWidget *m_topContainer = nullptr;
+    QWidget *m_tabRowWidget = nullptr;
     QColor m_shellTone;
     int m_lastRailWidth = 360;
     bool m_railVisible = false;

@@ -155,7 +155,7 @@ QString normalizedPath(const QString &path) {
     const QString absolutePath = info.exists()
         ? info.absoluteFilePath()
         : QDir::cleanPath(path);
-    return QDir::fromNativeSeparators(absolutePath).toLower();
+    return QDir::fromNativeSeparators(absolutePath);
 }
 
 } // namespace
@@ -393,7 +393,7 @@ const QVector<ActivityEvent> &ActivityTracker::events() const {
 }
 
 QString ActivityTracker::hashForPath(const QString &path) {
-    const QString normalized = normalizedPath(path);
+    const QString normalized = normalizedPath(path).toLower();
     if (normalized.isEmpty()) {
         return QString();
     }

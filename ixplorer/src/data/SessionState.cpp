@@ -29,6 +29,7 @@ QJsonObject toJson(const TabState &tab) {
         {QStringLiteral("path"), tab.path},
         {QStringLiteral("is_document"), tab.isDocument},
         {QStringLiteral("is_preview"), tab.isPreview},
+        {QStringLiteral("launch_deferred"), tab.launchDeferred},
         {QStringLiteral("scroll_position"), tab.scrollPosition},
         {QStringLiteral("view_mode"), tab.viewMode},
         {QStringLiteral("history"), QJsonArray::fromStringList(tab.history)},
@@ -41,6 +42,7 @@ TabState tabFromJson(const QJsonObject &object) {
     tab.path = object.value(QStringLiteral("path")).toString();
     tab.isDocument = object.value(QStringLiteral("is_document")).toBool();
     tab.isPreview = object.value(QStringLiteral("is_preview")).toBool();
+    tab.launchDeferred = object.value(QStringLiteral("launch_deferred")).toBool();
     tab.scrollPosition = object.value(QStringLiteral("scroll_position")).toInt();
     tab.viewMode = object.value(QStringLiteral("view_mode")).toInt();
     const QJsonArray history = object.value(QStringLiteral("history")).toArray();
@@ -186,7 +188,7 @@ bool SessionState::save() {
 
 void SessionState::restoreDefault() {
     m_snapshot = SessionSnapshot();
-    m_snapshot.tabs = {TabState{QDir::homePath(), false, false, 0, 0, {QDir::homePath()}, 0}};
+    m_snapshot.tabs = QVector<TabState>{TabState{QDir::homePath(), false, false, false, 0, 0, QStringList{QDir::homePath()}, 0}};
     m_snapshot.hasCleanExit = true;
     m_dirty = false;
     emit snapshotChanged();

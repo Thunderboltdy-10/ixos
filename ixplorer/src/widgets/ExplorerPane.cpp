@@ -32,19 +32,31 @@ PendingClipboard &pendingClipboard() {
     return state;
 }
 
+QString formatSiSize(quint64 bytes) {
+    if (bytes < 1000) return QString::number(bytes) + " bytes";
+    static const char *units[] = {"KB", "MB", "GB", "TB", "PB", "EB"};
+    int unitIndex = -1;
+    double size = bytes;
+    while (size >= 1000 && unitIndex < 5) {
+        size /= 1000.0;
+        unitIndex++;
+    }
+    return QString("%1 %2").arg(size, 0, 'f', unitIndex > 0 ? 2 : 1).arg(units[unitIndex]);
+}
+
 QString propertiesText(const QFileInfo &info, int selectedCount, quint64 selectedBytes) {
     if (selectedCount <= 1) {
         return QString("Name: %1\nLocation: %2\nType: %3\nSize: %4\nModified: %5")
             .arg(info.fileName(),
                  QDir::toNativeSeparators(info.absolutePath()),
                  info.isDir() ? "Folder" : (info.suffix().isEmpty() ? "File" : info.suffix().toUpper() + " file"),
-                 info.isDir() ? QString("Folder") : QLocale().formattedDataSize(info.size()),
+                 info.isDir() ? QString("Folder") : formatSiSize(info.size()),
                  info.lastModified().toString("yyyy-MM-dd hh:mm"));
     }
 
     return QString("%1 items selected\nTotal size: %2")
         .arg(selectedCount)
-        .arg(QLocale().formattedDataSize(selectedBytes));
+        .arg(formatSiSize(selectedBytes));
 }
 
 void openWithDialog(const QString &path) {
@@ -111,9 +123,9 @@ ExplorerPane::ExplorerPane(const QString &rootPath, QWidget *parent)
     header->setSectionsClickable(true);
     header->setStretchLastSection(false);
     header->setSectionResizeMode(0, QHeaderView::Stretch);
-    header->resizeSection(1, 180);
-    header->resizeSection(2, 120);
-    header->resizeSection(3, 90);
+    header->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    header->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    header->setSectionResizeMode(3, QHeaderView::ResizeToContents);
 
     m_tree->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_tree, &QTreeView::customContextMenuRequested, this, &ExplorerPane::showContextMenu);

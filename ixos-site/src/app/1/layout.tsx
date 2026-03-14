@@ -176,11 +176,6 @@ function MissionTicker() {
 }
 
 const NAV = [
-  { label: "Pipeline", href: "/1#pipeline" },
-  { label: "Evidence", href: "/1#evidence" },
-  { label: "Modes", href: "/1#modes" },
-  { label: "Today", href: "/1#today" },
-  { label: "CLI", href: "/1#cli" },
   { label: "Pricing", href: "/1/pricing" },
 ];
 

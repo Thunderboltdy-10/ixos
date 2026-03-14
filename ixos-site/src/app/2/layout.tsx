@@ -87,8 +87,6 @@ function SignalNav() {
         ixos
       </Link>
       <div className="flex items-center gap-6 text-[11px]" style={{ color: "rgba(255,255,255,0.45)" }}>
-        <Link href="/2#pipeline" className="hidden lg:block hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Engine</Link>
-        <Link href="/2#embedding" className="hidden lg:block hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Index</Link>
         <Link href="/2/docs" className="hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Docs</Link>
         <Link href="/2/pricing" className="hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Pricing</Link>
         <div className="w-[1px] h-3 bg-white/10 mx-1 hidden sm:block" />

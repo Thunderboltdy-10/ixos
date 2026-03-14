@@ -29,6 +29,7 @@ import { V4SpatialStage } from "../app/5/_v4/V4SpatialStage";
 import { V4ResultNode } from "../app/5/_v4/V4ResultNode";
 import { V4SectionDivider } from "../app/5/_v4/V4SectionDivider";
 import { V4Footer } from "../app/5/_v4/V4Footer";
+import { ResultDivider } from "@/components/ui/ResultDivider";
 
 // Section content components
 import { V4Hero } from "../app/5/_v4/V4Hero";
@@ -253,6 +254,31 @@ function LandingPageInner({ Connector }: { Connector: ConnectorComponent }) {
                     >
                       {s.content}
                     </TrackedResultNode>
+
+                    {/* Cinematic Dividers for Director's Cut vibe */}
+                    {s.id === "pipeline" && maxRevealedIndex >= globalIndex && (
+                      <ResultDivider 
+                        query="pipeline latency audit"
+                        resultTitle="Core Ranking Pipeline"
+                        resultPath="src/ixos_rank/hybrid_engine.rs"
+                        resultSnippet="Stage 1: Rayon-parallelized Lexical Scan. Stage 2: Model2Vec Semantic Reranking. Stage 3: Deterministic Evidence Locking."
+                        score={98}
+                        accentColor="#2DD4BF"
+                        variant="5"
+                      />
+                    )}
+
+                    {s.id === "comparison" && maxRevealedIndex >= globalIndex && (
+                      <ResultDivider 
+                        query="system architecture integrity"
+                        resultTitle="Technical Capability Matrix"
+                        resultPath="docs/ARCHITECTURE.md"
+                        resultSnippet="Verified sub-second response times across 10k+ files. Hybrid engine maintains 0.92 MRR@10 while staying 100% local."
+                        score={95}
+                        accentColor="#2DD4BF"
+                        variant="5"
+                      />
+                    )}
                   </React.Fragment>
                 );
               })}

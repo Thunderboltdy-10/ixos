@@ -145,9 +145,9 @@ export function QualitySwitcher({ value, onChange, className, proLocked = false 
                   top: dropdownPos.top,
                   left: dropdownPos.left,
                   width: Math.max(320, dropdownPos.width),
-                  zIndex: 11000,
+                  zIndex: 20000,
                 }}
-                className="overflow-hidden rounded-xl border border-white/12 bg-[#151b23] shadow-[0_24px_64px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.04)]"
+                className="overflow-hidden rounded-xl border border-white/12 bg-[#1a1d24] shadow-[0_24px_64px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.04)]"
               >
                 <div className="max-h-[300px] overflow-y-auto">
                   {(Object.keys(MODE_META) as SearchMode[]).map((mode) => {

@@ -168,7 +168,7 @@ function DocsLayout({ variant, children, activeSection, setActiveSection, themeC
                 <button
                   key={sec.id}
                   onClick={() => { setActiveSection(sec.id); setMobileMenuOpen(false); }}
-                  className={`w-full text-left px-5 py-3.5 flex items-center gap-3 transition-all rounded-xl relative group overflow-hidden ${
+                  className={`w-full text-left px-5 py-3.5 flex items-center gap-3 transition-all rounded-xl relative group overflow-hidden cursor-pointer ${
                     isActive ? "text-white" : "text-white/40 hover:text-white/70"
                   }`}
                 >

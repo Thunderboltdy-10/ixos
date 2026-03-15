@@ -531,19 +531,19 @@ export function CSSLattice() {
         className="absolute inset-0 pointer-events-none z-10"
         style={{
           background:
-            "radial-gradient(ellipse 90% 90% at 50% 50%, transparent 30%, #080c14 85%)",
+            "radial-gradient(ellipse 95% 95% at 50% 50%, transparent 60%, #0A0D0F 90%)",
         }}
       />
       <div
-        className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none z-10"
+        className="absolute bottom-0 left-0 right-0 h-28 pointer-events-none z-10"
         style={{
-          background: "linear-gradient(to top, #080c14 0%, transparent 100%)",
+          background: "linear-gradient(to top, #0A0D0F 0%, transparent 100%)",
         }}
       />
       <div
-        className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-10"
+        className="absolute top-0 left-0 right-0 h-20 pointer-events-none z-10"
         style={{
-          background: "linear-gradient(to bottom, #080c14 0%, transparent 100%)",
+          background: "linear-gradient(to bottom, #0A0D0F 0%, transparent 100%)",
         }}
       />
       <canvas

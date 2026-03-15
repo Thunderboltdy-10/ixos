@@ -242,31 +242,41 @@ export function DemoSurface({
       // initial wait before typing starts
       await new Promise(r => setTimeout(r, 1500));
       while (!isCancelled) {
-        if (Date.now() - lastInteractionRef.current < 5000) {
-          await new Promise(r => setTimeout(r, 1000));
+        if (Date.now() - lastInteractionRef.current < 4000) {
+          await new Promise(r => setTimeout(r, 500));
           continue;
         }
+
+        // Clear user input and results before starting next sequence
+        if (Date.now() - lastInteractionRef.current >= 4000) {
+          setQuery("");
+          runSearch("", mode);
+        }
+        
+        // Brief pause after clear
+        await new Promise(r => setTimeout(r, 400));
+        if (isCancelled || Date.now() - lastInteractionRef.current < 4000) continue;
 
         const targetText = presets[currentPresetIndex % presets.length];
 
         for (let i = 0; i <= targetText.length; i++) {
-          if (isCancelled || Date.now() - lastInteractionRef.current < 5000) break;
+          if (isCancelled || Date.now() - lastInteractionRef.current < 4000) break;
           setQuery(targetText.slice(0, i));
           await new Promise(r => setTimeout(r, 40 + Math.random() * 50));
         }
 
-        if (isCancelled || Date.now() - lastInteractionRef.current < 5000) continue;
+        if (isCancelled || Date.now() - lastInteractionRef.current < 4000) continue;
 
         runSearch(targetText, mode);
 
         // wait to show results
         await new Promise(r => setTimeout(r, 4500));
 
-        if (isCancelled || Date.now() - lastInteractionRef.current < 5000) continue;
+        if (isCancelled || Date.now() - lastInteractionRef.current < 4000) continue;
 
         // delete text
         for (let i = targetText.length; i >= 0; i--) {
-          if (isCancelled || Date.now() - lastInteractionRef.current < 5000) break;
+          if (isCancelled || Date.now() - lastInteractionRef.current < 4000) break;
           setQuery(targetText.slice(0, i));
           await new Promise(r => setTimeout(r, 20));
         }

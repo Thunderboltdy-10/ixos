@@ -147,8 +147,10 @@ function ProUpgradeActionInner({ className, variantPrefix }: { className?: strin
     );
   }
 
+  // Empty prefix means the main site — use /sign-in; variant prefixes use /signin
+  const signInPath = variantPrefix ? `${variantPrefix}/signin` : '/sign-in';
   return (
-    <Link href={`${variantPrefix || ''}/signin?redirect_url=${variantPrefix || ''}/pricing`} className={buttonClass}>
+    <Link href={`${signInPath}?redirect_url=${variantPrefix || ''}/pricing`} className={buttonClass}>
       SIGN_IN_TO_UPGRADE
     </Link>
   );

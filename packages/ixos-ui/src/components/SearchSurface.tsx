@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties } from 'react';
-import { Activity, Copy, Sparkles, Check } from 'lucide-react';
+import { Activity, Copy, Sparkles, Check, Search, Folder, ChevronDown, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { IxosSearchResult } from '../types';
 
@@ -240,6 +240,7 @@ export function SearchSurface({
   const finalRatio = normalizeRatio(selected?.score ?? 0);
 
   const [copiedKind, setCopiedKind] = useState<'path' | 'context' | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState<'mode' | 'engine' | null>(null);
   const surfaceVars = {
     '--ixos-accent': theme.accent,
     '--ixos-accent-soft': theme.accentSoft,
@@ -275,144 +276,232 @@ export function SearchSurface({
     >
       {!hideSearchChrome && (
         <div style={{ paddingBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 10, letterSpacing: '0.16em', color: 'rgba(255,255,255,0.46)' }}>
-              IXOS DESKTOP
-            </span>
-            <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 10, color: theme.text }}>
-              {progressText}
-            </span>
+          {/* Breadcrumb row */}
+          <div
+            style={{
+              padding: "0 0 12px 0",
+              fontSize: 11,
+              color: "rgba(255,255,255,0.28)",
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              fontFamily: 'var(--font-ixo-mono), monospace'
+            }}
+          >
+            <span>Ixos</span>
+            <span style={{ color: "rgba(255,255,255,0.15)" }}>/</span>
+            <span style={{ color: "rgba(255,255,255,0.6)" }}>Search</span>
+            {progressText && <span style={{ marginLeft: "auto", fontSize: 10, color: theme.text }}>{progressText}</span>}
           </div>
 
           <div
             style={{
-              height: 46,
-              borderRadius: 8,
               border: `1px solid ${theme.border}`,
-              background: 'rgba(10,14,18,0.85)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              padding: '0 12px',
+              background: "rgba(10,14,18,0.5)",
+              borderRadius: 8,
+              position: 'relative'
             }}
           >
-            <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
-              query
-            </span>
-            <input
-              value={query}
-              onChange={(e) => onQueryChange?.(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') onSubmit?.();
-              }}
-              readOnly={!interactive}
-              placeholder="Type what you remember..."
+            {/* Query row */}
+            <div
               style={{
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                color: '#F3F5F7',
-                fontFamily: 'var(--font-ixo-mono), monospace',
-                fontSize: 13,
-                flex: 1,
+                padding: "10px 14px",
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
               }}
-            />
-            {directoryLabel && (
+            >
+              <Search size={14} style={{ opacity: 0.45, color: theme.accent, flexShrink: 0 }} />
+              <input
+                value={query}
+                onChange={(e) => onQueryChange?.(e.target.value)}
+                onFocus={() => {
+                  if (interactive) onQueryChange?.('');
+                }}
+                onClick={() => {
+                  if (interactive) onQueryChange?.('');
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') onSubmit?.();
+                }}
+                readOnly={!interactive}
+                placeholder="Type what you remember..."
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#F3F5F7',
+                  fontFamily: 'var(--font-ixo-mono), monospace',
+                  fontSize: 13,
+                  flex: 1,
+                }}
+              />
+              <X size={14} style={{ opacity: 0.3, color: '#F3F5F7', cursor: interactive ? 'pointer' : 'default', flexShrink: 0 }} onClick={() => { if (interactive) onQueryChange?.(''); }} />
+            </div>
+            {/* Folder path and modes row */}
+            <div
+              style={{
+                padding: "6px 14px 9px",
+                borderTop: `1px solid rgba(255,255,255,0.04)`,
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+              }}
+            >
+              <Folder size={11} style={{ opacity: 0.3, color: '#F3F5F7', flexShrink: 0 }} />
               <span
                 style={{
                   fontSize: 10,
-                  color: 'rgba(255,255,255,0.3)',
+                  color: 'rgba(255,255,255,0.32)',
                   fontFamily: 'var(--font-ixo-mono), monospace',
+                  flex: 1,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  maxWidth: 280,
+                  whiteSpace: 'nowrap'
                 }}
               >
-                in {directoryLabel}
+                {directoryLabel || "C:\\Users\\pablo\\Downloads\\Ixos"}
               </span>
-            )}
 
-            <div style={{ display: 'flex', gap: 6 }}>
-              {MODES.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => onModeChange?.(item)}
-                  style={{
-                    borderRadius: 999,
-                    border: mode === item ? `1px solid ${theme.border}` : '1px solid rgba(255,255,255,0.12)',
-                    background: mode === item ? theme.accentSoft : 'transparent',
-                    color: mode === item ? theme.text : 'rgba(255,255,255,0.44)',
-                    fontFamily: 'var(--font-ixo-mono), monospace',
-                    fontSize: 10,
-                    padding: '4px 10px',
-                    cursor: interactive ? 'pointer' : 'default',
-                    textTransform: 'capitalize',
-                  }}
-                >
-                  {item}
-                </button>
-              ))}
+              {/* Modes */}
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center', position: 'relative' }}>
+                {/* Overlay to close dropdowns */}
+                {dropdownOpen && (
+                  <div 
+                    style={{ position: 'fixed', inset: 0, zIndex: 14000 }} 
+                    onClick={() => setDropdownOpen(null)} 
+                  />
+                )}
+                
+                <div style={{ position: 'relative', zIndex: dropdownOpen === 'mode' ? 15001 : 1 }}>
+                  <div 
+                    onClick={() => interactive && setDropdownOpen(dropdownOpen === 'mode' ? null : 'mode')}
+                    style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: interactive ? 'pointer' : 'default' }}
+                  >
+                    <Sparkles size={10} style={{ color: theme.accent }} />
+                    <span style={{ fontSize: 9, fontFamily: 'var(--font-ixo-mono), monospace', color: theme.accent, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{mode}</span>
+                    <ChevronDown size={10} style={{ color: 'rgba(255,255,255,0.3)', marginLeft: 2 }} />
+                  </div>
+                  
+                  <AnimatePresence>
+                    {dropdownOpen === 'mode' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        transition={{ duration: 0.15 }}
+                        style={{
+                          position: 'absolute',
+                          top: '100%',
+                          right: 0,
+                          marginTop: 8,
+                          background: '#1a1d24',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: 6,
+                          padding: 4,
+                          minWidth: 120,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 2,
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                        }}
+                      >
+                        {MODES.map(m => (
+                          <div
+                            key={m}
+                            onClick={() => {
+                              onModeChange?.(m);
+                              setDropdownOpen(null);
+                            }}
+                            style={{
+                              padding: '6px 10px',
+                              fontSize: 10,
+                              fontFamily: 'var(--font-ixo-mono), monospace',
+                              color: mode === m ? theme.accent : 'rgba(255,255,255,0.7)',
+                              background: mode === m ? 'rgba(255,255,255,0.05)' : 'transparent',
+                              borderRadius: 4,
+                              cursor: 'pointer',
+                              textTransform: 'capitalize',
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = mode === m ? 'rgba(255,255,255,0.05)' : 'transparent'}
+                          >
+                            {m}
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <div style={{ position: 'relative', zIndex: dropdownOpen === 'engine' ? 15001 : 1 }}>
+                  <div 
+                    onClick={() => interactive && setDropdownOpen(dropdownOpen === 'engine' ? null : 'engine')}
+                    style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: interactive ? 'pointer' : 'default' }}
+                  >
+                    <Activity size={10} style={{ color: theme.text }} />
+                    <span style={{ fontSize: 9, fontFamily: 'var(--font-ixo-mono), monospace', color: theme.text, fontWeight: 700, letterSpacing: '0.05em' }}>LOCAL</span>
+                    <ChevronDown size={10} style={{ color: 'rgba(255,255,255,0.3)', marginLeft: 2 }} />
+                  </div>
+                  
+                  <AnimatePresence>
+                    {dropdownOpen === 'engine' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        transition={{ duration: 0.15 }}
+                        style={{
+                          position: 'absolute',
+                          top: '100%',
+                          right: 0,
+                          marginTop: 8,
+                          background: '#1a1d24',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: 6,
+                          padding: 4,
+                          minWidth: 120,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 2,
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                        }}
+                      >
+                        <div
+                          onClick={() => setDropdownOpen(null)}
+                          style={{
+                            padding: '6px 10px',
+                            fontSize: 10,
+                            fontFamily: 'var(--font-ixo-mono), monospace',
+                            color: theme.text,
+                            background: 'rgba(255,255,255,0.05)',
+                            borderRadius: 4,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Local Engine
+                        </div>
+                        <div
+                          onClick={() => setDropdownOpen(null)}
+                          style={{
+                            padding: '6px 10px',
+                            fontSize: 10,
+                            fontFamily: 'var(--font-ixo-mono), monospace',
+                            color: 'rgba(255,255,255,0.4)',
+                            background: 'transparent',
+                            borderRadius: 4,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Network (Disabled)
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
             </div>
-
-            {showInlineRunButton && (
-              <button
-                type="button"
-                onClick={() => onSubmit?.()}
-                style={{
-                  borderRadius: 8,
-                  background: theme.accent,
-                  color: '#041015',
-                  fontFamily: 'var(--font-ixo-mono), monospace',
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: '6px 12px',
-                  cursor: interactive ? 'pointer' : 'default',
-                  border: 'none',
-                }}
-              >
-                Run Search
-              </button>
-            )}
           </div>
-
-          {presets && presets.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-              {presets.map((preset) => (
-                <button
-                  key={preset}
-                  type="button"
-                  onClick={() => onPresetSelect?.(preset)}
-                  style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${theme.border}`,
-                    borderRadius: 6,
-                    color: theme.text,
-                    fontFamily: 'var(--font-ixo-mono), monospace',
-                    fontSize: 10,
-                    padding: '3px 9px',
-                    cursor: interactive ? 'pointer' : 'default',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    maxWidth: 200,
-                    transition: 'background 0.15s',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (interactive) {
-                      (e.currentTarget as HTMLButtonElement).style.background = theme.accentFaint;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.04)';
-                  }}
-                >
-                  {preset}
-                </button>
-              ))}
-            </div>
-          )}
 
           {errorMessage && (
             <div style={{ marginTop: 10, border: '1px solid rgba(239, 68, 68, 0.5)', borderRadius: 8, background: 'rgba(239, 68, 68, 0.08)', padding: '10px 12px', color: '#fca5a5', fontSize: 12 }}>

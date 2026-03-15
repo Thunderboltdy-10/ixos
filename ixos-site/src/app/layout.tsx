@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Geist_Mono } from "next/font/google"; // New premium font system
+import { Space_Grotesk, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
-import { ArcNoiseBackground } from "@/components/effects/ArcNoiseBackground";
-import { ParticlesFieldV3 } from "@/components/effects/ParticlesFieldV3";
-// import { TraceLayer } from "@/components/effects/TraceLayer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from '@vercel/analytics/next';
+import { IxosNav } from "@/components/IxosNav";
+import { GridBackground } from "@/components/effects/GridBackground";
 
 const analyticsEnabled = process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === "1";
 
@@ -45,22 +44,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${spaceGrotesk.variable} ${geistMono.variable} antialiased`}
+        style={{ backgroundColor: '#0A0D0F' }}
       >
         <ClerkProvider>
           <SmoothScrollProvider>
-            {/* bg-root: fixed particle canvas only - no texture overlays */}
-            <div
-              id="bg-root"
-              className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
-              aria-hidden="true"
-            >
-              <ArcNoiseBackground />
-              <ParticlesFieldV3 />
-              {/* <TraceLayer /> */}
-            </div>
-
-            {/* app-root: relative, z-10 */}
-            <div id="app-root" className="relative z-10 min-h-screen flex flex-col">
+            <div id="app-root" className="relative min-h-screen flex flex-col">
+              <GridBackground />
+              <IxosNav />
               {children}
               {analyticsEnabled ? <Analytics /> : null}
             </div>

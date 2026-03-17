@@ -13,7 +13,8 @@ bool HoverAnimationFilter::eventFilter(QObject *watched, QEvent *event) {
         auto *widget = qobject_cast<QWidget*>(watched);
         if (widget) {
             QString name = widget->objectName();
-            if (name == "SidebarItem" || name == "ToolbarNavButton" || name == "ToolbarPrimaryButton" || name == "ToolbarGhostButton" || name == "DocumentGhostButton") {
+            // Exclude SidebarItem — QSS :hover and [current="true"] handle it
+            if (name == "ToolbarNavButton" || name == "ToolbarPrimaryButton" || name == "ToolbarGhostButton" || name == "DocumentGhostButton") {
                 if (event->type() == QEvent::HoverEnter) {
                     ensureAnimation(watched);
                     if (auto anim = m_animations.value(watched)) {

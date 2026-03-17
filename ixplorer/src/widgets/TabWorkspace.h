@@ -88,6 +88,7 @@ private:
     void onTabCloseRequested(int index);
     void onNewTabClicked();
     void showContextMenu(const QPoint &pos);
+    void updateAdaptiveTabWidth();
 
     WorkstreamManager *m_wm = nullptr;
     ResumptionEngine *m_re = nullptr;

@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QPixmap>
 #include <QSizePolicy>
+#include <QToolButton>
 #include <QVBoxLayout>
 
 namespace Ixplorer {
@@ -18,7 +19,7 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     , m_refreshBtn(new QPushButton(this))
     , m_breadcrumb(new BreadcrumbBar(this))
     , m_searchField(new QLineEdit(this))
-    , m_toggleRailBtn(nullptr) { // Removed from toolbar
+    , m_toggleRailBtn(new QPushButton(this)) {
     setObjectName("ExplorerToolbar");
 
     QColor iconColor(0x8B, 0x8B, 0x90);
@@ -65,6 +66,16 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     m_searchField->setMaximumWidth(320);
     navLayout->addWidget(m_searchField, 1);
 
+    navLayout->addSpacing(4);
+
+    m_toggleRailBtn->setObjectName("StatusRailToggle");
+    m_toggleRailBtn->setCheckable(true);
+    m_toggleRailBtn->setFixedSize(32, 32);
+    m_toggleRailBtn->setToolTip("Details Pane");
+    m_toggleRailBtn->setCursor(Qt::PointingHandCursor);
+    m_toggleRailBtn->setIcon(Icons::makeIconFromFont(Icons::Sidebar, 14, iconColor));
+    navLayout->addWidget(m_toggleRailBtn);
+
     mainLayout->addWidget(navRow);
 
     connect(m_backBtn, &QPushButton::clicked, this, &ExplorerToolbar::backRequested);
@@ -80,6 +91,7 @@ ExplorerToolbar::ExplorerToolbar(QWidget *parent)
     });
     
     connect(m_breadcrumb, &BreadcrumbBar::navigateRequested, this, &ExplorerToolbar::navigateRequested);
+    connect(m_toggleRailBtn, &QPushButton::clicked, this, &ExplorerToolbar::toggleRailRequested);
 
     setNavigationState(false, false, false);
 }
@@ -95,7 +107,9 @@ void ExplorerToolbar::setSearchText(const QString &query) {
 }
 
 void ExplorerToolbar::setRailVisible(bool visible) {
-    // Moved to Status Strip
+    m_toggleRailBtn->setChecked(visible);
+    QColor color = visible ? QColor(0xFF, 0xFF, 0xFF) : QColor(0x8B, 0x8B, 0x90);
+    m_toggleRailBtn->setIcon(Icons::makeIconFromFont(Icons::Sidebar, 14, color));
 }
 
 void ExplorerToolbar::focusSearch() {

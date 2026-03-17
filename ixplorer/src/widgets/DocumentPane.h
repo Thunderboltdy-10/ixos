@@ -7,14 +7,12 @@
 #include <QWidget>
 
 class QHideEvent;
-class QColor;
 class QLabel;
 class QPushButton;
 class QResizeEvent;
 class QShowEvent;
 class QTimer;
 class QVBoxLayout;
-class QPlainTextEdit;
 class QGraphicsView;
 class QGraphicsScene;
 class QGraphicsPixmapItem;
@@ -34,7 +32,7 @@ class QPdfDocument;
 class QPdfView;
 #endif
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && defined(QT_AXCONTAINER_LIB)
 class QAxWidget;
 #endif
 
@@ -117,9 +115,6 @@ private:
     QLabel *m_stateBody = nullptr;
     QPushButton *m_externalButton = nullptr;
     
-    QLabel *m_imageLabel = nullptr;
-    QPlainTextEdit *m_textEdit = nullptr;
-    
     QGraphicsView *m_graphicsView = nullptr;
     QGraphicsScene *m_graphicsScene = nullptr;
     QGraphicsPixmapItem *m_pixmapItem = nullptr;
@@ -140,7 +135,7 @@ private:
     QPdfView *m_pdfView = nullptr;
 #endif
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && defined(QT_AXCONTAINER_LIB)
     QAxWidget *m_axWidget = nullptr;
 #endif
 

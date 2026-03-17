@@ -8,16 +8,21 @@ interface UIState {
     showInfo: boolean;
     showPricing: boolean;
     activeView: SidebarView;
+    sidebarCollapsed: boolean;
 
     setShowSettings: (show: boolean) => void;
     setSettingsTab: (tab: SettingsTabId) => void;
     setShowInfo: (show: boolean) => void;
     setShowPricing: (show: boolean) => void;
     setActiveView: (view: SidebarView) => void;
+    toggleSidebar: () => void;
+    setSidebarCollapsed: (collapsed: boolean) => void;
 
     // Helpers
     openSettings: (tab?: SettingsTabId) => void;
 }
+
+const SIDEBAR_COLLAPSED_KEY = 'ixos_sidebar_collapsed';
 
 export const useUIStore = create<UIState>((set) => ({
     showSettings: false,
@@ -25,12 +30,22 @@ export const useUIStore = create<UIState>((set) => ({
     showInfo: false,
     showPricing: false,
     activeView: 'search',
+    sidebarCollapsed: localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1',
 
     setShowSettings: (show) => set({ showSettings: show }),
     setSettingsTab: (tab) => set({ settingsTab: tab }),
     setShowInfo: (show) => set({ showInfo: show }),
     setShowPricing: (show) => set({ showPricing: show }),
     setActiveView: (view) => set({ activeView: view }),
+    toggleSidebar: () => set((state) => {
+        const next = !state.sidebarCollapsed;
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? '1' : '0');
+        return { sidebarCollapsed: next };
+    }),
+    setSidebarCollapsed: (collapsed) => {
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? '1' : '0');
+        set({ sidebarCollapsed: collapsed });
+    },
 
     openSettings: (tab) => set((state) => ({
         showSettings: true,

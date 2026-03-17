@@ -28,6 +28,7 @@ signals:
     void forwardRequested();
     void upRequested();
     void refreshRequested();
+    void toggleRailRequested();
 
 private:
     void emitSearchDraft();

@@ -28,9 +28,16 @@ HomeDashboardPane::HomeDashboardPane(QWidget *parent)
     m_layout->setContentsMargins(40, 24, 40, 40);
     m_layout->setSpacing(0);
 
-    auto *headerLabel = new QLabel("Home", m_content);
-    headerLabel->setObjectName("DashboardHeader");
-    m_layout->addWidget(headerLabel);
+    auto *greetingLabel = new QLabel(m_content);
+    greetingLabel->setObjectName("DashboardHeader");
+    const int hour = QDateTime::currentDateTime().time().hour();
+    const QString greeting = hour < 12 ? "Good morning" : (hour < 17 ? "Good afternoon" : "Good evening");
+    greetingLabel->setText(greeting);
+    m_layout->addWidget(greetingLabel);
+
+    auto *dateLabel = new QLabel(QDateTime::currentDateTime().toString("dddd, MMMM d"), m_content);
+    dateLabel->setStyleSheet("font-size: 13px; color: #71717A; margin-bottom: 8px;");
+    m_layout->addWidget(dateLabel);
 
     // Resume Section
     m_resumeSection = new QWidget(m_content);

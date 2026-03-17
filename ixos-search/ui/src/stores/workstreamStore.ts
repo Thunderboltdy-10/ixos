@@ -16,6 +16,7 @@ interface WorkstreamState {
   stats: WorkstreamsStats | null;
   isLoading: boolean;
   error: string | null;
+  retryCount: number;
 
   // Actions
   loadWorkstreams: (limit?: number, offset?: number) => Promise<void>;
@@ -47,20 +48,28 @@ export const useWorkstreamStore = create<WorkstreamState>((set, get) => ({
   stats: null,
   isLoading: false,
   error: null,
+  retryCount: 0,
 
   // Load workstreams
   loadWorkstreams: async (limit, offset) => {
     set({ isLoading: true, error: null });
     try {
       const workstreams = await tauri.listWorkstreams(limit, offset);
-      set({ workstreams, isLoading: false });
+      set({ workstreams, isLoading: false, retryCount: 0 });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       // Don't show error for Pro capability requirement
-      if (!message.includes('Pro capability required')) {
-        set({ error: message });
+      if (message.includes('Pro capability required')) {
+        set({ isLoading: false });
+        return;
       }
-      set({ isLoading: false });
+      const currentRetry = get().retryCount;
+      if (currentRetry < 2) {
+        set({ retryCount: currentRetry + 1 });
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        return get().loadWorkstreams(limit, offset);
+      }
+      set({ error: message, isLoading: false });
     }
   },
 
@@ -241,6 +250,7 @@ export const useWorkstreamStore = create<WorkstreamState>((set, get) => ({
       stats: null,
       isLoading: false,
       error: null,
+      retryCount: 0,
     });
   },
 }));

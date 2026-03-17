@@ -37,19 +37,18 @@ private:
     ResumptionEngine *m_re = nullptr;
     ActivityTracker *m_at = nullptr;
 
-    QWidget *m_content;
-    QVBoxLayout *m_layout;
+    QWidget *m_content = nullptr;
+    QVBoxLayout *m_layout = nullptr;
 
-    QWidget *m_resumeSection;
-    QGridLayout *m_resumeGrid;
-    
-    QWidget *m_workstreamsSection;
-    QHBoxLayout *m_workstreamsLayout;
+    QWidget *m_resumeSection = nullptr;
+    QGridLayout *m_resumeGrid = nullptr;
 
-    QWidget *m_recentsSection;
-    QGridLayout *m_recentsGrid;
+    QWidget *m_workstreamsSection = nullptr;
+    QHBoxLayout *m_workstreamsLayout = nullptr;
 
-    void buildUi();
+    QWidget *m_recentsSection = nullptr;
+    QGridLayout *m_recentsGrid = nullptr;
+
     void updateResumeSection();
     void updateWorkstreamsSection();
     void updateRecentsSection();

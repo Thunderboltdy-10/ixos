@@ -545,6 +545,8 @@ function ModelManagementPanel() {
   const [isLoading, setIsLoading] = useState(false);
   const [downloading, setDownloading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [hfToken, setHfToken] = useState(() => localStorage.getItem('ix_hf_token') || '');
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
 
   const loadStatus = async () => {
     setIsLoading(true);
@@ -558,21 +560,34 @@ function ModelManagementPanel() {
     }
   };
 
-  const handleDownload = async (modelType: string) => {
+  const handleDownload = async (modelType: string, retryCount = 0) => {
     setDownloading(modelType);
     setError(null);
+    setDownloadProgress(0);
     try {
-      await invoke('download_model', { modelType });
+      const token = hfToken.trim() || null;
+      if (token) localStorage.setItem('ix_hf_token', token);
+      await invoke('download_model', { modelType, hfToken: token });
+      setDownloadProgress(100);
       await loadStatus();
     } catch (err) {
       console.error('Failed to download model:', err);
-      if (String(err).includes('401')) {
-        setError('Unauthorized. Please check your internet connection.');
+      const msg = String(err);
+      if (msg.includes('403') || msg.includes('401') || msg.includes('Access denied')) {
+        setError('Authentication required. Some models need a HuggingFace token. Enter it below and retry.');
+      } else if (msg.includes('429') || msg.includes('Rate limited')) {
+        if (retryCount < 3) {
+          const delay = Math.pow(2, retryCount) * 1000;
+          await new Promise((r) => setTimeout(r, delay));
+          return handleDownload(modelType, retryCount + 1);
+        }
+        setError('Rate limited by HuggingFace. Please wait a moment and try again.');
       } else {
-        setError(typeof err === 'string' ? err : 'Download failed');
+        setError(typeof err === 'string' ? err : 'Download failed. Check your connection and try again.');
       }
     } finally {
       setDownloading(null);
+      setDownloadProgress(null);
     }
   };
 
@@ -648,11 +663,35 @@ function ModelManagementPanel() {
 
 
 
+      {downloading && downloadProgress !== null && (
+        <div className="mt-2">
+          <div className="h-1.5 w-full bg-graphite-3 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-accent-teal rounded-full transition-all duration-300"
+              style={{ width: `${Math.max(downloadProgress, 5)}%` }}
+            />
+          </div>
+          <p className="text-[10px] text-fg-dim mt-1">Downloading...</p>
+        </div>
+      )}
+
       {error && (
         <div className="mt-2 text-xs text-error p-2 bg-error/10 border border-error/20 rounded">
           {error}
         </div>
       )}
+
+      <div className="mt-3 pt-3 border-t border-white/8">
+        <label className="text-[11px] text-fg-muted block mb-1.5">HuggingFace Token (optional)</label>
+        <input
+          type="password"
+          value={hfToken}
+          onChange={(e) => setHfToken(e.target.value)}
+          placeholder="hf_..."
+          className="w-full px-2.5 py-1.5 text-xs bg-graphite-2/60 border border-white/10 rounded-md text-porcelain placeholder:text-fg-dim focus:outline-none focus:border-accent-teal/40"
+        />
+        <p className="text-[10px] text-fg-dim mt-1">Required for private/gated models. Stored locally only.</p>
+      </div>
     </div>
   );
 }

@@ -46,7 +46,7 @@ export function SettingsPanel({ initialTab, onUpgrade }: { initialTab?: Settings
   return (
     <div className="flex h-full bg-graphite-1/[0.985] backdrop-blur-xl border border-stroke-hairline rounded-2xl overflow-hidden shadow-2xl">
       {/* Sidebar Navigation */}
-      <nav className="w-64 bg-graphite-2/68 border-r border-stroke-hairline p-4 flex flex-col gap-1.5">
+      <nav className="w-64 bg-graphite-2/88 border-r border-stroke-hairline p-4 flex flex-col gap-1.5">
         <div className="mb-6 px-3 pt-2">
           <h2 className="text-xl font-display font-semibold text-porcelain tracking-tight">Settings</h2>
           <p className="text-sm text-fg-secondary">Preferences & Controls</p>

@@ -679,9 +679,9 @@ void IxosRail::rebuildContextPane() {
         m_contextActionsLayout->addWidget(openBundle);
         hasAction = true;
     } else {
-        eyebrow = QStringLiteral("INTELLIGENCE");
-        title = QStringLiteral("Active Workstreams & Context");
-        subtitle = QStringLiteral("Ixos clusters activity into workstreams and learns personal ranking priors. Use search to find files or inspect the relationship neighborhood.");
+        eyebrow = QStringLiteral("DETAILS");
+        title = QStringLiteral("No selection");
+        subtitle = QStringLiteral("Select a file to see details, or use search to find files.");
 
         auto *workstreamsBtn = new QPushButton(QStringLiteral("View Workstreams"), m_contextActions);
         workstreamsBtn->setProperty("railPrimaryAction", true);

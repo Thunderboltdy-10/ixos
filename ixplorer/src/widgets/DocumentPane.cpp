@@ -735,6 +735,9 @@ void DocumentPane::showEvent(QShowEvent *event) {
     QWidget::showEvent(event);
     setHostedWindowVisible(true);
     updateHostedGeometry();
+    if (m_hostMode == ImageViewer && m_graphicsView && m_graphicsScene) {
+        m_graphicsView->fitInView(m_graphicsScene->sceneRect(), Qt::KeepAspectRatio);
+    }
 }
 
 void DocumentPane::hideEvent(QHideEvent *event) {
@@ -745,6 +748,9 @@ void DocumentPane::hideEvent(QHideEvent *event) {
 void DocumentPane::resizeEvent(QResizeEvent *event) {
     QWidget::resizeEvent(event);
     updateHostedGeometry();
+    if (m_hostMode == ImageViewer && m_graphicsView && m_graphicsScene) {
+        m_graphicsView->fitInView(m_graphicsScene->sceneRect(), Qt::KeepAspectRatio);
+    }
     if (m_hostMode == WindowEmbed && m_hostedReady) {
         QTimer::singleShot(140, this, [this]() {
             if (m_hostMode == WindowEmbed && m_hostedReady) {
@@ -812,6 +818,7 @@ void DocumentPane::buildUi() {
     m_graphicsView->setDragMode(QGraphicsView::ScrollHandDrag);
     m_graphicsView->setRenderHint(QPainter::Antialiasing);
     m_graphicsView->setStyleSheet("background-color: transparent; border: none;");
+    m_graphicsView->installEventFilter(this);
     m_contentLayout->addWidget(m_graphicsView, 1);
     m_graphicsView->hide();
     
@@ -889,6 +896,8 @@ bool DocumentPane::startHosting() {
     const QString fileNameLower = info.fileName().toLower();
     const QString fileBaseNameLower = info.completeBaseName().toLower();
 
+    AllowSetForegroundWindow(ASFW_ANY);
+
     HANDLE processHandle = nullptr;
     DWORD launchedProcessId = 0;
     bool ownsProcess = false;
@@ -908,7 +917,7 @@ bool DocumentPane::startHosting() {
     hideVisibleCandidateWindows(fileNameLower, fileBaseNameLower, expectedExecutable, launchedProcessId);
 
     if (processHandle) {
-        WaitForInputIdle(processHandle, profile.inputIdleTimeoutMs);
+        WaitForInputIdle(processHandle, static_cast<DWORD>(profile.inputIdleTimeoutMs));
     }
 
     WindowCandidate chosen;
@@ -931,18 +940,21 @@ bool DocumentPane::startHosting() {
 
         const qint64 elapsed = timer.elapsed();
         int requiredScore = expectedExecutable.isEmpty() ? 40 : 55;
-        if (elapsed > 3500) {
+        if (elapsed > 2500) {
             requiredScore -= 10;
         }
-        if (elapsed > 9000) {
+        if (elapsed > 6000) {
             requiredScore -= 10;
+        }
+        if (elapsed > 8000) {
+            requiredScore -= 5;
         }
         if (chosen.hwnd != nullptr && chosen.score >= requiredScore) {
             break;
         }
 
         QCoreApplication::processEvents();
-        QThread::msleep(timer.elapsed() < 1800 ? 20 : 80);
+        QThread::msleep(timer.elapsed() < 1800 ? 10 : 80);
     }
 
     const int minimumAcceptableScore = expectedExecutable.isEmpty() ? 20 : 30;
@@ -973,13 +985,13 @@ bool DocumentPane::startHosting() {
         SetWindowLongPtrW(chosen.hwnd, GWL_STYLE, hostedStyle);
     }
     SetParent(chosen.hwnd, hostHwnd);
-    SetWindowPos(chosen.hwnd,
-                 nullptr,
-                 0,
-                 0,
-                 qMax(1, m_hostSurface->width()),
-                 qMax(1, m_hostSurface->height()),
-                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+    {
+        const qreal dpr = m_hostSurface->devicePixelRatioF();
+        const int w = qMax(1, static_cast<int>(m_hostSurface->width() * dpr));
+        const int h = qMax(1, static_cast<int>(m_hostSurface->height() * dpr));
+        SetWindowPos(chosen.hwnd, nullptr, 0, 0, w, h,
+                     SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+    }
     RedrawWindow(chosen.hwnd, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 
     m_hostedWindowId = reinterpret_cast<WId>(chosen.hwnd);
@@ -1028,9 +1040,83 @@ bool DocumentPane::setupHostFailureFallback() {
         return false;
     }
 
+    // Auto-fallback: try built-in viewer for known MIME types before showing error
+    const QString ext = info.suffix().toLower();
+    static const QMimeDatabase mimeDb;
+    const QMimeType mime = mimeDb.mimeTypeForFile(info);
+    if (mime.name().startsWith(QStringLiteral("image/"))) {
+        m_hostMode = ImageViewer;
+        setupImageViewer();
+        syncUiState();
+        logEmbedEvent(QStringLiteral("fallback_image"), m_filePath);
+        emit statusMessage(QStringLiteral("Showing %1 in built-in image viewer.").arg(info.fileName()));
+        return true;
+    }
+    if (mime.name().startsWith(QStringLiteral("text/"))
+        || mime.inherits(QStringLiteral("text/plain"))) {
+        m_hostMode = CodeViewer;
+        setupCodeViewer();
+        syncUiState();
+        logEmbedEvent(QStringLiteral("fallback_code"), m_filePath);
+        emit statusMessage(QStringLiteral("Showing %1 in built-in code viewer.").arg(info.fileName()));
+        return true;
+    }
+#ifdef QT_MULTIMEDIA_LIB
+    if (mime.name().startsWith(QStringLiteral("audio/"))
+        || mime.name().startsWith(QStringLiteral("video/"))) {
+        m_hostMode = MediaPlayer;
+        setupMediaPlayer();
+        syncUiState();
+        logEmbedEvent(QStringLiteral("fallback_media"), m_filePath);
+        emit statusMessage(QStringLiteral("Showing %1 in built-in media player.").arg(info.fileName()));
+        return true;
+    }
+#endif
+    if (ext == QStringLiteral("pdf")) {
+#ifdef QT_PDF_LIB
+        m_hostMode = PdfViewer;
+        setupPdfViewer();
+        syncUiState();
+        logEmbedEvent(QStringLiteral("fallback_pdf"), m_filePath);
+        emit statusMessage(QStringLiteral("Showing %1 in built-in PDF viewer.").arg(info.fileName()));
+        return true;
+#elif defined(QT_WEBENGINEWIDGETS_LIB)
+        m_hostMode = WebView;
+        setupWebView();
+        syncUiState();
+        logEmbedEvent(QStringLiteral("fallback_pdf"), m_filePath);
+        emit statusMessage(QStringLiteral("Showing %1 in built-in PDF viewer.").arg(info.fileName()));
+        return true;
+#endif
+    }
+
     showStateMessage(QStringLiteral("Associated app not embedded"),
-                     QStringLiteral("Ixplorer could not capture %1 yet. Retry reload or open externally.")
+                     QStringLiteral("Ixplorer could not capture %1 yet. Retry or open externally.")
                          .arg(info.fileName()));
+
+    // Add "Retry embedding" button
+    auto *retryBtn = new QPushButton(QStringLiteral("Retry embedding"), m_stateCard);
+    retryBtn->setObjectName("DocumentGhostButton");
+    retryBtn->setCursor(Qt::PointingHandCursor);
+    connect(retryBtn, &QPushButton::clicked, this, [this]() {
+        m_hostMode = WindowEmbed;
+        showStateMessage(QStringLiteral("Retrying..."),
+                         QStringLiteral("Attempting to capture the associated application again."));
+        m_loadingTimer->start();
+        QTimer::singleShot(50, this, [this]() {
+            m_loadingTimer->stop();
+            m_hostedReady = startHosting();
+            if (!m_hostedReady) {
+                showStateMessage(QStringLiteral("Embedding failed"),
+                                 QStringLiteral("Could not capture the app window. Open externally instead."));
+            }
+            syncUiState();
+        });
+    });
+    if (m_stateCard->layout()) {
+        m_stateCard->layout()->addWidget(retryBtn);
+    }
+
     emit statusMessage(QStringLiteral("Embedded capture failed for %1.").arg(info.fileName()));
     logEmbedEvent(QStringLiteral("fallback_state"), m_filePath);
     return false;
@@ -1133,9 +1219,9 @@ void DocumentPane::updateHostedGeometry() {
         SetParent(hwnd, hostHwnd);
     }
 
-    const int targetWidth = qMax(1, m_hostSurface->width());
-    const int targetHeight = qMax(1, m_hostSurface->height());
-    MoveWindow(hwnd, 0, 0, targetWidth, targetHeight, TRUE);
+    const qreal dpr = m_hostSurface->devicePixelRatioF();
+    const int targetWidth = qMax(1, static_cast<int>(m_hostSurface->width() * dpr));
+    const int targetHeight = qMax(1, static_cast<int>(m_hostSurface->height() * dpr));
     SetWindowPos(hwnd,
                  nullptr,
                  0,
@@ -1285,7 +1371,12 @@ bool DocumentPane::tryRecoverHostedWindow() {
         SetWindowLongPtrW(chosen.hwnd, GWL_STYLE, hostedStyle);
     }
     SetParent(chosen.hwnd, hostHwnd);
-    MoveWindow(chosen.hwnd, 0, 0, qMax(1, m_hostSurface->width()), qMax(1, m_hostSurface->height()), TRUE);
+    {
+        const qreal dpr = m_hostSurface->devicePixelRatioF();
+        const int w = qMax(1, static_cast<int>(m_hostSurface->width() * dpr));
+        const int h = qMax(1, static_cast<int>(m_hostSurface->height() * dpr));
+        MoveWindow(chosen.hwnd, 0, 0, w, h, TRUE);
+    }
     RedrawWindow(chosen.hwnd, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
     m_hostedWindowId = reinterpret_cast<WId>(chosen.hwnd);
     claimedHostedWindows().insert(m_hostedWindowId);
@@ -1646,7 +1737,7 @@ void DocumentPane::syncUiState() {
 }
 
 bool DocumentPane::eventFilter(QObject *watched, QEvent *event) {
-    if ((watched == m_hostSurface || watched == m_textEdit) &&
+    if (watched == m_hostSurface &&
         (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::FocusIn)) {
 #ifdef Q_OS_WIN
         if (m_hostedWindowId != 0 && IsWindow(reinterpret_cast<HWND>(m_hostedWindowId))) {
@@ -1655,6 +1746,14 @@ bool DocumentPane::eventFilter(QObject *watched, QEvent *event) {
             SetForegroundWindow(reinterpret_cast<HWND>(m_hostedWindowId));
         }
 #endif
+    }
+
+    // Mouse wheel zoom for image viewer
+    if (watched == m_graphicsView && event->type() == QEvent::Wheel && m_hostMode == ImageViewer) {
+        auto *wheelEvent = static_cast<QWheelEvent *>(event);
+        const qreal factor = wheelEvent->angleDelta().y() > 0 ? 1.15 : 1.0 / 1.15;
+        m_graphicsView->scale(factor, factor);
+        return true;
     }
 
     return QWidget::eventFilter(watched, event);

@@ -50,7 +50,8 @@ export function AppShell({ children }: AppShellProps) {
     showInfo, setShowInfo,
     showPricing, setShowPricing,
     settingsTab, openSettings,
-    activeView, setActiveView
+    activeView, setActiveView,
+    sidebarCollapsed
   } = useUIStore();
 
   const searchStore = useSearchStore();
@@ -137,6 +138,20 @@ export function AppShell({ children }: AppShellProps) {
 
     setFirstRunOnboarding((prev) => {
       if (prev.step === 1) {
+        // In ephemeral/JIT mode, skip step 2 (cold/hot comparison) since there's no cache
+        const isEphemeral = searchStore.cacheMode === 'ephemeral';
+        if (isEphemeral) {
+          return {
+            ...prev,
+            open: true,
+            step: 3,
+            firstDurationMs: durationMs,
+            firstCacheHits: cacheHits,
+            firstQuery: resolvedQuery,
+            secondDurationMs: null,
+            secondCacheHits: 0,
+          };
+        }
         return {
           ...prev,
           open: true,
@@ -387,7 +402,8 @@ export function AppShell({ children }: AppShellProps) {
         {/* Settings Panel Overlay */}
         {showSettings && (
           <div
-            className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-3 sm:p-4 bg-graphite-0/68 backdrop-blur-md pointer-events-auto"
+            className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-3 sm:p-4 bg-graphite-0/92 backdrop-blur-lg pointer-events-auto"
+            style={{ left: sidebarCollapsed ? '3rem' : '15rem' }}
             onMouseDown={(event) => {
               if (event.target === event.currentTarget) {
                 setShowSettings(false);
@@ -421,7 +437,8 @@ export function AppShell({ children }: AppShellProps) {
         {/* Info Panel Overlay */}
         {showInfo && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-graphite-0/58 backdrop-blur-md pointer-events-auto"
+            className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-graphite-0/92 backdrop-blur-lg pointer-events-auto"
+            style={{ left: sidebarCollapsed ? '3rem' : '15rem' }}
             onMouseDown={(event) => {
               if (event.target === event.currentTarget) {
                 setShowInfo(false);
@@ -448,7 +465,8 @@ export function AppShell({ children }: AppShellProps) {
         {/* Pricing Panel Overlay */}
         {showPricing && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-graphite-0/58 backdrop-blur-md pointer-events-auto"
+            className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-graphite-0/92 backdrop-blur-lg pointer-events-auto"
+            style={{ left: sidebarCollapsed ? '3rem' : '15rem' }}
             onMouseDown={(event) => {
               if (event.target === event.currentTarget) {
                 setShowPricing(false);

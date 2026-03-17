@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, FileText, Clock, Trash2, Star, BookOpen, EyeOff, Calendar, Layers, Search, Lock } from 'lucide-react';
+import { Plus, FileText, Clock, Trash2, Star, BookOpen, EyeOff, Calendar, Layers, Search, Lock, ChevronLeft, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStatsStore } from '@/stores/statsStore';
 import { useStarredStore, type SearchThread } from '@/stores/starredStore';
@@ -11,6 +11,7 @@ import { UpgradeBanner } from '@/components/account/UpgradeBanner';
 import { openExternalUrl } from '@/lib/tauri';
 import { useAuth } from '@clerk/clerk-react';
 import { hasProAccess } from '@/lib/proAccess';
+import { useUIStore } from '@/stores/uiStore';
 
 export type SidebarView = 'search' | 'today' | 'workstreams';
 
@@ -44,6 +45,7 @@ export function Sidebar({
   const { signOut, getToken } = useAuth();
   const deepSearchMode = searchStore.deepSearchMode;
   const cacheMode = searchStore.cacheMode;
+  const { sidebarCollapsed, toggleSidebar } = useUIStore();
 
   // Dynamic accent color follows search mode — same palette as SearchInput
   const modeAccent = deepSearchMode
@@ -105,16 +107,53 @@ export function Sidebar({
     }
   };
 
+  if (sidebarCollapsed) {
+    return (
+      <aside className={cn('w-12 h-full flex flex-col items-center bg-graphite-0 border-r border-white/[0.06] transition-all duration-200', className)}>
+        <button type="button" onClick={toggleSidebar} className="mt-12 mb-4 p-1.5 rounded-md hover:bg-graphite-2/40 transition-colors" title="Expand sidebar">
+          <img src={ixosIcon} alt="Ixos" className="w-6 h-6 object-contain" />
+        </button>
+        <nav className="flex flex-col items-center gap-1 px-1">
+          <button type="button" onClick={() => onViewChange?.('search')} title="Search"
+            className={cn('p-2 rounded-lg transition-colors', activeView === 'search' ? 'bg-graphite-2/40' : 'hover:bg-graphite-2/25')}>
+            <Search style={activeView === 'search' ? { color: modeAccent } : undefined} className={cn('w-4 h-4', activeView === 'search' ? '' : 'text-fg-dim')} />
+          </button>
+          <button type="button" onClick={() => isPro ? onViewChange?.('today') : onOpenPricing?.()} title="Today"
+            className={cn('p-2 rounded-lg transition-colors', activeView === 'today' ? 'bg-graphite-2/40' : 'hover:bg-graphite-2/25', !isPro && 'opacity-55')}>
+            <Calendar style={activeView === 'today' ? { color: modeAccent } : undefined} className={cn('w-4 h-4', activeView === 'today' ? '' : 'text-fg-dim')} />
+          </button>
+          <button type="button" onClick={() => isPro ? onViewChange?.('workstreams') : onOpenPricing?.()} title="Workstreams"
+            className={cn('p-2 rounded-lg transition-colors', activeView === 'workstreams' ? 'bg-graphite-2/40' : 'hover:bg-graphite-2/25', !isPro && 'opacity-55')}>
+            <Layers style={activeView === 'workstreams' ? { color: modeAccent } : undefined} className={cn('w-4 h-4', activeView === 'workstreams' ? '' : 'text-fg-dim')} />
+          </button>
+        </nav>
+        <div className="flex-1" />
+        <button type="button" onClick={() => onOpenSettings?.()} title="Settings"
+          className="p-2 rounded-lg hover:bg-graphite-2/25 transition-colors mb-3">
+          <Settings className="w-4 h-4 text-fg-dim" />
+        </button>
+      </aside>
+    );
+  }
+
   return (
-    <aside className={cn('w-60 h-full flex flex-col bg-graphite-0 border-r border-white/[0.06]', className)}>
+    <aside className={cn('w-60 h-full flex flex-col bg-graphite-0 border-r border-white/[0.06] transition-all duration-200', className)}>
       {/* Brand + New Search */}
       <div className="px-4 pt-12 pb-4 flex items-center gap-2.5">
         <img src={ixosIcon} alt="Ixos" className="w-7 h-7 object-contain" />
         <span className="font-display text-sm font-semibold text-porcelain tracking-tight">Ixos</span>
         <button
           type="button"
+          onClick={toggleSidebar}
+          className="ml-auto p-1 rounded-md text-fg-ghost hover:text-fg-muted hover:bg-graphite-2/40 transition-colors"
+          title="Collapse sidebar"
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
+        </button>
+        <button
+          type="button"
           onClick={onNewSearch}
-          className="ml-auto flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-accent-teal/10 text-accent-teal border border-accent-teal/20 hover:bg-accent-teal/18 transition-colors duration-150"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-accent-teal/10 text-accent-teal border border-accent-teal/20 hover:bg-accent-teal/18 transition-colors duration-150"
         >
           <Plus className="w-3 h-3" />
           New

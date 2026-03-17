@@ -23,6 +23,7 @@ interface TodayState {
   resumeCandidates: ResumeCandidate[];
   isLoading: boolean;
   error: string | null;
+  retryCount: number;
 
   // Pinned items (persisted separately)
   pinnedItems: PinnedItem[];
@@ -63,6 +64,7 @@ export const useTodayStore = create<TodayState>((set, get) => ({
   resumeCandidates: [],
   isLoading: false,
   error: null,
+  retryCount: 0,
   pinnedItems: [],
   showTodayTab: true, // Default to showing Today Tab
   lastBriefDate: null,
@@ -106,8 +108,15 @@ export const useTodayStore = create<TodayState>((set, get) => ({
         pinned: pinnedItems,
       };
 
-      set({ data, resumeCandidates: resumption.resumeCandidates, isLoading: false });
+      set({ data, resumeCandidates: resumption.resumeCandidates, isLoading: false, retryCount: 0 });
     } catch (error) {
+      const currentRetry = get().retryCount;
+      if (currentRetry < 2) {
+        // Auto-retry after 1.5s on first failures
+        set({ retryCount: currentRetry + 1 });
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        return get().loadTodayData();
+      }
       const message = error instanceof Error ? error.message : String(error);
       set({ error: message, isLoading: false });
     }
@@ -220,6 +229,7 @@ export const useTodayStore = create<TodayState>((set, get) => ({
       resumeCandidates: [],
       isLoading: false,
       error: null,
+      retryCount: 0,
       pinnedItems: [],
       showTodayTab: true,
       lastBriefDate: null,

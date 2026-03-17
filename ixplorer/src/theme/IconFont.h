@@ -59,6 +59,8 @@ inline const QChar Error(0xEA39);
 inline const QChar Info(0xE946);
 inline const QChar ChevronUp(0xE70E);
 inline const QChar ChevronLeft(0xE76B);
+inline const QChar Plus(0xE710);  // Alias for Add
+inline const QChar Sidebar(0xE89F);  // Panel right / details pane
 
 // Factory function to get the configured icon font with specific size
 QFont iconFont(int pixelSize = 16);

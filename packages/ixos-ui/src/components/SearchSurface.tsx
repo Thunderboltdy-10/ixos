@@ -198,14 +198,14 @@ export function SearchSurface({
   onOpenResult,
   onRevealResult,
   allowResultsScroll = true,
-  showInlineRunButton = true,
+  showInlineRunButton: _showInlineRunButton = true,
   hideSearchChrome = false,
   resultLimit,
   pipelineStats,
   sourcePath: _sourcePath,
   interactive = true,
-  presets,
-  onPresetSelect,
+  presets: _presets,
+  onPresetSelect: _onPresetSelect,
 }: SearchSurfaceProps) {
   const visibleResults = useMemo(
     () => (resultLimit ? results.slice(0, resultLimit) : results),

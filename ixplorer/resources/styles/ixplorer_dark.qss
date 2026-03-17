@@ -24,7 +24,7 @@ QWidget {
 }
 
 #TopContainer {
-    background-color: #1C1C1C;
+    background-color: #272727;
 }
 
 #TabBarRow {
@@ -72,8 +72,9 @@ QTabBar::tab {
     border: 1px solid transparent;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
-    min-width: 140px; 
+    min-width: 80px;
     max-width: 240px;
+    cursor: pointer;
 }
 
 QTabBar::tab:selected {
@@ -196,8 +197,8 @@ QTreeView {
 }
 
 QTreeView::item {
-    padding: 0px 8px;
-    min-height: 28px; /* Middle point density */
+    padding: 2px 8px;
+    min-height: 30px;
     border: none;
     margin: 0;
 }
@@ -279,6 +280,33 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
     margin-top: 28px;
     margin-bottom: 10px;
     letter-spacing: 0.5px;
+}
+
+/* ─── Dashboard Cards ─── */
+QPushButton[dashboardCardPrimary="true"] {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: left;
+}
+
+QPushButton[dashboardCardPrimary="true"]:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+QPushButton[dashboardCard="true"] {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: left;
+}
+
+QPushButton[dashboardCard="true"]:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
 }
 
 /* ─── Search Field ─── */

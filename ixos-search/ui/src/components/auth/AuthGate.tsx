@@ -209,7 +209,14 @@ function AuthScreen() {
   );
 }
 
-function LoadingScreen({ message }: { message: string }) {
+function LoadingScreen({ message, onContinueAnyway }: { message: string; onContinueAnyway?: () => void }) {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-graphite-0">
       <div className="flex flex-col items-center gap-6">
@@ -230,6 +237,16 @@ function LoadingScreen({ message }: { message: string }) {
             {message}
           </div>
         </div>
+
+        {elapsed >= 5 && onContinueAnyway && (
+          <button
+            type="button"
+            onClick={onContinueAnyway}
+            className="mt-2 px-4 py-2 rounded-md bg-graphite-2 border border-white/10 text-xs text-fg-muted hover:text-porcelain hover:border-white/20 transition-colors"
+          >
+            Continue anyway
+          </button>
+        )}
       </div>
     </div>
   );
@@ -592,7 +609,7 @@ function AuthGateInner({ children }: AuthGateProps) {
           console.log('[Auth] Registering device...');
           await withTimeout(
             registerDevice(clerkToken, deviceId, deviceLabel, devicePublicKey),
-            20000,
+            6000,
             'REGISTER_DEVICE'
           );
           console.log('[Auth] Device registered successfully');
@@ -609,7 +626,7 @@ function AuthGateInner({ children }: AuthGateProps) {
           console.log('[Auth] Attempting to claim lease...');
           const claimResult = await withTimeout(
             claimLease(clerkToken, deviceId, devicePublicKey),
-            20000,
+            6000,
             'LEASE_CLAIM'
           );
           console.log('[Auth] Lease claim response:', claimResult);
@@ -648,7 +665,7 @@ function AuthGateInner({ children }: AuthGateProps) {
             try {
               const entitlementResult = await withTimeout(
                 fetchEntitlement(clerkToken, deviceId),
-                20000,
+                6000,
                 'ENTITLEMENT_FETCH'
               );
               console.log('[Auth] Entitlement response:', entitlementResult);
@@ -690,7 +707,7 @@ function AuthGateInner({ children }: AuthGateProps) {
         logLease('bootstrap_timeout');
         setBootError('Startup verification timed out. You can continue, but lease status may be stale.');
         setBootstrapped(true);
-      }, 60000);
+      }, 12000);
       bootstrap().finally(() => {
         if (bootstrapGuard) clearTimeout(bootstrapGuard);
       });
@@ -780,7 +797,7 @@ function AuthGateInner({ children }: AuthGateProps) {
         const devicePublicKey = await invoke<string>('get_device_public_key').catch(() => null);
         const refreshResult = await withTimeout(
           refreshLease(token, deviceId, devicePublicKey, { silent: true }),
-          20000,
+          6000,
           'LEASE_REFRESH'
         );
         if (refreshResult?.token) {
@@ -881,7 +898,7 @@ function AuthGateInner({ children }: AuthGateProps) {
   }
 
   if (!bootstrapped) {
-    return <LoadingScreen message="Initializing..." />;
+    return <LoadingScreen message="Initializing..." onContinueAnyway={() => setBootstrapped(true)} />;
   }
 
   // Show error state but still allow app to load

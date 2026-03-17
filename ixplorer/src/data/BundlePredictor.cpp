@@ -81,6 +81,46 @@ void BundlePredictor::setWorkstreamManager(WorkstreamManager *manager) {
     m_workstreamManager = manager;
 }
 
+void BundlePredictor::recordFeedback(bool accepted) {
+    // IXP-302: EMA-based online weight adaptation
+    // When a prediction is accepted, slightly boost the dominant feature weights.
+    // When rejected, slightly reduce them toward uniform distribution.
+    ++m_feedbackCount;
+    const float alpha = kEmaAlpha;
+    const float uniform = 0.20f;
+
+    if (accepted) {
+        // Reinforce dominant weights: scale up those above uniform, scale down those below
+        auto reinforce = [uniform, alpha](float w) {
+            const float direction = w > uniform ? 1.0f : -1.0f;
+            return w + direction * alpha * 0.1f * std::abs(w - uniform);
+        };
+        m_weights.transition      = reinforce(m_weights.transition);
+        m_weights.coOpen          = reinforce(m_weights.coOpen);
+        m_weights.frecency        = reinforce(m_weights.frecency);
+        m_weights.workstreamPrior = reinforce(m_weights.workstreamPrior);
+        m_weights.personal        = reinforce(m_weights.personal);
+    } else {
+        // Move toward uniform distribution
+        m_weights.transition      = m_weights.transition * (1.0f - alpha) + uniform * alpha;
+        m_weights.coOpen          = m_weights.coOpen * (1.0f - alpha) + uniform * alpha;
+        m_weights.frecency        = m_weights.frecency * (1.0f - alpha) + uniform * alpha;
+        m_weights.workstreamPrior = m_weights.workstreamPrior * (1.0f - alpha) + uniform * alpha;
+        m_weights.personal        = m_weights.personal * (1.0f - alpha) + uniform * alpha;
+    }
+
+    // Renormalize to sum to 1.0
+    const float sum = m_weights.transition + m_weights.coOpen + m_weights.frecency
+                    + m_weights.workstreamPrior + m_weights.personal;
+    if (sum > 0.0f) {
+        m_weights.transition      /= sum;
+        m_weights.coOpen          /= sum;
+        m_weights.frecency        /= sum;
+        m_weights.workstreamPrior /= sum;
+        m_weights.personal        /= sum;
+    }
+}
+
 BundlePrediction BundlePredictor::predictForPath(const QString &currentPath, int limit, qint64 nowMs) const {
     BundlePrediction prediction;
     prediction.anchorPath = currentPath;
@@ -211,12 +251,13 @@ BundlePrediction BundlePredictor::predictForPath(const QString &currentPath, int
         item.frecency = frecencyScore;
         item.workstreamPrior = wsPrior;
         item.supportCount = openCounts.value(candidate, 0);
+        // IXP-302/303: Use adaptive weights with ablation mask
         item.score =
-            0.34f * item.transition +
-            0.26f * item.coOpen +
-            0.20f * item.frecency +
-            0.15f * item.workstreamPrior +
-            0.05f * personal;
+            (m_ablation.enableTransition      ? m_weights.transition : 0.0f)      * item.transition +
+            (m_ablation.enableCoOpen          ? m_weights.coOpen : 0.0f)          * item.coOpen +
+            (m_ablation.enableFrecency        ? m_weights.frecency : 0.0f)        * item.frecency +
+            (m_ablation.enableWorkstreamPrior ? m_weights.workstreamPrior : 0.0f) * item.workstreamPrior +
+            (m_ablation.enablePersonal        ? m_weights.personal : 0.0f)        * personal;
         item.reason = explainBundleItem(item);
         ranked.append(item);
     }

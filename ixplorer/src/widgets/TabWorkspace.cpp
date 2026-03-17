@@ -17,6 +17,7 @@
 #include <QHoverEvent>
 #include <QMenu>
 #include <QStyle>
+#include <QTimer>
 #include <QUrl>
 #include <QVBoxLayout>
 
@@ -50,10 +51,13 @@ QToolButton *makeTabCloseButton(QTabBar *tabBar, TabWorkspace *workspace) {
     auto *button = new QToolButton(tabBar);
     button->setObjectName("TabCloseButton");
     QColor iconColor = Colors::qc(Colors::FgMuted);
-    QColor hoverColor = Colors::qc(Colors::FgPrimary); // Not easily handled via icon overload, but the disabled color overload exists. Actually, we'll just use FgMuted.
     button->setIcon(Icons::makeIconFromFont(Icons::Close, 12, iconColor));
     button->setAutoRaise(true);
     button->setCursor(Qt::PointingHandCursor);
+    button->setStyleSheet(
+        "QToolButton { border: none; background: transparent; padding: 2px; border-radius: 4px; }"
+        "QToolButton:hover { background: rgba(255,255,255,0.12); }"
+    );
     QObject::connect(button, &QToolButton::clicked, workspace, [tabBar, workspace, button]() {
         for (int index = 0; index < tabBar->count(); ++index) {
             if (tabBar->tabButton(index, QTabBar::RightSide) == button) {
@@ -88,36 +92,12 @@ TabWorkspace::TabWorkspace(QWidget *parent)
     m_tabBar->setAttribute(Qt::WA_Hover, true);
     m_tabBar->installEventFilter(this);
 
-    m_tabBar->setStyleSheet(
-        "QTabBar {"
-        "  background: transparent;"
-        "}"
-        "QTabBar::tab {"
-        "  background: transparent;"
-        "  color: #A1A1AA;"
-        "  padding: 8px 20px;"
-        "  margin-top: 4px;"
-        "  margin-right: 2px;"
-        "  border: 1px solid transparent;"
-        "  border-top-left-radius: 8px;"
-        "  border-top-right-radius: 8px;"
-        "  font-size: 12px;"
-        "}"
-        "QTabBar::tab:selected {"
-        "  background: #272727;"
-        "  color: #FFFFFF;"
-        "  border: 1px solid rgba(255,255,255,0.1);"
-        "  border-bottom: 2px solid #272727;" /* Merges with content below */
-        "  margin-bottom: -1px;"
-        "}"
-        "QTabBar::tab:hover:!selected {"
-        "  background: rgba(255,255,255,0.05);"
-        "  color: #FFFFFF;"
-        "}"
-    );
+    // Tab styling handled by ixplorer_dark.qss — no inline overrides
 
     m_addTabButton->setObjectName("TabAddButton");
-    m_addTabButton->setText("+");
+    m_addTabButton->setIcon(Icons::makeIconFromFont(Icons::Plus, 16));
+    m_addTabButton->setFixedSize(32, 32);
+    m_addTabButton->setCursor(Qt::PointingHandCursor);
     m_addTabButton->setAutoRaise(true);
     m_addTabButton->setToolTip("New tab");
 
@@ -305,6 +285,7 @@ void TabWorkspace::closeTab(int index) {
     }
 
     updateSignalsForCurrentWidget();
+    updateAdaptiveTabWidth();
 }
 
 void TabWorkspace::navigateCurrentTab(const QString &path) {
@@ -442,6 +423,7 @@ int TabWorkspace::addDashboardTab() {
 
     updateTabMetadata(insertIndex, "ixplorer://home");
     m_tabBar->setCurrentIndex(insertIndex);
+    updateAdaptiveTabWidth();
     return insertIndex;
 }
 
@@ -459,6 +441,7 @@ int TabWorkspace::addExplorerTab(const QString &path) {
     
     updateTabMetadata(insertIndex, path);
     m_tabBar->setCurrentIndex(insertIndex);
+    updateAdaptiveTabWidth();
     return insertIndex;
 }
 
@@ -498,6 +481,7 @@ int TabWorkspace::addDocumentTab(const QString &path, bool preview, bool launchD
     
     updateTabMetadata(index, path);
     m_tabBar->setCurrentIndex(index);
+    updateAdaptiveTabWidth();
     return index;
 }
 
@@ -698,10 +682,14 @@ void TabWorkspace::onTabChanged(int index) {
     if (index >= 0 && index < m_stack->count()) {
         m_stack->setCurrentIndex(index);
         emit currentTabChanged(index);
-        updateSignalsForCurrentWidget();
+        QTimer::singleShot(0, this, [this]() {
+            updateSignalsForCurrentWidget();
+        });
 
         if (auto *document = currentDocument()) {
-            document->focusPrimaryControl();
+            QTimer::singleShot(50, document, [document]() {
+                document->focusPrimaryControl();
+            });
         }
     }
 }
@@ -717,11 +705,13 @@ void TabWorkspace::onTabMoved(int from, int to) {
     }
 
     const int currentIndex = m_tabBar->currentIndex();
+    setUpdatesEnabled(false);
     m_stack->removeWidget(widget);
     m_stack->insertWidget(to, widget);
     if (currentIndex >= 0 && currentIndex < m_stack->count()) {
         m_stack->setCurrentIndex(currentIndex);
     }
+    setUpdatesEnabled(true);
 
     if (m_previewTabIndex == from) {
         m_previewTabIndex = to;
@@ -731,7 +721,9 @@ void TabWorkspace::onTabMoved(int from, int to) {
         ++m_previewTabIndex;
     }
 
-    updateSignalsForCurrentWidget();
+    if (m_tabBar->currentIndex() == to || m_tabBar->currentIndex() == from) {
+        updateSignalsForCurrentWidget();
+    }
 }
 
 void TabWorkspace::onTabCloseRequested(int index) {
@@ -740,6 +732,16 @@ void TabWorkspace::onTabCloseRequested(int index) {
 
 void TabWorkspace::onNewTabClicked() {
     addTab("ixplorer://home");
+}
+
+void TabWorkspace::updateAdaptiveTabWidth() {
+    const int count = m_tabBar->count();
+    if (count <= 0) return;
+    const int available = m_tabBar->width() - 40; // Leave room for add button
+    const int dynamicMax = qBound(80, available / count, 240);
+    m_tabBar->setStyleSheet(
+        QStringLiteral("QTabBar::tab { max-width: %1px; }").arg(dynamicMax)
+    );
 }
 
 } // namespace Ixplorer

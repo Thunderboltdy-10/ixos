@@ -72,8 +72,8 @@ interface AppWorldSurfaceProps {
 export function AppWorldSurface({
   view,
   onViewChange,
-  title = 'Ixos Desktop',
-  subtitle = 'Local-first search cockpit',
+  title: _title = 'Ixos Desktop',
+  subtitle: _subtitle = 'Local-first search cockpit',
   search,
   today,
   workstreams,
@@ -147,7 +147,7 @@ export function AppWorldSurface({
                       }}
                     >
                       <span style={{ opacity: 0.4 }}>#</span>
-                      <span style={{ truncate: true }}>{row.title}</span>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name}</span>
                     </button>
                   ))}
                 </div>

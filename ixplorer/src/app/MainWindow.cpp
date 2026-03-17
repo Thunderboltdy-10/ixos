@@ -182,7 +182,8 @@ void MainWindow::setupConnections() {
     });
     
     connect(m_statusStrip, &StatusStrip::toggleRailRequested, this, &MainWindow::toggleRailVisible);
-    
+    connect(m_toolbar, &ExplorerToolbar::toggleRailRequested, this, &MainWindow::toggleRailVisible);
+
     connect(m_toolbar, &ExplorerToolbar::navigateRequested, this, &MainWindow::navigateTo);
     connect(m_toolbar, &ExplorerToolbar::backRequested, this, [this]() {
         m_workspace->goBackCurrent();
@@ -1067,7 +1068,7 @@ void MainWindow::openPathsBundle(const QStringList &paths, const QString &workst
             m_workspace->addTab(path);
             openedPrimary = true;
         } else {
-            m_workspace->addTab(path);
+            m_workspace->previewPath(path);
         }
     }
     if (openedPrimary) {
@@ -1088,6 +1089,7 @@ QString MainWindow::activeSearchRoot() const {
 void MainWindow::setRailVisible(bool visible) {
     if (m_railVisible == visible) {
         m_statusStrip->setRailVisible(visible);
+        m_toolbar->setRailVisible(visible);
         return;
     }
 
@@ -1098,6 +1100,7 @@ void MainWindow::setRailVisible(bool visible) {
 
     m_railVisible = visible;
     m_statusStrip->setRailVisible(visible);
+    m_toolbar->setRailVisible(visible);
 
     const int targetRailWidth = visible ? qMax(320, m_lastRailWidth) : 0;
     const int startRailWidth = m_rail->width();

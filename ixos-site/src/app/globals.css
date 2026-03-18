@@ -86,7 +86,7 @@ video::-moz-media-controls {
     0 4px 16px rgba(0, 0, 0, 0.5);
 
   /* FONTS */
-  --font-sans: var(--font-ixo-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-sans: var(--font-ixo-heading), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-ixo-mono), ui-monospace, SFMono-Regular, monospace;
   --font-display: var(--font-ixo-heading), ui-sans-serif, system-ui, sans-serif;
 
@@ -282,7 +282,7 @@ video::-moz-media-controls {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(244, 114, 182, 0.12) 0%, transparent 60%);
+  background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(246, 185, 76, 0.12) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }

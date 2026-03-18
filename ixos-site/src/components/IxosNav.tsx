@@ -19,7 +19,7 @@ export function IxosNav() {
 
   useEffect(() => {
     if (!isHomePage) return
-    const sections = ['hero', 'speed', 'privacy', 'pipeline', 'workstreams', 'cli']
+    const sections = ['hero', 'how-it-works', 'use-cases', 'features', 'privacy']
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) setActiveSection(entry.target.id)
@@ -43,13 +43,12 @@ export function IxosNav() {
   // On homepage: show section anchors + page links
   // On subpages: only show page-level links (no section anchors)
   const navLinks = [
-    { label: 'Speed', href: '/#speed', sectionId: 'speed' },
+    { label: 'Product', href: '/#how-it-works', sectionId: 'how-it-works' },
+    { label: 'Use Cases', href: '/#use-cases', sectionId: 'use-cases' },
     { label: 'Privacy', href: '/#privacy', sectionId: 'privacy' },
-    { label: 'Pipeline', href: '/#pipeline', sectionId: 'pipeline' },
-    { label: 'Streams', href: '/#workstreams', sectionId: 'workstreams' },
-    { label: 'CLI', href: '/#cli', sectionId: 'cli' },
     { label: 'Pricing', href: '/pricing', sectionId: '' },
     { label: 'Docs', href: '/docs', sectionId: '' },
+    { label: 'Developers', href: '/developers', sectionId: '' },
   ]
 
   const isLinkActive = (link: { href: string; sectionId: string }) => {

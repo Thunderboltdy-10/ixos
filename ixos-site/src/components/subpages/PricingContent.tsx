@@ -7,19 +7,19 @@ import Link from "next/link";
 import { ProUpgradeAction } from "@/components/sections/ProUpgradeAction";
 
 const FREE_FEATURES = [
-  "Local vector search (Flash mode)",
+  "Local semantic search with Flash mode",
   "VS Code extension integration",
   "Up to 3 active workstreams",
-  "Standard HMAC-SHA256 signing",
+  "Tamper-proof file verification",
   "Community support",
 ];
 
 const PRO_FEATURES = [
-  "JIT Pro models with deep reasoning",
-  "Unlimited persistent workstreams",
-  "Journalist mode (ephemeral cache)",
-  "Ed25519 cryptographic attestation",
-  "Priority architectural support",
+  "Deep search models for better results",
+  "Unlimited workstreams with session recovery",
+  "Maximum privacy mode — nothing saved",
+  "Cryptographic proof of search results",
+  "Priority support and early access",
   "Advanced metadata filtering",
 ];
 

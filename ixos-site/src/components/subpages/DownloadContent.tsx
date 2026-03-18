@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Download, Terminal, Copy, Check } from "lucide-react";
 import {
@@ -18,15 +18,19 @@ function useDownloadLogic() {
   const [macChip, setMacChip] = useState<"apple" | "intel">("apple");
   const [installOs, setInstallOs] = useState<InstallOs>("windows");
   const [copied, setCopied] = useState(false);
+  const detected = useRef(false);
 
   useEffect(() => {
+    if (detected.current) return;
+    detected.current = true;
+
     const p = detectDesktopPlatform();
     if (p.startsWith("macos")) setPlatform("macos");
     else if (p.startsWith("linux")) setPlatform("linux");
     else setPlatform("windows");
 
     if (p === "macos-x64") setMacChip("intel");
-    
+
     setInstallOs(detectInstallOs());
   }, []);
 

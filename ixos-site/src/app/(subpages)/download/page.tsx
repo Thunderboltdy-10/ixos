@@ -195,7 +195,7 @@ export default function DownloadPage() {
                   ▸ Download for {currentPlatform.label}
                   {platform === 'macos' && ` · ${macChip === 'apple' ? 'Apple Silicon' : 'Intel'}`}
                 </button>
-                <div className="text-[10px] text-white/28 leading-relaxed">
+                <div className="text-[10px] text-white/60 leading-relaxed font-medium">
                   <div>Includes desktop app + VS Code extension + CLI</div>
                   <div className="mt-0.5">No cloud connection required. Embeddings are local.</div>
                 </div>
@@ -216,18 +216,18 @@ export default function DownloadPage() {
         {/* ── CLI Installation Section ──────────────────────── */}
         <div>
           {/* Section heading */}
-          <div className="flex items-center gap-4 mb-5 py-3 border-b border-white/8">
+          <div className="flex items-center gap-4 mb-5 py-3 border-b border-white/10">
             <div className="flex items-center gap-2">
-              <Terminal size={14} style={{ color: 'rgba(255,255,255,0.55)' }} />
-              <span className="text-[11px] uppercase tracking-[0.28em] font-bold text-white/55">CLI Installation</span>
+              <Terminal size={14} style={{ color: 'rgba(255,255,255,0.7)' }} />
+              <span className="text-[11px] uppercase tracking-[0.28em] font-bold text-white/70">CLI Installation</span>
             </div>
-            <span className="text-[9px] text-white/22 uppercase tracking-[0.15em]">Headless · Cargo · Pure Rust</span>
+            <span className="text-[9px] text-white/40 uppercase tracking-[0.15em]">Headless · Cargo · Pure Rust</span>
           </div>
 
           <div className="relative mb-5" style={{ border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.018)' }}>
             <CornerBracketsSmall color="rgba(255,255,255,0.18)" />
             <div className="p-6 md:p-8">
-              <div className="text-[9px] uppercase tracking-[0.28em] text-white/35 mb-5">
+              <div className="text-[9px] uppercase tracking-[0.28em] text-white/60 mb-5">
                 Install via Cargo · {currentPlatform.label}
               </div>
               <div style={{ background: '#0A0D0F', border: '1px solid rgba(255,255,255,0.08)', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>

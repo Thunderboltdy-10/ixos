@@ -107,7 +107,7 @@ function ProUpgradeActionInner({ className, variantPrefix }: { className?: strin
 
   const buttonClass = cn(
     "w-full font-mono text-xs uppercase tracking-widest h-12 rounded-md inline-flex items-center justify-center",
-    "bg-accent-magenta hover:bg-accent-magenta-glow text-bg-graphite-0 font-bold shadow-glow-magenta hover:scale-[1.02] transition-all",
+    "bg-amber-500 hover:bg-amber-400 text-bg-graphite-0 font-bold shadow-[0_0_20px_rgba(246,185,76,0.3)] hover:scale-[1.02] transition-all",
     className
   );
 

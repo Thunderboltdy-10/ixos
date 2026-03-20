@@ -12,9 +12,9 @@ type GlowColor = keyof typeof GLOW_COLORS;
 export function PageGlow({ color }: { color: GlowColor }) {
   return (
     <div
-      className="fixed inset-0 pointer-events-none z-0"
+      className="fixed inset-0 pointer-events-none z-[1]"
       style={{
-        background: `radial-gradient(ellipse 80% 50% at 50% 0%, ${GLOW_COLORS[color]}, transparent 70%)`,
+        background: `radial-gradient(ellipse 60% 40% at 50% 50%, ${GLOW_COLORS[color]}, transparent 70%)`,
         transition: "opacity 0.5s ease-in-out",
       }}
     />

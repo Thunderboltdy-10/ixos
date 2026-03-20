@@ -65,16 +65,18 @@ const CACHE_FORMAT = `[version:u8]           1 byte
 ────────────────────────────────
 Total:                  225 bytes per entry`;
 
+import { useState } from "react";
+
 const COMP_FEATURES = [
-  { feature: "Full-text keyword search", ixos: "yes", grep: "yes", spotlight: "yes", vscode: "yes" },
-  { feature: "Semantic understanding", ixos: "yes", grep: "no", spotlight: "partial", vscode: "no" },
-  { feature: "Local-first / no egress", ixos: "yes", grep: "yes", spotlight: "partial", vscode: "partial" },
-  { feature: "Progressive results", ixos: "yes", grep: "no", spotlight: "no", vscode: "no" },
-  { feature: "No background daemon", ixos: "yes", grep: "yes", spotlight: "no", vscode: "partial" },
-  { feature: "Hybrid retrieval", ixos: "yes", grep: "no", spotlight: "no", vscode: "no" },
-  { feature: "Cryptographic cache signing", ixos: "yes", grep: "no", spotlight: "no", vscode: "no" },
-  { feature: "Cross-platform", ixos: "yes", grep: "yes", spotlight: "no", vscode: "yes" },
-  { feature: "Natural language queries", ixos: "pro", grep: "no", spotlight: "no", vscode: "no" },
+  { feature: "Full-text keyword search", ixos: "yes", grep: "yes", spotlight: "yes", vscode: "yes", note: 'Industry baseline — all tools handle this.' },
+  { feature: "Semantic understanding", ixos: "yes", grep: "no", spotlight: "partial", vscode: "no", note: 'Meaning-based matching, not just string proximity.' },
+  { feature: "Local-first / no egress", ixos: "yes", grep: "yes", spotlight: "partial", vscode: "partial", note: 'Spotlight may sync via iCloud; VS Code extensions vary.' },
+  { feature: "Progressive results", ixos: "yes", grep: "no", spotlight: "no", vscode: "no", note: 'Results stream as confidence increases.' },
+  { feature: "No background daemon", ixos: "yes", grep: "yes", spotlight: "no", vscode: "partial", note: 'Spotlight indexes continuously.' },
+  { feature: "Hybrid retrieval", ixos: "yes", grep: "no", spotlight: "no", vscode: "no", note: 'Lexical + semantic in a single pass.' },
+  { feature: "Cryptographic cache signing", ixos: "yes", grep: "no", spotlight: "no", vscode: "no", note: 'HMAC-SHA256 on every cached embedding.' },
+  { feature: "Cross-platform", ixos: "yes", grep: "yes", spotlight: "no", vscode: "yes", note: 'Windows, macOS, Linux. Spotlight is macOS-only.' },
+  { feature: "Natural language queries", ixos: "pro", grep: "no", spotlight: "no", vscode: "no", note: 'Pro tier only.' },
 ];
 
 type CellValue = "yes" | "no" | "partial" | "pro";
@@ -97,6 +99,8 @@ function CompSymbol({ value, isIxos }: { value: CellValue; isIxos: boolean }) {
 }
 
 export default function DevelopersPage() {
+  const [hovered, setHovered] = useState<number | null>(null);
+
   return (
     <div className="relative min-h-screen text-[#f3f5f7] selection:bg-amber-400/30" style={{ overflowX: "clip" }}>
       <main className="relative z-10">
@@ -276,16 +280,21 @@ export default function DevelopersPage() {
                 </div>
                 {/* Rows */}
                 <div style={{ padding: "8px 0" }}>
-                  {COMP_FEATURES.map((feat) => (
-                    <div key={feat.feature} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", alignItems: "center", padding: "11px 12px", gap: 8 }}>
-                      <div className="font-mono" style={{ fontSize: 12, color: "rgba(243,245,247,0.65)", letterSpacing: "0.01em" }}>
-                        {feat.feature}
-                      </div>
-                      {(["ixos", "grep", "spotlight", "vscode"] as const).map((k) => (
-                        <div key={k} style={{ textAlign: "center", background: k === "ixos" ? "rgba(246,185,76,0.04)" : "transparent", borderRadius: 3, padding: "2px 4px" }}>
-                          <CompSymbol value={feat[k] as CellValue} isIxos={k === "ixos"} />
+                  {COMP_FEATURES.map((feat, i) => (
+                    <div key={feat.feature} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)} style={{ borderRadius: 4, background: hovered === i ? 'rgba(255,255,255,0.02)' : 'transparent', transition: 'background 0.2s', cursor: 'default' }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", alignItems: "center", padding: "11px 12px", gap: 8 }}>
+                        <div className="font-mono" style={{ fontSize: 12, color: "rgba(243,245,247,0.65)", letterSpacing: "0.01em" }}>
+                          {feat.feature}
                         </div>
-                      ))}
+                        {(["ixos", "grep", "spotlight", "vscode"] as const).map((k) => (
+                          <div key={k} style={{ textAlign: "center", background: k === "ixos" ? "rgba(246,185,76,0.04)" : "transparent", borderRadius: 3, padding: "2px 4px" }}>
+                            <CompSymbol value={feat[k] as CellValue} isIxos={k === "ixos"} />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="font-mono" style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', padding: '0 12px 10px', lineHeight: 1.5, borderLeft: `2px solid rgba(246,185,76,${hovered === i ? 0.2 : 0})`, marginLeft: 12, marginRight: 12, marginBottom: 4, opacity: hovered === i ? 1 : 0, maxHeight: hovered === i ? 60 : 0, overflow: 'hidden', transition: 'opacity 0.2s, max-height 0.2s, border-color 0.2s' }}>
+                        {feat.note}
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -13,13 +13,13 @@ export function IxosNav() {
   const linkRefs = useRef<(HTMLElement | null)[]>([])
   const { isSignedIn, isLoaded } = useAuth()
   const pathname = usePathname() || ''
-  const isHomePage = pathname === '/'
+  const isHomePage = pathname === '/' || pathname === ''
 
   useEffect(() => { setMenuOpen(false) }, [pathname])
 
   useEffect(() => {
     if (!isHomePage) return
-    const sections = ['hero', 'how-it-works', 'use-cases', 'features', 'privacy']
+    const sections = ['hero', 'how-it-works', 'use-cases', 'features', 'privacy', 'pricing']
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) setActiveSection(entry.target.id)
@@ -46,17 +46,16 @@ export function IxosNav() {
     { label: 'Product', href: '/#how-it-works', sectionId: 'how-it-works' },
     { label: 'Use Cases', href: '/#use-cases', sectionId: 'use-cases' },
     { label: 'Privacy', href: '/#privacy', sectionId: 'privacy' },
-    { label: 'Pricing', href: '/pricing', sectionId: '' },
+    { label: 'Pricing', href: '/pricing', sectionId: 'pricing' },
+    { label: 'Ixplorer', href: '/ixplorer', sectionId: '' },
     { label: 'Docs', href: '/docs', sectionId: '' },
     { label: 'Developers', href: '/developers', sectionId: '' },
   ]
 
   const isLinkActive = (link: { href: string; sectionId: string }) => {
-    if (link.sectionId) return activeSection === link.sectionId
+    if (isHomePage && link.sectionId) return activeSection === link.sectionId
     return pathname === link.href || pathname.startsWith(link.href + '/')
   }
-
-  const isAccountActive = pathname === '/account' || pathname.startsWith('/account/')
 
   const movePill = (idx: number) => {
     const el = linkRefs.current[idx]
@@ -69,9 +68,6 @@ export function IxosNav() {
   }
 
   const hidePill = () => setPillState(p => ({ ...p, visible: false }))
-
-  const totalNavLinks = navLinks.length
-  const accountIdx = totalNavLinks
 
   return (
     <>
@@ -125,26 +121,10 @@ export function IxosNav() {
               </Link>
             )
           })}
-
-          {/* Account — inside container for pill tracking */}
-          {isLoaded && isSignedIn && (
-            <Link
-              ref={el => { linkRefs.current[accountIdx] = el }}
-              href="/account"
-              onMouseEnter={() => movePill(accountIdx)}
-              className={`relative z-10 px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest rounded-full transition-colors duration-150 ${
-                isAccountActive
-                  ? 'text-amber-400 bg-amber-400/10 shadow-[inset_0_0_12px_rgba(246,185,76,0.12)]'
-                  : 'text-white/40 hover:text-white/80'
-              }`}
-            >
-              Account
-            </Link>
-          )}
         </div>
 
         {/* Auth & CTA */}
-        <div className="flex items-center gap-1 ml-1">
+        <div className="flex items-center gap-3 ml-2">
           {isLoaded && isSignedIn ? (
             <UserButton afterSignOutUrl="/" />
           ) : isLoaded ? (
@@ -196,15 +176,6 @@ export function IxosNav() {
               {link.label}
             </Link>
           ))}
-          {isLoaded && isSignedIn && (
-            <Link
-              href="/account"
-              onClick={() => setMenuOpen(false)}
-              className="block px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-widest text-white/50 hover:text-white/90 hover:bg-white/5 rounded-xl transition-colors"
-            >
-              Account
-            </Link>
-          )}
           {isLoaded && !isSignedIn && (
             <Link
               href="/sign-in"

@@ -1,61 +1,57 @@
 "use client";
 
+import { useRef } from "react";
+import { useScroll, useTransform, motion } from "framer-motion";
 import { FadeInView } from "@/components/effects/FadeInView";
 import { CornerBrackets } from "@/components/effects/CornerBrackets";
+import { Database, Network, SearchCode } from "lucide-react";
 
 const STEPS = [
   {
     num: "01",
+    id: "scan",
     title: "Index",
-    desc: "Point Ixos at any folder. It scans your files in milliseconds — documents, spreadsheets, code, PDFs, and more.",
+    desc: "Point Ixos at any folder. It scans your files in milliseconds — documents, code, PDFs, and more.",
     color: "#F6B94C",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <path d="M4 8h20v14a2 2 0 01-2 2H6a2 2 0 01-2-2V8z" stroke="#F6B94C" strokeWidth="1.5" strokeOpacity="0.6" />
-        <path d="M4 8V6a2 2 0 012-2h6l2 4H4z" stroke="#F6B94C" strokeWidth="1.5" strokeOpacity="0.6" />
-        <path d="M10 15h8M10 18h5" stroke="#F6B94C" strokeWidth="1" strokeOpacity="0.4" strokeLinecap="round" />
-      </svg>
-    ),
+    icon: Database,
   },
   {
     num: "02",
+    id: "map",
     title: "Map",
-    desc: "A local semantic model maps meaning across your documents. Embeddings are cached and cryptographically signed on your device.",
-    color: "#14B8A6",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <circle cx="14" cy="14" r="3" stroke="#14B8A6" strokeWidth="1.5" strokeOpacity="0.6" />
-        <circle cx="6" cy="8" r="2" stroke="#14B8A6" strokeWidth="1" strokeOpacity="0.4" />
-        <circle cx="22" cy="8" r="2" stroke="#14B8A6" strokeWidth="1" strokeOpacity="0.4" />
-        <circle cx="6" cy="20" r="2" stroke="#14B8A6" strokeWidth="1" strokeOpacity="0.4" />
-        <circle cx="22" cy="20" r="2" stroke="#14B8A6" strokeWidth="1" strokeOpacity="0.4" />
-        <path d="M8 9l4 3.5M20 9l-4 3.5M8 19l4-3.5M20 19l-4-3.5" stroke="#14B8A6" strokeWidth="0.8" strokeOpacity="0.3" />
-      </svg>
-    ),
+    desc: "A local semantic model maps meaning. Embeddings are cached and cryptographically signed on-device.",
+    color: "#F6B94C",
+    icon: Network,
   },
   {
     num: "03",
+    id: "find",
     title: "Find",
-    desc: "Search naturally. Get ranked results with evidence — file, line, snippet, and a full score breakdown you can verify.",
-    color: "#7C5CFF",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <circle cx="12" cy="12" r="7" stroke="#7C5CFF" strokeWidth="1.5" strokeOpacity="0.6" />
-        <path d="M17.5 17.5L23 23" stroke="#7C5CFF" strokeWidth="1.5" strokeOpacity="0.6" strokeLinecap="round" />
-        <path d="M9 12h6M12 9v6" stroke="#7C5CFF" strokeWidth="1" strokeOpacity="0.35" strokeLinecap="round" />
-      </svg>
-    ),
+    desc: "Search naturally. Ranked results with verified evidence — file, line, and a full score breakdown.",
+    color: "#F6B94C",
+    icon: SearchCode,
   },
 ];
 
 export function HowItWorksSection() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start 80%", "end 20%"],
+  });
+
+  // Calculate length for the animated drawing
+  const pathLength = useTransform(scrollYProgress, [0, 1], [0, 1]);
+
   return (
-    <section id="how-it-works" className="relative z-10 py-28 px-6">
-      <div className="max-w-6xl mx-auto">
+    <section id="how-it-works" className="relative z-10 py-32 px-6 overflow-hidden">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(ellipse_50%_50%_at_50%_50%,rgba(246,185,76,0.02),transparent)] pointer-events-none" />
+
+      <div className="max-w-6xl mx-auto" ref={containerRef}>
         <FadeInView direction="up">
-          <div className="text-center mb-16">
-            <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-amber-400/60 mb-4">
-              ▸ How It Works
+          <div className="text-center mb-24">
+            <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-amber-500/80 mb-4 font-bold">
+              ▸ The Pipeline
             </p>
             <h2
               className="text-3xl md:text-5xl font-semibold font-display text-white"
@@ -66,57 +62,57 @@ export function HowItWorksSection() {
           </div>
         </FadeInView>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {STEPS.map((step, i) => (
-            <FadeInView key={step.num} direction="up" delay={i * 140}>
-              <div
-                className="relative p-8 border h-full group"
-                style={{
-                  borderColor: `${step.color}22`,
-                  background: `${step.color}04`,
-                  transition: "border-color 0.3s ease, box-shadow 0.3s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = `${step.color}44`;
-                  e.currentTarget.style.boxShadow = `0 0 40px ${step.color}12`;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = `${step.color}22`;
-                  e.currentTarget.style.boxShadow = "none";
-                }}
-              >
-                <CornerBrackets size={12} color={`${step.color}30`} />
+        <div className="relative">
+          {/* Desktop SVG Pipeline */}
+          <div className="hidden md:block absolute top-[48px] left-[16.6%] right-[16.6%] h-[2px] pointer-events-none z-0">
+            <svg width="100%" height="2" className="overflow-visible absolute top-0 left-0">
+              <line
+                x1="0" y1="1" x2="100%" y2="1"
+                stroke="rgba(246,185,76,0.15)"
+                strokeWidth="1"
+                strokeDasharray="4 6"
+              />
+              <motion.line
+                x1="0" y1="1" x2="100%" y2="1"
+                stroke="rgba(246,185,76,0.5)"
+                strokeWidth="1"
+                style={{ pathLength }}
+              />
+            </svg>
+          </div>
 
-                {/* Step number + icon row */}
-                <div className="flex items-center justify-between mb-6">
-                  <div
-                    className="text-4xl font-bold font-display opacity-15"
-                    style={{ color: step.color }}
-                  >
-                    {step.num}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-0 relative z-10">
+            {STEPS.map((step, i) => {
+              const Icon = step.icon;
+
+              return (
+                <FadeInView key={step.id} direction="up" delay={i * 200}>
+                  <div className="flex flex-col items-center">
+                    {/* Node */}
+                    <div
+                      className="relative w-24 h-24 mb-6 bg-[#0A0D14] flex flex-col items-center justify-center group overflow-hidden z-10"
+                    >
+                      <CornerBrackets size={12} color="rgba(246,185,76,0.3)" />
+                      <Icon className="w-8 h-8 mb-2 transition-transform duration-500 group-hover:scale-110" style={{ color: step.color }} />
+                      <span className="font-mono text-[9px] font-bold tracking-[0.2em] text-white/50 group-hover:text-white/90 transition-colors uppercase">
+                        STAGE_0{i + 1}
+                      </span>
+                    </div>
+
+                    {/* Content */}
+                    <div className="text-center max-w-[260px]">
+                      <h3 className="text-xl font-bold font-mono mb-3 text-amber-500">
+                        {step.title}
+                      </h3>
+                      <p className="text-[12px] text-white/50 leading-relaxed font-mono px-2">
+                        {step.desc}
+                      </p>
+                    </div>
                   </div>
-                  <div className="opacity-60 group-hover:opacity-100 transition-opacity">
-                    {step.icon}
-                  </div>
-                </div>
-
-                <h3
-                  className="text-2xl font-semibold font-display mb-3"
-                  style={{ color: step.color }}
-                >
-                  {step.title}
-                </h3>
-                <p className="text-sm text-white/45 leading-relaxed">
-                  {step.desc}
-                </p>
-              </div>
-            </FadeInView>
-          ))}
-        </div>
-
-        {/* Connecting line (desktop only) */}
-        <div className="hidden md:block relative h-0 -mt-[calc(50%+24px)]">
-          <div className="absolute top-1/2 left-[16.67%] right-[16.67%] h-px bg-gradient-to-r from-[#F6B94C22] via-[#14B8A622] to-[#7C5CFF22]" />
+                </FadeInView>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

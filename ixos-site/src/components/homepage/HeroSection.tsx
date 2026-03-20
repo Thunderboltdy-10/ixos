@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useDecodeEffect } from "@/hooks/useDecodeEffect";
-import { MixedFileSearchDemo } from "./MixedFileSearchDemo";
+import { DemoSurface } from "@/components/DemoSurface";
 
 function DecodedHeading({
   text,
@@ -62,9 +62,8 @@ export function HeroSection() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, delay: 0.5 }}
         className="relative z-10 w-full max-w-5xl overflow-hidden shadow-2xl shadow-black/50"
-        style={{ height: 520 }}
       >
-        <MixedFileSearchDemo />
+          <DemoSurface />
       </motion.div>
 
       <motion.div

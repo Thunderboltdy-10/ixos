@@ -73,7 +73,7 @@ function InstallBlock() {
             className={`px-5 py-2.5 text-[10px] font-mono font-bold uppercase tracking-widest transition-colors ${
               os === o
                 ? "text-amber-400 bg-amber-400/8 border-b-2 border-amber-400"
-                : "text-white/30 hover:text-white/50"
+                : "text-white/50 hover:text-white/80"
             }`}
           >
             {o === "macos" ? "macOS" : o.charAt(0).toUpperCase() + o.slice(1)}
@@ -84,18 +84,18 @@ function InstallBlock() {
       {/* Command */}
       <div className="p-5">
         <div className="flex items-center justify-between gap-4 mb-2">
-          <span className="text-[10px] font-mono text-white/25 uppercase tracking-widest">
+          <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest">
             {cmd.shell}
           </span>
           <button
             onClick={handleCopy}
-            className="text-[10px] font-mono text-amber-400/50 hover:text-amber-400 transition-colors"
+            className="text-[10px] font-mono text-amber-400/80 hover:text-amber-400 transition-colors"
           >
             {copied ? "Copied!" : "Copy"}
           </button>
         </div>
-        <div className="font-mono text-sm text-white/70 bg-white/[0.02] border border-white/6 p-4 overflow-x-auto">
-          <span className="text-white/25">$ </span>
+        <div className="font-mono text-sm text-white/90 bg-white/[0.04] border border-white/10 p-4 overflow-x-auto">
+          <span className="text-white/50">$ </span>
           {cmd.command}
         </div>
       </div>
@@ -165,7 +165,7 @@ export default function CLIPage() {
                     <span className="w-3 h-3 rounded-full bg-white/10" />
                     <span className="w-3 h-3 rounded-full bg-white/10" />
                   </div>
-                  <span className="font-mono text-xs text-amber-400/30 ml-2 uppercase tracking-widest">
+                  <span className="font-mono text-xs text-amber-400/60 ml-2 uppercase tracking-widest">
                     ixos — terminal
                   </span>
                 </div>
@@ -174,11 +174,11 @@ export default function CLIPage() {
                   {CLI_EXAMPLES.map((item, i) => (
                     <div key={i}>
                       <div>
-                        <span className="text-white/25">$ </span>
+                        <span className="text-white/50">$ </span>
                         <span className="text-amber-400">ixos</span>
-                        <span className="text-white/65"> {item.cmd}</span>
+                        <span className="text-white/90"> {item.cmd}</span>
                       </div>
-                      <div className="text-white/20 ml-4 text-xs mt-0.5">
+                      <div className="text-white/50 ml-4 text-xs mt-0.5">
                         # {item.hint}
                       </div>
                     </div>

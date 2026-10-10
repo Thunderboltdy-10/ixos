@@ -123,6 +123,7 @@ impl EmbeddingCache for XattrCache {
 
     fn set(&self, path: &Path, file_hash: &[u8; 32], embedding: &[f32]) -> Result<(), CacheError> {
         let signed_data = self.validator.sign(embedding, file_hash);
+        self.validator.verify(&signed_data, file_hash)?;
 
         xattr::set(path, XATTR_NAME, &signed_data)?;
         tracing::debug!("xattr cache set for {:?}", path);
@@ -180,7 +181,7 @@ mod tests {
         }
 
         let cache = XattrCache::with_validator(test_validator());
-        let embedding: Vec<f32> = (0..64).map(|i| i as f32 * 0.01).collect();
+        let embedding: Vec<f32> = (0..512).map(|i| (i % 100) as f32 * 0.01).collect();
         let file_hash = [0xCDu8; 32];
 
         // Set
@@ -230,7 +231,7 @@ mod tests {
         }
 
         let cache = XattrCache::with_validator(test_validator());
-        let embedding: Vec<f32> = (0..64).map(|i| i as f32 * 0.01).collect();
+        let embedding: Vec<f32> = (0..512).map(|i| (i % 100) as f32 * 0.01).collect();
         let original_hash = [0xCDu8; 32];
         let new_hash = [0xEEu8; 32];
 
@@ -255,7 +256,7 @@ mod tests {
         }
 
         let cache = XattrCache::with_validator(test_validator());
-        let embedding: Vec<f32> = (0..64).map(|i| i as f32 * 0.01).collect();
+        let embedding: Vec<f32> = (0..512).map(|i| (i % 100) as f32 * 0.01).collect();
         let file_hash = [0xCDu8; 32];
 
         // Set

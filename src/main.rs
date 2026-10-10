@@ -85,11 +85,19 @@ async fn main() -> anyhow::Result<()> {
             context,
             deep_search,
             evidence,
+            stats,
+            max_output_bytes,
+            snippet_chars,
         } => {
-            handle_search(
+            let resolved_format = format
+                .map(Into::into)
+                .map(Ok)
+                .unwrap_or_else(|| config.output.default_format.parse::<OutputFormat>())
+                .map_err(anyhow::Error::msg)?;
+            let outcome = handle_search(
                 &query,
-                limit,
-                format.into(),
+                limit.unwrap_or(config.search.default_limit),
+                resolved_format,
                 dir,
                 json,
                 progressive || config.search.progressive_by_default,
@@ -103,12 +111,28 @@ async fn main() -> anyhow::Result<()> {
                 model,
                 pro_model,
                 secure_timing || config.search.secure_timing,
-                context,
+                context.unwrap_or(config.search.context_lines),
                 deep_search,
                 evidence,
+                stats,
+                max_output_bytes,
+                snippet_chars,
                 &config,
             )
-            .await?;
+            .await;
+            if let Err(error) = outcome {
+                let formatter = create_formatter_with_options(
+                    if json {
+                        OutputFormat::Json
+                    } else {
+                        resolved_format
+                    },
+                    false,
+                    false,
+                );
+                formatter.format_error(&error.to_string(), &mut stdout())?;
+                return Err(error);
+            }
         }
 
         Commands::Index {
@@ -117,7 +141,7 @@ async fn main() -> anyhow::Result<()> {
             progress,
             clear,
         } => {
-            handle_index(dirs, use_xattr, progress, clear).await?;
+            handle_index(dirs, use_xattr, progress, clear, &config).await?;
         }
 
         Commands::Config {
@@ -162,7 +186,12 @@ async fn main() -> anyhow::Result<()> {
             handle_model(action).await?;
         }
 
-        Commands::Update { check, yes, version, auto } => {
+        Commands::Update {
+            check,
+            yes,
+            version,
+            auto,
+        } => {
             ixos_protocol::cli::self_update::run_update(check, yes, version, auto)?;
         }
     }
@@ -182,16 +211,16 @@ async fn main() -> anyhow::Result<()> {
 // Search Handler
 // =============================================================================
 
-fn resolve_flash_model_type(raw: &str) -> ModelType {
-    raw.parse::<ModelType>().unwrap_or(ModelType::IxosFlashV2)
+fn resolve_flash_model_type(raw: &str) -> anyhow::Result<ModelType> {
+    raw.parse::<ModelType>().map_err(anyhow::Error::msg)
 }
 
-fn resolve_pro_model_type(raw: &str) -> ModelType {
+fn resolve_pro_model_type(raw: &str) -> anyhow::Result<ModelType> {
     let normalized = raw.trim().to_lowercase();
     match normalized.as_str() {
-        "ixos-pro-v2" | "pro-v2" | "pro" => ModelType::IxosProV2,
-        "potion" | "potion-base-8m-int8" => ModelType::Potion,
-        _ => raw.parse::<ModelType>().unwrap_or(ModelType::IxosProV2),
+        "ixos-pro-v2" | "pro-v2" | "pro" => Ok(ModelType::IxosProV2),
+        "potion" | "potion-base-8m-int8" => Ok(ModelType::Potion),
+        _ => raw.parse::<ModelType>().map_err(anyhow::Error::msg),
     }
 }
 
@@ -235,8 +264,35 @@ async fn handle_search(
     context_lines: usize,
     deep_search: bool,
     include_evidence: bool,
+    show_stats: bool,
+    max_output_bytes: Option<usize>,
+    snippet_chars: Option<usize>,
     config: &IxosConfig,
 ) -> anyhow::Result<()> {
+    anyhow::ensure!(!query.trim().is_empty(), "Search query must not be empty");
+    anyhow::ensure!(limit > 0, "Result limit must be greater than zero");
+    anyhow::ensure!(
+        min_score
+            .unwrap_or(config.search.min_score_threshold)
+            .is_finite(),
+        "Minimum score must be finite"
+    );
+    anyhow::ensure!(
+        (0.0..=1.0).contains(&min_score.unwrap_or(config.search.min_score_threshold)),
+        "Minimum score must be between zero and one"
+    );
+    anyhow::ensure!(
+        config.search.timeout_seconds > 0,
+        "Search timeout must be greater than zero"
+    );
+    anyhow::ensure!(
+        !progressive || max_output_bytes.is_none(),
+        "Output byte budgets currently apply to final-only searches; disable progressive mode"
+    );
+    anyhow::ensure!(
+        max_output_bytes.is_none_or(|n| n >= 256),
+        "Output budget must be at least 256 bytes"
+    );
     // Initialize deep search mode if enabled.
     let mut deep_search_tracker = if deep_search {
         let mut tracker = ixos_protocol::journalist_mode::JournalistMode::new();
@@ -256,25 +312,17 @@ async fn handle_search(
     let configured_cache_mode = parse_runtime_cache_mode(&config.search.cache_mode)?;
     let effective_cache_mode = cache_mode.unwrap_or(configured_cache_mode);
 
-    // Check consent before AI operations
+    // Search runs locally; optional compliance/history commands never gate retrieval.
     let compliance = ComplianceManager::new()?;
-    match compliance.ensure_consent_cli() {
-        Ok(()) => {}
-        Err(ixos_protocol::ComplianceError::ConsentRequired) => {
-            println!("Search cancelled - consent required for AI-powered search.");
-            println!("Grant consent with: ixos compliance consent --grant");
-            return Ok(());
-        }
-        Err(e) => {
-            return Err(anyhow::anyhow!("Compliance error: {}", e));
-        }
-    }
 
     // Determine output format
     let output_format = if json { OutputFormat::Json } else { format };
     let use_color = config.output.color && output_format == OutputFormat::Human;
     let formatter = create_formatter_with_options(output_format, use_color, include_evidence);
-    let mut stdout = stdout();
+    let mut stdout = CountingOutput {
+        writer: stdout(),
+        bytes: 0,
+    };
 
     // Determine search directory
     let raw_search_dir = dir
@@ -285,11 +333,7 @@ async fn handle_search(
     // Enforce sandbox if provided
     if let Some(sandbox_dir) = sandbox {
         if !sandbox_dir.exists() {
-            formatter.format_error(
-                &format!("Sandbox directory not found: {}", sandbox_dir.display()),
-                &mut stdout,
-            )?;
-            return Ok(());
+            anyhow::bail!("Sandbox directory not found: {}", sandbox_dir.display());
         }
         let sandbox_config =
             ixos_protocol::security::sandbox::SandboxConfig::with_directories(
@@ -298,20 +342,15 @@ async fn handle_search(
         let sandbox = ixos_protocol::security::sandbox::Sandbox::new(sandbox_config)
             .map_err(|e| anyhow::anyhow!("{}", e))?;
         if let Err(e) = sandbox.validate_path(&search_dir) {
-            formatter.format_error(
-                &format!("Search directory outside sandbox: {}", e),
-                &mut stdout,
-            )?;
-            return Ok(());
+            anyhow::bail!("Search directory outside sandbox: {}", e);
         }
     }
 
-    if !search_dir.exists() {
-        formatter.format_error(
-            &format!("Search directory not found: {}", search_dir.display()),
-            &mut stdout,
-        )?;
-        return Ok(());
+    if !search_dir.is_dir() {
+        anyhow::bail!(
+            "Search directory not found or not a directory: {}",
+            search_dir.display()
+        );
     }
 
     // Resolve model and mode selection (CLI override > config)
@@ -324,17 +363,20 @@ async fn handle_search(
         None => match config.search.search_mode.as_str() {
             "flash" => ixos_protocol::ixos_rank::progressive::SearchMode::Flash,
             "pro" => ixos_protocol::ixos_rank::progressive::SearchMode::Pro,
-            _ => ixos_protocol::ixos_rank::progressive::SearchMode::Auto,
+            "auto" => ixos_protocol::ixos_rank::progressive::SearchMode::Auto,
+            invalid => anyhow::bail!("Invalid search mode '{invalid}'; use flash, pro or auto"),
         },
     };
 
     let model_type = model
         .map(ModelType::from)
-        .unwrap_or_else(|| resolve_flash_model_type(&config.search.model_type));
+        .map(Ok)
+        .unwrap_or_else(|| resolve_flash_model_type(&config.search.model_type))?;
 
     let pro_model_type = pro_model
         .map(ModelType::from)
-        .unwrap_or_else(|| resolve_pro_model_type(&config.search.pro_model_type));
+        .map(Ok)
+        .unwrap_or_else(|| resolve_pro_model_type(&config.search.pro_model_type))?;
     let ask_mode_auto_intent = IntentDetector::new().should_activate_ask_mode(query);
 
     // Create search engines
@@ -377,12 +419,7 @@ async fn handle_search(
                 StubSemanticEngine::with_cache_mode(embedder, effective_cache_mode)
             }
             Err(e) => {
-                tracing::warn!(
-                    "Failed to create model ({}), falling back to stub model: {}",
-                    model_type,
-                    e
-                );
-                StubSemanticEngine::with_stub_model_and_mode(effective_cache_mode)
+                anyhow::bail!("Failed to load embedding model {model_type}: {e}. Install the model or select an available one; --stub-model is only for explicit tests.");
             }
         }
     };
@@ -425,6 +462,12 @@ async fn handle_search(
                     ))
                 }
                 Err(e) => {
+                    if matches!(
+                        resolved_search_mode,
+                        ixos_protocol::ixos_rank::progressive::SearchMode::Pro
+                    ) {
+                        anyhow::bail!("Requested Pro model {pro_model_type} is unavailable: {e}");
+                    }
                     tracing::warn!("Failed to create pro model ({}): {}", pro_model_type, e);
                     None
                 }
@@ -489,6 +532,8 @@ async fn handle_search(
     // Create progressive search engine
     let search_config = ProgressiveSearchConfig {
         max_results: limit,
+        lexical_timeout: std::time::Duration::from_secs(config.search.timeout_seconds),
+        semantic_timeout: std::time::Duration::from_secs(config.search.timeout_seconds),
         enable_secure_ranking: secure_ranking,
         context_lines,
         min_score_threshold: threshold,
@@ -504,6 +549,9 @@ async fn handle_search(
         .personal_ranking_enabled = config.search.personal_ranking_enabled;
 
     let start_time = std::time::Instant::now();
+    let mut result_count = 0;
+    let mut first_result_ms = None;
+    let diagnostics;
 
     if progressive {
         // Progressive mode with streaming
@@ -511,13 +559,21 @@ async fn handle_search(
         let cancel = CancellationToken::new();
 
         let query_clone = query.to_string();
-        let search_handle =
-            tokio::spawn(async move { engine.search_progressive(query_clone, tx, cancel).await });
+        let search_handle = tokio::spawn(async move {
+            let outcome = engine.search_progressive(query_clone, tx, cancel).await;
+            (outcome, engine.diagnostics().clone())
+        });
 
         while let Some(event) = rx.recv().await {
             match event {
                 SearchEvent::LexicalResults(results) => {
-                    formatter.format_lexical_results(&results, &mut stdout)?;
+                    if !results.is_empty() {
+                        first_result_ms.get_or_insert(start_time.elapsed().as_millis() as u64);
+                    }
+                    formatter.format_lexical_results(
+                        &results[..results.len().min(limit)],
+                        &mut stdout,
+                    )?;
                     stdout.flush()?;
                 }
                 SearchEvent::LexicalBatch {
@@ -526,14 +582,26 @@ async fn handle_search(
                     is_final: _,
                 } => {
                     // P2.1: Batched lexical results - treat like regular lexical results
-                    formatter.format_lexical_results(&results, &mut stdout)?;
+                    if !results.is_empty() {
+                        first_result_ms.get_or_insert(start_time.elapsed().as_millis() as u64);
+                    }
+                    formatter.format_lexical_results(
+                        &results[..results.len().min(limit)],
+                        &mut stdout,
+                    )?;
                     stdout.flush()?;
                 }
                 SearchEvent::Status(msg) => {
                     formatter.format_status(&msg, &mut stdout)?;
                     stdout.flush()?;
                 }
-                SearchEvent::SemanticResults(results) => {
+                SearchEvent::SemanticResults(mut results) => {
+                    results.truncate(limit);
+                    result_count = results.len();
+                    if !results.is_empty() {
+                        first_result_ms.get_or_insert(start_time.elapsed().as_millis() as u64);
+                    }
+                    clip_snippets(&mut results, snippet_chars);
                     formatter.format_semantic_results(&results, show_scores, &mut stdout)?;
                 }
                 SearchEvent::LateResult {
@@ -550,7 +618,7 @@ async fn handle_search(
                     formatter.format_status("Search cancelled", &mut stdout)?;
                 }
                 SearchEvent::Error(e) => {
-                    formatter.format_error(&e, &mut stdout)?;
+                    tracing::debug!("Search pipeline error: {e}");
                 }
                 SearchEvent::StreamUpdate { .. } => {
                     // Stream updates are for UI/animation; ignore in CLI.
@@ -558,11 +626,37 @@ async fn handle_search(
             }
         }
 
-        search_handle.await??;
+        let (outcome, measured) = search_handle.await?;
+        outcome?;
+        diagnostics = measured;
     } else {
         // Simple blocking mode
-        let results = engine.search(query, limit).await?;
-        formatter.format_semantic_results(&results, show_scores, &mut stdout)?;
+        let mut results = engine.search(query, limit).await?;
+        if !results.is_empty() {
+            first_result_ms = Some(start_time.elapsed().as_millis() as u64);
+        }
+        clip_snippets(&mut results, snippet_chars);
+        loop {
+            let mut rendered = Vec::new();
+            formatter.format_semantic_results(&results, show_scores, &mut rendered)?;
+            if max_output_bytes.is_none_or(|budget| rendered.len() <= budget) {
+                stdout.write_all(&rendered)?;
+                break;
+            }
+            if results.len() > 1 {
+                results.pop();
+            } else if results
+                .first()
+                .is_some_and(|r| r.context_snippet.is_some() || r.evidence.is_some())
+            {
+                results[0].context_snippet = None;
+                results[0].evidence = None;
+            } else {
+                anyhow::bail!("Output budget is too small for the best result's path and metadata");
+            }
+        }
+        result_count = results.len();
+        diagnostics = engine.diagnostics().clone();
     }
 
     let duration_ms = start_time.elapsed().as_millis() as u64;
@@ -570,10 +664,23 @@ async fn handle_search(
     // Record the search in history
     let _ = compliance.record_search(
         query,
-        0, // Would be actual result count
+        result_count,
         duration_ms,
         ixos_protocol::SearchMode::Hybrid,
     );
+
+    if show_stats {
+        eprintln!(
+            "{}",
+            serde_json::json!({
+                "type": "searchStats", "durationMs": duration_ms, "firstResultMs": first_result_ms,
+                "resultCount": result_count, "outputBytes": stdout.bytes,
+                "cacheMode": if effective_cache_mode == ixos_protocol::CacheMode::NativeCache { "cached" } else { "jit" },
+                "model": if stub_model { "stub".to_owned() } else { model_type.to_string() },
+                "diagnostics": diagnostics
+            })
+        );
+    }
 
     // Emit deep-search summary if enabled.
     if let Some(ref mut tracker) = deep_search_tracker {
@@ -586,6 +693,44 @@ async fn handle_search(
     Ok(())
 }
 
+struct CountingOutput<W> {
+    writer: W,
+    bytes: usize,
+}
+impl<W: Write> Write for CountingOutput<W> {
+    fn write(&mut self, data: &[u8]) -> std::io::Result<usize> {
+        let written = self.writer.write(data)?;
+        self.bytes += written;
+        Ok(written)
+    }
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.writer.flush()
+    }
+}
+
+fn clip_snippets(results: &mut [ixos_protocol::ixos_rank::RankedResult], cap: Option<usize>) {
+    let Some(cap) = cap else {
+        return;
+    };
+    for result in results {
+        if cap == 0 {
+            result.context_snippet = None;
+            continue;
+        }
+        if let Some(snippet) = &mut result.context_snippet {
+            snippet.raw_matched = snippet.raw_matched.chars().take(cap).collect();
+            for line in snippet
+                .before
+                .iter_mut()
+                .chain(snippet.matched.iter_mut())
+                .chain(snippet.after.iter_mut())
+            {
+                *line = line.chars().take(cap).collect();
+            }
+        }
+    }
+}
+
 // =============================================================================
 // Index Handler
 // =============================================================================
@@ -595,10 +740,10 @@ async fn handle_index(
     use_xattr: bool,
     progress: bool,
     clear: bool,
+    config: &IxosConfig,
 ) -> anyhow::Result<()> {
     if dirs.is_empty() {
-        println!("No directories specified. Usage: ixos index <directory> [--use-xattr]");
-        return Ok(());
+        anyhow::bail!("No directories specified. Usage: ixos index <directory>");
     }
 
     println!("Indexing {} directories...", dirs.len());
@@ -610,13 +755,16 @@ async fn handle_index(
         }
 
         // Check if directory exists
-        if !dir.exists() {
+        if !dir.is_dir() {
             if progress {
                 println!("NOT FOUND");
             } else {
                 println!("  - {} (not found)", dir.display());
             }
-            continue;
+            anyhow::bail!(
+                "Index directory not found or not a directory: {}",
+                dir.display()
+            );
         }
 
         if clear {
@@ -633,27 +781,42 @@ async fn handle_index(
         }
 
         // Index the directory
-        let cache_mode = if use_xattr {
+        let cache_mode = if use_xattr || config.index.use_xattr {
             ixos_protocol::ixos_rank::semantic_engine::CacheMode::NativeCache
         } else {
             ixos_protocol::ixos_rank::semantic_engine::CacheMode::Ephemeral
         };
 
-        let mut semantic = StubSemanticEngine::with_stub_model_and_mode(cache_mode);
+        let model = ixos_protocol::ixos_embed::MmapModel2VecEmbedder::new_with_type(
+            resolve_flash_model_type(&config.search.model_type)?,
+        )?;
+        model.ensure_loaded()?;
+        let embedder = if config.search.secure_timing {
+            ixos_protocol::SecureEmbedder::new_secure(std::sync::Arc::new(model))
+        } else {
+            ixos_protocol::SecureEmbedder::new_fast(std::sync::Arc::new(model))
+        };
+        let mut semantic = StubSemanticEngine::with_cache_mode(embedder, cache_mode);
         match semantic.index_directory(&dir).await {
             Ok(count) => {
-                if progress {
-                    println!("{} files", count);
+                let warmed = if cache_mode == ixos_protocol::CacheMode::NativeCache {
+                    semantic.precompute_embeddings().await
                 } else {
-                    println!("  - {} ({} files indexed)", dir.display(), count);
+                    0
+                };
+                if progress {
+                    println!("{} eligible files, {} embeddings warmed", count, warmed);
+                } else {
+                    println!(
+                        "  - {} ({} eligible files, {} embeddings warmed)",
+                        dir.display(),
+                        count,
+                        warmed
+                    );
                 }
             }
             Err(e) => {
-                if progress {
-                    println!("ERROR: {}", e);
-                } else {
-                    println!("  - {} (error: {})", dir.display(), e);
-                }
+                return Err(e.into());
             }
         }
     }
@@ -670,48 +833,47 @@ fn clear_embedding_cache_for_directory(dir: &Path) -> usize {
     use ixos_protocol::storage::get_cache_for_path;
 
     let mut cleared = 0usize;
-    for entry in walkdir::WalkDir::new(dir)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.file_type().is_file())
-    {
+    for entry in cache_file_walk(dir) {
         let candidate_path =
             std::fs::canonicalize(entry.path()).unwrap_or_else(|_| entry.into_path());
         let cache = get_cache_for_path(&candidate_path);
-        if cache.delete(&candidate_path).is_ok() {
+        if cache.contains(&candidate_path) && cache.delete(&candidate_path).is_ok() {
             cleared += 1;
         }
     }
-    cleared += clear_lmdb_sidecar_cache();
     cleared
 }
 
-fn clear_lmdb_sidecar_cache() -> usize {
-    let lmdb = match ixos_protocol::storage::sidecar_lmdb::LmdbSidecarCache::new() {
-        Ok(lmdb) => lmdb,
-        Err(_) => return 0,
-    };
-
-    let before = lmdb.stats().map(|s| s.entry_count).unwrap_or(0);
-    if lmdb.clear().is_ok() {
-        before
-    } else {
-        0
-    }
+fn cache_file_walk(dir: &Path) -> impl Iterator<Item = ignore::DirEntry> {
+    ixos_protocol::ixos_rank::candidate_generator::path_engine::search_walk(
+        dir, true, true, false, None,
+    )
+    .build()
+    .filter_map(Result::ok)
+    .filter(|entry| {
+        entry.file_type().is_some_and(|kind| kind.is_file())
+            && ixos_protocol::parsers::can_extract_text(entry.path())
+    })
 }
 
-fn active_flash_model_fingerprint(config_path_override: Option<PathBuf>) -> [u8; 32] {
+fn active_flash_model_fingerprint(
+    config_path_override: Option<PathBuf>,
+) -> anyhow::Result<[u8; 32]> {
     use ixos_protocol::ixos_embed::MmapModel2VecEmbedder;
-    use ixos_protocol::EmbeddingModel;
 
     let config = match config_path_override {
         Some(path) => IxosConfig::load_from(path),
         None => IxosConfig::load(),
     };
-    let model_type = resolve_flash_model_type(&config.search.model_type);
-    MmapModel2VecEmbedder::new_with_type(model_type)
-        .map(|model| model.fingerprint())
-        .unwrap_or(ixos_protocol::storage::DEFAULT_MODEL_FINGERPRINT)
+    let model_type = resolve_flash_model_type(&config.search.model_type)?;
+    let model = MmapModel2VecEmbedder::new_with_type(model_type)?;
+    model.ensure_loaded()?;
+    let embedder = if config.search.secure_timing {
+        ixos_protocol::SecureEmbedder::new_secure(std::sync::Arc::new(model))
+    } else {
+        ixos_protocol::SecureEmbedder::new_fast(std::sync::Arc::new(model))
+    };
+    Ok(ixos_protocol::ixos_rank::semantic_engine::embedding_cache_fingerprint(&embedder))
 }
 
 // =============================================================================
@@ -864,44 +1026,37 @@ async fn handle_cache(
         CacheCommands::Stats { dir, json } => {
             let raw_dir = dir.unwrap_or_else(|| PathBuf::from("."));
             let target_dir = std::fs::canonicalize(&raw_dir).unwrap_or(raw_dir);
-            let model_fingerprint = active_flash_model_fingerprint(config_path_override.clone());
+            if !target_dir.is_dir() {
+                anyhow::bail!("Cache directory not found: {}", target_dir.display());
+            }
+            let model_fingerprint = active_flash_model_fingerprint(config_path_override.clone())?;
 
             // Walk directory and count cached files (validated by current file hash).
             let mut total_files = 0;
             let mut cached_files = 0;
             let mut cache_size_bytes = 0u64;
+            let mut present_entries = 0;
 
             if target_dir.is_dir() {
-                for entry in walkdir::WalkDir::new(&target_dir)
-                    .max_depth(10)
-                    .into_iter()
-                    .filter_map(|e| e.ok())
-                    .filter(|e| e.file_type().is_file())
-                {
+                for entry in cache_file_walk(&target_dir) {
                     total_files += 1;
                     let candidate_path =
                         std::fs::canonicalize(entry.path()).unwrap_or_else(|_| entry.into_path());
                     let file_hash =
-                        match ixos_protocol::security::crypto::sha256_file(&candidate_path) {
+                        match ixos_protocol::ixos_rank::semantic_engine::cached_source_identity(
+                            &candidate_path,
+                        ) {
                             Ok(hash) => hash,
                             Err(_) => continue,
                         };
                     let cache =
                         get_cache_for_path_with_fingerprint(&candidate_path, model_fingerprint);
-                    let mut counted = false;
+                    if cache.contains(&candidate_path) {
+                        present_entries += 1;
+                    }
                     if let Ok(Some(embedding)) = cache.get(&candidate_path, &file_hash) {
                         cached_files += 1;
-                        // Approximate entry storage (embedding + metadata/signature envelope).
-                        cache_size_bytes += (embedding.len() as u64 * 4).saturating_add(97);
-                        counted = true;
-                    }
-
-                    // Fallback signal for entries produced by a different model fingerprint
-                    // (e.g., stub-model test runs). This keeps cache-mode truthfulness checks
-                    // meaningful even when model identity differs from current config.
-                    if !counted && cache.contains(&candidate_path) {
-                        cached_files += 1;
-                        cache_size_bytes += 225;
+                        cache_size_bytes += (embedding.len() as u64 * 2) + 101;
                     }
                 }
             }
@@ -916,6 +1071,7 @@ async fn handle_cache(
                 println!("{{");
                 println!("  \"total_files\": {},", total_files);
                 println!("  \"cached_files\": {},", cached_files);
+                println!("  \"present_entries\": {},", present_entries);
                 println!("  \"cache_size_bytes\": {},", cache_size_bytes);
                 println!("  \"hit_rate_percent\": {:.1}", hit_rate);
                 println!("}}");
@@ -935,6 +1091,9 @@ async fn handle_cache(
             stale_days,
         } => {
             let target_dir = dir.unwrap_or_else(|| PathBuf::from("."));
+            if !target_dir.is_dir() {
+                anyhow::bail!("Cache directory not found: {}", target_dir.display());
+            }
 
             if !force {
                 print!("Clear cache for {}? [y/N]: ", target_dir.display());
@@ -953,12 +1112,7 @@ async fn handle_cache(
 
             let mut cleared = 0;
             if target_dir.is_dir() {
-                for entry in walkdir::WalkDir::new(&target_dir)
-                    .max_depth(10)
-                    .into_iter()
-                    .filter_map(|e| e.ok())
-                    .filter(|e| e.file_type().is_file())
-                {
+                for entry in cache_file_walk(&target_dir) {
                     let candidate_path =
                         std::fs::canonicalize(entry.path()).unwrap_or_else(|_| entry.into_path());
 
@@ -977,18 +1131,11 @@ async fn handle_cache(
                     }
 
                     let cache = get_cache_for_path(&candidate_path);
-                    if cache.delete(&candidate_path).is_ok() {
+                    if cache.contains(&candidate_path) && cache.delete(&candidate_path).is_ok() {
                         cleared += 1;
                     }
                 }
             }
-
-            if stale_days.is_some() {
-                println!(
-                    "Note: LMDB fallback cache is cleared globally because per-file stale filtering is not supported."
-                );
-            }
-            cleared += clear_lmdb_sidecar_cache();
 
             println!("Cleared {} cache entries.", cleared);
         }
@@ -996,40 +1143,39 @@ async fn handle_cache(
         CacheCommands::Audit { detailed, verify } => {
             println!("Cache Audit");
             println!("{}", "-".repeat(50));
-            let model_fingerprint = active_flash_model_fingerprint(config_path_override.clone());
+            let model_fingerprint = active_flash_model_fingerprint(config_path_override.clone())?;
 
             let raw_cwd = std::env::current_dir()?;
             let cwd = std::fs::canonicalize(&raw_cwd).unwrap_or(raw_cwd);
-            let mut total = 0;
+            let mut total: usize = 0;
             let mut valid = 0;
             let mut invalid = 0;
 
-            for entry in walkdir::WalkDir::new(&cwd)
-                .max_depth(5)
-                .into_iter()
-                .filter_map(|e| e.ok())
-                .filter(|e| e.file_type().is_file())
-            {
+            for entry in cache_file_walk(&cwd) {
                 let cache = get_cache_for_path_with_fingerprint(entry.path(), model_fingerprint);
 
                 // P2 Badge: Use real file hash when detecting cached entries for audit
-                let file_hash = match ixos_protocol::security::crypto::sha256_file(entry.path()) {
-                    Ok(h) => h,
-                    Err(e) => {
-                        if detailed {
-                            println!("SKIP: {} (hash error: {})", entry.path().display(), e);
+                let file_hash =
+                    match ixos_protocol::ixos_rank::semantic_engine::cached_source_identity(
+                        entry.path(),
+                    ) {
+                        Ok(h) => h,
+                        Err(e) => {
+                            if detailed {
+                                println!("SKIP: {} (hash error: {})", entry.path().display(), e);
+                            }
+                            continue;
                         }
-                        continue;
-                    }
-                };
+                    };
 
-                if let Ok(Some(embedding)) = cache.get(entry.path(), &file_hash) {
+                if cache.contains(entry.path()) {
                     total += 1;
-
+                }
+                if let Ok(Some(embedding)) = cache.get(entry.path(), &file_hash) {
                     if verify {
                         // Check embedding dimensions and values
                         let is_valid =
-                            embedding.len() == 64 && embedding.iter().all(|&v| v.is_finite());
+                            !embedding.is_empty() && embedding.iter().all(|&v| v.is_finite());
 
                         if is_valid {
                             valid += 1;
@@ -1054,6 +1200,7 @@ async fn handle_cache(
             }
 
             println!();
+            invalid = invalid.max(total.saturating_sub(valid));
             println!("Total cached:  {}", total);
             if verify {
                 println!("Valid:         {}", valid);
@@ -1093,7 +1240,7 @@ async fn handle_cache(
             workers,
             force,
         } => {
-            if !dir.exists() {
+            if !dir.is_dir() {
                 anyhow::bail!("Directory does not exist: {}", dir.display());
             }
 
@@ -1117,8 +1264,11 @@ async fn handle_cache(
             println!("Workers: {}", workers);
             println!();
 
-            let config = IxosConfig::load();
-            let model_type = resolve_flash_model_type(&config.search.model_type);
+            let config = match config_path_override {
+                Some(path) => IxosConfig::load_from(path),
+                None => IxosConfig::load(),
+            };
+            let model_type = resolve_flash_model_type(&config.search.model_type)?;
             let rebuild_dir = std::fs::canonicalize(&dir).unwrap_or(dir.clone());
             let started = std::time::Instant::now();
             use ixos_protocol::ixos_embed::MmapModel2VecEmbedder;
@@ -1133,7 +1283,13 @@ async fn handle_cache(
                     e
                 )
             })?;
-            let embedder = SecureEmbedder::new_fast(Arc::new(model));
+            model.ensure_loaded()?;
+            let embedder = if config.search.secure_timing {
+                SecureEmbedder::new_secure(Arc::new(model))
+            } else {
+                SecureEmbedder::new_fast(Arc::new(model))
+            };
+            clear_embedding_cache_for_directory(&rebuild_dir);
             let mut semantic =
                 StubSemanticEngine::with_cache_mode(embedder, CacheMode::NativeCache);
 
@@ -1474,7 +1630,11 @@ async fn handle_model(action: ModelCommands) -> anyhow::Result<()> {
                     println!("Available Remote Models (downloadable from HuggingFace):");
                     println!("");
                     for m in models {
-                        let download_status = if m.hf_id.is_some() { "Downloadable" } else { "Local only" };
+                        let download_status = if m.hf_id.is_some() {
+                            "Downloadable"
+                        } else {
+                            "Local only"
+                        };
                         println!("  {} ({})", m.model_id, download_status);
                         println!("    Description: {}", m.description);
                         if let Some(size) = m.size_mb {
@@ -1530,20 +1690,27 @@ async fn handle_model(action: ModelCommands) -> anyhow::Result<()> {
                 }
             }
         }
-        ModelCommands::Download { model, all, progress } => {
+        ModelCommands::Download {
+            model,
+            all,
+            progress,
+        } => {
             use ixos_protocol::ixos_embed::MmapModel2VecEmbedder;
-            
+
             let remote_catalog = MmapModel2VecEmbedder::remote_models();
-            
+
             let models_to_download: Vec<_> = if all {
-                remote_catalog.into_iter().filter(|m| m.hf_id.is_some()).collect()
+                remote_catalog
+                    .into_iter()
+                    .filter(|m| m.hf_id.is_some())
+                    .collect()
             } else if let Some(model_name) = model {
                 let name_lower = model_name.to_lowercase();
                 remote_catalog
                     .into_iter()
                     .filter(|m| {
-                        m.model_id.to_lowercase() == name_lower 
-                        || m.display_name.to_lowercase().contains(&name_lower)
+                        m.model_id.to_lowercase() == name_lower
+                            || m.display_name.to_lowercase().contains(&name_lower)
                     })
                     .collect()
             } else {
@@ -1553,46 +1720,48 @@ async fn handle_model(action: ModelCommands) -> anyhow::Result<()> {
                     .filter(|m| m.model_id == "potion")
                     .collect()
             };
-            
+
             if models_to_download.is_empty() {
                 println!("No downloadable models found.");
                 println!("Use 'ixos model list --remote' to see available models.");
                 println!("Note: ixos-flash-v2, ixos-pro-v2 are local models that must be built using Python scripts:");
                 println!("  python scripts/distill_model2vec_lab.py --mode flash --flash-id ixos-flash-v2");
-                println!("  python scripts/distill_model2vec_lab.py --mode pro --pro-id ixos-pro-v2");
+                println!(
+                    "  python scripts/distill_model2vec_lab.py --mode pro --pro-id ixos-pro-v2"
+                );
                 return Ok(());
             }
-            
+
             println!("Downloading {} model(s)...", models_to_download.len());
-            
+
             for entry in models_to_download {
                 if let Some(hf_id) = entry.hf_id {
                     println!("\nDownloading {} from HuggingFace...", entry.model_id);
                     println!("  HF ID: {}", hf_id);
-                    
+
                     // Get the models directory
                     let models_dir = dirs::data_local_dir()
                         .unwrap_or_else(|| std::path::PathBuf::from("."))
                         .join("Ixos")
                         .join("models")
                         .join(entry.model_id.clone());
-                    
+
                     // Convert to forward slashes for Python compatibility on Windows
                     let models_dir_str = models_dir.display().to_string().replace('\\', "/");
-                    
+
                     println!("  Target: {}", models_dir_str);
-                    
+
                     // Use Python directly with -c and proper escaping
                     let python_script = format!(
                         "import sys; from model2vec import StaticModel; m = StaticModel.from_pretrained('{}'); m.save_pretrained('{}')",
                         hf_id,
                         models_dir_str
                     );
-                    
+
                     if progress {
                         println!("  Running: python -c '...' ");
                     }
-                    
+
                     match std::process::Command::new("python")
                         .args(["-c", &python_script])
                         .output()
@@ -1602,7 +1771,10 @@ async fn handle_model(action: ModelCommands) -> anyhow::Result<()> {
                                 println!("  [OK] Downloaded successfully to {:?}", models_dir);
                             } else {
                                 let stderr = String::from_utf8_lossy(&output.stderr);
-                                println!("  [ERROR] Download failed: {}", stderr.lines().last().unwrap_or("Unknown error"));
+                                println!(
+                                    "  [ERROR] Download failed: {}",
+                                    stderr.lines().last().unwrap_or("Unknown error")
+                                );
                                 println!("  Note: Some models require the fetch_models.py script:");
                                 println!("    python scripts/fetch_models.py --manifest models/lab/manifest.json");
                             }
@@ -1613,12 +1785,18 @@ async fn handle_model(action: ModelCommands) -> anyhow::Result<()> {
                         }
                     }
                 } else {
-                    println!("\n{}: Local-only model, cannot download from HuggingFace", entry.model_id);
+                    println!(
+                        "\n{}: Local-only model, cannot download from HuggingFace",
+                        entry.model_id
+                    );
                     println!("  To build this model, run:");
                     if entry.model_id.contains("flash") {
                         println!("    python scripts/distill_model2vec_lab.py --mode flash --flash-id {}", entry.model_id);
                     } else if entry.model_id.contains("pro") {
-                        println!("    python scripts/distill_model2vec_lab.py --mode pro --pro-id {}", entry.model_id);
+                        println!(
+                            "    python scripts/distill_model2vec_lab.py --mode pro --pro-id {}",
+                            entry.model_id
+                        );
                     }
                 }
             }

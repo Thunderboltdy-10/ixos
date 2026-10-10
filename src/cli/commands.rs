@@ -125,12 +125,12 @@ pub enum Commands {
         query: String,
 
         /// Maximum number of results to return
-        #[arg(short, long, default_value = "20")]
-        limit: usize,
+        #[arg(short, long)]
+        limit: Option<usize>,
 
         /// Output format
-        #[arg(short, long, value_enum, default_value = "human")]
-        format: CliOutputFormat,
+        #[arg(short, long, value_enum)]
+        format: Option<CliOutputFormat>,
 
         /// Directory to search in
         #[arg(short, long)]
@@ -163,7 +163,7 @@ pub enum Commands {
         #[arg(long)]
         min_score: Option<f32>,
 
-        /// Disable secure ranking (faster but less secure)
+        /// Disable file-readability verification and the optional legacy ranker
         #[arg(long)]
         no_secure_ranking: bool,
 
@@ -195,8 +195,20 @@ pub enum Commands {
         secure_timing: bool,
 
         /// Number of lines of context to show around matches (default: 5)
-        #[arg(short = 'C', long, default_value = "5")]
-        context: usize,
+        #[arg(short = 'C', long)]
+        context: Option<usize>,
+
+        /// Emit query diagnostics as one JSON object on stderr
+        #[arg(long)]
+        stats: bool,
+
+        /// Bound final result output in bytes, keeping valid structured output
+        #[arg(long, conflicts_with = "progressive")]
+        max_output_bytes: Option<usize>,
+
+        /// Maximum characters per displayed snippet line (0 disables snippets)
+        #[arg(long)]
+        snippet_chars: Option<usize>,
 
         /// Enable Deep Search mode (thorough, slower, more comprehensive)
         #[arg(long = "deep-search")]
@@ -620,7 +632,7 @@ mod tests {
         match cli.command {
             Commands::Search { query, limit, .. } => {
                 assert_eq!(query, "test query");
-                assert_eq!(limit, 20); // default
+                assert_eq!(limit, None); // Resolved from configuration at dispatch
             }
             _ => panic!("Expected Search command"),
         }
@@ -647,8 +659,8 @@ mod tests {
                 progressive,
                 ..
             } => {
-                assert_eq!(limit, 50);
-                assert!(matches!(format, CliOutputFormat::Json));
+                assert_eq!(limit, Some(50));
+                assert!(matches!(format, Some(CliOutputFormat::Json)));
                 assert!(progressive);
             }
             _ => panic!("Expected Search command"),

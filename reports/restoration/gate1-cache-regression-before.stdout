@@ -1,0 +1,20 @@
+
+running 1 test
+test storage::validator::tests::roundtrip_preserves_real_model_dimensions ... FAILED
+
+failures:
+
+---- storage::validator::tests::roundtrip_preserves_real_model_dimensions stdout ----
+
+thread 'storage::validator::tests::roundtrip_preserves_real_model_dimensions' (27820) panicked at src\storage\validator.rs:227:13:
+assertion `left == right` failed: lost dimensions for 128d model
+  left: 64
+ right: 128
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    storage::validator::tests::roundtrip_preserves_real_model_dimensions
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 493 filtered out; finished in 0.00s
+

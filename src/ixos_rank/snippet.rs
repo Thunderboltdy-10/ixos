@@ -22,7 +22,67 @@
 //! }
 //! ```
 
+use std::collections::VecDeque;
+use std::io::{BufRead, BufReader, Read};
 use std::path::Path;
+
+/// Read a bounded window at a known lexical hit, including hits beyond the
+/// semantic prefix. Stop after the window instead of loading the whole file.
+pub fn extract_context_at_line(
+    path: &Path,
+    line: usize,
+    context_lines: usize,
+) -> Option<ContextSnippet> {
+    if line == 0 || crate::storage::cloud_detection::should_skip_cloud_file(path) {
+        return None;
+    }
+    let ext = path
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase();
+    if matches!(
+        ext.as_str(),
+        "pdf" | "docx" | "xlsx" | "xls" | "pptx" | "ppt" | "rtf"
+    ) {
+        return None;
+    }
+    let file = std::fs::File::open(path).ok()?;
+    let reader = BufReader::new(file.take(64 * 1024 * 1024));
+    let mut before = VecDeque::new();
+    let mut matched = None;
+    let mut after = Vec::new();
+    for (index, content) in reader.lines().enumerate() {
+        let content = content.ok()?;
+        let number = index + 1;
+        if number < line {
+            if context_lines > 0 {
+                before.push_back(content);
+                if before.len() > context_lines {
+                    before.pop_front();
+                }
+            }
+        } else if number == line {
+            matched = Some(content);
+            if context_lines == 0 {
+                break;
+            }
+        } else {
+            after.push(content);
+            if after.len() >= context_lines {
+                break;
+            }
+        }
+    }
+    let raw = matched?;
+    Some(ContextSnippet::new(
+        line,
+        before.into_iter().collect(),
+        vec![raw.clone()],
+        after,
+        raw,
+    ))
+}
 
 /// Context snippet showing match location with surrounding lines
 #[derive(Debug, Clone, Default, serde::Serialize)]
@@ -137,22 +197,7 @@ pub fn extract_context_from_string(
     let (best_line_idx, best_score) = find_best_match_line(&lines, &query_terms);
 
     if best_score == 0 {
-        // No matches found, return first line as context
-        let matched = vec![lines.first()?.to_string()];
-        let after: Vec<String> = lines
-            .iter()
-            .skip(1)
-            .take(context_lines)
-            .map(|s| s.to_string())
-            .collect();
-
-        return Some(ContextSnippet::new(
-            1,
-            vec![],
-            matched.clone(),
-            after,
-            matched.first().cloned().unwrap_or_default(),
-        ));
+        return None;
     }
 
     // Extract context around the best match
@@ -418,12 +463,25 @@ mod tests {
     }
 
     #[test]
-    fn test_no_match_returns_first_line() {
+    fn test_no_match_returns_no_evidence() {
         let content = "line 1\nline 2\nline 3";
-        let snippet = extract_context_from_string(content, "xyz", 1).unwrap();
+        assert!(extract_context_from_string(content, "xyz", 1).is_none());
+    }
 
-        assert_eq!(snippet.line_number, 1);
-        assert_eq!(snippet.matched[0], "line 1");
+    #[test]
+    fn known_lexical_witness_beyond_prefix_has_true_line_and_context() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("long.rs");
+        let content = format!(
+            "{}needle_marker\nafter\n",
+            "ordinary introduction line\n".repeat(3000)
+        );
+        std::fs::write(&path, content).unwrap();
+        let witness = extract_context_at_line(&path, 3001, 1).unwrap();
+        assert_eq!(witness.line_number, 3001);
+        assert_eq!(witness.raw_matched, "needle_marker");
+        assert_eq!(witness.before, ["ordinary introduction line"]);
+        assert_eq!(witness.after, ["after"]);
     }
 
     #[test]

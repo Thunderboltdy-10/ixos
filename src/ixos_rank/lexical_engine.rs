@@ -13,10 +13,10 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::LazyLock;
 
+use super::candidate_generator::path_engine::search_walk;
 use async_trait::async_trait;
 use grep_regex::RegexMatcherBuilder;
 use grep_searcher::{Searcher, SearcherBuilder, Sink, SinkMatch};
-use ignore::WalkBuilder;
 use parking_lot::Mutex;
 use rayon::prelude::*;
 use regex::Regex;
@@ -47,6 +47,9 @@ fn get_cached_regex(pattern: &str) -> Option<Regex> {
 /// Trait for lexical search engines
 #[async_trait]
 pub trait LexicalEngine: Send + Sync {
+    async fn candidate_stats(&self) -> super::candidate_generator::CandidateStats {
+        super::candidate_generator::CandidateStats::default()
+    }
     /// Search for files matching the query
     ///
     /// Returns files ranked by keyword relevance.
@@ -902,14 +905,13 @@ impl LexicalEngine for RipgrepLexicalEngine {
             .map_err(|e| SearchError::LexicalFailed(format!("Failed to build regex: {}", e)))?;
 
         // Build the directory walker
-        let mut walk_builder = WalkBuilder::new(&self.root_dir);
-        walk_builder
-            .hidden(!self.config.skip_hidden)
-            .git_ignore(self.config.respect_gitignore)
-            .git_global(self.config.respect_gitignore)
-            .git_exclude(self.config.respect_gitignore)
-            .follow_links(self.config.follow_symlinks)
-            .max_depth(None); // No depth limit
+        let mut walk_builder = search_walk(
+            &self.root_dir,
+            self.config.skip_hidden,
+            self.config.respect_gitignore,
+            self.config.follow_symlinks,
+            None,
+        );
 
         if self.config.thread_count > 0 {
             walk_builder.threads(self.config.thread_count);
@@ -921,7 +923,9 @@ impl LexicalEngine for RipgrepLexicalEngine {
             .filter_map(|entry| {
                 entry.ok().and_then(|e| {
                     let path = e.path();
-                    if path.is_file() && !self.should_exclude_extension(path) {
+                    if e.file_type().is_some_and(|kind| kind.is_file())
+                        && !self.should_exclude_extension(path)
+                    {
                         Some(path.to_path_buf())
                     } else {
                         None

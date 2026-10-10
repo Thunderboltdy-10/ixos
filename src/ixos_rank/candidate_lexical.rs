@@ -13,6 +13,7 @@ use super::types::{LexicalMatch, SearchError};
 /// Lexical engine backed by the P2 candidate generator
 pub struct CandidateLexicalEngine {
     generator: Mutex<CandidateGenerator>,
+    last_stats: Mutex<super::candidate_generator::CandidateStats>,
 }
 
 impl CandidateLexicalEngine {
@@ -21,6 +22,7 @@ impl CandidateLexicalEngine {
         let generator = CandidateGenerator::with_defaults(root_dir);
         Self {
             generator: Mutex::new(generator),
+            last_stats: Mutex::new(Default::default()),
         }
     }
 
@@ -29,12 +31,16 @@ impl CandidateLexicalEngine {
         let generator = CandidateGenerator::new(root_dir, config);
         Self {
             generator: Mutex::new(generator),
+            last_stats: Mutex::new(Default::default()),
         }
     }
 }
 
 #[async_trait]
 impl LexicalEngine for CandidateLexicalEngine {
+    async fn candidate_stats(&self) -> super::candidate_generator::CandidateStats {
+        self.last_stats.lock().await.clone()
+    }
     async fn search(&self, query: &str, limit: usize) -> Result<Vec<LexicalMatch>, SearchError> {
         if query.trim().is_empty() {
             return Ok(Vec::new());
@@ -42,7 +48,12 @@ impl LexicalEngine for CandidateLexicalEngine {
 
         let mut generator = self.generator.lock().await;
         let candidate_set = generator.generate(query);
-        let mut results = candidate_set.into_lexical_matches();
+        *self.last_stats.lock().await = candidate_set.stats.clone();
+        let mut results: Vec<_> = candidate_set
+            .into_lexical_matches()
+            .into_iter()
+            .map(|m| m.with_query_coverage(query))
+            .collect();
         results.truncate(limit);
         Ok(results)
     }
@@ -63,7 +74,11 @@ impl LexicalEngine for CandidateLexicalEngine {
         let candidate_set = if let Some(ref mut handler) = on_batch {
             let batch_interval_ms = batch_timeout.as_millis().max(1) as u64;
             generator.generate_streaming(query, batch_size, batch_interval_ms, |batch, is_final| {
-                let matches: Vec<LexicalMatch> = batch.iter().map(LexicalMatch::from).collect();
+                let matches: Vec<LexicalMatch> = batch
+                    .iter()
+                    .map(|c| LexicalMatch::from(c).with_query_coverage(query))
+                    .take(limit)
+                    .collect();
                 handler(matches, is_final);
             })
         } else {
@@ -75,7 +90,12 @@ impl LexicalEngine for CandidateLexicalEngine {
             )
         };
 
-        let mut results = candidate_set.into_lexical_matches();
+        *self.last_stats.lock().await = candidate_set.stats.clone();
+        let mut results: Vec<_> = candidate_set
+            .into_lexical_matches()
+            .into_iter()
+            .map(|m| m.with_query_coverage(query))
+            .collect();
         results.truncate(limit);
 
         // Ensure final batch if streaming handler didn't flush.

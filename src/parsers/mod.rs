@@ -3,10 +3,10 @@
 use crate::storage::cloud_detection::should_skip_cloud_file;
 use regex::Regex;
 use std::fs::File;
-use std::io::{BufReader, Read};
+use std::io::{Cursor, Read};
 use std::path::Path;
 
-use calamine::{open_workbook_auto, Reader};
+use calamine::{open_workbook_auto_from_rs, Reader};
 use quick_xml::events::Event;
 use quick_xml::Reader as XmlReader;
 use zip::ZipArchive;
@@ -40,6 +40,17 @@ pub fn can_extract_text(path: &Path) -> bool {
             | "py"
             | "js"
             | "ts"
+            | "tsx"
+            | "jsx"
+            | "css"
+            | "scss"
+            | "swift"
+            | "kt"
+            | "cs"
+            | "sql"
+            | "ipynb"
+            | "rst"
+            | "tex"
             | "java"
             | "go"
             | "c"
@@ -79,34 +90,62 @@ pub fn extract_text(path: &Path, max_bytes: usize, max_chars: usize) -> Option<S
         }
     }
 
-    let mut text = match ext.as_str() {
-        "pdf" => extract_pdf(path),
-        "docx" => extract_docx(path),
-        "xlsx" | "xls" => extract_xlsx(path),
-        "pptx" => extract_pptx(path),
-        "ppt" => None,
-        "rtf" => extract_plain_text(path, max_bytes),
-        _ => extract_plain_text(path, max_bytes),
-    }?;
-
-    if text.is_empty() {
-        return None;
-    }
-
-    if text.chars().count() > max_chars {
-        text = truncate_chars(&text, max_chars);
-    }
-
-    Some(text)
+    let mut bytes = Vec::new();
+    File::open(path)
+        .ok()?
+        .take(max_bytes as u64)
+        .read_to_end(&mut bytes)
+        .ok()?;
+    extract_text_from_bytes(path, &bytes, max_chars)
 }
 
-fn extract_plain_text(path: &Path, max_bytes: usize) -> Option<String> {
-    let file = File::open(path).ok()?;
-    let mut reader = BufReader::new(file);
-    let mut buffer = vec![0u8; max_bytes.max(1)];
-    let bytes_read = reader.read(&mut buffer).ok()?;
-    buffer.truncate(bytes_read);
-    let text = String::from_utf8_lossy(&buffer).to_string();
+/// Parse a stable snapshot; binary containers never fall back to raw text.
+pub(crate) fn extract_text_from_bytes(
+    path: &Path,
+    bytes: &[u8],
+    max_chars: usize,
+) -> Option<String> {
+    let ext = path
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase();
+    let text = match ext.as_str() {
+        "pdf" => extract_pdf(bytes),
+        "docx" => extract_docx(bytes),
+        "xlsx" | "xls" => extract_xlsx(bytes),
+        "pptx" => extract_pptx(bytes),
+        "ppt" | "doc" => None,
+        _ => decode_text(bytes),
+    }?;
+    if text.trim().is_empty() {
+        return None;
+    }
+    Some(truncate_chars(&text, max_chars))
+}
+
+/// Decode BOM-tagged UTF-16 and UTF-8. Untagged NUL data is binary.
+pub(crate) fn decode_text(bytes: &[u8]) -> Option<String> {
+    let text = if bytes.starts_with(&[0xFF, 0xFE]) || bytes.starts_with(&[0xFE, 0xFF]) {
+        let little = bytes[0] == 0xFF;
+        let units: Vec<u16> = bytes[2..]
+            .chunks_exact(2)
+            .map(|b| {
+                if little {
+                    u16::from_le_bytes([b[0], b[1]])
+                } else {
+                    u16::from_be_bytes([b[0], b[1]])
+                }
+            })
+            .collect();
+        String::from_utf16_lossy(&units)
+    } else {
+        if bytes.contains(&0) {
+            return None;
+        }
+        let bytes = bytes.strip_prefix(&[0xEF, 0xBB, 0xBF]).unwrap_or(bytes);
+        String::from_utf8_lossy(bytes).into_owned()
+    };
     if text.trim().is_empty() {
         None
     } else {
@@ -114,14 +153,14 @@ fn extract_plain_text(path: &Path, max_bytes: usize) -> Option<String> {
     }
 }
 
-fn extract_pdf(path: &Path) -> Option<String> {
-    if let Ok(text) = pdf_extract::extract_text(path) {
+fn extract_pdf(bytes: &[u8]) -> Option<String> {
+    if let Ok(text) = pdf_extract::extract_text_from_mem(bytes) {
         if !text.trim().is_empty() {
             return Some(text);
         }
     }
 
-    if let Ok(doc) = lopdf::Document::load(path) {
+    if let Ok(doc) = lopdf::Document::load_mem(bytes) {
         let mut pages: Vec<u32> = doc.get_pages().keys().copied().collect();
         pages.sort_unstable();
         if let Ok(fallback) = doc.extract_text(&pages) {
@@ -131,12 +170,11 @@ fn extract_pdf(path: &Path) -> Option<String> {
         }
     }
 
-    extract_pdf_literal_text(path)
+    extract_pdf_literal_text(bytes)
 }
 
-fn extract_pdf_literal_text(path: &Path) -> Option<String> {
-    let raw = std::fs::read(path).ok()?;
-    let content = String::from_utf8_lossy(&raw);
+fn extract_pdf_literal_text(bytes: &[u8]) -> Option<String> {
+    let content = String::from_utf8_lossy(bytes);
     let pattern = Regex::new(r"\(([^()]*)\)\s*Tj").ok()?;
     let mut out = String::new();
     let mut last_space = true;
@@ -159,17 +197,16 @@ fn extract_pdf_literal_text(path: &Path) -> Option<String> {
     }
 }
 
-fn extract_docx(path: &Path) -> Option<String> {
-    let file = File::open(path).ok()?;
-    let mut archive = ZipArchive::new(file).ok()?;
-    let mut doc = archive.by_name("word/document.xml").ok()?;
+fn extract_docx(bytes: &[u8]) -> Option<String> {
+    let mut archive = ZipArchive::new(Cursor::new(bytes)).ok()?;
+    let doc = archive.by_name("word/document.xml").ok()?;
     let mut xml = String::new();
-    doc.read_to_string(&mut xml).ok()?;
+    doc.take(8 * 1024 * 1024).read_to_string(&mut xml).ok()?;
     extract_text_from_xml(&xml)
 }
 
-fn extract_xlsx(path: &Path) -> Option<String> {
-    let mut workbook = open_workbook_auto(path).ok()?;
+fn extract_xlsx(bytes: &[u8]) -> Option<String> {
+    let mut workbook = open_workbook_auto_from_rs(Cursor::new(bytes)).ok()?;
     let sheet_names = workbook.sheet_names().to_owned();
     let mut out = String::new();
     let mut last_space;
@@ -207,9 +244,8 @@ fn extract_xlsx(path: &Path) -> Option<String> {
     }
 }
 
-fn extract_pptx(path: &Path) -> Option<String> {
-    let file = File::open(path).ok()?;
-    let mut archive = ZipArchive::new(file).ok()?;
+fn extract_pptx(bytes: &[u8]) -> Option<String> {
+    let mut archive = ZipArchive::new(Cursor::new(bytes)).ok()?;
     let mut slide_names: Vec<String> = archive
         .file_names()
         .filter(|name| name.starts_with("ppt/slides/slide") && name.ends_with(".xml"))
@@ -218,13 +254,18 @@ fn extract_pptx(path: &Path) -> Option<String> {
     if slide_names.is_empty() {
         return None;
     }
-    slide_names.sort();
+    slide_names.sort_by_key(|name| {
+        name.trim_start_matches("ppt/slides/slide")
+            .trim_end_matches(".xml")
+            .parse::<usize>()
+            .unwrap_or(usize::MAX)
+    });
 
     let mut out = String::new();
     for name in slide_names {
-        let mut slide = archive.by_name(&name).ok()?;
+        let slide = archive.by_name(&name).ok()?;
         let mut xml = String::new();
-        slide.read_to_string(&mut xml).ok()?;
+        slide.take(8 * 1024 * 1024).read_to_string(&mut xml).ok()?;
         if let Some(text) = extract_text_from_xml(&xml) {
             if !out.is_empty() {
                 out.push('\n');
@@ -321,6 +362,32 @@ fn is_heavy_ext(ext: &str) -> bool {
 mod tests {
     use super::*;
     use std::path::PathBuf;
+
+    #[test]
+    fn binary_containers_never_become_raw_text() {
+        assert!(
+            extract_text_from_bytes(Path::new("broken.docx"), b"PK raw archive garbage", 200)
+                .is_none()
+        );
+        assert!(extract_text_from_bytes(
+            Path::new("broken.pdf"),
+            b"%PDF invalid binary container",
+            200
+        )
+        .is_none());
+        assert!(decode_text(b"some\0binary data").is_none());
+    }
+
+    #[test]
+    fn utf16_text_and_utf8_bom_are_decoded() {
+        let original = "résumé 日本語";
+        let bytes: Vec<_> = [0xFF, 0xFE]
+            .into_iter()
+            .chain(original.encode_utf16().flat_map(u16::to_le_bytes))
+            .collect();
+        assert_eq!(decode_text(&bytes).unwrap(), original);
+        assert_eq!(decode_text(b"\xEF\xBB\xBFhello").unwrap(), "hello");
+    }
 
     fn fixture(name: &str) -> PathBuf {
         PathBuf::from("tests").join("fixtures").join(name)

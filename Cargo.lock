@@ -2942,6 +2942,7 @@ dependencies = [
  "half",
  "heed",
  "hex",
+ "hf-hub",
  "ignore",
  "libc",
  "lopdf 0.32.0",

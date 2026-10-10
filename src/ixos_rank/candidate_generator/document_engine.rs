@@ -10,10 +10,9 @@
 //! - **Memory-only caching**: Extracted text is cached only within a single search session
 //! - **Parallel extraction**: Uses rayon for parallel document processing on large sets
 
-use super::path_engine::HARDCODED_SKIP_DIRS;
+use super::path_engine::search_walk;
 use super::scorer::{CandidateSource, MatchContext, ScoredCandidate};
 use crate::parsers;
-use ignore::WalkBuilder;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
@@ -179,34 +178,19 @@ impl DocumentEngine {
     fn collect_documents(&self) -> Vec<PathBuf> {
         let mut documents = Vec::new();
 
-        let mut builder = WalkBuilder::new(&self.root_dir);
-        builder
-            .hidden(true) // Skip hidden files
-            .git_ignore(self.config.respect_gitignore)
-            .follow_links(false)
-            .max_filesize(Some(self.config.max_bytes as u64));
-
-        // Skip hardcoded directories
-        let root = self.root_dir.clone();
-        builder.filter_entry(move |entry| {
-            let path = entry.path();
-            if path == root {
-                return true;
-            }
-            if let Some(name) = path.file_name() {
-                let name_str = name.to_string_lossy();
-                if HARDCODED_SKIP_DIRS.contains(&name_str.as_ref()) {
-                    return false;
-                }
-            }
-            true
-        });
+        let builder = search_walk(
+            &self.root_dir,
+            true,
+            self.config.respect_gitignore,
+            false,
+            Some(self.config.max_bytes as u64),
+        );
 
         for entry in builder.build().flatten() {
             let path = entry.path();
 
             // Skip directories
-            if path.is_dir() {
+            if !entry.file_type().is_some_and(|kind| kind.is_file()) {
                 continue;
             }
 

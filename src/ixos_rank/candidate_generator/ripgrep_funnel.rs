@@ -3,12 +3,11 @@
 //! Streaming ripgrep search with hard caps and timeout.
 //! Produces candidates as they're found, with strict limits.
 
-use super::path_engine::HARDCODED_SKIP_DIRS;
+use super::path_engine::search_walk;
 use super::scorer::{MatchContext, ScoredCandidate};
 use crate::storage::cloud_detection::should_skip_cloud_file;
 use grep_regex::RegexMatcher;
-use grep_searcher::{sinks::UTF8, Searcher};
-use ignore::WalkBuilder;
+use grep_searcher::{sinks::UTF8, SearcherBuilder};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
@@ -50,9 +49,10 @@ impl Default for RipgrepFunnelConfig {
             respect_gitignore: true,
             skip_hidden: true,
             include_extensions: vec![
-                "txt", "md", "json", "yaml", "yml", "toml", "rs", "py", "js", "ts", "html", "css",
-                "java", "go", "c", "cpp", "h", "hpp", "rb", "php", "sh", "xml", "csv", "log",
-                "pdf", "docx", "xlsx", "xls", "pptx", "ppt", "rtf",
+                "txt", "md", "json", "yaml", "yml", "toml", "rs", "py", "js", "ts", "tsx", "jsx",
+                "swift", "kt", "cs", "sql", "ipynb", "rst", "tex", "html", "css", "java", "go",
+                "c", "cpp", "h", "hpp", "rb", "php", "sh", "xml", "csv", "log", "pdf", "docx",
+                "xlsx", "xls", "pptx", "ppt", "rtf",
             ]
             .into_iter()
             .map(String::from)
@@ -204,31 +204,14 @@ impl RipgrepFunnel {
             }
         } else {
             // Fallback: walk directory (original implementation)
-            let mut builder = WalkBuilder::new(&self.root_dir);
-            builder
-                .hidden(!self.config.skip_hidden)
-                .git_ignore(self.config.respect_gitignore)
-                .follow_links(false)
-                .max_filesize(Some(self.config.max_file_size))
-                .threads(self.config.thread_count);
-
-            // Add filter to skip hardcoded directories
-            let root = self.root_dir.clone();
-            builder.filter_entry(move |entry| {
-                let path = entry.path();
-                // Allow the root directory through
-                if path == root {
-                    return true;
-                }
-                // Skip hardcoded directories
-                if let Some(name) = path.file_name() {
-                    let name_str = name.to_string_lossy();
-                    if HARDCODED_SKIP_DIRS.contains(&name_str.as_ref()) {
-                        return false;
-                    }
-                }
-                true
-            });
+            let mut builder = search_walk(
+                &self.root_dir,
+                self.config.skip_hidden,
+                self.config.respect_gitignore,
+                false,
+                Some(self.config.max_file_size),
+            );
+            builder.threads(self.config.thread_count);
 
             let walker = builder.build();
 
@@ -262,7 +245,7 @@ impl RipgrepFunnel {
                 let path = entry.path();
 
                 // Skip directories
-                if path.is_dir() {
+                if !entry.file_type().is_some_and(|kind| kind.is_file()) {
                     continue;
                 }
 
@@ -346,31 +329,14 @@ impl RipgrepFunnel {
             *last_flush = Instant::now();
         };
 
-        let mut builder = WalkBuilder::new(&self.root_dir);
-        builder
-            .hidden(!self.config.skip_hidden)
-            .git_ignore(self.config.respect_gitignore)
-            .follow_links(false)
-            .max_filesize(Some(self.config.max_file_size))
-            .threads(self.config.thread_count);
-
-        // Add filter to skip hardcoded directories
-        let root = self.root_dir.clone();
-        builder.filter_entry(move |entry| {
-            let path = entry.path();
-            // Allow the root directory through
-            if path == root {
-                return true;
-            }
-            // Skip hardcoded directories
-            if let Some(name) = path.file_name() {
-                let name_str = name.to_string_lossy();
-                if HARDCODED_SKIP_DIRS.contains(&name_str.as_ref()) {
-                    return false;
-                }
-            }
-            true
-        });
+        let mut builder = search_walk(
+            &self.root_dir,
+            self.config.skip_hidden,
+            self.config.respect_gitignore,
+            false,
+            Some(self.config.max_file_size),
+        );
+        builder.threads(self.config.thread_count);
 
         let walker = builder.build();
 
@@ -402,7 +368,7 @@ impl RipgrepFunnel {
             }
 
             let path = entry.path();
-            if path.is_dir() {
+            if !entry.file_type().is_some_and(|kind| kind.is_file()) {
                 continue;
             }
 
@@ -448,6 +414,11 @@ impl RipgrepFunnel {
 
     /// Check if a file should be searched based on extension
     fn should_search_file(&self, path: &Path) -> bool {
+        if std::fs::symlink_metadata(path).map_or(true, |metadata| {
+            !metadata.is_file() || metadata.len() > self.config.max_file_size
+        }) {
+            return false;
+        }
         // Prevent cloud provider hydration from lexical probing.
         if should_skip_cloud_file(path) {
             return false;
@@ -482,7 +453,9 @@ impl RipgrepFunnel {
         let mut match_count = 0usize;
         let mut snippet: Option<String> = None;
 
-        let mut searcher = Searcher::new();
+        let mut searcher = SearcherBuilder::new()
+            .binary_detection(grep_searcher::BinaryDetection::quit(0))
+            .build();
 
         let result = searcher.search_path(
             matcher,
@@ -492,8 +465,8 @@ impl RipgrepFunnel {
                 match_count += 1;
 
                 // Capture first match as snippet
-                if snippet.is_none() && line.len() <= 200 {
-                    snippet = Some(line.trim().to_string());
+                if snippet.is_none() {
+                    snippet = Some(line.trim().chars().take(200).collect());
                 }
 
                 // Stop searching this file if we have enough matches
@@ -559,6 +532,25 @@ mod num_cpus {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn hidden_setting_has_correct_direction_and_dependencies_are_always_pruned() {
+        let temp = tempfile::tempdir().unwrap();
+        for folder in [".hidden", "node_modules", "source"] {
+            std::fs::create_dir(temp.path().join(folder)).unwrap();
+            std::fs::write(temp.path().join(folder).join("code.rs"), "witness_token").unwrap();
+        }
+        let visible = RipgrepFunnel::with_defaults(temp.path().to_path_buf())
+            .search_capped("witness_token")
+            .0;
+        assert_eq!(visible.len(), 1);
+        let mut config = RipgrepFunnelConfig::default();
+        config.skip_hidden = false;
+        let all = RipgrepFunnel::new(temp.path().to_path_buf(), config)
+            .search_capped("witness_token")
+            .0;
+        assert_eq!(all.len(), 2);
+    }
     use tempfile::TempDir;
 
     fn setup_test_dir() -> TempDir {

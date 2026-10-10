@@ -1,0 +1,5 @@
+   Compiling ixos-protocol v0.1.0 (C:\Users\pablo\Downloads\Ixos)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.12s
+     Running unittests src\lib.rs (target\debug\deps\ixos_protocol-1112a63a901a6c40.exe)
+     Running unittests src\main.rs (target\debug\deps\ixos-c1980c318a02669b.exe)
+     Running tests\settings_matrix.rs (target\debug\deps\settings_matrix-b85f6315da5ba640.exe)

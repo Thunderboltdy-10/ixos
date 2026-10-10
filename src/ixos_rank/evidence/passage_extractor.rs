@@ -89,7 +89,7 @@ impl PassageExtractor {
                 let embedding = embed_fn(&text)?;
                 let score = cosine_similarity(&embedding, query_embedding);
 
-                if score >= self.config.min_score {
+                if score.is_finite() && score >= self.config.min_score {
                     Some(Passage {
                         text,
                         offset,
@@ -103,15 +103,24 @@ impl PassageExtractor {
             .collect();
 
         // Sort by score descending
-        passages.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
+        passages.sort_by(|a, b| b.score.total_cmp(&a.score));
 
         passages
     }
 
     /// Extract best passage without embedding (using keyword matching)
     pub fn extract_by_keywords(&self, content: &str, keywords: &[String]) -> Vec<Passage> {
-        let chunks = self.chunk_content(content);
-        let keywords_lower: Vec<String> = keywords.iter().map(|k| k.to_lowercase()).collect();
+        // Lexical witnesses may occur after the semantic prefix budget. Scan all
+        // supplied text, then bound the number of returned passages.
+        let chunks = self.chunk_content_with_limit(content, usize::MAX);
+        let keywords_lower: Vec<String> = keywords
+            .iter()
+            .filter(|k| !k.trim().is_empty())
+            .map(|k| k.to_lowercase())
+            .collect();
+        if keywords_lower.is_empty() {
+            return Vec::new();
+        }
 
         let mut passages: Vec<Passage> = chunks
             .into_iter()
@@ -123,7 +132,7 @@ impl PassageExtractor {
                     .count();
 
                 if matches > 0 {
-                    let score = matches as f32 / keywords.len() as f32;
+                    let score = matches as f32 / keywords_lower.len() as f32;
                     Some(Passage {
                         text,
                         offset,
@@ -136,7 +145,8 @@ impl PassageExtractor {
             })
             .collect();
 
-        passages.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
+        passages.sort_by(|a, b| b.score.total_cmp(&a.score));
+        passages.truncate(self.config.max_chunks);
         passages
     }
 
@@ -157,34 +167,51 @@ impl PassageExtractor {
 
     /// Chunk content into overlapping passages
     fn chunk_content(&self, content: &str) -> Vec<(String, usize, usize)> {
-        let mut chunks = Vec::new();
-        let chars: Vec<char> = content.chars().collect();
-        let content_len = chars.len();
+        self.chunk_content_with_limit(content, self.config.max_chunks)
+    }
 
-        if content_len == 0 {
+    fn chunk_content_with_limit(&self, content: &str, limit: usize) -> Vec<(String, usize, usize)> {
+        let mut chunks = Vec::new();
+        if content.is_empty() || self.config.chunk_size == 0 || limit == 0 {
             return chunks;
         }
-
+        let boundaries: Vec<usize> = content
+            .char_indices()
+            .map(|(i, _)| i)
+            .chain(std::iter::once(content.len()))
+            .collect();
+        let newlines: Vec<usize> = content.match_indices('\n').map(|(i, _)| i).collect();
+        let content_len = boundaries.len() - 1;
+        let step = self
+            .config
+            .chunk_size
+            .saturating_sub(self.config.chunk_overlap)
+            .max(1);
         let mut offset = 0;
-        let mut line_number = 1;
-
-        while offset < content_len && chunks.len() < self.config.max_chunks {
-            let end = (offset + self.config.chunk_size).min(content_len);
-            let chunk: String = chars[offset..end].iter().collect();
-
-            // Try to end at a sentence or word boundary
-            let adjusted_chunk = self.adjust_to_boundary(&chunk);
-
+        while offset < content_len && chunks.len() < limit {
+            let end = offset
+                .saturating_add(self.config.chunk_size)
+                .min(content_len);
+            let chunk = &content[boundaries[offset]..boundaries[end]];
+            let adjusted_chunk = if end == content_len {
+                chunk.trim().to_string()
+            } else {
+                self.adjust_to_boundary(chunk)
+            };
+            let consumed = chunk.chars().count() - chunk.trim_start().chars().count()
+                + adjusted_chunk.chars().count();
             if !adjusted_chunk.trim().is_empty() {
-                chunks.push((adjusted_chunk, offset, line_number));
+                let byte_offset = boundaries[offset] + chunk.len() - chunk.trim_start().len();
+                let line_number = 1 + newlines.partition_point(|&i| i < byte_offset);
+                chunks.push((adjusted_chunk, byte_offset, line_number));
             }
-
-            // Count newlines for line number tracking
-            let chunk_newlines = chars[offset..end].iter().filter(|&&c| c == '\n').count();
-            line_number += chunk_newlines;
-
-            // Move offset with overlap
-            offset += self.config.chunk_size - self.config.chunk_overlap;
+            if end == content_len {
+                break;
+            }
+            // Boundary trimming must not leave gaps between successive windows.
+            offset = offset.saturating_add(
+                step.min(consumed.saturating_sub(self.config.chunk_overlap).max(1)),
+            );
         }
 
         chunks
@@ -230,7 +257,7 @@ impl PassageExtractor {
 
     /// Truncate passage for display
     pub fn truncate_for_display(&self, passage: &str) -> String {
-        if passage.len() <= self.config.max_display_length {
+        if passage.chars().count() <= self.config.max_display_length {
             return passage.to_string();
         }
 
@@ -300,6 +327,53 @@ pub fn read_file_content(path: &Path, max_bytes: usize) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn unicode_display_and_source_locations_are_valid() {
+        let extractor = PassageExtractor::new(PassageConfig {
+            chunk_size: 12,
+            chunk_overlap: 4,
+            max_display_length: 5,
+            ..Default::default()
+        });
+        assert_eq!(extractor.truncate_for_display("ééééé"), "ééééé");
+        assert_eq!(extractor.truncate_for_display("éééééé"), "ééééé...");
+        let content = "  ééé first\n  résumé\n  日本語 tail\n more text";
+        for (chunk, offset, line) in extractor.chunk_content(content) {
+            assert!(content[offset..].starts_with(&chunk));
+            assert_eq!(line, 1 + content[..offset].matches('\n').count());
+        }
+    }
+
+    #[test]
+    fn keyword_witness_beyond_semantic_chunk_budget_is_found() {
+        let extractor = PassageExtractor::new(PassageConfig {
+            max_chunks: 1,
+            ..Default::default()
+        });
+        let content = format!("{}\nneedle_marker at the end", "ordinary text ".repeat(500));
+        let passages = extractor.extract_by_keywords(&content, &["needle_marker".into()]);
+        assert_eq!(passages.len(), 1);
+        assert!(passages[0].text.contains("needle_marker"));
+    }
+
+    #[test]
+    fn invalid_overlap_and_empty_keywords_do_not_panic_or_loop() {
+        let extractor = PassageExtractor::new(PassageConfig {
+            chunk_size: 3,
+            chunk_overlap: 30,
+            ..Default::default()
+        });
+        assert!(!extractor.chunk_content("some text").is_empty());
+        assert!(extractor
+            .extract_by_keywords("some text", &[String::new()])
+            .is_empty());
+        let empty = PassageExtractor::new(PassageConfig {
+            chunk_size: 0,
+            ..Default::default()
+        });
+        assert!(empty.chunk_content("some text").is_empty());
+    }
 
     #[test]
     fn test_passage_extraction_by_keywords() {

@@ -77,16 +77,16 @@ pub struct SecureRankerConfig {
     /// How long to cache integrity verification (default: 5 min)
     pub integrity_ttl: Duration,
 
-    /// Weight for semantic similarity score (default: 0.4)
+    /// Weight for retrieval relevance (default: 1.0)
     pub semantic_weight: f32,
 
-    /// Weight for integrity score (default: 0.3)
+    /// Optional legacy age/integrity prior (default: 0.0)
     pub integrity_weight: f32,
 
-    /// Weight for temporal score (default: 0.1)
+    /// Optional legacy temporal prior (default: 0.0)
     pub temporal_weight: f32,
 
-    /// Weight for behavior score (default: 0.2)
+    /// Optional legacy access prior (default: 0.0); repeated agent reads are normal
     pub behavior_weight: f32,
 
     /// Files modified more recently than this get reduced integrity score (default: 5 min)
@@ -115,10 +115,10 @@ impl Default for SecureRankerConfig {
     fn default() -> Self {
         Self {
             integrity_ttl: DEFAULT_INTEGRITY_TTL,
-            semantic_weight: 0.4,
-            integrity_weight: 0.3,
-            temporal_weight: 0.1,
-            behavior_weight: 0.2,
+            semantic_weight: 1.0,
+            integrity_weight: 0.0,
+            temporal_weight: 0.0,
+            behavior_weight: 0.0,
             recent_modification_threshold: DEFAULT_RECENT_MODIFICATION_THRESHOLD,
             max_age_for_temporal_score: DEFAULT_MAX_AGE_FOR_TEMPORAL,
             behavior_window: DEFAULT_BEHAVIOR_WINDOW,
@@ -550,15 +550,11 @@ impl SecureRanker {
                     tracing::trace!("Using cached integrity for {:?} (hash unchanged)", path);
                     return true;
                 } else {
-                    // File was modified while cached - suspicious activity
-                    tracing::warn!(
-                        "File {:?} was modified while in integrity cache - possible tampering",
-                        path
-                    );
-                    // Update cache with new hash but return false to flag this
+                    // Editing a source during development is normal. Refresh the
+                    // observed version; embedding caches separately validate freshness.
                     self.integrity_cache
                         .insert(path.to_path_buf(), FileIntegrity::new(current_hash));
-                    return false;
+                    return true;
                 }
             }
         }
@@ -681,10 +677,10 @@ mod tests {
     #[test]
     fn test_config_default() {
         let config = SecureRankerConfig::default();
-        assert_eq!(config.semantic_weight, 0.4);
-        assert_eq!(config.integrity_weight, 0.3);
-        assert_eq!(config.temporal_weight, 0.1);
-        assert_eq!(config.behavior_weight, 0.2);
+        assert_eq!(config.semantic_weight, 1.0);
+        assert_eq!(config.integrity_weight, 0.0);
+        assert_eq!(config.temporal_weight, 0.0);
+        assert_eq!(config.behavior_weight, 0.0);
         assert_eq!(config.integrity_ttl, Duration::from_secs(300));
     }
 

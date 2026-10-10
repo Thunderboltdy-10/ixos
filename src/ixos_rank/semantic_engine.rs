@@ -9,6 +9,7 @@ use std::collections::HashMap;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::sync::OnceLock;
 
 use async_trait::async_trait;
 use rayon::prelude::*;
@@ -21,7 +22,6 @@ use crate::journalist_mode::deep_search_overrides;
 use crate::security::crypto::{sha256, sha256_file};
 use crate::storage::{get_cache_for_path_with_fingerprint, EmbeddingCache};
 
-use super::candidate_generator::MAX_TEXT_CHARS_PER_FILE;
 use super::evidence::DirectoryCentroids;
 use super::fstd::{FstdConfig, FstdState};
 use super::types::{LexicalMatch, SearchError, SemanticMatch};
@@ -41,6 +41,10 @@ pub enum CacheMode {
 /// Trait for semantic search engines
 #[async_trait]
 pub trait SemanticEngine: Send + Sync {
+    async fn metrics(&self) -> SemanticMetrics {
+        SemanticMetrics::default()
+    }
+    async fn reset_metrics(&self) {}
     /// Rerank candidates using semantic similarity
     ///
     /// Takes lexical search results and reranks them based on
@@ -77,11 +81,11 @@ pub struct StubSemanticEngine {
     /// Files to search (paths only, not pre-computed embeddings)
     files_to_search: Vec<PathBuf>,
     /// In-memory embedding cache (for Ephemeral and as fallback)
-    memory_cache: Mutex<HashMap<PathBuf, Vec<f32>>>,
+    memory_cache: Mutex<HashMap<PathBuf, MemoryEmbedding>>,
     /// Cache mode (Ephemeral = memory only, NativeCache = use ADS/xattr)
     cache_mode: CacheMode,
     /// Persistent cache backend (for NativeCache mode)
-    storage_cache: Option<Box<dyn EmbeddingCache + Send + Sync>>,
+    storage_cache: OnceLock<Box<dyn EmbeddingCache>>,
     /// Minimum similarity score threshold (0.0 to 1.0)
     min_score_threshold: f32,
     /// Metrics for performance reporting
@@ -96,8 +100,52 @@ pub struct StubSemanticEngine {
     fstd_state: Mutex<FstdState>,
 }
 
+#[derive(Clone)]
+struct MemoryEmbedding {
+    embedding: Vec<f32>,
+    // None is reserved for explicitly supplied virtual documents in add_file.
+    source_hash: Option<[u8; 32]>,
+}
+
+impl MemoryEmbedding {
+    fn matches_source(&self, path: &Path) -> (bool, u64) {
+        match self.source_hash {
+            None => (!path.exists(), 0),
+            Some(expected) => {
+                let bytes = std::fs::metadata(path).map(|m| m.len()).unwrap_or(0);
+                let matches = sha256_file(path)
+                    .map(|hash| source_identity(path, &hash) == expected)
+                    .unwrap_or(false);
+                (matches, bytes)
+            }
+        }
+    }
+}
+
+// Until path augmentation is evaluated separately, a move must invalidate a
+// vector whose input includes its old path. Bind both content and location.
+fn source_identity(path: &Path, content_hash: &[u8; 32]) -> [u8; 32] {
+    let canonical = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    let mut identity = content_hash.to_vec();
+    identity.extend_from_slice(canonical.as_os_str().to_string_lossy().as_bytes());
+    let caps = deep_search_overrides();
+    identity.extend_from_slice(&(caps.max_bytes_per_file as u64).to_le_bytes());
+    identity.extend_from_slice(&(caps.max_text_chars as u64).to_le_bytes());
+    sha256(&identity)
+}
+
+pub fn cached_source_identity(path: &Path) -> Result<[u8; 32], std::io::Error> {
+    sha256_file(path).map(|hash| source_identity(path, &hash))
+}
+
+pub fn embedding_cache_fingerprint(embedder: &SecureEmbedder) -> [u8; 32] {
+    let mut identity = embedder.model_fingerprint().to_vec();
+    identity.extend_from_slice(b"ixos-extraction-path-prefix-v3");
+    sha256(&identity)
+}
+
 /// Metrics captured during semantic search
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct SemanticMetrics {
     pub embedding_ms: u64,
     pub cache_hits: usize,
@@ -115,7 +163,7 @@ impl StubSemanticEngine {
             files_to_search: Vec::new(),
             memory_cache: Mutex::new(HashMap::new()),
             cache_mode: CacheMode::NativeCache,
-            storage_cache: None,
+            storage_cache: OnceLock::new(),
             min_score_threshold: 0.0,
             metrics: Mutex::new(SemanticMetrics::default()),
             directory_centroids: Mutex::new(DirectoryCentroids::default_config()),
@@ -144,7 +192,7 @@ impl StubSemanticEngine {
             files_to_search: Vec::new(),
             memory_cache: Mutex::new(HashMap::new()),
             cache_mode: mode,
-            storage_cache: None,
+            storage_cache: OnceLock::new(),
             min_score_threshold: 0.0,
             metrics: Mutex::new(SemanticMetrics::default()),
             directory_centroids: Mutex::new(DirectoryCentroids::default_config()),
@@ -174,38 +222,33 @@ impl StubSemanticEngine {
 
     /// Index files from a directory (lazy - only collects paths, no embedding computation)
     pub async fn index_directory(&mut self, dir: &Path) -> Result<usize, SearchError> {
-        fn collect_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<(), SearchError> {
-            let entries = std::fs::read_dir(dir).map_err(SearchError::Io)?;
-
-            for entry in entries {
-                let entry = entry.map_err(SearchError::Io)?;
-                let path = entry.path();
-
-                if path.is_dir() {
-                    collect_files(&path, files)?;
-                } else if path.is_file() {
-                    if crate::parsers::can_extract_text(&path) {
-                        files.push(path);
-                    }
-                }
-            }
-
-            Ok(())
+        if !dir.is_dir() {
+            return Err(SearchError::Io(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "Search directory does not exist",
+            )));
         }
-
-        let mut files = Vec::new();
-        collect_files(dir, &mut files)?;
+        let files: Vec<_> = super::candidate_generator::path_engine::search_walk(
+            dir,
+            true,
+            true,
+            false,
+            Some(100 * 1024 * 1024),
+        )
+        .build()
+        .filter_map(Result::ok)
+        .filter(|entry| {
+            entry.file_type().is_some_and(|kind| kind.is_file())
+                && crate::parsers::can_extract_text(entry.path())
+        })
+        .map(|entry| entry.into_path())
+        .collect();
 
         let count = files.len();
         self.files_to_search = files;
 
         // Initialize storage cache for NativeCache mode
-        if self.cache_mode == CacheMode::NativeCache && !self.files_to_search.is_empty() {
-            self.storage_cache = Some(get_cache_for_path_with_fingerprint(
-                dir,
-                self.embedder.model_fingerprint(),
-            ));
-        }
+        // The backend is initialized on first use, including candidate-only searches.
 
         {
             let mut fstd_state = self.fstd_state.lock().await;
@@ -239,7 +282,16 @@ impl StubSemanticEngine {
 
         // Store in memory cache
         let mut cache = self.memory_cache.lock().await;
-        cache.insert(path, embedding);
+        let source_hash = sha256_file(&path)
+            .ok()
+            .map(|hash| source_identity(&path, &hash));
+        cache.insert(
+            path,
+            MemoryEmbedding {
+                embedding,
+                source_hash,
+            },
+        );
 
         Ok(())
     }
@@ -273,6 +325,17 @@ impl StubSemanticEngine {
         self.memory_cache.lock().await.clear();
     }
 
+    fn persistent_cache(&self, path: &Path) -> &dyn EmbeddingCache {
+        self.storage_cache
+            .get_or_init(|| {
+                get_cache_for_path_with_fingerprint(
+                    path,
+                    embedding_cache_fingerprint(&self.embedder),
+                )
+            })
+            .as_ref()
+    }
+
     /// Get embedding for a file with lazy loading
     ///
     /// Checks caches in order:
@@ -281,13 +344,16 @@ impl StubSemanticEngine {
     /// 3. Compute embedding (slowest, stores in appropriate cache(s))
     async fn get_embedding(&self, path: &Path) -> Result<Vec<f32>, SearchError> {
         // 1. Check memory cache first
-        {
-            let cache = self.memory_cache.lock().await;
-            if let Some(embedding) = cache.get(path) {
+        let cached = self.memory_cache.lock().await.get(path).cloned();
+        if let Some(entry) = cached {
+            let (fresh, bytes) = entry.matches_source(path);
+            self.metrics.lock().await.io_read_bytes += bytes;
+            if fresh {
                 let mut metrics = self.metrics.lock().await;
                 metrics.cache_hits += 1;
-                return Ok(embedding.clone());
+                return Ok(entry.embedding);
             }
+            self.memory_cache.lock().await.remove(path);
         }
 
         // 2. Read limited file content (hot path cap)
@@ -300,13 +366,25 @@ impl StubSemanticEngine {
 
         // 3. If NativeCache mode, check persistent storage (ADS/xattr)
         if self.cache_mode == CacheMode::NativeCache {
-            if let Some(ref storage) = self.storage_cache {
-                if let Ok(Some(embedding)) = storage.get(path, &file_hash) {
+            let storage = self.persistent_cache(path);
+            {
+                if let Some(embedding) = storage
+                    .get(path, &file_hash)
+                    .ok()
+                    .flatten()
+                    .filter(|embedding| embedding.len() == self.embedder.dimensions())
+                {
                     let mut metrics = self.metrics.lock().await;
                     metrics.cache_hits += 1;
                     // Store in memory cache for faster subsequent access
                     let mut cache = self.memory_cache.lock().await;
-                    cache.insert(path.to_path_buf(), embedding.clone());
+                    cache.insert(
+                        path.to_path_buf(),
+                        MemoryEmbedding {
+                            embedding: embedding.clone(),
+                            source_hash: Some(file_hash),
+                        },
+                    );
                     return Ok(embedding);
                 }
             }
@@ -331,12 +409,19 @@ impl StubSemanticEngine {
         // Store in memory cache
         {
             let mut cache = self.memory_cache.lock().await;
-            cache.insert(path.to_path_buf(), embedding.clone());
+            cache.insert(
+                path.to_path_buf(),
+                MemoryEmbedding {
+                    embedding: embedding.clone(),
+                    source_hash: Some(file_hash),
+                },
+            );
         }
 
         // Store in persistent storage if in NativeCache mode
         if self.cache_mode == CacheMode::NativeCache {
-            if let Some(ref storage) = self.storage_cache {
+            let storage = self.persistent_cache(path);
+            {
                 // Best effort - don't fail if storage fails
                 let _ = storage.set(path, &file_hash, &embedding);
             }
@@ -408,7 +493,7 @@ impl StubSemanticEngine {
 }
 
 /// Read file contents with hard caps for hot path safety.
-fn read_file_limited_bytes(path: &Path) -> Result<(Vec<u8>, usize), SearchError> {
+fn read_file_limited_bytes(path: &Path) -> Result<(Vec<u8>, usize, [u8; 32]), SearchError> {
     // SECURITY: Check if this is a cloud-only file to prevent auto-download
     use crate::storage::cloud_detection::{get_cloud_storage_status, CloudStorageStatus};
     match get_cloud_storage_status(path) {
@@ -426,45 +511,60 @@ fn read_file_limited_bytes(path: &Path) -> Result<(Vec<u8>, usize), SearchError>
     }
 
     let caps = deep_search_overrides();
-    let file = std::fs::File::open(path).map_err(SearchError::Io)?;
-    let mut buffer = Vec::with_capacity(caps.max_bytes_per_file.min(8192));
-    let mut limited = file.take(caps.max_bytes_per_file as u64);
-    let bytes_read = limited.read_to_end(&mut buffer).map_err(SearchError::Io)?;
-    Ok((buffer, bytes_read))
+    let mut file = std::fs::File::open(path).map_err(SearchError::Io)?;
+    let before = file.metadata().map_err(SearchError::Io)?;
+    let capture_limit = if is_heavy_format(path) {
+        32 * 1024 * 1024
+    } else {
+        caps.max_bytes_per_file
+    };
+    if is_heavy_format(path) && before.len() > capture_limit as u64 {
+        return Err(SearchError::Io(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "Document exceeds the 32 MiB parser input budget",
+        )));
+    }
+    let mut buffer = Vec::with_capacity(capture_limit.min(8192));
+    let mut digest = ring::digest::Context::new(&ring::digest::SHA256);
+    let mut block = [0u8; 16 * 1024];
+    let mut bytes_read = 0;
+    loop {
+        let count = file.read(&mut block).map_err(SearchError::Io)?;
+        if count == 0 {
+            break;
+        }
+        digest.update(&block[..count]);
+        bytes_read += count;
+        let keep = count.min(capture_limit.saturating_sub(buffer.len()));
+        buffer.extend_from_slice(&block[..keep]);
+    }
+    let after = file.metadata().map_err(SearchError::Io)?;
+    if before.len() != after.len() || before.modified().ok() != after.modified().ok() {
+        return Err(SearchError::Io(std::io::Error::new(
+            std::io::ErrorKind::Interrupted,
+            "File changed during extraction; retry search",
+        )));
+    }
+    let content_hash: [u8; 32] = digest.finish().as_ref().try_into().unwrap();
+    Ok((buffer, bytes_read, source_identity(path, &content_hash)))
 }
 
 fn read_text_for_embedding(
     path: &Path,
-    require_full_file_hash: bool,
+    _require_full_file_hash: bool,
 ) -> Result<(String, usize, [u8; 32]), SearchError> {
     let caps = deep_search_overrides();
-    let (bytes, bytes_read) = read_file_limited_bytes(path)?;
-    let file_hash = if require_full_file_hash {
-        sha256_file(path).unwrap_or_else(|_| sha256(&bytes))
-    } else {
-        sha256(&bytes)
-    };
+    let (bytes, bytes_read, file_hash) = read_file_limited_bytes(path)?;
 
-    let content = if is_heavy_format(path) {
-        crate::parsers::extract_text(path, caps.max_bytes_per_file, caps.max_text_chars)
-            .unwrap_or_else(|| bytes_to_capped_string(&bytes))
-    } else {
-        bytes_to_capped_string_with_cap(&bytes, caps.max_text_chars)
-    };
+    let content = crate::parsers::extract_text_from_bytes(path, &bytes, caps.max_text_chars)
+        .ok_or_else(|| {
+            SearchError::Io(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "No extractable text; unsupported, empty or binary document",
+            ))
+        })?;
 
     Ok((content, bytes_read, file_hash))
-}
-
-/// Convert bytes to a capped UTF-8 string for embedding.
-fn bytes_to_capped_string(bytes: &[u8]) -> String {
-    bytes_to_capped_string_with_cap(bytes, MAX_TEXT_CHARS_PER_FILE)
-}
-
-fn bytes_to_capped_string_with_cap(bytes: &[u8], char_cap: usize) -> String {
-    String::from_utf8_lossy(bytes)
-        .chars()
-        .take(char_cap)
-        .collect()
 }
 
 fn is_heavy_format(path: &Path) -> bool {
@@ -480,9 +580,15 @@ fn is_heavy_format(path: &Path) -> bool {
 
 #[async_trait]
 impl SemanticEngine for StubSemanticEngine {
+    async fn metrics(&self) -> SemanticMetrics {
+        self.metrics.lock().await.clone()
+    }
+    async fn reset_metrics(&self) {
+        self.take_metrics().await;
+    }
     /// Rerank candidates using semantic similarity (P4.1 batch optimized)
     ///
-    /// This method uses batch embedding for ~5-7x speedup over sequential processing.
+    /// This method batches candidate embeddings; speedups must be measured per workload.
     /// Optimizations (P5 perf):
     /// - Reduced mutex lock acquisitions (8 -> 4)
     /// - Batch similarity calculations
@@ -526,22 +632,37 @@ impl SemanticEngine for StubSemanticEngine {
         // P5 OPT: Use indices to reduce cloning, collect paths once
         let candidate_paths: Vec<PathBuf> = candidates.iter().map(|c| c.path.clone()).collect();
 
-        // Phase 1: Partition candidates into cached vs uncached (single lock acquisition)
-        let (cached_indices, uncached_indices, initial_cache_hits) = {
+        // Snapshot under the lock, then validate source versions without holding it.
+        let snapshots: Vec<_> = {
             let cache = self.memory_cache.lock().await;
-            let mut cached_idx: Vec<usize> = Vec::with_capacity(candidate_paths.len());
-            let mut uncached_idx: Vec<usize> = Vec::with_capacity(candidate_paths.len() / 4);
-
-            for (idx, path) in candidate_paths.iter().enumerate() {
-                if cache.contains_key(path) {
-                    cached_idx.push(idx);
-                } else {
-                    uncached_idx.push(idx);
-                }
-            }
-            let hits = cached_idx.len();
-            (cached_idx, uncached_idx, hits)
+            candidate_paths
+                .iter()
+                .map(|path| cache.get(path).cloned())
+                .collect()
         };
+        let validated: Vec<_> = snapshots
+            .par_iter()
+            .enumerate()
+            .map(|(idx, entry)| {
+                entry
+                    .as_ref()
+                    .map(|entry| entry.matches_source(&candidate_paths[idx]))
+                    .unwrap_or((false, 0))
+            })
+            .collect();
+        let cached_indices: Vec<_> = validated
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, (fresh, _))| fresh.then_some(idx))
+            .collect();
+        let uncached_indices: Vec<_> = validated
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, (fresh, _))| (!fresh).then_some(idx))
+            .collect();
+        let initial_cache_hits = cached_indices.len();
+        self.metrics.lock().await.io_read_bytes +=
+            validated.iter().map(|(_, bytes)| bytes).sum::<u64>();
 
         // Phase 2: Read file content in PARALLEL using rayon (P5 optimization)
         // This provides significant speedup on cold starts with many uncached files
@@ -608,16 +729,21 @@ impl SemanticEngine for StubSemanticEngine {
 
         // Partition file results into storage hits vs to-embed
         let total_bytes_read: u64 = file_results.iter().map(|r| r.bytes_read as u64).sum();
-        let mut storage_hits: Vec<(usize, Vec<f32>)> = Vec::new();
+        let mut storage_hits: Vec<(usize, Vec<f32>, [u8; 32])> = Vec::new();
         let mut to_embed: Vec<(usize, String, [u8; 32])> = Vec::new();
 
         for result in file_results {
             // Check persistent cache (ADS/xattr) if in NativeCache mode
             if self.cache_mode == CacheMode::NativeCache {
-                if let Some(ref storage) = self.storage_cache {
-                    let path = &candidate_paths[result.idx];
+                let path = &candidate_paths[result.idx];
+                let storage = self.persistent_cache(path);
+                {
                     if let Ok(Some(embedding)) = storage.get(path, &result.file_hash) {
-                        storage_hits.push((result.idx, embedding));
+                        if embedding.len() != query_embedding.len() {
+                            to_embed.push((result.idx, result.augmented, result.file_hash));
+                            continue;
+                        }
+                        storage_hits.push((result.idx, embedding, result.file_hash));
                         continue;
                     }
                 }
@@ -680,25 +806,39 @@ impl SemanticEngine for StubSemanticEngine {
 
             // Add memory cache hits
             for &idx in &cached_indices {
-                if let Some(emb) = cache.get(&candidate_paths[idx]) {
-                    embeddings.push((idx, emb.clone()));
+                if let Some(entry) = &snapshots[idx] {
+                    embeddings.push((idx, entry.embedding.clone()));
                 }
             }
 
             // Add storage cache hits (and update memory cache)
-            for (idx, emb) in storage_hits {
-                cache.insert(candidate_paths[idx].clone(), emb.clone());
+            for (idx, emb, source_hash) in storage_hits {
+                // Storage hit source identity is the same one validated during reading.
+                cache.insert(
+                    candidate_paths[idx].clone(),
+                    MemoryEmbedding {
+                        embedding: emb.clone(),
+                        source_hash: Some(source_hash),
+                    },
+                );
                 embeddings.push((idx, emb));
             }
 
             // Add batch embeddings (and update caches)
             for (embedding, (idx, _, file_hash)) in batch_embeddings.iter().zip(to_embed.iter()) {
                 let path = &candidate_paths[*idx];
-                cache.insert(path.clone(), embedding.clone());
+                cache.insert(
+                    path.clone(),
+                    MemoryEmbedding {
+                        embedding: embedding.clone(),
+                        source_hash: Some(*file_hash),
+                    },
+                );
 
                 // Store in persistent cache if in NativeCache mode
                 if self.cache_mode == CacheMode::NativeCache {
-                    if let Some(ref storage) = self.storage_cache {
+                    let storage = self.persistent_cache(path);
+                    {
                         let _ = storage.set(path, file_hash, embedding);
                     }
                 }
@@ -916,6 +1056,71 @@ fn l2_distance(a: &[f32], b: &[f32]) -> f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn cache_validates_edits_and_deleted_files() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("source.rs");
+        std::fs::write(&path, "alpha original concept").unwrap();
+        let engine = StubSemanticEngine::with_stub_model_and_mode(CacheMode::NativeCache);
+        let original = engine.get_embedding(&path).await.unwrap();
+        engine.take_metrics().await;
+        let warmed = engine.get_embedding(&path).await.unwrap();
+        assert_eq!(original, warmed);
+        assert_eq!(engine.take_metrics().await.cache_hits, 1);
+        std::fs::write(&path, "entirely different beta concept").unwrap();
+        assert_ne!(original, engine.get_embedding(&path).await.unwrap());
+        let metrics = engine.take_metrics().await;
+        assert_eq!(metrics.cache_hits, 0);
+        std::fs::remove_file(&path).unwrap();
+        assert!(engine.get_embedding(&path).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn candidate_only_search_initializes_native_cache_and_preserves_source() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("notes.txt");
+        let text = "retrieval engine supporting source evidence";
+        std::fs::write(&path, text).unwrap();
+        let candidates = || vec![LexicalMatch::new(path.clone(), 1.0, text.into(), 1, 1)];
+        let first = StubSemanticEngine::with_stub_model_and_mode(CacheMode::NativeCache);
+        first.rerank("retrieval", candidates(), 1).await.unwrap();
+        assert_eq!(first.take_metrics().await.candidates_embedded, 1);
+        drop(first);
+        let second = StubSemanticEngine::with_stub_model_and_mode(CacheMode::NativeCache);
+        second.rerank("retrieval", candidates(), 1).await.unwrap();
+        let metrics = second.take_metrics().await;
+        assert_eq!(metrics.cache_hits, 1);
+        assert_eq!(metrics.candidates_embedded, 0);
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), text);
+        assert_eq!(std::fs::read_dir(temp.path()).unwrap().count(), 1);
+    }
+
+    #[tokio::test]
+    async fn semantic_discovery_respects_ignores_and_dependency_pruning() {
+        let temp = tempfile::tempdir().unwrap();
+        std::fs::write(temp.path().join(".gitignore"), "ignored/**\n").unwrap();
+        for folder in ["ignored", "node_modules", ".hidden", "source"] {
+            std::fs::create_dir(temp.path().join(folder)).unwrap();
+            std::fs::write(temp.path().join(folder).join("code.tsx"), "retrieval").unwrap();
+        }
+        let mut engine = StubSemanticEngine::with_stub_model();
+        assert_eq!(engine.index_directory(temp.path()).await.unwrap(), 1);
+        assert!(engine.files_to_search[0].ends_with("source/code.tsx"));
+    }
+
+    #[test]
+    fn document_above_embedding_prefix_budget_is_parsed_instead_of_raw_bytes() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("large.pdf");
+        let mut pdf = std::fs::read("tests/fixtures/sample.pdf").unwrap();
+        pdf.extend(std::iter::repeat_n(b' ', 100_000));
+        std::fs::write(&path, &pdf).unwrap();
+        let (text, bytes_read, _) = read_text_for_embedding(&path, true).unwrap();
+        assert!(text.contains("Ixos PDF Fixture"));
+        assert!(!text.starts_with("%PDF"));
+        assert_eq!(bytes_read, pdf.len());
+    }
 
     #[test]
     fn test_cosine_similarity_identical() {

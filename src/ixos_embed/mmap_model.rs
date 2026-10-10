@@ -1,40 +1,12 @@
-//! Memory-mapped Model2Vec embedding model with lazy initialization
+//! Lazy Model2Vec loader with local-model discovery.
 //!
-//! Provides near-zero load time by deferring model initialization until first use.
-//! The underlying model2vec-rs crate already uses memmap2 for efficient safetensors
-//! loading, so this wrapper focuses on:
+//! The public type retains its historical `Mmap` name for compatibility. The
+//! current model2vec-rs loader reads safetensors and expands the table to f32;
+//! this wrapper does not implement memory-mapped inference. Construction defers
+//! that cost until the first embedding or artifact-identity request.
 //!
-//! 1. **Lazy initialization**: Model is loaded on first `embed()` call
-//! 2. **HuggingFace cache detection**: Checks if model exists locally before loading
-//! 3. **Seamless fallback**: Falls back to standard loading if mmap fails
-//!
-//! # Model Types (P1.3)
-//!
-//! Ixos supports multiple embedding models, selectable via CLI `--model` flag:
-//!
-//! - **Ixos Flash** (`ixos-flash-v2`): Current production flash model.
-//! - **Ixos Pro** (`ixos-pro-v2`): Pro routing model.
-//! - **potion-base-8m-int8**: Internal dependency used by Ixos Pro.
-//! - **Qwen** (legacy/experimental): Distilled from Qwen3-Embedding-0.6B.
-//!
-//! # Performance
-//! - Initial "load" time: <1ms (just creates wrapper)
-//! - First embed: 2-3s if model needs download, <100ms if cached locally
-//! - Subsequent embeds: <1ms (model already in memory)
-//!
-//! # Usage
-//! ```ignore
-//! use ixos_protocol::ixos_embed::{MmapModel2VecEmbedder, ModelType};
-//!
-//! // Use default model selection
-//! let model = MmapModel2VecEmbedder::new()?;
-//!
-//! // Or specify a model type
-//! let model = MmapModel2VecEmbedder::new_with_type(ModelType::Potion)?;
-//!
-//! // First embed triggers actual model loading
-//! let embedding = model.embed("hello world")?;
-//! ```
+//! Runtime and quality measurements belong in reports, rather than assumed
+//! timing/accuracy claims in the loader. Local artifacts remain CPU-only.
 
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -152,11 +124,11 @@ impl std::fmt::Display for ModelType {
     }
 }
 
-/// Memory-mapped Model2Vec embedder with lazy initialization
+/// Model2Vec embedder with lazy initialization (historical public type name)
 ///
 /// This embedder provides near-zero initial load time by deferring the actual
 /// model loading until the first embedding request. The underlying model2vec-rs
-/// library already uses memory mapping (memmap2) for efficient safetensors loading.
+/// library currently reads the complete safetensors table and decodes it to f32.
 ///
 /// # Thread Safety
 /// Uses `RwLock` for thread-safe lazy initialization. Multiple threads calling
@@ -170,7 +142,7 @@ pub struct MmapModel2VecEmbedder {
     model_id: String,
     /// Local path override (if loading from disk instead of HuggingFace)
     local_path: Option<PathBuf>,
-    /// Pre-computed fingerprint (consistent whether mmap or standard loading)
+    /// Provisional identity used only if loading fails; successful loads use artifact hashes.
     fingerprint: [u8; 32],
     /// Cached dimensions (set after first load, or default 256 for potion-base-8M)
     dims: AtomicUsize,
@@ -759,7 +731,7 @@ impl MmapModel2VecEmbedder {
     /// It handles both local path loading and HuggingFace download.
     ///
     /// Uses double-checked locking for thread-safe lazy initialization.
-    fn ensure_loaded(&self) -> Result<(), ModelError> {
+    pub fn ensure_loaded(&self) -> Result<(), ModelError> {
         // Fast path: model already loaded
         if self.model.read().is_some() {
             return Ok(());
@@ -848,8 +820,16 @@ impl EmbeddingModel for MmapModel2VecEmbedder {
     }
 
     fn fingerprint(&self) -> [u8; 32] {
-        // Fingerprint is pre-computed and consistent across load methods
-        self.fingerprint
+        // Cache readers need the actual artifact identity, even before the first embed.
+        // If loading fails, no embedding can be written under the provisional identity.
+        if self.ensure_loaded().is_err() {
+            return self.fingerprint;
+        }
+        self.model
+            .read()
+            .as_ref()
+            .expect("Model loaded")
+            .fingerprint()
     }
 }
 

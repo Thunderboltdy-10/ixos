@@ -20,6 +20,8 @@ pub struct LexicalMatch {
     pub term_matches: usize,
     /// Total number of query terms
     pub total_terms: usize,
+    /// Actual lexical witness locations (1-indexed), carried through reranking.
+    pub line_numbers: Vec<usize>,
 }
 
 impl LexicalMatch {
@@ -31,7 +33,26 @@ impl LexicalMatch {
             content_snippet: snippet,
             term_matches: matches,
             total_terms: total,
+            line_numbers: Vec::new(),
         }
+    }
+
+    /// Count distinct query terms, rather than treating repeated occurrences as coverage.
+    pub fn with_query_coverage(mut self, query: &str) -> Self {
+        let mut terms: Vec<_> = query
+            .split_whitespace()
+            .filter(|t| t.len() >= 2 && !t.contains(':'))
+            .map(str::to_lowercase)
+            .collect();
+        terms.sort();
+        terms.dedup();
+        let evidence = format!("{} {}", self.path.display(), self.content_snippet).to_lowercase();
+        self.total_terms = terms.len();
+        self.term_matches = terms
+            .iter()
+            .filter(|term| evidence.contains(term.as_str()))
+            .count();
+        self
     }
 
     /// Get the match ratio (matched terms / total terms)

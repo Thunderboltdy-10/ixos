@@ -28,7 +28,7 @@ use super::model::{EmbeddingModel, ModelError};
 /// between short and long inputs based on processing time.
 pub const MIN_PROCESSING_TIME: Duration = Duration::from_millis(100);
 
-/// Maximum content length for embedding (2048 characters)
+/// Fixed input length for the optional timing-protected mode (2048 characters)
 ///
 /// Content is truncated or padded to this exact length to prevent
 /// length-based timing side channels.
@@ -127,7 +127,7 @@ impl SecureEmbedder {
     /// * `content` - Text content to embed
     ///
     /// # Returns
-    /// The embedding vector (64 f32 values)
+    /// The embedding vector in the selected model's native dimensions
     ///
     /// # Timing Guarantee
     /// This method always takes at least `min_processing_time` (default 100ms),
@@ -288,8 +288,12 @@ impl SecureEmbedder {
     /// - Truncates if longer than limit
     /// - Pads with NUL characters if shorter
     ///
-    /// This ensures that content length doesn't affect timing.
+    /// Fast mode preserves the caller's text. The optional timing floor is a
+    /// minimum duration, not a guarantee that different inputs take equal time.
     fn normalize_content(&self, content: &str) -> String {
+        if !self.has_timing_protection() {
+            return content.to_owned();
+        }
         let mut normalized = String::with_capacity(self.content_size_limit);
 
         // Take up to limit characters
@@ -299,7 +303,10 @@ impl SecureEmbedder {
 
         // Pad with NUL characters if shorter
         // NUL chars are typically ignored by embedding models
-        while normalized.len() < self.content_size_limit {
+        let padding = self
+            .content_size_limit
+            .saturating_sub(normalized.chars().count());
+        for _ in 0..padding {
             normalized.push('\0');
         }
 
@@ -313,7 +320,16 @@ impl SecureEmbedder {
 
     /// Get the model's fingerprint (for cache validation)
     pub fn model_fingerprint(&self) -> [u8; 32] {
-        self.model.fingerprint()
+        let mut recipe = self.model.fingerprint().to_vec();
+        recipe.extend_from_slice(if self.has_timing_protection() {
+            b"fixed-input-v2"
+        } else {
+            b"full-input-v1"
+        });
+        if self.has_timing_protection() {
+            recipe.extend_from_slice(&(self.content_size_limit as u64).to_le_bytes());
+        }
+        crate::security::crypto::sha256(&recipe)
     }
 }
 
@@ -334,7 +350,7 @@ mod tests {
 
     fn create_embedder() -> SecureEmbedder {
         let model = Arc::new(StubModel::new());
-        SecureEmbedder::new(model)
+        SecureEmbedder::new_secure(model)
     }
 
     fn create_fast_embedder() -> SecureEmbedder {
@@ -352,6 +368,31 @@ mod tests {
         assert!(normalized.starts_with("hello"));
         // Rest should be NUL padding
         assert!(normalized.chars().skip(5).all(|c| c == '\0'));
+    }
+
+    #[test]
+    fn fast_mode_preserves_text_beyond_the_legacy_limit() {
+        let model = Arc::new(StubModel::new());
+        let embedder = SecureEmbedder::new_fast(model.clone());
+        let text = format!("{} useful late concept", "é".repeat(5000));
+        assert_eq!(embedder.normalize_content(&text), text);
+        assert_eq!(
+            embedder.embed_sync(&text).unwrap(),
+            model.embed(&text).unwrap()
+        );
+        assert_ne!(
+            embedder.model_fingerprint(),
+            SecureEmbedder::new_secure(model).model_fingerprint()
+        );
+    }
+
+    #[test]
+    fn timing_mode_pads_unicode_by_characters() {
+        let embedder = create_embedder();
+        assert_eq!(
+            embedder.normalize_content("é日本語").chars().count(),
+            CONTENT_SIZE_LIMIT
+        );
     }
 
     #[test]

@@ -189,6 +189,10 @@ pub struct CandidateStats {
     pub path_candidates: usize,
     /// Candidates from ripgrep
     pub ripgrep_candidates: usize,
+    /// Actual file scans, including documents, rather than number of hits.
+    pub files_scanned: usize,
+    /// Whether any lexical phase exhausted its time or result budget.
+    pub truncated: bool,
     /// Candidates after merge (before cap)
     pub merged_candidates: usize,
     /// Final candidates (after cap)

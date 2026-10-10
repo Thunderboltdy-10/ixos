@@ -7,14 +7,12 @@ use half::f16;
 use ring::hmac::{self, Key, HMAC_SHA256};
 
 /// Binary format version for signed metadata
-const VERSION_SIGNED: u8 = 2;
+const VERSION_SIGNED: u8 = 3;
 
-/// Number of embedding dimensions
-const EMBEDDING_DIMS: usize = 64;
-
-/// Total size of signed metadata:
-/// version(1) + fingerprint(32) + file_hash(32) + embedding(128) + signature(32) = 225 bytes
-pub const METADATA_SIZE: usize = 1 + 32 + 32 + (EMBEDDING_DIMS * 2) + 32;
+/// Version, dimension count, model identity and source content hash.
+pub const METADATA_HEADER_SIZE: usize = 1 + 4 + 32 + 32;
+const SIGNATURE_SIZE: usize = 32;
+const MAX_EMBEDDING_DIMS: usize = 16_384;
 
 /// Validates and signs embedding metadata
 pub struct MetadataValidator {
@@ -42,22 +40,24 @@ impl MetadataValidator {
 
     /// Sign an embedding with file hash, creating a verifiable blob
     ///
-    /// # Binary Format (225 bytes)
+    /// # Binary Format (variable length, f16 values)
     /// ```text
-    /// [version:u8][model_fingerprint:32b][file_hash:32b][embedding:128b][signature:32b]
+    /// [version:u8][dimensions:u32-le][model_fingerprint:32b][file_hash:32b][embedding:f16-le...][signature:32b]
     /// ```
     ///
     /// # Arguments
-    /// * `embedding` - The embedding vector (64 f32 values)
+    /// * `embedding` - The complete embedding vector; never truncate dimensions
     /// * `file_hash` - SHA256 hash of the source file content
     ///
     /// # Returns
     /// A signed binary blob that can be stored in file metadata
     pub fn sign(&self, embedding: &[f32], file_hash: &[u8; 32]) -> Vec<u8> {
-        let mut payload = Vec::with_capacity(METADATA_SIZE);
+        let mut payload =
+            Vec::with_capacity(METADATA_HEADER_SIZE + embedding.len() * 2 + SIGNATURE_SIZE);
 
         // Version byte
         payload.push(VERSION_SIGNED);
+        payload.extend_from_slice(&(embedding.len() as u32).to_le_bytes());
 
         // Model fingerprint (32 bytes)
         payload.extend_from_slice(&self.model_fingerprint);
@@ -65,15 +65,10 @@ impl MetadataValidator {
         // File hash (32 bytes)
         payload.extend_from_slice(file_hash);
 
-        // Embedding quantized to f16 (64 * 2 = 128 bytes)
-        for val in embedding.iter().take(EMBEDDING_DIMS) {
+        // Preserve every dimension. Precision reduction is not dimension reduction.
+        for val in embedding {
             let f16_val = f16::from_f32(*val);
             payload.extend_from_slice(&f16_val.to_le_bytes());
-        }
-
-        // Pad with zeros if embedding is shorter than expected
-        for _ in embedding.len()..EMBEDDING_DIMS {
-            payload.extend_from_slice(&f16::ZERO.to_le_bytes());
         }
 
         // HMAC-SHA256 signature (32 bytes)
@@ -104,7 +99,7 @@ impl MetadataValidator {
         expected_file_hash: &[u8; 32],
     ) -> Result<Vec<f32>, ValidatorError> {
         // Check minimum length
-        if data.len() < METADATA_SIZE {
+        if data.len() < METADATA_HEADER_SIZE + SIGNATURE_SIZE {
             return Err(ValidatorError::InvalidFormat);
         }
 
@@ -113,35 +108,41 @@ impl MetadataValidator {
             return Err(ValidatorError::UnsupportedVersion(data[0]));
         }
 
-        // Check model fingerprint (bytes 1-33)
-        let stored_fingerprint = &data[1..33];
+        let dimensions = u32::from_le_bytes(data[1..5].try_into().unwrap()) as usize;
+        if dimensions == 0
+            || dimensions > MAX_EMBEDDING_DIMS
+            || data.len() != METADATA_HEADER_SIZE + dimensions * 2 + SIGNATURE_SIZE
+        {
+            return Err(ValidatorError::InvalidFormat);
+        }
+
+        // Check artifact/extraction identity.
+        let stored_fingerprint = &data[5..37];
         if stored_fingerprint != self.model_fingerprint {
             return Err(ValidatorError::ModelMismatch);
         }
 
-        // Check file hash (bytes 33-65)
-        let stored_file_hash = &data[33..65];
+        let stored_file_hash = &data[37..69];
         if stored_file_hash != expected_file_hash {
             return Err(ValidatorError::FileHashMismatch);
         }
 
         // Verify HMAC signature
-        let signature_start = data.len() - 32;
+        let signature_start = data.len() - SIGNATURE_SIZE;
         let payload = &data[..signature_start];
         let signature = &data[signature_start..];
 
         hmac::verify(&self.hmac_key, payload, signature)
             .map_err(|_| ValidatorError::InvalidSignature)?;
 
-        // Decode embedding from f16 (bytes 65 to signature_start)
-        let embedding_bytes = &data[65..signature_start];
-        let mut embedding = Vec::with_capacity(EMBEDDING_DIMS);
-
-        for chunk in embedding_bytes.chunks(2) {
-            if chunk.len() == 2 {
-                let f16_val = f16::from_le_bytes([chunk[0], chunk[1]]);
-                embedding.push(f16_val.to_f32());
+        let embedding_bytes = &data[METADATA_HEADER_SIZE..signature_start];
+        let mut embedding = Vec::with_capacity(dimensions);
+        for chunk in embedding_bytes.chunks_exact(2) {
+            let value = f16::from_le_bytes([chunk[0], chunk[1]]).to_f32();
+            if !value.is_finite() {
+                return Err(ValidatorError::InvalidFormat);
             }
+            embedding.push(value);
         }
 
         Ok(embedding)
@@ -191,7 +192,10 @@ mod tests {
     fn test_sign_produces_correct_length() {
         let validator = MetadataValidator::new(&test_key(), test_fingerprint());
         let signed = validator.sign(&test_embedding(), &test_file_hash());
-        assert_eq!(signed.len(), METADATA_SIZE);
+        assert_eq!(
+            signed.len(),
+            METADATA_HEADER_SIZE + test_embedding().len() * 2 + SIGNATURE_SIZE
+        );
     }
 
     #[test]
@@ -213,6 +217,50 @@ mod tests {
                 dec
             );
         }
+    }
+
+    #[test]
+    fn roundtrip_preserves_real_model_dimensions() {
+        let validator = MetadataValidator::new(&test_key(), test_fingerprint());
+        for dimensions in [64, 128, 256, 512, 768] {
+            let original: Vec<f32> = (0..dimensions)
+                .map(|i| (i % 100) as f32 / 100.0 - 0.5)
+                .collect();
+            let signed = validator.sign(&original, &test_file_hash());
+            let decoded = validator.verify(&signed, &test_file_hash()).unwrap();
+            assert_eq!(
+                decoded.len(),
+                dimensions,
+                "lost dimensions for {dimensions}d model"
+            );
+            for (original, decoded) in original.iter().zip(&decoded) {
+                assert!((original - decoded).abs() < 0.001);
+            }
+        }
+    }
+
+    #[test]
+    fn rejects_incompatible_legacy_and_malformed_vectors() {
+        let validator = MetadataValidator::new(&test_key(), test_fingerprint());
+        let mut legacy = validator.sign(&test_embedding(), &test_file_hash());
+        legacy[0] = 2;
+        assert!(matches!(
+            validator.verify(&legacy, &test_file_hash()),
+            Err(ValidatorError::UnsupportedVersion(2))
+        ));
+        for embedding in [vec![], vec![f32::NAN], vec![f32::INFINITY]] {
+            let blob = validator.sign(&embedding, &test_file_hash());
+            assert!(matches!(
+                validator.verify(&blob, &test_file_hash()),
+                Err(ValidatorError::InvalidFormat)
+            ));
+        }
+        let mut blob = validator.sign(&test_embedding(), &test_file_hash());
+        blob.push(0);
+        assert!(matches!(
+            validator.verify(&blob, &test_file_hash()),
+            Err(ValidatorError::InvalidFormat)
+        ));
     }
 
     #[test]

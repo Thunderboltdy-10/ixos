@@ -4,20 +4,21 @@
 //! extended attributes (FAT32, exFAT) or NTFS ADS (USB drives, network shares).
 //!
 //! The cache uses LMDB (Lightning Memory-Mapped Database) for fast key-value storage:
-//! - Location: %TEMP%\ixos-sidecar (Windows) or /tmp/ixos-sidecar (Unix)
-//! - Key: xxHash3(file_path + file_hash) for fast collision-resistant hashing
-//! - Value: 225-byte signed embedding (same format as ADS/xattr caches)
+//! - Location: the user's application cache under ixos/embeddings
+//! - Key: SHA256(normalized_absolute_path)
+//! - Value: dimension-aware signed embedding (same format as ADS/xattr caches)
 //! - Size cap: 50MB maximum database size
 //!
-//! This cache is thread-safe (Send + Sync) and auto-cleans on drop.
+//! This cache is shared across searches and survives process exit. No files are
+//! created alongside searched documents.
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+use crate::security::crypto::sha256;
 use heed::types::Bytes;
 use heed::{Database, Env, EnvOpenOptions};
 use parking_lot::Mutex;
-use xxhash_rust::xxh3::xxh3_64;
 
 use super::{CacheError, EmbeddingCache, MetadataValidator, ValidatorError};
 use crate::security::crypto::load_or_create_key;
@@ -25,17 +26,12 @@ use crate::security::crypto::load_or_create_key;
 /// Maximum database size: 50MB
 const MAX_DB_SIZE: usize = 50 * 1024 * 1024;
 
-/// Name of the sidecar cache directory
-const SIDECAR_DIR_NAME: &str = "ixos-sidecar";
-
 /// LMDB-backed sidecar cache for non-xattr/ADS filesystems
 pub struct LmdbSidecarCache {
     env: Arc<Env>,
     db: Database<Bytes, Bytes>,
     validator: MetadataValidator,
     cache_dir: PathBuf,
-    /// Track whether this instance owns the cache directory (for cleanup)
-    owns_cache: bool,
     /// Lock to serialize write operations
     write_lock: Mutex<()>,
 }
@@ -52,17 +48,17 @@ impl LmdbSidecarCache {
     /// Create a new LMDB sidecar cache with an explicit model fingerprint.
     pub fn new_with_fingerprint(model_fingerprint: [u8; 32]) -> Result<Self, LmdbCacheError> {
         let cache_dir = Self::get_cache_dir();
-        Self::with_cache_dir(cache_dir, true, model_fingerprint)
+        Self::with_cache_dir(cache_dir, false, model_fingerprint)
     }
 
     /// Create a new LMDB sidecar cache at a custom directory
     ///
     /// # Arguments
     /// * `cache_dir` - Directory where the LMDB database will be stored
-    /// * `owns_cache` - If true, the cache directory will be cleaned up on drop
+    /// * `_owns_cache` - Retained for API compatibility; dropping a shared cache never deletes it
     pub fn with_cache_dir(
         cache_dir: PathBuf,
-        owns_cache: bool,
+        _owns_cache: bool,
         model_fingerprint: [u8; 32],
     ) -> Result<Self, LmdbCacheError> {
         // Ensure the cache directory exists
@@ -95,7 +91,6 @@ impl LmdbSidecarCache {
             db,
             validator,
             cache_dir,
-            owns_cache,
             write_lock: Mutex::new(()),
         })
     }
@@ -126,7 +121,6 @@ impl LmdbSidecarCache {
             db,
             validator,
             cache_dir,
-            owns_cache: false, // Test instances don't auto-cleanup
             write_lock: Mutex::new(()),
         })
     }
@@ -134,29 +128,28 @@ impl LmdbSidecarCache {
     /// Get the default cache directory
     ///
     /// Returns:
-    /// - Windows: %TEMP%\ixos-sidecar
-    /// - Unix: /tmp/ixos-sidecar
+    /// Uses the platform application cache, with a temporary-directory fallback.
     pub fn get_cache_dir() -> PathBuf {
-        std::env::temp_dir().join(SIDECAR_DIR_NAME)
+        dirs::cache_dir()
+            .unwrap_or_else(std::env::temp_dir)
+            .join("ixos")
+            .join("embeddings")
     }
 
-    /// Generate the cache key from file path and content hash
-    ///
-    /// Uses xxHash3 for fast, high-quality hashing:
-    /// key = xxh3_64(canonical_path_bytes + file_hash)
-    fn make_key(path: &Path, file_hash: &[u8; 32]) -> [u8; 8] {
-        // Canonicalize the path for consistent keys across different path representations
-        let path_str = path.to_string_lossy();
-        let path_bytes = path_str.as_bytes();
-
-        // Combine path and file hash for the key
-        let mut combined = Vec::with_capacity(path_bytes.len() + 32);
-        combined.extend_from_slice(path_bytes);
-        combined.extend_from_slice(file_hash);
-
-        // xxHash3 produces a 64-bit hash
-        let hash = xxh3_64(&combined);
-        hash.to_le_bytes()
+    /// One slot per file, like ADS/xattr. The signed value validates model and
+    /// source identities. Presence/deletion also work for generic cache commands.
+    fn make_key(path: &Path) -> [u8; 32] {
+        let absolute = std::fs::canonicalize(path).unwrap_or_else(|_| {
+            if path.is_absolute() {
+                path.to_path_buf()
+            } else {
+                std::env::current_dir().unwrap_or_default().join(path)
+            }
+        });
+        let text = absolute.to_string_lossy();
+        #[cfg(windows)]
+        let text = text.trim_start_matches(r"\\?\").to_lowercase();
+        sha256(text.as_bytes())
     }
 
     /// Check if LMDB sidecar caching is available
@@ -203,26 +196,9 @@ impl Default for LmdbSidecarCache {
     }
 }
 
-impl Drop for LmdbSidecarCache {
-    fn drop(&mut self) {
-        if self.owns_cache {
-            // Clean up the cache directory on drop
-            if let Err(e) = std::fs::remove_dir_all(&self.cache_dir) {
-                tracing::warn!(
-                    "Failed to clean up LMDB sidecar cache at {:?}: {}",
-                    self.cache_dir,
-                    e
-                );
-            } else {
-                tracing::debug!("LMDB sidecar cache cleaned up at {:?}", self.cache_dir);
-            }
-        }
-    }
-}
-
 impl EmbeddingCache for LmdbSidecarCache {
     fn get(&self, path: &Path, file_hash: &[u8; 32]) -> Result<Option<Vec<f32>>, CacheError> {
-        let key = Self::make_key(path, file_hash);
+        let key = Self::make_key(path);
 
         let rtxn = self.env.read_txn().map_err(|e| {
             tracing::warn!("LMDB read transaction failed: {}", e);
@@ -263,8 +239,9 @@ impl EmbeddingCache for LmdbSidecarCache {
     }
 
     fn set(&self, path: &Path, file_hash: &[u8; 32], embedding: &[f32]) -> Result<(), CacheError> {
-        let key = Self::make_key(path, file_hash);
+        let key = Self::make_key(path);
         let signed_data = self.validator.sign(embedding, file_hash);
+        self.validator.verify(&signed_data, file_hash)?;
 
         let _lock = self.write_lock.lock();
         let mut wtxn = self.env.write_txn().map_err(|e| {
@@ -287,59 +264,27 @@ impl EmbeddingCache for LmdbSidecarCache {
     }
 
     fn delete(&self, path: &Path) -> Result<(), CacheError> {
-        // For delete, we need to find the entry by path prefix
-        // Since we include the file hash in the key, we can't directly delete by path alone
-        // For now, we skip this since cached entries will naturally be invalidated by hash mismatch
-        tracing::debug!(
-            "LMDB sidecar cache delete called for {:?} (no-op, relies on hash invalidation)",
-            path
-        );
+        let key = Self::make_key(path);
+        let _lock = self.write_lock.lock();
+        let mut transaction = self
+            .env
+            .write_txn()
+            .map_err(|e| std::io::Error::other(e.to_string()))?;
+        self.db
+            .delete(&mut transaction, &key)
+            .map_err(|e| std::io::Error::other(e.to_string()))?;
+        transaction
+            .commit()
+            .map_err(|e| std::io::Error::other(e.to_string()))?;
         Ok(())
     }
 
-    fn contains(&self, _path: &Path) -> bool {
-        // For LMDB, we can't easily check containment without the file hash because the key depends on it.
-        // However, the `contains` API is primarily for stats where we want to know if *something* is cached.
-        // Since we can't iterate efficiently to find if *any* key matches the path prefix (hashed),
-        // we might return false or try to iterate.
-        //
-        // Optimization: Iterating the whole DB is slow.
-        // BUT, `make_key` requires the hash.
-        //
-        // If we change `contains` to accept `file_hash`, it defeats the purpose of "quick check without hash".
-        //
-        // Alternative: LmdbSidecarCache stores `xxh3(path + hash)`. We cannot lookup by path alone.
-        // Result: `contains` for LMDB sidecar MUST return false or be expensive.
-        //
-        // WAIT: The user request says "add a cache API to detect presence without a hash".
-        // Use case: `ixos cache stats`.
-        //
-        // If LMDB can't support it, stats will be 0 for LMDB.
-        // But iterating the DB and checking if any key "matches" is impossible because keys are hashes.
-        //
-        // Actually, if we are doing `cache stats`, we are iterating the filesystem.
-        // We have the file path. We DON'T have the hash (expensive to compute).
-        //
-        // If we are using LMDB, we are stuck. We MUST compute the hash to check existence.
-        // OR we change the key structure to `path + hash` (not hashed key).
-        // The current impl uses `xxh3_64` for the key.
-        //
-        // So `contains` is impossible O(1) for LmdbSidecarCache without hash.
-        // We will return `false` for now, or we can iterate the whole DB (O(N) - acceptable for `stats` command? No).
-        //
-        // Actually, we can return `false` and documenting that LMDB stats require hash.
-        // OR, we can implement it as "always false" since LMDB is a fallback.
-        //
-        // Let's implement it as returning `false` with a TODO, because changing key structure is a breaking change.
-        //
-        // WAIT - `ixos cache stats` iterates files.
-        // If `get_cache_for_path` returns LmdbSidecarCache, we are using it.
-        // If `contains` returns false, stats say 0.
-        //
-        // Is there a way?
-        // No, `make_key` consumes `file_hash`.
-        //
-        return false;
+    fn contains(&self, path: &Path) -> bool {
+        let key = Self::make_key(path);
+        self.env
+            .read_txn()
+            .ok()
+            .is_some_and(|transaction| self.db.get(&transaction, &key).ok().flatten().is_some())
     }
 
     fn is_supported(&self, _path: &Path) -> bool {
@@ -404,7 +349,7 @@ mod tests {
     }
 
     fn test_embedding() -> Vec<f32> {
-        (0..64).map(|i| i as f32 * 0.01).collect()
+        (0..512).map(|i| (i % 100) as f32 * 0.01).collect()
     }
 
     fn test_file_hash() -> [u8; 32] {
@@ -414,10 +359,8 @@ mod tests {
     #[test]
     fn test_make_key_deterministic() {
         let path = Path::new("/test/file.txt");
-        let hash = test_file_hash();
-
-        let key1 = LmdbSidecarCache::make_key(path, &hash);
-        let key2 = LmdbSidecarCache::make_key(path, &hash);
+        let key1 = LmdbSidecarCache::make_key(path);
+        let key2 = LmdbSidecarCache::make_key(path);
 
         assert_eq!(key1, key2, "Keys should be deterministic");
     }
@@ -426,24 +369,33 @@ mod tests {
     fn test_make_key_different_for_different_paths() {
         let path1 = Path::new("/test/file1.txt");
         let path2 = Path::new("/test/file2.txt");
-        let hash = test_file_hash();
-
-        let key1 = LmdbSidecarCache::make_key(path1, &hash);
-        let key2 = LmdbSidecarCache::make_key(path2, &hash);
+        let key1 = LmdbSidecarCache::make_key(path1);
+        let key2 = LmdbSidecarCache::make_key(path2);
 
         assert_ne!(key1, key2, "Different paths should produce different keys");
     }
 
     #[test]
-    fn test_make_key_different_for_different_hashes() {
-        let path = Path::new("/test/file.txt");
-        let hash1 = [0xAAu8; 32];
-        let hash2 = [0xBBu8; 32];
-
-        let key1 = LmdbSidecarCache::make_key(path, &hash1);
-        let key2 = LmdbSidecarCache::make_key(path, &hash2);
-
-        assert_ne!(key1, key2, "Different hashes should produce different keys");
+    fn cache_rejects_different_model_in_the_same_file_slot() {
+        let temp = TempDir::new().unwrap();
+        let path = Path::new("/test/document.txt");
+        let cache =
+            LmdbSidecarCache::with_validator(temp.path().to_path_buf(), test_validator()).unwrap();
+        cache
+            .set(path, &test_file_hash(), &test_embedding())
+            .unwrap();
+        let other = LmdbSidecarCache::with_validator(
+            temp.path().to_path_buf(),
+            MetadataValidator::new(&[0x42; 32], [0x99; 32]),
+        )
+        .unwrap();
+        assert!(other.contains(path));
+        assert!(other.get(path, &test_file_hash()).unwrap().is_none());
+        other
+            .set(path, &test_file_hash(), &test_embedding())
+            .unwrap();
+        assert_eq!(other.stats().unwrap().entry_count, 1);
+        assert!(cache.get(path, &test_file_hash()).unwrap().is_none());
     }
 
     #[test]
@@ -478,6 +430,51 @@ mod tests {
                 ret
             );
         }
+    }
+
+    #[test]
+    fn cache_survives_last_handle_and_reopens() {
+        let temp_dir = TempDir::new().unwrap();
+        let path = Path::new("/test/document.txt");
+        {
+            let cache =
+                LmdbSidecarCache::with_validator(temp_dir.path().to_path_buf(), test_validator())
+                    .unwrap();
+            cache
+                .set(path, &test_file_hash(), &test_embedding())
+                .unwrap();
+        }
+        assert!(temp_dir.path().join("data.mdb").exists());
+        let reopened =
+            LmdbSidecarCache::with_validator(temp_dir.path().to_path_buf(), test_validator())
+                .unwrap();
+        assert_eq!(
+            reopened
+                .get(path, &test_file_hash())
+                .unwrap()
+                .unwrap()
+                .len(),
+            512
+        );
+    }
+
+    #[test]
+    fn edited_values_replace_old_entries_and_delete_is_real() {
+        let temp = TempDir::new().unwrap();
+        let cache =
+            LmdbSidecarCache::with_validator(temp.path().to_path_buf(), test_validator()).unwrap();
+        let path = Path::new("/test/editable.txt");
+        assert!(!cache.contains(path));
+        for byte in 0..20 {
+            cache.set(path, &[byte; 32], &test_embedding()).unwrap();
+        }
+        assert_eq!(cache.stats().unwrap().entry_count, 1);
+        assert!(cache.contains(path));
+        assert!(cache.get(path, &[0; 32]).unwrap().is_none());
+        assert!(cache.get(path, &[19; 32]).unwrap().is_some());
+        cache.delete(path).unwrap();
+        assert!(!cache.contains(path));
+        assert_eq!(cache.stats().unwrap().entry_count, 0);
     }
 
     #[test]

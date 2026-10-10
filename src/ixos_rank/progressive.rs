@@ -290,6 +290,13 @@ pub struct StreamStats {
     pub cache_hits: usize,
 }
 
+#[derive(Debug, Clone, Default, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchDiagnostics {
+    pub candidates: super::candidate_generator::CandidateStats,
+    pub embedding: super::semantic_engine::SemanticMetrics,
+}
+
 #[derive(Debug, Clone)]
 pub struct StreamEventItem {
     pub id: String,
@@ -375,6 +382,7 @@ pub struct ProgressiveSearchEngine<L: LexicalEngine, S: SemanticEngine> {
     pro_engine: Option<Arc<dyn SemanticEngine>>,
     secure_ranker: SecureRanker,
     config: ProgressiveSearchConfig,
+    diagnostics: SearchDiagnostics,
 }
 
 impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
@@ -386,6 +394,7 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             pro_engine: None,
             secure_ranker: SecureRanker::new(),
             config: ProgressiveSearchConfig::default(),
+            diagnostics: SearchDiagnostics::default(),
         }
     }
 
@@ -397,6 +406,7 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             pro_engine: None,
             secure_ranker: SecureRanker::new(),
             config,
+            diagnostics: SearchDiagnostics::default(),
         }
     }
 
@@ -413,6 +423,7 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             pro_engine: pro.map(|engine| Arc::new(engine) as Arc<dyn SemanticEngine>),
             secure_ranker: SecureRanker::new(),
             config,
+            diagnostics: SearchDiagnostics::default(),
         }
     }
 
@@ -437,6 +448,11 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         tx: mpsc::Sender<SearchEvent>,
         cancel: CancellationToken,
     ) -> Result<(), SearchError> {
+        self.semantic_engine.reset_metrics().await;
+        if let Some(pro) = &self.pro_engine {
+            pro.reset_metrics().await;
+        }
+        self.diagnostics = SearchDiagnostics::default();
         const MAX_STREAM_EVENTS: usize = 120;
         const MAX_SCAN_EVENTS_PER_BATCH: usize = 6;
         let _total_span = search_total_span(&query);
@@ -642,7 +658,6 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             flash_engine
         };
         let mut flash_scores: Option<std::collections::HashMap<std::path::PathBuf, f32>> = None;
-        let mut embedded_count: usize = 0;
 
         let mut semantic_results = if lexical_results.is_empty() {
             // Ask-mode queries should avoid search_pure to prevent full-corpus scans.
@@ -786,18 +801,11 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             }
         }
 
-        if lexical_results.is_empty() {
-            embedded_count = semantic_results.len();
-        } else {
-            embedded_count = embedded_count.saturating_add(lexical_results.len());
-        }
+        let metrics = primary_engine.metrics().await;
         {
             let mut stats = stream_stats.lock().unwrap();
-            stats.embedded = stats.embedded.max(embedded_count);
-            if lexical_results.is_empty() {
-                stats.candidates = stats.candidates.max(semantic_results.len());
-                stats.files_scanned = stats.files_scanned.max(semantic_results.len());
-            }
+            stats.embedded = metrics.candidates_embedded;
+            stats.cache_hits = metrics.cache_hits;
         }
         let semantic_progress_stats = stream_stats.lock().unwrap().clone();
         let _ = tx.try_send(SearchEvent::StreamUpdate {
@@ -840,7 +848,6 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             }
 
             if !flash_candidates.is_empty() {
-                let flash_candidate_count = flash_candidates.len();
                 match tokio::time::timeout(
                     self.config.semantic_timeout,
                     flash_engine.rerank(
@@ -858,7 +865,6 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                                 .map(|m| (m.path, m.similarity))
                                 .collect(),
                         );
-                        embedded_count = embedded_count.saturating_add(flash_candidate_count);
                     }
                     Ok(Err(e)) => {
                         tracing::warn!("Flash refinement failed: {}", e);
@@ -965,7 +971,6 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
 
             if let Some(pro_engine) = pro_engine {
                 if !pro_candidates.is_empty() {
-                    let pro_candidate_count = pro_candidates.len();
                     let auto_refine_timeout =
                         self.config.semantic_timeout.min(AUTO_REFINE_TIMEOUT_CAP);
                     match tokio::time::timeout(
@@ -1005,7 +1010,6 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                                         .partial_cmp(&a.similarity)
                                         .unwrap_or(std::cmp::Ordering::Equal)
                                 });
-                                embedded_count = embedded_count.saturating_add(pro_candidate_count);
                                 used_pro = true;
 
                                 final_results = rank_with_optional_witness_guard(
@@ -1064,8 +1068,15 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             let _ = tx.try_send(SearchEvent::Status("Collecting evidence...".into()));
 
             for (index, result) in final_results.iter_mut().enumerate() {
+                if let Some(line) = lexical_lookup
+                    .get(&result.path)
+                    .and_then(|m| m.line_numbers.first())
+                {
+                    result.context_snippet =
+                        super::snippet::extract_context_at_line(&result.path, *line, context_lines);
+                }
                 if index >= evidence_limit {
-                    if context_lines > 0 {
+                    if context_lines > 0 && result.context_snippet.is_none() {
                         if let Some(content) = super::evidence::passage_extractor::read_file_content(
                             &result.path,
                             evidence_max_bytes,
@@ -1083,8 +1094,12 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                 }
 
                 let mut semantic_passage: Option<String> = None;
+                let mut semantic_offset = 0;
                 let mut ask_mode_trust: Option<TrustedSnippet> = None;
-                if let Some(query_embedding) = query_embedding.as_ref() {
+                if let Some(query_embedding) = query_embedding
+                    .as_ref()
+                    .filter(|_| result.context_snippet.is_none())
+                {
                     if should_extract_evidence(&result.path) {
                         if let Some(content) = super::evidence::passage_extractor::read_file_content(
                             &result.path,
@@ -1120,6 +1135,7 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                                         let display = passage_extractor
                                             .truncate_for_display(&trusted.passage.text);
                                         semantic_passage = Some(display.clone());
+                                        semantic_offset = trusted.passage.offset;
                                         let matched_lines: Vec<String> =
                                             display.lines().map(|l| l.to_string()).collect();
                                         result.context_snippet =
@@ -1140,6 +1156,7 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                             {
                                 let display = passage_extractor.truncate_for_display(&passage.text);
                                 semantic_passage = Some(display.clone());
+                                semantic_offset = passage.offset;
                                 let matched_lines: Vec<String> =
                                     display.lines().map(|l| l.to_string()).collect();
                                 result.context_snippet = Some(super::snippet::ContextSnippet::new(
@@ -1177,6 +1194,7 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
                     lexical_lookup.get(&result.path),
                     &query_terms,
                     semantic_passage,
+                    semantic_offset,
                     ask_mode_trust,
                 );
                 result.evidence = Some(evidence);
@@ -1192,8 +1210,27 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
             } else {
                 final_results.len()
             };
-            stats.embedded = embedded_count.max(stats.candidates);
         }
+
+        let mut embedding = self.semantic_engine.metrics().await;
+        if let Some(pro) = &self.pro_engine {
+            let other = pro.metrics().await;
+            embedding.cache_hits += other.cache_hits;
+            embedding.candidates_embedded += other.candidates_embedded;
+            embedding.io_read_bytes += other.io_read_bytes;
+            embedding.embedding_ms += other.embedding_ms;
+        }
+        let candidates = self.lexical_engine.candidate_stats().await;
+        {
+            let mut stats = stream_stats.lock().unwrap();
+            stats.files_scanned = candidates.files_scanned;
+            stats.embedded = embedding.candidates_embedded;
+            stats.cache_hits = embedding.cache_hits;
+        }
+        self.diagnostics = SearchDiagnostics {
+            candidates,
+            embedding,
+        };
 
         let mut semantic_events: Vec<StreamEventItem> = Vec::new();
         for (slot_index, result) in final_results.iter().enumerate() {
@@ -1228,6 +1265,10 @@ impl<L: LexicalEngine, S: SemanticEngine> ProgressiveSearchEngine<L, S> {
         let _ = tx.send(SearchEvent::Complete).await;
 
         Ok(())
+    }
+
+    pub fn diagnostics(&self) -> &SearchDiagnostics {
+        &self.diagnostics
     }
 
     /// Simple blocking search (non-progressive)
@@ -1455,14 +1496,18 @@ fn promote_witness_anchor_candidate(
         return;
     }
 
-    let promote_idx = ranked.iter().enumerate().skip(top_k).find_map(|(idx, result)| {
-        let hits = witness_hits_for(&result.path);
-        if hits >= 2 && !path_is_sensitive(&result.path) {
-            Some(idx)
-        } else {
-            None
-        }
-    });
+    let promote_idx = ranked
+        .iter()
+        .enumerate()
+        .skip(top_k)
+        .find_map(|(idx, result)| {
+            let hits = witness_hits_for(&result.path);
+            if hits >= 2 && !path_is_sensitive(&result.path) {
+                Some(idx)
+            } else {
+                None
+            }
+        });
 
     if let Some(idx) = promote_idx {
         let promoted = ranked.remove(idx);
@@ -1869,6 +1914,7 @@ fn build_evidence_summary(
     lexical: Option<&LexicalMatch>,
     query_terms: &[String],
     semantic_passage: Option<String>,
+    semantic_offset: usize,
     ask_mode_trust: Option<TrustedSnippet>,
 ) -> EvidenceSummary {
     let mut evidence_items: Vec<Evidence> = Vec::new();
@@ -1883,7 +1929,7 @@ fn build_evidence_summary(
         evidence_items.push(Evidence::Lexical {
             terms: matched_terms.clone(),
             snippet: lexical.content_snippet.clone(),
-            line_numbers: Vec::new(),
+            line_numbers: lexical.line_numbers.clone(),
             tf_score,
         });
     }
@@ -1892,7 +1938,7 @@ fn build_evidence_summary(
         evidence_items.push(Evidence::Semantic {
             similarity: result.score_breakdown.semantic,
             best_chunk: passage.clone(),
-            chunk_offset: 0,
+            chunk_offset: semantic_offset,
             concepts: Vec::new(),
         });
     }

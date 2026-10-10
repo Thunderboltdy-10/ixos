@@ -4,7 +4,7 @@
 //! This model downloads from Hugging Face on first use (~30 MB).
 
 use super::model::{EmbeddingModel, ModelError};
-use crate::security::crypto::sha256;
+use crate::security::crypto::{sha256, sha256_file};
 use model2vec_rs::model::StaticModel;
 
 /// Real embedding model using Model2Vec Potion Base 8M
@@ -44,32 +44,33 @@ impl Model2VecEmbedder {
     /// # Arguments
     /// * `model_id` - Hugging Face model ID (e.g., "minishlab/potion-base-8M")
     pub fn from_pretrained(model_id: &str) -> Result<Self, ModelError> {
-        tracing::info!("Loading Model2Vec model: {}", model_id);
-
-        // StaticModel::from_pretrained takes (repo_or_path, token, normalize, subfolder)
-        let model = StaticModel::from_pretrained(
-            model_id, None, // token
-            None, // normalize (use config.json default)
-            None, // subfolder
-        )
-        .map_err(|e| ModelError::LoadError(format!("Failed to load {}: {}", model_id, e)))?;
-
-        // Get dimensions by encoding a test string
-        let test_embedding = model.encode_single("test");
-        let dims = test_embedding.len();
-
-        // Create fingerprint from model ID + version
-        let fingerprint_input = format!("model2vec_{}_{}", model_id, env!("CARGO_PKG_VERSION"));
-        let fingerprint = sha256(fingerprint_input.as_bytes());
-
-        tracing::info!("Model2Vec loaded successfully. Dimensions: {}", dims);
-
-        Ok(Self {
-            model,
-            model_id: 1, // 1 = Model2Vec, 0 = Stub
-            fingerprint,
-            dims,
-        })
+        if std::path::Path::new(model_id).exists() {
+            return Self::from_path(std::path::Path::new(model_id));
+        }
+        let api =
+            hf_hub::api::sync::Api::new().map_err(|e| ModelError::LoadError(e.to_string()))?;
+        let repo = api.model(model_id.to_owned());
+        let mut snapshot = None;
+        for filename in ["tokenizer.json", "model.safetensors", "config.json"] {
+            let file = repo
+                .get(filename)
+                .map_err(|e| ModelError::LoadError(e.to_string()))?;
+            let parent = file
+                .parent()
+                .ok_or_else(|| ModelError::LoadError("Missing model snapshot directory".into()))?
+                .to_path_buf();
+            if snapshot
+                .as_ref()
+                .is_some_and(|previous| previous != &parent)
+            {
+                return Err(ModelError::LoadError(
+                    "Model revision changed during download; retry loading a consistent snapshot"
+                        .into(),
+                ));
+            }
+            snapshot = Some(parent);
+        }
+        Self::from_path(&snapshot.expect("Three model files were resolved"))
     }
 
     /// Create from a local path
@@ -78,6 +79,7 @@ impl Model2VecEmbedder {
     /// * `path` - Path to the model directory containing model files
     pub fn from_path(path: &std::path::Path) -> Result<Self, ModelError> {
         tracing::info!("Loading Model2Vec model from: {:?}", path);
+        let fingerprint = artifact_fingerprint(path)?;
 
         let model = StaticModel::from_pretrained(path.to_string_lossy().as_ref(), None, None, None)
             .map_err(|e| ModelError::LoadError(format!("Failed to load from {:?}: {}", path, e)))?;
@@ -85,8 +87,11 @@ impl Model2VecEmbedder {
         let test_embedding = model.encode_single("test");
         let dims = test_embedding.len();
 
-        let fingerprint_input = format!("model2vec_local_{:?}", path);
-        let fingerprint = sha256(fingerprint_input.as_bytes());
+        if artifact_fingerprint(path)? != fingerprint {
+            return Err(ModelError::LoadError(
+                "Model files changed while loading; retry with a stable model directory".into(),
+            ));
+        }
 
         Ok(Self {
             model,
@@ -95,6 +100,19 @@ impl Model2VecEmbedder {
             dims,
         })
     }
+}
+
+/// Identify the actual weights, tokenizer, configuration and inference behaviour.
+/// The directory name is deliberately excluded so copied models share a cache identity.
+pub(crate) fn artifact_fingerprint(path: &std::path::Path) -> Result<[u8; 32], ModelError> {
+    let mut identity = b"ixos:model2vec-rs:0.1.4:unit-normalization-v1".to_vec();
+    for filename in ["model.safetensors", "tokenizer.json", "config.json"] {
+        let digest = sha256_file(&path.join(filename))
+            .map_err(|e| ModelError::LoadError(format!("Cannot identify {filename}: {e}")))?;
+        identity.extend_from_slice(filename.as_bytes());
+        identity.extend_from_slice(&digest);
+    }
+    Ok(sha256(&identity))
 }
 
 impl EmbeddingModel for Model2VecEmbedder {
@@ -119,7 +137,8 @@ impl EmbeddingModel for Model2VecEmbedder {
 
     /// Batch embed multiple texts using native model2vec batch API (P4.1 optimization)
     ///
-    /// This provides ~5-7x speedup over sequential embedding by:
+    /// This batches tokenization and amortizes call overhead; measured speedups
+    /// depend on the model and workload:
     /// - Batching tokenization
     /// - Amortizing model overhead
     /// - Better cache locality
@@ -172,6 +191,23 @@ impl EmbeddingModel for Model2VecEmbedder {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn artifact_identity_tracks_contents_and_survives_directory_moves() {
+        let first = tempfile::tempdir().unwrap();
+        let second = tempfile::tempdir().unwrap();
+        for filename in ["model.safetensors", "tokenizer.json", "config.json"] {
+            std::fs::write(first.path().join(filename), filename).unwrap();
+            std::fs::write(second.path().join(filename), filename).unwrap();
+        }
+        let original = artifact_fingerprint(first.path()).unwrap();
+        assert_eq!(original, artifact_fingerprint(second.path()).unwrap());
+        for filename in ["model.safetensors", "tokenizer.json", "config.json"] {
+            std::fs::write(second.path().join(filename), "changed").unwrap();
+            assert_ne!(original, artifact_fingerprint(second.path()).unwrap());
+            std::fs::write(second.path().join(filename), filename).unwrap();
+        }
+    }
 
     // Note: These tests require network access and will download the model
     // They are marked #[ignore] by default to avoid slowing down CI

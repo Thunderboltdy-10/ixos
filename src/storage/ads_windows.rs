@@ -167,6 +167,7 @@ impl EmbeddingCache for AdsCache {
     fn set(&self, path: &Path, file_hash: &[u8; 32], embedding: &[f32]) -> Result<(), CacheError> {
         let ads_path = Self::ads_path(path);
         let signed_data = self.validator.sign(embedding, file_hash);
+        self.validator.verify(&signed_data, file_hash)?;
 
         fs::write(&ads_path, signed_data)?;
         tracing::debug!("ADS cache set for {:?}", path);
@@ -187,15 +188,16 @@ impl EmbeddingCache for AdsCache {
             }
             Err(e) => {
                 tracing::warn!("ADS delete error for {:?}: {}", path, e);
-                // Don't propagate delete errors - best effort
-                Ok(())
+                Err(CacheError::Io(e))
             }
         }
     }
 
     fn contains(&self, path: &Path) -> bool {
         let ads_path = Self::ads_path(path);
-        ads_path.exists()
+        // GetFileAttributes (used by Path::exists) does not reliably address ADS.
+        // Opening the named stream also works for canonical extended-length paths.
+        fs::File::open(ads_path).is_ok()
     }
 
     fn is_supported(&self, path: &Path) -> bool {
@@ -234,13 +236,15 @@ mod tests {
         }
 
         let cache = AdsCache::with_validator(test_validator());
-        let embedding: Vec<f32> = (0..64).map(|i| i as f32 * 0.01).collect();
+        let embedding: Vec<f32> = (0..512).map(|i| (i % 100) as f32 * 0.01).collect();
         let file_hash = [0xCDu8; 32];
 
         // Set
         cache
             .set(path, &file_hash, &embedding)
             .expect("Failed to set");
+        assert!(cache.contains(path));
+        assert!(cache.contains(&fs::canonicalize(path).unwrap()));
 
         // Get
         let retrieved = cache.get(path, &file_hash).expect("Failed to get");
@@ -253,6 +257,8 @@ mod tests {
         for (orig, ret) in embedding.iter().zip(retrieved.iter()) {
             assert!((orig - ret).abs() < 0.01);
         }
+        cache.delete(path).unwrap();
+        assert!(!cache.contains(path));
     }
 
     #[test]
@@ -284,7 +290,7 @@ mod tests {
         }
 
         let cache = AdsCache::with_validator(test_validator());
-        let embedding: Vec<f32> = (0..64).map(|i| i as f32 * 0.01).collect();
+        let embedding: Vec<f32> = (0..512).map(|i| (i % 100) as f32 * 0.01).collect();
         let original_hash = [0xCDu8; 32];
         let new_hash = [0xEEu8; 32];
 

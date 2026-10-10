@@ -17,6 +17,7 @@ categories = ["command-line-utilities", "filesystem"]
 [dependencies]
 # Real embedding model - Model2Vec
 model2vec-rs = "0.1.4"
+hf-hub = { version = "0.4.3", default-features = false, features = ["ureq"] }
 
 # Async runtime
 tokio = { version = "1.43", features = ["full", "time", "sync"] }

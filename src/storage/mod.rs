@@ -3,7 +3,7 @@
 //! Provides a unified interface for storing signed embeddings in file metadata:
 //! - Windows NTFS: Alternate Data Streams (file:ixos_embed)
 //! - Unix (Linux/macOS): Extended attributes (user.ixos.embed)
-//! - LMDB Sidecar: For FAT32, USB drives, network shares (temp directory)
+//! - Application-cache LMDB: fallback for filesystems without native metadata
 //! - Fallback: NullCache for when all else fails (pure JIT mode)
 
 use std::path::Path;
@@ -45,9 +45,9 @@ pub trait EmbeddingCache: Send + Sync {
 /// Auto-detect best cache backend for a path
 ///
 /// Priority order:
-/// 1. Windows NTFS ADS (best performance, no extra files)
-/// 2. Unix xattr (best performance, no extra files)
-/// 3. LMDB sidecar (FAT32, USB, network drives - uses temp directory)
+/// 1. Windows NTFS ADS (no adjacent files)
+/// 2. Unix xattr (no adjacent files)
+/// 3. Application-cache LMDB (FAT32, USB, network drives)
 /// 4. NullCache (pure JIT mode, no persistence)
 pub fn get_cache_for_path(path: &Path) -> Box<dyn EmbeddingCache> {
     get_cache_for_path_with_fingerprint(path, DEFAULT_MODEL_FINGERPRINT)

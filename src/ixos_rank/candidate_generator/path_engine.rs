@@ -42,6 +42,34 @@ pub const HARDCODED_SKIP_DIRS: &[&str] = &[
     ".ruff_cache",
 ];
 
+/// One discovery contract for lexical, semantic and cache-warmup searches.
+pub fn search_walk(
+    root: &Path,
+    skip_hidden: bool,
+    respect_gitignore: bool,
+    follow_symlinks: bool,
+    max_file_size: Option<u64>,
+) -> WalkBuilder {
+    let mut builder = WalkBuilder::new(root);
+    builder
+        .hidden(skip_hidden)
+        .git_ignore(respect_gitignore)
+        .git_global(respect_gitignore)
+        .git_exclude(respect_gitignore)
+        .require_git(false)
+        .follow_links(follow_symlinks)
+        .max_filesize(max_file_size);
+    builder.filter_entry(|entry| {
+        entry.depth() == 0
+            || !entry.file_type().is_some_and(|kind| kind.is_dir())
+            || !entry
+                .file_name()
+                .to_str()
+                .is_some_and(|name| HARDCODED_SKIP_DIRS.contains(&name))
+    });
+    builder
+}
+
 /// In-memory index of path tokens for instant scoring
 pub struct PathIndex {
     /// All indexed path entries
@@ -106,10 +134,10 @@ impl Default for PathIndexConfig {
     fn default() -> Self {
         Self {
             include_extensions: vec![
-                "txt", "md", "json", "yaml", "yml", "toml", "rs", "py", "js", "ts", "html", "css",
-                "java", "go", "c", "cpp", "h", "hpp", "rb", "php", "sh", "bat", "ps1", "xml",
-                "csv", "log", "conf", "cfg", "ini", "pdf", "docx", "xlsx", "xls", "pptx", "ppt",
-                "rtf",
+                "txt", "md", "json", "yaml", "yml", "toml", "rs", "py", "js", "ts", "tsx", "jsx",
+                "swift", "kt", "cs", "sql", "ipynb", "rst", "tex", "html", "css", "java", "go",
+                "c", "cpp", "h", "hpp", "rb", "php", "sh", "bat", "ps1", "xml", "csv", "log",
+                "conf", "cfg", "ini", "pdf", "docx", "xlsx", "xls", "pptx", "ppt", "rtf",
             ]
             .into_iter()
             .map(String::from)
@@ -174,37 +202,13 @@ impl PathIndex {
     /// Path collection with filtering using WalkBuilder (respects .gitignore)
     fn collect_paths(dir: &Path, entries: &mut Vec<PathEntry>, config: &PathIndexConfig) {
         // Use WalkBuilder for proper .gitignore support (consistent with ripgrep_funnel.rs)
-        let mut builder = WalkBuilder::new(dir);
-        builder
-            .hidden(!config.skip_hidden) // WalkBuilder's hidden() is inverted (true = show hidden)
-            .git_ignore(config.respect_gitignore)
-            .git_global(config.respect_gitignore)
-            .git_exclude(config.respect_gitignore)
-            .follow_links(config.follow_symlinks)
-            .max_filesize(Some(config.max_file_size));
-
-        // Also respect .gitignore files even in non-git directories
-        if config.respect_gitignore {
-            builder.add_custom_ignore_filename(".gitignore");
-        }
-
-        // Add filter to skip hardcoded directories
-        let root_dir = dir.to_path_buf();
-        builder.filter_entry(move |entry| {
-            let path = entry.path();
-            // Allow the root directory through
-            if path == root_dir {
-                return true;
-            }
-            // Skip hardcoded directories
-            if let Some(name) = path.file_name() {
-                let name_str = name.to_string_lossy();
-                if HARDCODED_SKIP_DIRS.contains(&name_str.as_ref()) {
-                    return false;
-                }
-            }
-            true
-        });
+        let builder = search_walk(
+            dir,
+            config.skip_hidden,
+            config.respect_gitignore,
+            config.follow_symlinks,
+            Some(config.max_file_size),
+        );
 
         let walker = builder.build();
 
@@ -222,12 +226,12 @@ impl PathIndex {
             }
 
             // Double-check path doesn't contain skipped directories (for nested paths)
-            if Self::should_skip_path(path) {
+            if Self::should_skip_path(path.strip_prefix(dir).unwrap_or(path)) {
                 continue;
             }
 
             // Must be a file
-            if !path.is_file() {
+            if !entry.file_type().is_some_and(|kind| kind.is_file()) {
                 continue;
             }
 

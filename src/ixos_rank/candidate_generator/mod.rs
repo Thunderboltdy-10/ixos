@@ -50,10 +50,10 @@ pub use scorer::{
     ScoreWeights, ScoredCandidate,
 };
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex, OnceLock};
-use std::time::{Duration, Instant};
+use std::sync::Arc;
+use std::time::Instant;
 
 use crate::ixos_rank::ask_mode::{AnchorTerm, QueryMode};
 use crate::journalist_mode::deep_search_overrides;
@@ -162,16 +162,6 @@ pub struct CandidateGenerator {
     last_index_build_ms: u64,
 }
 
-struct CachedIndex {
-    index: Arc<PathIndex>,
-    file_list: Vec<PathBuf>,
-    built_at: Instant,
-}
-
-const INDEX_CACHE_TTL_SECS: u64 = 300;
-
-static INDEX_CACHE: OnceLock<Mutex<HashMap<PathBuf, CachedIndex>>> = OnceLock::new();
-
 impl CandidateGenerator {
     /// Create a new candidate generator for a directory
     pub fn new(root_dir: PathBuf, config: CandidateGeneratorConfig) -> Self {
@@ -199,23 +189,6 @@ impl CandidateGenerator {
     /// P5 optimization: Also updates RipgrepFunnel with the file list
     /// to skip redundant directory walking during search.
     pub fn build_index(&mut self) {
-        let cache_key = self
-            .root_dir
-            .canonicalize()
-            .unwrap_or(self.root_dir.clone());
-        let cache = INDEX_CACHE.get_or_init(|| Mutex::new(HashMap::new()));
-        {
-            let cache_guard = cache.lock().unwrap();
-            if let Some(entry) = cache_guard.get(&cache_key) {
-                if entry.built_at.elapsed() < Duration::from_secs(INDEX_CACHE_TTL_SECS) {
-                    self.path_index = Some(Arc::clone(&entry.index));
-                    self.ripgrep.set_cached_file_list(entry.file_list.clone());
-                    self.last_index_build_ms = 0;
-                    return;
-                }
-            }
-        }
-
         let start = Instant::now();
         let _span = directory_walk_span(&self.root_dir);
         let _enter = _span.enter();
@@ -225,27 +198,22 @@ impl CandidateGenerator {
 
         // P5 optimization: Share file list with ripgrep funnel
         let file_paths = index.get_file_paths();
-        self.ripgrep.set_cached_file_list(file_paths.clone());
-
-        let index = Arc::new(index);
-        self.path_index = Some(Arc::clone(&index));
-
-        let mut cache_guard = cache.lock().unwrap();
-        cache_guard.insert(
-            cache_key,
-            CachedIndex {
-                index,
-                file_list: file_paths,
-                built_at: Instant::now(),
-            },
-        );
+        if self.config.path_config.respect_gitignore == self.config.ripgrep_config.respect_gitignore
+            && self.config.path_config.skip_hidden == self.config.ripgrep_config.skip_hidden
+            && !self.config.path_config.follow_symlinks
+        {
+            self.ripgrep.set_cached_file_list(file_paths);
+        } else {
+            self.ripgrep.clear_cached_file_list();
+        }
+        self.path_index = Some(Arc::new(index));
     }
 
     /// Ensure path index is built
     fn ensure_index(&mut self) {
-        if self.path_index.is_none() {
-            self.build_index();
-        }
+        // Re-discover each query so created/deleted files and changed ignore rules
+        // take effect. A watcher-backed manifest can replace this after measurement.
+        self.build_index();
     }
 
     /// Gate expensive document parsing so code-only queries stay fast.
@@ -347,14 +315,18 @@ impl CandidateGenerator {
             (Vec::new(), RipgrepStats::default())
         };
         stats.ripgrep_candidates = ripgrep_candidates.len();
+        stats.files_scanned += ripgrep_stats.files_scanned;
+        stats.truncated |= ripgrep_stats.terminated_by != TerminationReason::Complete;
         stats.ripgrep_capped = ripgrep_stats.terminated_by == TerminationReason::MaxHitsReached;
         stats.ripgrep_ms = ripgrep_start.elapsed().as_millis() as u64;
 
         // Phase 2.5: Document search (for binary formats ripgrep can't handle)
         let document_candidates = if self.should_search_documents(&lexical_query, &path_candidates)
         {
-            let (document_candidates, _doc_stats) = self.document_engine.search(&lexical_query);
+            let (document_candidates, doc_stats) = self.document_engine.search(&lexical_query);
             // Clear document cache after search (privacy: no persistent cache)
+            stats.files_scanned += doc_stats.documents_extracted;
+            stats.truncated |= doc_stats.truncated;
             self.document_engine.clear_cache();
             document_candidates
         } else {
@@ -465,14 +437,18 @@ impl CandidateGenerator {
             (Vec::new(), RipgrepStats::default())
         };
         stats.ripgrep_candidates = ripgrep_candidates.len();
+        stats.files_scanned += ripgrep_stats.files_scanned;
+        stats.truncated |= ripgrep_stats.terminated_by != TerminationReason::Complete;
         stats.ripgrep_capped = ripgrep_stats.terminated_by == TerminationReason::MaxHitsReached;
         stats.ripgrep_ms = ripgrep_start.elapsed().as_millis() as u64;
 
         // Phase 2.5: Document search (for binary formats ripgrep can't handle)
         let document_candidates = if self.should_search_documents(&lexical_query, &path_candidates)
         {
-            let (document_candidates, _doc_stats) = self.document_engine.search(&lexical_query);
+            let (document_candidates, doc_stats) = self.document_engine.search(&lexical_query);
             // Clear document cache after search (privacy: no persistent cache)
+            stats.files_scanned += doc_stats.documents_extracted;
+            stats.truncated |= doc_stats.truncated;
             self.document_engine.clear_cache();
             document_candidates
         } else {
@@ -639,6 +615,11 @@ impl From<&ScoredCandidate> for LexicalMatch {
                 .map(|c| c.match_count)
                 .unwrap_or(0),
             total_terms: 1, // Query is treated as single term for conversion
+            line_numbers: candidate
+                .match_context
+                .as_ref()
+                .map(|c| c.line_numbers.clone())
+                .unwrap_or_default(),
         }
     }
 }
@@ -654,6 +635,20 @@ impl CandidateSet {
 mod tests {
     use super::*;
     use tempfile::TempDir;
+
+    #[test]
+    fn subsequent_queries_see_new_files_and_changed_ignore_rules() {
+        let temp = TempDir::new().unwrap();
+        std::fs::write(temp.path().join("first.rs"), "unique_witness").unwrap();
+        let mut generator = CandidateGenerator::with_defaults(temp.path().to_path_buf());
+        assert_eq!(generator.generate("unique_witness").len(), 1);
+        std::fs::write(temp.path().join("second.rs"), "unique_witness").unwrap();
+        assert_eq!(generator.generate("unique_witness").len(), 2);
+        std::fs::write(temp.path().join(".gitignore"), "first.rs\n").unwrap();
+        let results = generator.generate("unique_witness");
+        assert_eq!(results.len(), 1);
+        assert!(results.candidates[0].path.ends_with("second.rs"));
+    }
 
     fn setup_test_dir() -> TempDir {
         let temp = TempDir::new().unwrap();

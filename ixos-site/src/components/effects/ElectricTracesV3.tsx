@@ -29,10 +29,10 @@ const TRACE_SEGMENTS = [
     // 4. Meeting -> Benchmarks (Vertical Left)
     { id: "meet-bench", points: "M200,1900 L200,2400 L600,2400", color: "violet", delay: 1.5 },
 
-    // 5. Benchmarks -> Pricing (Center Feed)
+    // 5. Benchmarks -> OpenSource (Center Feed)
     { id: "bench-price", points: "M800,2400 L1200,2400 L1200,2800 L800,2800 L800,3200", color: "magenta", delay: 2.0 },
 
-    // 6. Pricing -> Trust (Bottom Spread)
+    // 6. OpenSource -> Trust (Bottom Spread)
     { id: "price-trust", points: "M800,3300 L800,3600 L200,3600", color: "amber", delay: 2.5 },
 ] as const;
 

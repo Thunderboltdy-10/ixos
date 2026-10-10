@@ -1,6 +1,2 @@
-"use client";
-import { SigninContent } from "@/components/subpages/SigninContent";
-
-export default function Page() {
-  return <SigninContent variant="5" />;
-}
+import { redirect } from "next/navigation";
+export default function Page() { redirect("/5/download"); }

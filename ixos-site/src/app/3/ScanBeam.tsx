@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import { useEffect, useState } from 'react'
 
 export function ScanBeam({ onProgress }: { onProgress?: (y: number) => void }) {

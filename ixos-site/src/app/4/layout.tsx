@@ -3,12 +3,10 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth, UserButton } from "@clerk/nextjs";
 
 // Beautiful, airy navbar with soft drop shadows and clean typography
 function V4Navbar({ isLanding }: { isLanding: boolean }) {
-  const { isSignedIn, isLoaded } = useAuth();
-  
+
   const landingClasses = "bg-black/20 backdrop-blur-md border-white/5 text-white shadow-none";
   const subpageClasses = "bg-white/80 backdrop-blur-xl border-gray-200/50 shadow-sm text-[#0D1117]";
 
@@ -22,7 +20,7 @@ function V4Navbar({ isLanding }: { isLanding: boolean }) {
         <div className="hidden md:flex items-center gap-6">
           {[
             { label: "Platform", href: "/4/docs" },
-            { label: "Pricing", href: "/4/pricing" },
+            { label: "Open source", href: "/4/open-source" },
             { label: "Download", href: "/4/download" },
           ].map((link) => (
             <Link
@@ -37,22 +35,7 @@ function V4Navbar({ isLanding }: { isLanding: boolean }) {
       </div>
 
       <div className="flex items-center gap-4">
-        {isLoaded && isSignedIn ? (
-          <>
-            <Link href="/4/account" className={`font-sans text-sm font-medium hidden sm:block ${isLanding ? 'text-white/60 hover:text-white' : 'text-gray-600 hover:text-blue-600'}`}>Account</Link>
-            <UserButton afterSignOutUrl="/4" />
-          </>
-        ) : isLoaded && !isSignedIn ? (
-          <>
-            <Link href="/4/signin" className={`font-sans text-sm font-medium hidden sm:block ${isLanding ? 'text-white/60 hover:text-white' : 'text-gray-600 hover:text-blue-600'}`}>Sign In</Link>
-            <Link
-              href="/4/signup"
-              className="px-5 py-2 rounded-full font-sans text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] transition-all"
-            >
-              Get Started
-            </Link>
-          </>
-        ) : null}
+
       </div>
     </nav>
   );

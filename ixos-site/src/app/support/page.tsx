@@ -107,8 +107,6 @@ export default function SupportPage() {
                       className="mt-2 w-full rounded-lg bg-bg-graphite-2/60 border border-white/5 px-4 py-3 text-sm text-porcelain focus:border-accent-teal focus:outline-none"
                     >
                       <option>General</option>
-                      <option>Billing</option>
-                      <option>Device Transfer</option>
                       <option>Bug Report</option>
                       <option>Partnerships</option>
                     </select>
@@ -164,8 +162,7 @@ export default function SupportPage() {
                     Need fast answers?
                   </h3>
                   <p className="text-sm text-fg-muted mb-4">
-                    Start with docs and troubleshooting. If it is billing or device
-                    access, mention your account email.
+                    Start with docs and troubleshooting. Include your operating system, Ixos version, and the steps needed to reproduce the issue.
                   </p>
                   <Link
                     href="/docs"

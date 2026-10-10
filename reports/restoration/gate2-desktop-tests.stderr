@@ -1,0 +1,26 @@
+   Compiling tokio v1.49.0
+   Compiling model2vec-rs v0.1.4
+   Compiling tokio-util v0.7.18
+   Compiling tauri v2.10.2
+   Compiling tower v0.5.3
+   Compiling tokio-rustls v0.26.4
+   Compiling tokio-native-tls v0.3.1
+   Compiling tower-http v0.6.8
+   Compiling h2 v0.4.13
+   Compiling ixos-protocol v0.1.0 (C:\Users\pablo\Downloads\Ixos)
+   Compiling hyper v1.8.1
+   Compiling hyper-util v0.1.20
+   Compiling hyper-rustls v0.27.7
+   Compiling hyper-tls v0.6.0
+   Compiling reqwest v0.13.2
+   Compiling reqwest v0.12.28
+   Compiling tauri-plugin-fs v2.4.5
+   Compiling tauri-plugin-global-shortcut v2.3.1
+   Compiling tauri-plugin-updater v2.10.0
+   Compiling tauri-plugin-os v2.3.2
+   Compiling tauri-plugin-shell v2.3.5
+   Compiling tauri-plugin-opener v2.5.3
+   Compiling tauri-plugin-dialog v2.6.0
+   Compiling ixos-app v0.1.0 (C:\Users\pablo\Downloads\Ixos\ixos-search\src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 36.65s
+     Running unittests src\lib.rs (target\debug\deps\ixos_app_lib-9e51d4f8a9025fad.exe)

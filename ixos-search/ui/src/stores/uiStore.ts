@@ -6,14 +6,12 @@ interface UIState {
     showSettings: boolean;
     settingsTab: SettingsTabId;
     showInfo: boolean;
-    showPricing: boolean;
     activeView: SidebarView;
     sidebarCollapsed: boolean;
 
     setShowSettings: (show: boolean) => void;
     setSettingsTab: (tab: SettingsTabId) => void;
     setShowInfo: (show: boolean) => void;
-    setShowPricing: (show: boolean) => void;
     setActiveView: (view: SidebarView) => void;
     toggleSidebar: () => void;
     setSidebarCollapsed: (collapsed: boolean) => void;
@@ -28,14 +26,12 @@ export const useUIStore = create<UIState>((set) => ({
     showSettings: false,
     settingsTab: 'search',
     showInfo: false,
-    showPricing: false,
     activeView: 'search',
     sidebarCollapsed: localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1',
 
     setShowSettings: (show) => set({ showSettings: show }),
     setSettingsTab: (tab) => set({ settingsTab: tab }),
     setShowInfo: (show) => set({ showInfo: show }),
-    setShowPricing: (show) => set({ showPricing: show }),
     setActiveView: (view) => set({ activeView: view }),
     toggleSidebar: () => set((state) => {
         const next = !state.sidebarCollapsed;
@@ -50,7 +46,6 @@ export const useUIStore = create<UIState>((set) => ({
     openSettings: (tab) => set((state) => ({
         showSettings: true,
         showInfo: false,
-        showPricing: false,
         settingsTab: tab ?? state.settingsTab
     })),
 }));

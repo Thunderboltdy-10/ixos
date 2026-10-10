@@ -30,9 +30,6 @@ ixos-protocol = { path = "../.." }
 # Serialization
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-jsonwebtoken = "9"
-uuid = { version = "1", features = ["v4"] }
-base64 = "0.22"
 chacha20poly1305 = "0.10"
 
 # Async runtime (shared with ixos-protocol)
@@ -60,10 +57,8 @@ futures-util = "0.3"
 
 # Environment variables
 dotenvy = "0.15"
-tauri-plugin-single-instance = "2.3.7"
 
 [dev-dependencies]
-p256 = { version = "0.13", features = ["ecdsa", "pkcs8", "pem"] }
 
 [features]
 default = ["custom-protocol"]

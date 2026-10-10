@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react';
 import { Copy, Settings, Minus, Square, X } from 'lucide-react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { platform as getOsPlatform } from '@tauri-apps/plugin-os';
-import { useAuth } from '@clerk/clerk-react';
 import { useUIStore } from '@/stores/uiStore';
-import { useAuthStore } from '@/stores/authStore';
 
 // Safe Tauri window import - falls back to no-op in browser
 const getTauriWindow = async () => {
@@ -25,11 +23,9 @@ const getTauriWindow = async () => {
 export function WindowControls() {
     const [osFamily, setOsFamily] = useState<'windows' | 'macos' | 'linux'>('windows');
     const [isMaximized, setIsMaximized] = useState(true);
-    const { isSignedIn } = useAuth();
-    const { transferRequired } = useAuthStore();
     const openSettings = useUIStore(state => state.openSettings);
 
-    const showSettings = isSignedIn && !transferRequired;
+    const showSettings = true;
 
     useEffect(() => {
         let cancelled = false;

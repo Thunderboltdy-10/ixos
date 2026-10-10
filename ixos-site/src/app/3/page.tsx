@@ -1,5 +1,7 @@
 "use client";
 
+import { OpenSourceNotice } from "@/components/sections/OpenSourceNotice";
+
 import Link from "next/link";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useInView } from "framer-motion";
@@ -28,14 +30,14 @@ function SectionKicker({
 function GridOverlay() {
   return (
     <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.04]"
         style={{
           backgroundImage: `linear-gradient(rgba(246,185,76,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(246,185,76,0.2) 1px, transparent 1px)`,
           backgroundSize: '40px 40px',
         }}
       />
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.08]"
         style={{
           backgroundImage: `linear-gradient(rgba(246,185,76,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(246,185,76,0.3) 1px, transparent 1px)`,
@@ -43,7 +45,7 @@ function GridOverlay() {
         }}
       />
       {/* Moving scan line */}
-      <motion.div 
+      <motion.div
         className="absolute left-0 right-0 h-px bg-amber-400/20 z-10"
         animate={{ top: ['-10%', '110%'] }}
         transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
@@ -232,7 +234,7 @@ function HUDNav() {
         <a href="/3" className="font-mono text-sm font-bold tracking-tighter text-amber-400">IXOS</a>
         <div className="hidden lg:flex items-center gap-6 text-[10px] font-mono tracking-[0.2em] text-white/30 uppercase">
           <a href="/3/docs" className="hover:text-amber-400/80 transition-colors">Docs</a>
-          <a href="/3/pricing" className="hover:text-amber-400/80 transition-colors">Pricing</a>
+          <a href="/3/open-source" className="hover:text-amber-400/80 transition-colors">Open source</a>
         </div>
       </div>
 
@@ -265,7 +267,7 @@ function FloatingNav() {
     { label: "Speed", href: "#speed", type: "anchor" },
     { label: "Privacy", href: "#privacy", type: "anchor" },
     { label: "Pipeline", href: "#pipeline", type: "anchor" },
-    { label: "Pricing", href: "/3/pricing", type: "link" },
+    { label: "Open source", href: "/3/open-source", type: "link" },
     { label: "Docs", href: "/3/docs", type: "link" },
   ];
 
@@ -321,8 +323,8 @@ function FloatingNav() {
             href={link.href}
             onClick={(e) => link.type === "anchor" && scrollTo(e, link.href)}
             className={`px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest transition-all ${
-              (link.type === "anchor" && activeSection === link.href.replace('#', '')) 
-                ? 'text-amber-400 bg-amber-400/10 rounded-full shadow-[inset_0_0_10px_rgba(246,185,76,0.1)]' 
+              (link.type === "anchor" && activeSection === link.href.replace('#', ''))
+                ? 'text-amber-400 bg-amber-400/10 rounded-full shadow-[inset_0_0_10px_rgba(246,185,76,0.1)]'
                 : 'text-white/40 hover:text-white/80 hover:bg-white/5 rounded-full'
             }`}
           >
@@ -760,7 +762,7 @@ export default function Page3PrecisionGrid() {
           </section>
         </ScanSection>
 
-        <ResultDivider 
+        <ResultDivider
           query="local performance metrics"
           resultTitle="Ixos Zero-Cloud Audit"
           resultPath="docs/security/AUDIT.md"
@@ -833,7 +835,7 @@ export default function Page3PrecisionGrid() {
           </section>
         </ScanSection>
 
-        <ResultDivider 
+        <ResultDivider
           query="cryptographic cache integrity"
           resultTitle="HMAC-SHA256 Verification"
           resultPath="src/storage/cache.rs"
@@ -1311,89 +1313,7 @@ export default function Page3PrecisionGrid() {
             11. PRICING
             ═══════════════════════════════════ */}
         <ScanSection clipFrom="left">
-          <section className="relative z-10 py-28 px-6">
-            <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-14">
-                <SectionKicker label="Licensing" />
-                <DecodedHeading text="Simple pricing." delay={40} />
-                <p className="mt-4 text-white/45 font-mono text-sm max-w-xl mx-auto">
-                  Start free. Upgrade when your workstreams demand it.
-                </p>
-              </div>
-
-              <div className="relative">
-                {/* Outer: Community */}
-                <div className="w-full border border-amber-400/8 bg-amber-400/[0.01] p-8 md:p-12 relative">
-                  <CornerBrackets size={20} color="rgba(246,185,76,0.08)" />
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8 mb-10">
-                    <div>
-                      <div className="text-[10px] font-mono tracking-[0.3em] text-white/30 uppercase mb-1">
-                        [FREE_TIER]
-                      </div>
-                      <h3 className="text-xl font-bold font-mono text-white/70 mb-1">Community</h3>
-                      <div className="text-4xl font-bold font-mono">
-                        $0
-                        <span className="text-base font-normal text-white/25 ml-1">/ forever</span>
-                      </div>
-                    </div>
-                    <ul className="space-y-2 text-sm font-mono text-white/40">
-                      {[
-                        "Local vector search with Flash and Auto modes",
-                        "VS Code extension and standard CLI",
-                        "Up to 3 active workstreams",
-                        "HMAC-SHA256 cache signing",
-                      ].map((feat) => (
-                        <li key={feat} className="flex items-center gap-2">
-                          <span className="text-amber-400/30">▸</span>
-                          {feat}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Inner: Pro */}
-                  <div className="border border-amber-400/25 bg-amber-400/[0.03] p-8 md:p-10 relative overflow-hidden">
-                    <CornerBrackets size={16} color="rgba(246,185,76,0.3)" />
-                    <div className="absolute -top-20 -right-20 w-60 h-60 bg-amber-400/[0.04] rounded-full blur-[80px] pointer-events-none" />
-                    <div className="relative z-10">
-                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8 mb-8">
-                        <div>
-                          <div className="text-[10px] font-mono tracking-[0.3em] text-amber-400/50 uppercase mb-1">
-                            [PRO_TIER]
-                          </div>
-                          <h3 className="text-xl font-bold font-mono text-amber-400 mb-1">Pro</h3>
-                          <div className="text-4xl font-bold font-mono">
-                            $12
-                            <span className="text-base font-normal text-white/25 ml-1">/ month</span>
-                          </div>
-                        </div>
-                        <ul className="space-y-2 text-sm font-mono text-white/50">
-                          {[
-                            "JIT Pro embedding models with deep reasoning",
-                            "Unlimited workstreams with session recovery",
-                            "Journalist mode and ephemeral cache",
-                            "Ed25519 cryptographic attestation",
-                            "Priority support and early access",
-                          ].map((feat) => (
-                            <li key={feat} className="flex items-center gap-2">
-                              <span className="text-amber-400">▸</span>
-                              {feat}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <Link
-                        href="/3/download"
-                        className="inline-block px-8 py-3 bg-amber-400 text-[#0A0D0F] font-mono font-semibold text-sm hover:bg-amber-300 transition-colors"
-                      >
-                        ▸ Start Free Trial
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+          <OpenSourceNotice variant="3" />
         </ScanSection>
 
         {/* ═══════════════════════════════════

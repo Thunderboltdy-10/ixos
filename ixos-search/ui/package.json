@@ -14,7 +14,6 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@clerk/clerk-react": "^5.12.0",
     "@gsap/react": "^2.1.2",
     "@ixos/ixos-ui": "*",
     "@ixos/ui": "*",
@@ -41,7 +40,6 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
-    "@clerk/types": "^4.101.13",
     "@tauri-apps/cli": "^2.10.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

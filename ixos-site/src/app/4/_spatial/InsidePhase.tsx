@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import { useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { DemoSurface } from '@/landing/DemoSurface'
@@ -51,7 +52,7 @@ const CHAPTERS = [
     kicker: 'Phase 05 / Install',
     title: 'Acquire',
     highlight: 'The Protocol.',
-    content: 'Start searching in 30 seconds. No account. No API key. No configuration. Community tier is free forever.',
+    content: 'Download Ixos and install a local model. All search modes are free, with no account or API key required.',
     stat: 'v1.0', statLabel: 'Production ready',
     color: '#14B8A6',
   },

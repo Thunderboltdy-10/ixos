@@ -20,7 +20,7 @@ export type SettingsTabId =
 
 const tabs: { id: SettingsTabId; label: string; icon: React.ElementType }[] = [
   { id: 'search', label: 'Search', icon: Settings },
-  { id: 'account', label: 'Account', icon: User },
+  { id: 'account', label: 'Installation', icon: User },
   { id: 'keyboard', label: 'Keyboard', icon: Keyboard },
   { id: 'privacy', label: 'Privacy', icon: Shield },
   { id: 'compliance', label: 'Compliance', icon: Scale },
@@ -28,7 +28,7 @@ const tabs: { id: SettingsTabId; label: string; icon: React.ElementType }[] = [
   { id: 'about', label: 'About', icon: Info },
 ];
 
-export function SettingsPanel({ initialTab, onUpgrade }: { initialTab?: SettingsTabId; onUpgrade?: () => void }) {
+export function SettingsPanel({ initialTab }: { initialTab?: SettingsTabId }) {
   const [activeTab, setActiveTab] = useState<SettingsTabId>(initialTab ?? 'search');
   const { loadConfig, loadConsent } = useSettingsStore();
 
@@ -79,7 +79,7 @@ export function SettingsPanel({ initialTab, onUpgrade }: { initialTab?: Settings
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.045] via-white/[0.018] to-transparent" />
         <div className="mx-auto max-w-4xl p-6 lg:p-8">
           {activeTab === 'search' && <SearchSettings />}
-          {activeTab === 'account' && <AccountSettings onUpgrade={onUpgrade} />}
+          {activeTab === 'account' && <AccountSettings />}
           {activeTab === 'keyboard' && <ShortcutSettings />}
           {activeTab === 'privacy' && <PrivacySettings />}
           {activeTab === 'compliance' && <ComplianceSettings />}

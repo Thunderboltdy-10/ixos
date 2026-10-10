@@ -22,7 +22,7 @@ export function Footer() {
                         <h4 className="font-medium text-sm text-white mb-4">Product</h4>
                         <ul className="space-y-2 text-sm text-fg-muted">
                             <li><Link href="/download" className="hover:text-accent-amber transition-colors">Download</Link></li>
-                            <li><Link href="/pricing" className="hover:text-accent-amber transition-colors">Pricing</Link></li>
+                            <li><Link href="/open-source" className="hover:text-accent-amber transition-colors">Open source</Link></li>
                             <li><Link href="#changelog" className="hover:text-accent-amber transition-colors">Changelog</Link></li>
                         </ul>
                     </div>

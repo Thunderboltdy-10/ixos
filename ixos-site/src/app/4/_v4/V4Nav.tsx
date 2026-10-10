@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useEffect, useState } from 'react'
 import { useReducedOrLowEnd } from './hooks/useReducedOrLowEnd'
@@ -7,7 +7,7 @@ const NAV_LINKS = [
   { label: 'Flow', href: '#progressive' },
   { label: 'Proof', href: '#benchmarks' },
   { label: 'Ask', href: '#ask-mode' },
-  { label: 'Pricing', href: '#pricing' },
+  { label: 'Open source', href: '#open-source' },
 ] as const
 
 export function V4Nav() {

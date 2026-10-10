@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useEffect, useMemo, useState } from 'react'
 import { useReducedOrLowEnd } from './hooks/useReducedOrLowEnd'
@@ -13,7 +13,7 @@ const SECTION_ORDER = [
   { id: 'cli', label: 'CLI' },
   { id: 'ask-mode', label: 'Ask' },
   { id: 'pro-value', label: 'Pro' },
-  { id: 'pricing', label: 'Plan' },
+  { id: 'open-source', label: 'Plan' },
   { id: 'cta', label: 'Launch' },
 ] as const
 

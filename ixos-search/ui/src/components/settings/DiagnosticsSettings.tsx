@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useSearchStore } from '@/stores/searchStore';
 import * as tauri from '@/lib/tauri';
-import type { DoctorReport, IxosConfig, ModelStatus, ProStatus } from '@/lib/types';
+import type { DoctorReport, IxosConfig, ModelStatus } from '@/lib/types';
 
 interface CacheStats {
   backendType: string;
@@ -23,8 +23,6 @@ export function DiagnosticsSettings() {
   const [config, setConfig] = useState<IxosConfig | null>(null);
   const [modelStatus, setModelStatus] = useState<ModelStatus | null>(null);
   const [cacheStats, setCacheStats] = useState<CacheStats | null>(null);
-  const [proStatus, setProStatus] = useState<ProStatus | null>(null);
-  const [deviceId, setDeviceId] = useState<string | null>(null);
   const [doctor, setDoctor] = useState<DoctorReport | null>(null);
   const [loadingDoctor, setLoadingDoctor] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState('');
@@ -39,16 +37,12 @@ export function DiagnosticsSettings() {
   const loadBasics = async () => {
     setError(null);
     try {
-      const [cfg, model, pro, dev] = await Promise.all([
+      const [cfg, model] = await Promise.all([
         tauri.getConfig(),
         tauri.getModelStatus(),
-        tauri.getProStatus().catch(() => null),
-        tauri.getDeviceId().catch(() => null),
       ]);
       setConfig(cfg);
       setModelStatus(model);
-      setProStatus(pro);
-      setDeviceId(dev);
 
       try {
         const stats = await tauri.getCacheStats(effectiveDirectory);
@@ -90,8 +84,6 @@ export function DiagnosticsSettings() {
       config,
       modelStatus,
       cacheStats,
-      proStatus,
-      deviceId,
       doctor,
     };
     try {
@@ -139,10 +131,6 @@ export function DiagnosticsSettings() {
           <Line k="cacheMode" v={cacheStats?.cacheMode ?? '-'} />
         </Panel>
 
-        <Panel title="Pro & Device">
-          <Line k="proStatus" v={proStatus?.status ?? 'free'} />
-          <Line k="deviceId" v={deviceId ?? '-'} mono />
-        </Panel>
       </div>
 
       <div className="flex items-center gap-2">

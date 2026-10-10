@@ -1,6 +1,6 @@
 //! Activity Ledger command handlers (Phase 2 - Second Brain)
 //!
-//! Provides activity tracking for Pro "Second Brain" features:
+//! Provides activity tracking for local "Second Brain" features:
 //! - Today Tab
 //! - Related Files Panel
 //! - Workstreams
@@ -15,37 +15,16 @@ use serde::{Deserialize, Serialize};
 use tauri::{Manager, State};
 
 use crate::state::AppState;
-use ixos_protocol::capabilities::Capability;
-use ixos_protocol::entitlements::ProStatus;
 use ixos_protocol::security::device_identity::DeviceIdentity;
 
 use chacha20poly1305::aead::{rand_core::RngCore, Aead, KeyInit, OsRng};
 use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce};
 use std::fs;
 use std::path::PathBuf;
-use std::time::SystemTime;
 
 const ACTIVITY_LEDGER_FILE_ENC: &str = "activity_ledger_v1.enc";
 const ACTIVITY_LEDGER_FILE_JSON_LEGACY: &str = "activity_ledger_v1.json";
 const ACTIVITY_LEDGER_KEY_CONTEXT: &str = "activity-ledger-v1";
-
-fn ensure_move_recommendations_access(
-    status: &ProStatus,
-    has_automation_capability: bool,
-) -> Result<(), String> {
-    if !status.is_enabled() {
-        return Err(match status {
-            ProStatus::TimeSuspect { .. } => {
-                "Local time change detected - refresh required to re-enable Pro".to_string()
-            }
-            _ => "Entitlement expired".to_string(),
-        });
-    }
-    if !has_automation_capability {
-        return Err("Pro capability required for move recommendations".into());
-    }
-    Ok(())
-}
 
 fn get_config_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     app.path()
@@ -80,7 +59,7 @@ fn decrypt_payload(blob: &[u8], key_bytes: [u8; 32]) -> Result<Vec<u8>, String> 
 /// State wrapper for activity ledger
 pub struct ActivityState {
     pub ledger: Mutex<ActivityLedger>,
-    /// Whether persistence is enabled (Pro only)
+    /// Whether persistence is enabled (local storage)
     pub persist_enabled: Mutex<bool>,
 }
 
@@ -88,7 +67,7 @@ impl Default for ActivityState {
     fn default() -> Self {
         Self {
             ledger: Mutex::new(ActivityLedger::new()),
-            persist_enabled: Mutex::new(false),
+            persist_enabled: Mutex::new(true),
         }
     }
 }
@@ -98,12 +77,12 @@ impl ActivityState {
         Self::default()
     }
 
-    /// Enable persistence (called when Pro entitlement is verified)
+    /// Enable persistence (local opt-in storage)
     pub fn enable_persistence(&self) {
         *self.persist_enabled.lock() = true;
     }
 
-    /// Disable persistence (free users)
+    /// Disable persistence
     pub fn disable_persistence(&self) {
         *self.persist_enabled.lock() = false;
     }
@@ -412,16 +391,7 @@ pub fn get_co_occurrence(
     file_path: String,
     window_mins: Option<u32>,
     activity_state: State<'_, ActivityState>,
-    app_state: State<'_, AppState>,
 ) -> Result<Vec<CoOccurrencePayload>, String> {
-    // Check Pro capability for related files
-    let _device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
-    let manager = app_state.entitlement_manager.lock();
-
-    if !manager.capabilities().has(Capability::RelatedGraph) {
-        return Err("Pro capability required for related files".into());
-    }
-
     let ledger = activity_state.ledger.lock();
     let co_occurrences = ledger.get_co_occurrence(&file_path, window_mins.unwrap_or(30));
 
@@ -450,17 +420,7 @@ pub fn get_move_recommendations(
     limit: Option<usize>,
     min_evidence: Option<u32>,
     activity_state: State<'_, ActivityState>,
-    app_state: State<'_, AppState>,
 ) -> Result<Vec<MoveRecommendationPayload>, String> {
-    let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
-    let mut manager = app_state.entitlement_manager.lock();
-    let status = manager.pro_status(SystemTime::now(), &device);
-    ensure_move_recommendations_access(
-        &status,
-        manager.capabilities().has(Capability::AutomationActions),
-    )?;
-    drop(manager);
-
     let ledger = activity_state.ledger.lock();
     let recommendations =
         ledger.get_move_recommendations(min_evidence.unwrap_or(3), limit.unwrap_or(8));
@@ -519,12 +479,6 @@ async fn save_activity_ledger_impl(
         return Ok(());
     }
 
-    let manager = app_state.entitlement_manager.lock();
-    if !manager.capabilities().has(Capability::MemoryGraph) {
-        return Err("Pro capability required for activity persistence".into());
-    }
-    drop(manager);
-
     if !activity_state.is_persistence_enabled() {
         return Err("Activity persistence not enabled".into());
     }
@@ -545,6 +499,9 @@ async fn save_activity_ledger_impl(
     fs::create_dir_all(&config_dir)
         .map_err(|e| format!("Failed to create config directory: {}", e))?;
     let file_path = config_dir.join(ACTIVITY_LEDGER_FILE_ENC);
+    let _guard =
+        ixos_protocol::security::local_lock::exclusive(&config_dir.join("activity_ledger.lock"))
+            .map_err(|e| e.to_string())?;
     fs::write(&file_path, encrypted).map_err(|e| format!("Failed to write ledger: {}", e))?;
 
     let mut ledger = activity_state.ledger.lock();
@@ -577,7 +534,7 @@ pub async fn autosave_if_dirty(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// Save activity ledger to encrypted storage (Pro only)
+/// Save activity ledger to encrypted storage (local storage)
 #[tauri::command]
 pub async fn save_activity_ledger(
     app: tauri::AppHandle,
@@ -587,7 +544,7 @@ pub async fn save_activity_ledger(
     save_activity_ledger_impl(&app, &activity_state, &app_state).await
 }
 
-/// Load activity ledger from encrypted storage (Pro only)
+/// Load activity ledger from encrypted storage (local storage)
 #[tauri::command]
 pub async fn load_activity_ledger(
     app: tauri::AppHandle,
@@ -602,18 +559,14 @@ pub async fn load_activity_ledger(
         });
     }
 
-    // Check Pro capability
-    let manager = app_state.entitlement_manager.lock();
-    if !manager.capabilities().has(Capability::MemoryGraph) {
-        return Err("Pro capability required for activity persistence".into());
-    }
-    drop(manager);
-
     activity_state.enable_persistence();
 
     let config_dir = get_config_dir(&app)?;
     let encrypted_path = config_dir.join(ACTIVITY_LEDGER_FILE_ENC);
     let legacy_path = config_dir.join(ACTIVITY_LEDGER_FILE_JSON_LEGACY);
+    let _guard =
+        ixos_protocol::security::local_lock::exclusive(&config_dir.join("activity_ledger.lock"))
+            .map_err(|e| e.to_string())?;
 
     let loaded_events = if encrypted_path.exists() {
         let blob = fs::read(&encrypted_path).map_err(|e| e.to_string())?;
@@ -662,32 +615,12 @@ mod tests {
     fn test_activity_state_persistence_toggle() {
         let state = ActivityState::new();
 
-        assert!(!state.is_persistence_enabled());
+        assert!(state.is_persistence_enabled());
 
         state.enable_persistence();
         assert!(state.is_persistence_enabled());
 
         state.disable_persistence();
         assert!(!state.is_persistence_enabled());
-    }
-
-    #[test]
-    fn test_move_recommendation_access_requires_active_status() {
-        let result =
-            ensure_move_recommendations_access(&ProStatus::Expired { expired_at: 1 }, true);
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_move_recommendation_access_requires_capability() {
-        let result = ensure_move_recommendations_access(
-            &ProStatus::Active {
-                expires_at: u64::MAX,
-            },
-            false,
-        );
-        assert!(result
-            .expect_err("expected capability gating error")
-            .contains("Pro capability required"));
     }
 }

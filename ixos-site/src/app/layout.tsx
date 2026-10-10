@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from '@vercel/analytics/next';
 import { IxosNav } from "@/components/IxosNav";
 import { GridBackground } from "@/components/effects/GridBackground";
@@ -47,7 +46,7 @@ export default function RootLayout({
         className={`${spaceGrotesk.variable} ${geistMono.variable} antialiased`}
         style={{ backgroundColor: '#0A0D0F' }}
       >
-        <ClerkProvider>
+        <>
           <SmoothScrollProvider>
             <div id="app-root" className="relative min-h-screen flex flex-col">
               <GridBackground />
@@ -57,7 +56,7 @@ export default function RootLayout({
               {analyticsEnabled ? <Analytics /> : null}
             </div>
           </SmoothScrollProvider>
-        </ClerkProvider>
+        </>
       </body>
     </html>
   );

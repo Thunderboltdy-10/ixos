@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
@@ -55,8 +54,8 @@ export function Nav() {
                         <Link href={`${variantPrefix}/#how-it-works`} className="text-sm font-medium hover:text-white transition-colors">
                             How it works
                         </Link>
-                        <Link href={`${variantPrefix}/pricing`} className="text-sm font-medium hover:text-white transition-colors">
-                            Pricing
+                        <Link href={`${variantPrefix}/open-source`} className="text-sm font-medium hover:text-white transition-colors">
+                            OpenSource
                         </Link>
                         <Link href={`${variantPrefix}/docs`} className="text-sm font-medium hover:text-white transition-colors">
                             Docs
@@ -67,22 +66,8 @@ export function Nav() {
                         <Button variant="primary" size="sm" hasParticleMagnet asChild>
                             <Link href={`${variantPrefix}/download`}>Download</Link>
                         </Button>
-                        <SignedIn>
-                            <Link
-                                href={`${variantPrefix}/account`}
-                                className="p-2 rounded-md hover:bg-white/5 text-fg-muted hover:text-white transition-colors"
-                            >
-                                <User className="w-5 h-5" />
-                            </Link>
-                        </SignedIn>
-                        <SignedOut>
-                            <Button variant="ghost" size="sm" asChild>
-                                <Link href={`${variantPrefix}/signin`}>Sign In</Link>
-                            </Button>
-                            <Button variant="secondary" size="sm" asChild>
-                                <Link href={`${variantPrefix}/signup`}>Sign Up</Link>
-                            </Button>
-                        </SignedOut>
+
+
                     </div>
 
                     {/* Mobile Toggle */}
@@ -111,22 +96,13 @@ export function Nav() {
 
                     <nav className="flex flex-col gap-6 text-lg">
                         <Link href={`${variantPrefix}/#how-it-works`} onClick={() => setIsMobileMenuOpen(false)}>How it works</Link>
-                        <Link href={`${variantPrefix}/pricing`} onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
+                        <Link href={`${variantPrefix}/open-source`} onClick={() => setIsMobileMenuOpen(false)}>Open source</Link>
                         <Link href={`${variantPrefix}/docs`} onClick={() => setIsMobileMenuOpen(false)}>Docs</Link>
                         <hr className="border-white/10" />
                         <Button variant="primary" size="lg" className="w-full" asChild>
                             <Link href={`${variantPrefix}/download`} onClick={() => setIsMobileMenuOpen(false)}>Download for Windows</Link>
                         </Button>
-                        <SignedOut>
-                            <div className="pt-4 border-t border-white/10 space-y-3">
-                                <Button variant="ghost" size="lg" className="w-full" asChild>
-                                    <Link href={`${variantPrefix}/signin`} onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
-                                </Button>
-                                <Button variant="secondary" size="lg" className="w-full" asChild>
-                                    <Link href={`${variantPrefix}/signup`} onClick={() => setIsMobileMenuOpen(false)}>Sign Up</Link>
-                                </Button>
-                            </div>
-                        </SignedOut>
+
                     </nav>
                 </div>
             )}

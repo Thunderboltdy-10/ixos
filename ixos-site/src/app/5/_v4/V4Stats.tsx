@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useRef, useState, useEffect } from 'react'
 import { motion, useInView } from 'framer-motion'
@@ -201,7 +201,7 @@ function StatCard({
     const y = e.clientY - rect.top
     const centerX = rect.width / 2
     const centerY = rect.height / 2
-    
+
     setRotateX(((y - centerY) / centerY) * -10)
     setRotateY(((x - centerX) / centerX) * 10)
   }

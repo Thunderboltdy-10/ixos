@@ -1,5 +1,7 @@
 "use client";
 
+import { OpenSourceNotice } from "@/components/sections/OpenSourceNotice";
+
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { DemoSurface } from "@/landing/DemoSurface";
@@ -531,11 +533,11 @@ function SignalGlowBackground() {
   return (
     <div className="fixed inset-0 pointer-events-none z-0">
       <div className="absolute top-0 left-0 w-full h-full bg-[#080C14]" />
-      <div 
+      <div
         className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full opacity-20 blur-[120px]"
         style={{ background: 'radial-gradient(circle, #38BDF8 0%, transparent 70%)' }}
       />
-      <div 
+      <div
         className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full opacity-10 blur-[120px]"
         style={{ background: 'radial-gradient(circle, #14B8A6 0%, transparent 70%)' }}
       />
@@ -1245,95 +1247,7 @@ export default function Page2SignalArchitecture() {
       {/* ================================================================
           12. PRICING
           ================================================================ */}
-      <section
-        id="pricing"
-        className="relative py-28 md:py-36 px-6 z-10"
-        style={{ background: "rgba(5,7,9,0.6)", borderTop: "1px solid rgba(255,255,255,0.04)" }}
-      >
-        <div className="max-w-4xl mx-auto">
-          <Reveal className="text-center mb-14">
-            <h2
-              className="text-3xl md:text-4xl font-light text-white tracking-tight"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Simple, transparent pricing
-            </h2>
-          </Reveal>
-
-          <Reveal delay={0.15}>
-            <div
-              className="grid grid-cols-2 gap-0 rounded-xl overflow-hidden"
-              style={{ border: "1px solid rgba(255,255,255,0.07)" }}
-            >
-              {/* Community */}
-              <div className="p-8 md:p-10" style={{ borderRight: "1px solid rgba(255,255,255,0.07)" }}>
-                <h3 className="text-lg mb-1" style={{ color: "rgba(255,255,255,0.7)" }}>Community</h3>
-                <div
-                  className="text-4xl font-light text-white mb-8 tracking-tight"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  Free
-                </div>
-                <div className="space-y-4 text-sm">
-                  {["Local vector search", "Flash & Auto modes", "CLI interface", "HMAC cache signing", "File watcher"].map((f) => (
-                    <div key={f} className="flex items-center gap-2.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-                      <span className="w-1 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.2)" }} />
-                      {f}
-                    </div>
-                  ))}
-                </div>
-                <button
-                  className="mt-10 w-full py-3 rounded-lg text-sm font-mono transition-colors"
-                  style={{
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    color: "rgba(255,255,255,0.6)",
-                  }}
-                >
-                  Download
-                </button>
-              </div>
-
-              {/* Pro */}
-              <div
-                className="p-8 md:p-10 relative"
-                style={{ background: "rgba(246,185,76,0.02)" }}
-              >
-                <div
-                  className="absolute top-0 left-0 right-0 h-px"
-                  style={{ background: "linear-gradient(90deg, transparent, #F6B94C, transparent)" }}
-                />
-                <h3 className="text-lg mb-1" style={{ color: "#F6B94C" }}>Pro</h3>
-                <div
-                  className="text-4xl font-light text-white mb-8 tracking-tight"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  $12<span className="text-lg" style={{ color: "rgba(255,255,255,0.3)" }}>/mo</span>
-                </div>
-                <div className="space-y-4 text-sm">
-                  {[
-                    "Everything in Community",
-                    "Pro mode (deep semantic)",
-                    "Unlimited workstreams",
-                    "Cryptographic attestation",
-                    "Priority model updates",
-                  ].map((f) => (
-                    <div key={f} className="flex items-center gap-2.5" style={{ color: "rgba(255,255,255,0.5)" }}>
-                      <span className="w-1 h-1 rounded-full" style={{ background: "#F6B94C" }} />
-                      {f}
-                    </div>
-                  ))}
-                </div>
-                <button
-                  className="mt-10 w-full py-3 rounded-lg text-sm font-mono font-medium text-black hover:brightness-110 transition-all"
-                  style={{ background: "#F6B94C" }}
-                >
-                  Start Free Trial
-                </button>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      <OpenSourceNotice variant="2" />
 
       {/* ================================================================
           13. CTA FOOTER — with teal beam sweep

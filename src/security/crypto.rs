@@ -20,6 +20,18 @@ pub const KEY_LENGTH: usize = 32;
 /// - macOS: ~/Library/Application Support/ixos/cache_key
 pub fn load_or_create_key() -> [u8; KEY_LENGTH] {
     let key_path = get_key_path();
+    load_or_create_key_at(&key_path)
+}
+
+fn load_or_create_key_at(key_path: &Path) -> [u8; KEY_LENGTH] {
+    // Multiple instances may run, but must not generate competing cache keys.
+    let _guard = match super::local_lock::exclusive(&key_path.with_file_name("cache_key.lock")) {
+        Ok(guard) => Some(guard),
+        Err(error) => {
+            tracing::warn!("Cache key storage unavailable: {error}; using a process-local key");
+            return generate_key();
+        }
+    };
 
     // Try to load existing key
     if let Ok(key_bytes) = fs::read(&key_path) {
@@ -72,7 +84,7 @@ pub fn generate_key() -> [u8; KEY_LENGTH] {
 /// Get the path to the HMAC key file
 pub fn get_key_path() -> PathBuf {
     let config_dir = dirs::config_dir()
-        .unwrap_or_else(|| PathBuf::from("."))
+        .unwrap_or_else(std::env::temp_dir)
         .join("ixos");
     config_dir.join("cache_key")
 }
@@ -94,6 +106,24 @@ pub fn sha256_file(path: &Path) -> std::io::Result<[u8; 32]> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn concurrent_creators_share_one_persisted_key() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("cache_key");
+        let threads: Vec<_> = (0..8)
+            .map(|_| {
+                let path = path.clone();
+                std::thread::spawn(move || load_or_create_key_at(&path))
+            })
+            .collect();
+        let keys: Vec<_> = threads
+            .into_iter()
+            .map(|thread| thread.join().unwrap())
+            .collect();
+        assert!(keys.iter().all(|key| *key == keys[0]));
+        assert_eq!(std::fs::read(path).unwrap(), keys[0]);
+    }
 
     #[test]
     fn test_generate_key_length() {

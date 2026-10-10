@@ -27,7 +27,7 @@ const BRIEF_ITEMS: BriefItem[] = [
     action: "Compare with forecast_v3.xlsx and draft one paragraph for the exec summary.",
     command: "ixos ask \"summarize q4 variance using forecast_v3.xlsx\"",
     reasons: ["Highest reopen frequency", "Cross-file edits", "Board deadline today"],
-    evidence: ["forecast_v3.xlsx", "board_packet_v2.md", "pricing_notes_2026.md"],
+    evidence: ["forecast_v3.xlsx", "board_packet_v2.md", "open-source_notes_2026.md"],
   },
   {
     id: "auth",

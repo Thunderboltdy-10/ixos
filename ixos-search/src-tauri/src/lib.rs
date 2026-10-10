@@ -25,13 +25,6 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            if let Some(main) = app.get_webview_window("main") {
-                let _ = main.show();
-                let _ = main.unminimize();
-                let _ = main.set_focus();
-            }
-        }))
         .setup(|app| {
             // Initialize application state
             app.manage(state::AppState::new());
@@ -133,17 +126,7 @@ pub fn run() {
             commands::storage::read_encrypted_file,
             commands::storage::delete_encrypted_file,
             commands::storage::clear_all_encrypted_files,
-            // Auth / Entitlements
-            commands::auth::verify_entitlement_token,
-            commands::auth::set_entitlement_public_key,
-            commands::auth::set_entitlement_token,
-            commands::auth::clear_entitlement_token,
-            commands::auth::check_search_allowed,
-            commands::auth::get_pro_status,
-            commands::auth::get_device_id,
-            commands::auth::get_device_public_key,
-            commands::auth::open_checkout,
-            commands::auth::open_external_url,
+            commands::system::open_external_url,
             // Pro
             commands::pro::ask_mode_plus,
             commands::pro::extract_answer_card,

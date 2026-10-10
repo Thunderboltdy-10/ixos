@@ -5,12 +5,12 @@ import { SearchSurface, createDemoAdapter, type IxosSearchResult } from "@ixos/i
 
 const adapter = createDemoAdapter();
 
-export function DemoSurface({ 
-  initialQuery = "", 
-  forcedState, 
+export function DemoSurface({
+  initialQuery = "",
+  forcedState,
   forcedStageLabel,
-  forcedResults 
-}: { 
+  forcedResults
+}: {
   initialQuery?: string;
   forcedState?: "idle" | "searching" | "done";
   forcedStageLabel?: string;
@@ -35,14 +35,14 @@ export function DemoSurface({
       setResults([]);
     } else if (forcedState === "done") {
       setIsSearching(false);
-      setStats(prev => ({ 
-        ...prev, 
-        stage: 'locked', 
-        filesScanned: 14205, 
-        candidates: 210, 
-        embedded: 45, 
+      setStats(prev => ({
+        ...prev,
+        stage: 'locked',
+        filesScanned: 14205,
+        candidates: 210,
+        embedded: 45,
         cacheHits: 120,
-        scanTrail: ['src/core/search.rs'] 
+        scanTrail: ['src/core/search.rs']
       }));
       setResults(forcedResults || []);
     }
@@ -51,8 +51,11 @@ export function DemoSurface({
   const handleSubmit = async () => {
     if (forcedState) return;
     setIsSearching(true);
-    const data = await adapter.search(query, { mode: "auto" });
-    setResults(data.results.map(r => ({ ...r, matchedLineNumber: 12 })));
+    const found: IxosSearchResult[] = [];
+    await adapter.search.search(query, "auto", event => {
+      if (event.type === "result" && event.result) found.push(event.result);
+    });
+    setResults(found);
     setStats({
       stage: 'locked',
       filesScanned: 12450,

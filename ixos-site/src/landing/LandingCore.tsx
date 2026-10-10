@@ -45,7 +45,7 @@ import { V4CLI } from "../app/5/_v4/V4CLI";
 import { V4AskMode } from "../app/5/_v4/V4AskMode";
 import { V4LocalFirst } from "../app/5/_v4/V4LocalFirst";
 import { V4ProValue } from "../app/5/_v4/V4ProValue";
-import { V4Pricing } from "../app/5/_v4/V4Pricing";
+import { V4OpenSource } from "../app/5/_v4/V4OpenSource";
 import { V4CTA } from "../app/5/_v4/V4CTA";
 
 // Context + connector system
@@ -116,11 +116,11 @@ function TrackedResultNode({
   // IMPORTANT: The section only EXPANDS if its index is <= maxRevealedIndex
   // If index === maxRevealedIndex + 1, it's the "waiting" section (only divider shown)
   const expanded = index <= maxRevealedIndex;
-  
+
   // Track previous expanded state to trigger animation
   const wasExpanded = useRef(expanded);
   const [justRevealed, setJustRevealed] = useState(false);
-  
+
   useEffect(() => {
     if (expanded && !wasExpanded.current) {
       setJustRevealed(true);
@@ -257,7 +257,7 @@ function LandingPageInner({ Connector }: { Connector: ConnectorComponent }) {
 
                     {/* Cinematic Dividers for Director's Cut vibe */}
                     {s.id === "pipeline" && maxRevealedIndex >= globalIndex && (
-                      <ResultDivider 
+                      <ResultDivider
                         query="pipeline latency audit"
                         resultTitle="Core Ranking Pipeline"
                         resultPath="src/ixos_rank/hybrid_engine.rs"
@@ -269,7 +269,7 @@ function LandingPageInner({ Connector }: { Connector: ConnectorComponent }) {
                     )}
 
                     {s.id === "comparison" && maxRevealedIndex >= globalIndex && (
-                      <ResultDivider 
+                      <ResultDivider
                         query="system architecture integrity"
                         resultTitle="Technical Capability Matrix"
                         resultPath="docs/ARCHITECTURE.md"
@@ -344,14 +344,14 @@ function LandingPageInner({ Connector }: { Connector: ConnectorComponent }) {
 
               <TrackedResultNode
                 index={13}
-                sectionId="pricing"
+                sectionId="open-source"
                 rank="14"
                 file="docs/product/PRICING.md"
                 tone="cyan"
-                title="investment tiers"
+                title="free local access"
                 isRevealed={maxRevealedIndex >= 13}
               >
-                <V4Pricing />
+                <V4OpenSource />
               </TrackedResultNode>
 
               {maxRevealedIndex >= 14 && <V4SectionDivider accent="cyan" />}

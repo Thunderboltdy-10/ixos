@@ -1,9 +1,12 @@
 "use client";
 
+import { OpenSourceNotice } from "@/components/sections/OpenSourceNotice";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { DemoSurface } from "@/landing/DemoSurface";
 import { ResultDivider } from "@/components/ui/ResultDivider";
+import { ArcNoiseBackground } from "@/components/effects/ArcNoiseBackground";
 
 /* ── CSS injection for conic pulse + section reveals ────────────────── */
 
@@ -74,22 +77,22 @@ function GlobalStyles() {
 function DataStreamOverlay() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.03]">
-      <div 
+      <div
         className="absolute inset-0"
         style={{
           backgroundImage: `linear-gradient(90deg, rgba(246,185,76,0.1) 1px, transparent 1px), linear-gradient(0deg, rgba(246,185,76,0.1) 1px, transparent 1px)`,
           backgroundSize: '40px 40px',
         }}
       />
-      <div 
+      <div
         className="absolute top-0 left-1/4 w-px h-64 bg-gradient-to-b from-transparent via-[#F6B94C] to-transparent"
         style={{ animation: 'streamVertical 8s linear infinite' }}
       />
-      <div 
+      <div
         className="absolute top-0 left-1/2 w-px h-96 bg-gradient-to-b from-transparent via-[#F6B94C] to-transparent"
         style={{ animation: 'streamVertical 12s linear infinite', animationDelay: '2s' }}
       />
-      <div 
+      <div
         className="absolute top-0 left-3/4 w-px h-48 bg-gradient-to-b from-transparent via-[#F6B94C] to-transparent"
         style={{ animation: 'streamVertical 10s linear infinite', animationDelay: '5s' }}
       />
@@ -405,7 +408,7 @@ const NAV = [
   { label: "Modes", id: "modes" },
   { label: "Today", id: "today" },
   { label: "CLI", id: "cli" },
-  { label: "Pricing", id: "pricing" },
+  { label: "Open source", id: "open-source" },
 ];
 
 /* ── FAQ data ──────────────────────────────────────────────────────── */
@@ -428,8 +431,8 @@ const FAQS = [
     a: "Windows (NTFS Alternate Data Streams), macOS (extended attributes), and Linux (xattr). The cache backend is auto-detected per filesystem. FAT32 and cloud drives fall back to ephemeral mode.",
   },
   {
-    q: "Is Pro worth it if Community is already fast?",
-    a: "Community gives you Flash and Auto modes with the int8 model (16.6 MB, sub-second search). Pro unlocks the fusion model (MRR@10 = 0.92), unlimited workstreams, and deep reasoning mode for complex multi-hop queries.",
+    q: "Are all search modes available for free?",
+    a: "Yes. All local search modes, Ask, and workstreams are free and available without an account. Choose an installed model and search on your own computer.",
   },
 ];
 
@@ -964,7 +967,7 @@ export default function Page1CommandCenter() {
           <Reveal delay={0.15}>
             <div className="flex flex-wrap gap-3">
               <motion.button
-                onClick={() => scrollTo("pricing")}
+                onClick={() => scrollTo("open-source")}
                 className="px-6 py-3 rounded-md font-mono text-sm font-semibold text-black"
                 style={{
                   background: `linear-gradient(135deg, ${A}, #F59E0B)`,
@@ -1021,7 +1024,7 @@ export default function Page1CommandCenter() {
         </StaggerGroup>
       </section>
 
-      <ResultDivider 
+      <ResultDivider
         query="performance benchmarks"
         resultTitle="Ixos Performance Audit"
         resultPath="bench/results/2026-02-14.json"
@@ -1374,7 +1377,7 @@ export default function Page1CommandCenter() {
         </div>
       </section>
 
-      <ResultDivider 
+      <ResultDivider
         query="search modes and depth"
         resultTitle="Ixos Engine Configurations"
         resultPath="src/ixos_rank/modes.rs"
@@ -1674,85 +1677,7 @@ export default function Page1CommandCenter() {
       </section>
 
       {/* ── S12  PRICING ──────────────────────────────────────────── */}
-      <section id="pricing" className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}>
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <Reveal>
-            <div className="text-center mb-14">
-              <h2 className="font-mono text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
-                Simple, honest pricing
-              </h2>
-              <p className="text-white/50 max-w-lg mx-auto">
-                Community is free forever. Pro unlocks the full engine.
-              </p>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div
-              className="rounded-xl overflow-hidden"
-              style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(22,27,34,0.4)" }}
-            >
-              <div className="grid grid-cols-[1fr_120px_120px] sm:grid-cols-[1fr_150px_150px]" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                <div className="p-4 sm:p-5" />
-                <div className="p-4 sm:p-5 text-center" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div className="font-mono text-lg font-semibold">Community</div>
-                  <div className="font-mono text-2xl font-semibold mt-1">Free</div>
-                </div>
-                <div className="p-4 sm:p-5 text-center" style={{ borderLeft: `1px solid ${A}20`, background: `${A}03` }}>
-                  <div className="font-mono text-lg font-semibold" style={{ color: A }}>Pro</div>
-                  <div className="font-mono text-2xl font-semibold mt-1">
-                    $12<span className="text-sm text-white/40">/mo</span>
-                  </div>
-                </div>
-              </div>
-              {(
-                [
-                  ["Local semantic search", true, true],
-                  ["Flash + Auto modes", true, true],
-                  ["CLI with JSON/CSV output", true, true],
-                  ["HMAC-signed cache", true, true],
-                  ["Pro mode (fusion model)", false, true],
-                  ["Unlimited workstreams", false, true],
-                  ["Journalist mode", false, true],
-                  ["Cryptographic attestation", false, true],
-                  ["Priority support", false, true],
-                ] as const
-              ).map(([feat, comm, pro], i) => (
-                <div
-                  key={i}
-                  className="grid grid-cols-[1fr_120px_120px] sm:grid-cols-[1fr_150px_150px]"
-                  style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}
-                >
-                  <div className="px-4 sm:px-5 py-3 text-xs text-white/50">{feat}</div>
-                  <div className="px-4 sm:px-5 py-3 text-center text-sm" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }}>
-                    {comm ? <span className="text-white/50">&#10003;</span> : <span className="text-white/15">&mdash;</span>}
-                  </div>
-                  <div className="px-4 sm:px-5 py-3 text-center text-sm" style={{ borderLeft: `1px solid ${A}10`, background: `${A}02` }}>
-                    {pro ? <span style={{ color: A }}>&#10003;</span> : <span className="text-white/15">&mdash;</span>}
-                  </div>
-                </div>
-              ))}
-              <div className="grid grid-cols-[1fr_120px_120px] sm:grid-cols-[1fr_150px_150px]" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                <div className="p-4 sm:p-5" />
-                <div className="p-4 sm:p-5 flex justify-center" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }}>
-                  <button className="px-4 py-2 rounded-md text-xs font-medium text-white/60 hover:text-white transition-colors duration-150" style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
-                    Download
-                  </button>
-                </div>
-                <div className="p-4 sm:p-5 flex justify-center" style={{ borderLeft: `1px solid ${A}10`, background: `${A}03` }}>
-                  <motion.button
-                    className="px-4 py-2 rounded-md text-xs font-semibold text-black"
-                    style={{ background: `linear-gradient(135deg, ${A}, #F59E0B)`, boxShadow: `0 0 16px ${A}30` }}
-                    whileHover={{ scale: 1.05, boxShadow: `0 0 24px ${A}50` }}
-                    whileTap={{ scale: 0.97 }}
-                  >
-                    Start Free Trial
-                  </motion.button>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      <OpenSourceNotice variant="1" />
 
       {/* ── S13  FAQ & CTA FOOTER ─────────────────────────────────── */}
       <section className={`relative z-10 py-28 md:py-36 px-5 md:px-10 ${SepBorder}`}>

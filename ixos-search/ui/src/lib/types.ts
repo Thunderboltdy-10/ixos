@@ -221,11 +221,6 @@ export interface ShortcutConfig {
   key: string;
 }
 
-export type ProStatus =
-  | { status: 'active'; expiresAt: number }
-  | { status: 'grace'; expiresAt: number; refreshBy: number }
-  | { status: 'expired'; expiredAt: number }
-  | { status: 'timeSuspect'; limitedUntil?: number | null };
 
 export type DoctorStatus = 'PASS' | 'WARN' | 'FAIL' | 'INFO';
 

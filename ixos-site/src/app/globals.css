@@ -586,43 +586,6 @@ video::-moz-media-controls {
   font-size: 0.98rem;
 }
 
-/* Clerk readability hardening for auth views */
-.cl-socialButtonsBlockButton {
-  background: #121722 !important;
-  border-color: rgba(243, 245, 247, 0.2) !important;
-  color: #f3f5f7 !important;
-  opacity: 1 !important;
-}
-
-.cl-socialButtonsBlockButton:hover {
-  background: #1a2131 !important;
-  border-color: rgba(20, 184, 166, 0.45) !important;
-}
-
-.cl-socialButtonsBlockButtonText {
-  color: #f3f5f7 !important;
-  font-weight: 600 !important;
-  opacity: 1 !important;
-}
-
-.cl-dividerText {
-  color: rgba(243, 245, 247, 0.68) !important;
-}
-
-.cl-formFieldInput::placeholder {
-  color: rgba(243, 245, 247, 0.45) !important;
-}
-
-.cl-formFieldInput:-webkit-autofill,
-.cl-formFieldInput:-webkit-autofill:hover,
-.cl-formFieldInput:-webkit-autofill:focus,
-.cl-formFieldInput:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #11151f inset !important;
-  -webkit-text-fill-color: #f3f5f7 !important;
-  caret-color: #f3f5f7 !important;
-  transition: background-color 9999s ease-in-out 0s !important;
-}
-
 /* Section transition zone: teal -> violet blend */
 .section-transition-teal-to-violet {
   position: relative;

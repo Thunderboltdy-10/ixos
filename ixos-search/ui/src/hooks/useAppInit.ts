@@ -42,7 +42,7 @@ export function useAppInit() {
           loadConsent(),
         ]);
 
-        // Initialize Phase 2 Second Brain features (Pro only - fails silently for free users)
+        // Hydrate local activity and workstreams before displaying their views.
         try {
           // Load activity ledger from encrypted storage
           await loadActivityFromStorage();
@@ -54,7 +54,7 @@ export function useAppInit() {
             const wsStats = await tauri.loadWorkstreams();
             hasPersistedWorkstreams = wsStats.totalCount > 0;
           } catch {
-            // Expected for free users or first launch
+            // A first installation may not have persisted workstreams yet.
           }
 
           // Keep the UI store hydrated from first render.
@@ -69,8 +69,8 @@ export function useAppInit() {
             await tauri.reclusterWorkstreams();
             await loadWorkstreamsStore();
           }
-        } catch {
-          // Silent failure - Second Brain features are Pro only
+        } catch (error) {
+          console.warn('Local activity/workstream initialization failed:', error);
         }
 
         // Verify that at least one model is available

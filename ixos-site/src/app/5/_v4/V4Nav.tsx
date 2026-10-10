@@ -1,23 +1,21 @@
-'use client'
+"use client";
 
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { useAuth, UserButton } from '@clerk/nextjs'
 import { useReducedOrLowEnd } from './hooks/useReducedOrLowEnd'
 
 export function V4Nav() {
   const [scrolled, setScrolled] = useState(false)
   const lowEnd = useReducedOrLowEnd()
   const pathname = usePathname() || ''
-  const { isSignedIn, isLoaded } = useAuth()
 
   // Detect variant prefix (e.g. /1, /4, /5)
   const variantMatch = pathname.match(/^\/([1-5])(?:\/|$)/)
   const variantPrefix = variantMatch ? `/${variantMatch[1]}` : '/5'
 
   const NAV_LINKS = [
-    { label: 'Pricing', href: `${variantPrefix}/pricing` },
+    { label: 'Open source', href: `${variantPrefix}/open-source` },
     { label: 'Docs', href: `${variantPrefix}/docs` },
   ] as const
 
@@ -90,60 +88,7 @@ export function V4Nav() {
 
       {/* Auth & Primary Actions */}
       <div className="flex items-center gap-4">
-        {isLoaded && isSignedIn ? (
-          <>
-            <Link
-              href={`${variantPrefix}/account`}
-              className="font-mono hidden md:inline-flex"
-              style={{
-                textDecoration: 'none',
-                color: 'rgba(255,255,255,0.46)',
-                fontSize: 10,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                padding: '8px 14px',
-              }}
-            >
-              Account
-            </Link>
-            <UserButton afterSignOutUrl={`${variantPrefix}`} />
-          </>
-        ) : isLoaded && !isSignedIn ? (
-          <>
-            <Link
-              href={`${variantPrefix}/signin`}
-              className="font-mono hidden md:inline-flex"
-              style={{
-                textDecoration: 'none',
-                color: 'rgba(255,255,255,0.46)',
-                fontSize: 10,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                padding: '8px 14px',
-              }}
-            >
-              Sign In
-            </Link>
 
-            <Link
-              href={`${variantPrefix}/signup`}
-              className="font-mono hidden md:inline-flex"
-              style={{
-                textDecoration: 'none',
-                color: 'rgba(255,255,255,0.7)',
-                fontSize: 10,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                padding: '8px 18px',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 6,
-                background: 'rgba(255,255,255,0.03)',
-              }}
-            >
-              Sign Up
-            </Link>
-          </>
-        ) : null}
 
         <Link
           href={`${variantPrefix}/download`}

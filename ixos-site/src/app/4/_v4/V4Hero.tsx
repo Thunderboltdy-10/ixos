@@ -1,5 +1,6 @@
-'use client'
+"use client";
 
+import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { FileText, Layers, Lock, Shield, Sparkles, Zap } from 'lucide-react'

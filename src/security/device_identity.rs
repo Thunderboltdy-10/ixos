@@ -21,6 +21,11 @@ pub struct DeviceIdentity {
 
 impl DeviceIdentity {
     pub fn load_or_create() -> Result<Self, DeviceIdentityError> {
+        // Coordinate creation across app instances without restricting their lifetime.
+        let _guard = super::local_lock::exclusive(
+            &crate::security::crypto::get_key_path().with_file_name("local_identity.lock"),
+        )
+        .map_err(|e| DeviceIdentityError::Storage(e.to_string()))?;
         let key_bytes = match load_key_bytes()? {
             Some(bytes) => bytes,
             None => {

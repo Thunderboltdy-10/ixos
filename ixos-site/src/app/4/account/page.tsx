@@ -1,6 +1,2 @@
-"use client";
-import { AccountContent } from "@/components/subpages/AccountContent";
-
-export default function Page() {
-  return <AccountContent variant="4" />;
-}
+import { redirect } from "next/navigation";
+export default function Page() { redirect("/4/download"); }

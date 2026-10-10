@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth, UserButton } from "@clerk/nextjs";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    STAR FIELD — client-only, avoids hydration mismatch
@@ -54,7 +53,6 @@ function StarField() {
 function SignalNav() {
   const [visible, setVisible] = useState(true);
   const lastY = useRef(0);
-  const { isSignedIn } = useAuth();
 
   useEffect(() => {
     const onScroll = () => {
@@ -88,26 +86,11 @@ function SignalNav() {
       </Link>
       <div className="flex items-center gap-6 text-[11px]" style={{ color: "rgba(255,255,255,0.45)" }}>
         <Link href="/2/docs" className="hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Docs</Link>
-        <Link href="/2/pricing" className="hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Pricing</Link>
+        <Link href="/2/open-source" className="hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Open source</Link>
         <div className="w-[1px] h-3 bg-white/10 mx-1 hidden sm:block" />
-        
-        {isSignedIn ? (
-          <>
-            <Link href="/2/account" className="hidden sm:block hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Account</Link>
-            <UserButton afterSignOutUrl="/" />
-          </>
-        ) : (
-          <>
-            <Link href="/2/signin" className="hidden sm:block hover:text-white/80 transition-colors font-mono text-xs tracking-wider uppercase">Sign In</Link>
-            <Link
-              href="/2/signup"
-              className="px-4 py-1.5 rounded font-mono text-xs tracking-wider uppercase transition-all bg-white/5 border border-white/10 hover:bg-white/10"
-            >
-              Sign Up
-            </Link>
-          </>
-        )}
-        
+
+
+
         <Link
           href="/2/download"
           className="px-4 py-1.5 rounded font-mono text-xs tracking-wider uppercase transition-all"

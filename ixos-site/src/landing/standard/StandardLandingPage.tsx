@@ -91,7 +91,7 @@ const PRESET_COPY: Record<
 > = {
   editorial: {
     name: "Ripple Foundry",
-    heroKicker: "Editorial Premium",
+    heroKicker: "Editorial Search",
     headline: "Search that materializes from the field.",
     subhead:
       "Ixos keeps search local, progressive, and source-grounded. Ripples trigger each section so product proof appears from the same signal layer.",
@@ -925,7 +925,7 @@ export function StandardLandingPage({
 
           <footer className={styles.footerLinks}>
             <Link href="/docs">Docs</Link>
-            <Link href="/pricing">Pricing</Link>
+            <Link href="/open-source">Open source</Link>
             <Link href="/privacy">Privacy</Link>
             <Link href="/terms">Terms</Link>
           </footer>

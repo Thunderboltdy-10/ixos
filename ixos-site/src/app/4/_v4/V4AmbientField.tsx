@@ -1,4 +1,5 @@
-'use client'
+"use client";
+
 import { useRef, useEffect } from 'react'
 import { useReducedOrLowEnd } from './hooks/useReducedOrLowEnd'
 
@@ -42,10 +43,12 @@ function PixelWaveCanvas() {
   const dimsRef = useRef<{ W: number; H: number; dpr: number }>({ W: 0, H: 0, dpr: 1 })
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const foundCanvas = canvasRef.current
+    if (!foundCanvas) return
+    const canvas: HTMLCanvasElement = foundCanvas
+    const foundContext = canvas.getContext('2d')
+    if (!foundContext) return
+    const ctx: CanvasRenderingContext2D = foundContext
 
     const CELL_SIZE = 22
 

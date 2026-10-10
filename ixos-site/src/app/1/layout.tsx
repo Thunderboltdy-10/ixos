@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth, UserButton } from "@clerk/nextjs";
 import { ArcNoiseBackground } from "@/components/effects/ArcNoiseBackground";
 
 /* ── CSS injection for conic pulse + section reveals ────────────────── */
@@ -176,11 +175,10 @@ function MissionTicker() {
 }
 
 const NAV = [
-  { label: "Pricing", href: "/1/pricing" },
+  { label: "Open source", href: "/1/open-source" },
 ];
 
 export default function V1Layout({ children }: { children: React.ReactNode }) {
-  const { isSignedIn } = useAuth();
   const pathname = usePathname();
   const A = "#F6B94C";
 
@@ -200,11 +198,11 @@ export default function V1Layout({ children }: { children: React.ReactNode }) {
         <Link href="/1" className="font-mono text-sm font-semibold tracking-tight mr-8 shrink-0" style={{ color: A }}>
           IXOS
         </Link>
-        
+
         <div className="hidden lg:block mr-8">
           <MissionTicker />
         </div>
-        
+
         <div className="hidden lg:flex items-center gap-6 text-[11px] tracking-widest uppercase text-white/40">
           {NAV.map((l) => (
             <Link key={l.label} href={l.href} className="hover:text-white/80 transition-colors duration-150">
@@ -215,17 +213,7 @@ export default function V1Layout({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="ml-auto flex items-center gap-4">
-          {isSignedIn ? (
-            <>
-              <Link href="/1/account" className="hidden md:block text-[11px] font-mono tracking-widest uppercase text-white/40 hover:text-white/80">Account</Link>
-              <UserButton afterSignOutUrl="/" />
-            </>
-          ) : (
-            <>
-              <Link href="/1/signin" className="hidden md:block text-[11px] font-mono tracking-widest uppercase text-white/40 hover:text-white/80">Sign In</Link>
-              <Link href="/1/signup" className="hidden md:block text-[11px] font-semibold tracking-wide uppercase px-3 py-1 rounded border border-white/10 bg-white/5 hover:bg-white/10 transition-all">Sign Up</Link>
-            </>
-          )}
+
           <Link href="/1/download" className="text-[11px] font-semibold tracking-wide uppercase px-3 py-1 rounded" style={{ background: `${A}15`, color: A, border: `1px solid ${A}25`, boxShadow: `0 0 12px ${A}10` }}>
             Download
           </Link>

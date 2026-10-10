@@ -185,12 +185,12 @@ export function DownloadActions() {
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <Button variant="outline" size="sm" onClick={handleCopyTest} className="border-white/10 hover:border-accent-amber/30 hover:bg-accent-amber/5 text-xs font-mono h-9">
+                <Button variant="secondary" size="sm" onClick={handleCopyTest} className="border-white/10 hover:border-accent-amber/30 hover:bg-accent-amber/5 text-xs font-mono h-9">
                   {copiedTest ? <Check className="h-3.5 w-3.5 mr-2 text-accent-amber" /> : <Terminal className="h-3.5 w-3.5 mr-2" />}
                   {copiedTest ? "Test copied" : "Copy test query"}
                 </Button>
                 <Link href="/docs/cli-reference">
-                  <Button variant="outline" size="sm" className="border-white/10 hover:border-accent-amber/30 hover:bg-accent-amber/5 text-xs font-mono h-9">
+                  <Button variant="secondary" size="sm" className="border-white/10 hover:border-accent-amber/30 hover:bg-accent-amber/5 text-xs font-mono h-9">
                     <Terminal className="h-3.5 w-3.5 mr-2" />
                     CLI reference
                   </Button>

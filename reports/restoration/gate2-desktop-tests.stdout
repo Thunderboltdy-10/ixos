@@ -1,0 +1,20 @@
+
+running 15 tests
+test commands::activity::tests::test_activity_state_persistence_toggle ... ok
+test commands::search::tests::ask_mode_uses_intent_and_explicit_selection ... ok
+test commands::activity::tests::test_log_activity_request_deserialization ... ok
+test commands::history::tests::test_add_and_get_suggestions ... ok
+test commands::search::tests::eager_indexing_is_forced_for_pro_mode ... ok
+test commands::search::tests::eager_indexing_runs_when_lexical_probe_is_empty ... ok
+test commands::search::tests::eager_indexing_skips_when_lexical_probe_has_hits ... ok
+test commands::search::tests::parse_cache_mode_rejects_legacy_aliases ... ok
+test commands::search::tests::search_modes_do_not_require_an_account ... ok
+test commands::history::tests::test_clear_history ... ok
+test commands::workstreams::tests::test_workstream_payload_conversion ... ok
+test commands::indexer::tests::test_indexer_state ... ok
+test commands::prefetch::tests::test_clear_cache ... ok
+test commands::prefetch::tests::test_prefetch_state ... ok
+test commands::indexer::tests::test_start_stop_indexing ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+

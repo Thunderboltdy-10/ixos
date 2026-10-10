@@ -37,6 +37,18 @@ for (const route of ROUTES) {
 
       await page.goto(`${route}?visual=1`, { waitUntil: "networkidle" });
       await page.waitForTimeout(1800);
+      // Reveal scroll-triggered sections before capturing the full page.
+      const pageHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+      for (let y = 0; y < pageHeight; y += Math.floor(viewport.height * 0.7)) {
+        await page.evaluate((position) => window.scrollTo(0, position), y);
+        await page.waitForTimeout(120);
+      }
+      const freeAccess = page.getByRole("heading", { name: "Every search mode is free." });
+      await freeAccess.scrollIntoViewIfNeeded();
+      await expect(freeAccess).toBeVisible();
+      await expect(page.getByText("Use the Rust CLI or desktop app without an account.", { exact: false })).toBeVisible();
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.waitForTimeout(1200);
 
       await expect(page).toHaveScreenshot(
         `variant-${route.replace("/", "")}-${viewport.width}.png`,

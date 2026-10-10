@@ -1,6 +1,2 @@
-"use client";
-import { SignupContent } from "@/components/subpages/SignupContent";
-
-export default function Page() {
-  return <SignupContent variant="4" />;
-}
+import { redirect } from "next/navigation";
+export default function Page() { redirect("/4/download"); }

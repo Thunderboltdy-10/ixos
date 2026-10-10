@@ -8,9 +8,6 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname, ".."),
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   transpilePackages: ['lucide-react', '@ixos/ui', '@ixos/ixos-ui'],
   // Allow dev origins for desktop app and local testing
   allowedDevOrigins: [

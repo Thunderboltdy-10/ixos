@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useRef, useState, useEffect } from 'react'
 import { motion, useInView } from 'framer-motion'
@@ -81,7 +81,7 @@ function BlueprintGrid() {
 
 function TreeCard({ inView }: { inView: boolean }) {
   const countDisplay = useCountUp(312, 1600, inView)
-  
+
   // Interactive 3D hover effect
   const cardRef = useRef<HTMLDivElement>(null)
   const [rotateX, setRotateX] = useState(0)
@@ -94,10 +94,10 @@ function TreeCard({ inView }: { inView: boolean }) {
     const y = e.clientY - rect.top
     const centerX = rect.width / 2
     const centerY = rect.height / 2
-    
+
     const rotateXValue = ((y - centerY) / centerY) * -8
     const rotateYValue = ((x - centerX) / centerX) * 8
-    
+
     setRotateX(rotateXValue)
     setRotateY(rotateYValue)
   }

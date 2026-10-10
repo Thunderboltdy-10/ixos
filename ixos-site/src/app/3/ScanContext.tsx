@@ -1,4 +1,5 @@
 "use client";
+
 import { createContext, useContext, useState, useCallback } from "react";
 
 const ScanContext = createContext<{

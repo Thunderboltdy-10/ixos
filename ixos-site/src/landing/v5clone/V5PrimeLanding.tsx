@@ -21,7 +21,7 @@ import { V4Comparison } from "../../app/5/_v4/V4Comparison";
 import { V4TechBento } from "../../app/5/_v4/V4TechBento";
 import { V4CLI } from "../../app/5/_v4/V4CLI";
 import { V4LocalFirst } from "../../app/5/_v4/V4LocalFirst";
-import { V4Pricing } from "../../app/5/_v4/V4Pricing";
+import { V4OpenSource } from "../../app/5/_v4/V4OpenSource";
 import { V4CTA } from "../../app/5/_v4/V4CTA";
 import styles from "./V5PrimeLanding.module.css";
 
@@ -709,14 +709,14 @@ function PrimeLandingInner({ preset, activeRoute, visualMode = false }: V5PrimeL
               <SideDivider accent="violet" side="right" />
 
               <TrackedSideNode
-                sectionId="pricing"
+                sectionId="open-source"
                 rank="14"
-                file="src/app/pricing/page.tsx"
+                file="src/app/open-source/page.tsx"
                 tone="violet"
-                title="plan split"
+                title="free local access"
                 index={14}
               >
-                <V4Pricing />
+                <V4OpenSource />
               </TrackedSideNode>
 
               <SideDivider accent="cyan" side="left" />

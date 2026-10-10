@@ -8,11 +8,8 @@ import { WindowControls } from './components/layout/WindowControls';
 import { MainSearchView } from './components/search/MainSearchView';
 import { useAppInit } from './hooks/useAppInit';
 import { AchievementNotifications } from './components/stats';
-import { IxosClerkProvider } from './providers/ClerkProvider';
-import { AuthGate } from './components/auth/AuthGate';
 import { ToastContainer } from './components/notifications/ToastContainer';
 import type { ModelStatus } from './lib/types';
-// import { useAuthStore } from './stores/authStore';
 
 type WindowType = 'overlay' | 'main' | 'unknown';
 
@@ -89,11 +86,11 @@ function App() {
   }
 
   return (
-    <IxosClerkProvider>
-      {/* Global Window Controls - visible based on window type and handling auth state internally for settings */}
+    <>
+      {/* Window controls stay available without a network session. */}
       {windowType !== 'overlay' && <WindowControls />}
 
-      <AuthGate>
+      <>
         {windowType === 'overlay' ? (
           <SearchOverlay />
         ) : (
@@ -108,8 +105,8 @@ function App() {
             )}
           </>
         )}
-      </AuthGate>
-    </IxosClerkProvider>
+      </>
+    </>
   );
 }
 

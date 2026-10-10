@@ -120,7 +120,7 @@ const MODE_INFO: Record<string, { headline: string; body: string; source: string
   },
   balanced: {
     headline: "Auto",
-    body: "Adaptive routing based on query complexity and score confidence. Routes to Pro only when score gap < 0.05 or lexical ratio < 0.15.",
+    body: "Adaptive routing based on query complexity and score confidence. Routes to Local when score gap < 0.05 or lexical ratio < 0.15.",
     source: "ixos_rank/hybrid_engine.rs · routing logic",
   },
 };

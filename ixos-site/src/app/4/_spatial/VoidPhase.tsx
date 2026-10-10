@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import { OrbitalParticles } from './OrbitalParticles'
 import { AppFrame } from './AppFrame'
 

@@ -19,3 +19,7 @@
 - REMOVE the fast-mode wrapper's hidden 2,048-character truncation. Preserve explicit protected-mode behaviour separately; expose the dependency's remaining 512-token limit as experiment work.
 - KEEP output budget validity over byte truncation: reduce displayed results/evidence, never cut serialized JSON midway. Whole-stream progressive budgets need a later contract.
 - SHARE cache identities and traversal with cache-management utilities. Report present versus valid entries, warm actual vectors on index, and clear only entries under the requested directory.
+- REMOVE account/subscription/lease controls and the desktop instance restriction entirely. Retain installation identity only where needed for existing encrypted local state.
+- SERIALIZE first key creation and state-file I/O with short OS locks in application directories. Running multiple instances remains permitted; these locks do not merge independent state snapshots.
+- ENFORCE site TypeScript checking and use the verified Webpack build. Repair source errors instead of hiding them behind `ignoreBuildErrors`.
+- VERIFY scroll-triggered content before full-page screenshot capture. A passing screenshot-update run alone is insufficient visual evidence.

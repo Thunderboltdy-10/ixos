@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 export function V4SectionDivider({ accent = 'dim' }: { accent?: 'cyan' | 'violet' | 'amber' | 'dim' }) {
   const colors = {

@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { VoidPhase } from './VoidPhase'
 import { InsidePhase } from './InsidePhase'

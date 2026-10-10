@@ -3,20 +3,16 @@
 //! Provides progressive search with streaming results to the frontend.
 
 use crate::state::AppState;
-use ixos_protocol::capabilities::Capability;
 use ixos_protocol::cli::IxosConfig;
-use ixos_protocol::entitlements::ProStatus;
 use ixos_protocol::instrumentation::ipc_send_span;
 use ixos_protocol::ixos_rank::{
     progressive::{SearchEvent, SearchMode, StreamEventKind, StreamStage, StreamStats},
     CandidateLexicalEngine, IntentDetector, LexicalEngine, ProgressiveSearchConfig,
     ProgressiveSearchEngine, RankedResult, StubSemanticEngine,
 };
-use ixos_protocol::security::DeviceIdentity;
 use ixos_protocol::EvidenceTag;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use std::time::SystemTime;
 use tauri::ipc::Channel;
 use tauri::State;
 use tokio::sync::mpsc;
@@ -417,23 +413,6 @@ fn ask_mode_requested(value: Option<&str>, query: &str) -> bool {
     }
 }
 
-fn ask_mode_active(value: Option<&str>, query: &str, pro_available: bool) -> bool {
-    pro_available && ask_mode_requested(value, query)
-}
-
-fn resolve_search_mode(requested: Option<&str>, pro_available: bool) -> Result<SearchMode, String> {
-    let mode = parse_search_mode(requested);
-    if pro_available {
-        return Ok(mode);
-    }
-
-    match mode {
-        SearchMode::Flash => Ok(SearchMode::Flash),
-        SearchMode::Auto => Ok(SearchMode::Flash),
-        SearchMode::Pro => Err("Pro plan required for Pro mode".into()),
-    }
-}
-
 fn should_eager_index_semantic(search_mode: SearchMode, lexical_probe_is_empty: bool) -> bool {
     matches!(search_mode, SearchMode::Pro) || lexical_probe_is_empty
 }
@@ -450,45 +429,6 @@ pub async fn search_progressive(
     options: SearchOptions,
 ) -> Result<(), String> {
     let requested_search_mode = options.search_mode.as_deref();
-    let mut pro_available = false;
-
-    // Verify entitlement token before allowing search.
-    // Free users can search with Flash mode, but Pro-only modes require
-    // capability + active entitlement status.
-    {
-        let mut manager = state.entitlement_manager.lock();
-        if manager.entitlement_token().is_some() {
-            let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
-            let status = manager.pro_status(SystemTime::now(), &device);
-            let has_pro_capability = manager.capabilities().has(Capability::AskModePlus);
-            pro_available = has_pro_capability && status.is_enabled();
-
-            if matches!(requested_search_mode, Some("pro")) && !pro_available {
-                return Err(match status {
-                    ProStatus::TimeSuspect { .. } => {
-                        "Pro temporarily locked due to local time change. Refresh entitlement and retry."
-                            .into()
-                    }
-                    ProStatus::Expired { .. } => {
-                        "Pro entitlement expired. Switch to Flash mode or renew your subscription."
-                            .into()
-                    }
-                    _ if !has_pro_capability => "Pro plan required for Pro mode".into(),
-                    _ => "Pro mode unavailable. Please refresh entitlement and retry.".into(),
-                });
-            }
-        } else if matches!(requested_search_mode, Some("pro")) {
-            return Err(
-                "Authentication required for Pro mode. Refresh your account status and try again."
-                    .into(),
-            );
-        } else {
-            tracing::warn!(
-                "No entitlement token in backend; continuing with Flash-mode search fallback"
-            );
-        }
-    }
-
     // Cancel any existing search
     state.cancel_search();
     state.disable_deep_search_mode();
@@ -503,7 +443,7 @@ pub async fn search_progressive(
 
     // Parse directory
     let dir_path = PathBuf::from(&directory);
-    if !dir_path.exists() {
+    if !dir_path.is_dir() {
         return Err(format!("Directory not found: {}", directory));
     }
 
@@ -515,6 +455,9 @@ pub async fn search_progressive(
         ProgressiveSearchConfig::default()
     };
     config.max_results = options.limit.unwrap_or(config.max_results);
+    if query.trim().is_empty() || config.max_results == 0 {
+        return Err("Search requires a nonempty query and a positive result limit".into());
+    }
     config.enable_secure_ranking = options
         .secure_ranking
         .unwrap_or(config.enable_secure_ranking);
@@ -535,7 +478,7 @@ pub async fn search_progressive(
         config.semantic_timeout = std::time::Duration::from_secs(secs);
     }
 
-    config.search_mode = resolve_search_mode(requested_search_mode, pro_available)?;
+    config.search_mode = parse_search_mode(requested_search_mode);
 
     // Create internal channel for search engine → forwarder communication.
     // 512 provides ample headroom for try_send() in sync batch callbacks.
@@ -580,7 +523,7 @@ pub async fn search_progressive(
     let model_type_str = options.model_type.as_deref().unwrap_or("ixos-flash-v2");
     let model_type = model_type_str
         .parse::<ModelType>()
-        .unwrap_or(ModelType::IxosFlashV2);
+        .map_err(|e| format!("Invalid search model: {e}"))?;
 
     let pro_model_type_str = options.pro_model_type.as_deref().unwrap_or("ixos-pro-v2");
     let pro_model_type = match pro_model_type_str.to_lowercase().as_str() {
@@ -588,12 +531,11 @@ pub async fn search_progressive(
         "potion" | "potion-base-8m-int8" => ModelType::Potion,
         _ => pro_model_type_str
             .parse::<ModelType>()
-            .unwrap_or(ModelType::IxosProV2),
+            .map_err(|e| format!("Invalid secondary search model: {e}"))?,
     };
 
     let model_result = state.get_or_load_model(model_type);
-    let ask_mode_requested = ask_mode_requested(options.is_ask_mode.as_deref(), &query);
-    let ask_mode_enabled = ask_mode_active(options.is_ask_mode.as_deref(), &query, pro_available);
+    let ask_mode_enabled = ask_mode_requested(options.is_ask_mode.as_deref(), &query);
     let use_pro = matches!(config.search_mode, SearchMode::Pro)
         || (matches!(config.search_mode, SearchMode::Auto) && !ask_mode_enabled);
     let pro_model_result = if use_pro {
@@ -622,19 +564,6 @@ pub async fn search_progressive(
         let lexical = CandidateLexicalEngine::new(dir_path.clone());
 
         // Create semantic engine with pre-loaded model
-        let (_subdir, _repo_id, _files) = match model_type {
-            ModelType::IxosFlashV2 => (
-                "ixos-flash-v2",
-                "Thunderboltdy10/Ixos-Flash-v2",
-                vec!["config.json", "model.safetensors", "tokenizer.json"],
-            ),
-            ModelType::IxosFlashV1 => (
-                "ixos-flash-v1",
-                "Thunderboltdy10/Ixos-Flash",
-                vec!["config.json", "model.safetensors", "tokenizer.json"],
-            ),
-            _ => ("default", "default_repo", vec!["default_file"]),
-        };
         let mut semantic = match model_result {
             Ok(model) => {
                 tracing::info!(
@@ -646,8 +575,12 @@ pub async fn search_progressive(
                 StubSemanticEngine::with_cache_mode(embedder, cache_mode)
             }
             Err(e) => {
-                tracing::warn!("Model load failed ({}), using stub: {}", model_type, e);
-                StubSemanticEngine::with_stub_model()
+                let _ = tx
+                    .send(SearchEvent::Error(format!(
+                        "Model {model_type} could not load: {e}"
+                    )))
+                    .await;
+                return;
             }
         };
         let mut pro_engine = match pro_model_result {
@@ -661,19 +594,21 @@ pub async fn search_progressive(
                 Some(StubSemanticEngine::with_cache_mode(embedder, cache_mode))
             }
             Some(Err(e)) => {
+                if matches!(config.search_mode, SearchMode::Pro) {
+                    let _ = tx
+                        .send(SearchEvent::Error(format!(
+                            "Selected secondary model {pro_model_type} could not load: {e}"
+                        )))
+                        .await;
+                    return;
+                }
                 tracing::warn!("Pro model load failed ({}): {}", pro_model_type, e);
                 None
             }
             None => None,
         };
 
-        if ask_mode_requested && !pro_available {
-            let _ = tx
-                .send(SearchEvent::Status(
-                    "Ask Mode requires Pro; running standard semantic search.".into(),
-                ))
-                .await;
-        } else if ask_mode_enabled {
+        if ask_mode_enabled {
             let _ = tx
                 .send(SearchEvent::Status(
                     "Ask Mode active: understanding your question.".into(),
@@ -745,16 +680,7 @@ pub async fn search_progressive(
             ProgressiveSearchEngine::with_config_and_pro(lexical, semantic, pro_engine, config);
         let runtime_config = IxosConfig::load();
 
-        // SECURITY: Enforce Pro gating for personal ranking
-        // Only enable personal ranking if user has Pro AND config says enabled
-        let has_pro = pro_available; // This is already computed earlier in the function
-        let personal_ranking_enabled = runtime_config.search.personal_ranking_enabled && has_pro;
-
-        if runtime_config.search.personal_ranking_enabled && !has_pro {
-            tracing::debug!(
-                "Personal ranking config enabled but user lacks Pro entitlement - disabling for this search"
-            );
-        }
+        let personal_ranking_enabled = runtime_config.search.personal_ranking_enabled;
 
         engine
             .secure_ranker_mut()
@@ -784,27 +710,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn resolve_search_mode_downgrades_auto_without_pro() {
-        let mode = resolve_search_mode(Some("auto"), false).expect("mode");
-        assert!(matches!(mode, SearchMode::Flash));
-    }
-
-    #[test]
-    fn resolve_search_mode_rejects_pro_without_pro() {
-        let err = resolve_search_mode(Some("pro"), false).expect_err("expected error");
-        assert!(err.contains("Pro plan required"));
-    }
-
-    #[test]
-    fn resolve_search_mode_keeps_pro_when_available() {
-        let mode = resolve_search_mode(Some("pro"), true).expect("mode");
-        assert!(matches!(mode, SearchMode::Pro));
-    }
-
-    #[test]
-    fn resolve_search_mode_allows_flash_without_pro() {
-        let mode = resolve_search_mode(Some("flash"), false).expect("mode");
-        assert!(matches!(mode, SearchMode::Flash));
+    fn search_modes_do_not_require_an_account() {
+        assert!(matches!(parse_search_mode(Some("auto")), SearchMode::Auto));
+        assert!(matches!(parse_search_mode(Some("pro")), SearchMode::Pro));
+        assert!(matches!(
+            parse_search_mode(Some("flash")),
+            SearchMode::Flash
+        ));
     }
 
     #[test]
@@ -831,15 +743,13 @@ mod tests {
     }
 
     #[test]
-    fn ask_mode_active_uses_auto_intent_detection() {
-        assert!(ask_mode_active(
+    fn ask_mode_uses_intent_and_explicit_selection() {
+        assert!(ask_mode_requested(
             Some("auto"),
-            "where is the release notes?",
-            true
+            "where is the release notes?"
         ));
-        assert!(ask_mode_active(None, "why is search slow?", true));
-        assert!(!ask_mode_active(Some("off"), "why is search slow?", true));
-        assert!(!ask_mode_active(Some("auto"), "why is search slow?", false));
+        assert!(ask_mode_requested(None, "why is search slow?"));
+        assert!(!ask_mode_requested(Some("off"), "why is search slow?"));
     }
 }
 

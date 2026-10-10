@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import { DemoSurface } from '../../../landing/DemoSurface'
 import type { ReactNode } from 'react'
 

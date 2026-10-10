@@ -6,7 +6,7 @@ import { HowItWorksSection } from "@/components/homepage/HowItWorksSection";
 import { UseCasesSection } from "@/components/homepage/UseCasesSection";
 import { FeatureShowcaseSection } from "@/components/homepage/FeatureShowcaseSection";
 import { PrivacyTrustSection } from "@/components/homepage/PrivacyTrustSection";
-import { PricingPreviewSection } from "@/components/homepage/PricingPreviewSection";
+import { OpenSourcePreviewSection } from "@/components/homepage/OpenSourcePreviewSection";
 import { SocialProofSection } from "@/components/homepage/SocialProofSection";
 import { FinalCTASection } from "@/components/homepage/FinalCTASection";
 
@@ -23,7 +23,7 @@ export default function HomePage() {
         <UseCasesSection />
         <FeatureShowcaseSection />
         <PrivacyTrustSection />
-        <PricingPreviewSection />
+        <OpenSourcePreviewSection />
         <SocialProofSection />
         <FinalCTASection />
       </main>

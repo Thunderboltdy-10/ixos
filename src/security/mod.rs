@@ -6,6 +6,7 @@
 
 pub mod crypto;
 pub mod device_identity;
+pub mod local_lock;
 pub mod sandbox;
 pub mod secure_store;
 

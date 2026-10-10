@@ -159,7 +159,7 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
       const stats = await tauri.loadActivityLedger();
       set({ stats });
     } catch (error) {
-      // Expected for free users
+      // Local activity hydration can fail independently of search
       console.debug('Activity ledger not available:', error);
     }
   },

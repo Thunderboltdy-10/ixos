@@ -31,7 +31,17 @@ Current working state, 2026-10-10. Earlier working plans/logs/decisions are pres
 - Bottleneck order: cache dimensions/freshness → discovery/evidence/extraction → trustworthy evaluation/instrumentation → measured optimization.
 - Corrected gate-1 state: 506 core tests pass, six ignored; 48 settings combinations pass. The locked release and expanded real Flash probes pass, including cache stats/clearing/index warmup. See `reports/restoration/GATE1.md`. No new quality/model baseline yet; natural-language self-navigation still misses relevant code in its first five.
 - Next three tasks: remove active payment/account/device-instance restrictions; organize and verify monorepo preparation/builds; validate the evaluation contract/harness before any model or architecture experiments.
+- Gate 1 committed as `6a7ec7f`. Gate 2 is in progress: desktop account/entitlement/single-instance gates and site subscription/control-plane APIs are removed; UI type/build and desktop Rust check pass. Historical loose docs are archived. Actual local envs remain on disk, with account/payment fields removed, and are untracked; public-history remediation still precedes publication. Full workspace tests, site build/visual checks and gate-2 review remain outstanding. No new optimized models or quality baseline yet.
 
 ## Experiment contract being prepared
 
 Primary: code/AI retrieval. Secondary: other agent document tasks. Tertiary: human-style search. Compare models × adaptive passage policies × lexical/semantic/hybrid retrieval × fusion × session intelligence, with conditional exclusions for meaningless combinations. Stage full feasible screening on development data, interaction follow-ups, validation selection, then frozen held-out test. Separate JIT/cached/startup and output-budget measurements. Record raw outputs, source/model/data/config identities, negative results, source-span quality and total context/tool-call cost. Benchmark integrity tests precede lab execution.
+
+## STATE SNAPSHOT — Gate 2 final review
+
+- Gate 1 commit: `6a7ec7f`; Gate 2 implementation is uncommitted. No model/architecture experiments have started.
+- Final workspace tests pass 508 engine tests (six ignored), 15 desktop tests and 48 settings combinations. Focused local-lock tests, site build/typecheck, desktop UI build/typecheck and all 13 revised browser checks pass. Four variant-1 checks pass again after removing the final paid-tier FAQ. Free-access captures were visually inspected.
+- Paid/account/lease paths and the desktop instance restriction are removed. Short application-state/key locks serialize writes without restricting running instances. Concurrent stale state updates still use last-writer-wins.
+- Local envs are retained and Git-excluded; former tracked env files are staged deletions. Historical credentials require revocation/rotation and history preparation before public release.
+- Next: finish artifact/diff review and Gate 2 commit; build and validate the evaluation contract/harness; then perform measured retrieval/model/session experiments.
+- No current held-out quality numbers, optimized-model baseline or Mac runtime verification yet.

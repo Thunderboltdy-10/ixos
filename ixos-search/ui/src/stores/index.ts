@@ -3,7 +3,6 @@ export { useSearchStore } from './searchStore';
 export { useSettingsStore } from './settingsStore';
 export { useStarredStore } from './starredStore';
 export { useStatsStore } from './statsStore';
-export { useAuthStore } from './authStore';
 
 // Search history suggestions
 export type { HistorySuggestion } from './starredStore';

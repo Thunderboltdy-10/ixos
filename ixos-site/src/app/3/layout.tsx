@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth, UserButton } from "@clerk/nextjs";
 import { GridBackground } from "./GridBackground";
 import { ScanBeam } from "./ScanBeam";
 
@@ -18,7 +17,7 @@ function RadarPing({ scanY }: { scanY: number }) {
 
   useEffect(() => {
     let hideTimer: ReturnType<typeof setTimeout>;
-    
+
     function firePing() {
       setPingY(scanY > 5 ? scanY : 50);
       setPingKey((k) => k + 1);
@@ -68,8 +67,7 @@ function RadarPing({ scanY }: { scanY: number }) {
    TOP HUD NAV — Fixed top bar for subpages
    ────────────────────────────────────────────── */
 function HUDNav() {
-  const { isSignedIn } = useAuth();
-  
+
   return (
     <nav
       className="fixed top-0 left-0 right-0 z-50 h-[54px] flex items-center justify-between px-6 md:px-10"
@@ -83,27 +81,12 @@ function HUDNav() {
         <Link href="/3" className="font-mono text-sm font-bold tracking-tighter text-amber-400">IXOS</Link>
         <div className="hidden lg:flex items-center gap-6 text-[10px] font-mono tracking-[0.2em] text-white/30 uppercase">
           <Link href="/3/docs" className="hover:text-amber-400/80 transition-colors">Docs</Link>
-          <Link href="/3/pricing" className="hover:text-amber-400/80 transition-colors">Pricing</Link>
+          <Link href="/3/open-source" className="hover:text-amber-400/80 transition-colors">Open source</Link>
         </div>
       </div>
 
       <div className="flex items-center gap-5">
-        {isSignedIn ? (
-          <>
-            <Link href="/3/account" className="hidden sm:block font-mono text-[10px] tracking-[0.2em] text-white/40 uppercase hover:text-white/80">Account</Link>
-            <UserButton afterSignOutUrl="/" />
-          </>
-        ) : (
-          <>
-            <Link href="/3/signin" className="hidden sm:block font-mono text-[10px] tracking-[0.2em] text-white/40 uppercase hover:text-white/80">Sign In</Link>
-            <Link
-              href="/3/signup"
-              className="px-4 py-1.5 border border-amber-400/20 rounded font-mono text-[10px] tracking-[0.2em] text-amber-400/70 uppercase hover:bg-amber-400/5 transition-all"
-            >
-              Sign Up
-            </Link>
-          </>
-        )}
+
         <Link
           href="/3/download"
           className="px-4 py-1.5 bg-amber-400 text-[#0A0D0F] font-mono font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-amber-300 transition-colors"
@@ -138,9 +121,9 @@ function V3LayoutInner({ children }: { children: React.ReactNode }) {
       `}</style>
 
       {pathname !== "/3" && <HUDNav />}
-      
+
       {/* Background elements */}
-      <GridBackground scanY={scanY} />
+      <GridBackground />
       <ScanBeam onProgress={handleScanProgress} />
       <RadarPing scanY={scanY} />
 

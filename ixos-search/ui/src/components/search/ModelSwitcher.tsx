@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '@clerk/clerk-react';
 import { Beaker, Wand2, ChevronDown, Check, AlertCircle, Loader2, DownloadCloud } from 'lucide-react';
 import { invoke, type InvokeArgs } from '@tauri-apps/api/core';
 import { cn } from '@/lib/utils';
@@ -50,7 +49,6 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps) {
-  const { isSignedIn } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
   const [menuMetrics, setMenuMetrics] = useState<FloatingMenuMetrics | null>(null);
@@ -155,7 +153,7 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
     setIsOpen(false);
     await onChange(model);
 
-    if (model !== currentLoadedModel && isSignedIn) {
+    if (model !== currentLoadedModel) {
       setPreloadingModel(model);
       try {
         await safeInvoke('preload_model', { modelType: model });
@@ -221,14 +219,14 @@ export function ModelSwitcher({ value, onChange, className }: ModelSwitcherProps
       ? status.ixosProV2Available
       : status.ixosFlashV2Available;
 
-    if (!isAvailable || !isSignedIn) return;
+    if (!isAvailable) return;
 
     setPreloadingModel(value);
     safeInvoke('preload_model', { modelType: value })
       .then(() => setCurrentLoadedModel(value))
       .catch((err) => console.warn('Failed to preload model:', err))
       .finally(() => setPreloadingModel(null));
-  }, [status, value, currentLoadedModel, preloadingModel, isSignedIn]);
+  }, [status, value, currentLoadedModel, preloadingModel]);
 
   return (
     <div className={cn('relative', className)}>

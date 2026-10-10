@@ -212,9 +212,6 @@ jobs:
       - name: Build UI
         working-directory: ixos-search/ui
         env:
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
-          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
-          VITE_LEMONSQUEEZY_PRO_VARIANT_ID: ${{ vars.VITE_LEMONSQUEEZY_PRO_VARIANT_ID }}
         run: npm run build
 
       - name: Clean prior Tauri bundle outputs
@@ -224,10 +221,6 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
-          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
-          VITE_LEMONSQUEEZY_PRO_VARIANT_ID: ${{ vars.VITE_LEMONSQUEEZY_PRO_VARIANT_ID }}
-          IXOS_JWT_PUBLIC_KEY: ${{ secrets.IXOS_JWT_PUBLIC_KEY }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:

@@ -27,12 +27,10 @@
 
 pub mod activity_ledger;
 pub mod attestation;
-pub mod capabilities;
 pub mod cli;
 pub mod compliance;
 pub mod daemon;
 pub mod diagnostics;
-pub mod entitlements;
 pub mod instrumentation;
 pub mod integrations;
 pub mod ixos_embed;
@@ -48,7 +46,6 @@ pub mod telemetry;
 pub mod workstreams;
 
 // Re-exports for convenience
-pub use entitlements::{Entitlement, ProStatus};
 pub use ixos_embed::memory_protection::{
     MemoryProtectionConfig, MemoryProtectionError, SecureBuffer, SecureEmbeddingBuffer,
 };

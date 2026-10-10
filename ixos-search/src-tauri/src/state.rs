@@ -6,7 +6,6 @@
 //! - Deep Search mode state
 //! - Cached directory for faster repeated searches
 
-use crate::commands::entitlement_manager::EntitlementManager;
 use ixos_protocol::ixos_embed::{MmapModel2VecEmbedder, ModelType};
 use parking_lot::Mutex;
 use std::collections::HashMap;
@@ -60,8 +59,6 @@ pub struct AppState {
     pub model_cache: Arc<Mutex<HashMap<String, Arc<MmapModel2VecEmbedder>>>>,
     /// Last loaded model type
     pub loaded_model: Arc<Mutex<Option<String>>>,
-    /// Entitlement manager for offline grace + refresh
-    pub entitlement_manager: Arc<Mutex<EntitlementManager>>,
     /// Application data directory for persistence
     pub app_data_dir: PathBuf,
 }
@@ -85,7 +82,6 @@ impl AppState {
             cached_directory: Arc::new(Mutex::new(None)),
             model_cache: Arc::new(Mutex::new(HashMap::new())),
             loaded_model: Arc::new(Mutex::new(None)),
-            entitlement_manager: Arc::new(Mutex::new(EntitlementManager::new())),
             app_data_dir,
         }
     }
@@ -176,6 +172,7 @@ impl AppState {
         }
 
         let model = MmapModel2VecEmbedder::new_with_type(model_type).map_err(|e| e.to_string())?;
+        model.ensure_loaded().map_err(|e| e.to_string())?;
         let model = Arc::new(model);
         self.model_cache.lock().insert(key.clone(), model.clone());
         *self.loaded_model.lock() = Some(key);
@@ -185,8 +182,6 @@ impl AppState {
     pub fn loaded_model(&self) -> Option<String> {
         self.loaded_model.lock().clone()
     }
-
-    // Entitlement and capability management lives in EntitlementManager.
 }
 
 impl Default for AppState {

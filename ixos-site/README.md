@@ -1,36 +1,14 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ixos site workspace
 
-## Getting Started
+The Next.js site is one product in the Ixos monorepo. Run npm commands from the repository root so the local `@ixos/ixos-ui` and `@ixos/ui` packages resolve correctly.
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```sh
+npm ci
+npm run dev --workspace ixos-site
+npm run build --workspace ixos-site
+npm run test:visual --workspace ixos-site
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`src/app/` contains the main site and numbered design variants; `src/components/` contains shared site components; `src/landing/` contains the shared desktop demo surfaces. Legacy account URLs redirect to downloads. The site and desktop no longer require subscriptions or accounts. Optional contact-email configuration is described in `.env.example`; local env values must remain excluded from Git.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Earlier specifications and design notes are preserved in `../docs/archive/site/`. Loose retired source is under `../legacy/site/`. Current restoration evidence is under `../reports/restoration/`. Full product documentation and performance claims will be revised after the engine evaluations.

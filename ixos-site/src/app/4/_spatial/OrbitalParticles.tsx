@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import { useEffect, useRef } from 'react'
 
 // Deterministic particle data — no Math.random() in render or initialization

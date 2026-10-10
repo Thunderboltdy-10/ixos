@@ -14,7 +14,7 @@ export default defineConfig({
     headless: true,
     colorScheme: "dark",
     locale: "en-US",
-    reducedMotion: "reduce",
+    contextOptions: { reducedMotion: "reduce" },
   },
   webServer: {
     command: `npm run build && npm run start -- --hostname ${HOST} --port ${PORT}`,

@@ -1,9 +1,8 @@
-'use client'
+"use client";
 
 import { useState, useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { useAuth, UserButton } from '@clerk/nextjs'
 
 export function IxosNav() {
   const [activeSection, setActiveSection] = useState('')
@@ -11,7 +10,6 @@ export function IxosNav() {
   const [pillState, setPillState] = useState({ left: 0, width: 0, visible: false })
   const containerRef = useRef<HTMLDivElement>(null)
   const linkRefs = useRef<(HTMLElement | null)[]>([])
-  const { isSignedIn, isLoaded } = useAuth()
   const pathname = usePathname() || ''
   const isHomePage = pathname === '/' || pathname === ''
 
@@ -19,7 +17,7 @@ export function IxosNav() {
 
   useEffect(() => {
     if (!isHomePage) return
-    const sections = ['hero', 'how-it-works', 'use-cases', 'features', 'privacy', 'pricing']
+    const sections = ['hero', 'how-it-works', 'use-cases', 'features', 'privacy', 'open-source']
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) setActiveSection(entry.target.id)
@@ -46,9 +44,8 @@ export function IxosNav() {
     { label: 'Product', href: '/#how-it-works', sectionId: 'how-it-works' },
     { label: 'Use Cases', href: '/#use-cases', sectionId: 'use-cases' },
     { label: 'Privacy', href: '/#privacy', sectionId: 'privacy' },
-    { label: 'Pricing', href: '/pricing', sectionId: 'pricing' },
-    { label: 'Ixplorer', href: '/ixplorer', sectionId: '' },
-    { label: 'Docs', href: '/docs', sectionId: '' },
+    { label: 'Open source', href: '/open-source', sectionId: 'open-source' },
+        { label: 'Docs', href: '/docs', sectionId: '' },
     { label: 'Developers', href: '/developers', sectionId: '' },
   ]
 
@@ -125,16 +122,7 @@ export function IxosNav() {
 
         {/* Auth & CTA */}
         <div className="flex items-center gap-3 ml-2">
-          {isLoaded && isSignedIn ? (
-            <UserButton afterSignOutUrl="/" />
-          ) : isLoaded ? (
-            <Link
-              href="/sign-in"
-              className="hidden sm:block px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-white/40 hover:text-white/80 transition-colors rounded-full hover:bg-white/5"
-            >
-              Sign In
-            </Link>
-          ) : null}
+
           <Link
             href="/download"
             className="px-5 py-2 bg-amber-400 text-[#0A0D0F] font-mono font-bold text-[10px] tracking-widest uppercase rounded-full hover:bg-amber-300 transition-all shadow-[0_0_20px_rgba(246,185,76,0.4)] hover:scale-105 active:scale-95"
@@ -176,14 +164,7 @@ export function IxosNav() {
               {link.label}
             </Link>
           ))}
-          {isLoaded && !isSignedIn && (
-            <Link
-              href="/sign-in"
-              className="block px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-widest text-white/50 hover:text-white/90 hover:bg-white/5 rounded-xl transition-colors"
-            >
-              Sign In
-            </Link>
-          )}
+
         </div>
       )}
     </>

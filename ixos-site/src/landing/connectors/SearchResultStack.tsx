@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -28,7 +28,7 @@ export const SearchResultStackConnector: ConnectorComponent = ({
   const [phase, setPhase] = useState<'idle' | 'typing' | 'searching' | 'streaming'>('idle')
   const [typedQuery, setTypedQuery] = useState('')
   const [scanLines, setScanLines] = useState<{ id: number; path: string; x: number; y: number; speed: number }[]>([])
-  
+
   const queryToType = 'ixos search "privacy-first file search" --dir ./project --progressive'
   const maxSections = sectionMap.length
 
@@ -43,8 +43,8 @@ export const SearchResultStackConnector: ConnectorComponent = ({
     if (revealedCount > prevRevealed.current) {
       // Find the y position of the newly revealed section
       const newlyRevealed = sections[revealedCount - 1]
-      if (newlyRevealed && newlyRevealed.node && typeof newlyRevealed.node.getBoundingClientRect === 'function') {
-        const y = newlyRevealed.node.getBoundingClientRect().top + window.scrollY
+      if (newlyRevealed && newlyRevealed.element && typeof newlyRevealed.element.getBoundingClientRect === 'function') {
+        const y = newlyRevealed.element.getBoundingClientRect().top + window.scrollY
         setPulses(p => [...p, { id: Date.now(), y }])
         setTimeout(() => {
           setPulses(p => p.slice(1))
@@ -101,7 +101,7 @@ export const SearchResultStackConnector: ConnectorComponent = ({
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[100] font-mono">
-      
+
       {/* Cinematic Pulses on New Result */}
       <AnimatePresence>
         {pulses.map(pulse => (
@@ -133,7 +133,7 @@ export const SearchResultStackConnector: ConnectorComponent = ({
       </AnimatePresence>
 
       {/* Top Terminal Strip */}
-      <div 
+      <div
         className="absolute top-[62px] left-0 right-0 h-14 bg-gradient-to-b from-[#0C0E10] to-[#0C0E10]/80 backdrop-blur-xl border-b border-cyan-500/20 flex items-center px-8"
         style={{ zIndex: 100 }}
       >
@@ -142,14 +142,14 @@ export const SearchResultStackConnector: ConnectorComponent = ({
           <span className="text-[#F3F5F7] text-sm tracking-wide">
             {typedQuery}
             {phase !== 'streaming' && (
-              <motion.span 
-                animate={{ opacity: [1, 0] }} 
+              <motion.span
+                animate={{ opacity: [1, 0] }}
                 transition={{ repeat: Infinity, duration: 0.8 }}
                 className="inline-block w-2 h-4 bg-cyan-400 ml-1 align-middle shadow-[0_0_8px_rgba(34,211,238,0.8)]"
               />
             )}
           </span>
-          
+
           <div className="ml-auto flex items-center gap-4">
             {phase === 'searching' && (
               <span className="text-cyan-400 text-xs uppercase tracking-[0.2em] animate-pulse font-bold flex items-center gap-2">
@@ -158,7 +158,7 @@ export const SearchResultStackConnector: ConnectorComponent = ({
               </span>
             )}
             {phase === 'streaming' && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 className="flex items-center gap-3 bg-cyan-500/10 px-3 py-1.5 rounded border border-cyan-500/30"
               >

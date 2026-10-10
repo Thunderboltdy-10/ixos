@@ -7,6 +7,7 @@ resolver = "2"
 name = "ixos-protocol"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.89"
 authors = ["Ixos Team"]
 description = "Privacy-first semantic file search with cross-platform caching"
 license = "MIT OR Apache-2.0"

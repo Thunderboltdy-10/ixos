@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useEffect, useState } from "react";
 import { Copy, Check, Monitor, Terminal } from "lucide-react";
@@ -295,7 +295,7 @@ export default function DownloadPage() {
             <div>Both include the VS Code extension manifest.</div>
           </div>
           <a
-            href="/pricing"
+            href="/open-source"
             className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.18em] text-amber-400/55 hover:text-amber-400/85 transition-colors"
           >
             Compare plans →

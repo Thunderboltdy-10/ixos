@@ -8,21 +8,8 @@
 use crate::state::AppState;
 use ixos_protocol::cli::IxosConfig;
 use ixos_protocol::ixos_rank::personal_ranker;
-use ixos_protocol::security::DeviceIdentity;
 use ixos_protocol::storage::personal_ranking::{get_personal_signals, set_personal_signals};
-use std::time::SystemTime;
 use tauri::{AppHandle, Manager, State};
-
-/// Check if the user has an active Pro entitlement
-///
-/// This should be called before any Pro-gated feature to ensure
-/// the user is actually entitled to use it.
-pub(crate) async fn check_pro_status(state: &State<'_, AppState>) -> Result<bool, String> {
-    let device = DeviceIdentity::load_or_create().map_err(|e| e.to_string())?;
-    let mut manager = state.entitlement_manager.lock();
-    let status = manager.pro_status(SystemTime::now(), &device);
-    Ok(status.is_enabled())
-}
 
 /// Show the search overlay window
 #[tauri::command]
@@ -71,31 +58,15 @@ pub async fn open_file(path: String, state: State<'_, AppState>) -> Result<(), S
             .map_err(|e| e.to_string())?;
     }
 
-    // Personal ranking learning updates are local-only and disabled in journalist mode.
-    // CRITICAL: Also requires active Pro entitlement - check server-side to prevent bypass
-    if !state.is_journalist_mode() {
-        let cfg = IxosConfig::load();
-        // SECURITY: Verify Pro status server-side before applying personal ranking
-        // This prevents users from keeping personal_ranking_enabled=true in config after Pro expires
-        let has_pro = check_pro_status(&state).await.unwrap_or(false);
-
-        if cfg.search.personal_ranking_enabled && has_pro {
-            let file_path = std::path::Path::new(&path);
-            if file_path.exists() {
-                let current = get_personal_signals(file_path)
-                    .unwrap_or(None)
-                    .unwrap_or_default();
-                let updated =
-                    personal_ranker::update_on_open(current, personal_ranker::now_unix_s());
-                let _ = set_personal_signals(file_path, updated);
-            }
-        } else if cfg.search.personal_ranking_enabled && !has_pro {
-            // Config says enabled but user doesn't have Pro - this shouldn't happen
-            // Log it for debugging but don't apply ranking
-            tracing::debug!(
-                "Personal ranking config enabled but user lacks Pro entitlement - skipping update for {}",
-                path
-            );
+    // Opening a file is local feedback; persistence follows the user's settings.
+    if !state.is_journalist_mode() && IxosConfig::load().search.personal_ranking_enabled {
+        let file_path = std::path::Path::new(&path);
+        if file_path.exists() {
+            let current = get_personal_signals(file_path)
+                .unwrap_or(None)
+                .unwrap_or_default();
+            let updated = personal_ranker::update_on_open(current, personal_ranker::now_unix_s());
+            let _ = set_personal_signals(file_path, updated);
         }
     }
 
@@ -285,16 +256,6 @@ pub async fn preload_model(
     model_type: String,
 ) -> Result<String, String> {
     use ixos_protocol::ixos_embed::ModelType;
-
-    // Check authentication
-    if state
-        .entitlement_manager
-        .lock()
-        .entitlement_token()
-        .is_none()
-    {
-        return Err("Authentication required to preload models".to_string());
-    }
 
     let normalized = model_type.trim().to_lowercase();
     if normalized == "ixos-pro-v2" || normalized == "pro-v2" || normalized == "pro" {
@@ -622,4 +583,17 @@ pub async fn check_and_download_models(app: AppHandle) -> Result<bool, String> {
             Err(e)
         }
     }
+}
+
+/// Open a documentation or source link in the system browser.
+#[tauri::command]
+pub async fn open_external_url(app: AppHandle, url: String) -> Result<(), String> {
+    use tauri_plugin_opener::OpenerExt;
+    let parsed = tauri::Url::parse(&url).map_err(|e| format!("Invalid URL: {e}"))?;
+    if !matches!(parsed.scheme(), "https" | "http") {
+        return Err("External links must use HTTP or HTTPS".into());
+    }
+    app.opener()
+        .open_url(parsed.as_str(), None::<&str>)
+        .map_err(|e| e.to_string())
 }

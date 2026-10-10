@@ -1,7 +1,7 @@
 /**
  * Today Store - Phase 2 Second Brain
  *
- * Manages state for the Today Tab (default view for Pro users).
+ * Manages state for the Today Tab.
  * Combines data from activity ledger and workstreams.
  */
 

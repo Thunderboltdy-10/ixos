@@ -1,6 +1,6 @@
 //! Workstreams command handlers (Phase 2 - Second Brain)
 //!
-//! Provides workstream management for Pro "Second Brain" features:
+//! Provides workstream management for local "Second Brain" features:
 //! - Auto-clustered work sessions
 //! - Manual workstream creation
 //! - Merge, rename, delete operations
@@ -14,7 +14,6 @@ use tauri::{Manager, State};
 
 use super::activity::ActivityState;
 use crate::state::AppState;
-use ixos_protocol::capabilities::Capability;
 use ixos_protocol::security::device_identity::DeviceIdentity;
 
 use chacha20poly1305::aead::{rand_core::RngCore, Aead, KeyInit, OsRng};
@@ -79,6 +78,9 @@ fn persist_workstreams_to_disk(
     fs::create_dir_all(&config_dir)
         .map_err(|e| format!("Failed to create config directory: {}", e))?;
     let storage_path = config_dir.join(WORKSTREAMS_FILE_ENC);
+    let _guard =
+        ixos_protocol::security::local_lock::exclusive(&config_dir.join("workstreams.lock"))
+            .map_err(|e| e.to_string())?;
     fs::write(&storage_path, encrypted)
         .map_err(|e| format!("Failed to save workstreams: {}", e))?;
 
@@ -97,7 +99,7 @@ fn persist_workstreams_to_disk(
 /// State wrapper for workstreams
 pub struct WorkstreamsState {
     pub manager: Mutex<WorkstreamManager>,
-    /// Whether persistence is enabled (Pro only)
+    /// Whether persistence is enabled (local storage)
     pub persist_enabled: Mutex<bool>,
 }
 
@@ -105,18 +107,18 @@ impl Default for WorkstreamsState {
     fn default() -> Self {
         Self {
             manager: Mutex::new(WorkstreamManager::new()),
-            persist_enabled: Mutex::new(false),
+            persist_enabled: Mutex::new(true),
         }
     }
 }
 
 impl WorkstreamsState {
-    /// Enable persistence (called when Pro entitlement is verified)
+    /// Enable persistence (local opt-in storage)
     pub fn enable_persistence(&self) {
         *self.persist_enabled.lock() = true;
     }
 
-    /// Disable persistence (free users)
+    /// Disable persistence
     #[allow(dead_code)]
     pub fn disable_persistence(&self) {
         *self.persist_enabled.lock() = false;
@@ -263,14 +265,7 @@ pub fn list_workstreams(
     limit: Option<usize>,
     offset: Option<usize>,
     workstreams_state: State<'_, WorkstreamsState>,
-    app_state: State<'_, AppState>,
 ) -> Result<Vec<WorkstreamPayload>, String> {
-    // Check Pro capability
-    let manager = app_state.entitlement_manager.lock();
-    if !manager.capabilities().has(Capability::TodayTab) {
-        return Err("Pro capability required for workstreams".into());
-    }
-
     let ws_manager = workstreams_state.manager.lock();
     let workstreams = ws_manager.list(limit, offset);
 
@@ -283,14 +278,7 @@ pub fn get_workstream(
     id: String,
     graph_limit: Option<usize>,
     workstreams_state: State<'_, WorkstreamsState>,
-    app_state: State<'_, AppState>,
 ) -> Result<WorkstreamDetailPayload, String> {
-    // Check Pro capability
-    let manager = app_state.entitlement_manager.lock();
-    if !manager.capabilities().has(Capability::TodayTab) {
-        return Err("Pro capability required for workstreams".into());
-    }
-
     let ws_manager = workstreams_state.manager.lock();
     let workstream = ws_manager
         .get(&id)
@@ -321,12 +309,6 @@ pub fn create_workstream(
     activity_state: State<'_, ActivityState>,
     app_state: State<'_, AppState>,
 ) -> Result<WorkstreamPayload, String> {
-    // Check Pro capability
-    let manager = app_state.entitlement_manager.lock();
-    if !manager.capabilities().has(Capability::TodayTab) {
-        return Err("Pro capability required for workstreams".into());
-    }
-
     let mut workstream = if let Some(event_ids) = request.event_ids.clone() {
         let event_id_set: HashSet<String> = event_ids.into_iter().collect();
         let ledger = activity_state.ledger.lock();
@@ -375,12 +357,6 @@ pub fn rename_workstream(
     workstreams_state: State<'_, WorkstreamsState>,
     app_state: State<'_, AppState>,
 ) -> Result<bool, String> {
-    // Check Pro capability
-    let manager = app_state.entitlement_manager.lock();
-    if !manager.capabilities().has(Capability::TodayTab) {
-        return Err("Pro capability required for workstreams".into());
-    }
-
     let mut ws_manager = workstreams_state.manager.lock();
     let renamed = ws_manager.rename(&id, new_name);
     drop(ws_manager);
@@ -400,12 +376,6 @@ pub fn merge_workstreams(
     workstreams_state: State<'_, WorkstreamsState>,
     app_state: State<'_, AppState>,
 ) -> Result<Option<String>, String> {
-    // Check Pro capability
-    let manager = app_state.entitlement_manager.lock();
-    if !manager.capabilities().has(Capability::TodayTab) {
-        return Err("Pro capability required for workstreams".into());
-    }
-
     let mut ws_manager = workstreams_state.manager.lock();
     let merged = ws_manager.merge(&ids);
     drop(ws_manager);
@@ -425,12 +395,6 @@ pub fn delete_workstream(
     workstreams_state: State<'_, WorkstreamsState>,
     app_state: State<'_, AppState>,
 ) -> Result<bool, String> {
-    // Check Pro capability
-    let manager = app_state.entitlement_manager.lock();
-    if !manager.capabilities().has(Capability::TodayTab) {
-        return Err("Pro capability required for workstreams".into());
-    }
-
     let mut ws_manager = workstreams_state.manager.lock();
     let deleted = ws_manager.delete(&id);
     drop(ws_manager);
@@ -451,13 +415,6 @@ pub fn recluster_workstreams(
     activity_state: State<'_, ActivityState>,
     app_state: State<'_, AppState>,
 ) -> Result<usize, String> {
-    // Check Pro capability
-    let manager = app_state.entitlement_manager.lock();
-    if !manager.capabilities().has(Capability::TodayTab) {
-        return Err("Pro capability required for workstreams".into());
-    }
-    drop(manager);
-
     // Get all events from activity ledger
     let ledger = activity_state.ledger.lock();
     let events = ledger.export_events();
@@ -488,12 +445,6 @@ pub fn pin_workstream(
     workstreams_state: State<'_, WorkstreamsState>,
     app_state: State<'_, AppState>,
 ) -> Result<bool, String> {
-    // Check Pro capability
-    let manager = app_state.entitlement_manager.lock();
-    if !manager.capabilities().has(Capability::TodayTab) {
-        return Err("Pro capability required for workstreams".into());
-    }
-
     let mut ws_manager = workstreams_state.manager.lock();
 
     if let Some(ws) = ws_manager.get_mut(&id) {
@@ -537,7 +488,7 @@ pub struct WorkstreamsStatsPayload {
     pub is_dirty: bool,
 }
 
-/// Save workstreams to encrypted storage (Pro only)
+/// Save workstreams to encrypted storage (local storage)
 #[tauri::command]
 pub async fn save_workstreams(
     app: tauri::AppHandle,
@@ -547,13 +498,6 @@ pub async fn save_workstreams(
     if app_state.is_journalist_mode() {
         return Ok(());
     }
-
-    // Check Pro capability
-    let manager = app_state.entitlement_manager.lock();
-    if !manager.capabilities().has(Capability::TodayTab) {
-        return Err("Pro capability required for workstream persistence".into());
-    }
-    drop(manager);
 
     if !workstreams_state.is_persistence_enabled() {
         return Err("Workstream persistence not enabled".into());
@@ -581,7 +525,7 @@ pub async fn autosave_if_dirty(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// Load workstreams from encrypted storage (Pro only)
+/// Load workstreams from encrypted storage (local storage)
 #[tauri::command]
 pub async fn load_workstreams(
     app: tauri::AppHandle,
@@ -601,19 +545,15 @@ pub async fn load_workstreams(
         });
     }
 
-    // Check Pro capability
-    let manager = app_state.entitlement_manager.lock();
-    if !manager.capabilities().has(Capability::TodayTab) {
-        return Err("Pro capability required for workstream persistence".into());
-    }
-    drop(manager);
-
     // Enable persistence for the session
     workstreams_state.enable_persistence();
 
     let config_dir = get_config_dir(&app)?;
     let storage_path = config_dir.join(WORKSTREAMS_FILE_ENC);
     let legacy_path = config_dir.join(WORKSTREAMS_FILE_JSON_LEGACY);
+    let _guard =
+        ixos_protocol::security::local_lock::exclusive(&config_dir.join("workstreams.lock"))
+            .map_err(|e| e.to_string())?;
 
     // Try to load existing workstreams
     if storage_path.exists() {

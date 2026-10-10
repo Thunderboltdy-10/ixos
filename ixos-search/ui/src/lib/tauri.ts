@@ -4,7 +4,6 @@ import type {
   SearchOptions,
   SearchEvent,
   ConsentStatus,
-  ProStatus,
   ModelStatus,
   DoctorReport,
   PersonalSignals,
@@ -190,12 +189,6 @@ export async function cacheClear(directory?: string | null): Promise<number> {
   return await invoke('cache_clear', { directory: directory ?? null });
 }
 
-/**
- * Get local device identifier.
- */
-export async function getDeviceId(): Promise<string> {
-  return await invoke('get_device_id');
-}
 
 /**
  * Run backend doctor checks.
@@ -216,27 +209,6 @@ export async function getShortcutConfig(): Promise<import('./types').ShortcutCon
  */
 export async function setShortcutConfig(config: import('./types').ShortcutConfig): Promise<void> {
   await invoke('set_shortcut_config', { config });
-}
-
-/**
- * Set the entitlement token in the Tauri backend
- */
-export async function setEntitlementToken(token: string): Promise<void> {
-  await invoke('set_entitlement_token', { token });
-}
-
-/**
- * Set entitlement verification public key at runtime (release fallback).
- */
-export async function setEntitlementPublicKey(publicKey: string): Promise<void> {
-  await invoke('set_entitlement_public_key', { publicKey });
-}
-
-/**
- * Get current Pro status from the backend
- */
-export async function getProStatus(): Promise<ProStatus> {
-  return await invoke('get_pro_status');
 }
 
 /**
@@ -271,32 +243,7 @@ export async function resetLearning(directory: string): Promise<number> {
 }
 
 /**
- * Open the Lemon Squeezy checkout in an in-app window
- */
-export async function openCheckout(
-  variantId: string,
-  userId: string,
-  userEmail?: string,
-  options?: {
-    pricingUrl?: string;
-    checkoutUrlTemplate?: string;
-    successUrl?: string;
-    cancelUrl?: string;
-  }
-): Promise<void> {
-  await invoke('open_checkout', {
-    variant_id: variantId,
-    user_id: userId,
-    user_email: userEmail,
-    pricing_url: options?.pricingUrl,
-    checkout_url_template: options?.checkoutUrlTemplate,
-    success_url: options?.successUrl,
-    cancel_url: options?.cancelUrl,
-  });
-}
-
-/**
- * Open an external URL inside a dedicated in-app window
+ * Open an HTTP(S) link in the system browser
  */
 export async function openExternalUrl(url: string, title?: string, label?: string): Promise<void> {
   await invoke('open_external_url', { url, title, label });
@@ -369,7 +316,7 @@ export async function getResumptionData(
 }
 
 /**
- * Get Pro move recommendations inferred from repeated search/open behavior.
+ * Get local move recommendations inferred from repeated search/open behavior.
  */
 export async function getMoveRecommendations(
   limit?: number,
@@ -393,14 +340,14 @@ export async function getActivityStats(): Promise<ActivityStats> {
 }
 
 /**
- * Save activity ledger to encrypted storage (Pro only)
+ * Save activity ledger to local encrypted storage
  */
 export async function saveActivityLedger(): Promise<void> {
   await invoke('save_activity_ledger');
 }
 
 /**
- * Load activity ledger from encrypted storage (Pro only)
+ * Load activity ledger from local encrypted storage
  */
 export async function loadActivityLedger(): Promise<ActivityStats> {
   return await invoke('load_activity_ledger');
@@ -505,14 +452,14 @@ export async function getWorkstreamsStats(): Promise<WorkstreamsStats> {
 }
 
 /**
- * Save workstreams to encrypted storage (Pro only)
+ * Save workstreams to local encrypted storage
  */
 export async function saveWorkstreams(): Promise<void> {
   await invoke('save_workstreams');
 }
 
 /**
- * Load workstreams from encrypted storage (Pro only)
+ * Load workstreams from local encrypted storage
  */
 export async function loadWorkstreams(): Promise<WorkstreamsStats> {
   return await invoke('load_workstreams');

@@ -110,6 +110,9 @@ def main():
     config_hash = canonical_hash(config_identity)
     if args.selection:
         selection = json.loads(args.selection.read_text(encoding="utf-8"))
+        if selection.get('suite') == 'repoqa-heldout-v1':
+            from eval.selection import checked_bound_selection
+            checked_bound_selection(selection)
         if config_hash not in selection["config_hashes"] or any(d.fingerprint not in selection["dataset_hashes"] for d in datasets):
             parser.error("Run identity is absent from the frozen selection record")
         if args.backend=='ixos' and digest(args.binary.read_bytes())!=selection.get('binary_sha256'):
@@ -119,6 +122,8 @@ def main():
         (args.output/name).write_text(json.dumps(value, indent=2, ensure_ascii=False), encoding="utf-8")
     provenance = {"argv": sys.argv, "config": config_identity, "config_sha256": config_hash, "datasets": [{"id":d.id,"sha256":d.fingerprint,"sources":len(d.sources),"provenance":d.provenance} for d in datasets], "dataset_load_ms": dataset_load_ms, "model": model, "binary_sha256": digest(args.binary.read_bytes()) if args.backend=="ixos" else None, "git_head": subprocess.check_output(["git","rev-parse","HEAD"], text=True).strip(), "dirty_diff_sha256": digest(subprocess.check_output(["git","diff","HEAD","--"])), "harness_sha256": canonical_hash({p.as_posix():digest(p.read_bytes()) for p in sorted(Path("eval").glob("*.py"))}), "platform": platform.platform(), "machine": platform.machine(), "processor": platform.processor(), "logical_cpus": os.cpu_count(), "python": sys.version, "tokenizer": {"name":"cl100k_base", "package":"tiktoken", "version":importlib.metadata.version("tiktoken")}, "timing_condition": "fresh CLI process" if args.backend=="ixos" else ("fresh ripgrep process + ranked source windows from loaded corpus" if args.backend=="rg" else "persistent in-memory BM25 query"), "seed":args.seed, "repetitions":args.repetitions, "status":"running"}
     provenance.update(available_split_queries=original_query_count, selected_queries=len(selected), exploratory_sample=args.sample)
+    if args.selection:
+        provenance['selection_sha256'] = canonical_hash(selection)
     provenance['source_snapshot']=snapshot(args.output,args.binary if args.backend=='ixos' else None)
     write("provenance.json", provenance)
     corpus_indexes = {d.id: BM25(d) for d in datasets} if args.backend=="bm25" else {}

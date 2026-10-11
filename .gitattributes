@@ -3,3 +3,11 @@ reports/** -text
 docs/archive/pre-restoration/** -text
 legacy/release-workflows/** -text
 legacy/tools/run_settings_matrix.py -text
+
+# Frozen evaluator hashes cover exact bytes, including older CRLF/mixed files.
+# Declare checkout endings so a fresh clone reproduces the measured harness.
+/eval/*.py text eol=lf
+/eval/evidence.py text eol=crlf
+/eval/lexical.py text eol=crlf
+/eval/retrieval.py text eol=crlf
+/eval/test_compress_model.py -text !eol

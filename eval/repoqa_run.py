@@ -15,9 +15,16 @@ from eval.contract import ContractError, load_dataset, paired_family_difference
 BACKENDS = {'hybrid': 'ixos', 'lexical': 'ixos', 'bm25': 'bm25', 'rg': 'rg'}
 
 
-def checked_preparation(receipt):
+def checked_preparation(receipt, selection=None):
+    if receipt.get('split') == 'test':
+        from eval.selection import checked_bound_selection
+        if not selection:
+            raise ContractError('Test replay requires the frozen bound selection')
+        _, bound_preparation = checked_bound_selection(selection)
+        if bound_preparation != receipt:
+            raise ContractError('Test preparation differs from the bound selection')
     families = receipt.get('families', [])
-    if (receipt.get('status') != 'passed' or receipt.get('split') not in {'dev', 'validation'}
+    if (receipt.get('status') != 'passed' or receipt.get('split') not in {'dev', 'validation', 'test'}
             or len(families) != receipt.get('planned_families') or not families
             or any(row.get('status') != 'passed' or row.get('queries') != 10 for row in families)
             or len({row['repository'] for row in families}) != len(families)):

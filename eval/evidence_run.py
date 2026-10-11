@@ -12,7 +12,7 @@ import time
 
 from eval.anchor_run import checked_reference, frozen_input
 from eval.artifacts import artifact_identity
-from eval.contract import ContractError, cluster_mean_ci, digest, load_dataset, paired_family_difference, score_query
+from eval.contract import ContractError, canonical_hash, cluster_mean_ci, digest, load_dataset, paired_family_difference, score_query
 from eval.provenance import snapshot
 from eval.repoqa_run import checked_preparation
 from eval.trajectory import POLICIES, Task, grep_request, read_requests, score_steps, search_request
@@ -32,11 +32,13 @@ def main():
     for name in ['preparation', 'control', 'candidate', 'binary', 'model-path', 'output', 'receipt']:
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--policy', choices=list(POLICIES), default='top3-cue')
+    parser.add_argument('--selection', type=Path, help='Bound prospective selection required for held-out replay')
     args = parser.parse_args()
     if args.output.exists() or args.receipt.exists():
         parser.error('Use new output and receipt paths')
     preparation = json.loads(args.preparation.read_text(encoding='utf-8'))
-    families = checked_preparation(preparation)
+    selection = json.loads(args.selection.read_text(encoding='utf-8')) if args.selection else None
+    families = checked_preparation(preparation, selection)
     datasets = [load_dataset(Path(row['manifest']), Path(row['root'])) for row in families]
     model = artifact_identity(args.model_path)
     control = checked_reference(args.control, preparation, datasets, model, args.binary)
@@ -50,6 +52,11 @@ def main():
     config = args.output / 'isolated-config.toml'
     config.write_text('[retrieval]\nsession="off"\n', encoding='utf-8')
     policy = POLICIES[args.policy]
+    if selection:
+        if (canonical_hash(policy) != selection.get('trajectory_policy_sha256')
+                or control['config_sha256'] != canonical_hash(selection['recipes']['hybrid'])
+                or candidate['config_sha256'] != canonical_hash(selection['recipes']['bounded-rerank'])):
+            raise ContractError('Test evidence replay differs from the frozen methods/policy')
     provenance = {'status': 'running', 'binary_sha256': control['binary_sha256'], 'model': model,
                   'plan_sha256': preparation['plan_sha256'], 'policy': policy,
                   'control_provenance_sha256': digest((args.control / 'provenance.json').read_bytes()),
@@ -57,6 +64,9 @@ def main():
                   'source_snapshot': snapshot(args.output, args.binary),
                   'condition': 'Recorded actual fresh CLI/JIT searches plus actual fresh model-free read/grep calls; diagnostic stderr and canonical request tokens counted. One search repetition is descriptive timing, not a stable latency estimate. No lab-vector reimplementation.',
                   'limitations': 'Complete dev/validation supplied-source RepoQA families, inherited generated labels and unknown pretraining overlap. Gold-blind fixed schedule; no autonomous reasoning, official syntax score or product superiority.'}
+    if selection:
+        provenance.update(selection_sha256=canonical_hash(selection), split='test',
+                          limitations='Frozen prospective repository families/recipes; inherited generated labels and unknown pretraining overlap. Gold-blind fixed schedule, no autonomous reasoning or official syntax score/product comparison.')
     def write_state():
         (args.output / 'provenance.json').write_text(json.dumps(provenance, indent=2) + '\n', encoding='utf-8')
     records = []

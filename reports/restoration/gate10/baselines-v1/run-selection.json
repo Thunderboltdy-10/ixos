@@ -1,0 +1,150 @@
+{
+  "schema": 1,
+  "suite": "repoqa-heldout-v1",
+  "plan_sha256": "4a9a1ebdf425f648b08f4257f3a391afb07c8206d81556743dd7b325d5a5b1b1",
+  "binary_sha256": "9596b928852289d5b3e4e8bd1c3e70bf397be9ed38b8455143e8bba679a3d351",
+  "models": [
+    {
+      "path": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+      "files": {
+        "model.safetensors": "75cf7a6c2171b230ad19b1e7d8e0b1aee86da5a02af8e7cacedd9921d227623c",
+        "tokenizer.json": "936b2d026b9e81fb683eab537ea37c5a1a65a4d02ad9cb92ce269fb8bc561ebf",
+        "config.json": "148e5691a6fcc553437156859701fba017a1ba5d340b170f17e0f3668fb861a7"
+      },
+      "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+      "file_bytes": 33514284,
+      "tokenizer_settings": {
+        "truncation": null,
+        "padding": null
+      }
+    }
+  ],
+  "model_fingerprints": [
+    "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972"
+  ],
+  "recipes": {
+    "hybrid": {
+      "backend": "ixos",
+      "cache": "jit",
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 6000,
+      "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+      "legacy_mode": null,
+      "retrieval": "hybrid",
+      "representation": "intro-uniform",
+      "io_workers": 4,
+      "typo_correction": false,
+      "output_contract": "bounded-rows-v2"
+    },
+    "bounded-rerank": {
+      "backend": "ixos",
+      "cache": "jit",
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 6000,
+      "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+      "legacy_mode": null,
+      "retrieval": "hybrid",
+      "representation": "intro-uniform",
+      "io_workers": 4,
+      "typo_correction": false,
+      "output_contract": "bounded-rows-v2",
+      "evidence_policy": "bounded-rerank"
+    },
+    "lexical": {
+      "backend": "ixos",
+      "cache": "jit",
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 6000,
+      "model_fingerprint": null,
+      "legacy_mode": null,
+      "retrieval": "lexical",
+      "representation": "intro-uniform",
+      "io_workers": 4,
+      "typo_correction": false,
+      "output_contract": "bounded-rows-v2"
+    },
+    "bm25": {
+      "backend": "bm25",
+      "cache": "jit",
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 6000,
+      "model_fingerprint": null,
+      "legacy_mode": null
+    },
+    "rg": {
+      "backend": "rg",
+      "cache": "jit",
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 6000,
+      "model_fingerprint": null,
+      "legacy_mode": null
+    }
+  },
+  "config_hashes": [
+    "12adfceb317c09606461d7111099d2669a0bd54d30e1341cb4716194fe70a8a9",
+    "38d3717259051da68f186b7a71ddc2da6ab7bf7739471484430e4d44f791c6b3",
+    "a8bbf282220d58d13293a7c98a8be8263b34944dafe00a94aa1a62504e6b2281",
+    "a06731122aadce350db33a8b4684f5af00a475156ccd323b32a8b5a055175cbf",
+    "f6ff1767ed7a2b6b90b817aad783c56f795b4146178d7c44332096e932a3857b"
+  ],
+  "harness_sha256": "95afba09dd7c77e0fc56ed4e922d508116f701bb679f52c0844ed7725fc14297",
+  "trajectory_policy": {
+    "id": "inspect-top3-inline-cue-top2-v1",
+    "search_limit": 10,
+    "context": 2,
+    "response_bytes": 6000,
+    "read_lines": 61,
+    "search_reads": 3,
+    "grep_limit": 10,
+    "grep_reads": 2,
+    "max_calls": 7,
+    "cue": "First single-line inline-backtick identifier/option, length3..80, outside fenced blocks; exact case-sensitive literal.",
+    "reads": "Ranked returned files/anchors only; center requested61-line window on the shown interval. File-only results begin at line1. Skip fully covered read intervals, clipped at EOF only when a previous read reported it.",
+    "feedback": "None. Returned/inspected does not imply usefulness or acceptance.",
+    "stopping": "Fixed schedule/limits only. Never use annotation overlap or success to stop."
+  },
+  "trajectory_policy_sha256": "fef4ef10256d338e5f81c6dfe802a224634a39101a348242facdb0628f74e8b9",
+  "test_families": 26,
+  "test_queries": 260,
+  "selection_git_head": "0e93febfa3636d02dbc26ee89e89076020360115",
+  "decision": "Prospective test of unchanged hybrid/global-line and opt-in bounded-rerank, with lexical/BM25/ranked-rg file controls and identical gold-blind follow-up schedule. Preserve global-line default regardless of this test; no further model/threshold/passage/fusion tuning from reserved targets.",
+  "condition": "One fresh-process/JIT repetition per method. Prepared BM25 and fresh ranked rg with loaded windows differ in timing. Generated descriptions, unknown pretraining overlap; line/rank metrics, not official RepoQA syntax leaderboard, autonomous success or commercial product superiority.",
+  "freeze_boundary": "Recipes/model/binary/evaluator/policy frozen before preparing descriptions or target coordinates for the 26 reserved families. Dataset fingerprints will be bound from complete preparation without changing any recipe.",
+  "dataset_hashes": [
+    "10ebd88da966780b13d92ed1f229040874d4bda074fbaabd0a0f7a4f64a63630",
+    "22e0691c91bfcc296f88f88d7816975b2c48570c899476d5a0a638c30abc7b82",
+    "80564613a2d67a16d0bbc58153cba487c10b56cb6ed1490054192b09989f73ea",
+    "ed4bc26f87138fbd3a15dc659dffe0dee5ec86e85298f8f9bd1a070cc1687731",
+    "21b0d48eb31a76b4ca9a32a3ef674ea4271229bfd58a4502b4e652499c8ea052",
+    "8d09c41960d27c31b157c2a11565dc07feaa58577d7b444252d7579c2cd01e83",
+    "07eac39db9267ccea0037072049b1d16397be9411bc0bd82a08fc803f2bb0d02",
+    "86421e940906c8ed66af462642262fe7382069252bf911311fbe9c7d6a77e894",
+    "be31072de8dedc9e377ae2faaccddfadb7735123230ccc12d7d6959bea4c8f20",
+    "aed0d2cf5cfe419474f63fce6f8c4459a261a807a2ff986bf10ae9557ef2637e",
+    "015c197184a78528a5b2421f96f04df52bb315985f27653af7e957ccff4396b1",
+    "f8e6955811fc7ba9d3bed74e00d0df50ca1ce0300c555b7fabe1d885cfa64b43",
+    "80bac013a0527be80213e610a135e635b036e8ef5a6a9198dd9c9caaff709ba5",
+    "6f0d72d5d358f999fede6d1dbdcfa70350b84aed42b1643e02c24c814e27ac34",
+    "5737c0859b74fc746c815fa47607838fafe2687c1dcfeb273f141b7da953f873",
+    "582c0d453b2ca7976bbc4be239d8ed958b005beeac08520c97d407d3f0a90dec",
+    "bed9f6fb3b2f0628e321cb863ea91ca75f0040c619c4ed317e169ac692c0fa1e",
+    "74d890696e7ad61208de08c79cdaa004472b666b23f66a4b6e4e3705d33ab249",
+    "0f0697bc1550695975d78c50afd772b4303dc46678a2f2e47ce977cc26d55556",
+    "bf8b00b6b07af3482fdca4a2078f8ba3a9590211528b2eeafe13165afdece637",
+    "921fab1cb1dfa61197f71b7ac4a05ad4d41659fba93c1f0735258ed575145b24",
+    "74736440ae7112c773f4c2041aa100d7830a8ae65b99bac5d5b5a535c37ee35b",
+    "54723ef821288cb909bcd68d7d6c9d54c9bf2f5c8fe53c722b313ef908882179",
+    "3d9347e777781d977aa26480f4e1b7aeabb3e665de7f438031f993863b3718f5",
+    "49d6b8bbee5dda8fbb78ccf9e73a758211db29699a15bb750745363a55431269",
+    "ea32c9e70ade7408f4bf22923de28cf7731c18c28d43f45e37e92aea6dde477f"
+  ],
+  "frozen_selection_sha256": "52fd9a94331a603b4fa2e62f329a01396b10df299dd22b091d674044f9a9344d",
+  "preparation_sha256": "c6c9b32b37975d427edf8eb20cd9f33ec983f66aa48cd62335fa3571286cd44d",
+  "freeze_file": "eval\\repoqa-test-selection-v1.json",
+  "preparation_file": "reports\\restoration\\gate10\\preparation-v1.json"
+}

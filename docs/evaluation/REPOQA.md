@@ -40,3 +40,19 @@ Four complete baseline arms: actual fresh Ixos hybrid JIT, actual model-free Ixo
 After baseline completion, `eval.anchor_run` accepts the repository preparation and hybrid reference directory. It preserves each actual initial candidate order/score/control response and runs the four [evidence-location strategies](ANCHORS.md) with real Rust embeddings and identical actual read/grep follow-ups. The policy uses returned observations/descriptions only; gold scores finished schedules. Shared candidate/lexical preparation is a quality screen, separately recorded, not end-to-end production arm timing. Exact output budgets and unioned displayed-line metrics apply throughout.
 
 Gate8 reports development only. Its promising bounded query-rerank result is retained for unchanged validation, then exact runtime/recipe freezing and fresh held-out execution. Do not optimize on reserved test scores, copy official leaderboard values onto Ixos line metrics, or present these deterministic tool schedules as LLM task success. See `reports/restoration/GATE8.md` for results and preserved negative cases.
+
+## Prospective actual-runtime held-out protocol
+
+Gate 9 verifies the actual Rust policy on all development/validation descriptions, repairs random lexical-preview ties and incomplete-word evidence at chunk boundaries, and keeps bounded reranking opt-in. Its report separates actual query inference, output tokens, native-cache hits and resident memory/latency. The older full-precision lab screen is retained as exploratory evidence.
+
+`eval/repoqa-test-selection-v1.json` freezes five methods, the actual binary/model fingerprints, configuration hashes, evaluator source hash and fixed follow-up policy before reserved target preparation. Canonical selection SHA256 is `52fd9a94331a603b4fa2e62f329a01396b10df299dd22b091d674044f9a9344d`. The default remains global-line regardless of this test; no model, threshold, passage or fusion tuning follows from reserved targets. Each method gets one fresh/JIT repetition, with the existing distinctions for prepared BM25 and ranked ripgrep timing.
+
+Preparation adds the immutable selection hash to its receipt. `eval.selection` then binds the complete prepared dataset fingerprints into a separate run-selection record, preserving every frozen recipe. The runner verifies the original freeze, preparation and evaluator source on every invocation. Changed recipes, sources, missing families or partial method outputs fail; every one of the 260 descriptions must complete. The binding step records source identities derived after preparation and does not introduce parameters chosen from target results.
+
+```sh
+python -m eval.repoqa prepare --plan eval/repoqa-family-v1.json --archive dataset/restoration/repoqa-download/repoqa-2024-06-23.json.gz --split test --selection eval/repoqa-test-selection-v1.json --destination NEW_TEST_CORPORA --receipt NEW_TEST_PREPARATION.json
+python -m eval.repoqa_test_run --freeze eval/repoqa-test-selection-v1.json --preparation NEW_TEST_PREPARATION.json --binary FROZEN_BINARY --model-path FROZEN_MODEL --output NEW_TEST_RUNS --receipts NEW_TEST_RECEIPTS
+python -m eval.evidence_run --preparation NEW_TEST_PREPARATION.json --control NEW_TEST_RUNS/hybrid --candidate NEW_TEST_RUNS/bounded-rerank --selection NEW_TEST_RECEIPTS/run-selection.json --binary FROZEN_BINARY --model-path FROZEN_MODEL --output NEW_TEST_TRAJECTORIES --receipt NEW_TRAJECTORY_RECEIPT.json
+```
+
+Use fresh paths throughout. The original freeze and evaluator sources are immutable once reserved targets are accessed; later experiment changes need new held-out material or an explicit exploratory label. Source preparation, functions, queries and full raw traffic remain ignored. Public receipts contain identities, commands, counts and aggregate/per-task measurements. The original Gate 3 selection and held-out results remain separate and untouched.

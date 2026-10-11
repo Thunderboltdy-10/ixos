@@ -135,6 +135,8 @@ def prepare(plan, data, split, destination, receipt_path, selection=None):
                'query_policy': plan['query'], 'coordinate_policy': plan['coordinate_policy'],
                'condition': 'All nonempty supplied content files per repository, not a new full Git checkout; zero-content exclusions recorded before targets. All10 upstream generated-description needles. Source coordinates verified, semantic relevance inherited; not official generated-function syntax scoring.',
                'families': []}
+    if split == 'test':
+        receipt['selection_sha256'] = canonical_hash(selection)
     datasets = []
     try:
         for item in selected:

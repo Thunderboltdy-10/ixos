@@ -7,6 +7,15 @@ on:
 permissions:
   contents: read
 jobs:
+  minimum-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89.0
+      - name: Locked minimum-compiler core build
+        run: cargo build --release --locked --bin ixos --jobs 2
+      - name: Minimum-compiler core and settings contracts
+        run: cargo test --release --locked -p ixos-protocol --lib --bin ixos --test settings_matrix --jobs 2
   core:
     strategy:
       fail-fast: false

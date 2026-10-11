@@ -103,3 +103,7 @@
 - KEEP effective config/model precedence and failing JSON exit status. A required model failure remains a failure even when lexical retrieval works. Read-only-root inability to create a diagnostic witness is an explicit capability warning, not a claimed failed read-only search.
 - KEEP isolated unique probe names, source byte/mtime integrity and cleanup; replace legacy fixed config scratch filename to avoid overwriting existing files. No user corpus indexing or adjacent persistent records by doctor.
 - VERIFY NEXT declared Rust1.89 minimum rather than infer it from Rust1.92 builds. New diagnosis does not select retrieval/model defaults or refresh consumed quality labels.
+
+- KEEP (Gate16): declared Rust1.89 minimum for core after direct locked nativeLinux build/tests/actualmodels/exact cross-compiler outputs. Add Linux minimum-compiler CI guard; do not extrapolate every desktop/OS combination from Linux proof.
+- KEEP readable complete gate index; preserve previous long raw-capture index byte-for-byte and retain all path-map/raw history.
+- INVESTIGATE NEXT: multiple accepted/rejected feedback paths are deduplicated in a HashSet, then float vectors are summed in its random order. Reproduce actual repeated output variability before replacing aggregation order; no default/quality tuning from this finding.

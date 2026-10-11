@@ -1,6 +1,6 @@
 # Install from source
 
-Builds require Rust 1.89+ with the platform C toolchain (Visual Studio C++ build tools on Windows, Command Line Tools on macOS, GCC/Clang on Linux). Python 3.11+ prepares pinned model variants. Code preparation uses the standard library; documents additionally use `numpy==2.3.5`. Runtime search uses Rust/CPU and needs no Python process or network request.
+Builds require Rust 1.89+ with the platform C toolchain (Visual Studio C++ build tools on Windows, Command Line Tools on macOS, GCC/Clang on Linux). The declared minimum was directly checked for the Linux core with Rust 1.89.0: locked build, core/settings tests and both actual model profiles pass; sampled retrieval responses match the 1.92 build byte-for-byte. See [Gate 16](../../reports/restoration/GATE16.md). Windows restoration builds use 1.92; native Mac and every desktop/compiler combination are separate checks. Python 3.11+ prepares pinned model variants. Code preparation uses the standard library; documents additionally use `numpy==2.3.5`. Runtime search uses Rust/CPU and needs no Python process or network request.
 
 ```sh
 cargo build --release --locked --bin ixos

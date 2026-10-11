@@ -25,6 +25,8 @@ Local source/runtime proof now covers Windows and Ubuntu24.04/WSL x86-64 on ext4
 
 [Gate 13](../../reports/restoration/GATE13.md) verifies exact current JIT/native/resident output precision and exported-source/local-package execution on Windows/Linux after the loader/cache repair. [Gate 14](../../reports/restoration/GATE14.md) separately records constrained CPU/address-space behavior, an allocation abort and allocator regressions. Follow [resource guidance](RESOURCES.md) without interpreting virtual caps as physical RAM or promoting a global allocator setting.
 
+[Gate 16](../../reports/restoration/GATE16.md) directly verifies the declared Rust1.89 Linux core minimum with the locked dependencies, core/settings suite and both actual models. Twenty saved process stdout outputs match the same-host 1.92 reference exactly. This does not establish every desktop/OS compiler minimum; CI adds a Linux minimum-compiler guard and has not been dispatched remotely.
+
 ## Historical credentials while preserving development
 
 Ignore rules prevent new env staging; they do not remove old blobs. Keep local env files excluded. First revoke/rotate every formerly usable credential at its provider and invalidate dependent sessions. The agent cannot establish provider-side revocation from a file scan; owner confirmation is required before publishing.

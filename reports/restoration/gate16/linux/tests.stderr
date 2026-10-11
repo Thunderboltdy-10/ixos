@@ -1,0 +1,44 @@
+   Compiling num-traits v0.2.19
+   Compiling rustix v1.1.3
+   Compiling num-integer v0.1.46
+   Compiling tokio v1.49.0
+   Compiling num-complex v0.4.6
+   Compiling polling v3.11.0
+   Compiling num-bigint v0.4.6
+   Compiling num-rational v0.4.2
+   Compiling async-io v2.6.0
+   Compiling num-iter v0.1.45
+   Compiling chrono v0.4.43
+   Compiling num v0.4.3
+   Compiling zbus v4.4.0
+   Compiling ndarray v0.15.6
+   Compiling xattr v1.6.1
+   Compiling euclid v0.20.14
+   Compiling pdf-extract v0.7.12
+   Compiling lopdf v0.32.0
+   Compiling model2vec-rs v0.1.4
+   Compiling secret-service v4.0.0
+   Compiling tar v0.4.44
+   Compiling tokio-util v0.7.18
+   Compiling ixos-protocol v0.1.0 (/home/thunderboltdy/.cache/ixos-review-298088f-20261011/source)
+   Compiling ciborium-io v0.2.2
+   Compiling plotters-backend v0.3.7
+   Compiling plotters-svg v0.3.7
+   Compiling ciborium-ll v0.2.2
+   Compiling itertools v0.10.5
+   Compiling cast v0.3.0
+   Compiling criterion-plot v0.5.0
+   Compiling ciborium v0.2.2
+   Compiling plotters v0.3.7
+   Compiling tokio-stream v0.1.18
+   Compiling tinytemplate v1.2.1
+   Compiling is-terminal v0.4.17
+   Compiling oorandom v11.1.5
+   Compiling anes v0.1.6
+   Compiling criterion v0.5.1
+   Compiling tokio-test v0.4.5
+   Compiling tempfile v3.25.0
+    Finished `release` profile [optimized] target(s) in 2m 31s
+     Running unittests src/lib.rs (/home/thunderboltdy/.cache/ixos-review-298088f-20261011/target-msrv-g16/release/deps/ixos_protocol-3dca14d55e08c06e)
+     Running unittests src/main.rs (/home/thunderboltdy/.cache/ixos-review-298088f-20261011/target-msrv-g16/release/deps/ixos-ca1e6d9feaa4c7ad)
+     Running tests/settings_matrix.rs (/home/thunderboltdy/.cache/ixos-review-298088f-20261011/target-msrv-g16/release/deps/settings_matrix-a5e2a95e7305aafb)

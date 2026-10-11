@@ -1,0 +1,22 @@
+Ixos Doctor
+--------------------------------------------------
+[PASS] CLI configuration
+  Effective CLI configuration loaded
+  path=/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-doctor-contract-tvq7rn3g/chosen.toml
+[PASS] Retrieval settings
+  profile=Documents, mode=Hybrid, representation=WholeTokenCentroid, persistent_cache=true
+[FAIL] Current retrieval model
+  Selected model unavailable: Failed to load model: Cannot identify model.safetensors: No such file or directory (os error 2)
+[PASS] Search root
+  Directory is accessible
+  /home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-doctor-contract-tvq7rn3g/corpus
+[PASS] Current lexical retrieval
+  Real current-engine search returned exact witness evidence; no stub model
+[INFO] Current document cache
+  Not probed: selected model unavailable or lexical mode; no embedding records written
+[PASS] Temporary probe cleanup
+  Temporary probe removed; existing source files were not touched
+[INFO] Platform
+  os=linux, arch=x86_64; diagnostic witness is not a relevance/performance benchmark
+
+Summary: 5 pass, 0 warn, 1 fail, 2 info

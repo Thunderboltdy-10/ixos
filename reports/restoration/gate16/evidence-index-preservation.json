@@ -1,0 +1,7 @@
+{
+  "original": "reports/restoration/INDEX.md",
+  "condition": "Byte-identical earlier six-gate capture index preserved before replacing active navigation",
+  "archive": "reports/restoration/gate6/CAPTURE_INDEX.md",
+  "status": "passed",
+  "sha256": "8d29c74d7610d8ca514f114ba9a72262807d53a57143c01593216eee71c685e1"
+}

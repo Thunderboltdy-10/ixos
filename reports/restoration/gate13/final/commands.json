@@ -1,0 +1,163 @@
+[
+  {
+    "label": "own-search",
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate13\\absent.toml",
+      "search",
+      "where are embedding vectors converted to bytes before writing native cache",
+      "--dir",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\src",
+      "--model-path",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models\\potion-code-16M-v2-unbounded",
+      "--cache-mode",
+      "ephemeral",
+      "--json",
+      "--stats"
+    ],
+    "cwd": "C:\\Users\\pablo\\Downloads\\Ixos",
+    "exit_code": 0
+  },
+  {
+    "label": "own-grep",
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "grep",
+      "quantize",
+      "--dir",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\src",
+      "-F",
+      "--limit",
+      "10",
+      "--max-output-bytes",
+      "4000"
+    ],
+    "cwd": "C:\\Users\\pablo\\Downloads\\Ixos",
+    "exit_code": 0
+  },
+  {
+    "label": "own-read",
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "read",
+      "retrieval/cache.rs",
+      "--dir",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\src",
+      "--start",
+      "188",
+      "--lines",
+      "42",
+      "--max-output-bytes",
+      "4500"
+    ],
+    "cwd": "C:\\Users\\pablo\\Downloads\\Ixos",
+    "exit_code": 0
+  },
+  {
+    "label": "own-read-pipeline",
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "read",
+      "retrieval/mod.rs",
+      "--dir",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\src",
+      "--start",
+      "469",
+      "--lines",
+      "34",
+      "--max-output-bytes",
+      "4500"
+    ],
+    "cwd": "C:\\Users\\pablo\\Downloads\\Ixos",
+    "exit_code": 0
+  },
+  {
+    "label": "export",
+    "argv": [
+      "git",
+      "checkout-index",
+      "--all",
+      "--prefix=.tmp/gate13/reviewer-source/"
+    ],
+    "cwd": "C:\\Users\\pablo\\Downloads\\Ixos",
+    "exit_code": 0
+  },
+  {
+    "label": "source-build",
+    "argv": [
+      "cargo",
+      "build",
+      "--release",
+      "--locked",
+      "--bin",
+      "ixos",
+      "--target-dir",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target"
+    ],
+    "cwd": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate13\\reviewer-source",
+    "exit_code": 0
+  },
+  {
+    "label": "source-profiles",
+    "argv": [
+      "C:\\Users\\pablo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate13\\reviewer-source\\scripts\\verify_restored_cli.py",
+      "--binary",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--code-model",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models\\potion-code-16M-v2-unbounded",
+      "--documents-model",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models\\potion-retrieval-32M-row-int8",
+      "--frozen-binary",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\models\\lab\\restoration\\test-code-native-warm\\ixos.exe",
+      "--output",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate13\\final\\source-profiles.json"
+    ],
+    "cwd": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate13\\reviewer-source",
+    "exit_code": 0
+  },
+  {
+    "label": "package",
+    "argv": [
+      "C:\\Users\\pablo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "scripts/package_cli.py",
+      "--binary",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--output",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate13\\ixos-windows-local.zip"
+    ],
+    "cwd": "C:\\Users\\pablo\\Downloads\\Ixos",
+    "exit_code": 0
+  },
+  {
+    "label": "package-setup",
+    "argv": [
+      "C:\\Users\\pablo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate13\\extracted\\scripts\\setup_models.py",
+      "--profile",
+      "all",
+      "--destination",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models"
+    ],
+    "cwd": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate13\\extracted",
+    "exit_code": 0
+  },
+  {
+    "label": "package-profiles",
+    "argv": [
+      "C:\\Users\\pablo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\scripts\\verify_restored_cli.py",
+      "--binary",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate13\\extracted\\ixos.exe",
+      "--code-model",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models\\potion-code-16M-v2-unbounded",
+      "--documents-model",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models\\potion-retrieval-32M-row-int8",
+      "--output",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate13\\final\\package-profiles.json"
+    ],
+    "cwd": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate13\\extracted",
+    "exit_code": 0
+  }
+]

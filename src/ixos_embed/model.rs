@@ -4,17 +4,12 @@
 //! - `EmbeddingModel` trait for generating semantic embeddings
 //! - `StubModel` for testing without actual ML model
 //! - `Model2VecEmbedder` for production semantic embeddings
-//! - `MmapModel2VecEmbedder` for lazy-loaded embeddings with near-zero startup
+//! - `MmapModel2VecEmbedder` for retained experimental mapped storage
 //!
-//! ## P1.3 Int8 Quantization (Future Work)
-//!
-//! Int8 quantization would provide 2x inference speedup by:
-//! - Reducing model size from 30MB to 7.5MB
-//! - Enabling SIMD int8 operations (AVX2/NEON)
-//! - Reducing memory bandwidth requirements
-//!
-//! This requires model2vec-rs to expose int8 quantization APIs or
-//! custom safetensors loading with int8 weight conversion.
+//! The current CLI uses owned encoded rows through `Model2VecEmbedder`.
+//! I8 storage reduces the artifact/table footprint; pooling still uses F32.
+//! Speed, startup and RSS depend on the artifact/workload and are measured in
+//! reports/restoration/GATE12.md. No fixed integer-inference speedup is implied.
 
 use crate::security::crypto::sha256;
 

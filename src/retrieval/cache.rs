@@ -176,6 +176,29 @@ pub(super) fn prefetch(path: &Path) -> Option<Vec<u8>> {
     native_read(path).ok().flatten()
 }
 
+fn row_scale(vector: &[f32]) -> f32 {
+    let maximum = vector.iter().map(|v| v.abs()).fold(0.0f32, f32::max);
+    if maximum > 0.0 {
+        maximum / 127.0
+    } else {
+        1.0
+    }
+}
+
+fn row_byte(value: f32, scale: f32) -> u8 {
+    (value / scale).round().clamp(-127.0, 127.0) as i8 as u8
+}
+
+/// The same single storage round-trip used by native-record decoding. Call on
+/// original model output, after serializing it if persistence is requested.
+pub(super) fn quantize(vector: &mut [f32]) {
+    let scale = row_scale(vector);
+    for value in vector.iter_mut() {
+        *value = (row_byte(*value, scale) as i8 as f32) * scale;
+    }
+    unit(vector);
+}
+
 fn encode(
     rows: &[Passage],
     key: &hmac::Key,
@@ -199,14 +222,9 @@ fn encode(
         data.extend_from_slice(&(row.end_byte as u64).to_le_bytes());
         data.extend_from_slice(&(row.start_line as u32).to_le_bytes());
         data.extend_from_slice(&(row.end_line as u32).to_le_bytes());
-        let maximum = row.vector.iter().map(|v| v.abs()).fold(0.0f32, f32::max);
-        let scale = if maximum > 0.0 { maximum / 127.0 } else { 1.0 };
+        let scale = row_scale(&row.vector);
         data.extend_from_slice(&scale.to_le_bytes());
-        data.extend(
-            row.vector
-                .iter()
-                .map(|v| (v / scale).round().clamp(-127.0, 127.0) as i8 as u8),
-        );
+        data.extend(row.vector.iter().map(|v| row_byte(*v, scale)));
     }
     let signature = hmac::sign(key, &data);
     data.extend_from_slice(signature.as_ref());
@@ -313,6 +331,48 @@ fn native_delete(path: &Path) -> std::io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn serialized_original_rows_match_single_ram_round_trip_exactly() {
+        let key = hmac::Key::new(hmac::HMAC_SHA256, &[3; 32]);
+        for dims in [1, 64, 256, 512, 4096] {
+            for variant in 0..8 {
+                let raw: Vec<f32> = (0..dims)
+                    .map(|i| match variant {
+                        0 => 0.0,
+                        1 => -0.0,
+                        2 => 0.5,
+                        3 => -0.5,
+                        _ => ((i * 17 + variant * 23) as f32).sin() * 0.11,
+                    })
+                    .collect();
+                let row = Passage {
+                    start_byte: 0,
+                    end_byte: 100,
+                    start_line: 1,
+                    end_line: 3,
+                    vector: raw.clone(),
+                };
+                let decoded = decode(
+                    &encode(&[row], &key, &[1; 32], &[2; 32]).unwrap(),
+                    &key,
+                    &[1; 32],
+                    &[2; 32],
+                )
+                .unwrap();
+                let mut ram = raw;
+                quantize(&mut ram);
+                assert_eq!(
+                    ram.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+                    decoded[0]
+                        .vector
+                        .iter()
+                        .map(|v| v.to_bits())
+                        .collect::<Vec<_>>()
+                );
+            }
+        }
+    }
+
     #[test]
     fn compact_record_rejects_stale_tampered_and_keeps_all_dimensions() {
         let key = hmac::Key::new(hmac::HMAC_SHA256, &[3; 32]);

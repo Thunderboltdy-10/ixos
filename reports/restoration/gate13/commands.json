@@ -1,0 +1,80 @@
+[
+  {
+    "label": "precision",
+    "argv": [
+      "C:\\Users\\pablo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "scripts/verify_cache_precision.py",
+      "--binary",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--code-model",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+      "--documents-model",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+      "--root",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\reviewer-source\\src",
+      "--output",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate13\\after"
+    ],
+    "exit_code": 0
+  },
+  {
+    "label": "evidence",
+    "argv": [
+      "C:\\Users\\pablo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "scripts/verify_evidence_policy.py",
+      "--binary",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--model",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+      "--output",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate13\\evidence"
+    ],
+    "exit_code": 0
+  },
+  {
+    "label": "query",
+    "argv": [
+      "C:\\Users\\pablo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "scripts/verify_query_literals.py",
+      "--binary",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--model",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+      "--output",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate13\\query"
+    ],
+    "exit_code": 0
+  },
+  {
+    "label": "engine",
+    "argv": [
+      "C:\\Users\\pablo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "scripts/verify_retrieval_engine.py",
+      "--binary",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--model",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+      "--output",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate13\\engine.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "label": "profiles",
+    "argv": [
+      "C:\\Users\\pablo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "scripts/verify_restored_cli.py",
+      "--binary",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--code-model",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+      "--documents-model",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+      "--frozen-binary",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\models\\lab\\restoration\\test-code-native-warm\\ixos.exe",
+      "--output",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate13\\profiles.json"
+    ],
+    "exit_code": 0
+  }
+]

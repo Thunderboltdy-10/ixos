@@ -9,6 +9,7 @@ pub mod typo;
 use crate::ixos_embed::{EmbeddingModel, Model2VecEmbedder};
 use crate::ixos_rank::candidate_generator::path_engine::search_walk;
 use crate::security::crypto::sha256;
+use cache::quantize;
 pub use evidence::EvidencePolicy;
 use rayon::prelude::*;
 use record::{representatives, unit, Passage, Representation};
@@ -228,7 +229,7 @@ impl Engine {
         let cache = if options.persist {
             model.as_ref().map(|model| {
                 let mut recipe = format!(
-                    "ixos:document-v1:physical-lf:extract-v1:1800chars:{:?}:all-tokens:int8",
+                    "ixos:document-v1:physical-lf:extract-v1:1800chars:{:?}:all-tokens:int8-single-roundtrip-v2",
                     options.representation
                 )
                 .into_bytes();
@@ -471,8 +472,7 @@ impl Engine {
             for (batch, targets) in inputs.chunks(64).zip(locators.chunks(64)) {
                 let vectors = model.embed_batch_with_limit(batch, None)?;
                 stats.passages_embedded += vectors.len();
-                for ((path, index), mut vector) in targets.iter().zip(vectors) {
-                    quantize(&mut vector);
+                for ((path, index), vector) in targets.iter().zip(vectors) {
                     self.documents.get_mut(path).unwrap().passages[*index].vector = vector;
                 }
             }
@@ -488,6 +488,12 @@ impl Engine {
                         }
                     }
                     stats.cache_write_ms += cache_started.elapsed().as_secs_f64() * 1000.0;
+                }
+                // Serialize original model rows once, then reproduce precisely
+                // the same byte/scale decode for live JIT/resident vectors.
+                // A failed write still receives the same bounded RAM precision.
+                for passage in &mut self.documents.get_mut(&path).unwrap().passages {
+                    quantize(&mut passage.vector);
                 }
             }
             stats.document_embed_ms = (embedding_started.elapsed().as_secs_f64() * 1000.0
@@ -927,16 +933,6 @@ fn dot(left: &[f32], right: &[f32]) -> f32 {
 fn add(left: &mut [f32], right: &[f32], weight: f32) {
     for (a, b) in left.iter_mut().zip(right) {
         *a += weight * b;
-    }
-}
-fn quantize(vector: &mut [f32]) {
-    let maximum = vector.iter().map(|v| v.abs()).fold(0.0f32, f32::max);
-    if maximum > 0.0 {
-        let scale = maximum / 127.0;
-        for value in vector.iter_mut() {
-            *value = (*value / scale).round().clamp(-127.0, 127.0) * scale;
-        }
-        unit(vector);
     }
 }
 pub fn view_at(path: &str, lines: &[String], anchor: usize, context: usize) -> View {

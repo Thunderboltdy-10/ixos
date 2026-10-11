@@ -31,7 +31,7 @@ ixos config --set retrieval.evidence_policy=bounded-rerank
 ixos search "another query" --dir ROOT --json --evidence-policy global-line
 ```
 
-Extra passage vectors are not written to the document cache. Unselected vectors are discarded; an explicit session can retain selected result vectors in its bounded RAM history for feedback. The persistent ADS/xattr record and its recipe stay unchanged. Diagnostics add an `evidence` object with `candidatePassages`, `extraPassagesEmbedded`, `extraEmbedMs` and `selectionMs`; the last timing includes selection and extra inference. These counters are separate from document-cache embeddings and hits. A native or resident cache hit can still incur query-time evidence inference. Lexical/legacy mode rejects this policy explicitly; override a persisted policy with `global-line` when selecting lexical mode.
+Extra passage vectors are not written to the document cache. Unselected vectors are discarded; an explicit session can retain selected result vectors in its bounded RAM history for feedback. Choosing this evidence policy does not change the persistent ADS/xattr record or its recipe. The current single-round-trip recipe independently invalidates older double-rounded records; the next native search recomputes them once. Diagnostics add an `evidence` object with `candidatePassages`, `extraPassagesEmbedded`, `extraEmbedMs` and `selectionMs`; the last timing includes selection and extra inference. These counters are separate from document-cache embeddings and hits. A native or resident cache hit can still incur query-time evidence inference. Lexical/legacy mode rejects this policy explicitly; override a persisted policy with `global-line` when selecting lexical mode.
 
 ## Configurations
 

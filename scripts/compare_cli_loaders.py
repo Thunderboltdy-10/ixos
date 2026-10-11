@@ -194,10 +194,14 @@ def main():
                     value = {key: statistics.median(r[key] for r in rows) for key in keys}
                     if condition == 'resident-jit':
                         value['fill_p50_ms'] = statistics.median(r['samples'][0]['wall_ms'] for r in rows)
-                        value['model_memory_p50'] = {key: statistics.median(r['model_only_memory'][key] for r in rows)
-                                                    for key in rows[0]['model_only_memory']}
-                        value['resident_memory_p50'] = {key: statistics.median(r['samples'][-1]['memory'][key] for r in rows)
-                                                       for key in rows[0]['samples'][-1]['memory']}
+                        value['model_memory_p50'] = (
+                            {key: statistics.median(r['model_only_memory'][key] for r in rows)
+                             for key in rows[0]['model_only_memory']}
+                            if rows[0]['model_only_memory'] is not None else None)
+                        value['resident_memory_p50'] = (
+                            {key: statistics.median(r['samples'][-1]['memory'][key] for r in rows)
+                             for key in rows[0]['samples'][-1]['memory']}
+                            if rows[0]['samples'][-1]['memory'] is not None else None)
                     record['summary'][condition][arm] = value
             print(model.name+': '+json.dumps(record['summary']), flush=True)
             save()

@@ -16,6 +16,7 @@ Start with [installation](getting-started/INSTALLATION.md), [CLI usage](CLI.md) 
 | [Held-out function results](../reports/restoration/GATE10.md) | Complete 260-description file/evidence comparison and context cost |
 | [Current CLI/package checks](../reports/restoration/GATE11.md) | Literal-query fixes, source export and Windows/Linux local package proof |
 | [Model loading costs](../reports/restoration/GATE12.md) | Exact-vector owned-row loader, paired CPU memory/latency and retained negative experiments |
+| [Cache precision repair](../reports/restoration/GATE13.md) | Single quantization round-trip, old-record invalidation and exact native/resident/feedback output |
 | [Agent skill](../skills/ixos-retrieval/SKILL.md) | Choose search/grep/read, budgets, sessions and feedback |
 | [Release preparation](engineering/RELEASE.md) | Native Mac checks, public history and release boundaries |
 | [Model publication playbook](models/PUBLISHING.md) | Verified recipes, upstream cards and responsible uploads |

@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "binary_sha256": "afbbbfe2df00d1fa6bfb031fb7a5fba5a29ace7cb1295552d66c7a38dbb06bb3",
+  "exported_binary_sha256": "a11aaf79db87a8f5ef1ec56d7475b6a22605b1b05114ed2811df3d52e755aa41",
+  "archive_sha256": "db10fbbf7bef23eacfec3aa623df8a0fe5cc091f080d01ed42fcc59846d408bc",
+  "own_search_paths": [
+    "ixos_rank/semantic_engine.rs",
+    "retrieval/mod.rs",
+    "ixos_embed/model2vec.rs",
+    "ixos_embed/model.rs",
+    "ixos_embed/memory_protection.rs",
+    "ixos_embed/encoded_model.rs",
+    "main.rs",
+    "cli/commands.rs",
+    "ixos_embed/secure_embedder.rs",
+    "storage/mod.rs"
+  ],
+  "own_trace_note": "Exploratory navigation after the defect was already understood, not a blind agent-task benchmark. Grep and two bounded reads verify the actual serializer/pipeline. Individual raw outputs retained.",
+  "frozen_evaluator_matches": true,
+  "condition": "Fresh source index export with reused dependency/toolchain cache; extracted package reuses Gate11 independently downloaded pinned parents without checkout imports. Not clean OS or new download proof."
+}

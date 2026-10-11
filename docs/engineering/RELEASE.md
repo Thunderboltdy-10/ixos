@@ -14,6 +14,7 @@ python scripts/verify_retrieval_engine.py --binary PATH --model CODE_MODEL --out
 python scripts/verify_restored_cli.py --binary PATH --code-model CODE_MODEL --documents-model DOC_MODEL --output RECEIPT.json
 python scripts/verify_evidence_policy.py --binary PATH --model CODE_MODEL --output NEW_EVIDENCE_RECEIPTS
 python scripts/verify_query_literals.py --binary PATH --model CODE_MODEL --output NEW_QUERY_RECEIPTS
+python scripts/verify_cache_precision.py --binary PATH --code-model CODE_MODEL --documents-model DOC_MODEL --root src --output NEW_PRECISION_RECEIPTS
 ```
 
 Capture actual xattr/ADS hits, failed-native fallback, equal-length edits, rename, ignore policy, long Unicode sources and no adjacent files. Read-only probes must not change source content. Report failures without relabeling fallback as a native hit. Document/low-memory/real agent-task evidence remains separate from authored contract checks.

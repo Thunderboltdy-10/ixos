@@ -23,6 +23,8 @@ Local source/runtime proof now covers Windows and Ubuntu24.04/WSL x86-64 on ext4
 
 [Gate 9](../../reports/restoration/GATE9.md) adds actual-model preview/cache bounds and stable anchor checks. [Gate 11](../../reports/restoration/GATE11.md) repeats Windows/Linux core and actual model/source contracts after identifier parsing fixes and verifies extracted local packages. The CI matrix now includes evidence and query probes; it has not been dispatched remotely. The numerical held-out [Gate 10](../../reports/restoration/GATE10.md) keeps its original exact binary/model/evaluator freeze, rather than silently relabeling those measurements as a later build.
 
+[Gate 13](../../reports/restoration/GATE13.md) verifies exact current JIT/native/resident output precision and exported-source/local-package execution on Windows/Linux after the loader/cache repair. [Gate 14](../../reports/restoration/GATE14.md) separately records constrained CPU/address-space behavior, an allocation abort and allocator regressions. Follow [resource guidance](RESOURCES.md) without interpreting virtual caps as physical RAM or promoting a global allocator setting.
+
 ## Historical credentials while preserving development
 
 Ignore rules prevent new env staging; they do not remove old blobs. Keep local env files excluded. First revoke/rotate every formerly usable credential at its provider and invalidate dependent sessions. The agent cannot establish provider-side revocation from a file scan; owner confirmation is required before publishing.

@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Users\pablo\Downloads\Ixos\reports\restoration\gate14\summarize.py", line 87, in <module>
+    main()
+  File "C:\Users\pablo\Downloads\Ixos\reports\restoration\gate14\summarize.py", line 72, in main
+    assert current == original
+           ^^^^^^^^^^^^^^^^^^^
+AssertionError

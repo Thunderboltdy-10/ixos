@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "purpose": "Current actual-model retrieval under simulated resource constraints, no quality tuning",
+  "git_head": "05a352f",
+  "linux_binary_sha256": "823b1e77daba847591fefb937e3edadc2e7141088da0204715c463fe7929a883",
+  "corpus": "Gate11 fixed 113 Rust source export, same exact bytes as Gates12/13",
+  "models": ["potion-code-16M-v2-unbounded", "potion-retrieval-32M-row-int8"],
+  "conditions": [
+    {"name":"unconstrained","affinity":"all initially allowed","rayon_threads":null,"io_workers":4,"address_limit_mib":null},
+    {"name":"one-core","affinity":"lowest initially allowed CPU","rayon_threads":1,"io_workers":1,"address_limit_mib":null},
+    {"name":"one-core-768","affinity":"lowest initially allowed CPU","rayon_threads":1,"io_workers":1,"address_limit_mib":768},
+    {"name":"one-core-512","affinity":"lowest initially allowed CPU","rayon_threads":1,"io_workers":1,"address_limit_mib":512},
+    {"name":"one-core-384","affinity":"lowest initially allowed CPU","rayon_threads":1,"io_workers":1,"address_limit_mib":384},
+    {"name":"one-core-256","affinity":"lowest initially allowed CPU","rayon_threads":1,"io_workers":1,"address_limit_mib":256}
+  ],
+  "repetitions": 3,
+  "requests": "Combined-session seed query, repeat, actual accepted-result feedback follow-up, then bounded evidence request-local override and repeat. Fresh resident JIT processes; source reads and RAM reuse counted separately.",
+  "contract": "Exact response equality to unconstrained reference for every successful run; actual safetensors fingerprints, source bytes/mtime and no sidecars. Preserve failed limits with stage/exit/stderr; a resource failure is not a successful equivalence result. Disable core dumps.",
+  "measurements": "OS per-process VmRSS/VmHWM/VmSize/Threads at ready and every request; startup/fill/resident/request diagnostics/stdout and diagnostic tokens. Three repetitions descriptive, not statistical latency proof.",
+  "limits": "RLIMIT_AS is virtual address space, not physical RAM. CPU affinity plus fixed thread/worker count is a bundled scenario on the same Ryzen host/WSL. Not a real weak-device or Mac benchmark. No threshold/model/default changes from this stress test."
+}

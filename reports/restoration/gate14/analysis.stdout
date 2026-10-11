@@ -1,0 +1,66 @@
+{
+  "status": "passed",
+  "source_files": 113,
+  "source_bytes": 1610853,
+  "resource_processes": 82,
+  "resource_responses": 405,
+  "trace_processes": 12,
+  "tokens": {
+    "runtime": [
+      {
+        "stdout": 4686,
+        "stderr_ready_and_stats": 1639,
+        "input_requests": 178,
+        "per_response_stdout": [
+          947,
+          947,
+          905,
+          938,
+          949
+        ],
+        "stdout_and_stderr": 6325
+      },
+      {
+        "stdout": 4646,
+        "stderr_ready_and_stats": 1666,
+        "input_requests": 178,
+        "per_response_stdout": [
+          947,
+          947,
+          856,
+          947,
+          949
+        ],
+        "stdout_and_stderr": 6312
+      }
+    ],
+    "allocator": [
+      {
+        "stdout": 4686,
+        "stderr_ready_and_stats": 1646,
+        "input_requests": 178,
+        "per_response_stdout": [
+          947,
+          947,
+          905,
+          938,
+          949
+        ],
+        "stdout_and_stderr": 6332
+      },
+      {
+        "stdout": 4646,
+        "stderr_ready_and_stats": 1653,
+        "input_requests": 178,
+        "per_response_stdout": [
+          947,
+          947,
+          856,
+          947,
+          949
+        ],
+        "stdout_and_stderr": 6299
+      }
+    ]
+  }
+}

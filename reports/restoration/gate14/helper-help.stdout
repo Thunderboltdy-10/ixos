@@ -1,0 +1,17 @@
+usage: profile_constrained.py [-h] --binary BINARY --code-model CODE_MODEL
+                              --documents-model DOCUMENTS_MODEL --root ROOT
+                              --protocol PROTOCOL --output OUTPUT
+
+Actual-model Linux resident retrieval under explicit CPU/address limits.
+Virtual address limits are not physical RAM, and CPU affinity does not emulate
+a different processor. Preserve failed limits; only successful runs receive
+exact output-equivalence credit. The protocol must exist before execution.
+
+options:
+  -h, --help            show this help message and exit
+  --binary BINARY
+  --code-model CODE_MODEL
+  --documents-model DOCUMENTS_MODEL
+  --root ROOT
+  --protocol PROTOCOL
+  --output OUTPUT

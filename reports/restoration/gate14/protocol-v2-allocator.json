@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "purpose": "Exploratory allocator A/B after v1 shows a code embedding cliff at 256MiB virtual address space; no production default change",
+  "git_head": "05a352f",
+  "linux_binary_sha256": "823b1e77daba847591fefb937e3edadc2e7141088da0204715c463fe7929a883",
+  "corpus": "Gate11 fixed 113 Rust source export, same exact bytes as Gates12/13",
+  "models": [
+    "potion-code-16M-v2-unbounded",
+    "potion-retrieval-32M-row-int8"
+  ],
+  "conditions": [
+    {
+      "name": "unconstrained",
+      "affinity": "all initially allowed",
+      "rayon_threads": null,
+      "io_workers": 4,
+      "address_limit_mib": null
+    },
+    {
+      "name": "one-core-256",
+      "affinity": "lowest initially allowed CPU",
+      "rayon_threads": 1,
+      "io_workers": 1,
+      "address_limit_mib": 256
+    },
+    {
+      "name": "one-core-256-arena1",
+      "affinity": "lowest initially allowed CPU",
+      "rayon_threads": 1,
+      "io_workers": 1,
+      "address_limit_mib": 256,
+      "malloc_arena_max": 1
+    },
+    {
+      "name": "one-core-256-arena2",
+      "affinity": "lowest initially allowed CPU",
+      "rayon_threads": 1,
+      "io_workers": 1,
+      "address_limit_mib": 256,
+      "malloc_arena_max": 2
+    },
+    {
+      "name": "one-core-256-arena4",
+      "affinity": "lowest initially allowed CPU",
+      "rayon_threads": 1,
+      "io_workers": 1,
+      "address_limit_mib": 256,
+      "malloc_arena_max": 4
+    },
+    {
+      "name": "one-core-arena1",
+      "affinity": "lowest initially allowed CPU",
+      "rayon_threads": 1,
+      "io_workers": 1,
+      "address_limit_mib": null,
+      "malloc_arena_max": 1
+    },
+    {
+      "name": "unconstrained-arena1",
+      "affinity": "all initially allowed",
+      "rayon_threads": null,
+      "io_workers": 4,
+      "address_limit_mib": null,
+      "malloc_arena_max": 1
+    }
+  ],
+  "repetitions": 3,
+  "requests": "Combined-session seed query, repeat, actual accepted-result feedback follow-up, then bounded evidence request-local override and repeat. Fresh resident JIT processes; source reads and RAM reuse counted separately.",
+  "contract": "Exact response equality to unconstrained reference for every successful run; actual safetensors fingerprints, source bytes/mtime and no sidecars. Preserve failed limits with stage/exit/stderr; a resource failure is not a successful equivalence result. Disable core dumps.",
+  "measurements": "OS per-process VmRSS/VmHWM/VmSize/Threads at ready and every request; startup/fill/resident/request diagnostics/stdout and diagnostic tokens. Three repetitions descriptive, not statistical latency proof.",
+  "limits": "RLIMIT_AS is virtual address space, not physical RAM. CPU affinity plus fixed thread/worker count is a bundled scenario on the same Ryzen host/WSL. Not a real weak-device or Mac benchmark. No threshold/model/default changes from this stress test. MALLOC_ARENA_MAX is a glibc-specific process environment experiment. Multi-core arena1 is checked for contention; not a universal setting. Prior negative v1 retained.",
+  "control_protocol": "protocol-v1.json",
+  "hypothesis": "Restricting glibc allocator arena count may avoid virtual address reservation pressure; phase diagnostics identify embedding but do not yet prove allocator causality."
+}

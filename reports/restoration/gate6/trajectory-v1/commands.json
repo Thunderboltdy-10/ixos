@@ -1,0 +1,19 @@
+[
+  [
+    "C:\\Users\\pablo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+    "-m",
+    "eval.trajectory_run",
+    "--preparation",
+    "reports/restoration/gate5/gate5-contextbench-isolated.json",
+    "--binary",
+    "target/release/ixos.exe",
+    "--model-path",
+    ".tmp/gate4/reviewer-models/potion-code-16M-v2-unbounded",
+    "--backend",
+    "hybrid",
+    "--output",
+    "models/lab/restoration/contextbench-trajectories-v1/hybrid",
+    "--receipt",
+    "reports\\restoration\\gate6\\trajectory-v1\\hybrid.json"
+  ]
+]

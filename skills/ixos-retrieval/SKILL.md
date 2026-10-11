@@ -34,6 +34,7 @@ Example:
 ```sh
 ixos search "how cached vectors are invalidated after equal-length edits" --dir . --json --limit 5
 ixos grep 'raw_hash|source_hash' --dir src/retrieval -C 2 --limit 5
+ixos grep --dir ROOT -F -- '--literal-option'
 ixos read src/retrieval/mod.rs --dir . --start 300 --lines 35 --max-output-bytes 6000
 ```
 
@@ -62,7 +63,7 @@ Index `0` means the first actually displayed result in response `q1`. Submit acc
 
 ## Coverage limits
 
-The walker respects `.gitignore` and prunes hidden, symlink, dependency/build and virtual-environment sources. A per-file 16 MiB primary-byte limit and 256 MiB source budget apply. Unsupported/oversized sources are skipped or explicitly rejected. PDF/Office locators refer to extracted text, not original pages. Image/OCR retrieval and perfect document-layout fidelity are not implemented.
+The walker respects `.gitignore` and Git boundaries, and prunes hidden, symlink, dependency/cache and recognized virtual-environment sources. Source modules named `build` remain visible; ignore rules exclude generated outputs. A per-file 16 MiB primary-byte limit and 256 MiB source budget apply. Unsupported/oversized sources are skipped or explicitly rejected. PDF/Office locators refer to extracted text, not original pages. Image/OCR retrieval and perfect document-layout fidelity are not implemented.
 
 Eight vectors cannot represent every topic in a long multi-topic file. Literal evidence remains full-source within supported limits; semantic representatives may miss an unsampled topic. Use exact/lexical operations where the needed symbol is known. Ixos does not have to replace faster native ripgrep for every workload; external exact tools remain valid when their broader syntax or performance is useful. Do not claim that a one-call retrieval benchmark establishes autonomous coding success or superiority over Cursor/Augment.
 

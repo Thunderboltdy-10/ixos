@@ -39,6 +39,8 @@ Code scores cover only two held-out repositories and use upstream LLM-derived la
 
 A separate eight-task/eight-language ContextBench development diagnostic found additional discovery errors and shows why file ranking alone is insufficient: hybrid has higher file recall, slightly lower first-hit rank than BM25, and compact previews cover less than1% of the broad annotated context. Both paired ranking intervals include zero. [Follow-up corrections, actual results and limits](reports/restoration/GATE5.md), [context protocol](docs/evaluation/CONTEXTBENCH.md). This is retrieval-only development evidence, not the official coding-agent leaderboard.
 
+The [multi-call follow-up and native platform report](reports/restoration/GATE6.md) measures search/read/grep context costs and checks Windows plus Linux/WSL source/cache/package behavior with actual models. Broader reading raises hybrid annotated-line coverage from0.87% to8.65–9.88%, at roughly3,481–5,060 stdout tokens, while four of eight development tasks still have no annotated overlap. Correct file ranking can leave the evidence anchor wrong; these results do not select a more verbose production default. Windows native cache writes now preserve primary modification time and reject missing primaries. Mac execution remains deferred.
+
 ## Monorepo map
 
 | Location | Responsibility |

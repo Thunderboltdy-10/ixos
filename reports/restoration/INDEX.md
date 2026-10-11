@@ -7,6 +7,7 @@
 | 3 | [Measured engine](GATE3.md) | [gate3](gate3/) |
 | 4 | [Integration](GATE4.md) | [gate4](gate4/) |
 | 5 | [Source discovery and context diagnostics](GATE5.md) | [gate5](gate5/) |
+| 6 | [Native platforms and multi-call evidence](GATE6.md) | [gate6](gate6/) |
 
 Raw files were moved without altering their bytes. [PATH_MAP.json](PATH_MAP.json) records old and current paths plus SHA256. Historical commands/JSON receipts keep the original paths they used; resolve them through this map. Failed builds, invalid older corpus captures and rejected experiments remain preserved. Gate3 test recipes/identities remain frozen. Current source/binary integration checks do not replace those timings.
 

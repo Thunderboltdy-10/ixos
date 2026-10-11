@@ -1,0 +1,363 @@
+{
+  "backend": "rg",
+  "tasks": 8,
+  "families": 8,
+  "cumulative_span_recall": {
+    "mean": 0.04137301962318469,
+    "ci95": [
+      0.012064224344068997,
+      0.0744509480191015
+    ],
+    "families": 8,
+    "queries": 8
+  },
+  "cumulative_span_precision": {
+    "mean": 0.04658199185810466,
+    "ci95": [
+      0.005351018025249945,
+      0.10352653739025497
+    ],
+    "families": 8,
+    "queries": 8
+  },
+  "initial_span_recall_mean": 0.007578028338266176,
+  "mean_calls": 7,
+  "mean_stdout_tokens": 5644.75,
+  "mean_stderr_tokens": 0,
+  "mean_request_tokens": 304.875,
+  "mean_tool_wall_ms": 428.87408749970746,
+  "mean_prepare_ms": 0.0,
+  "tasks_with_any_annotated_overlap": 5,
+  "per_task": [
+    {
+      "query_id": "SWE-Bench-Verified__python__maintenance__bugfix__982277e4",
+      "group": "pytest-dev/pytest",
+      "initial": {
+        "mrr": 0.0,
+        "recall": 0.0,
+        "ndcg": 0.0,
+        "span_recall": 0.0,
+        "span_precision": 0.0,
+        "span_metrics_complete": true,
+        "false_positive": null,
+        "abstained": false,
+        "unique_viewed_lines": 50,
+        "duplicate_views": 0
+      },
+      "final": {
+        "span_recall": 0.0,
+        "span_precision": 0.0,
+        "unique_displayed_lines": 381,
+        "annotated_lines_displayed": 0,
+        "annotated_lines": 168,
+        "relevant_files_with_displayed_lines": 0,
+        "duplicate_displayed_lines": 30
+      },
+      "calls": 7,
+      "tool_wall_ms": 636.6987000001245,
+      "first_annotated_overlap_call": null,
+      "tool_ms_to_first_annotated_overlap": null,
+      "stdout_tokens": 4980,
+      "stderr_tokens": 0,
+      "request_tokens": 344
+    },
+    {
+      "query_id": "Multi-SWE-Bench__go__maintenance__bugfix__d129d52f",
+      "group": "cli/cli",
+      "initial": {
+        "mrr": 0.125,
+        "recall": 1.0,
+        "ndcg": 0.31546487678572877,
+        "span_recall": 0.04065040650406504,
+        "span_precision": 0.1,
+        "span_metrics_complete": true,
+        "false_positive": null,
+        "abstained": false,
+        "unique_viewed_lines": 50,
+        "duplicate_views": 0
+      },
+      "final": {
+        "span_recall": 0.04065040650406504,
+        "span_precision": 0.012953367875647668,
+        "unique_displayed_lines": 386,
+        "annotated_lines_displayed": 5,
+        "annotated_lines": 123,
+        "relevant_files_with_displayed_lines": 1,
+        "duplicate_displayed_lines": 30
+      },
+      "calls": 7,
+      "tool_wall_ms": 465.0738000018464,
+      "first_annotated_overlap_call": 1,
+      "tool_ms_to_first_annotated_overlap": 93.05020000101649,
+      "stdout_tokens": 6484,
+      "stderr_tokens": 0,
+      "request_tokens": 239
+    },
+    {
+      "query_id": "Multi-SWE-Bench__rust__maintenance__bugfix__3be02163",
+      "group": "clap-rs/clap",
+      "initial": {
+        "mrr": 0.5,
+        "recall": 0.6666666666666666,
+        "ndcg": 0.49818925746641285,
+        "span_recall": 0.0,
+        "span_precision": 0.0,
+        "span_metrics_complete": true,
+        "false_positive": null,
+        "abstained": false,
+        "unique_viewed_lines": 50,
+        "duplicate_views": 0
+      },
+      "final": {
+        "span_recall": 0.0,
+        "span_precision": 0.0,
+        "unique_displayed_lines": 386,
+        "annotated_lines_displayed": 0,
+        "annotated_lines": 538,
+        "relevant_files_with_displayed_lines": 0,
+        "duplicate_displayed_lines": 30
+      },
+      "calls": 7,
+      "tool_wall_ms": 320.37710000076913,
+      "first_annotated_overlap_call": null,
+      "tool_ms_to_first_annotated_overlap": null,
+      "stdout_tokens": 6234,
+      "stderr_tokens": 0,
+      "request_tokens": 218
+    },
+    {
+      "query_id": "Multi-SWE-Bench__java__maintenance__bugfix__747c7f60",
+      "group": "google/gson",
+      "initial": {
+        "mrr": 0.2,
+        "recall": 0.5,
+        "ndcg": 0.23719771276929622,
+        "span_recall": 0.008849557522123894,
+        "span_precision": 0.12195121951219512,
+        "span_metrics_complete": true,
+        "false_positive": null,
+        "abstained": false,
+        "unique_viewed_lines": 41,
+        "duplicate_views": 0
+      },
+      "final": {
+        "span_recall": 0.1079646017699115,
+        "span_precision": 0.16180371352785147,
+        "unique_displayed_lines": 377,
+        "annotated_lines_displayed": 61,
+        "annotated_lines": 565,
+        "relevant_files_with_displayed_lines": 1,
+        "duplicate_displayed_lines": 30
+      },
+      "calls": 7,
+      "tool_wall_ms": 634.7025999984908,
+      "first_annotated_overlap_call": 1,
+      "tool_ms_to_first_annotated_overlap": 315.12819999989006,
+      "stdout_tokens": 5633,
+      "stderr_tokens": 0,
+      "request_tokens": 337
+    },
+    {
+      "query_id": "Multi-SWE-Bench__cpp__maintenance__bugfix__3e497d27",
+      "group": "fmtlib/fmt",
+      "initial": {
+        "mrr": 0.16666666666666666,
+        "recall": 0.6666666666666666,
+        "ndcg": 0.3235866969737877,
+        "span_recall": 0.005070993914807302,
+        "span_precision": 0.1,
+        "span_metrics_complete": true,
+        "false_positive": null,
+        "abstained": false,
+        "unique_viewed_lines": 50,
+        "duplicate_views": 0
+      },
+      "final": {
+        "span_recall": 0.005070993914807302,
+        "span_precision": 0.012953367875647668,
+        "unique_displayed_lines": 386,
+        "annotated_lines_displayed": 5,
+        "annotated_lines": 986,
+        "relevant_files_with_displayed_lines": 1,
+        "duplicate_displayed_lines": 30
+      },
+      "calls": 7,
+      "tool_wall_ms": 264.90169999851787,
+      "first_annotated_overlap_call": 1,
+      "tool_ms_to_first_annotated_overlap": 101.06610000002547,
+      "stdout_tokens": 5633,
+      "stderr_tokens": 0,
+      "request_tokens": 241
+    },
+    {
+      "query_id": "Multi-SWE-Bench__c__maintenance__bugfix__cdbc5890",
+      "group": "jqlang/jq",
+      "initial": {
+        "mrr": 0.0,
+        "recall": 0.0,
+        "ndcg": 0.0,
+        "span_recall": 0.0,
+        "span_precision": 0.0,
+        "span_metrics_complete": true,
+        "false_positive": null,
+        "abstained": false,
+        "unique_viewed_lines": 50,
+        "duplicate_views": 0
+      },
+      "final": {
+        "span_recall": 0.0,
+        "span_precision": 0.0,
+        "unique_displayed_lines": 386,
+        "annotated_lines_displayed": 0,
+        "annotated_lines": 456,
+        "relevant_files_with_displayed_lines": 0,
+        "duplicate_displayed_lines": 30
+      },
+      "calls": 7,
+      "tool_wall_ms": 435.6647000004159,
+      "first_annotated_overlap_call": null,
+      "tool_ms_to_first_annotated_overlap": null,
+      "stdout_tokens": 5636,
+      "stderr_tokens": 0,
+      "request_tokens": 357
+    },
+    {
+      "query_id": "SWE-PolyBench__typescript__evolution__feature__41cd3842",
+      "group": "coder/code-server",
+      "initial": {
+        "mrr": 1.0,
+        "recall": 0.5,
+        "ndcg": 0.6131471927654584,
+        "span_recall": 0.0,
+        "span_precision": 0.0,
+        "span_metrics_complete": true,
+        "false_positive": null,
+        "abstained": false,
+        "unique_viewed_lines": 50,
+        "duplicate_views": 0
+      },
+      "final": {
+        "span_recall": 0.10344827586206896,
+        "span_precision": 0.016901408450704224,
+        "unique_displayed_lines": 355,
+        "annotated_lines_displayed": 6,
+        "annotated_lines": 58,
+        "relevant_files_with_displayed_lines": 1,
+        "duplicate_displayed_lines": 28
+      },
+      "calls": 7,
+      "tool_wall_ms": 333.35259999694244,
+      "first_annotated_overlap_call": 2,
+      "tool_ms_to_first_annotated_overlap": 166.89769999720738,
+      "stdout_tokens": 5977,
+      "stderr_tokens": 0,
+      "request_tokens": 401
+    },
+    {
+      "query_id": "Multi-SWE-Bench__javascript__maintenance__bugfix__cbea412a",
+      "group": "expressjs/express",
+      "initial": {
+        "mrr": 0.3333333333333333,
+        "recall": 0.5,
+        "ndcg": 0.3065735963827292,
+        "span_recall": 0.006053268765133172,
+        "span_precision": 0.1,
+        "span_metrics_complete": true,
+        "false_positive": null,
+        "abstained": false,
+        "unique_viewed_lines": 50,
+        "duplicate_views": 0
+      },
+      "final": {
+        "span_recall": 0.07384987893462469,
+        "span_precision": 0.16804407713498623,
+        "unique_displayed_lines": 363,
+        "annotated_lines_displayed": 61,
+        "annotated_lines": 826,
+        "relevant_files_with_displayed_lines": 1,
+        "duplicate_displayed_lines": 30
+      },
+      "calls": 7,
+      "tool_wall_ms": 340.2215000005526,
+      "first_annotated_overlap_call": 1,
+      "tool_ms_to_first_annotated_overlap": 108.70219999924302,
+      "stdout_tokens": 4581,
+      "stderr_tokens": 0,
+      "request_tokens": 302
+    }
+  ],
+  "provenance": {
+    "status": "passed",
+    "backend": "rg",
+    "policy": {
+      "id": "inspect-top6-no-cue-v1",
+      "search_limit": 10,
+      "context": 2,
+      "response_bytes": 6000,
+      "read_lines": 61,
+      "search_reads": 6,
+      "grep_limit": 10,
+      "grep_reads": 0,
+      "max_calls": 7,
+      "cue": "Disabled. Inspect up to six ranked initial results under the same seven-call ceiling.",
+      "reads": "Ranked returned files/anchors only; center requested61-line window on the shown interval. File-only results begin at line1. Skip fully covered read intervals, clipped at EOF only when a previous read reported it.",
+      "feedback": "None. Returned/inspected does not imply usefulness or acceptance.",
+      "stopping": "Fixed schedule/limits only. Never use annotation overlap or success to stop."
+    },
+    "policy_sha256": "0f096f163913e8c67e254b49a717bb1185661652ceb1c243473732223a3f0712",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "binary_sha256": "21e9b3fd1aee11b6308f3f2de4344ccf2a0081bb264dbb9ec93d40a729318eee",
+    "model": null,
+    "plan_sha256": "9b675efff985518d60bdee4c0c9d711622f35043c1e6981c064019597c289bcb",
+    "dataset_sha256": "cd1bc4ddefa69271d4f073f31d54bf33a1c5671800211d9db7e6a3c24435a75d",
+    "coordinate_policy": "upstream-compatible",
+    "datasets": [
+      {
+        "id": "contextbench-SWE-Bench-Verified__python__maintenance__bugfix__982277e4",
+        "fingerprint": "c36c6b24986df7ed77c95816333dc97830967bd3a39736e5b12444bf055b3bfa",
+        "sources": 471
+      },
+      {
+        "id": "contextbench-Multi-SWE-Bench__go__maintenance__bugfix__d129d52f",
+        "fingerprint": "d11c66a879171b7aedcfe1a521359fee9ffc5324f3b7b716375c628cb44ef064",
+        "sources": 540
+      },
+      {
+        "id": "contextbench-Multi-SWE-Bench__rust__maintenance__bugfix__3be02163",
+        "fingerprint": "16f631a870c970ba89331dd8ce5310ee4a816978265293c5388c0268cbe7d0f6",
+        "sources": 313
+      },
+      {
+        "id": "contextbench-Multi-SWE-Bench__java__maintenance__bugfix__747c7f60",
+        "fingerprint": "10f198620cb3f8654dc96bb87f39b5d70213c2844900a6da7eb38c6317cf6836",
+        "sources": 324
+      },
+      {
+        "id": "contextbench-Multi-SWE-Bench__cpp__maintenance__bugfix__3e497d27",
+        "fingerprint": "e0b5ba4e41eb16dfcad596e045be3df7c1c93e3b80402201f296ced10ffc8a2d",
+        "sources": 102
+      },
+      {
+        "id": "contextbench-Multi-SWE-Bench__c__maintenance__bugfix__cdbc5890",
+        "fingerprint": "a63c661396dc5b51d24235ad267200995b2d9690a163e23b4bf96660f6757290",
+        "sources": 113
+      },
+      {
+        "id": "contextbench-SWE-PolyBench__typescript__evolution__feature__41cd3842",
+        "fingerprint": "e5dca6404e2d6d1a491563d92b1f685377f516a73b2ccc4649bfaa48fcd84e3a",
+        "sources": 154
+      },
+      {
+        "id": "contextbench-Multi-SWE-Bench__javascript__maintenance__bugfix__cbea412a",
+        "fingerprint": "f121e88c0a02bfc852604ed412dfc82c7ce6bd2955068049e38f913bb7fb7f07",
+        "sources": 174
+      }
+    ],
+    "tokenizer": {
+      "name": "cl100k_base",
+      "version": "0.12.0"
+    },
+    "condition": "Fresh CLI calls, hybrid JIT, session off. BM25 initial search is prepared memory; rg initial search uses fresh rg plus loaded-source windows. All follow-up read/grep calls use the same fresh model-free Ixos CLI.",
+    "limitations": "Inspected eight-task development pilot, deterministic schedule, upstream-compatible line annotations. Not held-out, real LLM reasoning, symbol/byte ContextBench leaderboard, coding success or product superiority. Request tokens use canonical tool JSON, not a vendor wrapper. Preparation/read indexing costs and controller overhead reported separately/excluded from tool timing."
+  }
+}

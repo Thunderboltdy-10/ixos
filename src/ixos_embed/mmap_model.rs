@@ -965,22 +965,21 @@ mod tests {
     }
 
     #[test]
-    fn test_new_ixos_handles_missing_model() {
-        // This test verifies that new_ixos() fails gracefully when model doesn't exist
-        // In production, the model should be bundled, but during development it may not exist
+    fn legacy_qwen_constructor_reports_missing_artifact() {
+        // new_ixos is the retained Qwen alias, not the current CLI profile.
+        // Source-only installs can legitimately lack its legacy artifact.
         let result = MmapModel2VecEmbedder::new_ixos();
 
         // If model exists, should succeed
         // If model doesn't exist, should return appropriate error
         match result {
-            Ok(_) => {
-                // Model was found - verify it's actually usable
-                println!("Ixos model found during test");
+            Ok(model) => {
+                assert!(model.local_path.is_some());
+                assert!(!model.is_loaded(), "Legacy constructor should remain lazy");
             }
             Err(ModelError::LoadError(msg)) => {
-                // Expected if model not yet distilled
                 assert!(
-                    msg.contains("Ixos embedder not found") || msg.contains("does not exist"),
+                    msg.starts_with("Qwen model not found."),
                     "Error message should indicate missing model: {}",
                     msg
                 );

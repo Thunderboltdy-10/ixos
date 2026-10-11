@@ -1,0 +1,15 @@
+test_actual_read_coverage_not_requested_range_controls_skip (eval.test_trajectory.TrajectoryTests.test_actual_read_coverage_not_requested_range_controls_skip) ... ok
+test_all_views_count_and_overlaps_are_unioned (eval.test_trajectory.TrajectoryTests.test_all_views_count_and_overlaps_are_unioned) ... ok
+test_broader_inspection_keeps_call_ceiling_without_cues (eval.test_trajectory.TrajectoryTests.test_broader_inspection_keeps_call_ceiling_without_cues) ... ok
+test_first_overlap_and_all_steps_survive_early_hit (eval.test_trajectory.TrajectoryTests.test_first_overlap_and_all_steps_survive_early_hit) ... ok
+test_gold_only_path_cannot_enter_policy (eval.test_trajectory.TrajectoryTests.test_gold_only_path_cannot_enter_policy) ... ok
+test_missing_overlap_is_censored_not_fast_success (eval.test_trajectory.TrajectoryTests.test_missing_overlap_is_censored_not_fast_success) ... ok
+test_only_exact_displayed_source_gets_credit (eval.test_trajectory.TrajectoryTests.test_only_exact_displayed_source_gets_credit) ... ok
+test_policy_bound_is_shared_across_backends (eval.test_trajectory.TrajectoryTests.test_policy_bound_is_shared_across_backends) ... ok
+test_query_and_cue_have_no_source_or_label_fields (eval.test_trajectory.TrajectoryTests.test_query_and_cue_have_no_source_or_label_fields) ... ok
+test_reads_only_returned_ranked_files_and_skip_duplicates (eval.test_trajectory.TrajectoryTests.test_reads_only_returned_ranked_files_and_skip_duplicates) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.002s
+
+OK

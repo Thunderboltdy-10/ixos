@@ -268,7 +268,7 @@ pub fn set_personal_signals(path: &Path, signals: PersonalSignals) -> Result<(),
         let bytes = signals.encode();
         #[cfg(windows)]
         {
-            match std::fs::write(ads_rank_path(path), bytes) {
+            match super::ads_windows::write_metadata_stream(path, ADS_STREAM_NAME, &bytes) {
                 Ok(()) => return Ok(()),
                 Err(e) if should_fallback_from_native_error(&e) => {
                     tracing::debug!(
@@ -309,7 +309,7 @@ pub fn clear_personal_signals(path: &Path) -> Result<(), std::io::Error> {
     if is_native_supported(path) {
         #[cfg(windows)]
         {
-            match std::fs::remove_file(ads_rank_path(path)) {
+            match super::ads_windows::remove_metadata_stream(&ads_rank_path(path)) {
                 Ok(()) => return Ok(()),
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
                 Err(e) if should_fallback_from_native_error(&e) => {

@@ -27,6 +27,11 @@ def main():
         (root/'.gitignore').write_text('ignored.txt\n',encoding='utf-8')
         (root/'ignored.txt').write_text('LATE_WITNESS_A',encoding='utf-8')
         before={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in root.iterdir() if p.is_file()}
+        def metadata():
+            value=path.stat()
+            return {'mode':stat.S_IMODE(value.st_mode),'bytes':value.st_size,
+                    'mtime_ns':value.st_mtime_ns,'ctime_ns':value.st_ctime_ns}
+        before_metadata=metadata()
         def search(query,cache='native-cache'):
             argv=[str(args.binary.resolve()),'search',query,'--dir',str(root),'--retrieval','hybrid','--model-path',str(args.model.resolve()),'--json','--stats','--cache-mode',cache,'--max-output-bytes','3000']
             raw=subprocess.run(argv,capture_output=True,timeout=120)
@@ -43,7 +48,10 @@ def main():
         assert s2['nativeCacheHits']+s2['applicationCacheHits']==1
         assert abs(first['results'][0]['score']-second['results'][0]['score'])<1e-6
         assert before=={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in root.iterdir() if p.is_file()}
-        results.append({'case':'warm record preserves source/ranking and eight passages','first':s1,'second':s2})
+        if os.name=='nt' or sys.platform.startswith('linux'):
+            assert metadata()['mtime_ns']==before_metadata['mtime_ns']
+        results.append({'case':'warm record preserves source/ranking and eight passages','first':s1,'second':s2,
+                        'source_metadata_before':before_metadata,'source_metadata_after':metadata()})
         path.write_bytes(text.replace('LATE_WITNESS_A','LATE_WITNESS_B').encode())
         _,edited=search('LATE_WITNESS_B')
         assert edited['passagesEmbedded']==8
@@ -56,8 +64,11 @@ def main():
         _,jit=search('LATE_WITNESS_B','ephemeral')
         assert jit['passagesEmbedded']==8 and jit['cacheWrites']==0 and jit['nativeCacheHits']==0
         results.append({'case':'JIT ignores native record and does not persist','stats':jit})
+        before_clear=metadata()
         cleared=subprocess.run([str(args.binary.resolve()),'cache','clear','--dir',str(root),'--force'],capture_output=True,timeout=120)
         assert cleared.returncode==0,cleared.stderr.decode()
+        if os.name=='nt' or sys.platform.startswith('linux'):
+            assert metadata()['mtime_ns']==before_clear['mtime_ns']
         _,cleared_stats=search('LATE_WITNESS_B')
         assert cleared_stats['passagesEmbedded']==8
         results.append({'case':'explicit cache clear includes document namespace','stats':cleared_stats})
@@ -82,8 +93,13 @@ def main():
                 _,_,statistics,_,_=server.request({'op':'search','id':'after-reset','query':'LATE_WITNESS_C'})
                 assert statistics['sessionEntries']==1
         results.append({'case':'indexed feedback is consumed; source edits invalidate live vectors and old feedback; reset clears session','status':'passed'})
-        if os.name=='nt':
+        # Linux user.* attributes require source write permission. Run this as
+        # an ordinary user; root bypasses the permission being tested. Native
+        # macOS permission behavior needs its own probe rather than assuming
+        # that every Unix filesystem matches Linux.
+        if os.name=='nt' or (sys.platform.startswith('linux') and os.geteuid()!=0):
             path.write_bytes(text.replace('LATE_WITNESS_A','LATE_WITNESS_F').encode())
+            original_mode=stat.S_IMODE(path.stat().st_mode)
             path.chmod(stat.S_IREAD)
             try:
                 _,filled=search('LATE_WITNESS_F')
@@ -91,8 +107,30 @@ def main():
                 assert filled['cacheWrites']==1 and fallback['applicationCacheHits']==1
                 assert fallback['passagesEmbedded']==0
                 results.append({'case':'readonly native source uses application DB without sidecars','fill':filled,'warm':fallback})
-            finally:path.chmod(stat.S_IWRITE|stat.S_IREAD)
-            subprocess.run([str(args.binary.resolve()),'cache','clear','--dir',str(root),'--force'],capture_output=True,timeout=120,check=True)
+            finally:path.chmod(original_mode)
+        subprocess.run([str(args.binary.resolve()),'cache','clear','--dir',str(root),'--force'],capture_output=True,timeout=120,check=True)
+        unicode_path=root/'Ω 中😀'/'source 中.rs'
+        unicode_path.parent.mkdir()
+        unicode_bytes='fn UNIQUE_UNICODE_WITNESS() {}\n// Evidence 中😀\n'.encode()
+        unicode_path.write_bytes(unicode_bytes)
+        before_names={p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file()}
+        argv=[str(args.binary.resolve()),'search','UNIQUE_UNICODE_WITNESS','--dir',str(root),
+              '--model-path',str(args.model.resolve()),'--json','--stats','--max-output-bytes','3000']
+        unicode_rows=[]
+        for _ in range(2):
+            raw=subprocess.run(argv,capture_output=True,timeout=120,check=True)
+            value=json.loads(raw.stdout)
+            stats=json.loads(raw.stderr)['diagnostics']
+            assert value['results'][0]['path']==unicode_path.relative_to(root).as_posix()
+            assert '中😀' in value['results'][0]['view']['text']
+            unicode_rows.append(stats)
+        assert unicode_rows[1]['passagesEmbedded']==0
+        assert unicode_rows[1]['nativeCacheHits']+unicode_rows[1]['applicationCacheHits']==2
+        assert unicode_path.read_bytes()==unicode_bytes
+        assert before_names=={p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file()}
+        results.append({'case':'Unicode source names/content retrieve and cache without adjacent files',
+                        'first':unicode_rows[0],'warm':unicode_rows[1]})
+        subprocess.run([str(args.binary.resolve()),'cache','clear','--dir',str(root),'--force'],capture_output=True,timeout=120,check=True)
     args.output.write_text(json.dumps({'status':'passed','model':str(args.model),'cases':results},indent=2),encoding='utf-8')
     print(f'{len(results)} real-artifact retrieval/cache/protocol probes passed')
 

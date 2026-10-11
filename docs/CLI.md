@@ -41,6 +41,7 @@ Use global `--config FILE` for an isolated configuration. Missing files use defa
 ```sh
 ixos grep 'PATTERN' --dir ROOT -C 2 --limit 10
 ixos grep 'literal_symbol' --dir ROOT -F -i
+ixos grep --dir ROOT -F -- '--literal-option'
 ixos read relative/path.rs --dir ROOT --start 50 --lines 30 --max-output-bytes 6000
 ixos read relative/path.txt --dir ROOT --start 1 --lines 1 --characters 1000 --character-offset 0
 ```

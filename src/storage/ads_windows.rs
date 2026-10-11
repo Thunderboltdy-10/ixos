@@ -14,7 +14,10 @@
 
 use std::ffi::OsString;
 use std::fs;
+use std::io::Write;
 use std::os::windows::ffi::OsStringExt;
+use std::os::windows::fs::OpenOptionsExt;
+use std::os::windows::io::AsRawHandle;
 use std::path::{Path, PathBuf};
 use windows_sys::Win32::Storage::FileSystem::GetVolumeInformationW;
 
@@ -23,6 +26,79 @@ use crate::security::crypto::load_or_create_key;
 
 /// Name of the alternate data stream for Ixos embeddings
 const ADS_STREAM_NAME: &str = ":ixos_embed";
+
+/// Disable automatic access/write timestamp updates from THIS metadata handle.
+/// No previously read timestamp is restored, so concurrent primary writes retain
+/// their own timestamps. Stream updates can still generate filesystem events.
+fn suppress_handle_times(file: &fs::File) -> std::io::Result<()> {
+    use windows_sys::Win32::{Foundation::FILETIME, Storage::FileSystem::SetFileTime};
+    let unchanged = FILETIME {
+        dwLowDateTime: u32::MAX,
+        dwHighDateTime: u32::MAX,
+    };
+    // SAFETY: the File owns a live handle; pointers address initialized FILETIME
+    // values for this synchronous call. All-ones is the documented suppression
+    // sentinel, not a timestamp value to assign to the source.
+    if unsafe {
+        SetFileTime(
+            file.as_raw_handle(),
+            std::ptr::null(),
+            &unchanged,
+            &unchanged,
+        )
+    } == 0
+    {
+        return Err(std::io::Error::last_os_error());
+    }
+    Ok(())
+}
+
+pub(crate) fn write_metadata_stream(path: &Path, name: &str, data: &[u8]) -> std::io::Result<()> {
+    use windows_sys::Win32::Storage::FileSystem::{FILE_SHARE_READ, FILE_SHARE_WRITE};
+    // Open the primary first and prevent rename/delete for this short write.
+    // A missing primary must never be recreated just to attach cached metadata.
+    let _primary = fs::OpenOptions::new()
+        .read(true)
+        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE)
+        .open(path)?;
+    let mut stream = path.as_os_str().to_owned();
+    stream.push(name);
+    // Truncate only AFTER suppression. CREATE_ALWAYS would modify the stream
+    // before its handle has been configured.
+    let mut file = fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .open(stream)?;
+    suppress_handle_times(&file)?;
+    file.set_len(0)?;
+    file.write_all(data)
+}
+
+pub(crate) fn remove_metadata_stream(stream: &Path) -> std::io::Result<()> {
+    use windows_sys::Win32::Storage::FileSystem::{
+        FileDispositionInfo, SetFileInformationByHandle, DELETE, FILE_DISPOSITION_INFO,
+        FILE_WRITE_ATTRIBUTES,
+    };
+    let file = fs::OpenOptions::new()
+        .access_mode(DELETE | FILE_WRITE_ATTRIBUTES)
+        .open(stream)?;
+    suppress_handle_times(&file)?;
+    let disposition = FILE_DISPOSITION_INFO { DeleteFile: 1 };
+    // SAFETY: live owned handle and correctly sized/initialized synchronous
+    // disposition structure. This deletes the named metadata stream on close.
+    if unsafe {
+        SetFileInformationByHandle(
+            file.as_raw_handle(),
+            FileDispositionInfo,
+            &disposition as *const _ as *const std::ffi::c_void,
+            std::mem::size_of::<FILE_DISPOSITION_INFO>() as u32,
+        )
+    } == 0
+    {
+        return Err(std::io::Error::last_os_error());
+    }
+    Ok(())
+}
 
 /// Windows NTFS Alternate Data Streams cache
 pub struct AdsCache {
@@ -165,11 +241,10 @@ impl EmbeddingCache for AdsCache {
     }
 
     fn set(&self, path: &Path, file_hash: &[u8; 32], embedding: &[f32]) -> Result<(), CacheError> {
-        let ads_path = Self::ads_path(path);
         let signed_data = self.validator.sign(embedding, file_hash);
         self.validator.verify(&signed_data, file_hash)?;
 
-        fs::write(&ads_path, signed_data)?;
+        write_metadata_stream(path, ADS_STREAM_NAME, &signed_data)?;
         tracing::debug!("ADS cache set for {:?}", path);
         Ok(())
     }
@@ -177,7 +252,7 @@ impl EmbeddingCache for AdsCache {
     fn delete(&self, path: &Path) -> Result<(), CacheError> {
         let ads_path = Self::ads_path(path);
 
-        match fs::remove_file(&ads_path) {
+        match remove_metadata_stream(&ads_path) {
             Ok(()) => {
                 tracing::debug!("ADS cache deleted for {:?}", path);
                 Ok(())
@@ -214,6 +289,67 @@ mod tests {
         let key = [0x42u8; 32];
         let fingerprint = [0xABu8; 32];
         MetadataValidator::new(&key, fingerprint)
+    }
+
+    #[test]
+    fn metadata_write_replace_and_delete_preserve_primary_mtime() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("source.txt");
+        fs::write(&path, "primary source").unwrap();
+        if !AdsCache::is_supported_static(&path) {
+            return;
+        }
+        let before = fs::metadata(&path).unwrap().modified().unwrap();
+        write_metadata_stream(&path, ADS_STREAM_NAME, b"long cached value").unwrap();
+        assert_eq!(fs::metadata(&path).unwrap().modified().unwrap(), before);
+        write_metadata_stream(&path, ADS_STREAM_NAME, b"short").unwrap();
+        assert_eq!(fs::read(AdsCache::ads_path(&path)).unwrap(), b"short");
+        assert_eq!(fs::metadata(&path).unwrap().modified().unwrap(), before);
+        remove_metadata_stream(&AdsCache::ads_path(&path)).unwrap();
+        assert!(!AdsCache::with_validator(test_validator()).contains(&path));
+        assert_eq!(fs::metadata(&path).unwrap().modified().unwrap(), before);
+        assert_eq!(fs::read(&path).unwrap(), b"primary source");
+        assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 1);
+    }
+
+    #[test]
+    fn suppressed_cache_handle_does_not_restore_over_concurrent_source_edit() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("source.txt");
+        fs::write(&path, "before edit").unwrap();
+        if !AdsCache::is_supported_static(&path) {
+            return;
+        }
+        let mut cache = fs::OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(AdsCache::ads_path(&path))
+            .unwrap();
+        suppress_handle_times(&cache).unwrap();
+        fs::write(&path, "concurrent edit").unwrap();
+        let external_time = std::time::UNIX_EPOCH + std::time::Duration::from_secs(1_700_000_000);
+        fs::File::options()
+            .write(true)
+            .open(&path)
+            .unwrap()
+            .set_times(fs::FileTimes::new().set_modified(external_time))
+            .unwrap();
+        cache.write_all(b"metadata update").unwrap();
+        drop(cache);
+        assert_eq!(
+            fs::metadata(&path).unwrap().modified().unwrap(),
+            external_time
+        );
+        assert_eq!(fs::read(&path).unwrap(), b"concurrent edit");
+    }
+
+    #[test]
+    fn metadata_write_never_creates_a_missing_primary() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("deleted.txt");
+        assert!(write_metadata_stream(&path, ADS_STREAM_NAME, b"cache").is_err());
+        assert!(!path.exists());
+        assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 0);
     }
 
     #[test]

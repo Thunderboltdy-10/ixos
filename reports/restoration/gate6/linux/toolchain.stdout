@@ -1,0 +1,22 @@
+
+  1.92.0-x86_64-unknown-linux-gnu installed - rustc 1.92.0 (ded5c06cf 2025-12-08)
+
+
+Rust is installed now. Great!
+
+To get started you need Cargo's bin directory 
+(/home/thunderboltdy/.cache/ixos-review-298088f-20261011/cargo/bin) in your 
+PATH
+environment variable. This has not been done automatically.
+
+To configure your current shell, you need to source
+the corresponding env file under 
+/home/thunderboltdy/.cache/ixos-review-298088f-20261011/cargo.
+
+This is usually done by running one of the following (note the leading DOT):
+. "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/cargo/env"          
+# For sh/bash/zsh/ash/dash/pdksh
+source "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/cargo/env.fish"
+# For fish
+source $"/home/thunderboltdy/.cache/ixos-review-298088f-20261011/cargo/env.nu" 
+# For nushell

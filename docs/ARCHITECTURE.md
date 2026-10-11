@@ -52,6 +52,8 @@ The signed `IXD1` document record contains a recipe fingerprint, source fingerpr
 
 The formula is `103 + passages × (28 + dimensions)`. Filesystem allocation overhead is additional. Records live in Windows `:ixos_document_v1` ADS or Unix `user.ixos.document-v1` xattr. Actual native write failure uses a 64 MiB LMDB in the application cache. There are no embedding sidecars in the searched folder.
 
+Windows streams share the primary file's timestamps. Ixos suppresses automatic access/write-time updates on the **cache handle before truncation**, using the documented `SetFileTime` sentinel. It does not restore an old timestamp after writing, which could overwrite a concurrent primary edit's timestamp. Legacy embedding and personal-signal streams use the same helper. The primary is opened first and held against rename/delete during the short cache write; a missing primary is never created just to attach metadata. Actual native write failure still uses the application DB. Stream/xattr updates can generate filesystem events and Unix ctime changes; preserving modification time is not an invisible-write guarantee. See [Windows handle semantics](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-setfiletime) and [shared stream timestamps](https://learn.microsoft.com/en-us/windows/win32/fileio/file-streams).
+
 | Condition | Source freshness | Extraction/lexical preparation | Document embeddings |
 |---|---|---|---|
 | Fresh JIT process | Full bounded read/hash | Rebuilt | Computed; no persistent writes |

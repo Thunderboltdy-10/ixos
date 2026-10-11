@@ -1,0 +1,21 @@
+{
+  "archive": "ixos-linux-reviewed.tar.gz",
+  "sha256": "c5911400bef71648bd359cd4d34f3a3f3572d49e51bc0900e42db98593c3d539",
+  "files": [
+    "LICENSE",
+    "config/retrieval-models.json",
+    "scripts/setup_models.py",
+    "eval/__init__.py",
+    "eval/artifacts.py",
+    "eval/normalize_tokenizer.py",
+    "eval/compress_model.py",
+    "skills/ixos-retrieval/SKILL.md",
+    "docs/CLI.md",
+    "docs/ARCHITECTURE.md",
+    "docs/models/README.md",
+    "docs/models/PUBLISHING.md",
+    "ixos",
+    "README.md"
+  ],
+  "bundled_weights": false
+}

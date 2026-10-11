@@ -7,7 +7,7 @@ The source restoration is local. No public push, Git history rewrite, new binary
 Build/test on Windows, Linux and native macOS with actual pinned model artifacts. `engine-ci.yml` defines core/evaluation/model/cache/profile checks on all three OSes; it has not run on remote CI during this restoration. Mac desktop testing must include launch without signup, search with the selected model, progressive events, file open/reveal and multiple instances. Test ARM and x86 where supported; a cross-build is not native runtime proof.
 
 ```sh
-cargo test --workspace --locked --jobs 2
+cargo test --locked -p ixos-protocol --lib --bin ixos --test settings_matrix --jobs 2
 cargo build --release --locked --bin ixos
 python scripts/setup_models.py --profile all
 python scripts/verify_retrieval_engine.py --binary PATH --model CODE_MODEL --output RECEIPT.json
@@ -15,6 +15,8 @@ python scripts/verify_restored_cli.py --binary PATH --code-model CODE_MODEL --do
 ```
 
 Capture actual xattr/ADS hits, failed-native fallback, equal-length edits, rename, ignore policy, long Unicode sources and no adjacent files. Read-only probes must not change source content. Report failures without relabeling fallback as a native hit. Document/low-memory/real agent-task evidence remains separate from authored contract checks.
+
+Local source/runtime proof now covers Windows and Ubuntu24.04/WSL x86-64 on ext4 with the pinned models; [Gate6](../../reports/restoration/GATE6.md) records core tests, nine native/cache/source probes, eight profile checks, Windows timestamp preservation and Linux package execution. WSL uses a native Linux executable/kernel/filesystem, not bare-metal or Mac proof. The Mac checks remain deferred by the owner. Run `cargo test --workspace --locked --jobs 2` separately for desktop/workspace verification with the desktop's platform system dependencies installed.
 
 ## Historical credentials while preserving development
 

@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+    "--config",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate9\\own-config.toml",
+    "read",
+    "evidence.rs",
+    "--dir",
+    "src/retrieval",
+    "--start",
+    "172",
+    "--lines",
+    "60",
+    "--max-output-bytes",
+    "6000"
+  ],
+  "exit_code": 0
+}

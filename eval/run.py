@@ -64,6 +64,7 @@ def main():
     parser.add_argument("--representation",choices=['intro-uniform','whole-token-centroid'],default='intro-uniform')
     parser.add_argument('--io-workers',type=int,default=1)
     parser.add_argument('--typo-correction',action='store_true')
+    parser.add_argument('--evidence-policy', choices=['global-line', 'bounded-rerank'], default='global-line')
     parser.add_argument("--cache", choices=["jit", "native-cold", "native-warm"], default="jit")
     parser.add_argument("--split", choices=["dev", "validation", "test"], default="dev")
     parser.add_argument("--selection", type=Path)
@@ -79,6 +80,8 @@ def main():
         parser.error("Match manifest/root counts and use valid repetitions/limit/context")
     if args.backend != "ixos" and args.cache != "jit":
         parser.error("Native embedding-cache conditions apply only to Ixos")
+    if args.evidence_policy != 'global-line' and (args.backend != 'ixos' or args.retrieval not in {'hybrid', 'semantic'} or args.limit > 10):
+        parser.error('Bounded evidence requires actual semantic/hybrid Ixos and limit <=10')
     if args.split == "test" and not args.selection:
         parser.error("Freeze selection/config/model identities before a held-out run")
     if args.sample is not None and (args.sample < 1 or args.split != "dev"):
@@ -102,6 +105,8 @@ def main():
     model = artifact_identity(args.model_path) if args.backend == "ixos" and args.retrieval!='lexical' else None
     config_identity = {"backend": args.backend, "cache": args.cache, "limit": args.limit, "context": args.context, "output_bytes": args.output_bytes, "model_fingerprint": model["fingerprint"] if model else None, "legacy_mode": "flash" if model else None}
     if args.retrieval!='legacy': config_identity.update(retrieval=args.retrieval,representation=args.representation,legacy_mode=None,io_workers=args.io_workers,typo_correction=args.typo_correction,output_contract='bounded-rows-v2')
+    # Preserve already frozen control identities; opt-in changes get a new hash.
+    if args.evidence_policy != 'global-line': config_identity['evidence_policy'] = args.evidence_policy
     config_hash = canonical_hash(config_identity)
     if args.selection:
         selection = json.loads(args.selection.read_text(encoding="utf-8"))
@@ -151,6 +156,7 @@ def main():
                             utility(root, f"clear-{label}", "cache", "clear", "--dir", root, "--force")
                         extras=["--search-mode","flash","--model","ixos-flash-v2"] if args.retrieval=='legacy' else ['--retrieval',args.retrieval,'--representation',args.representation,'--model-path',str(args.model_path.resolve()),'--io-workers',str(args.io_workers)]
                         if args.typo_correction:extras.append('--typo-correction')
+                        if args.evidence_policy != 'global-line': extras += ['--evidence-policy', args.evidence_policy]
                         response = run_ixos(args.binary,config,root,dataset,query.text,cache_mode="ephemeral" if args.cache=="jit" else "native-cache",limit=args.limit,context=args.context,output_bytes=args.output_bytes,extra_args=extras,capture=capture)
                         if args.retrieval=='legacy':
                             primary = next((m for m in response.diagnostics.get("models",[]) if m["role"]=="primary"),None)
@@ -161,6 +167,12 @@ def main():
                             work=response.diagnostics['diagnostics']
                             if model and work['modelFingerprint']!=model['fingerprint']: raise ContractError('Loaded model differs from frozen artifact identity')
                             embedded,hits=work['passagesEmbedded'],work['nativeCacheHits']+work['applicationCacheHits']
+                            if args.evidence_policy == 'bounded-rerank':
+                                evidence = work.get('evidence', {})
+                                if (evidence.get('policy') != args.evidence_policy
+                                        or not 0 <= evidence.get('candidatePassages', -1) <= 160
+                                        or not 0 <= evidence.get('extraPassagesEmbedded', -1) <= 80):
+                                    raise ContractError('Bounded evidence policy/ceilings were not verified')
                         if args.cache=="native-warm" and (embedded != 0 or (response.paths and hits == 0)):
                             raise ContractError("Native-warm condition did not produce actual disk-cache hits")
                     elif args.backend=="rg":

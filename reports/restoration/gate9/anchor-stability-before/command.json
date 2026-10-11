@@ -1,0 +1,14 @@
+[
+  "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+  "--config",
+  "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-line-stability-zavb_ko0\\config.toml",
+  "search",
+  "alpha beta gamma delta epsilon zeta",
+  "--dir",
+  "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-line-stability-zavb_ko0\\corpus",
+  "--profile",
+  "lexical",
+  "--context",
+  "0",
+  "--json"
+]

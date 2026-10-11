@@ -1,5 +1,7 @@
 //! Evidence-selected CLI profiles. Explicit query flags override these defaults.
-use crate::retrieval::{record::Representation, Options, RetrievalMode, SessionPolicy};
+use crate::retrieval::{
+    record::Representation, EvidencePolicy, Options, RetrievalMode, SessionPolicy,
+};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -27,6 +29,7 @@ pub struct RetrievalConfig {
     pub io_workers: usize,
     pub typo_correction: bool,
     pub session: SessionPolicy,
+    pub evidence_policy: EvidencePolicy,
 }
 
 impl Default for RetrievalConfig {
@@ -44,6 +47,7 @@ impl Default for RetrievalConfig {
             io_workers: 4,
             typo_correction: false,
             session: SessionPolicy::Off,
+            evidence_policy: EvidencePolicy::GlobalLine,
         }
     }
 }
@@ -103,6 +107,7 @@ impl RetrievalConfig {
             io_workers: self.io_workers,
             typo_correction: self.typo_correction,
             session: self.session,
+            evidence_policy: self.evidence_policy,
             ..Options::default()
         })
     }

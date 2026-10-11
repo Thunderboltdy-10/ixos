@@ -1,0 +1,169 @@
+[
+  {
+    "argv": [
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/source/target/release/ixos",
+      "--config",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/config.toml",
+      "search",
+      "late unique evidence witness cache freshness",
+      "--dir",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/corpus",
+      "--model-path",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/models/potion-code-16M-v2-unbounded",
+      "--json",
+      "--stats"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/source/target/release/ixos",
+      "--config",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/config.toml",
+      "search",
+      "late unique evidence witness cache freshness",
+      "--dir",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/corpus",
+      "--model-path",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/models/potion-code-16M-v2-unbounded",
+      "--json",
+      "--stats",
+      "--evidence-policy",
+      "bounded-rerank"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/source/target/release/ixos",
+      "--config",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/config.toml",
+      "search",
+      "late unique evidence witness cache freshness",
+      "--dir",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/corpus",
+      "--model-path",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/models/potion-code-16M-v2-unbounded",
+      "--json",
+      "--stats",
+      "--evidence-policy",
+      "bounded-rerank",
+      "--cache-mode",
+      "ephemeral"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/source/target/release/ixos",
+      "--config",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/config.toml",
+      "search",
+      "late unique evidence witness cache freshness",
+      "--dir",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/corpus",
+      "--model-path",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/models/potion-code-16M-v2-unbounded",
+      "--json",
+      "--stats",
+      "--evidence-policy",
+      "bounded-rerank",
+      "--limit",
+      "11"
+    ],
+    "exit_code": 1
+  },
+  {
+    "argv": [
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/source/target/release/ixos",
+      "--config",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/config.toml",
+      "search",
+      "late unique evidence witness cache freshness",
+      "--dir",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/corpus",
+      "--model-path",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/models/potion-code-16M-v2-unbounded",
+      "--json",
+      "--stats",
+      "--evidence-policy",
+      "bounded-rerank",
+      "--retrieval",
+      "lexical"
+    ],
+    "exit_code": 1
+  },
+  {
+    "argv": [
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/source/target/release/ixos",
+      "--config",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/config.toml",
+      "serve",
+      "--dir",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/corpus",
+      "--model-path",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/models/potion-code-16M-v2-unbounded",
+      "--quiet-stats"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/source/target/release/ixos",
+      "--config",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/config.toml",
+      "serve",
+      "--dir",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/corpus",
+      "--retrieval",
+      "lexical",
+      "--quiet-stats"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/source/target/release/ixos",
+      "--config",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/config.toml",
+      "config",
+      "--set",
+      "retrieval.evidence_policy=bounded-rerank"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/source/target/release/ixos",
+      "--config",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/config.toml",
+      "search",
+      "late unique evidence witness cache freshness",
+      "--dir",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/corpus",
+      "--model-path",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/models/potion-code-16M-v2-unbounded",
+      "--json",
+      "--stats"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/source/target/release/ixos",
+      "--config",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/config.toml",
+      "search",
+      "late unique evidence witness cache freshness",
+      "--dir",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-evidence-probe-9f80iq45/corpus",
+      "--model-path",
+      "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/models/potion-code-16M-v2-unbounded",
+      "--json",
+      "--stats",
+      "--evidence-policy",
+      "global-line"
+    ],
+    "exit_code": 0
+  }
+]

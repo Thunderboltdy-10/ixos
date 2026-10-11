@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "anchors": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "unique_anchors": [
+    1
+  ],
+  "unique_output_hashes": 1,
+  "binary_sha256": "9596b928852289d5b3e4e8bd1c3e70bf397be9ed38b8455143e8bba679a3d351",
+  "condition": "Authored equal-unique-term lines with varying corpus IDFs. Model-free fresh lexical processes; not retrieval quality."
+}

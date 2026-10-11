@@ -72,6 +72,7 @@ async fn main() -> anyhow::Result<()> {
             io_workers,
             typo_correction,
             representation,
+            evidence_policy,
             limit,
             format,
             dir,
@@ -110,6 +111,7 @@ async fn main() -> anyhow::Result<()> {
                     let mut options = config.retrieval.options(profile)?;
                     options.mode = retrieval.unwrap_or(options.mode);
                     options.representation = representation.unwrap_or(options.representation);
+                    options.evidence_policy = evidence_policy.unwrap_or(options.evidence_policy);
                     options.io_workers = io_workers.unwrap_or(options.io_workers);
                     options.typo_correction = typo_correction.unwrap_or(options.typo_correction);
                     if let Some(mode) = cache_mode {
@@ -171,7 +173,8 @@ async fn main() -> anyhow::Result<()> {
                     && model_path.is_none()
                     && io_workers.is_none()
                     && typo_correction.is_none()
-                    && representation.is_none(),
+                    && representation.is_none()
+                    && evidence_policy.is_none(),
                 "Measured profile/model options cannot be mixed with --retrieval legacy"
             );
             let resolved_format = format
@@ -237,6 +240,7 @@ async fn main() -> anyhow::Result<()> {
             retrieval,
             representation,
             session,
+            evidence_policy,
             typo_correction,
             quiet_stats,
             jit,
@@ -247,6 +251,7 @@ async fn main() -> anyhow::Result<()> {
             options.representation = representation.unwrap_or(options.representation);
             options.io_workers = io_workers.unwrap_or(options.io_workers);
             options.session = session.unwrap_or(options.session);
+            options.evidence_policy = evidence_policy.unwrap_or(options.evidence_policy);
             options.typo_correction = typo_correction.unwrap_or(options.typo_correction);
             options.persist = !jit && options.persist;
             options.output_bytes = max_output_bytes.unwrap_or(options.output_bytes);

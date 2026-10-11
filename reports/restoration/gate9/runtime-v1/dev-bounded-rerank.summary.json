@@ -1,0 +1,74 @@
+{
+  "config_sha256": "38d3717259051da68f186b7a71ddc2da6ab7bf7739471484430e4d44f791c6b3",
+  "queries": 180,
+  "runs": 180,
+  "families": 18,
+  "quality": {
+    "mrr": {
+      "mean": 0.6798214285714286,
+      "ci95": [
+        0.6149845679012346,
+        0.738639770723104
+      ],
+      "families": 18,
+      "queries": 180
+    },
+    "recall": {
+      "mean": 0.8888888888888888,
+      "ci95": [
+        0.8222222222222223,
+        0.9444444444444444
+      ],
+      "families": 18,
+      "queries": 180
+    },
+    "ndcg": {
+      "mean": 0.7305820475816824,
+      "ci95": [
+        0.6705880877056908,
+        0.7845481502142295
+      ],
+      "families": 18,
+      "queries": 180
+    },
+    "span_recall": {
+      "mean": 0.13949942176064914,
+      "ci95": [
+        0.10799636945279313,
+        0.17643675745973905
+      ],
+      "families": 18,
+      "queries": 180
+    },
+    "span_precision": {
+      "mean": 0.03062226001511716,
+      "ci95": [
+        0.023900226757369615,
+        0.037983371126228266
+      ],
+      "families": 18,
+      "queries": 180
+    },
+    "false_positive": {
+      "mean": null,
+      "ci95": null,
+      "families": 0,
+      "queries": 0
+    }
+  },
+  "wall_ms": {
+    "p50": 348.1239499997173,
+    "p95": 520.0864950009417
+  },
+  "output": {
+    "mean_bytes": 3858.038888888889,
+    "mean_tokens": 1026.3055555555557,
+    "p95_tokens": 1260.05,
+    "verified_views": 1800,
+    "evidence_failures": 0,
+    "mean_stderr_tokens": 382.81666666666666,
+    "mean_total_response_tokens": 1409.1222222222223,
+    "p95_total_response_tokens": 1639.1499999999999
+  },
+  "notes": "Equal-family quality means; repetitions are timing/stability samples. Latency conditions differ across backend types and are labeled in provenance. Span annotations may be incomplete."
+}

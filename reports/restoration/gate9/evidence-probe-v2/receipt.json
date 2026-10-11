@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "checks": [
+    "eight cached vectors reused; extra evidence separately counted; native payload unchanged at 2375 bytes",
+    "JIT and native-warm policy responses agree with the same vector precision",
+    "file ranking preserved and displayed text matches exact source coordinates",
+    "explicit errors for unbounded result count and model-free lexical mode",
+    "per-request override resets after success or malformed request; resident default unchanged",
+    "resident policy validation occurs before refresh; lexical server recovers",
+    "persistent setting is editable and explicit CLI override wins",
+    "all probes preserve source bytes/mtime and create no adjacent files"
+  ],
+  "binary_sha256": "ddf0ac1f91dc58f1480355f2c92cba2cf2f755d668ae15116f4cfaf74b791db4",
+  "quality_benchmark": false,
+  "condition": "Real CPU model, native ADS/xattr fixture; not fallback-DB or low-end-device proof."
+}

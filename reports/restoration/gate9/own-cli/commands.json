@@ -1,0 +1,80 @@
+[
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate9\\own-config.toml",
+      "search",
+      "How does selecting extra query-time evidence preserve the small persistent file cache?",
+      "--dir",
+      "src",
+      "--model-path",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+      "--json",
+      "--stats",
+      "--limit",
+      "5",
+      "--max-output-bytes",
+      "3000"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate9\\own-config.toml",
+      "search",
+      "How does selecting extra query-time evidence preserve the small persistent file cache?",
+      "--dir",
+      "src",
+      "--model-path",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+      "--json",
+      "--stats",
+      "--limit",
+      "5",
+      "--max-output-bytes",
+      "3000",
+      "--evidence-policy",
+      "bounded-rerank"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate9\\own-config.toml",
+      "grep",
+      "-F",
+      "--dir",
+      "src/retrieval",
+      "--limit",
+      "4",
+      "--max-output-bytes",
+      "3000",
+      "--",
+      "extra_passages_embedded"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate9\\own-config.toml",
+      "read",
+      "evidence.rs",
+      "--dir",
+      "src/retrieval",
+      "--start",
+      "30",
+      "--lines",
+      "30",
+      "--max-output-bytes",
+      "3000"
+    ],
+    "exit_code": 0
+  }
+]

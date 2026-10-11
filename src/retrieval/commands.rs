@@ -329,6 +329,8 @@ enum Request {
         feedback: Option<Feedback>,
         #[serde(default)]
         stats: bool,
+        #[serde(default)]
+        evidence_policy: Option<super::EvidencePolicy>,
     },
     Reset {
         id: String,
@@ -381,6 +383,7 @@ pub fn serve_with_diagnostics(
     options.output_bytes -= 300;
     let context = options.context;
     let limit = options.limit;
+    let evidence_policy = options.evidence_policy;
     let started = Instant::now();
     let mut engine = Engine::new(root, model_path, options)?;
     eprintln!(
@@ -430,8 +433,14 @@ pub fn serve_with_diagnostics(
                     query,
                     feedback,
                     stats: requested_stats,
+                    evidence_policy: requested_policy,
                 } => {
-                    let (raw, stats) = engine.search(&query, &id, feedback.as_ref())?;
+                    let (raw, stats) = engine.search_with_policy(
+                        &query,
+                        &id,
+                        feedback.as_ref(),
+                        requested_policy.unwrap_or(evidence_policy),
+                    )?;
                     let mut value: serde_json::Value = serde_json::from_slice(&raw)?;
                     value["id"] = json!(id);
                     if !quiet_stats || requested_stats {

@@ -40,6 +40,8 @@ ixos read src/retrieval/mod.rs --dir . --start 300 --lines 35 --max-output-bytes
 
 Grep and read always return JSON and do not accept `--json`. Use returned coordinates rather than assuming that the example's line number remains current. JSON `view.text` is the actual displayed source. `evidence_omitted:true` is an intentional file-only result; do not invent its source span. An oversized line can be read using `--characters 1000 --character-offset 0`; the response supplies exact UTF-8 byte locators and the next character offset.
 
+For concept searches where returned files are plausible but their excerpts are misplaced, try `--evidence-policy bounded-rerank`. This experimental policy selects a passage using semantic/local lexical evidence, reusing stored vectors and embedding up to eight extra chunks/file. It requires semantic/hybrid mode and `--limit` at most ten. File ranking is unchanged; the extra inference is still charged on cache hits. Keep `global-line` for the default behavior, model-free lexical retrieval or larger result counts. Persist a preference with `retrieval.evidence_policy`; explicit flags override it. Do not treat this option as proof the shown passage answers the question.
+
 ## Cache and diagnostics
 
 Native records live in ADS/xattr; unsupported writes fall back to the application cache DB. No ordinary embedding sidecars are created beside searched sources. Native warm still reads/hashes sources and a fresh process still loads the model. `--cache-mode ephemeral` (JIT) avoids persistent embedding writes. A resident JIT process can reuse memory between requests. Edited sources are revalidated; a cache hit is not permission to assume stale content remains correct.
@@ -51,6 +53,8 @@ Use `--stats` when diagnosing misses or cost. It emits detailed diagnostics on s
 ## Resident sessions and explicit feedback
 
 `ixos serve --dir ROOT --quiet-stats` accepts one JSON request per line and avoids routine diagnostic context. Search/grep can set `"stats":true` when needed; the ready record still appears once on stderr. Requests return bounded JSON. Start with session `off`; `related`, `feedback`, `combined` and experimental `context` are explicit alternatives. Use `reset` when starting an unrelated task. Read/grep calls do not imply acceptance and Ixos cannot observe external ripgrep operations.
+
+Search requests may set `"evidence_policy":"bounded-rerank"` or `"global-line"` independently of the server default. An override lasts one request. With `stats:true`, its `evidence` diagnostics distinguish extra candidate inference from cached document work; `selectionMs` includes `extraEmbedMs`. Routine diagnostics can be omitted when context is more valuable than debugging detail.
 
 ```json
 {"op":"search","id":"q1","query":"where is cache freshness checked"}

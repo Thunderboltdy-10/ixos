@@ -1,0 +1,9 @@
+{
+  "startup_wall_ms": 202.86209999903804,
+  "model_only_memory": {
+    "working_set_bytes": 89272320,
+    "peak_working_set_bytes": 135847936,
+    "private_committed_bytes": 81977344
+  },
+  "warm_p50_ms": 31.977000000551925
+}

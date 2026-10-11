@@ -3,11 +3,13 @@
 //! remains available while this engine is validated through the same evaluator.
 pub mod cache;
 pub mod commands;
+pub mod evidence;
 pub mod record;
 pub mod typo;
 use crate::ixos_embed::{EmbeddingModel, Model2VecEmbedder};
 use crate::ixos_rank::candidate_generator::path_engine::search_walk;
 use crate::security::crypto::sha256;
+pub use evidence::EvidencePolicy;
 use rayon::prelude::*;
 use record::{representatives, unit, Passage, Representation};
 use serde::{Deserialize, Serialize};
@@ -53,6 +55,7 @@ pub struct Options {
     pub explain: bool,
     pub io_workers: usize,
     pub typo_correction: bool,
+    pub evidence_policy: EvidencePolicy,
 }
 impl Default for Options {
     fn default() -> Self {
@@ -70,6 +73,7 @@ impl Default for Options {
             explain: false,
             io_workers: 1,
             typo_correction: false,
+            evidence_policy: EvidencePolicy::GlobalLine,
         }
     }
 }
@@ -115,6 +119,8 @@ pub struct Stats {
     pub representation: Option<Representation>,
     pub model_fingerprint: Option<String>,
     pub tokenizer_settings: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub evidence: Option<evidence::EvidenceStats>,
 }
 
 pub struct Document {
@@ -191,6 +197,9 @@ pub struct Engine {
 
 impl Engine {
     pub fn new(root: &Path, model_path: Option<&Path>, options: Options) -> anyhow::Result<Self> {
+        options
+            .evidence_policy
+            .validate(options.mode, options.limit)?;
         anyhow::ensure!(
             options.mode != RetrievalMode::Legacy,
             "Legacy retrieval uses the historical pipeline"
@@ -493,6 +502,18 @@ impl Engine {
         id: &str,
         feedback: Option<&Feedback>,
     ) -> anyhow::Result<(Vec<u8>, Stats)> {
+        self.search_with_policy(query, id, feedback, self.options.evidence_policy)
+    }
+
+    /// A JSONL override applies to this request only, including on failure.
+    pub fn search_with_policy(
+        &mut self,
+        query: &str,
+        id: &str,
+        feedback: Option<&Feedback>,
+        evidence_policy: EvidencePolicy,
+    ) -> anyhow::Result<(Vec<u8>, Stats)> {
+        evidence_policy.validate(self.options.mode, self.options.limit)?;
         anyhow::ensure!(
             !query.trim().is_empty() && query.len() <= 65536 && id.len() <= 256,
             "Empty/oversized query or id"
@@ -731,6 +752,26 @@ impl Engine {
             })
             .collect();
         ranked.sort_by(|a, b| b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+        let selections = if evidence_policy == EvidencePolicy::BoundedRerank {
+            let paths = ranked
+                .iter()
+                .take(self.options.limit)
+                .map(|row| row.0.clone())
+                .collect::<Vec<_>>();
+            let (selected, diagnostics) = evidence::select(
+                &self.documents,
+                &paths,
+                &query_vector,
+                &idfs,
+                self.model
+                    .as_ref()
+                    .ok_or_else(|| anyhow::anyhow!("Evidence model is unavailable"))?,
+            )?;
+            stats.evidence = Some(diagnostics);
+            selected
+        } else {
+            HashMap::new()
+        };
         let mut rows = commands::BoundedRows::new(self.options.output_bytes);
         let mut returned = HashMap::new();
         let mut returned_paths = Vec::new();
@@ -738,20 +779,19 @@ impl Engine {
             let document = &self.documents[&path];
             let mut anchor = 0;
             let mut weight = 0.0;
-            for (i, line) in document.lines.iter().enumerate() {
-                let value = tokens(line)
-                    .into_iter()
-                    .collect::<HashSet<_>>()
-                    .iter()
-                    .map(|t| idfs.get(t).copied().unwrap_or(0.0))
-                    .sum::<f32>();
-                if value > weight {
-                    weight = value;
-                    anchor = i;
+            if let Some(selection) = selections.get(&path) {
+                anchor = selection.anchor - 1;
+            } else {
+                for (i, line) in document.lines.iter().enumerate() {
+                    let value = evidence::line_weight(line, &idfs);
+                    if value > weight {
+                        weight = value;
+                        anchor = i;
+                    }
                 }
-            }
-            if weight == 0.0 && !document.passages.is_empty() {
-                anchor = document.passages[best].start_line - 1;
+                if weight == 0.0 && !document.passages.is_empty() {
+                    anchor = document.passages[best].start_line - 1;
+                }
             }
             let mut row = ResultRow {
                 path: path.clone(),
@@ -777,7 +817,9 @@ impl Engine {
                 break;
             }
             returned_paths.push(path.clone());
-            if let Some(passage) = document.passages.get(best) {
+            if let Some(selection) = selections.get(&path) {
+                returned.insert(path, (document.source_hash, selection.vector.clone()));
+            } else if let Some(passage) = document.passages.get(best) {
                 returned.insert(path, (document.source_hash, passage.vector.clone()));
             }
         }
@@ -897,6 +939,51 @@ pub fn view_at(path: &str, lines: &[String], anchor: usize, context: usize) -> V
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn equal_lexical_evidence_always_uses_earliest_line() {
+        let dir = tempfile::tempdir().unwrap();
+        let words = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"];
+        let text = (0..200)
+            .map(|i| {
+                format!(
+                    "{} {} stamp{i}",
+                    words[i % 6..].join(" "),
+                    words[..i % 6].join(" ")
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        std::fs::write(dir.path().join("main.txt"), text).unwrap();
+        for i in 0..6 {
+            std::fs::write(
+                dir.path().join(format!("background{i}.txt")),
+                words[..=i].join(" "),
+            )
+            .unwrap();
+        }
+        let mut engine = Engine::new(
+            dir.path(),
+            None,
+            Options {
+                mode: RetrievalMode::Lexical,
+                persist: false,
+                context: 0,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        for _ in 0..20 {
+            let (raw, _) = engine.search(&words.join(" "), "same", None).unwrap();
+            let value: serde_json::Value = serde_json::from_slice(&raw).unwrap();
+            let row = value["results"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|row| row["path"] == "main.txt")
+                .unwrap();
+            assert_eq!(row["view"]["start_line"], 1);
+        }
+    }
     #[test]
     fn full_source_lexical_freshness_ignores_and_budget() {
         let dir = tempfile::tempdir().unwrap();

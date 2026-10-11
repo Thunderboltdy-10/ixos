@@ -13,6 +13,14 @@ Ixos combines exact text evidence with small static embeddings. It runs on CPU a
 
 An agent looking for “cache invalidation after edits” can search by concept, inspect the returned path and line anchor, and then read the relevant function. `grep raw_hash` can verify the exact symbol. A search result is a navigation step; its score is neither a probability of correctness nor a claim that the small excerpt contains the entire answer.
 
+The default preview chooses the strongest lexical line anywhere in a returned file, falling back to the strongest stored semantic passage. Experimental `--evidence-policy bounded-rerank` adds a second, query-time passage decision after file ranking. For up to ten returned files, it combines the existing representatives with up to eight chunks selected by local lexical evidence (at most sixteen candidates/file). The passage score is half positive cosine and half its best lexical line weight divided by the file's maximum line weight. Ties choose the earliest byte span and line. The preview starts at the selected passage's best lexical line, or its start when there is no lexical evidence.
+
+Existing vectors are reused; only new candidate chunks are embedded in CPU batches of at most 64. Query-selected vectors are discarded and cannot enlarge the ADS/xattr record. Both stored and extra document vectors use the engine's normalized int8 round-trip precision, including in JIT mode; the query remains at runtime precision. Candidate selection sums unique lexical terms in deterministic order. Earlier lab screens used full-precision candidate vectors and are exploratory rather than exact-runtime measurements. This policy can improve navigation while leaving file ranking unchanged; it cannot recover a relevant file omitted before this stage. Native/resident hits still have extra evidence selection/inference costs, reported separately. See [evidence evaluation](evaluation/ANCHORS.md).
+
+Lexical evidence uses complete alphanumeric runs at passage boundaries: a fragment cut from a long identifier is not counted as an exact query word. This conservatively drops the affected split camel-case run too, while retaining other complete words inside the chunk. Embedding input and source quotes remain unchanged. Default global-line preview selection also sums unique terms deterministically and preserves earliest-line ties; older random `HashSet` summation could move equally relevant previews across identical calls.
+
+Extra candidate vectors never enter the persistent document record. Unselected vectors are discarded; selected vectors may remain in the explicit bounded RAM session history to support subsequent feedback. Stateless searches retain none of them across requests.
+
 ## Compact semantic representation
 
 `src/retrieval/record.rs` splits the extracted text into passages of at most 1,800 Unicode scalars, preferring a newline/space boundary in the latter half. The passages cover the whole source during preparation. The code profile stores:
@@ -84,6 +92,7 @@ The new CLI's full-source representations and new model profiles are not automat
 |---|---|
 | `src/retrieval/mod.rs` | Source refresh, lexical/semantic fusion, statistics, bounded session state |
 | `src/retrieval/record.rs` | Full-source chunks and compact representatives |
+| `src/retrieval/evidence.rs` | Deterministic line weights and optional bounded query-time passage selection |
 | `src/retrieval/cache.rs` | Signed ADS/xattr records and application DB fallback |
 | `src/retrieval/commands.rs` | Bounded output, exact read/grep, JSONL protocol |
 | `src/retrieval/typo.rs` | Conservative auditable correction |

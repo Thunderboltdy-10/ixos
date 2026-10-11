@@ -21,6 +21,16 @@ Common query flags: `--limit` (default 10), `--context` (2 lines), `--max-output
 
 `--stats` prints one JSON diagnostic on stderr: file counts, source bytes, actual native/application/RAM hits, recomputed passages, tokenizer/model identity, phase timings and output work. Full request time includes fresh model loading. I/O worker times are summed work; `ioBatchWallMs` is the batch wall measure. Omit routine diagnostics to save context. Human output renders the same selected evidence; the precise byte ceiling describes serialized JSON.
 
+`--evidence-policy global-line|bounded-rerank` controls where a result preview starts. `global-line` remains the default: the best lexical line anywhere in the file, or the strongest stored passage when no lexical line matches. The experimental `bounded-rerank` combines local lexical evidence with semantic similarity over stored representatives plus up to eight query-selected chunks per returned file. It requires semantic/hybrid retrieval and a result limit of at most ten. It does not change file scores or ordering; changed excerpt sizes can affect which trailing rows fit the byte budget. A correct file can still contain a missed topic or an unhelpful preview.
+
+```sh
+ixos search "concept and useful domain words" --dir ROOT --json --evidence-policy bounded-rerank --stats
+ixos config --set retrieval.evidence_policy=bounded-rerank
+ixos search "another query" --dir ROOT --json --evidence-policy global-line
+```
+
+Extra passage vectors are not written to the document cache. Unselected vectors are discarded; an explicit session can retain selected result vectors in its bounded RAM history for feedback. The persistent ADS/xattr record and its recipe stay unchanged. Diagnostics add an `evidence` object with `candidatePassages`, `extraPassagesEmbedded`, `extraEmbedMs` and `selectionMs`; the last timing includes selection and extra inference. These counters are separate from document-cache embeddings and hits. A native or resident cache hit can still incur query-time evidence inference. Lexical/legacy mode rejects this policy explicitly; override a persisted policy with `global-line` when selecting lexical mode.
+
 ## Configurations
 
 ```sh
@@ -32,7 +42,7 @@ ixos config --set retrieval.output_bytes=3000
 ixos config --set retrieval.mode=auto
 ```
 
-`retrieval.mode=auto`/`null` clears the explicit override and restores profile selection. Editable keys: `profile`, `mode`, `representation`, `model_path`, `persist`, `limit`, `context`, `output_bytes`, `semantic_floor`, `io_workers`, `typo_correction`, `session`. `representation=auto` and `model_path=auto` clear optional overrides. Explicit configuration values override profile-derived mode/representation; query flags override configuration. Model path precedence is query flag → `IXOS_MODEL_PATH` → configured path → installed profile model. To switch model automatically between profiles, clear an explicit model path.
+`retrieval.mode=auto`/`null` clears the explicit override and restores profile selection. Editable keys: `profile`, `mode`, `representation`, `model_path`, `persist`, `limit`, `context`, `output_bytes`, `semantic_floor`, `io_workers`, `typo_correction`, `session`, `evidence_policy`. `representation=auto` and `model_path=auto` clear optional overrides. Explicit configuration values override profile-derived mode/representation; query flags override configuration. Model path precedence is query flag → `IXOS_MODEL_PATH` → configured path → installed profile model. To switch model automatically between profiles, clear an explicit model path.
 
 Use global `--config FILE` for an isolated configuration. Missing files use defaults without creating a file; malformed settings fail visibly and remain untouched. `config --reset` is an explicit recovery. The desktop owns its existing search/output/security preferences and preserves CLI retrieval settings when saving them. Legacy preferences live under `[search]`; they do not silently change current retrieval.
 
@@ -76,5 +86,7 @@ ixos serve --dir ROOT --quiet-stats --session combined
 ```
 
 One bounded result per request is returned on stdout. A ready record appears on stderr; routine search/grep stats are suppressed by `--quiet-stats` and can be requested with `stats:true`. Protocol IDs are ≤256 bytes; query text ≤65,536 bytes; a request ≤1 MiB. Small malformed requests return errors without killing later requests; an oversized stream request is fatal. The server reserves 300 output bytes for its envelope.
+
+`serve --evidence-policy bounded-rerank` selects its default preview policy. A search can override it with `"evidence_policy":"global-line"` or `"evidence_policy":"bounded-rerank"`; overrides apply only to that request, including after failure. Returned source/score fields retain their existing schema. With bounded reranking, optional acceptance feedback uses the selected passage vector instead of an unrelated stored representative. This is bounded session feedback, not persistent model training.
 
 Session policies are `off` (default), `related`, `feedback`, `combined`, and experimental `context`. Accepted/rejected indices refer to the actually displayed earlier result order, zero-based. Paths also work. Only inspected useful results deserve acceptance. Silence is unknown; stale/unseen results cannot contribute. History holds at most 16 responses and four feedback turns; resets clear it. It cannot observe external tools or provide an unlimited learned user profile.

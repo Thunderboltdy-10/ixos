@@ -10,6 +10,7 @@ from pathlib import Path
 import statistics
 import subprocess
 import sys
+import tempfile
 import time
 
 
@@ -46,10 +47,18 @@ def main():
     parser.add_argument('--representation', choices=['intro-uniform', 'whole-token-centroid'], required=True)
     parser.add_argument('--query', required=True)
     parser.add_argument('--runs', type=int, default=5)
+    parser.add_argument('--evidence-policy', choices=['global-line', 'bounded-rerank'], default='global-line')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     assert 1 <= args.runs <= 100
-    argv = [str(args.binary.resolve()), 'serve', '--dir', str(args.root.resolve()), '--model-path', str(args.model.resolve()), '--representation', args.representation, '--quiet-stats', '--jit']
+    source_hashes = {str(path.relative_to(args.root)): hashlib.sha256(path.read_bytes()).hexdigest()
+                     for path in sorted(args.root.rglob('*')) if path.is_file() and not path.is_symlink()}
+    configuration = '[retrieval]\nmode="hybrid"\nevidence_policy="global-line"\nsession="off"\nlimit=10\ncontext=2\noutput_bytes=6000\nio_workers=4\ntypo_correction=false\n'
+    temporary_config = tempfile.TemporaryDirectory(prefix='ixos-resident-profile-config-')
+    config_path = Path(temporary_config.name) / 'config.toml'
+    config_path.write_text(configuration, encoding='utf-8')
+    argv = [str(args.binary.resolve()), '--config', str(config_path), 'serve', '--dir', str(args.root.resolve()), '--model-path', str(args.model.resolve()), '--representation', args.representation, '--quiet-stats', '--jit']
+    if args.evidence_policy != 'global-line': argv += ['--evidence-policy', args.evidence_policy]
     began = time.perf_counter()
     process = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     samples = []
@@ -78,17 +87,22 @@ def main():
         if process.poll() is None:
             process.kill()
             process.wait()
+        temporary_config.cleanup()
     peak = None
     if sys.platform != 'win32':
         import resource
         usage = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
         peak = {'peak_rss_bytes': usage if sys.platform == 'darwin' else usage * 1024}
     value = {'quality_benchmark': False, 'argv': argv, 'platform': sys.platform,
+             'configuration_toml': configuration,
+             'source_hashes': source_hashes,
              'binary_sha256': hashlib.sha256(args.binary.read_bytes()).hexdigest(),
              'startup_wall_ms': startup, 'model_only_memory': model_memory,
              'other_platform_peak': peak, 'warm_p50_ms': statistics.median(row['wall_ms'] for row in samples[1:]),
              'samples': samples, 'note': 'Fixed query, own source, sequential fresh resident process. Warm requests still read/hash every source. Disk artifact size is not RSS; private committed bytes are not working set. Not low-end-device or agent-task evidence.'}
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    assert source_hashes == {str(path.relative_to(args.root)): hashlib.sha256(path.read_bytes()).hexdigest()
+                             for path in sorted(args.root.rglob('*')) if path.is_file() and not path.is_symlink()}
     args.output.write_text(json.dumps(value, indent=2) + '\n', encoding='utf-8')
     print(json.dumps({key: value[key] for key in ['startup_wall_ms', 'model_only_memory', 'warm_p50_ms']}, indent=2))
 

@@ -13,7 +13,7 @@
 
 use super::retrieval_config::RetrievalProfile;
 use crate::retrieval::record::Representation;
-use crate::retrieval::{RetrievalMode, SessionPolicy};
+use crate::retrieval::{EvidencePolicy, RetrievalMode, SessionPolicy};
 use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 
@@ -149,6 +149,10 @@ pub enum Commands {
         #[arg(long, value_enum)]
         representation: Option<Representation>,
 
+        /// Preview selection; bounded-rerank is experimental (semantic/hybrid, limit <=10)
+        #[arg(long, value_enum)]
+        evidence_policy: Option<EvidencePolicy>,
+
         /// Maximum number of results to return
         #[arg(short, long)]
         limit: Option<usize>,
@@ -256,6 +260,9 @@ pub enum Commands {
         representation: Option<Representation>,
         #[arg(long, value_enum)]
         session: Option<SessionPolicy>,
+        /// Default preview policy; JSONL searches may override it per request
+        #[arg(long, value_enum)]
+        evidence_policy: Option<EvidencePolicy>,
         #[arg(long, num_args = 0..=1, default_missing_value = "true")]
         typo_correction: Option<bool>,
         /// Suppress routine stderr diagnostics; individual searches can set stats:true

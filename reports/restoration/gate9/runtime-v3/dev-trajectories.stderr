@@ -1,0 +1,6 @@
+warning: in the working copy of 'eval/run.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/cli/commands.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/cli/retrieval_config.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/main.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/retrieval/commands.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/retrieval/mod.rs', LF will be replaced by CRLF the next time Git touches it

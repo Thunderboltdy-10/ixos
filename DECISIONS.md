@@ -107,3 +107,6 @@
 - KEEP (Gate16): declared Rust1.89 minimum for core after direct locked nativeLinux build/tests/actualmodels/exact cross-compiler outputs. Add Linux minimum-compiler CI guard; do not extrapolate every desktop/OS combination from Linux proof.
 - KEEP readable complete gate index; preserve previous long raw-capture index byte-for-byte and retain all path-map/raw history.
 - INVESTIGATE NEXT: multiple accepted/rejected feedback paths are deduplicated in a HashSet, then float vectors are summed in its random order. Reproduce actual repeated output variability before replacing aggregation order; no default/quality tuning from this finding.
+
+- KEEP (Gate17): canonical deduplicated path order for feedback-vector reduction after actual-model jitter reproduction. Equivalent reference orders/duplicates must give exact outputs. The observed~6e-8 score variation changed no file order in these probes; this is reproducibility, not measured quality gain.
+- KEEP actual-model regression and cross-platform/compiler/source preservation contracts. Do not refresh historical quality/performance labels from compatibility checks or claim Gate15 packages contain the Gate17 binary. Broaden fresh realistic evaluations next rather than repeatedly proving the same minor fix.

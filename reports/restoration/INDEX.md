@@ -20,6 +20,7 @@ Start with the current [installation guide](../../docs/getting-started/INSTALLAT
 | 14 | One-core/address-space stress, allocation failure, allocator tradeoff | [Constrained resources](GATE14.md) | [gate14](gate14/) |
 | 15 | Current model/config diagnostics, real inference and failure exits | [Installation diagnostics](GATE15.md) | [gate15](gate15/) |
 | 16 | Rust1.89 locked core build and exact actual-model response compatibility | [Minimum compiler](GATE16.md) | [gate16](gate16/) |
+| 17 | Canonical multi-file feedback reduction and exact platform/compiler responses | [Deterministic feedback](GATE17.md) | [gate17](gate17/) |
 
 The held-out studies retain their exact original binary/model/evaluator identities. Later correctness or packaging checks do not silently replace their quality/performance figures. Repeated calls and authored diagnostic fixtures are not independent labeled tasks. JIT/native/resident timing, stdout/diagnostic context cost and source-preservation evidence are distinct.
 

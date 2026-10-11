@@ -14,7 +14,7 @@ pub use evidence::EvidencePolicy;
 use rayon::prelude::*;
 use record::{representatives, unit, Passage, Representation};
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -601,7 +601,9 @@ impl Engine {
                                         prior.paths.get(*index).map(String::as_str)
                                     }
                                 })
-                                .collect::<HashSet<_>>()
+                                // Canonical path order keeps f32 accumulation
+                                // independent of request order and hash seeds.
+                                .collect::<BTreeSet<_>>()
                             {
                                 if let Some((hash, vector)) = prior.documents.get(path) {
                                     if self

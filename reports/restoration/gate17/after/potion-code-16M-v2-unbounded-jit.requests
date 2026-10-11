@@ -1,0 +1,60 @@
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": [0, 1, 2, 3, 4, 5, 0, 1], "rejected": [6, 7, 8, 9, 6, 7]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": [5, 4, 3, 2, 1, 0, 5, 4], "rejected": [9, 8, 7, 6, 9, 8]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": ["ixos_rank/semantic_engine.rs", "retrieval/mod.rs", "compliance/gdpr.rs", "ixos_embed/model2vec.rs", "storage/validator.rs", "ixos_embed/model.rs", "ixos_rank/semantic_engine.rs", "retrieval/mod.rs"], "rejected": ["storage/ads_windows.rs", "ixos_embed/secure_embedder.rs", "ixos_rank/candidate_generator/document_engine.rs", "storage/mod.rs", "storage/ads_windows.rs", "ixos_embed/secure_embedder.rs"]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": [5, 4, 3, 2, 1, 0, 5, 4], "rejected": [9, 8, 7, 6, 9, 8]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": [0, 1, 2, 3, 4, 5, 0, 1], "rejected": [6, 7, 8, 9, 6, 7]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": ["ixos_embed/model.rs", "storage/validator.rs", "ixos_embed/model2vec.rs", "compliance/gdpr.rs", "retrieval/mod.rs", "ixos_rank/semantic_engine.rs", "ixos_embed/model.rs", "storage/validator.rs"], "rejected": ["storage/mod.rs", "ixos_rank/candidate_generator/document_engine.rs", "ixos_embed/secure_embedder.rs", "storage/ads_windows.rs", "storage/mod.rs", "ixos_rank/candidate_generator/document_engine.rs"]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": [0, 1, 2, 3, 4, 5, 0, 1], "rejected": [6, 7, 8, 9, 6, 7]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": [5, 4, 3, 2, 1, 0, 5, 4], "rejected": [9, 8, 7, 6, 9, 8]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": ["ixos_rank/semantic_engine.rs", "retrieval/mod.rs", "compliance/gdpr.rs", "ixos_embed/model2vec.rs", "storage/validator.rs", "ixos_embed/model.rs", "ixos_rank/semantic_engine.rs", "retrieval/mod.rs"], "rejected": ["storage/ads_windows.rs", "ixos_embed/secure_embedder.rs", "ixos_rank/candidate_generator/document_engine.rs", "storage/mod.rs", "storage/ads_windows.rs", "ixos_embed/secure_embedder.rs"]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": [5, 4, 3, 2, 1, 0, 5, 4], "rejected": [9, 8, 7, 6, 9, 8]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": [0, 1, 2, 3, 4, 5, 0, 1], "rejected": [6, 7, 8, 9, 6, 7]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": ["ixos_embed/model.rs", "storage/validator.rs", "ixos_embed/model2vec.rs", "compliance/gdpr.rs", "retrieval/mod.rs", "ixos_rank/semantic_engine.rs", "ixos_embed/model.rs", "storage/validator.rs"], "rejected": ["storage/mod.rs", "ixos_rank/candidate_generator/document_engine.rs", "ixos_embed/secure_embedder.rs", "storage/ads_windows.rs", "storage/mod.rs", "ixos_rank/candidate_generator/document_engine.rs"]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": [0, 1, 2, 3, 4, 5, 0, 1], "rejected": [6, 7, 8, 9, 6, 7]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": [5, 4, 3, 2, 1, 0, 5, 4], "rejected": [9, 8, 7, 6, 9, 8]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": ["ixos_rank/semantic_engine.rs", "retrieval/mod.rs", "compliance/gdpr.rs", "ixos_embed/model2vec.rs", "storage/validator.rs", "ixos_embed/model.rs", "ixos_rank/semantic_engine.rs", "retrieval/mod.rs"], "rejected": ["storage/ads_windows.rs", "ixos_embed/secure_embedder.rs", "ixos_rank/candidate_generator/document_engine.rs", "storage/mod.rs", "storage/ads_windows.rs", "ixos_embed/secure_embedder.rs"]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": [5, 4, 3, 2, 1, 0, 5, 4], "rejected": [9, 8, 7, 6, 9, 8]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": [0, 1, 2, 3, 4, 5, 0, 1], "rejected": [6, 7, 8, 9, 6, 7]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": ["ixos_embed/model.rs", "storage/validator.rs", "ixos_embed/model2vec.rs", "compliance/gdpr.rs", "retrieval/mod.rs", "ixos_rank/semantic_engine.rs", "ixos_embed/model.rs", "storage/validator.rs"], "rejected": ["storage/mod.rs", "ixos_rank/candidate_generator/document_engine.rs", "ixos_embed/secure_embedder.rs", "storage/ads_windows.rs", "storage/mod.rs", "ixos_rank/candidate_generator/document_engine.rs"]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": [0, 1, 2, 3, 4, 5, 0, 1], "rejected": [6, 7, 8, 9, 6, 7]}, "stats": true}
+{"op": "reset", "id": "reset"}
+{"op": "search", "id": "seed", "query": "equal-length source edits invalidate cached embeddings", "stats": true}
+{"op": "search", "id": "follow", "query": "How does it detect another edit?", "feedback": {"query_id": "seed", "accepted": [5, 4, 3, 2, 1, 0, 5, 4], "rejected": [9, 8, 7, 6, 9, 8]}, "stats": true}

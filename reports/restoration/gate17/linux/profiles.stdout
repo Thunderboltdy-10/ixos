@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "checks": [
+    "default code profile equals explicit and optional frozen retrieval",
+    "persistent settings affect bounded output; invalid update leaves configuration valid",
+    "lexical loads no model; missing model and mixed legacy flags fail explicitly",
+    "document profile chooses full-token centroid",
+    "warm/stats/clear share the current document cache namespace",
+    "quiet resident calls retain per-request diagnostics and source-read/grep operations",
+    "all operations preserve primary source bytes and create no adjacent sidecars",
+    "malformed configuration is preserved; explicit reset recovers"
+  ],
+  "binary_sha256": "b3c9427f211ec0adb15ef043da27d7975db2eb9a1ff23d278e0afe268a5a4f41",
+  "quality_benchmark": false
+}

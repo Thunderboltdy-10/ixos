@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "purpose": "Reproduce and repair feedback-set order nondeterminism on actual models",
+  "control_git": "2e36ff0",
+  "control_windows_binary_sha256": "e72e219eb83453702c45db0cdc9c2dfbb8580928281c07da98108c19f1259fb5",
+  "control_linux_binary_sha256": "dccda0113a72083b138513de5fc9ac59387ab572f79dc963258d78437cb54b40",
+  "corpus": "Fixed Gate11 113 Rust files, 1610853 bytes",
+  "recipe": "Both actual selected models; combined resident session; JIT/native. Twenty reset/seed/follow sequences per process. Feedback refers only to actually displayed paths: first six accepted and remaining up to four rejected (at least three accepted). Alternate ordering, duplicates and path/index representations of the same sets. Require stable seed bytes; retain/count distinct follow bytes and score differences. After a proved fix require exact within-process and JIT/native follow bytes. Source hash/mtime/noordinarysidecar preservation.",
+  "boundary": "Synthetic arbitrary feedback is an authored mathematical/correctness contract, not relevance judgment, new gold, task completion or evidence of improved quality. No parameters, default, weights, document recipe, frozen evaluator or commercial score selection from this case. Disable routine output stats except explicit checks, bound timeout and preserve negatives."
+}

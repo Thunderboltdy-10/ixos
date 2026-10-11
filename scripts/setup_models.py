@@ -88,7 +88,7 @@ def install(entry, destination, source_root):
                 shutil.copyfile(source / name, output / name)
             shutil.copyfile(source / 'README.md', output / 'UPSTREAM_MODEL_CARD.md')
             (output / 'README.md').write_text('---\nlicense: mit\n---\n\nStorage derivative of ' + parent['id'] +
-                '. See UPSTREAM_MODEL_CARD.md for original authorship, license and training. I8 vocabulary rows plus F32 row scales. No new training or integer inference; Rust expands rows to F32.\n', encoding='utf-8')
+                '. See UPSTREAM_MODEL_CARD.md for original authorship, license and training. I8 vocabulary rows plus F32 row scales. No new training or integer inference; Rust pools in F32. The current CLI retains encoded rows and decodes used tokens; the eager reference expands the full table.\n', encoding='utf-8')
             receipt = {'operation': 'row-int8', 'new_training': False}
         else:
             raise ValueError('Unknown pinned transform')

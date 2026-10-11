@@ -12,6 +12,7 @@
 pub mod augmented;
 pub mod background_indexer;
 pub mod chunker;
+mod encoded_model;
 pub mod memory_protection;
 pub mod mmap_model;
 pub mod model;

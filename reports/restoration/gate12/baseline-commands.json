@@ -1,0 +1,44 @@
+[
+  {
+    "argv": [
+      "C:\\Users\\pablo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\scripts\\profile_resident.py",
+      "--binary",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate12\\control-ixos.exe",
+      "--model",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+      "--root",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\src",
+      "--representation",
+      "intro-uniform",
+      "--query",
+      "source hash after equal length edits",
+      "--runs",
+      "10",
+      "--output",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate12\\code-baseline.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\scripts\\profile_resident.py",
+      "--binary",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate12\\control-ixos.exe",
+      "--model",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+      "--root",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\src",
+      "--representation",
+      "whole-token-centroid",
+      "--query",
+      "source hash after equal length edits",
+      "--runs",
+      "10",
+      "--output",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate12\\documents-baseline.json"
+    ],
+    "exit_code": 0
+  }
+]

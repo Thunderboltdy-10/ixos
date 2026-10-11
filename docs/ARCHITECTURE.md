@@ -21,6 +21,16 @@ Lexical evidence uses complete alphanumeric runs at passage boundaries: a fragme
 
 Extra candidate vectors never enter the persistent document record. Unselected vectors are discarded; selected vectors may remain in the explicit bounded RAM session history to support subsequent feedback. Stateless searches retain none of them across requests.
 
+## CPU model rows and memory
+
+The current CLI owns the safetensors bytes in memory and decodes only the vocabulary rows used by each input. Code rows remain F16 in that allocation; document rows remain I8 with their original floating-point scales. Accumulation, mean pooling and normalization still use F32. This is storage-aware loading, not integer inference, new training or a change to the semantic representation.
+
+For example, a query with ten known tokens reads ten vocabulary rows instead of expanding every vocabulary row to F32 at startup. Repeated tokens retain their original contribution to pooling. F16 conversion uses the `half` library's checked, portable slice conversion, with a scalar fallback for unaligned or big-endian input. The model owns its bytes; it neither maps a live file nor requires the artifact files to remain present after construction.
+
+`src/ixos_embed/encoded_model.rs` preserves the reference tokenizer's unknown-token filtering, remapping, weights, inherited padding/truncation, API caps and normalization order. Vocabulary and padding row indices are validated before inference. Real-model and authored-fixture comparisons check exact F32 bits, including different batching/cap combinations. That equivalence permits reuse of the existing artifact fingerprint and compact cache records. Loader cost and semantic identity are separate concerns.
+
+The public `Model2VecEmbedder::from_path` and retained desktop/legacy callers keep the eager reference loader. `from_path_encoded` is used by the current CLI; `ixos-lab-embed --encoded` supports the paired experiment. No additional user preset is needed for a numerically equivalent implementation. Model-only RSS, total request RSS and on-disk artifact bytes are different quantities; see [Gate 12](../reports/restoration/GATE12.md) for actual platform measurements and the rejected slower first prototype.
+
 ## Compact semantic representation
 
 `src/retrieval/record.rs` splits the extracted text into passages of at most 1,800 Unicode scalars, preferring a newline/space boundary in the latter half. The passages cover the whole source during preparation. The code profile stores:

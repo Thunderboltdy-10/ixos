@@ -12,6 +12,8 @@ use std::time::Instant;
 struct Args {
     #[arg(long)]
     model: PathBuf,
+    #[arg(long)]
+    encoded: bool,
 }
 
 #[derive(Deserialize)]
@@ -25,7 +27,11 @@ struct Request {
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     let started = Instant::now();
-    let model = Model2VecEmbedder::from_path(&args.model)?;
+    let model = if args.encoded {
+        Model2VecEmbedder::from_path_encoded(&args.model)?
+    } else {
+        Model2VecEmbedder::from_path(&args.model)?
+    };
     let fingerprint = model
         .fingerprint()
         .iter()

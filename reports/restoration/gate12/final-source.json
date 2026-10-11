@@ -1,0 +1,16 @@
+{
+  "files": {
+    "Cargo.toml": "c942a61db5852d9b78de36c73c7f7b8a3886624ef09bd5419d1e1d322cc4747c",
+    "Cargo.lock": "a28b7d6820b2b5ac15478fc27b55923b2a6a5ea8369ea01daa1e3585d93e3e5e",
+    "src/ixos_embed/encoded_model.rs": "dfa1832a5b3323a54d24419e3813b00a951ceb216db0667909dd615f70031099",
+    "src/ixos_embed/model2vec.rs": "7523e33e9d66327c4e756b5e2814267a5be7fa5d9e3ccb247b4e2fc1b13e4964",
+    "src/ixos_embed/mod.rs": "d155200df3fa2e2cbb601e34c2d86c0499ef5347d5fe5f4dd30d2e5655c28835",
+    "src/retrieval/mod.rs": "698c5b0649a9a905e59a1e8490cc69896fad1c23b3244c0c001890511703dfac",
+    "src/bin/ixos-lab-embed.rs": "cb146fc3e57bb00e59fd40b2584f6bbcb673773122c0ac9dc9bc80b281825674",
+    "scripts/compare_encoded_loader.py": "0c9cf9c4ae610eec6a8e36e48ed5fb7ed7305054cce0782fcf1f468a93bdd8cb",
+    "scripts/compare_cli_loaders.py": "684b474d7ae7255c14acf6826f42f51893f50f87ae51c1c4036a77689a79136a"
+  },
+  "cli_binary": "e18e80ce862896379491630d7476bf6e036f675a16aea6cec995fc82468bcdaf",
+  "bridge_binary": "aac9b2bfcb17f8eaa1b609eb9f2469c11171c8c1dc69c84b59e64a0da6cdea46",
+  "v3_change": "Only loader attribution/identity comments changed after v3 measurement; current CLI constructor selects encoded. Current exact source snapshot and rebuilt bridge retained here."
+}

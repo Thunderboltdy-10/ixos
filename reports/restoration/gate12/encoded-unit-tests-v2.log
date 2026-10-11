@@ -1,0 +1,14 @@
+   Compiling ixos-protocol v0.1.0 (C:\Users\pablo\Downloads\Ixos)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.40s
+     Running unittests src\lib.rs (target\debug\deps\ixos_protocol-28744956acaf391e.exe)
+
+running 6 tests
+test ixos_embed::encoded_model::tests::configured_padding_outside_vocabulary_is_checked_before_inference ... ok
+test ixos_embed::encoded_model::tests::malformed_tensor_or_token_row_is_a_load_error ... ok
+test ixos_embed::encoded_model::tests::owned_rows_remain_usable_after_fixture_model_is_removed ... ok
+test ixos_embed::encoded_model::tests::half_slice_and_unaligned_fallback_preserve_every_finite_half_value ... ok
+test ixos_embed::encoded_model::tests::inherited_padding_and_truncation_match_reference_batch_semantics ... ok
+test ixos_embed::encoded_model::tests::encoded_rows_preserve_reference_f32_bits_and_input_rules ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 544 filtered out; finished in 1.02s
+

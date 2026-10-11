@@ -1,24 +1,41 @@
 //! Model2Vec embedding model implementation
 //!
-//! Provides real semantic embeddings using the Model2Vec Potion Base 8M model.
-//! This model downloads from Hugging Face on first use (~30 MB).
+//! Reference and owned-row loaders for actual Model2Vec artifacts. The current
+//! CLI selects pinned local code/document parents; the retained legacy default
+//! can resolve Potion Base 8M from the Hub. Costs depend on artifact and workload.
 
+use super::encoded_model::EncodedModel;
 use super::model::{EmbeddingModel, ModelError};
 use crate::security::crypto::{sha256, sha256_file};
 use model2vec_rs::model::StaticModel;
 
-/// Real embedding model using Model2Vec Potion Base 8M
-///
-/// This model provides actual semantic understanding, unlike StubModel
-/// which only produces deterministic hashes.
-///
-/// # Performance
-/// - Model size: ~30 MB (downloads on first use)
-/// - Memory footprint: ~110 MB runtime
-/// - Embedding time: <1ms per text (before constant-time floor)
-/// - Dimensions: varies by model (256 for potion-base-8M)
+enum Backend {
+    Eager(StaticModel),
+    Encoded(EncodedModel),
+}
+
+impl Backend {
+    fn encode(
+        &self,
+        texts: &[String],
+        limit: Option<usize>,
+        batch: usize,
+    ) -> Result<Vec<Vec<f32>>, ModelError> {
+        match self {
+            Self::Eager(model) => Ok(model.encode_with_args(texts, limit, batch)),
+            Self::Encoded(model) => model.encode(texts, limit, batch),
+        }
+    }
+    fn single(&self, text: &str) -> Result<Vec<f32>, ModelError> {
+        Ok(self.encode(&[text.to_owned()], Some(512), 1024)?.remove(0))
+    }
+}
+
+/// CPU static embeddings with artifact identity and validated input coverage.
+/// `from_path` retains the eager reference; `from_path_encoded` keeps encoded
+/// rows and decodes used tokens. Runtime/quality claims belong in measured reports.
 pub struct Model2VecEmbedder {
-    model: StaticModel,
+    model: Backend,
     model_id: u8,
     fingerprint: [u8; 32],
     dims: usize,
@@ -79,19 +96,42 @@ impl Model2VecEmbedder {
     /// # Arguments
     /// * `path` - Path to the model directory containing model files
     pub fn from_path(path: &std::path::Path) -> Result<Self, ModelError> {
+        Self::load(path, false)
+    }
+
+    /// Owned encoded rows used by the current CLI after exact reference-vector
+    /// checks and measured memory/throughput gains. Legacy callers retain the
+    /// eager `from_path` implementation for compatibility and comparisons.
+    pub fn from_path_encoded(path: &std::path::Path) -> Result<Self, ModelError> {
+        Self::load(path, true)
+    }
+
+    fn load(path: &std::path::Path, encoded: bool) -> Result<Self, ModelError> {
         tracing::info!("Loading Model2Vec model from: {:?}", path);
         let fingerprint = artifact_fingerprint(path)?;
-        let tokenizer: serde_json::Value = serde_json::from_slice(
-            &std::fs::read(path.join("tokenizer.json"))
-                .map_err(|e| ModelError::LoadError(e.to_string()))?,
-        )
-        .map_err(|e| ModelError::LoadError(e.to_string()))?;
-        let tokenizer_settings = serde_json::json!({"truncation":tokenizer.get("truncation"),"padding":tokenizer.get("padding")});
+        let (model, tokenizer_settings) = if encoded {
+            let (model, settings) = EncodedModel::load(path)
+                .map_err(|e| ModelError::LoadError(format!("Encoded model {path:?}: {e}")))?;
+            (Backend::Encoded(model), settings)
+        } else {
+            let tokenizer: serde_json::Value = serde_json::from_slice(
+                &std::fs::read(path.join("tokenizer.json"))
+                    .map_err(|e| ModelError::LoadError(e.to_string()))?,
+            )
+            .map_err(|e| ModelError::LoadError(e.to_string()))?;
+            let settings = serde_json::json!({"truncation":tokenizer.get("truncation"),"padding":tokenizer.get("padding")});
+            (
+                Backend::Eager(
+                    StaticModel::from_pretrained(path.to_string_lossy().as_ref(), None, None, None)
+                        .map_err(|e| {
+                            ModelError::LoadError(format!("Failed to load from {:?}: {}", path, e))
+                        })?,
+                ),
+                settings,
+            )
+        };
 
-        let model = StaticModel::from_pretrained(path.to_string_lossy().as_ref(), None, None, None)
-            .map_err(|e| ModelError::LoadError(format!("Failed to load from {:?}: {}", path, e)))?;
-
-        let test_embedding = model.encode_single("test");
+        let test_embedding = model.single("test")?;
         let dims = test_embedding.len();
 
         if artifact_fingerprint(path)? != fingerprint {
@@ -131,7 +171,7 @@ impl Model2VecEmbedder {
         if texts.is_empty() {
             return Ok(Vec::new());
         }
-        let vectors = self.model.encode_with_args(texts, max_tokens, 64);
+        let vectors = self.model.encode(texts, max_tokens, 64)?;
         if vectors.len() != texts.len() {
             return Err(ModelError::Inference(
                 "Embedding batch size mismatch".into(),
@@ -158,6 +198,8 @@ impl Model2VecEmbedder {
 
 /// Identify the actual weights, tokenizer, configuration and inference behaviour.
 /// The directory name is deliberately excluded so copied models share a cache identity.
+/// Compatible loaders may share this identity only when reference f32 bits and
+/// input rules match; loader cost is measured separately from semantic identity.
 pub(crate) fn artifact_fingerprint(path: &std::path::Path) -> Result<[u8; 32], ModelError> {
     let mut identity = b"ixos:model2vec-rs:0.1.4:unit-normalization-v1".to_vec();
     for filename in ["model.safetensors", "tokenizer.json", "config.json"] {
@@ -172,7 +214,7 @@ pub(crate) fn artifact_fingerprint(path: &std::path::Path) -> Result<[u8; 32], M
 impl EmbeddingModel for Model2VecEmbedder {
     fn embed(&self, text: &str) -> Result<Vec<f32>, ModelError> {
         // Use encode_single for a single text input
-        let embedding = self.model.encode_single(text);
+        let embedding = self.model.single(text)?;
 
         if embedding.is_empty() {
             return Err(ModelError::Inference("No embeddings returned".to_string()));
@@ -203,7 +245,7 @@ impl EmbeddingModel for Model2VecEmbedder {
 
         // Use native batch encode API from model2vec-rs
         // StaticModel::encode takes &[impl AsRef<str>] and returns Vec<Vec<f32>>
-        let embeddings = self.model.encode(texts);
+        let embeddings = self.model.encode(texts, Some(512), 1024)?;
 
         if embeddings.len() != texts.len() {
             return Err(ModelError::Inference(format!(

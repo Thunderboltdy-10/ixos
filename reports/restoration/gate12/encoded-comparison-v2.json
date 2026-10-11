@@ -1,0 +1,2121 @@
+{
+  "status": "passed",
+  "quality_benchmark": false,
+  "source_hashes": {
+    "src/activity_ledger/co_occurrence.rs": "4ee166e5158e9e63c08bb41dc6fbe77fe376b0d179158cfde74845f70a2eabe9",
+    "src/activity_ledger/mod.rs": "e4794a32dcc190ae483c63840bf826e5097ed087afea41e92c451fcfd18e7d3c",
+    "src/activity_ledger/storage.rs": "b55cf2bd39d8b724244a0a38519069dcc713d95c52caceac2bd99cd7ed4c960c",
+    "src/attestation/mod.rs": "29d8f51f08a402a5900451b5765faae6c48287ff42811d663fd29d8ffc8a1d67",
+    "src/bin/ixos-agent-benchmark.rs": "8326e4b53059e14d02a40afbb950a8957e36fe93b14e241ddef4b71086f1a5c6",
+    "src/bin/ixos-bench.rs": "3a44d4e387714cd1037d21f024f1f62d5a62bad934f6f9001513633fe8e73b4c",
+    "src/bin/ixos-big-bench.rs": "a07c5df08a7d4bad905e0f807eff837e75d724026a68a6c3c747b7efd2c8fc9f",
+    "src/bin/ixos-lab-embed.rs": "a4c1f2d37b75373fafb2e599cf5bf0eca88d4e5263c5ab3c8b0dc09577355bac",
+    "src/bin/ixos-perf-suite.rs": "06bd5ad40c1b62210607dc14fe1f027bdabd292462ad07cd22736916bdc30ede",
+    "src/bin/ixos-profile.rs": "91415852e5af4754f903402f25823413911302f70f03dc47f45cf07818c01ada",
+    "src/bin/ixos-scale-bench.rs": "11e64bfae38e3295a571034aa5d3f03c373a55596ac238f510ea93c3ee560955",
+    "src/cli/commands.rs": "0223df3eee344e00c9d5043f1df8fa198f198340030d028f4cb82fd18f792ed9",
+    "src/cli/config.rs": "5da06286cd63fa617efcd0902b940c513e3666ac28303f0b9b42945e27f812c8",
+    "src/cli/mod.rs": "1e724093a38c0f8b7c1f108e97e2e3b3d1d6ccaf1a537880f1cb3be18023e79f",
+    "src/cli/output.rs": "06c9161320da3aeae3277619b53927f04adc7d273be6e4dacc0eadb7bcec2dd5",
+    "src/cli/retrieval_config.rs": "aa0cc062dd63b1e2234823d793ab4024c16f7d84697324f6d6dbb2c758e84f18",
+    "src/cli/self_update.rs": "265dac1eb932d0408385910143a74d3a1c5f085c4c05745d7516b24bfc158cd2",
+    "src/compliance/audit.rs": "e51c35821828a8b42f22198f555f8e39a78d969bdc831e25a7430c5312c7f5b9",
+    "src/compliance/ccpa.rs": "577d50e7f7778bcfce5b50fa27abdfd9f8a943c98bf38e88cbdd51944f9dc13d",
+    "src/compliance/consent.rs": "d58ab70e34ec9fef81fde26c0075bbc2299d350d5ae978931a220dce2f26654b",
+    "src/compliance/documentation.rs": "bedf9323b8f26b45f06d93a0cd98516ea50fc6b4ce30a61a8af506640679c49a",
+    "src/compliance/gdpr.rs": "05eee841e4f1309b95ae748143ba6309e03e3317d7523e6b0141c4048721144d",
+    "src/compliance/mod.rs": "157292df8133f01aca24425488383805e19d938b9bdfb7ac9031863757eb75af",
+    "src/compliance/search_history.rs": "5b22662485cfb1ee785afa0ba4e03781906b6eccb32390171f3028ef8efe9b2d",
+    "src/compliance/storage.rs": "ed37868616ca83c275d1ddb57df49c1c74f8bd7528b54f598d3cd34f09aa4682",
+    "src/compliance/transparency.rs": "3bab06cf9884bcb17967fdedc5062f6f5aa175b52f23d25ead2108262feeb541",
+    "src/compliance/types.rs": "f2c9f980fc2842df235b7dc4858ca577bfc7da967e239123f7d3a749dcf269f6",
+    "src/daemon/config.rs": "aa3cce9d32b948f026df97f3c3f13b9280ad2687e9f61c7f2b0dfd666b227d9d",
+    "src/daemon/ipc.rs": "5de9e4c3535e0d1c912eb1034d0d5f7d0adf3fca3e46c57c39b6b8e2577f8119",
+    "src/daemon/mod.rs": "6ef32d59f670774ddc3b56789d7f373de89d5aecc245ccbccf60265096d819ad",
+    "src/daemon/service.rs": "67c5ae2591b885305490438d33a83be668e3fbdb69cfea6890d89c6055f855f8",
+    "src/diagnostics.rs": "adbe4e59ba6e1d42844ab4a46432e224796e80a488e1126658c42eabf33d7dd1",
+    "src/instrumentation/metrics.rs": "85cc7a97d7ad65333ffb0df19d2b0299babcabb4a2954124ea0219048b47bd58",
+    "src/instrumentation/mod.rs": "478af8c8c5e079309b9b49e35302d2f8217abcc4a40f28d710b40f359760b9e4",
+    "src/instrumentation/profile.rs": "bf48e2d91941f04eeb31ad0064828a6e1761c920276002f24b86958d404aca78",
+    "src/instrumentation/reporter.rs": "0a2bd6ffad27deff555dbb853f4335905497fc37d7c1126b8a3f5e74938671f9",
+    "src/instrumentation/sampler.rs": "b52a31152435b134b7d6e15eb3b4d05bc14644f750566573bcb689fb10e70e10",
+    "src/instrumentation/spans.rs": "25ba0847920c497fd57035aa64dae235797fb55c958e2c94905db4ab295554cd",
+    "src/integrations/academic.rs": "45cc34184878863437502310cf15cb49e38d2cf0fe8a557948d66e35967e76b1",
+    "src/integrations/mod.rs": "8c0eda5e8fb76c7fd4b448d5df85bc1052582ec4f5733b9d193ebf1489130e05",
+    "src/ixos_embed/augmented.rs": "5847a2ec511da2c8123d9a234e7de10cdf0405caf231b5c5a8c69d349cc00a79",
+    "src/ixos_embed/background_indexer.rs": "fa3f9a86a20ca9769a1d39c7c94a5258f73c9568330bddb1251d425cc7ad7323",
+    "src/ixos_embed/chunker.rs": "e28d0ce4f09ffb49e982422d8efd87f06371be941f888c2093794d8be9b617a6",
+    "src/ixos_embed/memory_protection.rs": "2bcdb4b3806a97b33db99f529a67dbe5a1f9fc8876a69d582a2447691dfa9adf",
+    "src/ixos_embed/mmap_model.rs": "e21267174317483dbdf9bf8c593dad7b6000bf9c67cca8f488c92e1b62f04003",
+    "src/ixos_embed/mod.rs": "fc32b161bce9185a120dc976dbaa435ca870919f7a453d951a733a90d01b63d4",
+    "src/ixos_embed/model.rs": "005fd37ccf8047d80c8676f4fe66c8152a90647b38c892b167cfc0a397452b20",
+    "src/ixos_embed/model2vec.rs": "5b4a0f51e6219973b09a2ddb8300274ab8261bec0211d96321539fcfbe8f3b7b",
+    "src/ixos_embed/prefetcher.rs": "03d8e95f2d933fc6b5293a7b8ef3b0bdccc3b1198e4af0ee2b55620e81021a2a",
+    "src/ixos_embed/secure_embedder.rs": "625532799927f7c29319c4e728e078ba28d81d28d0c63111c8a9754d524c9fad",
+    "src/ixos_rank/ask_mode/anchor_extractor.rs": "c7938072177fa8ef6d23b51f84746e7f87bc02b2ab7d525d0309962ff001af85",
+    "src/ixos_rank/ask_mode/description_extractor.rs": "0e551757c445f0c13f8f70e9f1ff8342611ddd86cc4143f87f9e59b5ea14e0ff",
+    "src/ixos_rank/ask_mode/intent_detector.rs": "8d8dcda123ba5e1099aa838fb85edb103a2a28d1d670f67d030940ee8e170675",
+    "src/ixos_rank/ask_mode/mod.rs": "2696c9cf93d0088900b2203fd5cba98cffe67aec8057d67f80546e0496bb9c7b",
+    "src/ixos_rank/ask_mode/snippet_trust.rs": "129fe2346b8a1c2c282fce3d2815b5bd111ded1e3fa3c45d21d3cff730403880",
+    "src/ixos_rank/candidate_generator/document_engine.rs": "491d6b648eff1d85faa71bfa438f494070f94c7bb52ce1b89827f5f78258883b",
+    "src/ixos_rank/candidate_generator/metadata_priors.rs": "9740662d191362610975c4890901fec04bec34b45c383b4c9130501acba1868e",
+    "src/ixos_rank/candidate_generator/mod.rs": "b876497868573ff2231ccfe7b14857673fdc2fd3cb5c22c5e7218154e0aff9fa",
+    "src/ixos_rank/candidate_generator/path_engine.rs": "e86c49d2ad965e2e0ee3fc5b5392be545f29bea0a4cd94acd553cee0a2271e6b",
+    "src/ixos_rank/candidate_generator/query_preprocess.rs": "8883f883a06386dfc7b18a413028321faae1569b5d82b6a7eafe92e22ce974cf",
+    "src/ixos_rank/candidate_generator/ripgrep_funnel.rs": "008cb578b90c93ad359c83f9ba1df67a10241051974183a04c8dd28281e0c815",
+    "src/ixos_rank/candidate_generator/scorer.rs": "209972c2518c710a55a441b70de23c9fe1ad9af912316fe3908c65e6cc8bdfeb",
+    "src/ixos_rank/candidate_lexical.rs": "9537515934bef3e6df4b986a530fad570e84a22095f8c32b9a870c2e9550e559",
+    "src/ixos_rank/evidence/chain.rs": "1b9a347c6e09e19eed86eda407308d87d71177f1d05008215303fdc143a38386",
+    "src/ixos_rank/evidence/directory_centroids.rs": "1066359d1d8ac7589f608e4c2c68be752f7f5ea978c72534d9e6b8ddd7c3942c",
+    "src/ixos_rank/evidence/explanation.rs": "d1da0c0da3feb5bb805340d081cf52cbfeb9a6d20c8b046379e90df5cc230f38",
+    "src/ixos_rank/evidence/mod.rs": "a526b14daaa5dcea73451ec42425a0b2f53d7ab2a9374c80504698606a5f487e",
+    "src/ixos_rank/evidence/passage_extractor.rs": "f2ce01d41d94c42a45d0681e3e1fcb8f5282876451b303fb7f23ed50a5245107",
+    "src/ixos_rank/evidence/types.rs": "84afd8911618f213daa44caa1e246318095bcca2c3a25b881160d774eba6f7f9",
+    "src/ixos_rank/fstd.rs": "4500c3934737f4e10032a0d206a083f72517c01beb45353e45667afc4404ac4a",
+    "src/ixos_rank/history.rs": "ddf373a04e37f6b4564c36e6bf6dff11cef25b1660d42d2aa312e0636e5aa118",
+    "src/ixos_rank/hybrid_engine.rs": "490322a18aedd8d4908f318dc8403e87aba2fda0dbf312be4c896987fdf30918",
+    "src/ixos_rank/lexical_engine.rs": "0a77b323b784833d11580723734f6f01950ee5246540d866848bb402592ed55e",
+    "src/ixos_rank/mod.rs": "0c1c8f46e1ba188b0250e1b02aa3baacf2e36f8d19440b1211e8980d0648e331",
+    "src/ixos_rank/personal_ranker.rs": "04e2ebb07671f5917d123fc1bc168861c26b624a584da6b62ae0eb34d6295e62",
+    "src/ixos_rank/progressive.rs": "b8b893fee77adf4a5170ae2fd13a726ca0c09b5f605655168f47a46266b87afd",
+    "src/ixos_rank/secure_ranker.rs": "898c2034040f4ab3953f9eb868260f2e77609b6a865ae893daea410ab732775d",
+    "src/ixos_rank/semantic_engine.rs": "48c2514a0408ea9027c910445ecfef90c357d41de86612437d34eefad46e8b44",
+    "src/ixos_rank/snippet.rs": "95450a781a1d07a4baa8546ab5a5dde9af599dd96f2c4d1dbe196a1d2cb9f879",
+    "src/ixos_rank/types.rs": "e2f3b6ddd446d6fa5d7ee1ad90c105a8918fbbba29d383cd20be0d89be1d0349",
+    "src/ixos_watcher/events.rs": "7f29c4ddc48c56459f403a0e246a28a4197eefec3ad9644754f9048cfcfbb4fb",
+    "src/ixos_watcher/mod.rs": "29587393a7dcab8ea25f6ebd2b0d81d4bd329ae455c08d419f119ba558a24ad3",
+    "src/ixos_watcher/resilience.rs": "00ac2f48b042761d6255af6284b2570a8b966bf02d3157ed98ee273d3d4b4a04",
+    "src/journalist_mode.rs": "9a75d000215b1c1a0f3487062c5c2bf0b40b590748ad7ff48e4499ea454ff13d",
+    "src/lib.rs": "91dd078ae9116670020a3e5d8b5383ebb425418943c648a21c77f3db2ed644e7",
+    "src/main.rs": "b6362b9493a57179b6620b828c45ff7d4cc736dd7d232103cdb28d0aa975b75e",
+    "src/optimization/mod.rs": "d14068f3a545f19481820ddaa85f17583d94f44135cecd9f4cf7f25dcd9d35a8",
+    "src/parsers/mod.rs": "65681ff32b4d8fe7ad8065fe984c9ca4093d24ddc8733298c04f8adfcba9cc73",
+    "src/pro.rs": "214621568c60dfb0a2a80be18321a89a048fb08fb8d5e85e798c9ed9ea102513",
+    "src/retrieval/cache.rs": "5ec518f4ce5caad20b6b7e46abca60dd679fd4d5cf0ff835a4d23c7922c8ecfb",
+    "src/retrieval/commands.rs": "a01d8583d5d2fba47cf33f63baa9dc8f75e3cc53d6ce812c3ad79eea46ad161e",
+    "src/retrieval/evidence.rs": "92749f5c94b9d6ec094cd4595e18c83585b0932531831b9c8509002c75031192",
+    "src/retrieval/mod.rs": "1e4f74b54e8a2274cb15b42469f75442c9b296650bacb017dd628069eae274cb",
+    "src/retrieval/record.rs": "eea0f77467473b494fab304e5116024c5af75068e9178ff44dda13627e2099d5",
+    "src/retrieval/typo.rs": "b8a06e1059551d32fa7106cf514e1a30e7cc04a57df18a5d18473d523315a472",
+    "src/security/crypto.rs": "bbf891d4b5fee8bc9fa673fbab6353410288cddf3a84ed7cbe55e79668e48a9f",
+    "src/security/device_identity.rs": "4022eb6b5090943ec6255a6a6822f6338c6f2170bd2af5e7e7923589966e5ea9",
+    "src/security/local_lock.rs": "f86868cec5e36ac93ff412a7d3de89e4949f2f436363ad4b23397d76f9078cad",
+    "src/security/mod.rs": "183c98826f21f25e0821ce2c255e1b5b5a0daa37198dbf920b451148ba8d0b3c",
+    "src/security/sandbox.rs": "d128688b7ac1867ddcdde91019adfb8a164286e95254879c9dd43474459d7f78",
+    "src/security/secure_store.rs": "bce24033507f39a99328e1e7225ddf3b1e8f5398dbe683ff08402f33138ff19c",
+    "src/storage/ads_windows.rs": "8fdf6d833ad3609cce665f428f182459808f726fcdaab24cdd8817b9d08c2804",
+    "src/storage/cloud_detection.rs": "5359661948ee3cd94157efdfa41153513ca3a1839b7d7d17a15b82b51bad9564",
+    "src/storage/mod.rs": "a756bf2b1d047a2197890d6bbebc44aeea35b491a17dba06e309f77f008f0fda",
+    "src/storage/null.rs": "b9719153e5ac6c063fc9e68bce9c091e25d371b70f1504c0f2acd892cb208891",
+    "src/storage/personal_ranking.rs": "1483d1524bb665edb1905fdefef95b792bbc47d673c9e28836d28f11187a924a",
+    "src/storage/sidecar_lmdb.rs": "18e8c85c01f118d57b407c75b5fde941b2021b23cd4ce51bb90fc201a11d23aa",
+    "src/storage/validator.rs": "c9dfbbb06e90a6b4903ef542b142861028f6d2b17f7c77f3e98966875c61aa0e",
+    "src/storage/xattr_unix.rs": "b7c5d894064a50b67e2b159850cdff831272bdd39ccbdde98f95c9a546c09e44",
+    "src/telemetry/mod.rs": "b54cae5ca178dbd0cf684d051ce3e583e82c4d053bb5cd106e2534fd8dfb73da",
+    "src/workstreams/graph.rs": "d3d6db6952ca254901e5a454cc2e3874efde0aa4af2efef64fd02b01502e2af5",
+    "src/workstreams/mod.rs": "53760eabbc1e85d672cf5427ac058ae8ea2eaa6420cd4d9b419d055f0bc8eaad",
+    "src/workstreams/storage.rs": "ece86ef02ca96c0aacd5b0da6fe572ed4c2b368e7d89636cc349f0c2d4f10ace"
+  },
+  "binary_sha256": "97dacc439997eebd3001f72bc835e87cff63d33f1c0d43454f96e8cfdb06fbc8",
+  "reference_binary_sha256": "91349fc3c6e6a67a3a8f2e293ddfbe0e1db7958b96285021a2d7e0b09a957590",
+  "inputs_sha256": "2006262108873b1f51d57b8d43f5653061b31139839a691e19980ecc0e22d545",
+  "runs": 5,
+  "models": [
+    {
+      "model": {
+        "path": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+        "files": {
+          "model.safetensors": "75cf7a6c2171b230ad19b1e7d8e0b1aee86da5a02af8e7cacedd9921d227623c",
+          "tokenizer.json": "936b2d026b9e81fb683eab537ea37c5a1a65a4d02ad9cb92ce269fb8bc561ebf",
+          "config.json": "148e5691a6fcc553437156859701fba017a1ba5d340b170f17e0f3668fb861a7"
+        },
+        "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "file_bytes": 33514284,
+        "tokenizer_settings": {
+          "truncation": null,
+          "padding": null
+        }
+      },
+      "runs": [
+        {
+          "arm": "original",
+          "measured": false,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate12\\control-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded"
+          ],
+          "ready": {
+            "dimensions": 256,
+            "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "load_ms": 206.1345,
+            "pid": 29256,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 225.21689999848604,
+          "model_only_memory": {
+            "working_set_bytes": 86654976,
+            "peak_working_set_bytes": 133042176,
+            "private_committed_bytes": 82305024
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.1288,
+              "f32_bits_sha256": "6ba0614b42904e09f020f57484fadc8b772bc0342e143e47cb2b3e142133999f"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 27.442700000000002,
+              "f32_bits_sha256": "5c798f8da40ccd63c7b30a115784c81a606070057994dea7337301262ed811cd"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.1937,
+              "f32_bits_sha256": "1efc8ac77b3d7d9330718f382ec9126e487b5425f38ab8976a3012b903b5a674"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 200.9192,
+              "f32_bits_sha256": "af569deb8244e90d50bcf503945ac492b07d76f1d1b3affbc023fb24b1454e23"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 72.2159,
+              "f32_bits_sha256": "33d2c657c0dc91cb89a1c1089bbdb4de312d1899a72f7048e53e47383e39baea"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 99303424,
+            "peak_working_set_bytes": 133042176,
+            "private_committed_bytes": 93413376
+          }
+        },
+        {
+          "arm": "eager-warmup",
+          "measured": false,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded"
+          ],
+          "ready": {
+            "dimensions": 256,
+            "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "load_ms": 193.6625,
+            "pid": 10320,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 755.4098999971757,
+          "model_only_memory": {
+            "working_set_bytes": 86679552,
+            "peak_working_set_bytes": 133070848,
+            "private_committed_bytes": 82296832
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0711,
+              "f32_bits_sha256": "6ba0614b42904e09f020f57484fadc8b772bc0342e143e47cb2b3e142133999f"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 30.5046,
+              "f32_bits_sha256": "5c798f8da40ccd63c7b30a115784c81a606070057994dea7337301262ed811cd"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.4846,
+              "f32_bits_sha256": "1efc8ac77b3d7d9330718f382ec9126e487b5425f38ab8976a3012b903b5a674"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 183.74099999999999,
+              "f32_bits_sha256": "af569deb8244e90d50bcf503945ac492b07d76f1d1b3affbc023fb24b1454e23"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 63.302800000000005,
+              "f32_bits_sha256": "33d2c657c0dc91cb89a1c1089bbdb4de312d1899a72f7048e53e47383e39baea"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 99016704,
+            "peak_working_set_bytes": 133070848,
+            "private_committed_bytes": 92889088
+          }
+        },
+        {
+          "arm": "encoded-warmup",
+          "measured": false,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+            "--encoded"
+          ],
+          "ready": {
+            "dimensions": 256,
+            "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "load_ms": 185.69740000000002,
+            "pid": 6716,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 210.0471000012476,
+          "model_only_memory": {
+            "working_set_bytes": 54009856,
+            "peak_working_set_bytes": 93147136,
+            "private_committed_bytes": 47902720
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0596,
+              "f32_bits_sha256": "6ba0614b42904e09f020f57484fadc8b772bc0342e143e47cb2b3e142133999f"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 28.2792,
+              "f32_bits_sha256": "5c798f8da40ccd63c7b30a115784c81a606070057994dea7337301262ed811cd"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.1113,
+              "f32_bits_sha256": "1efc8ac77b3d7d9330718f382ec9126e487b5425f38ab8976a3012b903b5a674"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 127.5732,
+              "f32_bits_sha256": "af569deb8244e90d50bcf503945ac492b07d76f1d1b3affbc023fb24b1454e23"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 57.357699999999994,
+              "f32_bits_sha256": "33d2c657c0dc91cb89a1c1089bbdb4de312d1899a72f7048e53e47383e39baea"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 65470464,
+            "peak_working_set_bytes": 93147136,
+            "private_committed_bytes": 59871232
+          }
+        },
+        {
+          "arm": "eager",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded"
+          ],
+          "ready": {
+            "dimensions": 256,
+            "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "load_ms": 197.4534,
+            "pid": 8396,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 216.7076999976416,
+          "model_only_memory": {
+            "working_set_bytes": 86745088,
+            "peak_working_set_bytes": 133050368,
+            "private_committed_bytes": 82325504
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.07540000000000001,
+              "f32_bits_sha256": "6ba0614b42904e09f020f57484fadc8b772bc0342e143e47cb2b3e142133999f"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 29.2399,
+              "f32_bits_sha256": "5c798f8da40ccd63c7b30a115784c81a606070057994dea7337301262ed811cd"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.3613,
+              "f32_bits_sha256": "1efc8ac77b3d7d9330718f382ec9126e487b5425f38ab8976a3012b903b5a674"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 176.5806,
+              "f32_bits_sha256": "af569deb8244e90d50bcf503945ac492b07d76f1d1b3affbc023fb24b1454e23"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 73.9644,
+              "f32_bits_sha256": "33d2c657c0dc91cb89a1c1089bbdb4de312d1899a72f7048e53e47383e39baea"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 99774464,
+            "peak_working_set_bytes": 133050368,
+            "private_committed_bytes": 93990912
+          }
+        },
+        {
+          "arm": "encoded",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+            "--encoded"
+          ],
+          "ready": {
+            "dimensions": 256,
+            "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "load_ms": 174.93,
+            "pid": 464,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 192.73539999994682,
+          "model_only_memory": {
+            "working_set_bytes": 54046720,
+            "peak_working_set_bytes": 93224960,
+            "private_committed_bytes": 47890432
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0648,
+              "f32_bits_sha256": "6ba0614b42904e09f020f57484fadc8b772bc0342e143e47cb2b3e142133999f"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 27.0094,
+              "f32_bits_sha256": "5c798f8da40ccd63c7b30a115784c81a606070057994dea7337301262ed811cd"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.0739,
+              "f32_bits_sha256": "1efc8ac77b3d7d9330718f382ec9126e487b5425f38ab8976a3012b903b5a674"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 125.09490000000001,
+              "f32_bits_sha256": "af569deb8244e90d50bcf503945ac492b07d76f1d1b3affbc023fb24b1454e23"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 51.4613,
+              "f32_bits_sha256": "33d2c657c0dc91cb89a1c1089bbdb4de312d1899a72f7048e53e47383e39baea"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 66273280,
+            "peak_working_set_bytes": 93224960,
+            "private_committed_bytes": 60309504
+          }
+        },
+        {
+          "arm": "encoded",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+            "--encoded"
+          ],
+          "ready": {
+            "dimensions": 256,
+            "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "load_ms": 207.03730000000002,
+            "pid": 19232,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 228.52419999981066,
+          "model_only_memory": {
+            "working_set_bytes": 54022144,
+            "peak_working_set_bytes": 93159424,
+            "private_committed_bytes": 48074752
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0597,
+              "f32_bits_sha256": "6ba0614b42904e09f020f57484fadc8b772bc0342e143e47cb2b3e142133999f"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 30.869500000000002,
+              "f32_bits_sha256": "5c798f8da40ccd63c7b30a115784c81a606070057994dea7337301262ed811cd"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.0749,
+              "f32_bits_sha256": "1efc8ac77b3d7d9330718f382ec9126e487b5425f38ab8976a3012b903b5a674"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 127.5316,
+              "f32_bits_sha256": "af569deb8244e90d50bcf503945ac492b07d76f1d1b3affbc023fb24b1454e23"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 56.5603,
+              "f32_bits_sha256": "33d2c657c0dc91cb89a1c1089bbdb4de312d1899a72f7048e53e47383e39baea"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 67170304,
+            "peak_working_set_bytes": 93159424,
+            "private_committed_bytes": 61431808
+          }
+        },
+        {
+          "arm": "eager",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded"
+          ],
+          "ready": {
+            "dimensions": 256,
+            "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "load_ms": 191.7313,
+            "pid": 29984,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 209.10490000096615,
+          "model_only_memory": {
+            "working_set_bytes": 86704128,
+            "peak_working_set_bytes": 133091328,
+            "private_committed_bytes": 81321984
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0634,
+              "f32_bits_sha256": "6ba0614b42904e09f020f57484fadc8b772bc0342e143e47cb2b3e142133999f"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 26.695,
+              "f32_bits_sha256": "5c798f8da40ccd63c7b30a115784c81a606070057994dea7337301262ed811cd"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.0917999999999999,
+              "f32_bits_sha256": "1efc8ac77b3d7d9330718f382ec9126e487b5425f38ab8976a3012b903b5a674"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 173.4161,
+              "f32_bits_sha256": "af569deb8244e90d50bcf503945ac492b07d76f1d1b3affbc023fb24b1454e23"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 72.3933,
+              "f32_bits_sha256": "33d2c657c0dc91cb89a1c1089bbdb4de312d1899a72f7048e53e47383e39baea"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 99459072,
+            "peak_working_set_bytes": 133091328,
+            "private_committed_bytes": 93679616
+          }
+        },
+        {
+          "arm": "eager",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded"
+          ],
+          "ready": {
+            "dimensions": 256,
+            "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "load_ms": 195.2954,
+            "pid": 23660,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 216.17289999994682,
+          "model_only_memory": {
+            "working_set_bytes": 86695936,
+            "peak_working_set_bytes": 133058560,
+            "private_committed_bytes": 82321408
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0634,
+              "f32_bits_sha256": "6ba0614b42904e09f020f57484fadc8b772bc0342e143e47cb2b3e142133999f"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 28.185200000000002,
+              "f32_bits_sha256": "5c798f8da40ccd63c7b30a115784c81a606070057994dea7337301262ed811cd"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.3202,
+              "f32_bits_sha256": "1efc8ac77b3d7d9330718f382ec9126e487b5425f38ab8976a3012b903b5a674"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 170.41510000000002,
+              "f32_bits_sha256": "af569deb8244e90d50bcf503945ac492b07d76f1d1b3affbc023fb24b1454e23"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 69.5089,
+              "f32_bits_sha256": "33d2c657c0dc91cb89a1c1089bbdb4de312d1899a72f7048e53e47383e39baea"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 98967552,
+            "peak_working_set_bytes": 133058560,
+            "private_committed_bytes": 93073408
+          }
+        },
+        {
+          "arm": "encoded",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+            "--encoded"
+          ],
+          "ready": {
+            "dimensions": 256,
+            "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "load_ms": 200.9985,
+            "pid": 6380,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 226.19070000655483,
+          "model_only_memory": {
+            "working_set_bytes": 54034432,
+            "peak_working_set_bytes": 93204480,
+            "private_committed_bytes": 48357376
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0617,
+              "f32_bits_sha256": "6ba0614b42904e09f020f57484fadc8b772bc0342e143e47cb2b3e142133999f"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 28.2116,
+              "f32_bits_sha256": "5c798f8da40ccd63c7b30a115784c81a606070057994dea7337301262ed811cd"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.6766,
+              "f32_bits_sha256": "1efc8ac77b3d7d9330718f382ec9126e487b5425f38ab8976a3012b903b5a674"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 125.2395,
+              "f32_bits_sha256": "af569deb8244e90d50bcf503945ac492b07d76f1d1b3affbc023fb24b1454e23"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 56.0296,
+              "f32_bits_sha256": "33d2c657c0dc91cb89a1c1089bbdb4de312d1899a72f7048e53e47383e39baea"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 64716800,
+            "peak_working_set_bytes": 93204480,
+            "private_committed_bytes": 59330560
+          }
+        },
+        {
+          "arm": "encoded",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+            "--encoded"
+          ],
+          "ready": {
+            "dimensions": 256,
+            "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "load_ms": 173.94819999999999,
+            "pid": 16088,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 194.53249999787658,
+          "model_only_memory": {
+            "working_set_bytes": 54050816,
+            "peak_working_set_bytes": 93192192,
+            "private_committed_bytes": 48910336
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.061,
+              "f32_bits_sha256": "6ba0614b42904e09f020f57484fadc8b772bc0342e143e47cb2b3e142133999f"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 26.6585,
+              "f32_bits_sha256": "5c798f8da40ccd63c7b30a115784c81a606070057994dea7337301262ed811cd"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.2951,
+              "f32_bits_sha256": "1efc8ac77b3d7d9330718f382ec9126e487b5425f38ab8976a3012b903b5a674"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 121.404,
+              "f32_bits_sha256": "af569deb8244e90d50bcf503945ac492b07d76f1d1b3affbc023fb24b1454e23"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 59.1755,
+              "f32_bits_sha256": "33d2c657c0dc91cb89a1c1089bbdb4de312d1899a72f7048e53e47383e39baea"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 66568192,
+            "peak_working_set_bytes": 93192192,
+            "private_committed_bytes": 60620800
+          }
+        },
+        {
+          "arm": "eager",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded"
+          ],
+          "ready": {
+            "dimensions": 256,
+            "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "load_ms": 205.8006,
+            "pid": 22284,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 227.00829999666894,
+          "model_only_memory": {
+            "working_set_bytes": 86700032,
+            "peak_working_set_bytes": 133074944,
+            "private_committed_bytes": 82317312
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0766,
+              "f32_bits_sha256": "6ba0614b42904e09f020f57484fadc8b772bc0342e143e47cb2b3e142133999f"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 29.087600000000002,
+              "f32_bits_sha256": "5c798f8da40ccd63c7b30a115784c81a606070057994dea7337301262ed811cd"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.2032,
+              "f32_bits_sha256": "1efc8ac77b3d7d9330718f382ec9126e487b5425f38ab8976a3012b903b5a674"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 177.5421,
+              "f32_bits_sha256": "af569deb8244e90d50bcf503945ac492b07d76f1d1b3affbc023fb24b1454e23"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 67.93390000000001,
+              "f32_bits_sha256": "33d2c657c0dc91cb89a1c1089bbdb4de312d1899a72f7048e53e47383e39baea"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 100098048,
+            "peak_working_set_bytes": 133074944,
+            "private_committed_bytes": 94765056
+          }
+        },
+        {
+          "arm": "eager",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded"
+          ],
+          "ready": {
+            "dimensions": 256,
+            "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "load_ms": 200.64960000000002,
+            "pid": 28444,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 219.842400001653,
+          "model_only_memory": {
+            "working_set_bytes": 86700032,
+            "peak_working_set_bytes": 133103616,
+            "private_committed_bytes": 82317312
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.06559999999999999,
+              "f32_bits_sha256": "6ba0614b42904e09f020f57484fadc8b772bc0342e143e47cb2b3e142133999f"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 36.210499999999996,
+              "f32_bits_sha256": "5c798f8da40ccd63c7b30a115784c81a606070057994dea7337301262ed811cd"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.706,
+              "f32_bits_sha256": "1efc8ac77b3d7d9330718f382ec9126e487b5425f38ab8976a3012b903b5a674"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 185.2026,
+              "f32_bits_sha256": "af569deb8244e90d50bcf503945ac492b07d76f1d1b3affbc023fb24b1454e23"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 65.97160000000001,
+              "f32_bits_sha256": "33d2c657c0dc91cb89a1c1089bbdb4de312d1899a72f7048e53e47383e39baea"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 98992128,
+            "peak_working_set_bytes": 133103616,
+            "private_committed_bytes": 92909568
+          }
+        },
+        {
+          "arm": "encoded",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+            "--encoded"
+          ],
+          "ready": {
+            "dimensions": 256,
+            "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "load_ms": 179.8033,
+            "pid": 9400,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 198.04219999787165,
+          "model_only_memory": {
+            "working_set_bytes": 53968896,
+            "peak_working_set_bytes": 93138944,
+            "private_committed_bytes": 48840704
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0603,
+              "f32_bits_sha256": "6ba0614b42904e09f020f57484fadc8b772bc0342e143e47cb2b3e142133999f"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 30.139,
+              "f32_bits_sha256": "5c798f8da40ccd63c7b30a115784c81a606070057994dea7337301262ed811cd"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.4771999999999998,
+              "f32_bits_sha256": "1efc8ac77b3d7d9330718f382ec9126e487b5425f38ab8976a3012b903b5a674"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 128.3348,
+              "f32_bits_sha256": "af569deb8244e90d50bcf503945ac492b07d76f1d1b3affbc023fb24b1454e23"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 55.0055,
+              "f32_bits_sha256": "33d2c657c0dc91cb89a1c1089bbdb4de312d1899a72f7048e53e47383e39baea"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 65163264,
+            "peak_working_set_bytes": 93138944,
+            "private_committed_bytes": 59379712
+          }
+        }
+      ],
+      "summary": {
+        "eager": {
+          "load_p50_ms": 197.4534,
+          "startup_p50_ms": 216.7076999976416,
+          "embedding_p50_ms": {
+            "query": 0.06559999999999999,
+            "edge-uncapped": 29.087600000000002,
+            "edge-capped": 1.3202,
+            "source-uncapped": 176.5806,
+            "source-capped": 69.5089
+          }
+        },
+        "encoded": {
+          "load_p50_ms": 179.8033,
+          "startup_p50_ms": 198.04219999787165,
+          "embedding_p50_ms": {
+            "query": 0.061,
+            "edge-uncapped": 28.2116,
+            "edge-capped": 1.2951,
+            "source-uncapped": 125.2395,
+            "source-capped": 56.0296
+          }
+        }
+      }
+    },
+    {
+      "model": {
+        "path": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+        "files": {
+          "model.safetensors": "f3a9a9297a228914ca7cd0dc9601616ccb81a198676172ff6ff52658f5251ee2",
+          "tokenizer.json": "7d75cbc54318138807c401b0f0c9721117c628b39de8e8e0edb6cb17e0ee7d18",
+          "config.json": "63c00d90824c832c04ec1d02b6a983fb90489bf049f29fbff15ba481b8a432ee"
+        },
+        "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+        "file_bytes": 34048476,
+        "tokenizer_settings": {
+          "truncation": null,
+          "padding": null
+        }
+      },
+      "runs": [
+        {
+          "arm": "original",
+          "measured": false,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate12\\control-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8"
+          ],
+          "ready": {
+            "dimensions": 512,
+            "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+            "load_ms": 191.9801,
+            "pid": 30016,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 214.84849999978906,
+          "model_only_memory": {
+            "working_set_bytes": 151289856,
+            "peak_working_set_bytes": 197267456,
+            "private_committed_bytes": 146329600
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.08009999999999999,
+              "f32_bits_sha256": "f8d47da1b1dd2a6a3740ad07c818ee9b8495d882cf52b4f36a7755d719e6aa9d"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 31.6208,
+              "f32_bits_sha256": "7dd489403df180f333f8ca98c7c23bee551901659acc0d7928071b1b811897c3"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.619,
+              "f32_bits_sha256": "2f7bb4b1fad711adaf3041034e4045db93bdee82f4f8a4beb8f1afd60e196675"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 312.1961,
+              "f32_bits_sha256": "abcfe53081bda7e26c4fb383bcda7970779a0cfa602c48ca6a234af922e99d19"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 109.34580000000001,
+              "f32_bits_sha256": "7dcadb4ba9e85a6f372bcff95c79a0c49dcb66e2398eca3a0638184f4c45c0a8"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 163794944,
+            "peak_working_set_bytes": 197267456,
+            "private_committed_bytes": 158453760
+          }
+        },
+        {
+          "arm": "eager-warmup",
+          "measured": false,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8"
+          ],
+          "ready": {
+            "dimensions": 512,
+            "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+            "load_ms": 196.2072,
+            "pid": 27880,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 215.06030000455212,
+          "model_only_memory": {
+            "working_set_bytes": 151281664,
+            "peak_working_set_bytes": 197283840,
+            "private_committed_bytes": 146305024
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0897,
+              "f32_bits_sha256": "f8d47da1b1dd2a6a3740ad07c818ee9b8495d882cf52b4f36a7755d719e6aa9d"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 30.6847,
+              "f32_bits_sha256": "7dd489403df180f333f8ca98c7c23bee551901659acc0d7928071b1b811897c3"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.6146,
+              "f32_bits_sha256": "2f7bb4b1fad711adaf3041034e4045db93bdee82f4f8a4beb8f1afd60e196675"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 267.9481,
+              "f32_bits_sha256": "abcfe53081bda7e26c4fb383bcda7970779a0cfa602c48ca6a234af922e99d19"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 97.3386,
+              "f32_bits_sha256": "7dcadb4ba9e85a6f372bcff95c79a0c49dcb66e2398eca3a0638184f4c45c0a8"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 163454976,
+            "peak_working_set_bytes": 197283840,
+            "private_committed_bytes": 158482432
+          }
+        },
+        {
+          "arm": "encoded-warmup",
+          "measured": false,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+            "--encoded"
+          ],
+          "ready": {
+            "dimensions": 512,
+            "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+            "load_ms": 181.88899999999998,
+            "pid": 27240,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 201.70130000042263,
+          "model_only_memory": {
+            "working_set_bytes": 54214656,
+            "peak_working_set_bytes": 93347840,
+            "private_committed_bytes": 48005120
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0841,
+              "f32_bits_sha256": "f8d47da1b1dd2a6a3740ad07c818ee9b8495d882cf52b4f36a7755d719e6aa9d"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 27.631200000000003,
+              "f32_bits_sha256": "7dd489403df180f333f8ca98c7c23bee551901659acc0d7928071b1b811897c3"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.3268,
+              "f32_bits_sha256": "2f7bb4b1fad711adaf3041034e4045db93bdee82f4f8a4beb8f1afd60e196675"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 136.4042,
+              "f32_bits_sha256": "abcfe53081bda7e26c4fb383bcda7970779a0cfa602c48ca6a234af922e99d19"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 57.184400000000004,
+              "f32_bits_sha256": "7dcadb4ba9e85a6f372bcff95c79a0c49dcb66e2398eca3a0638184f4c45c0a8"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 66641920,
+            "peak_working_set_bytes": 93347840,
+            "private_committed_bytes": 61337600
+          }
+        },
+        {
+          "arm": "eager",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8"
+          ],
+          "ready": {
+            "dimensions": 512,
+            "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+            "load_ms": 198.046,
+            "pid": 13332,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 216.62490000016987,
+          "model_only_memory": {
+            "working_set_bytes": 151322624,
+            "peak_working_set_bytes": 197292032,
+            "private_committed_bytes": 146358272
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0747,
+              "f32_bits_sha256": "f8d47da1b1dd2a6a3740ad07c818ee9b8495d882cf52b4f36a7755d719e6aa9d"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 31.919900000000002,
+              "f32_bits_sha256": "7dd489403df180f333f8ca98c7c23bee551901659acc0d7928071b1b811897c3"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.3619,
+              "f32_bits_sha256": "2f7bb4b1fad711adaf3041034e4045db93bdee82f4f8a4beb8f1afd60e196675"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 259.71410000000003,
+              "f32_bits_sha256": "abcfe53081bda7e26c4fb383bcda7970779a0cfa602c48ca6a234af922e99d19"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 97.2505,
+              "f32_bits_sha256": "7dcadb4ba9e85a6f372bcff95c79a0c49dcb66e2398eca3a0638184f4c45c0a8"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 163803136,
+            "peak_working_set_bytes": 197292032,
+            "private_committed_bytes": 159129600
+          }
+        },
+        {
+          "arm": "encoded",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+            "--encoded"
+          ],
+          "ready": {
+            "dimensions": 512,
+            "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+            "load_ms": 186.1005,
+            "pid": 13836,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 207.50410000619013,
+          "model_only_memory": {
+            "working_set_bytes": 54185984,
+            "peak_working_set_bytes": 93392896,
+            "private_committed_bytes": 47972352
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0708,
+              "f32_bits_sha256": "f8d47da1b1dd2a6a3740ad07c818ee9b8495d882cf52b4f36a7755d719e6aa9d"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 29.8354,
+              "f32_bits_sha256": "7dd489403df180f333f8ca98c7c23bee551901659acc0d7928071b1b811897c3"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.1279000000000001,
+              "f32_bits_sha256": "2f7bb4b1fad711adaf3041034e4045db93bdee82f4f8a4beb8f1afd60e196675"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 135.1449,
+              "f32_bits_sha256": "abcfe53081bda7e26c4fb383bcda7970779a0cfa602c48ca6a234af922e99d19"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 60.8061,
+              "f32_bits_sha256": "7dcadb4ba9e85a6f372bcff95c79a0c49dcb66e2398eca3a0638184f4c45c0a8"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 65409024,
+            "peak_working_set_bytes": 93392896,
+            "private_committed_bytes": 60444672
+          }
+        },
+        {
+          "arm": "encoded",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+            "--encoded"
+          ],
+          "ready": {
+            "dimensions": 512,
+            "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+            "load_ms": 188.07150000000001,
+            "pid": 9140,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 205.91569999669446,
+          "model_only_memory": {
+            "working_set_bytes": 54181888,
+            "peak_working_set_bytes": 93421568,
+            "private_committed_bytes": 47923200
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.07440000000000001,
+              "f32_bits_sha256": "f8d47da1b1dd2a6a3740ad07c818ee9b8495d882cf52b4f36a7755d719e6aa9d"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 31.4806,
+              "f32_bits_sha256": "7dd489403df180f333f8ca98c7c23bee551901659acc0d7928071b1b811897c3"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.289,
+              "f32_bits_sha256": "2f7bb4b1fad711adaf3041034e4045db93bdee82f4f8a4beb8f1afd60e196675"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 143.4695,
+              "f32_bits_sha256": "abcfe53081bda7e26c4fb383bcda7970779a0cfa602c48ca6a234af922e99d19"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 65.1407,
+              "f32_bits_sha256": "7dcadb4ba9e85a6f372bcff95c79a0c49dcb66e2398eca3a0638184f4c45c0a8"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 65630208,
+            "peak_working_set_bytes": 93421568,
+            "private_committed_bytes": 60370944
+          }
+        },
+        {
+          "arm": "eager",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8"
+          ],
+          "ready": {
+            "dimensions": 512,
+            "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+            "load_ms": 186.97359999999998,
+            "pid": 14544,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 204.52700000168988,
+          "model_only_memory": {
+            "working_set_bytes": 151044096,
+            "peak_working_set_bytes": 197296128,
+            "private_committed_bytes": 144871424
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.08399999999999999,
+              "f32_bits_sha256": "f8d47da1b1dd2a6a3740ad07c818ee9b8495d882cf52b4f36a7755d719e6aa9d"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 31.380900000000004,
+              "f32_bits_sha256": "7dd489403df180f333f8ca98c7c23bee551901659acc0d7928071b1b811897c3"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 2.3019999999999996,
+              "f32_bits_sha256": "2f7bb4b1fad711adaf3041034e4045db93bdee82f4f8a4beb8f1afd60e196675"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 267.454,
+              "f32_bits_sha256": "abcfe53081bda7e26c4fb383bcda7970779a0cfa602c48ca6a234af922e99d19"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 105.3967,
+              "f32_bits_sha256": "7dcadb4ba9e85a6f372bcff95c79a0c49dcb66e2398eca3a0638184f4c45c0a8"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 162836480,
+            "peak_working_set_bytes": 197296128,
+            "private_committed_bytes": 158162944
+          }
+        },
+        {
+          "arm": "eager",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8"
+          ],
+          "ready": {
+            "dimensions": 512,
+            "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+            "load_ms": 182.2421,
+            "pid": 21764,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 200.65050000266638,
+          "model_only_memory": {
+            "working_set_bytes": 151048192,
+            "peak_working_set_bytes": 197287936,
+            "private_committed_bytes": 144855040
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0837,
+              "f32_bits_sha256": "f8d47da1b1dd2a6a3740ad07c818ee9b8495d882cf52b4f36a7755d719e6aa9d"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 29.5061,
+              "f32_bits_sha256": "7dd489403df180f333f8ca98c7c23bee551901659acc0d7928071b1b811897c3"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.2639,
+              "f32_bits_sha256": "2f7bb4b1fad711adaf3041034e4045db93bdee82f4f8a4beb8f1afd60e196675"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 265.4404,
+              "f32_bits_sha256": "abcfe53081bda7e26c4fb383bcda7970779a0cfa602c48ca6a234af922e99d19"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 102.5475,
+              "f32_bits_sha256": "7dcadb4ba9e85a6f372bcff95c79a0c49dcb66e2398eca3a0638184f4c45c0a8"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 162390016,
+            "peak_working_set_bytes": 197287936,
+            "private_committed_bytes": 157741056
+          }
+        },
+        {
+          "arm": "encoded",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+            "--encoded"
+          ],
+          "ready": {
+            "dimensions": 512,
+            "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+            "load_ms": 172.2046,
+            "pid": 28892,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 189.83550000120886,
+          "model_only_memory": {
+            "working_set_bytes": 54194176,
+            "peak_working_set_bytes": 93360128,
+            "private_committed_bytes": 47951872
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0671,
+              "f32_bits_sha256": "f8d47da1b1dd2a6a3740ad07c818ee9b8495d882cf52b4f36a7755d719e6aa9d"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 29.154300000000003,
+              "f32_bits_sha256": "7dd489403df180f333f8ca98c7c23bee551901659acc0d7928071b1b811897c3"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.2137,
+              "f32_bits_sha256": "2f7bb4b1fad711adaf3041034e4045db93bdee82f4f8a4beb8f1afd60e196675"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 135.31560000000002,
+              "f32_bits_sha256": "abcfe53081bda7e26c4fb383bcda7970779a0cfa602c48ca6a234af922e99d19"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 61.085,
+              "f32_bits_sha256": "7dcadb4ba9e85a6f372bcff95c79a0c49dcb66e2398eca3a0638184f4c45c0a8"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 66641920,
+            "peak_working_set_bytes": 93360128,
+            "private_committed_bytes": 60633088
+          }
+        },
+        {
+          "arm": "encoded",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+            "--encoded"
+          ],
+          "ready": {
+            "dimensions": 512,
+            "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+            "load_ms": 179.63199999999998,
+            "pid": 25028,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 197.44570000329986,
+          "model_only_memory": {
+            "working_set_bytes": 54173696,
+            "peak_working_set_bytes": 93376512,
+            "private_committed_bytes": 47919104
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.06470000000000001,
+              "f32_bits_sha256": "f8d47da1b1dd2a6a3740ad07c818ee9b8495d882cf52b4f36a7755d719e6aa9d"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 26.9726,
+              "f32_bits_sha256": "7dd489403df180f333f8ca98c7c23bee551901659acc0d7928071b1b811897c3"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.3689,
+              "f32_bits_sha256": "2f7bb4b1fad711adaf3041034e4045db93bdee82f4f8a4beb8f1afd60e196675"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 133.2827,
+              "f32_bits_sha256": "abcfe53081bda7e26c4fb383bcda7970779a0cfa602c48ca6a234af922e99d19"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 54.610899999999994,
+              "f32_bits_sha256": "7dcadb4ba9e85a6f372bcff95c79a0c49dcb66e2398eca3a0638184f4c45c0a8"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 68177920,
+            "peak_working_set_bytes": 93376512,
+            "private_committed_bytes": 62144512
+          }
+        },
+        {
+          "arm": "eager",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8"
+          ],
+          "ready": {
+            "dimensions": 512,
+            "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+            "load_ms": 193.0095,
+            "pid": 1580,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 214.3225000036182,
+          "model_only_memory": {
+            "working_set_bytes": 151347200,
+            "peak_working_set_bytes": 197267456,
+            "private_committed_bytes": 146382848
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0764,
+              "f32_bits_sha256": "f8d47da1b1dd2a6a3740ad07c818ee9b8495d882cf52b4f36a7755d719e6aa9d"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 32.1162,
+              "f32_bits_sha256": "7dd489403df180f333f8ca98c7c23bee551901659acc0d7928071b1b811897c3"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.388,
+              "f32_bits_sha256": "2f7bb4b1fad711adaf3041034e4045db93bdee82f4f8a4beb8f1afd60e196675"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 266.2525,
+              "f32_bits_sha256": "abcfe53081bda7e26c4fb383bcda7970779a0cfa602c48ca6a234af922e99d19"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 87.3734,
+              "f32_bits_sha256": "7dcadb4ba9e85a6f372bcff95c79a0c49dcb66e2398eca3a0638184f4c45c0a8"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 164823040,
+            "peak_working_set_bytes": 197267456,
+            "private_committed_bytes": 158806016
+          }
+        },
+        {
+          "arm": "eager",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8"
+          ],
+          "ready": {
+            "dimensions": 512,
+            "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+            "load_ms": 193.9249,
+            "pid": 13200,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 213.54920000158018,
+          "model_only_memory": {
+            "working_set_bytes": 151044096,
+            "peak_working_set_bytes": 197279744,
+            "private_committed_bytes": 144855040
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0816,
+              "f32_bits_sha256": "f8d47da1b1dd2a6a3740ad07c818ee9b8495d882cf52b4f36a7755d719e6aa9d"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 30.1775,
+              "f32_bits_sha256": "7dd489403df180f333f8ca98c7c23bee551901659acc0d7928071b1b811897c3"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.2381,
+              "f32_bits_sha256": "2f7bb4b1fad711adaf3041034e4045db93bdee82f4f8a4beb8f1afd60e196675"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 262.5037,
+              "f32_bits_sha256": "abcfe53081bda7e26c4fb383bcda7970779a0cfa602c48ca6a234af922e99d19"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 94.1091,
+              "f32_bits_sha256": "7dcadb4ba9e85a6f372bcff95c79a0c49dcb66e2398eca3a0638184f4c45c0a8"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 163446784,
+            "peak_working_set_bytes": 197279744,
+            "private_committed_bytes": 157872128
+          }
+        },
+        {
+          "arm": "encoded",
+          "measured": true,
+          "argv": [
+            "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos-lab-embed.exe",
+            "--model",
+            "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+            "--encoded"
+          ],
+          "ready": {
+            "dimensions": 512,
+            "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+            "load_ms": 175.5103,
+            "pid": 6380,
+            "tokenizer_settings": {
+              "padding": null,
+              "truncation": null
+            },
+            "type": "ready"
+          },
+          "startup_wall_ms": 192.87179999810178,
+          "model_only_memory": {
+            "working_set_bytes": 54177792,
+            "peak_working_set_bytes": 93388800,
+            "private_committed_bytes": 47935488
+          },
+          "requests": [
+            {
+              "id": "query",
+              "inputs": 1,
+              "input_bytes": 50,
+              "max_tokens": null,
+              "embed_ms": 0.0709,
+              "f32_bits_sha256": "f8d47da1b1dd2a6a3740ad07c818ee9b8495d882cf52b4f36a7755d719e6aa9d"
+            },
+            {
+              "id": "edge-uncapped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": null,
+              "embed_ms": 25.629099999999998,
+              "f32_bits_sha256": "7dd489403df180f333f8ca98c7c23bee551901659acc0d7928071b1b811897c3"
+            },
+            {
+              "id": "edge-capped",
+              "inputs": 7,
+              "input_bytes": 80615,
+              "max_tokens": 512,
+              "embed_ms": 1.2381,
+              "f32_bits_sha256": "2f7bb4b1fad711adaf3041034e4045db93bdee82f4f8a4beb8f1afd60e196675"
+            },
+            {
+              "id": "source-uncapped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": null,
+              "embed_ms": 139.28099999999998,
+              "f32_bits_sha256": "abcfe53081bda7e26c4fb383bcda7970779a0cfa602c48ca6a234af922e99d19"
+            },
+            {
+              "id": "source-capped",
+              "inputs": 925,
+              "input_bytes": 1564070,
+              "max_tokens": 128,
+              "embed_ms": 55.2705,
+              "f32_bits_sha256": "7dcadb4ba9e85a6f372bcff95c79a0c49dcb66e2398eca3a0638184f4c45c0a8"
+            }
+          ],
+          "after_requests_memory": {
+            "working_set_bytes": 66486272,
+            "peak_working_set_bytes": 93388800,
+            "private_committed_bytes": 61149184
+          }
+        }
+      ],
+      "summary": {
+        "eager": {
+          "load_p50_ms": 193.0095,
+          "startup_p50_ms": 213.54920000158018,
+          "embedding_p50_ms": {
+            "query": 0.0816,
+            "edge-uncapped": 31.380900000000004,
+            "edge-capped": 1.3619,
+            "source-uncapped": 265.4404,
+            "source-capped": 97.2505
+          }
+        },
+        "encoded": {
+          "load_p50_ms": 179.63199999999998,
+          "startup_p50_ms": 197.44570000329986,
+          "embedding_p50_ms": {
+            "query": 0.0708,
+            "edge-uncapped": 29.154300000000003,
+            "edge-capped": 1.2381,
+            "source-uncapped": 135.31560000000002,
+            "source-capped": 60.8061
+          }
+        }
+      }
+    }
+  ],
+  "condition": "One unmeasured warm-up per arm, then alternating arm order; sequential fresh processes. Same executable and fixed input bytes. All f32 bits, not cosine tolerance. Model-only memory at ready; later peak includes embedding work. Not retrieval quality or low-end/Mac proof.",
+  "bitwise_equivalent": true
+}

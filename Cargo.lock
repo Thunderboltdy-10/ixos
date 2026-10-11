@@ -2846,6 +2846,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "bytemuck",
  "calamine",
  "chacha20poly1305",
  "chrono",
@@ -2876,6 +2877,7 @@ dependencies = [
  "rayon",
  "regex",
  "ring",
+ "safetensors",
  "secret-service",
  "security-framework 2.11.1",
  "serde",
@@ -2886,6 +2888,7 @@ dependencies = [
  "tar",
  "tempfile",
  "thiserror 1.0.69",
+ "tokenizers",
  "tokio",
  "tokio-test",
  "tokio-util",

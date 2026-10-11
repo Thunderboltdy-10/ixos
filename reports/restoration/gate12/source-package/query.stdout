@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "checks": [
+    "lexical: quoted identifiers find code; every whitespace separator remains a multi-term query",
+    "lexical: JSONL agrees with fresh CLI; absent literal yields no results",
+    "hybrid: quoted identifiers find code; every whitespace separator remains a multi-term query",
+    "hybrid: JSONL agrees with fresh CLI; absent literal yields no results",
+    "source bytes/mtime unchanged; no adjacent cache files"
+  ],
+  "binary_sha256": "d07a06783513d671b9dce149b45f1d80bb6c0ee710c1760aa5a6a62acc91adcc",
+  "actual_model": true,
+  "quality_benchmark": false
+}

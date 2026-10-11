@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Users\pablo\Downloads\Ixos\scripts\compare_cli_loaders.py", line 204, in <module>
+    main()
+  File "C:\Users\pablo\Downloads\Ixos\scripts\compare_cli_loaders.py", line 176, in main
+    assert got == expected, (condition, label, 'CLI response changed')
+           ^^^^^^^^^^^^^^^
+AssertionError: ('fresh-native-warm', 'eager-warmup', 'CLI response changed')

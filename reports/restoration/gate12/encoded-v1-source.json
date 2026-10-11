@@ -1,0 +1,15 @@
+{
+  "status": "captured",
+  "binary_sha256": "b9f15a72deaef57b79afb7ec572fdd80c94ff9c9afd54c054a9a7ba309f0b245",
+  "source_hashes": {
+    "Cargo.toml": "0a44df3795c1f388669615e81d4ceb3b9a4cc804b6546185709d4883a90e6148",
+    "Cargo.lock": "760d7a3321b6973a04df0f18d48f389ec25b5eeae6d9c974f6a7d72c1ada0b4a",
+    "src/ixos_embed/encoded_model.rs": "a3a80310847f60eb6e1be618bddabdff91f195c1be4bb76eb51c77175000417b",
+    "src/ixos_embed/model2vec.rs": "34a6cf123bdd48ccb477431d9b7de3cd24b8417cb2de596ee2a184c9d9ebb544",
+    "src/ixos_embed/mod.rs": "d155200df3fa2e2cbb601e34c2d86c0499ef5347d5fe5f4dd30d2e5655c28835",
+    "src/bin/ixos-lab-embed.rs": "cb146fc3e57bb00e59fd40b2584f6bbcb673773122c0ac9dc9bc80b281825674",
+    "docs/licenses/model2vec-rs-MIT.txt": "6869ad291a9df9866448579b7157bf337373a21ced5b4b315e68b2924aff2ab9"
+  },
+  "production_default": "eager; current CLI binary remains Gate11 102b39ea\u2026",
+  "next": "V2 needs defensive configured-padding/row bounds and safe half-slice SIMD conversion before repeating exact-bit and throughput checks."
+}

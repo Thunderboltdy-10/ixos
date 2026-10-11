@@ -219,9 +219,11 @@ impl Engine {
         let model = if options.mode == RetrievalMode::Lexical {
             None
         } else {
-            Some(Model2VecEmbedder::from_path(model_path.ok_or_else(
-                || anyhow::anyhow!("Semantic/hybrid retrieval requires --model-path"),
-            )?)?)
+            Some(Model2VecEmbedder::from_path_encoded(
+                model_path.ok_or_else(|| {
+                    anyhow::anyhow!("Semantic/hybrid retrieval requires --model-path")
+                })?,
+            )?)
         };
         let cache = if options.persist {
             model.as_ref().map(|model| {

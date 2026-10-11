@@ -18,6 +18,10 @@ categories = ["command-line-utilities", "filesystem"]
 [dependencies]
 # Real embedding model - Model2Vec
 model2vec-rs = "0.1.4"
+# Same locked parser/tokenizer versions as the reference encoder, for row-loader experiments.
+safetensors = "=0.5.3"
+tokenizers = { version = "=0.21.4", default-features = false }
+bytemuck = "=1.25.0"
 hf-hub = { version = "0.4.3", default-features = false, features = ["ureq"] }
 
 # Async runtime

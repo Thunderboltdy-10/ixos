@@ -1,0 +1,29 @@
+{
+  "status": "passed",
+  "archive_name": "ixos-windows-local-review.zip",
+  "archive_sha256": "66bf65be571fdd15f0fbdcbc495834b8cc6da2622f98db3c73892273a97ad4d3",
+  "binary_sha256": "102b39ead184122c8e37d4e3414ef091084985f5fe96e58e3b171081df13c496",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "config/retrieval-models.json",
+    "docs/ARCHITECTURE.md",
+    "docs/CLI.md",
+    "docs/getting-started/INSTALLATION.md",
+    "docs/models/PUBLISHING.md",
+    "docs/models/README.md",
+    "eval/__init__.py",
+    "eval/artifacts.py",
+    "eval/compress_model.py",
+    "eval/normalize_tokenizer.py",
+    "ixos.exe",
+    "scripts/setup_models.py",
+    "skills/ixos-retrieval/SKILL.md"
+  ],
+  "bundled_weights": false,
+  "fresh_model_downloads": true,
+  "code_setup_standard_library_only": true,
+  "checkout_python_modules_available": false,
+  "condition": "Executable and setup run from extracted local Windows package, PYTHONPATH and IXOS_MODEL_PATH removed. Code setup uses python -S; documents use installed NumPy 2.3.5. Downloads independently verified against pinned catalog. Existing OS/toolchain/runtime remain; not a clean Windows VM. No public release.",
+  "source_bytes_mtime_and_names_preserved": true
+}

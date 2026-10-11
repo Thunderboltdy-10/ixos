@@ -12,11 +12,15 @@ cargo build --release --locked --bin ixos
 python scripts/setup_models.py --profile all
 python scripts/verify_retrieval_engine.py --binary PATH --model CODE_MODEL --output RECEIPT.json
 python scripts/verify_restored_cli.py --binary PATH --code-model CODE_MODEL --documents-model DOC_MODEL --output RECEIPT.json
+python scripts/verify_evidence_policy.py --binary PATH --model CODE_MODEL --output NEW_EVIDENCE_RECEIPTS
+python scripts/verify_query_literals.py --binary PATH --model CODE_MODEL --output NEW_QUERY_RECEIPTS
 ```
 
 Capture actual xattr/ADS hits, failed-native fallback, equal-length edits, rename, ignore policy, long Unicode sources and no adjacent files. Read-only probes must not change source content. Report failures without relabeling fallback as a native hit. Document/low-memory/real agent-task evidence remains separate from authored contract checks.
 
 Local source/runtime proof now covers Windows and Ubuntu24.04/WSL x86-64 on ext4 with the pinned models; [Gate6](../../reports/restoration/GATE6.md) records core tests, nine native/cache/source probes, eight profile checks, Windows timestamp preservation and Linux package execution. WSL uses a native Linux executable/kernel/filesystem, not bare-metal or Mac proof. The Mac checks remain deferred by the owner. Run `cargo test --workspace --locked --jobs 2` separately for desktop/workspace verification with the desktop's platform system dependencies installed.
+
+[Gate 9](../../reports/restoration/GATE9.md) adds actual-model preview/cache bounds and stable anchor checks. [Gate 11](../../reports/restoration/GATE11.md) repeats Windows/Linux core and actual model/source contracts after identifier parsing fixes and verifies extracted local packages. The CI matrix now includes evidence and query probes; it has not been dispatched remotely. The numerical held-out [Gate 10](../../reports/restoration/GATE10.md) keeps its original exact binary/model/evaluator freeze, rather than silently relabeling those measurements as a later build.
 
 ## Historical credentials while preserving development
 

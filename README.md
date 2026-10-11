@@ -41,9 +41,18 @@ A separate eight-task/eight-language ContextBench development diagnostic found a
 
 The [multi-call follow-up and native platform report](reports/restoration/GATE6.md) measures search/read/grep context costs and checks Windows plus Linux/WSL source/cache/package behavior with actual models. Broader reading raises hybrid annotated-line coverage from0.87% to8.65–9.88%, at roughly3,481–5,060 stdout tokens, while four of eight development tasks still have no annotated overlap. Correct file ranking can leave the evidence anchor wrong; these results do not select a more verbose production default. Windows native cache writes now preserve primary modification time and reject missing primaries. Mac execution remains deferred.
 
-The [evidence-location laboratory](reports/restoration/GATE7.md) preserves current file ranking and compares four ways to choose previews. Stored-passage lexical/semantic fusion modestly improves development line coverage at similar token cost, while several wrong-region/missing-file cases persist. This remains an experiment; production defaults and frozen held-out results are unchanged. [Reproducible protocol](docs/evaluation/ANCHORS.md).
+The [evidence-location laboratory](reports/restoration/GATE7.md) and [function-span development study](reports/restoration/GATE8.md) compare preview strategies while retaining file ranking. Negative candidates remain documented. [Gate 9](reports/restoration/GATE9.md) implements optional `--evidence-policy bounded-rerank`, verifies actual-model costs/native record size, and repairs random preview ties and incomplete-word evidence at chunk edges. The default remains `global-line`.
 
-A [larger function-span development evaluation](reports/restoration/GATE8.md) uses 180 generated descriptions across18 fresh repository families, with exact source coordinates and strong lexical controls. Hybrid file ranking improves, while bounded query-selected passage reranking raises follow-up line coverage at a small output-token increase. The latter needs extra inference and has regressions; it remains a lab candidate pending validation and fresh held-out evaluation. [Pinned source/splits/protocol](docs/evaluation/REPOQA.md).
+The prospectively frozen [RepoQA adaptation](reports/restoration/GATE10.md) completes all 260 descriptions across 26 reserved repository families and six languages:
+
+| Held-out function retrieval | Hybrid/global-line | Hybrid/bounded-rerank | Lexical/BM25 |
+|---|---:|---:|---:|
+| File nDCG@10 | 0.6937 | 0.6937 | 0.6066 |
+| File recall@10 | 0.9231 | 0.9231 | 0.8423 |
+| Cumulative function-line recall after fixed follow-ups | 0.4523 | 0.5048 | — |
+| Mean trajectory stdout + diagnostic tokens | 3,529.8 | 3,564.4 | — |
+
+Bounded reranking improves line recall by 5.26 percentage points, with a paired family 95% interval of 2.28–8.72 points, at about 35 extra total output tokens. It adds real query-time inference without enlarging the persistent file cache. There are regressions, and 107/260 bounded trajectories still have no annotated overlap. This supplied-source, generated-description evaluation uses a fixed search/read/grep schedule; it is not official RepoQA syntax scoring or autonomous agent success. [Pinned sources, split, exact binary/model/harness identities and reproduction](docs/evaluation/REPOQA.md). Subsequent literal-query correctness fixes are checked separately in [Gate 11](reports/restoration/GATE11.md); the frozen numerical receipts retain their original binary.
 
 ## Monorepo map
 
@@ -60,7 +69,7 @@ A [larger function-span development evaluation](reports/restoration/GATE8.md) us
 | `docs/`, `docs/archive/`, `legacy/` | Current guides, preserved historical documents, retired code |
 | `models/`, `dataset/`, `private-process/` | Excluded local artifacts/data/personal contribution records |
 
-The desktop keeps its earlier progressive search pipeline; it does not yet use the CLI's new representations. Ixplorer is retired under `legacy/`. [Feature inventory](docs/FEATURES.md) distinguishes current, retained and incomplete facilities. Native Mac/Linux execution and historical credential remediation remain release checks; CI configuration alone does not establish that they passed.
+The desktop keeps its earlier progressive search pipeline; it does not yet use the CLI's new representations. Ixplorer is retired under `legacy/`. [Feature inventory](docs/FEATURES.md) distinguishes current, retained and incomplete facilities. Windows and Linux/WSL core execution are verified locally; native Mac and historical credential remediation remain release checks. CI configuration alone does not establish that it passed.
 
 ## Development
 

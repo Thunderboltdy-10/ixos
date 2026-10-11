@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "binary_sha256": "d3266ae1ea09f1fabab4525a3235ce1c84ac58f890db1883c584f424b831bddb",
+  "source_export": {
+    "status": "passed",
+    "index_tree": "79978db6ce53e310d07030cd6afcde72ad490f4d",
+    "source_file_count": 2931,
+    "export_command": "git checkout-index --all --prefix .tmp/gate11/reviewer-source/",
+    "source_root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\reviewer-source",
+    "no_local_envs_weights_private_build_outputs": true,
+    "src_retrieval_mod_sha256": "1e4f74b54e8a2274cb15b42469f75442c9b296650bacb017dd628069eae274cb",
+    "prospective_evaluator_harness_matches": true,
+    "prior_attempt": "File-list comparison initially used Windows default subprocess text decoding; explicit UTF-8 -z decoding verifies all names without omissions. Export itself unchanged.",
+    "condition": "Fresh source export; isolated executable target uses existing gate4 Cargo dependency build cache and installed toolchain. Not a fresh OS/dependency download or native Mac proof."
+  },
+  "condition": "Actual executable independently rebuilt from staged source export in an existing separate dependency target; exported Python probes use third-party eval dependencies only, not root modules. Independent package-downloaded code/doc artifacts. Not a clean OS or fresh Cargo registry."
+}

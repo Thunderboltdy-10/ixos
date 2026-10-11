@@ -1,0 +1,1 @@
+{"results":[{"path":"cache.rs","score":0.8596357,"view":{"path":"cache.rs","start_line":1,"end_line":2,"text":"fn raw_hash() {}\nCache freshness compares source bytes after edits."}},{"path":"notes.txt","score":0.12156103,"view":{"path":"notes.txt","start_line":1,"end_line":1,"text":"Office and PDF extraction uses bounded source text."}}]}

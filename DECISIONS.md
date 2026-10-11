@@ -83,3 +83,7 @@
 - DO NOT reuse consumed RepoQA targets as a fresh selection set. New inspection-driven retrieval/model tuning requires new held-out material or explicit exploratory reporting. These line/rank scores are not official syntax leaderboard values or Cursor/Augment product scores.
 
 - KEEP (Gate10 checkout integrity): declare evaluator checkout byte endings explicitly; preserve the existing mixed-ending file without source changes so Windows/Linux clones can verify the same prospective harness hash.
+
+- KEEP (Gate11 query correctness): one matching outer ASCII quote pair denotes a single identifier; Unicode whitespace separates terms. Exact punctuation belongs to grep -F. No general phrase grammar or score-confidence claim.
+- KEEP (Gate11 installation): independently verify extracted packages/model setup without checkout imports, then record documentation-only refresh separately. CI includes real evidence/query contracts; retain native Mac and clean-OS limits.
+- MEASURE NEXT: investigate eager static-table expansion/startup/RSS using real selected artifacts. Any lazy/mapped loader must preserve numerical/output behavior under a declared equivalence contract; this is not new training or an opportunity to tune on consumed retrieval tests.

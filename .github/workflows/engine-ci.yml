@@ -36,6 +36,12 @@ jobs:
           python scripts/verify_retrieval_engine.py --binary $binary --model models/ci/potion-code-16M-v2-unbounded --output reports/ci/native-contract.json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python scripts/verify_restored_cli.py --binary $binary --code-model models/ci/potion-code-16M-v2-unbounded --documents-model models/ci/potion-retrieval-32M-row-int8 --output reports/ci/profile-contract.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/verify_evidence_policy.py --binary $binary --model models/ci/potion-code-16M-v2-unbounded --output reports/ci/evidence
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/verify_anchor_stability.py --binary $binary --output reports/ci/stability
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/verify_query_literals.py --binary $binary --model models/ci/potion-code-16M-v2-unbounded --output reports/ci/query-literals
           exit $LASTEXITCODE
       - uses: actions/upload-artifact@v4
         if: always()

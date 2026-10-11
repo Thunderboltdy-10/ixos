@@ -1,0 +1,165 @@
+[
+  {
+    "label": "own-search",
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\isolated.toml",
+      "search",
+      "where is the literal identifier guard implemented",
+      "--dir",
+      "src",
+      "--json",
+      "--cache-mode",
+      "ephemeral",
+      "--model-path",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+      "--limit",
+      "3",
+      "--stats"
+    ],
+    "exit": 0,
+    "stdin": null
+  },
+  {
+    "label": "own-grep",
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\isolated.toml",
+      "grep",
+      "--dir",
+      "src/retrieval",
+      "-F",
+      "is_identifier",
+      "--limit",
+      "5"
+    ],
+    "exit": 0,
+    "stdin": null
+  },
+  {
+    "label": "own-read",
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\isolated.toml",
+      "read",
+      "mod.rs",
+      "--dir",
+      "src/retrieval",
+      "--start",
+      "883",
+      "--lines",
+      "19"
+    ],
+    "exit": 0,
+    "stdin": null
+  },
+  {
+    "label": "bare",
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\isolated.toml",
+      "search",
+      "raw_hash",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-quote-probe-7_ivflef",
+      "--profile",
+      "lexical",
+      "--json",
+      "--stats"
+    ],
+    "exit": 0,
+    "stdin": null
+  },
+  {
+    "label": "double-quoted",
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\isolated.toml",
+      "search",
+      "\"raw_hash\"",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-quote-probe-7_ivflef",
+      "--profile",
+      "lexical",
+      "--json",
+      "--stats"
+    ],
+    "exit": 0,
+    "stdin": null
+  },
+  {
+    "label": "single-quoted",
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\isolated.toml",
+      "search",
+      "'raw_hash'",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-quote-probe-7_ivflef",
+      "--profile",
+      "lexical",
+      "--json",
+      "--stats"
+    ],
+    "exit": 0,
+    "stdin": null
+  },
+  {
+    "label": "tab-separator",
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\isolated.toml",
+      "search",
+      "raw_hash\tcache_key",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-quote-probe-7_ivflef",
+      "--profile",
+      "lexical",
+      "--json",
+      "--stats"
+    ],
+    "exit": 0,
+    "stdin": null
+  },
+  {
+    "label": "newline-separator",
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\isolated.toml",
+      "search",
+      "raw_hash\ncache_key",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-quote-probe-7_ivflef",
+      "--profile",
+      "lexical",
+      "--json",
+      "--stats"
+    ],
+    "exit": 0,
+    "stdin": null
+  },
+  {
+    "label": "resident",
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\isolated.toml",
+      "serve",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-quote-probe-7_ivflef",
+      "--profile",
+      "lexical",
+      "--quiet-stats"
+    ],
+    "exit": 0,
+    "stdin": "{\"op\": \"search\", \"id\": \"bare\", \"query\": \"raw_hash\"}\n{\"op\": \"search\", \"id\": \"quoted\", \"query\": \"\\\"raw_hash\\\"\"}\n"
+  }
+]

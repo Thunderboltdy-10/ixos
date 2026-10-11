@@ -1,0 +1,1 @@
+{"results":[{"path":"literal.rs","score":0.3726671,"view":{"path":"literal.rs","start_line":1,"end_line":1,"text":"const FIELD: &str = \"raw_hash\";"}},{"path":"implementation.rs","score":0.3569575,"view":{"path":"implementation.rs","start_line":1,"end_line":2,"text":"fn raw_hash() {}\nfn cache_key() {}"}}]}

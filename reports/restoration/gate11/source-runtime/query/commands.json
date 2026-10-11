@@ -1,0 +1,316 @@
+[
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "search",
+      "raw_hash",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--json",
+      "--stats",
+      "--cache-mode",
+      "ephemeral",
+      "--profile",
+      "lexical"
+    ],
+    "stdin": null,
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "search",
+      "\"raw_hash\"",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--json",
+      "--stats",
+      "--cache-mode",
+      "ephemeral",
+      "--profile",
+      "lexical"
+    ],
+    "stdin": null,
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "search",
+      "'raw_hash'",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--json",
+      "--stats",
+      "--cache-mode",
+      "ephemeral",
+      "--profile",
+      "lexical"
+    ],
+    "stdin": null,
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "search",
+      "raw_hash cache_key",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--json",
+      "--stats",
+      "--cache-mode",
+      "ephemeral",
+      "--profile",
+      "lexical"
+    ],
+    "stdin": null,
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "search",
+      "raw_hash\tcache_key",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--json",
+      "--stats",
+      "--cache-mode",
+      "ephemeral",
+      "--profile",
+      "lexical"
+    ],
+    "stdin": null,
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "search",
+      "raw_hash\ncache_key",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--json",
+      "--stats",
+      "--cache-mode",
+      "ephemeral",
+      "--profile",
+      "lexical"
+    ],
+    "stdin": null,
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "search",
+      "raw_hash\u2003cache_key",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--json",
+      "--stats",
+      "--cache-mode",
+      "ephemeral",
+      "--profile",
+      "lexical"
+    ],
+    "stdin": null,
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "serve",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--jit",
+      "--quiet-stats",
+      "--profile",
+      "lexical"
+    ],
+    "stdin": "{\"op\": \"search\", \"id\": \"bare\", \"query\": \"raw_hash\", \"stats\": true}\n{\"op\": \"search\", \"id\": \"double\", \"query\": \"\\\"raw_hash\\\"\", \"stats\": true}\n{\"op\": \"search\", \"id\": \"single\", \"query\": \"'raw_hash'\", \"stats\": true}\n{\"op\": \"search\", \"id\": \"spaces\", \"query\": \"raw_hash cache_key\", \"stats\": true}\n{\"op\": \"search\", \"id\": \"tabs\", \"query\": \"raw_hash\\tcache_key\", \"stats\": true}\n{\"op\": \"search\", \"id\": \"lines\", \"query\": \"raw_hash\\ncache_key\", \"stats\": true}\n{\"op\": \"search\", \"id\": \"unicode-space\", \"query\": \"raw_hash\\u2003cache_key\", \"stats\": true}\n{\"op\": \"search\", \"id\": \"absent\", \"query\": \"definitely_absent_symbol\", \"stats\": true}\n",
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "search",
+      "raw_hash",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--json",
+      "--stats",
+      "--cache-mode",
+      "ephemeral",
+      "--retrieval",
+      "hybrid",
+      "--model-path",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models\\potion-code-16M-v2-unbounded"
+    ],
+    "stdin": null,
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "search",
+      "\"raw_hash\"",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--json",
+      "--stats",
+      "--cache-mode",
+      "ephemeral",
+      "--retrieval",
+      "hybrid",
+      "--model-path",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models\\potion-code-16M-v2-unbounded"
+    ],
+    "stdin": null,
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "search",
+      "'raw_hash'",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--json",
+      "--stats",
+      "--cache-mode",
+      "ephemeral",
+      "--retrieval",
+      "hybrid",
+      "--model-path",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models\\potion-code-16M-v2-unbounded"
+    ],
+    "stdin": null,
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "search",
+      "raw_hash cache_key",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--json",
+      "--stats",
+      "--cache-mode",
+      "ephemeral",
+      "--retrieval",
+      "hybrid",
+      "--model-path",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models\\potion-code-16M-v2-unbounded"
+    ],
+    "stdin": null,
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "search",
+      "raw_hash\tcache_key",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--json",
+      "--stats",
+      "--cache-mode",
+      "ephemeral",
+      "--retrieval",
+      "hybrid",
+      "--model-path",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models\\potion-code-16M-v2-unbounded"
+    ],
+    "stdin": null,
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "search",
+      "raw_hash\ncache_key",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--json",
+      "--stats",
+      "--cache-mode",
+      "ephemeral",
+      "--retrieval",
+      "hybrid",
+      "--model-path",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models\\potion-code-16M-v2-unbounded"
+    ],
+    "stdin": null,
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "search",
+      "raw_hash\u2003cache_key",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--json",
+      "--stats",
+      "--cache-mode",
+      "ephemeral",
+      "--retrieval",
+      "hybrid",
+      "--model-path",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models\\potion-code-16M-v2-unbounded"
+    ],
+    "stdin": null,
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe",
+      "--config",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\config.toml",
+      "serve",
+      "--dir",
+      "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-query-contract-rvcl6k8_\\sources",
+      "--jit",
+      "--quiet-stats",
+      "--retrieval",
+      "hybrid",
+      "--model-path",
+      "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models\\potion-code-16M-v2-unbounded"
+    ],
+    "stdin": "{\"op\": \"search\", \"id\": \"bare\", \"query\": \"raw_hash\", \"stats\": true}\n{\"op\": \"search\", \"id\": \"double\", \"query\": \"\\\"raw_hash\\\"\", \"stats\": true}\n{\"op\": \"search\", \"id\": \"single\", \"query\": \"'raw_hash'\", \"stats\": true}\n{\"op\": \"search\", \"id\": \"spaces\", \"query\": \"raw_hash cache_key\", \"stats\": true}\n{\"op\": \"search\", \"id\": \"tabs\", \"query\": \"raw_hash\\tcache_key\", \"stats\": true}\n{\"op\": \"search\", \"id\": \"lines\", \"query\": \"raw_hash\\ncache_key\", \"stats\": true}\n{\"op\": \"search\", \"id\": \"unicode-space\", \"query\": \"raw_hash\\u2003cache_key\", \"stats\": true}\n{\"op\": \"search\", \"id\": \"absent\", \"query\": \"definitely_absent_symbol\", \"stats\": true}\n",
+    "exit_code": 0
+  }
+]

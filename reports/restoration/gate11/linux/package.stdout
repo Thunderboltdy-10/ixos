@@ -1,0 +1,22 @@
+{
+  "archive": "ixos-gate11-linux-local.tar.gz",
+  "sha256": "47dcc77907ee8c8fdf0029d76868edff909401f703793696f7a9ff96e9591f8b",
+  "files": [
+    "LICENSE",
+    "config/retrieval-models.json",
+    "scripts/setup_models.py",
+    "eval/__init__.py",
+    "eval/artifacts.py",
+    "eval/normalize_tokenizer.py",
+    "eval/compress_model.py",
+    "skills/ixos-retrieval/SKILL.md",
+    "docs/CLI.md",
+    "docs/ARCHITECTURE.md",
+    "docs/getting-started/INSTALLATION.md",
+    "docs/models/README.md",
+    "docs/models/PUBLISHING.md",
+    "ixos",
+    "README.md"
+  ],
+  "bundled_weights": false
+}

@@ -722,9 +722,8 @@ impl Engine {
                 .take(100)
                 .map(|(path, _)| path.clone()),
         );
-        let guarded = is_identifier(query);
-        stats.literal_guard = guarded;
-        let literal = query.trim().to_lowercase();
+        let literal = identifier_literal(query).map(str::to_lowercase);
+        stats.literal_guard = literal.is_some();
         let mut ranked: Vec<_> = scores
             .into_iter()
             .filter(|(path, lexical, semantic, _)| {
@@ -734,9 +733,10 @@ impl Engine {
                     _ => candidates.contains(path),
                 };
                 eligible
-                    && (!guarded
-                        || path.to_lowercase().contains(&literal)
-                        || self.documents[path].text.to_lowercase().contains(&literal))
+                    && literal.as_ref().map_or(true, |literal| {
+                        path.to_lowercase().contains(literal)
+                            || self.documents[path].text.to_lowercase().contains(literal)
+                    })
             })
             .map(|(path, lexical, semantic, best)| {
                 let score = match self.options.mode {
@@ -886,12 +886,25 @@ pub fn query_terms(query: &str) -> Vec<String> {
         .filter(|t| t.chars().count() >= 2 && !stops.contains(t.as_str()) && seen.insert(t.clone()))
         .collect()
 }
-fn is_identifier(query: &str) -> bool {
-    let query = query.trim();
-    !query.contains(' ')
+fn identifier_literal(query: &str) -> Option<&str> {
+    let trimmed = query.trim();
+    // Shell quotes disappear before invocation, but JSON can carry them literally.
+    // Treat one matching outer pair as identifier notation; exact punctuation is grep's job.
+    let query = trimmed
+        .strip_prefix('"')
+        .and_then(|value| value.strip_suffix('"'))
+        .or_else(|| {
+            trimmed
+                .strip_prefix('\'')
+                .and_then(|value| value.strip_suffix('\''))
+        })
+        .unwrap_or(trimmed)
+        .trim();
+    (!query.chars().any(char::is_whitespace)
         && (query.chars().any(|c| "_:/\\".contains(c))
             || query.chars().skip(1).any(char::is_uppercase)
-                && query.chars().any(char::is_lowercase))
+                && query.chars().any(char::is_lowercase)))
+    .then_some(query)
 }
 fn is_continuation(query: &str) -> bool {
     let pronouns: HashSet<_> = [
@@ -939,6 +952,64 @@ pub fn view_at(path: &str, lines: &[String], anchor: usize, context: usize) -> V
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn identifier_notation_uses_matching_quotes_and_all_whitespace() {
+        for query in ["raw_hash", "\"raw_hash\"", "'raw_hash'", "  ' raw_hash '  "] {
+            assert_eq!(identifier_literal(query), Some("raw_hash"));
+        }
+        for query in [
+            "raw_hash cache_key",
+            "raw_hash\tcache_key",
+            "raw_hash\ncache_key",
+            "raw_hash\u{2003}cache_key",
+        ] {
+            assert_eq!(identifier_literal(query), None);
+        }
+        assert_eq!(identifier_literal("\"raw_hash'"), Some("\"raw_hash'"));
+        assert_eq!(identifier_literal("\"ordinary phrase\""), None);
+    }
+
+    #[test]
+    fn quoted_identifiers_and_multiline_queries_retrieve_implementations() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("implementation.rs"),
+            "fn raw_hash() {}\nfn cache_key() {}\n",
+        )
+        .unwrap();
+        std::fs::write(
+            dir.path().join("literal.rs"),
+            "const FIELD: &str = \"raw_hash\";\n",
+        )
+        .unwrap();
+        let mut engine = Engine::new(
+            dir.path(),
+            None,
+            Options {
+                mode: RetrievalMode::Lexical,
+                persist: false,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let (bare, _) = engine.search("raw_hash", "bare", None).unwrap();
+        for query in ["\"raw_hash\"", "'raw_hash'"] {
+            let (quoted, stats) = engine.search(query, "quoted", None).unwrap();
+            assert_eq!(quoted, bare);
+            assert!(stats.literal_guard);
+        }
+        for query in [
+            "raw_hash cache_key",
+            "raw_hash\tcache_key",
+            "raw_hash\ncache_key",
+        ] {
+            let (raw, stats) = engine.search(query, "separated", None).unwrap();
+            let value: serde_json::Value = serde_json::from_slice(&raw).unwrap();
+            assert_eq!(value["results"][0]["path"], "implementation.rs");
+            assert!(!stats.literal_guard);
+        }
+    }
+
     #[test]
     fn equal_lexical_evidence_always_uses_earliest_line() {
         let dir = tempfile::tempdir().unwrap();

@@ -11,7 +11,8 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 FILES = ['LICENSE', 'config/retrieval-models.json', 'scripts/setup_models.py',
          'eval/__init__.py', 'eval/artifacts.py', 'eval/normalize_tokenizer.py', 'eval/compress_model.py',
-         'skills/ixos-retrieval/SKILL.md', 'docs/CLI.md', 'docs/ARCHITECTURE.md', 'docs/models/README.md', 'docs/models/PUBLISHING.md']
+         'skills/ixos-retrieval/SKILL.md', 'docs/CLI.md', 'docs/ARCHITECTURE.md',
+         'docs/getting-started/INSTALLATION.md', 'docs/models/README.md', 'docs/models/PUBLISHING.md']
 
 
 def main():
@@ -31,7 +32,7 @@ def main():
             target = root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, target)
-        (root / 'README.md').write_text('# Ixos CLI\n\nEverything is free. Run `python scripts/setup_models.py --profile code` with Python 3.11+, then `ixos search "concept" --dir ROOT --json`. Document setup needs `numpy==2.3.5` and `--profile documents`. Search runs on Rust/CPU, offline after setup. Use `--profile lexical` or grep/read without a model. Add the executable to PATH or invoke it by its full path. Model cards/receipts are preserved in the application model folder. No adjacent cache sidecars.\n\nSee docs/CLI.md, docs/ARCHITECTURE.md and skills/ixos-retrieval/SKILL.md. Native platform and complete release validation remain required.\n', encoding='utf-8')
+        (root / 'README.md').write_text('# Ixos CLI\n\nEverything is free. Run `python scripts/setup_models.py --profile code` with Python 3.11+, then `ixos search "concept" --dir ROOT --json`. Document setup needs `numpy==2.3.5` and `--profile documents`. Search runs on Rust/CPU, offline after setup. Use `--profile lexical` or grep/read without a model. Add the executable to PATH or invoke it by its full path. Model cards/receipts are preserved in the application model folder. No adjacent cache sidecars.\n\nSee docs/CLI.md, docs/ARCHITECTURE.md and skills/ixos-retrieval/SKILL.md. Evaluation-report links in the guides refer to the source repository; raw benchmark receipts are not bundled. Native platform and complete release validation remain required.\n', encoding='utf-8')
         if args.output.name.endswith('.zip'):
             with zipfile.ZipFile(args.output, 'x', zipfile.ZIP_DEFLATED) as archive:
                 for path in sorted(root.rglob('*')):

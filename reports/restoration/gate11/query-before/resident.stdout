@@ -1,0 +1,2 @@
+{"id":"bare","results":[{"path":"literal.rs","score":0.3726671,"view":{"end_line":1,"path":"literal.rs","start_line":1,"text":"const FIELD: &str = \"raw_hash\";"}},{"path":"implementation.rs","score":0.3569575,"view":{"end_line":2,"path":"implementation.rs","start_line":1,"text":"fn raw_hash() {}\nfn cache_key() {}"}}]}
+{"id":"quoted","results":[{"path":"literal.rs","score":0.3726671,"view":{"end_line":1,"path":"literal.rs","start_line":1,"text":"const FIELD: &str = \"raw_hash\";"}}]}

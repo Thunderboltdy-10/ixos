@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\pablo\Downloads\Ixos\eval\fixtures.py", line 82, in <module>
+    print(json.dumps(prepare(args.destination),indent=2))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\Downloads\Ixos\eval\fixtures.py", line 73, in prepare
+    dataset = load_dataset(path,root)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\Downloads\Ixos\eval\contract.py", line 206, in load_dataset
+    spans = tuple(union(interval(s, len(sources[path].lines)) for s in relevance["spans"]))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\Downloads\Ixos\eval\contract.py", line 62, in union
+    for start, end in sorted(ranges):
+                      ^^^^^^^^^^^^^^
+  File "C:\Users\pablo\Downloads\Ixos\eval\contract.py", line 206, in <genexpr>
+    spans = tuple(union(interval(s, len(sources[path].lines)) for s in relevance["spans"]))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\Downloads\Ixos\eval\contract.py", line 56, in interval
+    raise ContractError("Source interval is reversed or outside the source")
+eval.contract.ContractError: Source interval is reversed or outside the source

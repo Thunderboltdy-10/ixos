@@ -1,0 +1,518 @@
+{
+  "condition": "Development/validation quality comparison; two code families give wide uncertainty. No latency comparisons with memoized matrix math.",
+  "screen": "models\\lab\\restoration\\matrix-tokenizer-validation-v1",
+  "results": [
+    {
+      "recipe_sha256": "ffba5bc5b194c676c199f32196dc58e24a936e1cbd670217043b8b91288b430b",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "all-passages",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.7604619890102853,
+          "ci95": [
+            0.7073887331308708,
+            0.8135352448896999
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.7194444444444444,
+          "ci95": [
+            0.6791666666666667,
+            0.7597222222222222
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.9375,
+          "ci95": [
+            0.9,
+            0.975
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.034482758620689655,
+          "ci95": null,
+          "families": 1,
+          "queries": 3
+        },
+        "span_precision": {
+          "mean": 0.09999999999999999,
+          "ci95": null,
+          "families": 1,
+          "queries": 3
+        }
+      },
+      "stdout_tokens": 1045.325,
+      "vector_payload_bytes": 586040,
+      "selected_passages": 2254,
+      "paired_differences": {}
+    },
+    {
+      "recipe_sha256": "c2800e3f519bd102991092cb6cc5df8b40739a8b16703b73553eb313dc53b6f0",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.7493537354644109,
+          "ci95": [
+            0.7073887331308708,
+            0.7913187377979508
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.7056944444444444,
+          "ci95": [
+            0.6791666666666667,
+            0.7322222222222222
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.9375,
+          "ci95": [
+            0.9,
+            0.975
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.034482758620689655,
+          "ci95": null,
+          "families": 1,
+          "queries": 3
+        },
+        "span_precision": {
+          "mean": 0.09999999999999999,
+          "ci95": null,
+          "families": 1,
+          "queries": 3
+        }
+      },
+      "stdout_tokens": 1044.325,
+      "vector_payload_bytes": 349960,
+      "selected_passages": 1346,
+      "paired_differences": {}
+    },
+    {
+      "recipe_sha256": "851c560a2fcf4c9b91ab88c1c7f9b5d96d4c980537c1f76ab85175a218f18712",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-lex-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.7460985579653802,
+          "ci95": [
+            0.7188124522205759,
+            0.7733846637101844
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.7045833333333333,
+          "ci95": [
+            0.6916666666666667,
+            0.7175
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.9375,
+          "ci95": [
+            0.9,
+            0.975
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.034482758620689655,
+          "ci95": null,
+          "families": 1,
+          "queries": 3
+        },
+        "span_precision": {
+          "mean": 0.09999999999999999,
+          "ci95": null,
+          "families": 1,
+          "queries": 3
+        }
+      },
+      "stdout_tokens": 1043.85,
+      "vector_payload_bytes": 349180,
+      "selected_passages": 1343,
+      "paired_differences": {}
+    },
+    {
+      "recipe_sha256": "3fe343fe897cf00ea520e36b6da22c14f51cad9f83d4359f10d1d1281e163a79",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6723747943826943,
+          "ci95": [
+            0.5924444456469184,
+            0.7523051431184703
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.6024206349206349,
+          "ci95": [
+            0.5101984126984127,
+            0.6946428571428571
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.95,
+          "ci95": [
+            0.95,
+            0.95
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.034482758620689655,
+          "ci95": null,
+          "families": 1,
+          "queries": 3
+        },
+        "span_precision": {
+          "mean": 0.09999999999999999,
+          "ci95": null,
+          "families": 1,
+          "queries": 3
+        }
+      },
+      "stdout_tokens": 1047.9,
+      "vector_payload_bytes": 694536,
+      "selected_passages": 1346,
+      "paired_differences": {}
+    },
+    {
+      "recipe_sha256": "3fe343fe897cf00ea520e36b6da22c14f51cad9f83d4359f10d1d1281e163a79",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6856516595209422,
+          "ci95": [
+            0.5697404167338567,
+            0.793089930314754
+          ],
+          "families": 45,
+          "queries": 71
+        },
+        "mrr": {
+          "mean": 0.6714638447971781,
+          "ci95": [
+            0.5471428571428572,
+            0.7858465608465609
+          ],
+          "families": 45,
+          "queries": 71
+        },
+        "recall": {
+          "mean": 0.7746296296296297,
+          "ci95": [
+            0.6631481481481482,
+            0.8768518518518519
+          ],
+          "families": 45,
+          "queries": 71
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2495.5915492957747,
+      "vector_payload_bytes": 3381864,
+      "selected_passages": 6554,
+      "paired_differences": {}
+    },
+    {
+      "recipe_sha256": "c2800e3f519bd102991092cb6cc5df8b40739a8b16703b73553eb313dc53b6f0",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6851302242221673,
+          "ci95": [
+            0.5670951761663336,
+            0.7953353864765137
+          ],
+          "families": 45,
+          "queries": 71
+        },
+        "mrr": {
+          "mean": 0.6776543209876543,
+          "ci95": [
+            0.5526543209876543,
+            0.7962962962962964
+          ],
+          "families": 45,
+          "queries": 71
+        },
+        "recall": {
+          "mean": 0.7570370370370371,
+          "ci95": [
+            0.6422222222222221,
+            0.862962962962963
+          ],
+          "families": 45,
+          "queries": 71
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2513.2676056338028,
+      "vector_payload_bytes": 1704040,
+      "selected_passages": 6554,
+      "paired_differences": {}
+    },
+    {
+      "recipe_sha256": "851c560a2fcf4c9b91ab88c1c7f9b5d96d4c980537c1f76ab85175a218f18712",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-lex-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6851302242221673,
+          "ci95": [
+            0.5670951761663336,
+            0.7953353864765137
+          ],
+          "families": 45,
+          "queries": 71
+        },
+        "mrr": {
+          "mean": 0.6776543209876543,
+          "ci95": [
+            0.5526543209876543,
+            0.7962962962962964
+          ],
+          "families": 45,
+          "queries": 71
+        },
+        "recall": {
+          "mean": 0.7570370370370371,
+          "ci95": [
+            0.6422222222222221,
+            0.862962962962963
+          ],
+          "families": 45,
+          "queries": 71
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2513.2676056338028,
+      "vector_payload_bytes": 1704040,
+      "selected_passages": 6554,
+      "paired_differences": {}
+    },
+    {
+      "recipe_sha256": "ffba5bc5b194c676c199f32196dc58e24a936e1cbd670217043b8b91288b430b",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "all-passages",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6851302242221673,
+          "ci95": [
+            0.5670951761663336,
+            0.7953353864765137
+          ],
+          "families": 45,
+          "queries": 71
+        },
+        "mrr": {
+          "mean": 0.6776543209876543,
+          "ci95": [
+            0.5526543209876543,
+            0.7962962962962964
+          ],
+          "families": 45,
+          "queries": 71
+        },
+        "recall": {
+          "mean": 0.7570370370370371,
+          "ci95": [
+            0.6422222222222221,
+            0.862962962962963
+          ],
+          "families": 45,
+          "queries": 71
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2513.2535211267605,
+      "vector_payload_bytes": 1705080,
+      "selected_passages": 6558,
+      "paired_differences": {}
+    }
+  ]
+}

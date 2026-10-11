@@ -22,6 +22,7 @@ pub struct Model2VecEmbedder {
     model_id: u8,
     fingerprint: [u8; 32],
     dims: usize,
+    tokenizer_settings: serde_json::Value,
 }
 
 impl Model2VecEmbedder {
@@ -80,6 +81,12 @@ impl Model2VecEmbedder {
     pub fn from_path(path: &std::path::Path) -> Result<Self, ModelError> {
         tracing::info!("Loading Model2Vec model from: {:?}", path);
         let fingerprint = artifact_fingerprint(path)?;
+        let tokenizer: serde_json::Value = serde_json::from_slice(
+            &std::fs::read(path.join("tokenizer.json"))
+                .map_err(|e| ModelError::LoadError(e.to_string()))?,
+        )
+        .map_err(|e| ModelError::LoadError(e.to_string()))?;
+        let tokenizer_settings = serde_json::json!({"truncation":tokenizer.get("truncation"),"padding":tokenizer.get("padding")});
 
         let model = StaticModel::from_pretrained(path.to_string_lossy().as_ref(), None, None, None)
             .map_err(|e| ModelError::LoadError(format!("Failed to load from {:?}: {}", path, e)))?;
@@ -98,7 +105,54 @@ impl Model2VecEmbedder {
             model_id: 1,
             fingerprint,
             dims,
+            tokenizer_settings,
         })
+    }
+
+    /// Actual inherited input rules; disabling the API cap does not disable these.
+    pub fn tokenizer_settings(&self) -> &serde_json::Value {
+        &self.tokenizer_settings
+    }
+
+    /// Explicit input coverage for controlled experiments and passage callers.
+    /// `None` removes the API token cap, but the tokenizer artifact can still
+    /// carry its own truncation/padding settings. Full-source callers must use
+    /// an explicitly validated tokenizer variant (truncation/padding disabled).
+    /// The existing production trait keeps its 512-token API limit, additionally
+    /// constrained by the tokenizer. Include coverage in any cache recipe.
+    pub fn embed_batch_with_limit(
+        &self,
+        texts: &[String],
+        max_tokens: Option<usize>,
+    ) -> Result<Vec<Vec<f32>>, ModelError> {
+        if max_tokens == Some(0) {
+            return Err(ModelError::Inference("Token limit must be positive".into()));
+        }
+        if texts.is_empty() {
+            return Ok(Vec::new());
+        }
+        let vectors = self.model.encode_with_args(texts, max_tokens, 64);
+        if vectors.len() != texts.len() {
+            return Err(ModelError::Inference(
+                "Embedding batch size mismatch".into(),
+            ));
+        }
+        vectors
+            .into_iter()
+            .map(|vector| {
+                if vector.len() != self.dims || vector.iter().any(|x| !x.is_finite()) {
+                    return Err(ModelError::Inference(
+                        "Invalid embedding dimensions or values".into(),
+                    ));
+                }
+                let norm = vector.iter().map(|x| x * x).sum::<f32>().sqrt();
+                Ok(if norm > 0.0 {
+                    vector.into_iter().map(|x| x / norm).collect()
+                } else {
+                    vector
+                })
+            })
+            .collect()
     }
 }
 

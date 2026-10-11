@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "frozen_before_validation": true,
+  "development_screen": "matrix-dev-v1",
+  "reason": "Compact general/code candidates, document centroid, all-passages cost reference and current-model representation control. No test inspected.",
+  "recipes": [
+    {
+      "model_fingerprint": "495c28977d18668f4a8166c1f9f854bc507312bd9d18881557b38ddc9323c00f",
+      "representation": "intro-uniform",
+      "chunk_characters": 1800,
+      "precision": "int8",
+      "mode": "hybrid-normalized",
+      "semantic_threshold": 0.25,
+      "session": "off",
+      "literal_guard": true,
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 12000
+    },
+    {
+      "model_fingerprint": "495c28977d18668f4a8166c1f9f854bc507312bd9d18881557b38ddc9323c00f",
+      "representation": "whole-token-centroid",
+      "chunk_characters": 1800,
+      "precision": "int8",
+      "mode": "hybrid-normalized",
+      "semantic_threshold": 0.25,
+      "session": "off",
+      "literal_guard": true,
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 12000
+    },
+    {
+      "model_fingerprint": "460277a45072eeca6eed0971b7e4c45630cd687da3275642b90b6f39e16de0a9",
+      "representation": "intro-uniform",
+      "chunk_characters": 1800,
+      "precision": "int8",
+      "mode": "hybrid-normalized",
+      "semantic_threshold": 0.25,
+      "session": "off",
+      "literal_guard": true,
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 12000
+    },
+    {
+      "model_fingerprint": "460277a45072eeca6eed0971b7e4c45630cd687da3275642b90b6f39e16de0a9",
+      "representation": "intro-lex-diverse",
+      "chunk_characters": 1800,
+      "precision": "int8",
+      "mode": "hybrid-normalized",
+      "semantic_threshold": 0.25,
+      "session": "off",
+      "literal_guard": true,
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 12000
+    },
+    {
+      "model_fingerprint": "460277a45072eeca6eed0971b7e4c45630cd687da3275642b90b6f39e16de0a9",
+      "representation": "all-passages",
+      "chunk_characters": 1800,
+      "precision": "int8",
+      "mode": "hybrid-normalized",
+      "semantic_threshold": 0.25,
+      "session": "off",
+      "literal_guard": true,
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 12000
+    },
+    {
+      "model_fingerprint": "c3b6ad391ad38982393425c9bccd6333143eb5ad8d1e80f80fdba2631f656a08",
+      "representation": "intro-uniform",
+      "chunk_characters": 1800,
+      "precision": "int8",
+      "mode": "hybrid-normalized",
+      "semantic_threshold": 0.25,
+      "session": "off",
+      "literal_guard": true,
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 12000
+    }
+  ]
+}

@@ -1,0 +1,5334 @@
+{
+  "condition": "Development/validation quality comparison; two code families give wide uncertainty. No latency comparisons with memoized matrix math.",
+  "screen": "models\\lab\\restoration\\matrix-tokenizer-dev-v1",
+  "results": [
+    {
+      "recipe_sha256": "ffba5bc5b194c676c199f32196dc58e24a936e1cbd670217043b8b91288b430b",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "all-passages",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6976156046082265,
+          "ci95": [
+            0.6669591945535779,
+            0.7282720146628752
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.6779166666666667,
+          "ci95": [
+            0.60625,
+            0.7495833333333334
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8833333333333333,
+          "ci95": [
+            0.85,
+            0.9166666666666666
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1046.525,
+      "vector_payload_bytes": 336960,
+      "selected_passages": 1296,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.13269903834385346,
+          "ci95": [
+            0.06987235482003813,
+            0.1955257218676688
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "c2800e3f519bd102991092cb6cc5df8b40739a8b16703b73553eb313dc53b6f0",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6821331242690404,
+          "ci95": [
+            0.6386604064414602,
+            0.7256058420966206
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.6484027777777778,
+          "ci95": [
+            0.5697222222222222,
+            0.7270833333333333
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8916666666666666,
+          "ci95": [
+            0.85,
+            0.9333333333333333
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1041.2,
+      "vector_payload_bytes": 153660,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.11721655800466728,
+          "ci95": [
+            0.06720618225378353,
+            0.16722693375555103
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "62a4edc8bd462a7f04aecebfee3bad07cdeda34a6a2380a8a83f459801a3d857",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "all-passages",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6784760854576946,
+          "ci95": [
+            0.6607064668466479,
+            0.6962457040687412
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.640625,
+          "ci95": [
+            0.6329166666666667,
+            0.6483333333333333
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8833333333333333,
+          "ci95": [
+            0.85,
+            0.9166666666666666
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1052.9,
+      "vector_payload_bytes": 668736,
+      "selected_passages": 1296,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.11355951919332145,
+          "ci95": [
+            0.002306807003810807,
+            0.2248122313828321
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "3fe343fe897cf00ea520e36b6da22c14f51cad9f83d4359f10d1d1281e163a79",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6702818882978552,
+          "ci95": [
+            0.6640560634241423,
+            0.6765077131715681
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.6152777777777778,
+          "ci95": [
+            0.6066666666666667,
+            0.6238888888888889
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8916666666666666,
+          "ci95": [
+            0.85,
+            0.9333333333333333
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1052.125,
+      "vector_payload_bytes": 304956,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.10536532203348208,
+          "ci95": [
+            0.018108053328730937,
+            0.1926225907382332
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "a363362960efc8e17f1a5f54b00f93b235d0e37716077be57c2f5a412293fbbf",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-vector-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6696567451656404,
+          "ci95": [
+            0.6607064668466479,
+            0.678607023484633
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.6303075396825397,
+          "ci95": [
+            0.6276984126984126,
+            0.6329166666666667
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8833333333333333,
+          "ci95": [
+            0.85,
+            0.9166666666666666
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1052.925,
+      "vector_payload_bytes": 304956,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.10474017890126733,
+          "ci95": [
+            0.002306807003810807,
+            0.20717355079872385
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "9a731e453afc615bfb6eb60cf3911d54915a783f0cd3714ddd949ac0b3f2d216",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "all-passages",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6679765298703496,
+          "ci95": [
+            0.586301834915305,
+            0.7496512248253943
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.6558333333333333,
+          "ci95": [
+            0.51625,
+            0.7954166666666667
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8791666666666667,
+          "ci95": [
+            0.8,
+            0.9583333333333334
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1028.15,
+      "vector_payload_bytes": 336960,
+      "selected_passages": 1296,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.10305996360597654,
+          "ci95": [
+            0.09125156498255718,
+            0.11486836222939589
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "9dcda011c39aece05f1fc097ab3fc8ca4f9d6fc165a6a29801d5fc0ce3eaed65",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6572703472327173,
+          "ci95": [
+            0.5783904502146188,
+            0.7361502442508157
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.6245436507936508,
+          "ci95": [
+            0.5072222222222222,
+            0.7418650793650794
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8666666666666667,
+          "ci95": [
+            0.8,
+            0.9333333333333333
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.0125,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1018.7,
+      "vector_payload_bytes": 153660,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.09235378096834407,
+          "ci95": [
+            0.0777505844079785,
+            0.10695697752870963
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "bc60d1edd7b862929e4581d2306a405e5b2559036c2cc71e6d0639c49bd2f4b1",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-lex-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6572259015234944,
+          "ci95": [
+            0.6491543281895158,
+            0.6652974748574729
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.6138194444444445,
+          "ci95": [
+            0.60375,
+            0.6238888888888889
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8583333333333334,
+          "ci95": [
+            0.8,
+            0.9166666666666666
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1055.025,
+      "vector_payload_bytes": 304956,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.09230933525912131,
+          "ci95": [
+            -0.009245331653321271,
+            0.1938640021715639
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "851c560a2fcf4c9b91ab88c1c7f9b5d96d4c980537c1f76ab85175a218f18712",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-lex-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6541526872165843,
+          "ci95": [
+            0.602946263773142,
+            0.7053591106600265
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.6129166666666666,
+          "ci95": [
+            0.5237499999999999,
+            0.7020833333333333
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8833333333333333,
+          "ci95": [
+            0.85,
+            0.9166666666666666
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1042.6,
+      "vector_payload_bytes": 153660,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.08923612095221116,
+          "ci95": [
+            0.04695945081718946,
+            0.13151279108723285
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "2831b562ed807389dfff109cfd626f19eebae6441e0eb49371f301a4712847a8",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "whole-token-centroid",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6491988480046522,
+          "ci95": [
+            0.5810488171642142,
+            0.7173488788450904
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.6064880952380952,
+          "ci95": [
+            0.5108928571428571,
+            0.7020833333333333
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8666666666666667,
+          "ci95": [
+            0.8,
+            0.9333333333333333
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1045.1,
+      "vector_payload_bytes": 68900,
+      "selected_passages": 265,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.08428228174027917,
+          "ci95": [
+            0.05894921900225325,
+            0.1096153444783051
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "f991bbf2383084b64e105506cbfc650be022e27d7c8bf13a9ad143295a11f1d8",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-vector-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6297728523711155,
+          "ci95": [
+            0.5625323438520333,
+            0.6970133608901977
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.5823214285714285,
+          "ci95": [
+            0.47339285714285717,
+            0.6912499999999999
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8833333333333333,
+          "ci95": [
+            0.85,
+            0.9166666666666666
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1044.2,
+      "vector_payload_bytes": 153660,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.06485628610674246,
+          "ci95": [
+            0.03861370104736064,
+            0.09109887116612428
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "fd14119238d2b53a96ac9a04df335847d8408c8c576e0df3b4a89f20a83093c1",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "all-passages",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6285666626068239,
+          "ci95": [
+            0.5965295331165894,
+            0.6606037920970584
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.574295634920635,
+          "ci95": [
+            0.534702380952381,
+            0.6138888888888889
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8708333333333333,
+          "ci95": [
+            0.8,
+            0.9416666666666667
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1023.925,
+      "vector_payload_bytes": 668736,
+      "selected_passages": 1296,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.06365009634245083,
+          "ci95": [
+            0.0022041322542214054,
+            0.12509606043068028
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "2c5203cbeb39c1159ab566ea01e070381be49acef297c8853f33fb4d0dad56a2",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-lex-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6258769707240577,
+          "ci95": [
+            0.49728890413486904,
+            0.7544650373132462
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.5991666666666666,
+          "ci95": [
+            0.41708333333333336,
+            0.78125
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8541666666666667,
+          "ci95": [
+            0.75,
+            0.9583333333333334
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1021.775,
+      "vector_payload_bytes": 153660,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.06096040445968452,
+          "ci95": [
+            0.025855431448959947,
+            0.0960653774704091
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "9bf5b8662147f42dfe5c5c1bea48d6e467b0cf08110c90f5afd5529d751dfb12",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "all-passages",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6240988748478229,
+          "ci95": [
+            0.5630929753571458,
+            0.6851047743385001
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.61875,
+          "ci95": [
+            0.5166666666666667,
+            0.7208333333333333
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8041666666666667,
+          "ci95": [
+            0.7,
+            0.9083333333333334
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.013043478260869565,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 927.85,
+      "vector_payload_bytes": 336960,
+      "selected_passages": 1296,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.05918230858344983,
+          "ci95": [
+            0.02670511449566302,
+            0.09165950267123664
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "16bdab8695c1e5b8487f543aff52128a94e9db6996794160601ff6fa7556d557",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "prefix-512",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6235255794144692,
+          "ci95": [
+            0.5964639356526714,
+            0.650587223176267
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.5622222222222222,
+          "ci95": [
+            0.5334722222222222,
+            0.5909722222222222
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8583333333333334,
+          "ci95": [
+            0.8,
+            0.9166666666666666
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1046.65,
+      "vector_payload_bytes": 136740,
+      "selected_passages": 265,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.05860901315009611,
+          "ci95": [
+            -0.007812436666570064,
+            0.1250304629667623
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "3a8599f8f9acd4c1e5695ca9e2dd5e14130f7eb592d0f1842a24331702ead2b5",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "whole-token-centroid",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6127376927688672,
+          "ci95": [
+            0.45872445458299016,
+            0.7667509309547444
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.5851289682539682,
+          "ci95": [
+            0.37144841269841267,
+            0.7988095238095239
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8333333333333333,
+          "ci95": [
+            0.75,
+            0.9166666666666666
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.013043478260869565,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1010.875,
+      "vector_payload_bytes": 68900,
+      "selected_passages": 265,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.047821126504494216,
+          "ci95": [
+            -0.012709018102918959,
+            0.10835127111190739
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "980c219c06543968141290b8f62b40b69e689ebad6b54971c1f16cfa903b9cd0",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6069847062946532,
+          "ci95": [
+            0.6002459750742739,
+            0.6137234375150323
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.5403075396825396,
+          "ci95": [
+            0.5391666666666667,
+            0.5414484126984127
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8583333333333334,
+          "ci95": [
+            0.8,
+            0.9166666666666666
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1022.225,
+      "vector_payload_bytes": 304956,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.04206814003028005,
+          "ci95": [
+            -0.04467622232780473,
+            0.12881250238836484
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "59afc655abb9a91b8f679a02be9133d7138dd6d431b24282645f33afd50ad295",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-vector-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6007167392766107,
+          "ci95": [
+            0.5641537821687386,
+            0.6372796963844829
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.5391269841269841,
+          "ci95": [
+            0.493531746031746,
+            0.5847222222222223
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8708333333333333,
+          "ci95": [
+            0.8,
+            0.9416666666666667
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1023.975,
+      "vector_payload_bytes": 304956,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.03580017301223763,
+          "ci95": [
+            -0.0211199634583542,
+            0.09272030948282946
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "e53205ae2e8192d7fef10f2ae471b59f4cb0b9f03d638f7bf42b42d14bf81f06",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "whole-token-centroid",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.5870703036327829,
+          "ci95": [
+            0.5570204948053713,
+            0.6171201124601945
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.5134027777777778,
+          "ci95": [
+            0.48208333333333336,
+            0.5447222222222222
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8583333333333334,
+          "ci95": [
+            0.8,
+            0.9166666666666666
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1051.8,
+      "vector_payload_bytes": 136740,
+      "selected_passages": 265,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.02215373736840976,
+          "ci95": [
+            -0.04127954738264268,
+            0.0855870221194622
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "2a6e148f38a12df37e69719f5c81a801a9357f413d52238d871cd934b9e7192e",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-lex-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.5826431083567558,
+          "ci95": [
+            0.5715295331165894,
+            0.5937566835969221
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.4997123015873015,
+          "ci95": [
+            0.49805555555555553,
+            0.5013690476190475
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8708333333333333,
+          "ci95": [
+            0.8,
+            0.9416666666666667
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1022.3,
+      "vector_payload_bytes": 304956,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.017726542092382634,
+          "ci95": [
+            -0.064642976245915,
+            0.10009606043068027
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "228ae64dab0a4b7b688d1e3e353e1cedfe7d3fac523fa2b1cd25d42714d144db",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.5803873798550736,
+          "ci95": [
+            0.5309033347125468,
+            0.6298714249976005
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.5716666666666667,
+          "ci95": [
+            0.4916666666666667,
+            0.6516666666666666
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.7166666666666667,
+          "ci95": [
+            0.65,
+            0.7833333333333333
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.013043478260869565,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 848.675,
+      "vector_payload_bytes": 153660,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.015470813590700572,
+          "ci95": [
+            -0.02852823484523661,
+            0.05946986202663775
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "6ad2774090c11b61c4d6437a879903cf771337d7d81ee4de8339d14054348eb1",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "prefix-512",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.5712169019835462,
+          "ci95": [
+            0.48219920016724815,
+            0.6602346037998444
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.5052777777777777,
+          "ci95": [
+            0.4147222222222222,
+            0.5958333333333333
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8166666666666667,
+          "ci95": [
+            0.7,
+            0.9333333333333333
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1044.975,
+      "vector_payload_bytes": 68900,
+      "selected_passages": 265,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.006300335719173191,
+          "ci95": [
+            0.0018349439570073233,
+            0.01076572748133906
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "7de7767223e29ac53857d0296c011bcac882d32f2d6079dcecc730b790b8ce4b",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "prefix-512",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.5678313898317839,
+          "ci95": [
+            0.5488169184940583,
+            0.5868458611695094
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.4888194444444445,
+          "ci95": [
+            0.48708333333333337,
+            0.4905555555555556
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8333333333333333,
+          "ci95": [
+            0.75,
+            0.9166666666666666
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1005.775,
+      "vector_payload_bytes": 136740,
+      "selected_passages": 265,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 0.002914823567410754,
+          "ci95": [
+            -0.07155379867332766,
+            0.07738344580814917
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "f8e6d2f0dc32ec4a5ca5810d7ac81d81cbc8eaccdbeb138df0fe4acd7e69b197",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-vector-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.5650064558977489,
+          "ci95": [
+            0.44201157137997066,
+            0.6880013404155272
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.5097916666666666,
+          "ci95": [
+            0.36333333333333334,
+            0.65625
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.8291666666666666,
+          "ci95": [
+            0.7,
+            0.9583333333333334
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1020.275,
+      "vector_payload_bytes": 153660,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": 8.98896333757955e-05,
+          "ci95": [
+            -0.02942190130593848,
+            0.02960168057269007
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "5c88c8f25693ebec9240bbd9d5ae1b6040b03e3fd4d3c7ab1f2d8f3ec493af7f",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-lex-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.54368757330301,
+          "ci95": [
+            0.463196199783256,
+            0.624178946822764
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.5346130952380952,
+          "ci95": [
+            0.42041666666666666,
+            0.6488095238095238
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.7166666666666667,
+          "ci95": [
+            0.6,
+            0.8333333333333334
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.013043478260869565,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 886.425,
+      "vector_payload_bytes": 153660,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": -0.021228992961363092,
+          "ci95": [
+            -0.034220713020073124,
+            -0.008237272902653059
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "0724ad6db883e204d7a084643f63d9194207664eadcc4f8bc6493da62402fb18",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "prefix-512",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.5032885809815074,
+          "ci95": [
+            0.3514608539116947,
+            0.6551163080513202
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.45742063492063495,
+          "ci95": [
+            0.2914484126984127,
+            0.6233928571428572
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.7083333333333333,
+          "ci95": [
+            0.55,
+            0.8666666666666666
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 1002.85,
+      "vector_payload_bytes": 68900,
+      "selected_passages": 265,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": -0.06162798528286574,
+          "ci95": [
+            -0.11997261877421446,
+            -0.003283351791517019
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "a5d6515cb99ef808a49060ae50e553379b79de69ed57618f7cd694704bfeb7ae",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "whole-token-centroid",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.4416465507725169,
+          "ci95": [
+            0.25898365029478937,
+            0.6243094512502444
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.43833333333333335,
+          "ci95": [
+            0.2125,
+            0.6641666666666667
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.5583333333333333,
+          "ci95": [
+            0.4,
+            0.7166666666666667
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.02857142857142857,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 733,
+      "vector_payload_bytes": 68900,
+      "selected_passages": 265,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": -0.1232700154918562,
+          "ci95": [
+            -0.2124498223911197,
+            -0.034090208592592694
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "2b53774e17e14e80c0bb75e2f659e7c3f3e6158e4ab2ccc985875510267605ce",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-vector-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.43187094634163625,
+          "ci95": [
+            0.3031444751403448,
+            0.5605974175429277
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.3996825396825397,
+          "ci95": [
+            0.27222222222222225,
+            0.5271428571428571
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.6291666666666667,
+          "ci95": [
+            0.4,
+            0.8583333333333334
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.013043478260869565,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 886.7,
+      "vector_payload_bytes": 153660,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": -0.13304561992273686,
+          "ci95": [
+            -0.1682889975455643,
+            -0.09780224229990941
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "6421a9de6ba3901631911628c98dd6e0e729e07a0fbc762899295154616b2141",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "whole-token-centroid",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.4167918546467613,
+          "ci95": [
+            0.2797553472367321,
+            0.5538283620567904
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.3582242063492064,
+          "ci95": [
+            0.24125000000000002,
+            0.4751984126984127
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.6458333333333333,
+          "ci95": [
+            0.4,
+            0.8916666666666666
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.15,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.012,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 985.675,
+      "vector_payload_bytes": 136740,
+      "selected_passages": 265,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": -0.14812471161761182,
+          "ci95": [
+            -0.19167812544917698,
+            -0.10457129778604668
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "fa9aec599ba0ffdd9f357f838a603ee2de4c2aecf4f3f4e298ea64c946d43f59",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "all-passages",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.41358795727999287,
+          "ci95": [
+            0.4105800908592176,
+            0.4165958237007681
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.366140873015873,
+          "ci95": [
+            0.3655555555555555,
+            0.3667261904761905
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.5958333333333334,
+          "ci95": [
+            0.55,
+            0.6416666666666667
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 740.75,
+      "vector_payload_bytes": 668736,
+      "selected_passages": 1296,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": -0.15132860898438022,
+          "ci95": [
+            -0.241803836142069,
+            -0.06085338182669146
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "49a8abd5d0f30b61dc76e0af2f4bbb4ed3abc54c8f07ba21323b877b9c69018f",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-vector-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.3849190704057567,
+          "ci95": [
+            0.36927070972719894,
+            0.4005674310843144
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.3348611111111111,
+          "ci95": [
+            0.31666666666666665,
+            0.35305555555555557
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.5833333333333334,
+          "ci95": [
+            0.55,
+            0.6166666666666667
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 738.025,
+      "vector_payload_bytes": 304956,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": -0.1799974958586164,
+          "ci95": [
+            -0.28912895011563816,
+            -0.07086604160159468
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "cb8d6265b0efe6fe51eed8e36792fc67cba8678ef666b4f07935f4806ecad008",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.3653358230928062,
+          "ci95": [
+            0.33373777118184084,
+            0.39693387500377153
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.3200297619047619,
+          "ci95": [
+            0.29214285714285715,
+            0.34791666666666665
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.49583333333333335,
+          "ci95": [
+            0.4416666666666667,
+            0.55
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 705.525,
+      "vector_payload_bytes": 304956,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": -0.19958074317156693,
+          "ci95": [
+            -0.32466188866099627,
+            -0.07449959768213761
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "4c9614ed6bc7d432a358e31f576311311527c1c03a17d4b60206861ab0dd5e02",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-lex-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.3416831291124997,
+          "ci95": [
+            0.2806076395987424,
+            0.402758618626257
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.29468253968253966,
+          "ci95": [
+            0.23380952380952383,
+            0.3555555555555555
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.5,
+          "ci95": [
+            0.45,
+            0.55
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 706.475,
+      "vector_payload_bytes": 304956,
+      "selected_passages": 591,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": -0.22323343715187338,
+          "ci95": [
+            -0.37779202024409464,
+            -0.06867485405965211
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "3085762256ad419b0e3c7a1ca1ea5e037f51b5f731acd56a9fb3c551630ecc4c",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "prefix-512",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.31235990378595596,
+          "ci95": [
+            0.24009300431109656,
+            0.3846268032608154
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.2765277777777778,
+          "ci95": [
+            0.20722222222222225,
+            0.3458333333333333
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.425,
+          "ci95": [
+            0.35,
+            0.5
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 657.475,
+      "vector_payload_bytes": 136740,
+      "selected_passages": 265,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": -0.2525566624784171,
+          "ci95": [
+            -0.41830665553174057,
+            -0.0868066694250937
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "b08179af8b2d2e2add141f98f007d97511a354a6620d05508bb383591ea535fc",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "prefix-512",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.30694093701068165,
+          "ci95": [
+            0.15088912804029994,
+            0.4629927459810633
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.295,
+          "ci95": [
+            0.135,
+            0.45499999999999996
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.3833333333333333,
+          "ci95": [
+            0.2,
+            0.5666666666666667
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 702.525,
+      "vector_payload_bytes": 68900,
+      "selected_passages": 265,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": -0.25797562925369144,
+          "ci95": [
+            -0.32054434464560916,
+            -0.19540691386177375
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "2ffc1a481526d0b95d1b92f4a6843131931de9d6dd51b1526cd46aab68ff6e18",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "whole-token-centroid",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "code-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.11197888310294847,
+          "ci95": [
+            0.025,
+            0.19895776620589695
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "mrr": {
+          "mean": 0.09729166666666667,
+          "ci95": [
+            0.016666666666666666,
+            0.17791666666666667
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "recall": {
+          "mean": 0.1625,
+          "ci95": [
+            0.05,
+            0.275
+          ],
+          "families": 2,
+          "queries": 40
+        },
+        "span_recall": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        },
+        "span_precision": {
+          "mean": 0.0,
+          "ci95": null,
+          "families": 1,
+          "queries": 5
+        }
+      },
+      "stdout_tokens": 571.575,
+      "vector_payload_bytes": 136740,
+      "selected_passages": 265,
+      "paired_differences": {
+        "baseline-bm25": {
+          "mean": -0.45293768316142463,
+          "ci95": [
+            -0.45944189363694016,
+            -0.4464334726859091
+          ],
+          "families": 2,
+          "queries": 40
+        }
+      }
+    },
+    {
+      "recipe_sha256": "2831b562ed807389dfff109cfd626f19eebae6441e0eb49371f301a4712847a8",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "whole-token-centroid",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6401929362049861,
+          "ci95": [
+            0.5483156666031361,
+            0.7334691957559824
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.6078947368421053,
+          "ci95": [
+            0.5114035087719299,
+            0.7065789473684211
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.75,
+          "ci95": [
+            0.6513157894736842,
+            0.8421052631578947
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2520.925,
+      "vector_payload_bytes": 1347580,
+      "selected_passages": 5183,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.00611650304927398,
+          "ci95": [
+            -0.021497937270785878,
+            0.007105164522802769
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "6ad2774090c11b61c4d6437a879903cf771337d7d81ee4de8339d14054348eb1",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "prefix-512",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6375580257379063,
+          "ci95": [
+            0.5459784439731856,
+            0.731758558280962
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.6046052631578948,
+          "ci95": [
+            0.5096491228070176,
+            0.7032894736842106
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.75,
+          "ci95": [
+            0.6513157894736842,
+            0.8421052631578947
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2531.2625,
+      "vector_payload_bytes": 1347580,
+      "selected_passages": 5183,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.008751413516353775,
+          "ci95": [
+            -0.02403640887682755,
+            0.004234953124721328
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "e53205ae2e8192d7fef10f2ae471b59f4cb0b9f03d638f7bf42b42d14bf81f06",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "whole-token-centroid",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6320663600360206,
+          "ci95": [
+            0.5404827815155722,
+            0.7266228080023346
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.6023182957393484,
+          "ci95": [
+            0.5059367167919799,
+            0.7019736842105263
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.7368421052631579,
+          "ci95": [
+            0.6381578947368421,
+            0.8289473684210527
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2508.5875,
+      "vector_payload_bytes": 2674428,
+      "selected_passages": 5183,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.014243079218239512,
+          "ci95": [
+            -0.029080711971847095,
+            -0.002096354624547256
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "3fe343fe897cf00ea520e36b6da22c14f51cad9f83d4359f10d1d1281e163a79",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6289329324984273,
+          "ci95": [
+            0.5374698216342448,
+            0.7227108764805381
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.5979323308270676,
+          "ci95": [
+            0.500015664160401,
+            0.6955043859649123
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.7368421052631579,
+          "ci95": [
+            0.6381578947368421,
+            0.8289473684210527
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2507.3875,
+      "vector_payload_bytes": 3381864,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.017376506755832733,
+          "ci95": [
+            -0.035475133467090476,
+            -0.003037207938287395
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "bc60d1edd7b862929e4581d2306a405e5b2559036c2cc71e6d0639c49bd2f4b1",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-lex-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6289329324984273,
+          "ci95": [
+            0.5374698216342448,
+            0.7227108764805381
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.5979323308270676,
+          "ci95": [
+            0.500015664160401,
+            0.6955043859649123
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.7368421052631579,
+          "ci95": [
+            0.6381578947368421,
+            0.8289473684210527
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2507.3875,
+      "vector_payload_bytes": 3381864,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.017376506755832733,
+          "ci95": [
+            -0.035475133467090476,
+            -0.003037207938287395
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "a363362960efc8e17f1a5f54b00f93b235d0e37716077be57c2f5a412293fbbf",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-vector-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6289329324984273,
+          "ci95": [
+            0.5374698216342448,
+            0.7227108764805381
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.5979323308270676,
+          "ci95": [
+            0.500015664160401,
+            0.6955043859649123
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.7368421052631579,
+          "ci95": [
+            0.6381578947368421,
+            0.8289473684210527
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2507.3875,
+      "vector_payload_bytes": 3381864,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.017376506755832733,
+          "ci95": [
+            -0.035475133467090476,
+            -0.003037207938287395
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "62a4edc8bd462a7f04aecebfee3bad07cdeda34a6a2380a8a83f459801a3d857",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "all-passages",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6289329324984273,
+          "ci95": [
+            0.5374698216342448,
+            0.7227108764805381
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.5979323308270676,
+          "ci95": [
+            0.500015664160401,
+            0.6955043859649123
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.7368421052631579,
+          "ci95": [
+            0.6381578947368421,
+            0.8289473684210527
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2507.3625,
+      "vector_payload_bytes": 3383928,
+      "selected_passages": 6558,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.017376506755832733,
+          "ci95": [
+            -0.035475133467090476,
+            -0.003037207938287395
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "c2800e3f519bd102991092cb6cc5df8b40739a8b16703b73553eb313dc53b6f0",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6288593425714758,
+          "ci95": [
+            0.5374021974100419,
+            0.7245557700694332
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.5969298245614035,
+          "ci95": [
+            0.5008771929824561,
+            0.6973684210526315
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.7368421052631579,
+          "ci95": [
+            0.6381578947368421,
+            0.8289473684210527
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2503.525,
+      "vector_payload_bytes": 1704040,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.017450096682784324,
+          "ci95": [
+            -0.038938180809397135,
+            -2.4170196257569665e-05
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "851c560a2fcf4c9b91ab88c1c7f9b5d96d4c980537c1f76ab85175a218f18712",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-lex-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6288593425714758,
+          "ci95": [
+            0.5374021974100419,
+            0.7245557700694332
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.5969298245614035,
+          "ci95": [
+            0.5008771929824561,
+            0.6973684210526315
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.7368421052631579,
+          "ci95": [
+            0.6381578947368421,
+            0.8289473684210527
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2503.525,
+      "vector_payload_bytes": 1704040,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.017450096682784324,
+          "ci95": [
+            -0.038938180809397135,
+            -2.4170196257569665e-05
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "f991bbf2383084b64e105506cbfc650be022e27d7c8bf13a9ad143295a11f1d8",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-vector-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6288593425714758,
+          "ci95": [
+            0.5374021974100419,
+            0.7245557700694332
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.5969298245614035,
+          "ci95": [
+            0.5008771929824561,
+            0.6973684210526315
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.7368421052631579,
+          "ci95": [
+            0.6381578947368421,
+            0.8289473684210527
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2503.525,
+      "vector_payload_bytes": 1704040,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.017450096682784324,
+          "ci95": [
+            -0.038938180809397135,
+            -2.4170196257569665e-05
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "ffba5bc5b194c676c199f32196dc58e24a936e1cbd670217043b8b91288b430b",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "all-passages",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6288593425714758,
+          "ci95": [
+            0.5374021974100419,
+            0.7245557700694332
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.5969298245614035,
+          "ci95": [
+            0.5008771929824561,
+            0.6973684210526315
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.7368421052631579,
+          "ci95": [
+            0.6381578947368421,
+            0.8289473684210527
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2503.525,
+      "vector_payload_bytes": 1705080,
+      "selected_passages": 6558,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.017450096682784324,
+          "ci95": [
+            -0.038938180809397135,
+            -2.4170196257569665e-05
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "16bdab8695c1e5b8487f543aff52128a94e9db6996794160601ff6fa7556d557",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "prefix-512",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-normalized",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.6269761915197766,
+          "ci95": [
+            0.5350563992454125,
+            0.7256646516002156
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.5996867167919799,
+          "ci95": [
+            0.5042293233082706,
+            0.700234962406015
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.7236842105263158,
+          "ci95": [
+            0.631578947368421,
+            0.8223684210526315
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2496.15,
+      "vector_payload_bytes": 2674428,
+      "selected_passages": 5183,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.019333247734483482,
+          "ci95": [
+            -0.039510124405140554,
+            -0.003199104892972092
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "3a8599f8f9acd4c1e5695ca9e2dd5e14130f7eb592d0f1842a24331702ead2b5",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "whole-token-centroid",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.5203183695969855,
+          "ci95": [
+            0.4197644170006331,
+            0.6160150009681489
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.4839285714285714,
+          "ci95": [
+            0.38226817042606515,
+            0.5818295739348371
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.631578947368421,
+          "ci95": [
+            0.5197368421052632,
+            0.7368421052631579
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2467.9875,
+      "vector_payload_bytes": 1347580,
+      "selected_passages": 5183,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.12599106965727458,
+          "ci95": [
+            -0.1912201610563035,
+            -0.07045111659753632
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "9dcda011c39aece05f1fc097ab3fc8ca4f9d6fc165a6a29801d5fc0ce3eaed65",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.5158841165928217,
+          "ci95": [
+            0.4161473497570607,
+            0.6085428521035574
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.4722744360902256,
+          "ci95": [
+            0.375234962406015,
+            0.568765664160401
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.6447368421052632,
+          "ci95": [
+            0.5328947368421053,
+            0.75
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2475.375,
+      "vector_payload_bytes": 1704040,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.13042532266143833,
+          "ci95": [
+            -0.19481579188767276,
+            -0.07222509559347925
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "2c5203cbeb39c1159ab566ea01e070381be49acef297c8853f33fb4d0dad56a2",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-lex-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.5158841165928217,
+          "ci95": [
+            0.4161473497570607,
+            0.6085428521035574
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.4722744360902256,
+          "ci95": [
+            0.375234962406015,
+            0.568765664160401
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.6447368421052632,
+          "ci95": [
+            0.5328947368421053,
+            0.75
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2475.375,
+      "vector_payload_bytes": 1704040,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.13042532266143833,
+          "ci95": [
+            -0.19481579188767276,
+            -0.07222509559347925
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "f8e6d2f0dc32ec4a5ca5810d7ac81d81cbc8eaccdbeb138df0fe4acd7e69b197",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-vector-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.5158841165928217,
+          "ci95": [
+            0.4161473497570607,
+            0.6085428521035574
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.4722744360902256,
+          "ci95": [
+            0.375234962406015,
+            0.568765664160401
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.6447368421052632,
+          "ci95": [
+            0.5328947368421053,
+            0.75
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2475.375,
+      "vector_payload_bytes": 1704040,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.13042532266143833,
+          "ci95": [
+            -0.19481579188767276,
+            -0.07222509559347925
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "9a731e453afc615bfb6eb60cf3911d54915a783f0cd3714ddd949ac0b3f2d216",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "all-passages",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.5158841165928217,
+          "ci95": [
+            0.4161473497570607,
+            0.6085428521035574
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.4722744360902256,
+          "ci95": [
+            0.375234962406015,
+            0.568765664160401
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.6447368421052632,
+          "ci95": [
+            0.5328947368421053,
+            0.75
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2475.375,
+      "vector_payload_bytes": 1705080,
+      "selected_passages": 6558,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.13042532266143833,
+          "ci95": [
+            -0.19481579188767276,
+            -0.07222509559347925
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "0724ad6db883e204d7a084643f63d9194207664eadcc4f8bc6493da62402fb18",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "prefix-512",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.5084413067646179,
+          "ci95": [
+            0.40528094407061976,
+            0.6036286635451115
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.47218045112781953,
+          "ci95": [
+            0.368577694235589,
+            0.5692355889724311
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.618421052631579,
+          "ci95": [
+            0.5,
+            0.7236842105263158
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2470.35,
+      "vector_payload_bytes": 1347580,
+      "selected_passages": 5183,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.13786813248964222,
+          "ci95": [
+            -0.20209841305696388,
+            -0.07867135777295815
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "980c219c06543968141290b8f62b40b69e689ebad6b54971c1f16cfa903b9cd0",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.48075337847510796,
+          "ci95": [
+            0.38015281062516076,
+            0.576842622004432
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.4532111528822055,
+          "ci95": [
+            0.35507518796992477,
+            0.5524436090225564
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.5723684210526315,
+          "ci95": [
+            0.4605263157894737,
+            0.6776315789473685
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2496.75,
+      "vector_payload_bytes": 3381864,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.16555606077915214,
+          "ci95": [
+            -0.23655155304735334,
+            -0.09643843206005301
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "2a6e148f38a12df37e69719f5c81a801a9357f413d52238d871cd934b9e7192e",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-lex-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.48075337847510796,
+          "ci95": [
+            0.38015281062516076,
+            0.576842622004432
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.4532111528822055,
+          "ci95": [
+            0.35507518796992477,
+            0.5524436090225564
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.5723684210526315,
+          "ci95": [
+            0.4605263157894737,
+            0.6776315789473685
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2496.75,
+      "vector_payload_bytes": 3381864,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.16555606077915214,
+          "ci95": [
+            -0.23655155304735334,
+            -0.09643843206005301
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "59afc655abb9a91b8f679a02be9133d7138dd6d431b24282645f33afd50ad295",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-vector-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.48075337847510796,
+          "ci95": [
+            0.38015281062516076,
+            0.576842622004432
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.4532111528822055,
+          "ci95": [
+            0.35507518796992477,
+            0.5524436090225564
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.5723684210526315,
+          "ci95": [
+            0.4605263157894737,
+            0.6776315789473685
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2496.75,
+      "vector_payload_bytes": 3381864,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.16555606077915214,
+          "ci95": [
+            -0.23655155304735334,
+            -0.09643843206005301
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "fd14119238d2b53a96ac9a04df335847d8408c8c576e0df3b4a89f20a83093c1",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "all-passages",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.48075337847510796,
+          "ci95": [
+            0.38015281062516076,
+            0.576842622004432
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.4532111528822055,
+          "ci95": [
+            0.35507518796992477,
+            0.5524436090225564
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.5723684210526315,
+          "ci95": [
+            0.4605263157894737,
+            0.6776315789473685
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2496.725,
+      "vector_payload_bytes": 3383928,
+      "selected_passages": 6558,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.16555606077915214,
+          "ci95": [
+            -0.23655155304735334,
+            -0.09643843206005301
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "6421a9de6ba3901631911628c98dd6e0e729e07a0fbc762899295154616b2141",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "whole-token-centroid",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.4776543798909864,
+          "ci95": [
+            0.37934988011594173,
+            0.5709375581627452
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.4454417293233083,
+          "ci95": [
+            0.3476503759398496,
+            0.5396146616541353
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.5855263157894737,
+          "ci95": [
+            0.47368421052631576,
+            0.6907894736842105
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2478.5625,
+      "vector_payload_bytes": 2674428,
+      "selected_passages": 5183,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.16865505936327368,
+          "ci95": [
+            -0.23723490659608162,
+            -0.10128334638921019
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "7de7767223e29ac53857d0296c011bcac882d32f2d6079dcecc730b790b8ce4b",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "prefix-512",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "hybrid-rrf",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.4630746969989237,
+          "ci95": [
+            0.3642585490433352,
+            0.5572677626365767
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.43479010025062653,
+          "ci95": [
+            0.33654448621553884,
+            0.5285401002506266
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.5592105263157895,
+          "ci95": [
+            0.4473684210526316,
+            0.6644736842105263
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2477.025,
+      "vector_payload_bytes": 2674428,
+      "selected_passages": 5183,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.18323474225533642,
+          "ci95": [
+            -0.25499194153625243,
+            -0.11475988465124293
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "a5d6515cb99ef808a49060ae50e553379b79de69ed57618f7cd694704bfeb7ae",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "whole-token-centroid",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.41771077233172027,
+          "ci95": [
+            0.3176783813547585,
+            0.5178561269675721
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.39232456140350874,
+          "ci95": [
+            0.29276315789473684,
+            0.4973684210526315
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.5131578947368421,
+          "ci95": [
+            0.40131578947368424,
+            0.625
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2520.1625,
+      "vector_payload_bytes": 1347580,
+      "selected_passages": 5183,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.22859866692253983,
+          "ci95": [
+            -0.32515918813507344,
+            -0.12942326124354178
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "228ae64dab0a4b7b688d1e3e353e1cedfe7d3fac523fa2b1cd25d42714d144db",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.4170177234648619,
+          "ci95": [
+            0.3180076476447388,
+            0.5203801119116467
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.3961622807017544,
+          "ci95": [
+            0.2950657894736842,
+            0.5019736842105263
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.506578947368421,
+          "ci95": [
+            0.39473684210526316,
+            0.618421052631579
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2495.55,
+      "vector_payload_bytes": 1704040,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.22929171578939825,
+          "ci95": [
+            -0.32633583967350216,
+            -0.130875144520494
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "5c88c8f25693ebec9240bbd9d5ae1b6040b03e3fd4d3c7ab1f2d8f3ec493af7f",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-lex-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.4170177234648619,
+          "ci95": [
+            0.3180076476447388,
+            0.5203801119116467
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.3961622807017544,
+          "ci95": [
+            0.2950657894736842,
+            0.5019736842105263
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.506578947368421,
+          "ci95": [
+            0.39473684210526316,
+            0.618421052631579
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2495.55,
+      "vector_payload_bytes": 1704040,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.22929171578939825,
+          "ci95": [
+            -0.32633583967350216,
+            -0.130875144520494
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "2b53774e17e14e80c0bb75e2f659e7c3f3e6158e4ab2ccc985875510267605ce",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "intro-vector-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.4170177234648619,
+          "ci95": [
+            0.3180076476447388,
+            0.5203801119116467
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.3961622807017544,
+          "ci95": [
+            0.2950657894736842,
+            0.5019736842105263
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.506578947368421,
+          "ci95": [
+            0.39473684210526316,
+            0.618421052631579
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2506.3375,
+      "vector_payload_bytes": 1704040,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.22929171578939825,
+          "ci95": [
+            -0.32633583967350216,
+            -0.130875144520494
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "9bf5b8662147f42dfe5c5c1bea48d6e467b0cf08110c90f5afd5529d751dfb12",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "all-passages",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.4170177234648619,
+          "ci95": [
+            0.3180076476447388,
+            0.5203801119116467
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.3961622807017544,
+          "ci95": [
+            0.2950657894736842,
+            0.5019736842105263
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.506578947368421,
+          "ci95": [
+            0.39473684210526316,
+            0.618421052631579
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2495.55,
+      "vector_payload_bytes": 1705080,
+      "selected_passages": 6558,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.22929171578939825,
+          "ci95": [
+            -0.32633583967350216,
+            -0.130875144520494
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "b08179af8b2d2e2add141f98f007d97511a354a6620d05508bb383591ea535fc",
+      "config": {
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "model_label": "potion-code-16M-v2-unbounded",
+        "representation": "prefix-512",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.40661828474756645,
+          "ci95": [
+            0.3113543115557008,
+            0.5108149105498369
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.38596491228070173,
+          "ci95": [
+            0.28728070175438597,
+            0.4912280701754386
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.4868421052631579,
+          "ci95": [
+            0.3815789473684211,
+            0.5986842105263158
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2522.5,
+      "vector_payload_bytes": 1347580,
+      "selected_passages": 5183,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.23969115450669365,
+          "ci95": [
+            -0.33749189957065123,
+            -0.1395336946629361
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "cb8d6265b0efe6fe51eed8e36792fc67cba8678ef666b4f07935f4806ecad008",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-uniform",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.314259956444653,
+          "ci95": [
+            0.2280597654995752,
+            0.40377738900633475
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.28690998329156225,
+          "ci95": [
+            0.20114870509607352,
+            0.3798558897243108
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.42105263157894735,
+          "ci95": [
+            0.3157894736842105,
+            0.5263157894736842
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2508.4,
+      "vector_payload_bytes": 3381864,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.3320494828096071,
+          "ci95": [
+            -0.4173801251450486,
+            -0.24923207215113832
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "4c9614ed6bc7d432a358e31f576311311527c1c03a17d4b60206861ab0dd5e02",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-lex-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.314259956444653,
+          "ci95": [
+            0.2280597654995752,
+            0.40377738900633475
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.28690998329156225,
+          "ci95": [
+            0.20114870509607352,
+            0.3798558897243108
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.42105263157894735,
+          "ci95": [
+            0.3157894736842105,
+            0.5263157894736842
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2508.4,
+      "vector_payload_bytes": 3381864,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.3320494828096071,
+          "ci95": [
+            -0.4173801251450486,
+            -0.24923207215113832
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "49a8abd5d0f30b61dc76e0af2f4bbb4ed3abc54c8f07ba21323b877b9c69018f",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "intro-vector-diverse",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.314259956444653,
+          "ci95": [
+            0.2280597654995752,
+            0.40377738900633475
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.28690998329156225,
+          "ci95": [
+            0.20114870509607352,
+            0.3798558897243108
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.42105263157894735,
+          "ci95": [
+            0.3157894736842105,
+            0.5263157894736842
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2508.4,
+      "vector_payload_bytes": 3381864,
+      "selected_passages": 6554,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.3320494828096071,
+          "ci95": [
+            -0.4173801251450486,
+            -0.24923207215113832
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "fa9aec599ba0ffdd9f357f838a603ee2de4c2aecf4f3f4e298ea64c946d43f59",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "all-passages",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.314259956444653,
+          "ci95": [
+            0.2280597654995752,
+            0.40377738900633475
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.28690998329156225,
+          "ci95": [
+            0.20114870509607352,
+            0.3798558897243108
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.42105263157894735,
+          "ci95": [
+            0.3157894736842105,
+            0.5263157894736842
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2508.35,
+      "vector_payload_bytes": 3383928,
+      "selected_passages": 6558,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.3320494828096071,
+          "ci95": [
+            -0.4173801251450486,
+            -0.24923207215113832
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "3085762256ad419b0e3c7a1ca1ea5e037f51b5f731acd56a9fb3c551630ecc4c",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "prefix-512",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.2870437446161399,
+          "ci95": [
+            0.2042459340715079,
+            0.37189038804435176
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.254140559732665,
+          "ci95": [
+            0.1739922723475355,
+            0.33924916457811194
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.40789473684210525,
+          "ci95": [
+            0.3026315789473684,
+            0.506578947368421
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2498.725,
+      "vector_payload_bytes": 2674428,
+      "selected_passages": 5183,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.3592656946381202,
+          "ci95": [
+            -0.4433687649703516,
+            -0.2751805597283236
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    },
+    {
+      "recipe_sha256": "2ffc1a481526d0b95d1b92f4a6843131931de9d6dd51b1526cd46aab68ff6e18",
+      "config": {
+        "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+        "model_label": "ixos-flash-v2-unbounded",
+        "representation": "whole-token-centroid",
+        "chunk_characters": 1800,
+        "precision": "int8",
+        "mode": "semantic",
+        "semantic_threshold": 0.25,
+        "session": "off",
+        "literal_guard": true,
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 12000,
+        "session_algorithm": "bounded-context-v2"
+      },
+      "workload": "document-agent",
+      "metrics": {
+        "ndcg": {
+          "mean": 0.27706759124426905,
+          "ci95": [
+            0.19558168294821118,
+            0.3622763512810249
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "mrr": {
+          "mean": 0.24994256474519633,
+          "ci95": [
+            0.16817564745196326,
+            0.33475877192982456
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "recall": {
+          "mean": 0.3815789473684211,
+          "ci95": [
+            0.27631578947368424,
+            0.48026315789473684
+          ],
+          "families": 76,
+          "queries": 80
+        },
+        "span_recall": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        },
+        "span_precision": {
+          "mean": null,
+          "ci95": null,
+          "families": 0,
+          "queries": 0
+        }
+      },
+      "stdout_tokens": 2477.2125,
+      "vector_payload_bytes": 2674428,
+      "selected_passages": 5183,
+      "paired_differences": {
+        "scifact-dev80-bm25": {
+          "mean": -0.36924184800999105,
+          "ci95": [
+            -0.45440803329991764,
+            -0.28352506381297093
+          ],
+          "families": 76,
+          "queries": 80
+        }
+      }
+    }
+  ]
+}

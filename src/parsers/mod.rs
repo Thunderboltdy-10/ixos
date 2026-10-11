@@ -110,6 +110,21 @@ pub(crate) fn extract_text_from_bytes(
         .and_then(|e| e.to_str())
         .unwrap_or("")
         .to_ascii_lowercase();
+    if matches!(ext.as_str(), "docx" | "xlsx" | "pptx") {
+        // Reject expanded containers before a parser allocates their contents.
+        // Limits are honest failures, never successful partial XML extraction.
+        let mut archive = ZipArchive::new(Cursor::new(bytes)).ok()?;
+        let mut expanded = 0u64;
+        for i in 0..archive.len() {
+            let entry = archive.by_index(i).ok()?;
+            expanded = expanded.checked_add(entry.size())?;
+            if expanded > 32 * 1024 * 1024
+                || entry.name().ends_with(".xml") && entry.size() > 8 * 1024 * 1024
+            {
+                return None;
+            }
+        }
+    }
     let text = match ext.as_str() {
         "pdf" => extract_pdf(bytes),
         "docx" => extract_docx(bytes),
@@ -127,6 +142,9 @@ pub(crate) fn extract_text_from_bytes(
 /// Decode BOM-tagged UTF-16 and UTF-8. Untagged NUL data is binary.
 pub(crate) fn decode_text(bytes: &[u8]) -> Option<String> {
     let text = if bytes.starts_with(&[0xFF, 0xFE]) || bytes.starts_with(&[0xFE, 0xFF]) {
+        if bytes.len() % 2 != 0 {
+            return None;
+        }
         let little = bytes[0] == 0xFF;
         let units: Vec<u16> = bytes[2..]
             .chunks_exact(2)
@@ -138,13 +156,13 @@ pub(crate) fn decode_text(bytes: &[u8]) -> Option<String> {
                 }
             })
             .collect();
-        String::from_utf16_lossy(&units)
+        String::from_utf16(&units).ok()?
     } else {
         if bytes.contains(&0) {
             return None;
         }
         let bytes = bytes.strip_prefix(&[0xEF, 0xBB, 0xBF]).unwrap_or(bytes);
-        String::from_utf8_lossy(bytes).into_owned()
+        String::from_utf8(bytes.to_vec()).ok()?
     };
     if text.trim().is_empty() {
         None
@@ -376,6 +394,9 @@ mod tests {
         )
         .is_none());
         assert!(decode_text(b"some\0binary data").is_none());
+        assert!(decode_text(&[0xFE, 0xFF, 0xFE]).is_none());
+        assert!(decode_text(&[0xFF, 0xFE, 0x00, 0xD8]).is_none());
+        assert!(decode_text(&[0xFF, 0x80, 0x42]).is_none());
     }
 
     #[test]
@@ -433,5 +454,23 @@ mod tests {
         let path = fixture("sample.pdf");
         let text = extract_text(&path, 1, 512);
         assert!(text.is_none());
+    }
+
+    #[test]
+    fn office_xml_limit_rejects_partial_extraction() {
+        use std::io::Write;
+        let mut archive = zip::ZipWriter::new(Cursor::new(Vec::new()));
+        archive
+            .start_file(
+                "word/document.xml",
+                zip::write::FileOptions::default()
+                    .compression_method(zip::CompressionMethod::Deflated),
+            )
+            .unwrap();
+        archive.write_all(b"<document><p>").unwrap();
+        archive.write_all(&vec![b'x'; 8 * 1024 * 1024]).unwrap();
+        archive.write_all(b"</p></document>").unwrap();
+        let bytes = archive.finish().unwrap().into_inner();
+        assert!(extract_text_from_bytes(Path::new("oversized.docx"), &bytes, 1000).is_none());
     }
 }

@@ -51,10 +51,10 @@ color = false
             result = subprocess.run(argv, capture_output=True, timeout=60)
             elapsed = round((time.perf_counter() - started) * 1000, 3)
             payloads = []
-            for line in result.stdout.decode("utf-8").splitlines():
+            for line in result.stdout.decode("utf-8").split("\n"):
                 if line.strip():
                     payloads.append(json.loads(line))
-            statistics = [json.loads(line) for line in result.stderr.decode("utf-8").splitlines() if line.startswith('{"')]
+            statistics = [json.loads(line) for line in result.stderr.decode("utf-8").split("\n") if line.startswith('{"')]
             row = dict(label=label, argv=argv, exit_code=result.returncode, wall_ms=elapsed,
                        stdout_bytes=len(result.stdout), payloads=payloads, stats=statistics,
                        stderr=result.stderr.decode("utf-8"))

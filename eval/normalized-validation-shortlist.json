@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "development_screen": "matrix-tokenizer-dev-v1",
+  "frozen_before_validation": true,
+  "reason": "Check complete-token variants and retain all-passages cost reference; no test inspected.",
+  "recipes": [
+    {
+      "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+      "representation": "intro-uniform",
+      "chunk_characters": 1800,
+      "precision": "int8",
+      "mode": "hybrid-normalized",
+      "semantic_threshold": 0.25,
+      "session": "off",
+      "literal_guard": true,
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 12000,
+      "session_algorithm": "bounded-context-v2"
+    },
+    {
+      "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+      "representation": "intro-lex-diverse",
+      "chunk_characters": 1800,
+      "precision": "int8",
+      "mode": "hybrid-normalized",
+      "semantic_threshold": 0.25,
+      "session": "off",
+      "literal_guard": true,
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 12000,
+      "session_algorithm": "bounded-context-v2"
+    },
+    {
+      "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+      "representation": "all-passages",
+      "chunk_characters": 1800,
+      "precision": "int8",
+      "mode": "hybrid-normalized",
+      "semantic_threshold": 0.25,
+      "session": "off",
+      "literal_guard": true,
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 12000,
+      "session_algorithm": "bounded-context-v2"
+    },
+    {
+      "model_fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+      "representation": "intro-uniform",
+      "chunk_characters": 1800,
+      "precision": "int8",
+      "mode": "hybrid-normalized",
+      "semantic_threshold": 0.25,
+      "session": "off",
+      "literal_guard": true,
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 12000,
+      "session_algorithm": "bounded-context-v2"
+    }
+  ]
+}

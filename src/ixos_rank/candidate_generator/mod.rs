@@ -6,9 +6,9 @@
 //!
 //! ## Pipeline
 //!
-//! 1. **Path Scoring** (instant, ~10ms for 30k files)
+//! 1. **Path Scoring** (fresh metadata snapshot, then in-memory token scoring)
 //!    - Uses in-memory PathIndex for BM25-ish scoring
-//!    - No disk I/O - only path strings
+//!    - Snapshot discovery performs filesystem I/O; scoring uses path strings.
 //!
 //! 2. **Ripgrep Scan** (streamed, capped at RIPGREP_MAX_HITS)
 //!    - Content-based search with hard timeout
@@ -50,7 +50,7 @@ pub use scorer::{
     ScoreWeights, ScoredCandidate,
 };
 
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
@@ -536,22 +536,17 @@ impl CandidateGenerator {
         path_candidates: Vec<ScoredCandidate>,
         ripgrep_candidates: Vec<ScoredCandidate>,
     ) -> Vec<ScoredCandidate> {
-        let mut seen: HashSet<PathBuf> = HashSet::new();
+        let mut positions = HashMap::<PathBuf, usize>::new();
         let mut merged: Vec<ScoredCandidate> = Vec::new();
 
-        // Process path candidates first
-        for candidate in path_candidates {
-            seen.insert(candidate.path.clone());
-            merged.push(candidate);
-        }
-
-        // Process ripgrep candidates, merging scores for duplicates
-        for candidate in ripgrep_candidates {
-            if let Some(existing) = merged.iter_mut().find(|c| c.path == candidate.path) {
+        // Keep first-seen order and merge each path through one lookup. The
+        // previous repeated Vec scan was quadratic on dense candidate sets.
+        for candidate in path_candidates.into_iter().chain(ripgrep_candidates) {
+            if let Some(position) = positions.get(&candidate.path) {
                 // Merge: boost files that appear in both sources
-                existing.merge_with(&candidate);
-            } else if !seen.contains(&candidate.path) {
-                seen.insert(candidate.path.clone());
+                merged[*position].merge_with(&candidate);
+            } else {
+                positions.insert(candidate.path.clone(), merged.len());
                 merged.push(candidate);
             }
         }
@@ -579,6 +574,9 @@ impl CandidateGenerator {
                 .calculate_priors(&candidate.path, mtime, size);
 
             candidate.apply_priors(priors.recency, priors.folder, priors.type_prior);
+            candidate.combined_score = candidate
+                .breakdown
+                .weighted_sum_custom(&self.config.weights);
         }
     }
 
@@ -721,6 +719,48 @@ mod tests {
             assert!(
                 candidate.breakdown.path_score > 0.0 || candidate.breakdown.lexical_score > 0.0
             );
+        }
+    }
+
+    #[test]
+    fn merge_preserves_first_order_and_combines_repeated_sources() {
+        let folder = setup_test_dir();
+        let generator = CandidateGenerator::with_defaults(folder.path().to_path_buf());
+        let path = folder.path().join("a.txt");
+        let other = folder.path().join("b.txt");
+        let merged = generator.merge_candidates(
+            vec![
+                ScoredCandidate::from_path_match(path.clone(), 0.8),
+                ScoredCandidate::from_path_match(path.clone(), 0.4),
+            ],
+            vec![
+                ScoredCandidate::from_ripgrep_hit(other.clone(), 0.6, None),
+                ScoredCandidate::from_ripgrep_hit(path.clone(), 0.7, None),
+            ],
+        );
+        assert_eq!(merged.len(), 2);
+        assert_eq!(merged[0].path, path);
+        assert_eq!(merged[1].path, other);
+        assert_eq!(merged[0].breakdown.path_score, 0.8);
+        assert_eq!(merged[0].breakdown.lexical_score, 0.7);
+    }
+
+    #[test]
+    fn explicit_candidate_weights_are_applied() {
+        let folder = setup_test_dir();
+        let mut config = CandidateGeneratorConfig::default();
+        config.weights = ScoreWeights {
+            path: 1.0,
+            lexical: 0.0,
+            recency: 0.0,
+            folder: 0.0,
+            type_prior: 0.0,
+        };
+        let mut generator = CandidateGenerator::new(folder.path().to_path_buf(), config);
+        let result = generator.generate("report");
+        assert!(!result.candidates.is_empty());
+        for candidate in result.candidates {
+            assert_eq!(candidate.combined_score, candidate.breakdown.path_score);
         }
     }
 

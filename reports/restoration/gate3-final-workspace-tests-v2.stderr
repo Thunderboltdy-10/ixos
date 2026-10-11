@@ -1,0 +1,7 @@
+   Compiling ixos-protocol v0.1.0 (C:\Users\pablo\Downloads\Ixos)
+   Compiling ixos-app v0.1.0 (C:\Users\pablo\Downloads\Ixos\ixos-search\src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 34.43s
+     Running unittests src\lib.rs (target\debug\deps\ixos_app_lib-d515afe2fd01a3b8.exe)
+     Running unittests src\main.rs (target\debug\deps\ixos_app-f77da416cf9d5c5b.exe)
+     Running unittests src\lib.rs (target\debug\deps\ixos_protocol-1f5ca7ce28adac67.exe)
+error: test failed, to rerun pass `-p ixos-protocol --lib`

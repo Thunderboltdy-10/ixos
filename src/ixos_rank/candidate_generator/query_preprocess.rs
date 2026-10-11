@@ -424,7 +424,11 @@ fn detect_ext_hints(query: &str) -> Vec<&'static str> {
     if lower.contains("pdf") {
         exts.push("pdf");
     }
-    if lower.contains("word doc") || lower.contains("docx") || lower.contains("document") {
+    if lower.contains("word doc")
+        || lower
+            .split(|c: char| !c.is_alphanumeric())
+            .any(|word| word == "docx")
+    {
         exts.push("docx");
     }
     if lower.contains("excel") || lower.contains("spreadsheet") || lower.contains("xlsx") {
@@ -566,6 +570,21 @@ mod tests {
         let processed = pre.preprocess("Find my PDF invoice");
         assert!(processed.expanded_query.contains("ext:pdf"));
         assert!(processed.question_rewritten);
+    }
+    #[test]
+    fn generic_documentation_does_not_force_word_format() {
+        let mut pre = QueryPreprocessor::with_defaults();
+        for query in [
+            "Where is the API documentation?",
+            "Find the document about embeddings",
+        ] {
+            let processed = pre.preprocess(query);
+            assert!(!processed.expanded_query.contains("ext:docx"));
+        }
+        assert!(pre
+            .preprocess("Find my Word document")
+            .expanded_query
+            .contains("ext:docx"));
     }
     #[test]
     fn test_anchor_filters_common_words() {

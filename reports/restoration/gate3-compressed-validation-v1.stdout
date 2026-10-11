@@ -1,0 +1,7 @@
+potion-retrieval-32M-row-int8: semble-axios intro-uniform; 112/132 passages
+potion-retrieval-32M-row-int8: semble-axios whole-token-centroid; 67/132 passages
+potion-retrieval-32M-row-int8: semble-tokio intro-uniform; 1234/2122 passages
+potion-retrieval-32M-row-int8: semble-tokio whole-token-centroid; 375/2122 passages
+potion-retrieval-32M-row-int8: beir-scifact intro-uniform; 6554/6558 passages
+potion-retrieval-32M-row-int8: beir-scifact whole-token-centroid; 5183/6558 passages
+Completed 6 dataset/configuration screens; unique queries are reported separately.

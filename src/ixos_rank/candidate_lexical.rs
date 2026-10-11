@@ -14,6 +14,38 @@ use super::types::{LexicalMatch, SearchError};
 pub struct CandidateLexicalEngine {
     generator: Mutex<CandidateGenerator>,
     last_stats: Mutex<super::candidate_generator::CandidateStats>,
+    /// One search's prepared candidates; consumed once by its pipeline. This is
+    /// not a manifest cache across searches and does not hide newly created files.
+    prepared: Mutex<Option<(String, Vec<LexicalMatch>)>>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn preflight_preserves_all_candidates_and_is_consumed_once() {
+        let folder = tempfile::tempdir().unwrap();
+        for name in ["a.txt", "b.txt", "c.txt"] {
+            std::fs::write(folder.path().join(name), "witness_term\n").unwrap();
+        }
+        let engine = CandidateLexicalEngine::new(folder.path().to_path_buf());
+        assert!(!engine.preflight("witness_term").await.unwrap());
+        let mut batches = Vec::new();
+        let results = engine.search("witness_term", 10).await.unwrap();
+        assert_eq!(results.len(), 3);
+        std::fs::write(folder.path().join("new.txt"), "witness_term\n").unwrap();
+        let next = engine.search("witness_term", 10).await.unwrap();
+        assert_eq!(
+            next.len(),
+            4,
+            "A consumed preflight must not hide new files"
+        );
+        for result in next {
+            batches.push(result.path);
+        }
+        assert!(batches.contains(&folder.path().join("new.txt")));
+    }
 }
 
 impl CandidateLexicalEngine {
@@ -23,6 +55,7 @@ impl CandidateLexicalEngine {
         Self {
             generator: Mutex::new(generator),
             last_stats: Mutex::new(Default::default()),
+            prepared: Mutex::new(None),
         }
     }
 
@@ -32,7 +65,39 @@ impl CandidateLexicalEngine {
         Self {
             generator: Mutex::new(generator),
             last_stats: Mutex::new(Default::default()),
+            prepared: Mutex::new(None),
         }
+    }
+
+    /// Probe lexical availability while preserving the complete candidate batch
+    /// for this request. Running a full funnel and throwing it away doubled CLI
+    /// work on dense corpora before the actual search pipeline even started.
+    pub async fn preflight(&self, query: &str) -> Result<bool, SearchError> {
+        let mut generator = self.generator.lock().await;
+        let set = generator.generate(query);
+        *self.last_stats.lock().await = set.stats.clone();
+        let matches: Vec<_> = set
+            .into_lexical_matches()
+            .into_iter()
+            .map(|m| m.with_query_coverage(query))
+            .collect();
+        let empty = matches.is_empty();
+        *self.prepared.lock().await = Some((query.to_owned(), matches));
+        Ok(empty)
+    }
+
+    async fn take_prepared(&self, query: &str) -> Option<Vec<LexicalMatch>> {
+        self.prepared
+            .lock()
+            .await
+            .take()
+            .and_then(|(previous, matches)| {
+                if previous == query {
+                    Some(matches)
+                } else {
+                    None
+                }
+            })
     }
 }
 
@@ -44,6 +109,11 @@ impl LexicalEngine for CandidateLexicalEngine {
     async fn search(&self, query: &str, limit: usize) -> Result<Vec<LexicalMatch>, SearchError> {
         if query.trim().is_empty() {
             return Ok(Vec::new());
+        }
+
+        if let Some(mut results) = self.take_prepared(query).await {
+            results.truncate(limit);
+            return Ok(results);
         }
 
         let mut generator = self.generator.lock().await;
@@ -68,6 +138,17 @@ impl LexicalEngine for CandidateLexicalEngine {
     ) -> Result<Vec<LexicalMatch>, SearchError> {
         if query.trim().is_empty() {
             return Ok(Vec::new());
+        }
+
+        if let Some(mut results) = self.take_prepared(query).await {
+            results.truncate(limit);
+            if let Some(ref mut handler) = on_batch {
+                let count = results.len();
+                for (index, chunk) in results.chunks(batch_size.max(1)).enumerate() {
+                    handler(chunk.to_vec(), (index + 1) * batch_size.max(1) >= count);
+                }
+            }
+            return Ok(results);
         }
 
         let mut generator = self.generator.lock().await;

@@ -240,7 +240,7 @@ fn ranked_result_to_payload(result: &RankedResult) -> RankedResultPayload {
         context: result.context_snippet.as_ref().map(|ctx| ContextPayload {
             line_number: ctx.line_number,
             before: ctx.before.clone(),
-            matched: ctx.matched.clone(),
+            matched: ctx.raw_matched.lines().map(str::to_owned).collect(),
             after: ctx.after.clone(),
         }),
         evidence: result.evidence.as_ref().map(|e| EvidencePayload {

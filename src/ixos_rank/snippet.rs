@@ -343,6 +343,7 @@ pub fn format_snippet(snippet: &ContextSnippet, use_color: bool) -> String {
     // Matched line(s)
     for (i, line) in snippet.matched.iter().enumerate() {
         let line_num = snippet.line_number + i;
+        let plain = snippet.raw_matched.lines().nth(i).unwrap_or(line);
         if use_color {
             output.push_str(&format!(
                 "  {}{}{}{:>width$}{} │ {}\n",
@@ -358,7 +359,7 @@ pub fn format_snippet(snippet: &ContextSnippet, use_color: bool) -> String {
             output.push_str(&format!(
                 "  ▸{:>width$} │ {}\n",
                 line_num,
-                line,
+                plain,
                 width = line_num_width
             ));
         }

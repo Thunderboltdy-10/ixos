@@ -1,0 +1,25 @@
+...........s..............................................E.......
+======================================================================
+ERROR: test_artifact_identity_tracks_content_not_directory_label (test_run.RunTests.test_artifact_identity_tracks_content_not_directory_label)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\pablo\Downloads\Ixos\eval\test_run.py", line 31, in test_artifact_identity_tracks_content_not_directory_label
+    first = artifact_identity(folder)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\Downloads\Ixos\eval\run.py", line 33, in artifact_identity
+    tokenizer=json.loads((folder/'tokenizer.json').read_text(encoding='utf-8'))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\json\decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\json\decoder.py", line 356, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+----------------------------------------------------------------------
+Ran 66 tests in 0.333s
+
+FAILED (errors=1, skipped=1)

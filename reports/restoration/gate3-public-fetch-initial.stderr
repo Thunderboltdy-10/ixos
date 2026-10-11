@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\pablo\Downloads\Ixos\eval\public.py", line 115, in <module>
+    main()
+  File "C:\Users\pablo\Downloads\Ixos\eval\public.py", line 107, in main
+    identity = prepare(name, args.destination)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\Downloads\Ixos\eval\public.py", line 43, in prepare
+    prefix = relative_path(spec["benchmark_root"]).rstrip("/") + "/"
+                           ~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'benchmark_root'

@@ -1,0 +1,12 @@
+
+running 7 tests
+test retrieval::cache::tests::compact_record_rejects_stale_tampered_and_keeps_all_dimensions ... ok
+test retrieval::record::tests::centroid_includes_entire_source ... ok
+test retrieval::cache::tests::native_record_survives_rename_and_never_modifies_primary_bytes ... ok
+test retrieval::record::tests::unicode_full_coverage_and_late_anchor ... ok
+test retrieval::commands::tests::grep_and_read_keep_unicode_lines_and_respect_ignores ... ok
+test retrieval::commands::tests::long_line_preserves_file_and_exact_unicode_slice ... ok
+test retrieval::tests::full_source_lexical_freshness_ignores_and_budget ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 521 filtered out; finished in 0.05s
+

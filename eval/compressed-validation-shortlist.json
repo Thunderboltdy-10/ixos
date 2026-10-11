@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "development_screen": "matrix-compressed-dev-v1",
+  "frozen_before_validation": true,
+  "recipes": [
+    {
+      "model_fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+      "representation": "intro-uniform",
+      "chunk_characters": 1800,
+      "precision": "int8",
+      "mode": "hybrid-normalized",
+      "semantic_threshold": 0.25,
+      "session": "off",
+      "literal_guard": true,
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 12000
+    },
+    {
+      "model_fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+      "representation": "whole-token-centroid",
+      "chunk_characters": 1800,
+      "precision": "int8",
+      "mode": "hybrid-normalized",
+      "semantic_threshold": 0.25,
+      "session": "off",
+      "literal_guard": true,
+      "limit": 10,
+      "context": 2,
+      "output_bytes": 12000
+    }
+  ]
+}

@@ -11,6 +11,8 @@
 //! - `compliance` - Privacy and compliance management
 //! - `version` - Show version and diagnostics
 
+use crate::retrieval::record::Representation;
+use crate::retrieval::{RetrievalMode, SessionPolicy};
 use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 
@@ -124,6 +126,25 @@ pub enum Commands {
         /// Search query
         query: String,
 
+        /// Retrieval engine: lexical, semantic, hybrid, or historical legacy
+        #[arg(long, value_enum)]
+        retrieval: Option<RetrievalMode>,
+
+        /// Local static-model directory for the measured retrieval engine
+        #[arg(long)]
+        model_path: Option<PathBuf>,
+
+        /// Bounded workers for measured source/ADS reads (1..8)
+        #[arg(long, default_value_t = 1)]
+        io_workers: usize,
+        /// Recover a unique ordinary-word transposition from live corpus terms
+        #[arg(long)]
+        typo_correction: bool,
+
+        /// Query-independent document representation
+        #[arg(long, value_enum, requires = "retrieval")]
+        representation: Option<Representation>,
+
         /// Maximum number of results to return
         #[arg(short, long)]
         limit: Option<usize>,
@@ -213,6 +234,62 @@ pub enum Commands {
         /// Enable Deep Search mode (thorough, slower, more comprehensive)
         #[arg(long = "deep-search")]
         deep_search: bool,
+    },
+
+    /// Persistent JSONL retrieval with explicit, bounded session feedback
+    Serve {
+        #[arg(short, long, default_value = ".")]
+        dir: PathBuf,
+        #[arg(long)]
+        model_path: Option<PathBuf>,
+        #[arg(long, default_value_t = 1)]
+        io_workers: usize,
+        #[arg(long, value_enum, default_value = "hybrid")]
+        retrieval: RetrievalMode,
+        #[arg(long, value_enum, default_value = "intro-uniform")]
+        representation: Representation,
+        #[arg(long, value_enum, default_value = "off")]
+        session: SessionPolicy,
+        #[arg(long)]
+        jit: bool,
+        #[arg(long, default_value_t = 12000)]
+        max_output_bytes: usize,
+    },
+
+    /// Read exact lines from a source file, with an explicit output budget
+    Read {
+        path: PathBuf,
+        #[arg(short, long, default_value = ".")]
+        dir: PathBuf,
+        #[arg(long, default_value_t = 1)]
+        start: usize,
+        #[arg(long, default_value_t = 80)]
+        lines: usize,
+        /// Return an exact Unicode-character slice instead of whole lines
+        #[arg(long)]
+        characters: Option<usize>,
+        /// Zero-based character offset within the requested line range
+        #[arg(long, default_value_t = 0, requires = "characters")]
+        character_offset: usize,
+        #[arg(long, default_value_t = 12000)]
+        max_output_bytes: usize,
+    },
+
+    /// Exact regex/fixed-string search without loading an embedding model
+    Grep {
+        pattern: String,
+        #[arg(short, long, default_value = ".")]
+        dir: PathBuf,
+        #[arg(short = 'F', long)]
+        fixed: bool,
+        #[arg(short = 'i', long)]
+        ignore_case: bool,
+        #[arg(short = 'C', long, default_value_t = 2)]
+        context: usize,
+        #[arg(short, long, default_value_t = 20)]
+        limit: usize,
+        #[arg(long, default_value_t = 12000)]
+        max_output_bytes: usize,
     },
 
     /// Index directories for faster search

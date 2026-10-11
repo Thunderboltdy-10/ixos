@@ -1,0 +1,139 @@
+scifact-529: 1 runs, files=10, verified_views=4
+scifact-336: 1 runs, files=3, verified_views=2
+scifact-1118: 1 runs, files=3, verified_views=3
+scifact-357: 1 runs, files=6, verified_views=4
+scifact-816: 1 runs, files=10, verified_views=3
+scifact-71: 1 runs, files=10, verified_views=3
+scifact-633: 1 runs, files=5, verified_views=3
+scifact-945: 1 runs, files=10, verified_views=2
+scifact-61: 1 runs, files=3, verified_views=2
+scifact-1067: 1 runs, files=6, verified_views=3
+scifact-1043: 1 runs, files=10, verified_views=3
+scifact-1378: 1 runs, files=10, verified_views=2
+scifact-326: 1 runs, files=7, verified_views=4
+scifact-345: 1 runs, files=3, verified_views=3
+scifact-330: 1 runs, files=5, verified_views=3
+scifact-988: 1 runs, files=8, verified_views=3
+scifact-689: 1 runs, files=2, verified_views=2
+scifact-946: 1 runs, files=10, verified_views=2
+scifact-1195: 1 runs, files=10, verified_views=2
+scifact-1065: 1 runs, files=3, verified_views=3
+scifact-572: 1 runs, files=6, verified_views=3
+scifact-891: 1 runs, files=5, verified_views=2
+scifact-1046: 1 runs, files=6, verified_views=4
+scifact-358: 1 runs, files=6, verified_views=4
+scifact-1068: 1 runs, files=10, verified_views=3
+scifact-93: 1 runs, files=4, verified_views=4
+scifact-337: 1 runs, files=3, verified_views=2
+scifact-566: 1 runs, files=10, verified_views=3
+scifact-815: 1 runs, files=10, verified_views=3
+scifact-1323: 1 runs, files=10, verified_views=4
+scifact-1401: 1 runs, files=7, verified_views=2
+scifact-375: 1 runs, files=6, verified_views=3
+scifact-1148: 1 runs, files=10, verified_views=2
+scifact-64: 1 runs, files=6, verified_views=4
+scifact-1115: 1 runs, files=6, verified_views=2
+scifact-1120: 1 runs, files=10, verified_views=2
+scifact-98: 1 runs, files=10, verified_views=2
+scifact-890: 1 runs, files=5, verified_views=2
+scifact-356: 1 runs, files=5, verified_views=4
+scifact-1205: 1 runs, files=10, verified_views=2
+scifact-108: 1 runs, files=10, verified_views=3
+scifact-12: 1 runs, files=10, verified_views=2
+scifact-1327: 1 runs, files=5, verified_views=2
+scifact-1253: 1 runs, files=5, verified_views=4
+scifact-1333: 1 runs, files=9, verified_views=3
+scifact-1119: 1 runs, files=10, verified_views=2
+scifact-530: 1 runs, files=6, verified_views=3
+scifact-653: 1 runs, files=8, verified_views=4
+scifact-901: 1 runs, files=10, verified_views=2
+scifact-867: 1 runs, files=4, verified_views=3
+scifact-917: 1 runs, files=10, verified_views=4
+scifact-228: 1 runs, files=7, verified_views=4
+scifact-1390: 1 runs, files=10, verified_views=5
+scifact-1188: 1 runs, files=10, verified_views=3
+scifact-767: 1 runs, files=10, verified_views=2
+scifact-632: 1 runs, files=10, verified_views=3
+scifact-1406: 1 runs, files=10, verified_views=3
+scifact-1324: 1 runs, files=10, verified_views=3
+scifact-63: 1 runs, files=10, verified_views=3
+scifact-15: 1 runs, files=9, verified_views=3
+scifact-43: 1 runs, files=5, verified_views=3
+scifact-531: 1 runs, files=6, verified_views=4
+scifact-758: 1 runs, files=10, verified_views=2
+scifact-139: 1 runs, files=7, verified_views=2
+scifact-258: 1 runs, files=10, verified_views=3
+scifact-331: 1 runs, files=10, verified_views=3
+scifact-565: 1 runs, files=10, verified_views=3
+scifact-603: 1 runs, files=4, verified_views=3
+scifact-663: 1 runs, files=10, verified_views=3
+scifact-60: 1 runs, files=5, verified_views=3
+scifact-325: 1 runs, files=8, verified_views=4
+{
+  "config_sha256": "f6ff1767ed7a2b6b90b817aad783c56f795b4146178d7c44332096e932a3857b",
+  "queries": 71,
+  "runs": 71,
+  "families": 45,
+  "quality": {
+    "mrr": {
+      "mean": 0.5198765432098765,
+      "ci95": [
+        0.3828395061728395,
+        0.6519135802469136
+      ],
+      "families": 45,
+      "queries": 71
+    },
+    "recall": {
+      "mean": 0.6223456790123457,
+      "ci95": [
+        0.4766666666666666,
+        0.7479012345679013
+      ],
+      "families": 45,
+      "queries": 71
+    },
+    "ndcg": {
+      "mean": 0.5404470154638017,
+      "ci95": [
+        0.406346358705589,
+        0.6692230457015758
+      ],
+      "families": 45,
+      "queries": 71
+    },
+    "span_recall": {
+      "mean": null,
+      "ci95": null,
+      "families": 0,
+      "queries": 0
+    },
+    "span_precision": {
+      "mean": null,
+      "ci95": null,
+      "families": 0,
+      "queries": 0
+    },
+    "false_positive": {
+      "mean": null,
+      "ci95": null,
+      "families": 0,
+      "queries": 0
+    }
+  },
+  "wall_ms": {
+    "p50": 287.38979999616276,
+    "p95": 362.20774999674177
+  },
+  "output": {
+    "mean_bytes": 5807.788732394366,
+    "mean_tokens": 1324.8309859154929,
+    "p95_tokens": 1471.5,
+    "verified_views": 207,
+    "evidence_failures": 0,
+    "mean_stderr_tokens": 0,
+    "mean_total_response_tokens": 1324.8309859154929,
+    "p95_total_response_tokens": 1471.5
+  },
+  "notes": "Equal-family quality means; repetitions are timing/stability samples. Latency conditions differ across backend types and are labeled in provenance. Span annotations may be incomplete."
+}

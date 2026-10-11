@@ -132,7 +132,7 @@ impl From<&crate::ixos_rank::snippet::ContextSnippet> for ContextOutput {
         Self {
             line_number: snippet.line_number,
             before: snippet.before.clone(),
-            matched: snippet.matched.clone(),
+            matched: snippet.raw_matched.lines().map(str::to_owned).collect(),
             after: snippet.after.clone(),
         }
     }
@@ -818,6 +818,21 @@ pub fn create_formatter_with_options(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn structured_context_preserves_source_without_terminal_highlighting() {
+        let raw = "async fn exception_handler()";
+        let snippet = crate::ixos_rank::snippet::ContextSnippet::new(
+            11,
+            vec!["".into()],
+            vec!["async fn exception_h\u{1b}[1;33mand\u{1b}[0mler()".into()],
+            vec![],
+            raw.into(),
+        );
+        let output = ContextOutput::from(&snippet);
+        assert_eq!(output.matched, vec![raw]);
+        assert!(!serde_json::to_string(&output).unwrap().contains("\\u001b"));
+    }
     use std::path::PathBuf;
 
     fn create_test_lexical_results() -> Vec<LexicalMatch> {

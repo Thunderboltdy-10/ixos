@@ -19,6 +19,8 @@ Thumbs.db
 **/test-results/
 **/playwright-report/
 **/.clerk/
+__pycache__/
+*.pyc
 
 # Model files (large binaries)
 *.onnx

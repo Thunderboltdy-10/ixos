@@ -1,0 +1,108 @@
+fastapi-009: 1 runs, files=10, verified_views=10
+fastapi-003: 1 runs, files=10, verified_views=10
+fastapi-010: 1 runs, files=10, verified_views=10
+serde-016: 1 runs, files=10, verified_views=10
+serde-005: 1 runs, files=10, verified_views=10
+serde-004: 1 runs, files=10, verified_views=10
+serde-010: 1 runs, files=10, verified_views=10
+fastapi-011: 1 runs, files=10, verified_views=10
+fastapi-004: 1 runs, files=10, verified_views=10
+serde-012: 1 runs, files=10, verified_views=10
+serde-001: 1 runs, files=10, verified_views=10
+serde-008: 1 runs, files=10, verified_views=10
+serde-003: 1 runs, files=10, verified_views=10
+fastapi-018: 1 runs, files=3, verified_views=3
+fastapi-012: 1 runs, files=10, verified_views=10
+serde-014: 1 runs, files=10, verified_views=10
+serde-015: 1 runs, files=10, verified_views=10
+serde-006: 1 runs, files=10, verified_views=10
+fastapi-013: 1 runs, files=10, verified_views=10
+serde-002: 1 runs, files=10, verified_views=10
+serde-000: 1 runs, files=10, verified_views=10
+serde-011: 1 runs, files=10, verified_views=10
+serde-017: 1 runs, files=10, verified_views=10
+serde-009: 1 runs, files=10, verified_views=10
+fastapi-019: 1 runs, files=2, verified_views=2
+fastapi-016: 1 runs, files=9, verified_views=9
+serde-019: 1 runs, files=10, verified_views=10
+serde-013: 1 runs, files=10, verified_views=10
+fastapi-002: 1 runs, files=3, verified_views=3
+fastapi-000: 1 runs, files=10, verified_views=10
+serde-018: 1 runs, files=10, verified_views=10
+serde-007: 1 runs, files=10, verified_views=10
+fastapi-005: 1 runs, files=10, verified_views=10
+fastapi-006: 1 runs, files=10, verified_views=10
+fastapi-008: 1 runs, files=10, verified_views=10
+fastapi-014: 1 runs, files=10, verified_views=10
+fastapi-015: 1 runs, files=10, verified_views=10
+fastapi-017: 1 runs, files=3, verified_views=3
+fastapi-001: 1 runs, files=10, verified_views=10
+fastapi-007: 1 runs, files=10, verified_views=10
+{
+  "config_sha256": "f397e9f191ca023d1f29296f457aadb50e64ade540294436ee09596e08f3c053",
+  "queries": 40,
+  "runs": 40,
+  "families": 2,
+  "quality": {
+    "mrr": {
+      "mean": 0.6484027777777778,
+      "ci95": [
+        0.5697222222222222,
+        0.7270833333333333
+      ],
+      "families": 2,
+      "queries": 40
+    },
+    "recall": {
+      "mean": 0.8916666666666666,
+      "ci95": [
+        0.85,
+        0.9333333333333333
+      ],
+      "families": 2,
+      "queries": 40
+    },
+    "ndcg": {
+      "mean": 0.6821331242690404,
+      "ci95": [
+        0.6386604064414602,
+        0.7256058420966206
+      ],
+      "families": 2,
+      "queries": 40
+    },
+    "span_recall": {
+      "mean": 0.15,
+      "ci95": null,
+      "families": 1,
+      "queries": 5
+    },
+    "span_precision": {
+      "mean": 0.012,
+      "ci95": null,
+      "families": 1,
+      "queries": 5
+    },
+    "false_positive": {
+      "mean": null,
+      "ci95": null,
+      "families": 0,
+      "queries": 0
+    }
+  },
+  "wall_ms": {
+    "p50": 264.2634999974689,
+    "p95": 282.22863500304805
+  },
+  "output": {
+    "mean_bytes": 3000.275,
+    "mean_tokens": 799.5,
+    "p95_tokens": 981.5999999999999,
+    "verified_views": 370,
+    "evidence_failures": 0,
+    "mean_stderr_tokens": 333.5,
+    "mean_total_response_tokens": 1133,
+    "p95_total_response_tokens": 1314.05
+  },
+  "notes": "Equal-family quality means; repetitions are timing/stability samples. Latency conditions differ across backend types and are labeled in provenance. Span annotations may be incomplete."
+}

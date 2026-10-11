@@ -1,0 +1,145 @@
+scifact-418: 3 runs, files=7, verified_views=7
+scifact-1263: 3 runs, files=8, verified_views=8
+scifact-591: 3 runs, files=4, verified_views=4
+scifact-626: 3 runs, files=8, verified_views=8
+scifact-1036: 3 runs, files=8, verified_views=8
+scifact-1033: 3 runs, files=7, verified_views=7
+scifact-1182: 3 runs, files=8, verified_views=8
+scifact-1220: 3 runs, files=7, verified_views=7
+scifact-951: 3 runs, files=7, verified_views=7
+scifact-1315: 3 runs, files=9, verified_views=9
+scifact-940: 3 runs, files=5, verified_views=5
+scifact-856: 3 runs, files=4, verified_views=4
+scifact-570: 3 runs, files=7, verified_views=7
+scifact-306: 3 runs, files=7, verified_views=7
+scifact-428: 3 runs, files=9, verified_views=9
+scifact-1294: 3 runs, files=8, verified_views=8
+scifact-246: 3 runs, files=7, verified_views=7
+scifact-740: 3 runs, files=8, verified_views=8
+scifact-963: 3 runs, files=8, verified_views=8
+scifact-488: 3 runs, files=6, verified_views=6
+scifact-1228: 3 runs, files=6, verified_views=6
+scifact-616: 3 runs, files=7, verified_views=7
+scifact-894: 3 runs, files=5, verified_views=5
+scifact-20: 3 runs, files=8, verified_views=8
+scifact-222: 3 runs, files=7, verified_views=7
+scifact-505: 3 runs, files=7, verified_views=7
+scifact-1257: 3 runs, files=4, verified_views=4
+scifact-938: 3 runs, files=6, verified_views=6
+scifact-548: 3 runs, files=7, verified_views=7
+scifact-1047: 3 runs, files=8, verified_views=8
+scifact-264: 3 runs, files=9, verified_views=9
+scifact-205: 3 runs, files=8, verified_views=8
+scifact-1053: 3 runs, files=5, verified_views=5
+scifact-244: 3 runs, files=7, verified_views=7
+scifact-121: 3 runs, files=7, verified_views=7
+scifact-1006: 3 runs, files=7, verified_views=7
+scifact-426: 3 runs, files=8, verified_views=8
+scifact-927: 3 runs, files=4, verified_views=4
+scifact-152: 3 runs, files=7, verified_views=7
+scifact-1056: 3 runs, files=6, verified_views=6
+scifact-1075: 3 runs, files=7, verified_views=7
+scifact-120: 3 runs, files=4, verified_views=4
+scifact-1258: 3 runs, files=8, verified_views=8
+scifact-885: 3 runs, files=4, verified_views=4
+scifact-165: 3 runs, files=6, verified_views=6
+scifact-818: 3 runs, files=8, verified_views=8
+scifact-253: 3 runs, files=5, verified_views=5
+scifact-696: 3 runs, files=8, verified_views=8
+scifact-376: 3 runs, files=5, verified_views=5
+scifact-340: 3 runs, files=6, verified_views=6
+scifact-1244: 3 runs, files=5, verified_views=5
+scifact-1325: 3 runs, files=6, verified_views=6
+scifact-826: 3 runs, files=5, verified_views=5
+scifact-1356: 3 runs, files=7, verified_views=7
+scifact-26: 3 runs, files=5, verified_views=5
+scifact-625: 3 runs, files=7, verified_views=7
+scifact-934: 3 runs, files=8, verified_views=8
+scifact-201: 3 runs, files=7, verified_views=7
+scifact-1038: 3 runs, files=9, verified_views=9
+scifact-435: 3 runs, files=8, verified_views=8
+scifact-161: 3 runs, files=9, verified_views=9
+scifact-1142: 3 runs, files=8, verified_views=8
+scifact-369: 3 runs, files=9, verified_views=9
+scifact-504: 3 runs, files=4, verified_views=4
+scifact-397: 3 runs, files=4, verified_views=4
+scifact-1238: 3 runs, files=5, verified_views=5
+scifact-351: 3 runs, files=7, verified_views=7
+scifact-916: 3 runs, files=8, verified_views=8
+scifact-211: 3 runs, files=7, verified_views=7
+scifact-766: 3 runs, files=6, verified_views=6
+scifact-316: 3 runs, files=7, verified_views=7
+scifact-863: 3 runs, files=8, verified_views=8
+scifact-134: 3 runs, files=6, verified_views=6
+scifact-748: 3 runs, files=9, verified_views=9
+scifact-1165: 3 runs, files=8, verified_views=8
+scifact-682: 3 runs, files=6, verified_views=6
+scifact-226: 3 runs, files=9, verified_views=9
+scifact-672: 3 runs, files=7, verified_views=7
+scifact-1112: 3 runs, files=6, verified_views=6
+scifact-681: 3 runs, files=6, verified_views=6
+{
+  "config_sha256": "45d190309fa4260a1a63d7e27dbfaac0d95516f019b5fa76d086c6eb7e356fad",
+  "queries": 80,
+  "runs": 240,
+  "families": 76,
+  "quality": {
+    "mrr": {
+      "mean": 0.6102130325814535,
+      "ci95": [
+        0.5165726817042606,
+        0.7034147869674185
+      ],
+      "families": 76,
+      "queries": 80
+    },
+    "recall": {
+      "mean": 0.7697368421052632,
+      "ci95": [
+        0.6776315789473685,
+        0.8618421052631579
+      ],
+      "families": 76,
+      "queries": 80
+    },
+    "ndcg": {
+      "mean": 0.6489370131050659,
+      "ci95": [
+        0.5629391712154929,
+        0.7376821236593513
+      ],
+      "families": 76,
+      "queries": 80
+    },
+    "span_recall": {
+      "mean": null,
+      "ci95": null,
+      "families": 0,
+      "queries": 0
+    },
+    "span_precision": {
+      "mean": null,
+      "ci95": null,
+      "families": 0,
+      "queries": 0
+    },
+    "false_positive": {
+      "mean": null,
+      "ci95": null,
+      "families": 0,
+      "queries": 0
+    }
+  },
+  "wall_ms": {
+    "p50": 996.9908999992185,
+    "p95": 1050.9932700024365
+  },
+  "output": {
+    "mean_bytes": 11004.2,
+    "mean_tokens": 2458.2125,
+    "p95_tokens": 2776.2,
+    "verified_views": 1626,
+    "evidence_failures": 0
+  },
+  "notes": "Equal-family quality means; repetitions are timing/stability samples. Latency conditions differ across backend types and are labeled in provenance. Span annotations may be incomplete."
+}

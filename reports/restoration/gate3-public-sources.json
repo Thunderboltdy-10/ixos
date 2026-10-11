@@ -1,0 +1,128 @@
+[
+  {
+    "name": "fastapi",
+    "split": "dev",
+    "upstream_revision": "170608652681fadab4fcfac0834d6f962e59299e",
+    "repository": "https://github.com/fastapi/fastapi.git",
+    "source_revision": "c3c9dd6b1a08bcda766e7b43eafe72c4c5e9e193",
+    "benchmark_root": "fastapi",
+    "archive_url": "https://codeload.github.com/fastapi/fastapi/tar.gz/c3c9dd6b1a08bcda766e7b43eafe72c4c5e9e193",
+    "archive_sha256": "dfbdfa17b1ed6f904be011d65fd85dc05becd5d38d75486baf120d2b51aea364",
+    "annotations_sha256": "d08f39bccdfdef77d3c31722e061aa6ed7aa6c473fdded80a1c2089225e0d6da",
+    "repo_catalog_sha256": "fd178d28fdb98ef774d9d2b8169b34812917bde4ca57c5f7c73a1e34dfc70b1b",
+    "manifest_sha256": "6e54dc2d2174e0d1d88610cfceb100ab50c92d976520330a21438fbbbbab862e",
+    "sources": 46,
+    "queries": 20,
+    "categories": {
+      "architecture": 7,
+      "semantic": 8,
+      "symbol": 5
+    },
+    "span_annotated_queries": 5
+  },
+  {
+    "name": "serde",
+    "split": "dev",
+    "upstream_revision": "170608652681fadab4fcfac0834d6f962e59299e",
+    "repository": "https://github.com/serde-rs/serde.git",
+    "source_revision": "fa7da4a93567ed347ad0735c28e439fca688ef26",
+    "benchmark_root": "",
+    "archive_url": "https://codeload.github.com/serde-rs/serde/tar.gz/fa7da4a93567ed347ad0735c28e439fca688ef26",
+    "archive_sha256": "1f1ad42911b52754166b2047396c046af7d5005635b761a38a74576a744bd821",
+    "annotations_sha256": "f9bd5a3704ed60992157b188d0e80ed347d4b29036cb254c2ed881819c7047f7",
+    "repo_catalog_sha256": "fd178d28fdb98ef774d9d2b8169b34812917bde4ca57c5f7c73a1e34dfc70b1b",
+    "manifest_sha256": "16020599dd1eb8ba9a13d2f2f663478e873ccde50838045b60033618c53d9bde",
+    "sources": 219,
+    "queries": 20,
+    "categories": {
+      "architecture": 10,
+      "semantic": 6,
+      "symbol": 4
+    },
+    "span_annotated_queries": 0
+  },
+  {
+    "name": "axios",
+    "split": "validation",
+    "upstream_revision": "170608652681fadab4fcfac0834d6f962e59299e",
+    "repository": "https://github.com/axios/axios.git",
+    "source_revision": "c7a76ddbf277db864ee6cfb4ef17b8a08ffbe3f5",
+    "benchmark_root": "lib",
+    "archive_url": "https://codeload.github.com/axios/axios/tar.gz/c7a76ddbf277db864ee6cfb4ef17b8a08ffbe3f5",
+    "archive_sha256": "5afdf80ce583f96e9e91bae57f08b3e4711628943e63d4e5a9dc0727403df6a1",
+    "annotations_sha256": "fab64655b267e442cf22adc533e868ed0a0ba7e9330ee9f7bb21e44851a4a3cd",
+    "repo_catalog_sha256": "fd178d28fdb98ef774d9d2b8169b34812917bde4ca57c5f7c73a1e34dfc70b1b",
+    "manifest_sha256": "dba795eac722ac1ade0bb7dfa3351a2f82903189c2fbfe1de476062d6611a5c4",
+    "sources": 67,
+    "queries": 20,
+    "categories": {
+      "architecture": 5,
+      "semantic": 9,
+      "symbol": 6
+    },
+    "span_annotated_queries": 3
+  },
+  {
+    "name": "tokio",
+    "split": "validation",
+    "upstream_revision": "170608652681fadab4fcfac0834d6f962e59299e",
+    "repository": "https://github.com/tokio-rs/tokio.git",
+    "source_revision": "5db10f538b683fe88d699dfd11be31d193db011c",
+    "benchmark_root": "tokio/src",
+    "archive_url": "https://codeload.github.com/tokio-rs/tokio/tar.gz/5db10f538b683fe88d699dfd11be31d193db011c",
+    "archive_sha256": "14394a87db3ef96d7b7c7d70e58304810a983ad45787b4aef4c63383671d70ee",
+    "annotations_sha256": "0ffec1f71b133f6695d80c877c3d6edd21d0f2e0e3a4a3d84660b87d30b10301",
+    "repo_catalog_sha256": "fd178d28fdb98ef774d9d2b8169b34812917bde4ca57c5f7c73a1e34dfc70b1b",
+    "manifest_sha256": "5f36a4f9ba55de6cfaea7a19b4701b2d26adb39d0afe4a3100a467f8ebb03c4b",
+    "sources": 375,
+    "queries": 20,
+    "categories": {
+      "architecture": 6,
+      "semantic": 8,
+      "symbol": 6
+    },
+    "span_annotated_queries": 0
+  },
+  {
+    "name": "requests",
+    "split": "test",
+    "upstream_revision": "170608652681fadab4fcfac0834d6f962e59299e",
+    "repository": "https://github.com/psf/requests.git",
+    "source_revision": "ef439eb779c1eba7cbdeeeb302b11e1e061b4b7d",
+    "benchmark_root": "src/requests",
+    "archive_url": "https://codeload.github.com/psf/requests/tar.gz/ef439eb779c1eba7cbdeeeb302b11e1e061b4b7d",
+    "archive_sha256": "e4782983af63da571cbac09a4ff509e380c94dc1dd1d3d61ab8b939d21186036",
+    "annotations_sha256": "212684430a5199320215b782780368561418f2efd1b7295dfc92ed32888ef586",
+    "repo_catalog_sha256": "fd178d28fdb98ef774d9d2b8169b34812917bde4ca57c5f7c73a1e34dfc70b1b",
+    "manifest_sha256": "cf74ddb5100354e2915463449cee28a63f15a02aa148b72d31fcfc4cb4dca666",
+    "sources": 18,
+    "queries": 20,
+    "categories": {
+      "architecture": 7,
+      "semantic": 8,
+      "symbol": 5
+    },
+    "span_annotated_queries": 5
+  },
+  {
+    "name": "axum",
+    "split": "test",
+    "upstream_revision": "170608652681fadab4fcfac0834d6f962e59299e",
+    "repository": "https://github.com/tokio-rs/axum.git",
+    "source_revision": "309d1bd9530eec2217134cb262760af1df42ee3b",
+    "benchmark_root": "axum/src",
+    "archive_url": "https://codeload.github.com/tokio-rs/axum/tar.gz/309d1bd9530eec2217134cb262760af1df42ee3b",
+    "archive_sha256": "3500dcd090db2e8b13ac9ca61225818b19355c2a3c57be86ecdd1ff9c811f0fa",
+    "annotations_sha256": "5371e0e7dc6fb02c261022c2f766c210647433c0e7a0ec64c3093b22e6da3f0a",
+    "repo_catalog_sha256": "fd178d28fdb98ef774d9d2b8169b34812917bde4ca57c5f7c73a1e34dfc70b1b",
+    "manifest_sha256": "714d3adb24a316171729df5ec01983bd5e960b15082909b06dad88b523352b93",
+    "sources": 79,
+    "queries": 20,
+    "categories": {
+      "architecture": 5,
+      "semantic": 12,
+      "symbol": 3
+    },
+    "span_annotated_queries": 0
+  }
+]

@@ -102,8 +102,10 @@ impl DirectoryCentroid {
         self.access_timestamps.push(now);
 
         // Cleanup old timestamps (older than 1 hour)
-        let one_hour_ago = now - Duration::from_secs(3600);
-        self.access_timestamps.retain(|t| *t > one_hour_ago);
+        // Subtracting an hour from a monotonic timestamp can underflow shortly
+        // after boot on Windows. Compare elapsed durations instead.
+        self.access_timestamps
+            .retain(|t| now.saturating_duration_since(*t) < Duration::from_secs(3600));
 
         // Update hotness (accesses per hour)
         self.hotness = self.access_timestamps.len() as f32;

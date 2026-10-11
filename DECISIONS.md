@@ -23,3 +23,25 @@
 - SERIALIZE first key creation and state-file I/O with short OS locks in application directories. Running multiple instances remains permitted; these locks do not merge independent state snapshots.
 - ENFORCE site TypeScript checking and use the verified Webpack build. Repair source errors instead of hiding them behind `ignoreBuildErrors`.
 - VERIFY scroll-triggered content before full-page screenshot capture. A passing screenshot-update run alone is insufficient visual evidence.
+- FREEZE every ordinary corpus file, including hidden files; refuse preparer merges into old corpus folders. Allow native ADS/xattr, never adjacent embedding sidecars. Exclude downloaded corpus content from Git.
+- COUNT file-only no-answer results as false positives. Missing or invalid displayed coordinates cannot masquerade as abstention or receive fabricated span credit.
+- FILTER session feedback to actual earlier displayed results; unavailable feedback is disclosed. Silence remains unknown and stateless baselines pay no invented feedback-input cost.
+- SEPARATE real CLI request latency, candidate-pipeline latency, persistent retrieval math and embedding-bridge inference time. The observed dense-document bottleneck is discovery/merge/startup, so faster embedding alone cannot justify a fast-search claim.
+- KEEP the production 512-token inference identity as a baseline; explicit full-token experiment behaviour has a separate preparation recipe. No arbitrary dimension truncation or naming a third-party model an Ixos invention.
+
+- KEEP for further validation: code parent with intro-uniform bounded passages; compressed general centroid for documents. Actual CLI agrees with quality screen. These remain opt-in until held-out selection and evidence checks finish.
+- KEEP bounded topic anchors for short anaphoric follow-ups: v1 drift threshold erased needed context, v2 improves authored follow-ups in both lab and Rust without hurting explicit topic switches. Broad real-task generalization remains unproven; session state is explicit, bounded and resettable.
+- KEEP compact regular JSON; reserve routine breakdowns for --show-scores and diagnostics for --stats. Measure stderr tokens as well as stdout tokens. No automatic acceptance from silence or external tool use.
+- KEEP storage-only row quantization of general parent for validation. Preserve upstream attribution; this is not distillation or integer inference.
+- Add exact source/binary snapshots to future benchmark runs. Early baseline receipts identify binaries/diffs but do not retain every intermediate source state, a reproducibility limitation to state openly.
+
+- PIVOT coverage assumption: max_tokens=None is insufficient when tokenizer.json carries truncation. Record artifact rules explicitly, preserve original numeric baselines as capped-artifact results, and compare separately fingerprinted tokenizer-normalized variants. Do not silently rewrite originals or claim complete semantic coverage before checking tokenization and batch invariance.
+
+- KEEP (Gate 3 discovery): do not exclude all `env/` directories. Require `pyvenv.cfg` for that virtual-environment exclusion; enforce complete frozen inventory in new-engine evaluations.
+- KEEP (Gate 3 runtime): compare monotonic elapsed durations for hotness expiry; avoid Instant subtraction that can underflow on recently started Windows hosts.
+- KEEP (experimental options): conservative ordinary-word transposition correction and bounded lexical topic context remain opt-in. Their authored/derived development gains are not evidence of universal agent-task success.
+- REJECT (evidence default): naive window scoring reduced labeled span recall; retain exact line anchors and explicit bounded read for expanding evidence.
+
+- KEEP (frozen Gate 3): normalized attributed Potion code parent + intro/spaced representatives and compressed attributed general parent + whole-token centroid, normalized hybrid, source-verified compact JSON. These were selected on dev/validation before test; held-out code/docs confirm gains over lexical baselines in the restricted suites.
+- KEEP lexical/exact tools: new lexical mode matches the strong code BM25 ranking and is much faster than hybrid for literal work. Standalone native rg remains useful. Do not force slow semantic search for a known identifier.
+- LIMIT claims: only two held-out code repositories; incomplete spans; SciFact is clean text; fresh CLI/rg and prepared BM25 timings differ. No autonomous-agent task success, worst-device guarantee, new training or matched Cursor/Augment superiority claim.

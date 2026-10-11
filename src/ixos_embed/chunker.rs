@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 /// Configuration for text chunking
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChunkConfig {
-    /// Target chunk size in characters (default: 2048)
+    /// Target chunk size in UTF-8 bytes (default: 2048). A single character may exceed it.
     pub target_size: usize,
     /// Overlap ratio between chunks (0.0-1.0, default: 0.15)
     pub overlap_ratio: f32,
@@ -36,7 +36,7 @@ impl ChunkConfig {
         }
     }
 
-    /// Calculate overlap size in characters
+    /// Calculate requested overlap in bytes
     pub fn overlap_size(&self) -> usize {
         (self.target_size as f32 * self.overlap_ratio) as usize
     }
@@ -56,7 +56,7 @@ pub fn chunk_content(content: &str, config: &ChunkConfig) -> Vec<String> {
             content.len(),
             config.max_file_size
         );
-        let truncated = &content[..config.max_file_size];
+        let truncated = &content[..floor_boundary(content, config.max_file_size)];
         return chunk_content(truncated, config);
     }
 
@@ -106,7 +106,10 @@ fn recursive_split(content: &str, separators: &[&str], config: &ChunkConfig) -> 
 
             // Start new chunk with overlap from previous chunk
             if overlap_size > 0 && current_chunk.len() >= overlap_size {
-                let start_idx = current_chunk.len() - overlap_size;
+                let mut start_idx = current_chunk.len() - overlap_size;
+                while !current_chunk.is_char_boundary(start_idx) {
+                    start_idx += 1;
+                }
                 current_chunk = current_chunk[start_idx..].to_string();
             } else {
                 current_chunk = String::new();
@@ -148,7 +151,9 @@ fn character_split(content: &str, config: &ChunkConfig) -> Vec<String> {
     let overlap_size = config.overlap_size();
 
     while start < content.len() {
-        let end = (start + config.target_size).min(content.len());
+        let end = start
+            .saturating_add(config.target_size.max(1))
+            .min(content.len());
 
         // Ensure we don't split in the middle of a UTF-8 character
         let chunk_end = if end < content.len() {
@@ -157,7 +162,12 @@ fn character_split(content: &str, config: &ChunkConfig) -> Vec<String> {
             while boundary > start && !content.is_char_boundary(boundary) {
                 boundary -= 1;
             }
-            boundary
+            if boundary == start {
+                // Even a one-byte budget must consume a complete character.
+                start + content[start..].chars().next().unwrap().len_utf8()
+            } else {
+                boundary
+            }
         } else {
             end
         };
@@ -167,19 +177,46 @@ fn character_split(content: &str, config: &ChunkConfig) -> Vec<String> {
         // Move start with overlap; ensure forward progress at the end.
         start = if chunk_end >= content.len() {
             content.len()
-        } else if chunk_end >= overlap_size {
-            chunk_end - overlap_size
         } else {
-            chunk_end
+            let next = floor_boundary(content, chunk_end.saturating_sub(overlap_size));
+            if next > start {
+                next
+            } else {
+                chunk_end
+            }
         };
     }
 
     chunks
 }
 
+fn floor_boundary(text: &str, mut position: usize) -> usize {
+    position = position.min(text.len());
+    while !text.is_char_boundary(position) {
+        position -= 1;
+    }
+    position
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn unicode_overlap_and_truncation_remain_on_boundaries() {
+        let content = "缓存🦀".repeat(20);
+        let chunks = chunk_content(&content, &ChunkConfig::new(13, 0.25, 107));
+        assert!(!chunks.is_empty());
+        assert!(chunks.len() < 30);
+        assert!(chunks.iter().all(|chunk| !chunk.is_empty()));
+    }
+
+    #[test]
+    fn tiny_chunks_and_full_overlap_still_make_progress() {
+        let chunks = chunk_content("🦀🦀", &ChunkConfig::new(1, 1.0, 100));
+        assert_eq!(chunks, vec!["🦀", "🦀"]);
+        assert!(chunk_content("abc", &ChunkConfig::new(0, 1.0, 0)).is_empty());
+    }
 
     #[test]
     fn test_small_content_no_chunking() {

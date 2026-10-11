@@ -1,0 +1,108 @@
+requests-009: 3 runs, files=10, verified_views=10
+requests-003: 3 runs, files=7, verified_views=7
+requests-010: 3 runs, files=10, verified_views=10
+axum-016: 3 runs, files=10, verified_views=10
+axum-005: 3 runs, files=10, verified_views=10
+axum-004: 3 runs, files=10, verified_views=10
+axum-010: 3 runs, files=10, verified_views=10
+requests-011: 3 runs, files=10, verified_views=10
+requests-004: 3 runs, files=7, verified_views=7
+axum-012: 3 runs, files=10, verified_views=10
+axum-001: 3 runs, files=10, verified_views=10
+axum-008: 3 runs, files=10, verified_views=10
+axum-003: 3 runs, files=10, verified_views=10
+requests-018: 3 runs, files=2, verified_views=2
+requests-012: 3 runs, files=10, verified_views=10
+axum-014: 3 runs, files=10, verified_views=10
+axum-015: 3 runs, files=10, verified_views=10
+axum-006: 3 runs, files=10, verified_views=10
+requests-013: 3 runs, files=10, verified_views=10
+axum-002: 3 runs, files=10, verified_views=10
+axum-000: 3 runs, files=10, verified_views=10
+axum-011: 3 runs, files=10, verified_views=10
+axum-017: 3 runs, files=10, verified_views=10
+axum-009: 3 runs, files=10, verified_views=10
+requests-019: 3 runs, files=10, verified_views=10
+requests-016: 3 runs, files=1, verified_views=1
+axum-019: 3 runs, files=10, verified_views=10
+axum-013: 3 runs, files=10, verified_views=10
+requests-002: 3 runs, files=7, verified_views=7
+requests-000: 3 runs, files=10, verified_views=10
+axum-018: 3 runs, files=10, verified_views=10
+axum-007: 3 runs, files=10, verified_views=10
+requests-005: 3 runs, files=10, verified_views=10
+requests-006: 3 runs, files=10, verified_views=10
+requests-008: 3 runs, files=5, verified_views=5
+requests-014: 3 runs, files=8, verified_views=8
+requests-015: 3 runs, files=6, verified_views=6
+requests-017: 3 runs, files=5, verified_views=5
+requests-001: 3 runs, files=7, verified_views=7
+requests-007: 3 runs, files=8, verified_views=8
+{
+  "config_sha256": "12adfceb317c09606461d7111099d2669a0bd54d30e1341cb4716194fe70a8a9",
+  "queries": 40,
+  "runs": 120,
+  "families": 2,
+  "quality": {
+    "mrr": {
+      "mean": 0.6452777777777778,
+      "ci95": [
+        0.5488888888888889,
+        0.7416666666666667
+      ],
+      "families": 2,
+      "queries": 40
+    },
+    "recall": {
+      "mean": 0.9,
+      "ci95": [
+        0.8,
+        1.0
+      ],
+      "families": 2,
+      "queries": 40
+    },
+    "ndcg": {
+      "mean": 0.6956823589417936,
+      "ci95": [
+        0.6081078342128741,
+        0.7832568836707132
+      ],
+      "families": 2,
+      "queries": 40
+    },
+    "span_recall": {
+      "mean": 0.03224489795918367,
+      "ci95": null,
+      "families": 1,
+      "queries": 5
+    },
+    "span_precision": {
+      "mean": 0.18,
+      "ci95": null,
+      "families": 1,
+      "queries": 5
+    },
+    "false_positive": {
+      "mean": null,
+      "ci95": null,
+      "families": 0,
+      "queries": 0
+    }
+  },
+  "wall_ms": {
+    "p50": 271.8305000000214,
+    "p95": 310.12449000002675
+  },
+  "output": {
+    "mean_bytes": 2720.491666666667,
+    "mean_tokens": 728.75,
+    "p95_tokens": 931.9,
+    "verified_views": 1059,
+    "evidence_failures": 0,
+    "mean_stderr_tokens": 338.0833333333333,
+    "mean_total_response_tokens": 1066.8333333333333,
+    "p95_total_response_tokens": 1278.5
+  },
+  "notes": "Equal-family quality means; repetitions are timing/stability samples. Latency conditions differ across backend types and are labeled in provenance. Span annotations may be incomplete."
+}

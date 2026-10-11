@@ -1,0 +1,1658 @@
+{
+  "schema": 1,
+  "runs": {
+    "code-jit": {
+      "directory": "models/lab/restoration/test-code-jit",
+      "summary": {
+        "config_sha256": "12adfceb317c09606461d7111099d2669a0bd54d30e1341cb4716194fe70a8a9",
+        "queries": 40,
+        "runs": 120,
+        "families": 2,
+        "quality": {
+          "mrr": {
+            "mean": 0.6452777777777778,
+            "ci95": [
+              0.5488888888888889,
+              0.7416666666666667
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "recall": {
+            "mean": 0.9,
+            "ci95": [
+              0.8,
+              1.0
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "ndcg": {
+            "mean": 0.6956823589417936,
+            "ci95": [
+              0.6081078342128741,
+              0.7832568836707132
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "span_recall": {
+            "mean": 0.03224489795918367,
+            "ci95": null,
+            "families": 1,
+            "queries": 5
+          },
+          "span_precision": {
+            "mean": 0.18,
+            "ci95": null,
+            "families": 1,
+            "queries": 5
+          },
+          "false_positive": {
+            "mean": null,
+            "ci95": null,
+            "families": 0,
+            "queries": 0
+          }
+        },
+        "wall_ms": {
+          "p50": 271.8305000000214,
+          "p95": 310.12449000002675
+        },
+        "output": {
+          "mean_bytes": 2720.491666666667,
+          "mean_tokens": 728.75,
+          "p95_tokens": 931.9,
+          "verified_views": 1059,
+          "evidence_failures": 0,
+          "mean_stderr_tokens": 338.0833333333333,
+          "mean_total_response_tokens": 1066.8333333333333,
+          "p95_total_response_tokens": 1278.5
+        },
+        "notes": "Equal-family quality means; repetitions are timing/stability samples. Latency conditions differ across backend types and are labeled in provenance. Span annotations may be incomplete."
+      },
+      "config": {
+        "backend": "ixos",
+        "cache": "jit",
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 6000,
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "legacy_mode": null,
+        "retrieval": "hybrid",
+        "representation": "intro-uniform",
+        "io_workers": 4,
+        "typo_correction": false,
+        "output_contract": "bounded-rows-v2"
+      },
+      "binary_sha256": "2c641a2f4af7a7d0a2428eecbc462ba76152d0bd48bb80803c84948c747c6685",
+      "timing_condition": "fresh CLI process",
+      "datasets": [
+        {
+          "id": "semble-requests",
+          "sha256": "cf74ddb5100354e2915463449cee28a63f15a02aa148b72d31fcfc4cb4dca666",
+          "sources": 18,
+          "provenance": {
+            "origin": "https://raw.githubusercontent.com/MinishLab/semble/170608652681fadab4fcfac0834d6f962e59299e/benchmarks/annotations/requests.json",
+            "revision": "ef439eb779c1eba7cbdeeeb302b11e1e061b4b7d",
+            "label_method": "Upstream generated and verified LLM labels; existing file/span labels preserved",
+            "license": "Upstream Semble MIT benchmark; source repository retains its own license",
+            "limitations": "Subset with restricted text-extension policy and native Ixos output; not the complete published Semble protocol. File-only labels have no invented spans."
+          }
+        },
+        {
+          "id": "semble-axum",
+          "sha256": "714d3adb24a316171729df5ec01983bd5e960b15082909b06dad88b523352b93",
+          "sources": 79,
+          "provenance": {
+            "origin": "https://raw.githubusercontent.com/MinishLab/semble/170608652681fadab4fcfac0834d6f962e59299e/benchmarks/annotations/axum.json",
+            "revision": "309d1bd9530eec2217134cb262760af1df42ee3b",
+            "label_method": "Upstream generated and verified LLM labels; existing file/span labels preserved",
+            "license": "Upstream Semble MIT benchmark; source repository retains its own license",
+            "limitations": "Subset with restricted text-extension policy and native Ixos output; not the complete published Semble protocol. File-only labels have no invented spans."
+          }
+        }
+      ],
+      "by_dataset": {
+        "semble-axum": {
+          "ndcg": {
+            "mean": 0.6081078342128741,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.5488888888888889,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 0.8,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          }
+        },
+        "semble-requests": {
+          "ndcg": {
+            "mean": 0.7832568836707132,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.7416666666666667,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 1.0,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          }
+        }
+      },
+      "by_kind": {
+        "architecture": {
+          "ndcg": {
+            "mean": 0.6570249259374142,
+            "ci95": [
+              0.5314474365544006,
+              0.7826024153204278
+            ],
+            "families": 2,
+            "queries": 12
+          },
+          "mrr": {
+            "mean": 0.6206349206349207,
+            "ci95": [
+              0.45555555555555555,
+              0.7857142857142857
+            ],
+            "families": 2,
+            "queries": 12
+          },
+          "recall": {
+            "mean": 0.9,
+            "ci95": [
+              0.8,
+              1.0
+            ],
+            "families": 2,
+            "queries": 12
+          }
+        },
+        "semantic": {
+          "ndcg": {
+            "mean": 0.7344760961037241,
+            "ci95": [
+              0.6869216661952137,
+              0.7820305260122346
+            ],
+            "families": 2,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.6802083333333333,
+            "ci95": [
+              0.6416666666666667,
+              0.71875
+            ],
+            "families": 2,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 0.9166666666666667,
+            "ci95": [
+              0.8333333333333334,
+              1.0
+            ],
+            "families": 2,
+            "queries": 20
+          }
+        },
+        "symbol": {
+          "ndcg": {
+            "mean": 0.6033775736644917,
+            "ci95": [
+              0.42061983571430495,
+              0.7861353116146785
+            ],
+            "families": 2,
+            "queries": 8
+          },
+          "mrr": {
+            "mean": 0.525,
+            "ci95": [
+              0.3333333333333333,
+              0.7166666666666667
+            ],
+            "families": 2,
+            "queries": 8
+          },
+          "recall": {
+            "mean": 0.8333333333333333,
+            "ci95": [
+              0.6666666666666666,
+              1.0
+            ],
+            "families": 2,
+            "queries": 8
+          }
+        }
+      }
+    },
+    "code-native-warm": {
+      "directory": "models/lab/restoration/test-code-native-warm",
+      "summary": {
+        "config_sha256": "7045af28b326915f544b94482acd2f880d693619961448dfd4cc7670c56d41ca",
+        "queries": 40,
+        "runs": 120,
+        "families": 2,
+        "quality": {
+          "mrr": {
+            "mean": 0.6452777777777778,
+            "ci95": [
+              0.5488888888888889,
+              0.7416666666666667
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "recall": {
+            "mean": 0.9,
+            "ci95": [
+              0.8,
+              1.0
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "ndcg": {
+            "mean": 0.6956823589417936,
+            "ci95": [
+              0.6081078342128741,
+              0.7832568836707132
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "span_recall": {
+            "mean": 0.03224489795918367,
+            "ci95": null,
+            "families": 1,
+            "queries": 5
+          },
+          "span_precision": {
+            "mean": 0.18,
+            "ci95": null,
+            "families": 1,
+            "queries": 5
+          },
+          "false_positive": {
+            "mean": null,
+            "ci95": null,
+            "families": 0,
+            "queries": 0
+          }
+        },
+        "wall_ms": {
+          "p50": 244.32289999998602,
+          "p95": 280.9339800000089
+        },
+        "output": {
+          "mean_bytes": 2724.1833333333334,
+          "mean_tokens": 729.4583333333334,
+          "p95_tokens": 933.75,
+          "verified_views": 1059,
+          "evidence_failures": 0,
+          "mean_stderr_tokens": 337.73333333333335,
+          "mean_total_response_tokens": 1067.1916666666666,
+          "p95_total_response_tokens": 1276.5
+        },
+        "notes": "Equal-family quality means; repetitions are timing/stability samples. Latency conditions differ across backend types and are labeled in provenance. Span annotations may be incomplete."
+      },
+      "config": {
+        "backend": "ixos",
+        "cache": "native-warm",
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 6000,
+        "model_fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "legacy_mode": null,
+        "retrieval": "hybrid",
+        "representation": "intro-uniform",
+        "io_workers": 4,
+        "typo_correction": false,
+        "output_contract": "bounded-rows-v2"
+      },
+      "binary_sha256": "2c641a2f4af7a7d0a2428eecbc462ba76152d0bd48bb80803c84948c747c6685",
+      "timing_condition": "fresh CLI process",
+      "datasets": [
+        {
+          "id": "semble-requests",
+          "sha256": "cf74ddb5100354e2915463449cee28a63f15a02aa148b72d31fcfc4cb4dca666",
+          "sources": 18,
+          "provenance": {
+            "origin": "https://raw.githubusercontent.com/MinishLab/semble/170608652681fadab4fcfac0834d6f962e59299e/benchmarks/annotations/requests.json",
+            "revision": "ef439eb779c1eba7cbdeeeb302b11e1e061b4b7d",
+            "label_method": "Upstream generated and verified LLM labels; existing file/span labels preserved",
+            "license": "Upstream Semble MIT benchmark; source repository retains its own license",
+            "limitations": "Subset with restricted text-extension policy and native Ixos output; not the complete published Semble protocol. File-only labels have no invented spans."
+          }
+        },
+        {
+          "id": "semble-axum",
+          "sha256": "714d3adb24a316171729df5ec01983bd5e960b15082909b06dad88b523352b93",
+          "sources": 79,
+          "provenance": {
+            "origin": "https://raw.githubusercontent.com/MinishLab/semble/170608652681fadab4fcfac0834d6f962e59299e/benchmarks/annotations/axum.json",
+            "revision": "309d1bd9530eec2217134cb262760af1df42ee3b",
+            "label_method": "Upstream generated and verified LLM labels; existing file/span labels preserved",
+            "license": "Upstream Semble MIT benchmark; source repository retains its own license",
+            "limitations": "Subset with restricted text-extension policy and native Ixos output; not the complete published Semble protocol. File-only labels have no invented spans."
+          }
+        }
+      ],
+      "by_dataset": {
+        "semble-axum": {
+          "ndcg": {
+            "mean": 0.6081078342128741,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.5488888888888889,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 0.8,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          }
+        },
+        "semble-requests": {
+          "ndcg": {
+            "mean": 0.7832568836707132,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.7416666666666667,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 1.0,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          }
+        }
+      },
+      "by_kind": {
+        "architecture": {
+          "ndcg": {
+            "mean": 0.6570249259374142,
+            "ci95": [
+              0.5314474365544006,
+              0.7826024153204278
+            ],
+            "families": 2,
+            "queries": 12
+          },
+          "mrr": {
+            "mean": 0.6206349206349207,
+            "ci95": [
+              0.45555555555555555,
+              0.7857142857142857
+            ],
+            "families": 2,
+            "queries": 12
+          },
+          "recall": {
+            "mean": 0.9,
+            "ci95": [
+              0.8,
+              1.0
+            ],
+            "families": 2,
+            "queries": 12
+          }
+        },
+        "semantic": {
+          "ndcg": {
+            "mean": 0.7344760961037241,
+            "ci95": [
+              0.6869216661952137,
+              0.7820305260122346
+            ],
+            "families": 2,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.6802083333333333,
+            "ci95": [
+              0.6416666666666667,
+              0.71875
+            ],
+            "families": 2,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 0.9166666666666667,
+            "ci95": [
+              0.8333333333333334,
+              1.0
+            ],
+            "families": 2,
+            "queries": 20
+          }
+        },
+        "symbol": {
+          "ndcg": {
+            "mean": 0.6033775736644917,
+            "ci95": [
+              0.42061983571430495,
+              0.7861353116146785
+            ],
+            "families": 2,
+            "queries": 8
+          },
+          "mrr": {
+            "mean": 0.525,
+            "ci95": [
+              0.3333333333333333,
+              0.7166666666666667
+            ],
+            "families": 2,
+            "queries": 8
+          },
+          "recall": {
+            "mean": 0.8333333333333333,
+            "ci95": [
+              0.6666666666666666,
+              1.0
+            ],
+            "families": 2,
+            "queries": 8
+          }
+        }
+      }
+    },
+    "code-bm25": {
+      "directory": "models/lab/restoration/test-code-bm25",
+      "summary": {
+        "config_sha256": "a06731122aadce350db33a8b4684f5af00a475156ccd323b32a8b5a055175cbf",
+        "queries": 40,
+        "runs": 120,
+        "families": 2,
+        "quality": {
+          "mrr": {
+            "mean": 0.5835714285714286,
+            "ci95": [
+              0.5329761904761905,
+              0.6341666666666667
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "recall": {
+            "mean": 0.875,
+            "ci95": [
+              0.75,
+              1.0
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "ndcg": {
+            "mean": 0.6397430601087706,
+            "ci95": [
+              0.5835570705987776,
+              0.6959290496187635
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "span_recall": {
+            "mean": 0.03224489795918367,
+            "ci95": null,
+            "families": 1,
+            "queries": 5
+          },
+          "span_precision": {
+            "mean": 0.07714285714285714,
+            "ci95": null,
+            "families": 1,
+            "queries": 5
+          },
+          "false_positive": {
+            "mean": null,
+            "ci95": null,
+            "families": 0,
+            "queries": 0
+          }
+        },
+        "wall_ms": {
+          "p50": 13.411749999988842,
+          "p95": 17.64438999999811
+        },
+        "output": {
+          "mean_bytes": 2884.675,
+          "mean_tokens": 779.725,
+          "p95_tokens": 959.7499999999999,
+          "verified_views": 1089,
+          "evidence_failures": 0,
+          "mean_stderr_tokens": 0,
+          "mean_total_response_tokens": 779.725,
+          "p95_total_response_tokens": 959.7499999999999
+        },
+        "notes": "Equal-family quality means; repetitions are timing/stability samples. Latency conditions differ across backend types and are labeled in provenance. Span annotations may be incomplete."
+      },
+      "config": {
+        "backend": "bm25",
+        "cache": "jit",
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 6000,
+        "model_fingerprint": null,
+        "legacy_mode": null
+      },
+      "binary_sha256": null,
+      "timing_condition": "persistent in-memory BM25 query",
+      "datasets": [
+        {
+          "id": "semble-requests",
+          "sha256": "cf74ddb5100354e2915463449cee28a63f15a02aa148b72d31fcfc4cb4dca666",
+          "sources": 18,
+          "provenance": {
+            "origin": "https://raw.githubusercontent.com/MinishLab/semble/170608652681fadab4fcfac0834d6f962e59299e/benchmarks/annotations/requests.json",
+            "revision": "ef439eb779c1eba7cbdeeeb302b11e1e061b4b7d",
+            "label_method": "Upstream generated and verified LLM labels; existing file/span labels preserved",
+            "license": "Upstream Semble MIT benchmark; source repository retains its own license",
+            "limitations": "Subset with restricted text-extension policy and native Ixos output; not the complete published Semble protocol. File-only labels have no invented spans."
+          }
+        },
+        {
+          "id": "semble-axum",
+          "sha256": "714d3adb24a316171729df5ec01983bd5e960b15082909b06dad88b523352b93",
+          "sources": 79,
+          "provenance": {
+            "origin": "https://raw.githubusercontent.com/MinishLab/semble/170608652681fadab4fcfac0834d6f962e59299e/benchmarks/annotations/axum.json",
+            "revision": "309d1bd9530eec2217134cb262760af1df42ee3b",
+            "label_method": "Upstream generated and verified LLM labels; existing file/span labels preserved",
+            "license": "Upstream Semble MIT benchmark; source repository retains its own license",
+            "limitations": "Subset with restricted text-extension policy and native Ixos output; not the complete published Semble protocol. File-only labels have no invented spans."
+          }
+        }
+      ],
+      "by_dataset": {
+        "semble-axum": {
+          "ndcg": {
+            "mean": 0.5835570705987776,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.5329761904761905,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 0.75,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          }
+        },
+        "semble-requests": {
+          "ndcg": {
+            "mean": 0.6959290496187635,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.6341666666666667,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 1.0,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          }
+        }
+      },
+      "by_kind": {
+        "architecture": {
+          "ndcg": {
+            "mean": 0.5828657187364648,
+            "ci95": [
+              0.4578129652635775,
+              0.7079184722093519
+            ],
+            "families": 2,
+            "queries": 12
+          },
+          "mrr": {
+            "mean": 0.5695238095238095,
+            "ci95": [
+              0.42000000000000004,
+              0.719047619047619
+            ],
+            "families": 2,
+            "queries": 12
+          },
+          "recall": {
+            "mean": 0.8,
+            "ci95": [
+              0.6,
+              1.0
+            ],
+            "families": 2,
+            "queries": 12
+          }
+        },
+        "semantic": {
+          "ndcg": {
+            "mean": 0.6402331313166292,
+            "ci95": [
+              0.6345373599594079,
+              0.6459289026738505
+            ],
+            "families": 2,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.551438492063492,
+            "ci95": [
+              0.5145833333333333,
+              0.5882936507936508
+            ],
+            "families": 2,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 0.9166666666666667,
+            "ci95": [
+              0.8333333333333334,
+              1.0
+            ],
+            "families": 2,
+            "queries": 20
+          }
+        },
+        "symbol": {
+          "ndcg": {
+            "mean": 0.660506906318697,
+            "ci95": [
+              0.5436432511904857,
+              0.7773705614469083
+            ],
+            "families": 2,
+            "queries": 8
+          },
+          "mrr": {
+            "mean": 0.6033333333333333,
+            "ci95": [
+              0.5,
+              0.7066666666666667
+            ],
+            "families": 2,
+            "queries": 8
+          },
+          "recall": {
+            "mean": 0.8333333333333333,
+            "ci95": [
+              0.6666666666666666,
+              1.0
+            ],
+            "families": 2,
+            "queries": 8
+          }
+        }
+      }
+    },
+    "code-rg": {
+      "directory": "models/lab/restoration/test-code-rg",
+      "summary": {
+        "config_sha256": "f6ff1767ed7a2b6b90b817aad783c56f795b4146178d7c44332096e932a3857b",
+        "queries": 40,
+        "runs": 120,
+        "families": 2,
+        "quality": {
+          "mrr": {
+            "mean": 0.5273214285714285,
+            "ci95": [
+              0.3671428571428571,
+              0.6875
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "recall": {
+            "mean": 0.775,
+            "ci95": [
+              0.55,
+              1.0
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "ndcg": {
+            "mean": 0.5706162228711397,
+            "ci95": [
+              0.4110093070283938,
+              0.7302231387138856
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "span_recall": {
+            "mean": 0.03224489795918367,
+            "ci95": null,
+            "families": 1,
+            "queries": 5
+          },
+          "span_precision": {
+            "mean": 0.07333333333333333,
+            "ci95": null,
+            "families": 1,
+            "queries": 5
+          },
+          "false_positive": {
+            "mean": null,
+            "ci95": null,
+            "families": 0,
+            "queries": 0
+          }
+        },
+        "wall_ms": {
+          "p50": 27.83739999995305,
+          "p95": 46.083575000051255
+        },
+        "output": {
+          "mean_bytes": 2883.15,
+          "mean_tokens": 728.45,
+          "p95_tokens": 944.6499999999999,
+          "verified_views": 1107,
+          "evidence_failures": 0,
+          "mean_stderr_tokens": 0,
+          "mean_total_response_tokens": 728.45,
+          "p95_total_response_tokens": 944.6499999999999
+        },
+        "notes": "Equal-family quality means; repetitions are timing/stability samples. Latency conditions differ across backend types and are labeled in provenance. Span annotations may be incomplete."
+      },
+      "config": {
+        "backend": "rg",
+        "cache": "jit",
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 6000,
+        "model_fingerprint": null,
+        "legacy_mode": null
+      },
+      "binary_sha256": null,
+      "timing_condition": "fresh ripgrep process + ranked source windows from loaded corpus",
+      "datasets": [
+        {
+          "id": "semble-requests",
+          "sha256": "cf74ddb5100354e2915463449cee28a63f15a02aa148b72d31fcfc4cb4dca666",
+          "sources": 18,
+          "provenance": {
+            "origin": "https://raw.githubusercontent.com/MinishLab/semble/170608652681fadab4fcfac0834d6f962e59299e/benchmarks/annotations/requests.json",
+            "revision": "ef439eb779c1eba7cbdeeeb302b11e1e061b4b7d",
+            "label_method": "Upstream generated and verified LLM labels; existing file/span labels preserved",
+            "license": "Upstream Semble MIT benchmark; source repository retains its own license",
+            "limitations": "Subset with restricted text-extension policy and native Ixos output; not the complete published Semble protocol. File-only labels have no invented spans."
+          }
+        },
+        {
+          "id": "semble-axum",
+          "sha256": "714d3adb24a316171729df5ec01983bd5e960b15082909b06dad88b523352b93",
+          "sources": 79,
+          "provenance": {
+            "origin": "https://raw.githubusercontent.com/MinishLab/semble/170608652681fadab4fcfac0834d6f962e59299e/benchmarks/annotations/axum.json",
+            "revision": "309d1bd9530eec2217134cb262760af1df42ee3b",
+            "label_method": "Upstream generated and verified LLM labels; existing file/span labels preserved",
+            "license": "Upstream Semble MIT benchmark; source repository retains its own license",
+            "limitations": "Subset with restricted text-extension policy and native Ixos output; not the complete published Semble protocol. File-only labels have no invented spans."
+          }
+        }
+      ],
+      "by_dataset": {
+        "semble-axum": {
+          "ndcg": {
+            "mean": 0.4110093070283938,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.3671428571428571,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 0.55,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          }
+        },
+        "semble-requests": {
+          "ndcg": {
+            "mean": 0.7302231387138856,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.6875,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 1.0,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          }
+        }
+      },
+      "by_kind": {
+        "architecture": {
+          "ndcg": {
+            "mean": 0.5791644266455036,
+            "ci95": [
+              0.4666666666666667,
+              0.6916621866243406
+            ],
+            "families": 2,
+            "queries": 12
+          },
+          "mrr": {
+            "mean": 0.5773809523809523,
+            "ci95": [
+              0.42857142857142855,
+              0.7261904761904762
+            ],
+            "families": 2,
+            "queries": 12
+          },
+          "recall": {
+            "mean": 0.8,
+            "ci95": [
+              0.6,
+              1.0
+            ],
+            "families": 2,
+            "queries": 12
+          }
+        },
+        "semantic": {
+          "ndcg": {
+            "mean": 0.5890960311825484,
+            "ci95": [
+              0.49057106726954514,
+              0.6876209950955515
+            ],
+            "families": 2,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.5083333333333333,
+            "ci95": [
+              0.43333333333333335,
+              0.5833333333333334
+            ],
+            "families": 2,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 0.8333333333333333,
+            "ci95": [
+              0.6666666666666666,
+              1.0
+            ],
+            "families": 2,
+            "queries": 20
+          }
+        },
+        "symbol": {
+          "ndcg": {
+            "mean": 0.42618595071429144,
+            "ci95": [
+              0.0,
+              0.8523719014285829
+            ],
+            "families": 2,
+            "queries": 8
+          },
+          "mrr": {
+            "mean": 0.4,
+            "ci95": [
+              0.0,
+              0.8
+            ],
+            "families": 2,
+            "queries": 8
+          },
+          "recall": {
+            "mean": 0.5,
+            "ci95": [
+              0.0,
+              1.0
+            ],
+            "families": 2,
+            "queries": 8
+          }
+        }
+      }
+    },
+    "code-lexical": {
+      "directory": "models/lab/restoration/test-code-lexical",
+      "summary": {
+        "config_sha256": "a8bbf282220d58d13293a7c98a8be8263b34944dafe00a94aa1a62504e6b2281",
+        "queries": 40,
+        "runs": 120,
+        "families": 2,
+        "quality": {
+          "mrr": {
+            "mean": 0.5835714285714286,
+            "ci95": [
+              0.5329761904761905,
+              0.6341666666666667
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "recall": {
+            "mean": 0.875,
+            "ci95": [
+              0.75,
+              1.0
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "ndcg": {
+            "mean": 0.6397430601087706,
+            "ci95": [
+              0.5835570705987776,
+              0.6959290496187635
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "span_recall": {
+            "mean": 0.03224489795918367,
+            "ci95": null,
+            "families": 1,
+            "queries": 5
+          },
+          "span_precision": {
+            "mean": 0.18,
+            "ci95": null,
+            "families": 1,
+            "queries": 5
+          },
+          "false_positive": {
+            "mean": null,
+            "ci95": null,
+            "families": 0,
+            "queries": 0
+          }
+        },
+        "wall_ms": {
+          "p50": 43.829849999951875,
+          "p95": 53.24321999997892
+        },
+        "output": {
+          "mean_bytes": 2725.3166666666666,
+          "mean_tokens": 731.725,
+          "p95_tokens": 933.5999999999999,
+          "verified_views": 1056,
+          "evidence_failures": 0,
+          "mean_stderr_tokens": 293.90833333333336,
+          "mean_total_response_tokens": 1025.6333333333334,
+          "p95_total_response_tokens": 1240.0
+        },
+        "notes": "Equal-family quality means; repetitions are timing/stability samples. Latency conditions differ across backend types and are labeled in provenance. Span annotations may be incomplete."
+      },
+      "config": {
+        "backend": "ixos",
+        "cache": "jit",
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 6000,
+        "model_fingerprint": null,
+        "legacy_mode": null,
+        "retrieval": "lexical",
+        "representation": "intro-uniform",
+        "io_workers": 4,
+        "typo_correction": false,
+        "output_contract": "bounded-rows-v2"
+      },
+      "binary_sha256": "2c641a2f4af7a7d0a2428eecbc462ba76152d0bd48bb80803c84948c747c6685",
+      "timing_condition": "fresh CLI process",
+      "datasets": [
+        {
+          "id": "semble-requests",
+          "sha256": "cf74ddb5100354e2915463449cee28a63f15a02aa148b72d31fcfc4cb4dca666",
+          "sources": 18,
+          "provenance": {
+            "origin": "https://raw.githubusercontent.com/MinishLab/semble/170608652681fadab4fcfac0834d6f962e59299e/benchmarks/annotations/requests.json",
+            "revision": "ef439eb779c1eba7cbdeeeb302b11e1e061b4b7d",
+            "label_method": "Upstream generated and verified LLM labels; existing file/span labels preserved",
+            "license": "Upstream Semble MIT benchmark; source repository retains its own license",
+            "limitations": "Subset with restricted text-extension policy and native Ixos output; not the complete published Semble protocol. File-only labels have no invented spans."
+          }
+        },
+        {
+          "id": "semble-axum",
+          "sha256": "714d3adb24a316171729df5ec01983bd5e960b15082909b06dad88b523352b93",
+          "sources": 79,
+          "provenance": {
+            "origin": "https://raw.githubusercontent.com/MinishLab/semble/170608652681fadab4fcfac0834d6f962e59299e/benchmarks/annotations/axum.json",
+            "revision": "309d1bd9530eec2217134cb262760af1df42ee3b",
+            "label_method": "Upstream generated and verified LLM labels; existing file/span labels preserved",
+            "license": "Upstream Semble MIT benchmark; source repository retains its own license",
+            "limitations": "Subset with restricted text-extension policy and native Ixos output; not the complete published Semble protocol. File-only labels have no invented spans."
+          }
+        }
+      ],
+      "by_dataset": {
+        "semble-axum": {
+          "ndcg": {
+            "mean": 0.5835570705987776,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.5329761904761905,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 0.75,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          }
+        },
+        "semble-requests": {
+          "ndcg": {
+            "mean": 0.6959290496187635,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.6341666666666667,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 1.0,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          }
+        }
+      },
+      "by_kind": {
+        "architecture": {
+          "ndcg": {
+            "mean": 0.5828657187364648,
+            "ci95": [
+              0.4578129652635775,
+              0.7079184722093519
+            ],
+            "families": 2,
+            "queries": 12
+          },
+          "mrr": {
+            "mean": 0.5695238095238095,
+            "ci95": [
+              0.42000000000000004,
+              0.719047619047619
+            ],
+            "families": 2,
+            "queries": 12
+          },
+          "recall": {
+            "mean": 0.8,
+            "ci95": [
+              0.6,
+              1.0
+            ],
+            "families": 2,
+            "queries": 12
+          }
+        },
+        "semantic": {
+          "ndcg": {
+            "mean": 0.6402331313166292,
+            "ci95": [
+              0.6345373599594079,
+              0.6459289026738505
+            ],
+            "families": 2,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.551438492063492,
+            "ci95": [
+              0.5145833333333333,
+              0.5882936507936508
+            ],
+            "families": 2,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 0.9166666666666667,
+            "ci95": [
+              0.8333333333333334,
+              1.0
+            ],
+            "families": 2,
+            "queries": 20
+          }
+        },
+        "symbol": {
+          "ndcg": {
+            "mean": 0.660506906318697,
+            "ci95": [
+              0.5436432511904857,
+              0.7773705614469083
+            ],
+            "families": 2,
+            "queries": 8
+          },
+          "mrr": {
+            "mean": 0.6033333333333333,
+            "ci95": [
+              0.5,
+              0.7066666666666667
+            ],
+            "families": 2,
+            "queries": 8
+          },
+          "recall": {
+            "mean": 0.8333333333333333,
+            "ci95": [
+              0.6666666666666666,
+              1.0
+            ],
+            "families": 2,
+            "queries": 8
+          }
+        }
+      }
+    },
+    "code-flash-legacy": {
+      "directory": "models/lab/restoration/test-code-flash-legacy",
+      "summary": {
+        "config_sha256": "3c37c76dbab29ed5cbfcf1d8a0d40a104a5536052097c61052968591f6b545f7",
+        "queries": 40,
+        "runs": 120,
+        "families": 2,
+        "quality": {
+          "mrr": {
+            "mean": 0.4217592592592592,
+            "ci95": [
+              0.10685185185185184,
+              0.7366666666666666
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "recall": {
+            "mean": 0.675,
+            "ci95": [
+              0.35,
+              1.0
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "ndcg": {
+            "mean": 0.45507858547159524,
+            "ci95": [
+              0.16489863587926987,
+              0.7452585350639206
+            ],
+            "families": 2,
+            "queries": 40
+          },
+          "span_recall": {
+            "mean": 0.03224489795918367,
+            "ci95": null,
+            "families": 1,
+            "queries": 5
+          },
+          "span_precision": {
+            "mean": 0.18,
+            "ci95": null,
+            "families": 1,
+            "queries": 5
+          },
+          "false_positive": {
+            "mean": null,
+            "ci95": null,
+            "families": 0,
+            "queries": 0
+          }
+        },
+        "wall_ms": {
+          "p50": 193.48379999996723,
+          "p95": 225.21332000004008
+        },
+        "output": {
+          "mean_bytes": 3886.8166666666666,
+          "mean_tokens": 997.525,
+          "p95_tokens": 1253.35,
+          "verified_views": 1032,
+          "evidence_failures": 0,
+          "mean_stderr_tokens": 241.75833333333333,
+          "mean_total_response_tokens": 1239.2833333333333,
+          "p95_total_response_tokens": 1497.25
+        },
+        "notes": "Equal-family quality means; repetitions are timing/stability samples. Latency conditions differ across backend types and are labeled in provenance. Span annotations may be incomplete."
+      },
+      "config": {
+        "backend": "ixos",
+        "cache": "jit",
+        "limit": 10,
+        "context": 2,
+        "output_bytes": 6000,
+        "model_fingerprint": "c3b6ad391ad38982393425c9bccd6333143eb5ad8d1e80f80fdba2631f656a08",
+        "legacy_mode": "flash"
+      },
+      "binary_sha256": "2c641a2f4af7a7d0a2428eecbc462ba76152d0bd48bb80803c84948c747c6685",
+      "timing_condition": "fresh CLI process",
+      "datasets": [
+        {
+          "id": "semble-requests",
+          "sha256": "cf74ddb5100354e2915463449cee28a63f15a02aa148b72d31fcfc4cb4dca666",
+          "sources": 18,
+          "provenance": {
+            "origin": "https://raw.githubusercontent.com/MinishLab/semble/170608652681fadab4fcfac0834d6f962e59299e/benchmarks/annotations/requests.json",
+            "revision": "ef439eb779c1eba7cbdeeeb302b11e1e061b4b7d",
+            "label_method": "Upstream generated and verified LLM labels; existing file/span labels preserved",
+            "license": "Upstream Semble MIT benchmark; source repository retains its own license",
+            "limitations": "Subset with restricted text-extension policy and native Ixos output; not the complete published Semble protocol. File-only labels have no invented spans."
+          }
+        },
+        {
+          "id": "semble-axum",
+          "sha256": "714d3adb24a316171729df5ec01983bd5e960b15082909b06dad88b523352b93",
+          "sources": 79,
+          "provenance": {
+            "origin": "https://raw.githubusercontent.com/MinishLab/semble/170608652681fadab4fcfac0834d6f962e59299e/benchmarks/annotations/axum.json",
+            "revision": "309d1bd9530eec2217134cb262760af1df42ee3b",
+            "label_method": "Upstream generated and verified LLM labels; existing file/span labels preserved",
+            "license": "Upstream Semble MIT benchmark; source repository retains its own license",
+            "limitations": "Subset with restricted text-extension policy and native Ixos output; not the complete published Semble protocol. File-only labels have no invented spans."
+          }
+        }
+      ],
+      "by_dataset": {
+        "semble-axum": {
+          "ndcg": {
+            "mean": 0.16489863587926987,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.10685185185185184,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 0.35,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          }
+        },
+        "semble-requests": {
+          "ndcg": {
+            "mean": 0.7452585350639206,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.7366666666666666,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 1.0,
+            "ci95": null,
+            "families": 1,
+            "queries": 20
+          }
+        }
+      },
+      "by_kind": {
+        "architecture": {
+          "ndcg": {
+            "mean": 0.39106848029108493,
+            "ci95": [
+              0.1,
+              0.6821369605821699
+            ],
+            "families": 2,
+            "queries": 12
+          },
+          "mrr": {
+            "mean": 0.3869047619047619,
+            "ci95": [
+              0.06666666666666667,
+              0.7071428571428572
+            ],
+            "families": 2,
+            "queries": 12
+          },
+          "recall": {
+            "mean": 0.6,
+            "ci95": [
+              0.2,
+              1.0
+            ],
+            "families": 2,
+            "queries": 12
+          }
+        },
+        "semantic": {
+          "ndcg": {
+            "mean": 0.5111248598095137,
+            "ci95": [
+              0.23316439313211645,
+              0.789085326486911
+            ],
+            "families": 2,
+            "queries": 20
+          },
+          "mrr": {
+            "mean": 0.47098765432098766,
+            "ci95": [
+              0.15030864197530863,
+              0.7916666666666666
+            ],
+            "families": 2,
+            "queries": 20
+          },
+          "recall": {
+            "mean": 0.75,
+            "ci95": [
+              0.5,
+              1.0
+            ],
+            "families": 2,
+            "queries": 20
+          }
+        },
+        "symbol": {
+          "ndcg": {
+            "mean": 0.38175293653079345,
+            "ci95": [
+              0.0,
+              0.7635058730615869
+            ],
+            "families": 2,
+            "queries": 8
+          },
+          "mrr": {
+            "mean": 0.34500000000000003,
+            "ci95": [
+              0.0,
+              0.6900000000000001
+            ],
+            "families": 2,
+            "queries": 8
+          },
+          "recall": {
+            "mean": 0.5,
+            "ci95": [
+              0.0,
+              1.0
+            ],
+            "families": 2,
+            "queries": 8
+          }
+        }
+      }
+    }
+  },
+  "paired_comparisons": [
+    {
+      "left": "code-jit",
+      "right": "code-native-warm",
+      "difference_right_minus_left": {
+        "mean": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    },
+    {
+      "left": "code-jit",
+      "right": "code-bm25",
+      "difference_right_minus_left": {
+        "mean": -0.05593929883302317,
+        "ci95": [
+          -0.0873278340519498,
+          -0.024550763614096537
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    },
+    {
+      "left": "code-jit",
+      "right": "code-rg",
+      "difference_right_minus_left": {
+        "mean": -0.12506613607065398,
+        "ci95": [
+          -0.19709852718448034,
+          -0.0530337449568276
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    },
+    {
+      "left": "code-jit",
+      "right": "code-lexical",
+      "difference_right_minus_left": {
+        "mean": -0.05593929883302317,
+        "ci95": [
+          -0.0873278340519498,
+          -0.024550763614096537
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    },
+    {
+      "left": "code-jit",
+      "right": "code-flash-legacy",
+      "difference_right_minus_left": {
+        "mean": -0.24060377347019843,
+        "ci95": [
+          -0.4432091983336043,
+          -0.0379983486067926
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    },
+    {
+      "left": "code-native-warm",
+      "right": "code-bm25",
+      "difference_right_minus_left": {
+        "mean": -0.05593929883302317,
+        "ci95": [
+          -0.0873278340519498,
+          -0.024550763614096537
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    },
+    {
+      "left": "code-native-warm",
+      "right": "code-rg",
+      "difference_right_minus_left": {
+        "mean": -0.12506613607065398,
+        "ci95": [
+          -0.19709852718448034,
+          -0.0530337449568276
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    },
+    {
+      "left": "code-native-warm",
+      "right": "code-lexical",
+      "difference_right_minus_left": {
+        "mean": -0.05593929883302317,
+        "ci95": [
+          -0.0873278340519498,
+          -0.024550763614096537
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    },
+    {
+      "left": "code-native-warm",
+      "right": "code-flash-legacy",
+      "difference_right_minus_left": {
+        "mean": -0.24060377347019843,
+        "ci95": [
+          -0.4432091983336043,
+          -0.0379983486067926
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    },
+    {
+      "left": "code-bm25",
+      "right": "code-rg",
+      "difference_right_minus_left": {
+        "mean": -0.06912683723763081,
+        "ci95": [
+          -0.17254776357038382,
+          0.034294089095122195
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    },
+    {
+      "left": "code-bm25",
+      "right": "code-lexical",
+      "difference_right_minus_left": {
+        "mean": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    },
+    {
+      "left": "code-bm25",
+      "right": "code-flash-legacy",
+      "difference_right_minus_left": {
+        "mean": -0.18466447463717525,
+        "ci95": [
+          -0.4186584347195077,
+          0.049329485445157195
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    },
+    {
+      "left": "code-rg",
+      "right": "code-lexical",
+      "difference_right_minus_left": {
+        "mean": 0.06912683723763081,
+        "ci95": [
+          -0.034294089095122195,
+          0.17254776357038382
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    },
+    {
+      "left": "code-rg",
+      "right": "code-flash-legacy",
+      "difference_right_minus_left": {
+        "mean": -0.11553763739954444,
+        "ci95": [
+          -0.24611067114912388,
+          0.015035396350034999
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    },
+    {
+      "left": "code-lexical",
+      "right": "code-flash-legacy",
+      "difference_right_minus_left": {
+        "mean": -0.18466447463717525,
+        "ci95": [
+          -0.4186584347195077,
+          0.049329485445157195
+        ],
+        "families": 2,
+        "queries": 40
+      }
+    }
+  ],
+  "limits": [
+    "Restricted public code subset; upstream labels are LLM generated and span annotations incomplete.",
+    "Two held-out code repositories give weak uncertainty estimates.",
+    "SciFact retrieval is clean text, not a PDF/Office parser benchmark.",
+    "Fresh CLI, fresh rg with loaded-source windows, and persistent BM25 timing conditions differ.",
+    "No end-to-end agent task success or matched Cursor/Augment superiority claim."
+  ]
+}

@@ -26,7 +26,6 @@ pub const HARDCODED_SKIP_DIRS: &[&str] = &[
     ".vscode",
     "venv",
     ".venv",
-    "env",
     ".cargo",
     ".rustup",
     "bower_components",
@@ -62,10 +61,10 @@ pub fn search_walk(
     builder.filter_entry(|entry| {
         entry.depth() == 0
             || !entry.file_type().is_some_and(|kind| kind.is_dir())
-            || !entry
-                .file_name()
-                .to_str()
-                .is_some_and(|name| HARDCODED_SKIP_DIRS.contains(&name))
+            || !entry.file_name().to_str().is_some_and(|name| {
+                HARDCODED_SKIP_DIRS.contains(&name)
+                    || name == "env" && entry.path().join("pyvenv.cfg").is_file()
+            })
     });
     builder
 }
@@ -76,6 +75,8 @@ pub struct PathIndex {
     entries: Vec<PathEntry>,
     /// Inverted index: token -> entry indices (for fast lookup)
     token_index: HashMap<String, Vec<usize>>,
+    /// Path -> entry position, avoiding a corpus scan for each candidate's metadata.
+    path_positions: HashMap<PathBuf, usize>,
     /// Total number of documents (for IDF calculation)
     doc_count: usize,
 }
@@ -155,7 +156,7 @@ impl Default for PathIndexConfig {
 }
 
 impl PathIndex {
-    /// Build index from directory (fast: ~10-20ms for 30k files)
+    /// Build a fresh path/metadata snapshot from the ignore-aware directory walk.
     pub fn build_from_walk(root: &Path, config: &PathIndexConfig) -> Self {
         let mut entries = Vec::new();
         let mut token_index: HashMap<String, Vec<usize>> = HashMap::new();
@@ -179,9 +180,15 @@ impl PathIndex {
         }
 
         let doc_count = entries.len();
+        let path_positions = entries
+            .iter()
+            .enumerate()
+            .map(|(i, entry)| (entry.path.clone(), i))
+            .collect();
         Self {
             entries,
             token_index,
+            path_positions,
             doc_count,
         }
     }
@@ -476,10 +483,9 @@ impl PathIndex {
 
     /// Get metadata for a path (if indexed)
     pub fn get_metadata(&self, path: &Path) -> Option<&PathMetadata> {
-        self.entries
-            .iter()
-            .find(|e| e.path == path)
-            .map(|e| &e.metadata)
+        self.path_positions
+            .get(path)
+            .map(|i| &self.entries[*i].metadata)
     }
 
     /// Get all indexed file paths (P5 optimization)
@@ -631,5 +637,22 @@ mod tests {
             !HARDCODED_SKIP_DIRS.contains(&".env"),
             ".env must not be hard-skipped; users often store searchable config there"
         );
+    }
+
+    #[test]
+    fn env_source_folder_is_searchable_but_virtual_environment_is_pruned() {
+        let temp = TempDir::new().unwrap();
+        std::fs::create_dir(temp.path().join("env")).unwrap();
+        std::fs::write(temp.path().join("env/source.rs"), "source implementation").unwrap();
+        let visible = || {
+            search_walk(temp.path(), true, true, false, None)
+                .build()
+                .filter_map(Result::ok)
+                .filter(|e| e.file_type().is_some_and(|t| t.is_file()))
+                .count()
+        };
+        assert_eq!(visible(), 1);
+        std::fs::write(temp.path().join("env/pyvenv.cfg"), "home=python").unwrap();
+        assert_eq!(visible(), 0);
     }
 }

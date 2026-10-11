@@ -22,10 +22,11 @@ use ixos_protocol::cli::{
 use ixos_protocol::compliance::{ComplianceManager, DeletionScope};
 use ixos_protocol::ixos_embed::ModelType;
 use ixos_protocol::ixos_rank::{
-    CandidateLexicalEngine, IntentDetector, LexicalEngine, ProgressiveSearchConfig,
-    ProgressiveSearchEngine, SearchEvent, StubSemanticEngine,
+    CandidateLexicalEngine, IntentDetector, ProgressiveSearchConfig, ProgressiveSearchEngine,
+    SearchEvent, StubSemanticEngine,
 };
 use ixos_protocol::telemetry::{install_crash_handler, TelemetryConfig};
+use ixos_protocol::EmbeddingModel;
 
 // =============================================================================
 // Main Entry Point
@@ -67,6 +68,11 @@ async fn main() -> anyhow::Result<()> {
     match cli.command {
         Commands::Search {
             query,
+            retrieval,
+            model_path,
+            io_workers,
+            typo_correction,
+            representation,
             limit,
             format,
             dir,
@@ -89,6 +95,57 @@ async fn main() -> anyhow::Result<()> {
             max_output_bytes,
             snippet_chars,
         } => {
+            if model_path.is_some()
+                || retrieval
+                    .is_some_and(|mode| mode != ixos_protocol::retrieval::RetrievalMode::Legacy)
+            {
+                anyhow::ensure!(!progressive && !deep_search && !stub_model && search_mode.is_none() && model.is_none() && pro_model.is_none() && !secure_timing,"Legacy/progressive model options cannot be mixed with the measured retrieval engine");
+                let root = dir.unwrap_or(std::env::current_dir()?);
+                if let Some(sandbox) = sandbox {
+                    anyhow::ensure!(
+                        root.canonicalize()?.starts_with(sandbox.canonicalize()?),
+                        "Search directory is outside --sandbox"
+                    );
+                }
+                let began = std::time::Instant::now();
+                let options = ixos_protocol::retrieval::Options {
+                    io_workers,
+                    typo_correction,
+                    mode: retrieval.unwrap_or(ixos_protocol::retrieval::RetrievalMode::Hybrid),
+                    representation: representation.unwrap_or_default(),
+                    persist: !matches!(
+                        cache_mode,
+                        Some(ixos_protocol::cli::CliCacheMode::Ephemeral)
+                    ),
+                    limit: limit.unwrap_or(config.search.default_limit),
+                    context: context.unwrap_or(2),
+                    output_bytes: max_output_bytes.unwrap_or(12000),
+                    semantic_floor: min_score.unwrap_or(0.25),
+                    explain: show_scores,
+                    ..Default::default()
+                };
+                let mut engine =
+                    ixos_protocol::retrieval::Engine::new(&root, model_path.as_deref(), options)?;
+                let model_load_ms = began.elapsed().as_secs_f64() * 1000.0;
+                let (raw, diagnostics) = engine.search(&query, "cli", None)?;
+                if json || matches!(format, Some(ixos_protocol::cli::CliOutputFormat::Json)) {
+                    stdout().write_all(&raw)?;
+                } else {
+                    anyhow::ensure!(
+                        format.is_none()
+                            || matches!(format, Some(ixos_protocol::cli::CliOutputFormat::Human)),
+                        "Measured retrieval supports human or JSON output"
+                    );
+                    ixos_protocol::retrieval::commands::print_human(&raw)?;
+                }
+                if stats {
+                    eprintln!(
+                        "{}",
+                        serde_json::json!({"type":"stats","engine":"document-v1","modelLoadMs":model_load_ms,"fullRequestMs":began.elapsed().as_secs_f64()*1000.0,"diagnostics":diagnostics})
+                    );
+                }
+                return Ok(());
+            }
             let resolved_format = format
                 .map(Into::into)
                 .map(Ok)
@@ -142,6 +199,73 @@ async fn main() -> anyhow::Result<()> {
             clear,
         } => {
             handle_index(dirs, use_xattr, progress, clear, &config).await?;
+        }
+
+        Commands::Serve {
+            dir,
+            model_path,
+            io_workers,
+            retrieval,
+            representation,
+            session,
+            jit,
+            max_output_bytes,
+        } => {
+            ixos_protocol::retrieval::commands::serve(
+                &dir,
+                model_path.as_deref(),
+                ixos_protocol::retrieval::Options {
+                    io_workers,
+                    mode: retrieval,
+                    representation,
+                    session,
+                    persist: !jit,
+                    output_bytes: max_output_bytes,
+                    ..Default::default()
+                },
+            )?;
+        }
+        Commands::Read {
+            path,
+            dir,
+            start,
+            lines,
+            characters,
+            character_offset,
+            max_output_bytes,
+        } => {
+            stdout().write_all(&ixos_protocol::retrieval::commands::read_range(
+                &dir,
+                &path,
+                start,
+                lines,
+                characters,
+                character_offset,
+                max_output_bytes,
+            )?)?;
+        }
+        Commands::Grep {
+            pattern,
+            dir,
+            fixed,
+            ignore_case,
+            context,
+            limit,
+            max_output_bytes,
+        } => {
+            let (raw, stats) = ixos_protocol::retrieval::commands::grep(
+                &dir,
+                &pattern,
+                fixed,
+                ignore_case,
+                context,
+                limit,
+                max_output_bytes,
+            )?;
+            stdout().write_all(&raw)?;
+            if cli.verbose {
+                eprintln!("{}", serde_json::to_string(&stats)?);
+            }
         }
 
         Commands::Config {
@@ -269,6 +393,7 @@ async fn handle_search(
     snippet_chars: Option<usize>,
     config: &IxosConfig,
 ) -> anyhow::Result<()> {
+    let request_started = std::time::Instant::now();
     anyhow::ensure!(!query.trim().is_empty(), "Search query must not be empty");
     anyhow::ensure!(limit > 0, "Result limit must be greater than zero");
     anyhow::ensure!(
@@ -382,6 +507,8 @@ async fn handle_search(
     // Create search engines
     // P2: Use CandidateLexicalEngine to enforce hard caps and fast funneling
     let lexical = CandidateLexicalEngine::new(search_dir.clone());
+    let model_load_started = std::time::Instant::now();
+    let mut model_identities = Vec::new();
 
     // Create semantic engine based on stub_model flag and cache_mode
     let mut semantic = if stub_model {
@@ -403,6 +530,11 @@ async fn handle_search(
 
         match model_result {
             Ok(model) => {
+                model.ensure_loaded()?;
+                model_identities.push(serde_json::json!({
+                    "role": "primary", "id": model_type.to_string(),
+                    "fingerprint": hex::encode(model.fingerprint()), "dimensions": model.dimensions()
+                }));
                 // Check cache status for user feedback
                 let status = model.cache_status();
                 if !status.is_cached {
@@ -447,9 +579,17 @@ async fn handle_search(
                 pro_model_type.display_name(),
                 pro_model_type.description()
             );
-            let model_result = MmapModel2VecEmbedder::new_with_type(pro_model_type);
+            let model_result =
+                MmapModel2VecEmbedder::new_with_type(pro_model_type).and_then(|model| {
+                    model.ensure_loaded()?;
+                    Ok(model)
+                });
             match model_result {
                 Ok(model) => {
+                    model_identities.push(serde_json::json!({
+                        "role": "secondary", "id": pro_model_type.to_string(),
+                        "fingerprint": hex::encode(model.fingerprint()), "dimensions": model.dimensions()
+                    }));
                     let embedder = if secure_timing {
                         tracing::info!("Secure timing mode enabled (100ms floor)");
                         SecureEmbedder::new_secure(Arc::new(model))
@@ -475,6 +615,9 @@ async fn handle_search(
         };
     }
 
+    let model_load_ms = model_load_started.elapsed().as_secs_f64() * 1000.0;
+
+    let preflight_started = std::time::Instant::now();
     let lexical_probe_is_empty = if matches!(
         resolved_search_mode,
         ixos_protocol::ixos_rank::progressive::SearchMode::Pro
@@ -482,8 +625,8 @@ async fn handle_search(
     {
         false
     } else {
-        match lexical.search(query, 1).await {
-            Ok(results) => results.is_empty(),
+        match lexical.preflight(query).await {
+            Ok(empty) => empty,
             Err(e) => {
                 tracing::warn!(
                     "Lexical preflight failed, enabling semantic eager indexing fallback: {}",
@@ -493,6 +636,7 @@ async fn handle_search(
             }
         }
     };
+    let preflight_ms = preflight_started.elapsed().as_secs_f64() * 1000.0;
 
     if should_eager_index_semantic(resolved_search_mode, lexical_probe_is_empty) {
         if let Err(e) = semantic.index_directory(&search_dir).await {
@@ -677,6 +821,9 @@ async fn handle_search(
                 "resultCount": result_count, "outputBytes": stdout.bytes,
                 "cacheMode": if effective_cache_mode == ixos_protocol::CacheMode::NativeCache { "cached" } else { "jit" },
                 "model": if stub_model { "stub".to_owned() } else { model_type.to_string() },
+                "models": model_identities, "modelLoadMs": model_load_ms, "preflightMs": preflight_ms,
+                "requestMs": request_started.elapsed().as_secs_f64() * 1000.0,
+                "firstResultRequestMs": first_result_ms.map(|ms| start_time.duration_since(request_started).as_secs_f64() * 1000.0 + ms as f64),
                 "diagnostics": diagnostics
             })
         );
@@ -1111,6 +1258,7 @@ async fn handle_cache(
             println!("Clearing cache for: {}", target_dir.display());
 
             let mut cleared = 0;
+            let mut documents = ixos_protocol::retrieval::cache::DocumentCache::new([0; 32]);
             if target_dir.is_dir() {
                 for entry in cache_file_walk(&target_dir) {
                     let candidate_path =
@@ -1132,6 +1280,9 @@ async fn handle_cache(
 
                     let cache = get_cache_for_path(&candidate_path);
                     if cache.contains(&candidate_path) && cache.delete(&candidate_path).is_ok() {
+                        cleared += 1;
+                    }
+                    if documents.remove(&candidate_path)? {
                         cleared += 1;
                     }
                 }

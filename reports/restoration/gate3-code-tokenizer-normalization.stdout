@@ -1,0 +1,61 @@
+{
+  "operation": "remove inherited tokenizer truncation/padding",
+  "source": {
+    "path": "C:\\Users\\pablo\\Downloads\\Ixos\\models\\lab\\artifacts\\potion-code-16M-v2",
+    "files": {
+      "model.safetensors": "75cf7a6c2171b230ad19b1e7d8e0b1aee86da5a02af8e7cacedd9921d227623c",
+      "tokenizer.json": "107bbdcbad4bff1d299b7a4c3a2fb17c52890688b7dd0e4c9deab79d3c4f3d45",
+      "config.json": "148e5691a6fcc553437156859701fba017a1ba5d340b170f17e0f3668fb861a7"
+    },
+    "fingerprint": "460277a45072eeca6eed0971b7e4c45630cd687da3275642b90b6f39e16de0a9",
+    "file_bytes": 33514471,
+    "tokenizer_settings": {
+      "truncation": {
+        "direction": "Right",
+        "max_length": 512,
+        "strategy": "LongestFirst",
+        "stride": 0
+      },
+      "padding": {
+        "strategy": "BatchLongest",
+        "direction": "Right",
+        "pad_to_multiple_of": null,
+        "pad_id": 0,
+        "pad_type_id": 0,
+        "pad_token": "[PAD]"
+      }
+    }
+  },
+  "output": {
+    "path": "C:\\Users\\pablo\\Downloads\\Ixos\\models\\lab\\artifacts\\potion-code-16M-v2-unbounded",
+    "files": {
+      "model.safetensors": "75cf7a6c2171b230ad19b1e7d8e0b1aee86da5a02af8e7cacedd9921d227623c",
+      "tokenizer.json": "936b2d026b9e81fb683eab537ea37c5a1a65a4d02ad9cb92ce269fb8bc561ebf",
+      "config.json": "148e5691a6fcc553437156859701fba017a1ba5d340b170f17e0f3668fb861a7"
+    },
+    "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+    "file_bytes": 33514284,
+    "tokenizer_settings": {
+      "truncation": null,
+      "padding": null
+    }
+  },
+  "inherited_settings": {
+    "truncation": {
+      "direction": "Right",
+      "max_length": 512,
+      "strategy": "LongestFirst",
+      "stride": 0
+    },
+    "padding": {
+      "strategy": "BatchLongest",
+      "direction": "Right",
+      "pad_to_multiple_of": null,
+      "pad_id": 0,
+      "pad_type_id": 0,
+      "pad_token": "[PAD]"
+    }
+  },
+  "weights_unchanged": true,
+  "new_training": false
+}

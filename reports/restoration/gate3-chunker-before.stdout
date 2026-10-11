@@ -1,0 +1,18 @@
+
+running 1 test
+test ixos_embed::chunker::tests::unicode_overlap_and_truncation_remain_on_boundaries ... FAILED
+
+failures:
+
+---- ixos_embed::chunker::tests::unicode_overlap_and_truncation_remain_on_boundaries stdout ----
+
+thread 'ixos_embed::chunker::tests::unicode_overlap_and_truncation_remain_on_boundaries' (13884) panicked at src\ixos_embed\chunker.rs:59:33:
+byte index 107 is not a char boundary; it is inside '🦀' (bytes 106..110) of `缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀缓存🦀`
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    ixos_embed::chunker::tests::unicode_overlap_and_truncation_remain_on_boundaries
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 516 filtered out; finished in 0.00s
+

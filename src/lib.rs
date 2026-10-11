@@ -40,6 +40,7 @@ pub mod journalist_mode;
 pub mod optimization;
 pub mod parsers;
 pub mod pro;
+pub mod retrieval;
 pub mod security;
 pub mod storage;
 pub mod telemetry;

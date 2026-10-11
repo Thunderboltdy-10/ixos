@@ -142,8 +142,13 @@ impl EmbeddingCache for XattrCache {
             }
             Err(e) => {
                 tracing::warn!("xattr delete error for {:?}: {}", path, e);
-                // Don't propagate delete errors - best effort
-                Ok(())
+                // Linux reports an absent attribute as ENODATA rather than
+                // ErrorKind::NotFound. Preserve idempotent deletion (including a
+                // concurrent remover), but propagate permission/I/O failures.
+                match xattr::get(path, XATTR_NAME) {
+                    Ok(None) => Ok(()),
+                    _ => Err(CacheError::Io(e)),
+                }
             }
         }
     }
@@ -166,6 +171,15 @@ mod tests {
         let key = [0x42u8; 32];
         let fingerprint = [0xABu8; 32];
         MetadataValidator::new(&key, fingerprint)
+    }
+
+    #[test]
+    fn delete_missing_attribute_is_idempotent() {
+        let source = NamedTempFile::new().unwrap();
+        if !XattrCache::is_supported_static(source.path()) { return; }
+        let cache = XattrCache::with_validator(test_validator());
+        cache.delete(source.path()).unwrap();
+        cache.delete(source.path()).unwrap();
     }
 
     #[test]

@@ -1,0 +1,21 @@
+{
+  "url": "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scifact.zip",
+  "archive_md5": "5f7d1de60b170fc8027bb7898e2efca1",
+  "archive_sha256": "536e14446a0ba56ed1398ab1055f39fe852686ecad24a6306c80c490fa8e0165",
+  "manifest_sha256": "4b88b6888d28af1706a63d19dd32523e4c684b987726494c294a3fa8c38964bc",
+  "sources": 5183,
+  "queries_by_split": {
+    "dev": 460,
+    "validation": 71,
+    "test": 300
+  },
+  "families_by_split": {
+    "dev": 280,
+    "validation": 45,
+    "test": 247
+  },
+  "excluded_selection_queries": 278,
+  "excluded_identity_sha256": "4e340da1e743fd46febe1ab2596384cd0a7cb3b4b8d235eb4d5084d43a7b7601",
+  "official_test_preserved": true,
+  "format": "original title newline original abstract newline"
+}

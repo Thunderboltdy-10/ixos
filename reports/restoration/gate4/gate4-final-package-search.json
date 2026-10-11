@@ -1,0 +1,1 @@
+{"results":[{"path":"storage/personal_ranking.rs","score":9.188759,"view":{"path":"storage/personal_ranking.rs","start_line":165,"end_line":169,"text":"}\n\nfn should_fallback_from_native_error(error: &std::io::Error) -> bool {\n    matches!(\n        error.kind(),"}}]}

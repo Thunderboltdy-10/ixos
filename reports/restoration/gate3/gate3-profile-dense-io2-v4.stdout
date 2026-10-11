@@ -1,0 +1,82 @@
+[
+  {
+    "condition": "fresh-jit",
+    "runs": 3,
+    "p50": 1733.3924999984447,
+    "p95": 1881.6216899998835,
+    "median_phases": {
+      "cacheReadMs": 5.792000000000138,
+      "cacheWriteMs": 0.0,
+      "documentEmbedMs": 985.082,
+      "extractionMs": 8.248899999999898,
+      "ioBatchWallMs": 208.5575999999996,
+      "ioReadMs": 280.1566999999996,
+      "lexicalPrepareMs": 204.08220000000037,
+      "queryEmbedMs": 0.058499999999999996,
+      "queryMs": 9.2202,
+      "refreshMs": 1483.0981,
+      "requestMs": 1492.5646000000002,
+      "sourceHashMs": 10.098599999999932
+    }
+  },
+  {
+    "condition": "fresh-native-warm",
+    "runs": 3,
+    "p50": 887.2281000003568,
+    "p95": 891.3050999988627,
+    "median_phases": {
+      "cacheReadMs": 275.3560000000001,
+      "cacheWriteMs": 0.0,
+      "documentEmbedMs": 0.003,
+      "extractionMs": 8.723299999999883,
+      "ioBatchWallMs": 350.9270000000007,
+      "ioReadMs": 282.7736000000003,
+      "lexicalPrepareMs": 207.51729999999955,
+      "queryEmbedMs": 0.0614,
+      "queryMs": 8.0879,
+      "refreshMs": 639.949,
+      "requestMs": 647.9667999999999,
+      "sourceHashMs": 10.12999999999992
+    }
+  },
+  {
+    "condition": "resident-first",
+    "runs": 1,
+    "p50": 627.2201999963727,
+    "p95": 627.2201999963727,
+    "median_phases": {
+      "cacheReadMs": 265.6709000000025,
+      "cacheWriteMs": 0.0,
+      "documentEmbedMs": 0.0021,
+      "extractionMs": 8.291199999999911,
+      "ioBatchWallMs": 336.19940000000065,
+      "ioReadMs": 270.8645000000009,
+      "lexicalPrepareMs": 206.2685999999997,
+      "queryEmbedMs": 0.0549,
+      "queryMs": 7.867799999999999,
+      "refreshMs": 618.146,
+      "requestMs": 626.4917,
+      "sourceHashMs": 10.197199999999915
+    }
+  },
+  {
+    "condition": "resident-warm",
+    "runs": 3,
+    "p50": 211.57289999973727,
+    "p95": 240.7400099982624,
+    "median_phases": {
+      "cacheReadMs": 5.980499999999938,
+      "cacheWriteMs": 0.0,
+      "documentEmbedMs": 0.00039999999999999996,
+      "extractionMs": 0.0,
+      "ioBatchWallMs": 164.1374000000002,
+      "ioReadMs": 244.4529,
+      "lexicalPrepareMs": 0.0,
+      "queryEmbedMs": 0.0637,
+      "queryMs": 7.1829,
+      "refreshMs": 203.50969999999998,
+      "requestMs": 210.8797,
+      "sourceHashMs": 4.308899999999999
+    }
+  }
+]

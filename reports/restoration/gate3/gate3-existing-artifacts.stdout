@@ -1,0 +1,4 @@
+ixos-flash-v1 4ae163ab997520fdae4c6ecce9fcb9c029f6067e0c12395cf1af3a507969d531 {'weights': {'dtype': 'F64', 'shape': [43729]}, 'embeddings': {'dtype': 'F16', 'shape': [43729, 512]}}
+ixos-flash-v2 c3b6ad391ad38982393425c9bccd6333143eb5ad8d1e80f80fdba2631f656a08 {'weights': {'dtype': 'F64', 'shape': [33428]}, 'embeddings': {'dtype': 'I8', 'shape': [33428, 512]}}
+ixos-pro-v1 4d4b76157f056ab945179f86daf7aba55d4df170a5e0a4b82c61685da40547ec {'weights': {'dtype': 'F64', 'shape': [43729]}, 'embeddings': {'dtype': 'F16', 'shape': [43729, 768]}}
+potion-base-8M-int8 f728c621941e79b9daf4d8979a4309adc618a0c6ef11f3aa7a3844b43b17ccdc {'embeddings': {'dtype': 'I8', 'shape': [29528, 256]}}

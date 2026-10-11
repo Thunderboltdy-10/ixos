@@ -1,0 +1,19 @@
+ixos-flash-v2: semble-axios intro-uniform; 112/132 passages
+ixos-flash-v2: semble-tokio intro-uniform; 1234/2122 passages
+ixos-flash-v2: beir-scifact intro-uniform; 6554/6558 passages
+potion-code-16M-v2: semble-axios intro-uniform; 112/132 passages
+potion-code-16M-v2: semble-axios intro-lex-diverse; 112/132 passages
+potion-code-16M-v2: semble-axios all-passages; 132/132 passages
+potion-code-16M-v2: semble-tokio intro-uniform; 1234/2122 passages
+potion-code-16M-v2: semble-tokio intro-lex-diverse; 1231/2122 passages
+potion-code-16M-v2: semble-tokio all-passages; 2122/2122 passages
+potion-code-16M-v2: beir-scifact intro-uniform; 6554/6558 passages
+potion-code-16M-v2: beir-scifact intro-lex-diverse; 6554/6558 passages
+potion-code-16M-v2: beir-scifact all-passages; 6558/6558 passages
+potion-retrieval-32M: semble-axios intro-uniform; 112/132 passages
+potion-retrieval-32M: semble-axios whole-token-centroid; 67/132 passages
+potion-retrieval-32M: semble-tokio intro-uniform; 1234/2122 passages
+potion-retrieval-32M: semble-tokio whole-token-centroid; 375/2122 passages
+potion-retrieval-32M: beir-scifact intro-uniform; 6554/6558 passages
+potion-retrieval-32M: beir-scifact whole-token-centroid; 5183/6558 passages
+Completed 18 dataset/configuration screens; unique queries are reported separately.

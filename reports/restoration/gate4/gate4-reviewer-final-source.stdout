@@ -1,0 +1,11 @@
+{
+  "source": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-final-source",
+  "export": "git checkout-index --all --prefix=.tmp/gate4/clean-source/",
+  "git_index_tree": "fac55adcaf944e8c66d8e03af4fec82a86d48279",
+  "file_count": 2108,
+  "no_local_envs_weights_private_build_outputs": true,
+  "verified_archives": 98,
+  "verified_moved_receipts": 453,
+  "build_command": "cargo build --release --locked --bin ixos --manifest-path .tmp/gate4/clean-source/Cargo.toml --target-dir .tmp/gate4/reviewer-target",
+  "isolation": "Source and target directories are fresh. Installed Rust/C toolchain and existing Cargo registry cache are reused. Models are downloaded independently into a fresh custom destination; CLI uses the documented --model-path path and an absent explicit config. No OS-known-folder paths are redirected."
+}

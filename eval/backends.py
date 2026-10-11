@@ -81,7 +81,11 @@ def decode_ixos(stdout: bytes, root: Path, dataset: Dataset) -> tuple[list[str],
 
 
 def run_ixos(binary: Path, config: Path, root: Path, dataset: Dataset, query: str, *, cache_mode="ephemeral", limit=10, context=2, output_bytes=12000, extra_args=(), capture=None) -> Response:
-    argv = [str(binary.resolve()), "--config", str(config.resolve()), "search", query, "--dir", str(root.resolve()), "--json", "--stats", "--limit", str(limit), "--context", str(context), "--snippet-chars", "4000", "--max-output-bytes", str(output_bytes), "--cache-mode", cache_mode, *extra_args]
+    extras=list(extra_args)
+    measured='--model-path' in extras or ('--retrieval' in extras and extras[extras.index('--retrieval')+1]!='legacy')
+    if not measured and '--retrieval' not in extras:extras+=['--retrieval','legacy']
+    snippets=[] if measured else ['--snippet-chars','4000']
+    argv = [str(binary.resolve()), "--config", str(config.resolve()), "search", query, "--dir", str(root.resolve()), "--json", "--stats", "--limit", str(limit), "--context", str(context), *snippets, "--max-output-bytes", str(output_bytes), "--cache-mode", cache_mode, *extras]
     started = time.perf_counter()
     try:
         raw = subprocess.run(argv, capture_output=True, timeout=120)

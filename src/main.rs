@@ -1,10 +1,7 @@
-//! Ixos CLI - Privacy-first semantic file search
+//! Ixos CLI - CPU retrieval with bounded source evidence.
 //!
-//! A command-line interface for semantic file search with:
-//! - Progressive search results (lexical then semantic)
-//! - Multiple output formats (human, JSON, CSV, ripgrep)
-//! - Configuration file support
-//! - Privacy compliance (GDPR, CCPA)
+//! Code/document profiles, exact grep/read and resident JSONL are the default
+//! engine. Explicit legacy search retains progressive desktop compatibility.
 
 use std::io::{stdout, Write};
 use std::path::{Path, PathBuf};
@@ -52,9 +49,10 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     // Load configuration
-    let config = match &cli.config {
-        Some(path) => IxosConfig::load_from(path.clone()),
-        None => IxosConfig::load(),
+    let config = if matches!(&cli.command, Commands::Config { reset: true, .. }) {
+        IxosConfig::default()
+    } else {
+        IxosConfig::load_for_cli(cli.config.clone().unwrap_or_else(IxosConfig::default_path))?
     };
 
     install_crash_handler(
@@ -68,6 +66,7 @@ async fn main() -> anyhow::Result<()> {
     match cli.command {
         Commands::Search {
             query,
+            profile,
             retrieval,
             model_path,
             io_workers,
@@ -95,57 +94,86 @@ async fn main() -> anyhow::Result<()> {
             max_output_bytes,
             snippet_chars,
         } => {
-            if model_path.is_some()
-                || retrieval
-                    .is_some_and(|mode| mode != ixos_protocol::retrieval::RetrievalMode::Legacy)
-            {
-                anyhow::ensure!(!progressive && !deep_search && !stub_model && search_mode.is_none() && model.is_none() && pro_model.is_none() && !secure_timing,"Legacy/progressive model options cannot be mixed with the measured retrieval engine");
-                let root = dir.unwrap_or(std::env::current_dir()?);
-                if let Some(sandbox) = sandbox {
-                    anyhow::ensure!(
-                        root.canonicalize()?.starts_with(sandbox.canonicalize()?),
-                        "Search directory is outside --sandbox"
-                    );
+            if retrieval != Some(ixos_protocol::retrieval::RetrievalMode::Legacy) {
+                let outcome = (|| -> anyhow::Result<()> {
+                    anyhow::ensure!(!progressive && !deep_search && !stub_model && search_mode.is_none() && model.is_none() && pro_model.is_none() && !secure_timing && !evidence && snippet_chars.is_none() && !no_secure_ranking,"Legacy/progressive options require --retrieval legacy; measured JSON views are exact and --show-scores explains ranking");
+                    let root = dir
+                        .or_else(|| config.search.default_directory.clone())
+                        .unwrap_or(std::env::current_dir()?);
+                    if let Some(sandbox) = sandbox {
+                        anyhow::ensure!(
+                            root.canonicalize()?.starts_with(sandbox.canonicalize()?),
+                            "Search directory is outside --sandbox"
+                        );
+                    }
+                    let began = std::time::Instant::now();
+                    let mut options = config.retrieval.options(profile)?;
+                    options.mode = retrieval.unwrap_or(options.mode);
+                    options.representation = representation.unwrap_or(options.representation);
+                    options.io_workers = io_workers.unwrap_or(options.io_workers);
+                    options.typo_correction = typo_correction.unwrap_or(options.typo_correction);
+                    if let Some(mode) = cache_mode {
+                        options.persist =
+                            matches!(mode, ixos_protocol::cli::CliCacheMode::NativeCache);
+                    }
+                    options.limit = limit.unwrap_or(options.limit);
+                    options.context = context.unwrap_or(options.context);
+                    options.output_bytes = max_output_bytes.unwrap_or(options.output_bytes);
+                    options.semantic_floor = min_score.unwrap_or(options.semantic_floor);
+                    options.explain = show_scores || config.output.show_scores;
+                    let model_path =
+                        if options.mode == ixos_protocol::retrieval::RetrievalMode::Lexical {
+                            None
+                        } else {
+                            Some(config.retrieval.model(profile, model_path)?)
+                        };
+                    let selected_format = format
+                        .map(Into::into)
+                        .map(Ok)
+                        .unwrap_or_else(|| config.output.default_format.parse::<OutputFormat>())
+                        .map_err(anyhow::Error::msg)?;
+                    anyhow::ensure!(json || matches!(selected_format, OutputFormat::Json | OutputFormat::Human), "Measured retrieval supports human/JSON; add --retrieval legacy for other formats");
+                    let mut engine = ixos_protocol::retrieval::Engine::new(
+                        &root,
+                        model_path.as_deref(),
+                        options,
+                    )?;
+                    let model_load_ms = began.elapsed().as_secs_f64() * 1000.0;
+                    let (raw, diagnostics) = engine.search(&query, "cli", None)?;
+                    if json || matches!(selected_format, OutputFormat::Json) {
+                        stdout().write_all(&raw)?;
+                    } else {
+                        ixos_protocol::retrieval::commands::print_human(&raw)?;
+                    }
+                    if stats {
+                        eprintln!(
+                            "{}",
+                            serde_json::json!({"type":"stats","engine":"document-v1","modelLoadMs":model_load_ms,"fullRequestMs":began.elapsed().as_secs_f64()*1000.0,"diagnostics":diagnostics})
+                        );
+                    }
+                    Ok(())
+                })();
+                if let Err(error) = &outcome {
+                    if json
+                        || matches!(format, Some(ixos_protocol::cli::CliOutputFormat::Json))
+                        || format.is_none() && config.output.default_format == "json"
+                    {
+                        println!(
+                            "{}",
+                            serde_json::json!({"type":"error","message":error.to_string()})
+                        );
+                    }
                 }
-                let began = std::time::Instant::now();
-                let options = ixos_protocol::retrieval::Options {
-                    io_workers,
-                    typo_correction,
-                    mode: retrieval.unwrap_or(ixos_protocol::retrieval::RetrievalMode::Hybrid),
-                    representation: representation.unwrap_or_default(),
-                    persist: !matches!(
-                        cache_mode,
-                        Some(ixos_protocol::cli::CliCacheMode::Ephemeral)
-                    ),
-                    limit: limit.unwrap_or(config.search.default_limit),
-                    context: context.unwrap_or(2),
-                    output_bytes: max_output_bytes.unwrap_or(12000),
-                    semantic_floor: min_score.unwrap_or(0.25),
-                    explain: show_scores,
-                    ..Default::default()
-                };
-                let mut engine =
-                    ixos_protocol::retrieval::Engine::new(&root, model_path.as_deref(), options)?;
-                let model_load_ms = began.elapsed().as_secs_f64() * 1000.0;
-                let (raw, diagnostics) = engine.search(&query, "cli", None)?;
-                if json || matches!(format, Some(ixos_protocol::cli::CliOutputFormat::Json)) {
-                    stdout().write_all(&raw)?;
-                } else {
-                    anyhow::ensure!(
-                        format.is_none()
-                            || matches!(format, Some(ixos_protocol::cli::CliOutputFormat::Human)),
-                        "Measured retrieval supports human or JSON output"
-                    );
-                    ixos_protocol::retrieval::commands::print_human(&raw)?;
-                }
-                if stats {
-                    eprintln!(
-                        "{}",
-                        serde_json::json!({"type":"stats","engine":"document-v1","modelLoadMs":model_load_ms,"fullRequestMs":began.elapsed().as_secs_f64()*1000.0,"diagnostics":diagnostics})
-                    );
-                }
-                return Ok(());
+                return outcome;
             }
+            anyhow::ensure!(
+                profile.is_none()
+                    && model_path.is_none()
+                    && io_workers.is_none()
+                    && typo_correction.is_none()
+                    && representation.is_none(),
+                "Measured profile/model options cannot be mixed with --retrieval legacy"
+            );
             let resolved_format = format
                 .map(Into::into)
                 .map(Ok)
@@ -204,25 +232,34 @@ async fn main() -> anyhow::Result<()> {
         Commands::Serve {
             dir,
             model_path,
+            profile,
             io_workers,
             retrieval,
             representation,
             session,
+            typo_correction,
+            quiet_stats,
             jit,
             max_output_bytes,
         } => {
-            ixos_protocol::retrieval::commands::serve(
+            let mut options = config.retrieval.options(profile)?;
+            options.mode = retrieval.unwrap_or(options.mode);
+            options.representation = representation.unwrap_or(options.representation);
+            options.io_workers = io_workers.unwrap_or(options.io_workers);
+            options.session = session.unwrap_or(options.session);
+            options.typo_correction = typo_correction.unwrap_or(options.typo_correction);
+            options.persist = !jit && options.persist;
+            options.output_bytes = max_output_bytes.unwrap_or(options.output_bytes);
+            let model_path = if options.mode == ixos_protocol::retrieval::RetrievalMode::Lexical {
+                None
+            } else {
+                Some(config.retrieval.model(profile, model_path)?)
+            };
+            ixos_protocol::retrieval::commands::serve_with_diagnostics(
                 &dir,
                 model_path.as_deref(),
-                ixos_protocol::retrieval::Options {
-                    io_workers,
-                    mode: retrieval,
-                    representation,
-                    session,
-                    persist: !jit,
-                    output_bytes: max_output_bytes,
-                    ..Default::default()
-                },
+                options,
+                quiet_stats,
             )?;
         }
         Commands::Read {
@@ -283,7 +320,7 @@ async fn main() -> anyhow::Result<()> {
             stop,
             status,
         } => {
-            handle_daemon(foreground, stop, status)?;
+            handle_daemon(foreground, stop, status).await?;
         }
 
         Commands::Cache { action } => {
@@ -1050,7 +1087,7 @@ fn handle_config(
         return Ok(());
     }
 
-    let mut config = IxosConfig::load_from(config_path.clone());
+    let mut config = IxosConfig::load_for_cli(config_path.clone())?;
 
     if let Some(key) = get {
         match config.get(&key) {
@@ -1112,7 +1149,7 @@ fn handle_config(
 // Daemon Handler
 // =============================================================================
 
-fn handle_daemon(foreground: bool, stop: bool, status: bool) -> anyhow::Result<()> {
+async fn handle_daemon(foreground: bool, stop: bool, status: bool) -> anyhow::Result<()> {
     use ixos_protocol::daemon::{DaemonConfig, DaemonService};
 
     if status {
@@ -1134,23 +1171,14 @@ fn handle_daemon(foreground: bool, stop: bool, status: bool) -> anyhow::Result<(
 
         // Create daemon with default config
         let config = DaemonConfig::default();
-        let rt = tokio::runtime::Runtime::new()?;
-
-        rt.block_on(async {
-            let mut daemon = DaemonService::new(config);
-            if let Err(e) = daemon.start().await {
-                eprintln!("Failed to start daemon: {}", e);
-                return;
-            }
-
-            println!("Daemon started. Watching for file changes...");
-
-            // Wait for Ctrl+C
-            tokio::signal::ctrl_c().await.ok();
-
-            println!("\nStopping daemon...");
-            daemon.stop().await;
-        });
+        let mut daemon = DaemonService::new(config);
+        daemon.start().await?;
+        println!("Daemon started. Watching for file changes...");
+        // Reuse the CLI runtime; nesting Runtime::block_on here panics.
+        let interrupted = tokio::signal::ctrl_c().await;
+        println!("\nStopping daemon...");
+        daemon.stop().await;
+        interrupted?;
     } else {
         println!("Background daemon mode is disabled in this build.");
         println!("Use `ixos daemon --foreground`.");
@@ -1170,11 +1198,79 @@ async fn handle_cache(
     use ixos_protocol::storage::{get_cache_for_path, get_cache_for_path_with_fingerprint};
 
     match action {
-        CacheCommands::Stats { dir, json } => {
+        CacheCommands::Warm {
+            dir,
+            profile,
+            model_path,
+            representation,
+            io_workers,
+        } => {
+            let config = IxosConfig::load_for_cli(
+                config_path_override.unwrap_or_else(IxosConfig::default_path),
+            )?;
+            let mut options = config.retrieval.options(profile)?;
+            anyhow::ensure!(
+                options.mode != ixos_protocol::retrieval::RetrievalMode::Lexical,
+                "Lexical mode has no document vectors to warm"
+            );
+            options.persist = true;
+            options.representation = representation.unwrap_or(options.representation);
+            options.io_workers = io_workers.unwrap_or(options.io_workers);
+            let model_path = config.retrieval.model(profile, model_path)?;
+            let mut engine =
+                ixos_protocol::retrieval::Engine::new(&dir, Some(&model_path), options)?;
+            println!(
+                "{}",
+                serde_json::json!({"type":"cacheWarmup","diagnostics":engine.refresh()?})
+            );
+        }
+        CacheCommands::Stats { dir, json, legacy } => {
             let raw_dir = dir.unwrap_or_else(|| PathBuf::from("."));
             let target_dir = std::fs::canonicalize(&raw_dir).unwrap_or(raw_dir);
             if !target_dir.is_dir() {
                 anyhow::bail!("Cache directory not found: {}", target_dir.display());
+            }
+            if !legacy {
+                use ixos_protocol::security::crypto::sha256;
+                use std::io::Read;
+                let mut cache = ixos_protocol::retrieval::cache::DocumentCache::new([0; 32]);
+                let (mut total, mut present, mut valid, mut size) =
+                    (0usize, 0usize, 0usize, 0usize);
+                for entry in cache_file_walk(&target_dir) {
+                    total += 1;
+                    let path = entry.path().canonicalize()?;
+                    let mut raw = Vec::new();
+                    std::fs::File::open(&path)?
+                        .take(16 * 1024 * 1024 + 1)
+                        .read_to_end(&mut raw)?;
+                    if raw.len() > 16 * 1024 * 1024 {
+                        continue;
+                    }
+                    let Some(text) = ixos_protocol::parsers::extract_text_from_bytes(
+                        &path,
+                        &raw,
+                        16 * 1024 * 1024 + 1,
+                    ) else {
+                        continue;
+                    };
+                    let text = ixos_protocol::retrieval::normalize_text(&text);
+                    if text.chars().count() > 16 * 1024 * 1024 {
+                        continue;
+                    }
+                    let mut identity = sha256(&raw).to_vec();
+                    identity.extend_from_slice(&sha256(text.as_bytes()));
+                    let (found, current, bytes) = cache.inspect(&path, &sha256(&identity), &text);
+                    present += usize::from(found);
+                    valid += usize::from(current);
+                    size += bytes;
+                }
+                let payload = serde_json::json!({"namespace":"document-v1","total_files":total,"present_entries":present,"cached_files":valid,"cache_size_bytes":size,"model_compatibility":"Not checked; search --stats reports actual model/recipe hits","hit_rate_percent":if total>0 {valid as f64*100.0/total as f64} else {0.0}});
+                if json {
+                    println!("{payload}");
+                } else {
+                    println!("Document cache for {}\n{payload}", target_dir.display());
+                }
+                return Ok(());
             }
             let model_fingerprint = active_flash_model_fingerprint(config_path_override.clone())?;
 
@@ -1679,10 +1775,10 @@ fn handle_version(verbose: bool) {
 
         println!();
         println!("Features:");
-        println!("  - P0: Security Foundation (complete)");
-        println!("  - P1: Legal Compliance (complete)");
-        println!("  - P2.1: Progressive Search Engine");
-        println!("  - P2.2: CLI Interface");
+        println!("  - CPU code/document/lexical retrieval profiles");
+        println!("  - Signed ADS/xattr records and application-cache fallback");
+        println!("  - Bounded exact grep/read and resident JSONL sessions");
+        println!("  - Retained desktop progressive/compliance utilities");
 
         println!();
         println!("Config file: {}", IxosConfig::default_path().display());
@@ -1694,17 +1790,16 @@ fn handle_version(verbose: bool) {
 }
 
 async fn handle_release_check(quick: bool) -> anyhow::Result<()> {
-    println!("Release-check stub");
+    println!("Release verification requires captured native checks");
     println!("------------------");
     if quick {
         println!("Quick mode enabled.");
     }
-    println!("Full release-check workflow lands in Phase 7.");
-    println!("Current recommended checks:");
-    println!("  1) cargo test --test settings_matrix");
-    println!("  2) python scripts/run_settings_matrix.py");
-    println!("  3) cargo run --release --bin ixos-big-bench -- --dir . --runs 3");
-    Ok(())
+    println!("See docs/engineering/RELEASE.md and .github/workflows/engine-ci.yml.");
+    println!("  cargo test --workspace --locked --jobs 2");
+    println!("  python -m unittest discover -s eval -t .");
+    println!("  python scripts/verify_restored_cli.py --help");
+    anyhow::bail!("Release readiness is not established by this command; native platform and historical credential checks remain required")
 }
 
 async fn handle_doctor(json: bool, verbose: bool) -> anyhow::Result<()> {

@@ -49,7 +49,7 @@ function CacheDiagram({ active }: { active: boolean }) {
         className="font-mono text-[8px] mt-1 tracking-[0.12em]"
         style={{ color: "rgba(255,255,255,0.15)" }}
       >
-        Cache entry: 225 bytes · [ver][fingerprint][hash][embedding][signature]
+        CLI record: 643–2,375 bytes · [IXD1][recipe][source][locators][vectors][signature]
       </motion.div>
     </div>
   );

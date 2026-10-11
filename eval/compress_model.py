@@ -12,7 +12,7 @@ from pathlib import Path
 import shutil
 import struct
 import numpy as np
-from eval.contract import digest
+from eval.artifacts import digest
 
 DTYPES={'F32':np.dtype('<f4'),'F16':np.dtype('<f2'),'F64':np.dtype('<f8'),'I8':np.dtype('i1')}
 

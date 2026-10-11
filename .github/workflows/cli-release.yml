@@ -1,208 +1,82 @@
-name: CLI Release
-
+name: Prepare CLI draft release
 on:
-  push:
-    tags:
-      - "cli-v*"
-
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing reviewed CLI tag (cli-v...)
+        required: true
+        type: string
+permissions:
+  contents: read
 jobs:
-  build-cli:
-    permissions:
-      contents: write
+  build:
     strategy:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-latest
-            target_os: linux
-            target_arch: x86_64
-            rust_target: x86_64-unknown-linux-gnu
-          - runner: macos-latest
-            target_os: macos
-            target_arch: arm64
-            rust_target: aarch64-apple-darwin
-          - runner: macos-latest
-            target_os: macos
-            target_arch: x86_64
-            rust_target: x86_64-apple-darwin
-          - runner: windows-latest
-            target_os: windows
-            target_arch: x86_64
-            rust_target: x86_64-pc-windows-msvc
-    runs-on: ${{ matrix.runner }}
+          - os: ubuntu-latest
+            label: linux-x86_64
+            binary: target/release/ixos
+            extension: tar.gz
+          - os: macos-15
+            label: macos-arm64
+            binary: target/release/ixos
+            extension: tar.gz
+          - os: macos-15-intel
+            label: macos-x86_64
+            binary: target/release/ixos
+            extension: tar.gz
+          - os: windows-latest
+            label: windows-x86_64
+            binary: target/release/ixos.exe
+            extension: zip
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.rust_target }}
-
-      - name: Build ixos CLI
-        run: cargo build --locked --release --bin ixos --target ${{ matrix.rust_target }}
-
-      - name: Derive version
-        shell: bash
-        run: |
-          VERSION="${GITHUB_REF_NAME#cli-v}"
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-
-      - name: Package Unix artifact
-        if: matrix.target_os != 'windows'
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p dist/pkg
-          cp target/${{ matrix.rust_target }}/release/ixos dist/pkg/ixos
-          [ -f README.md ] && cp README.md dist/pkg/README.md || true
-          [ -f LICENSE ] && cp LICENSE dist/pkg/LICENSE || true
-          ARCHIVE="ixos-${VERSION}-${{ matrix.target_os }}-${{ matrix.target_arch }}.tar.gz"
-          tar -czf "dist/$ARCHIVE" -C dist/pkg .
-          if command -v shasum >/dev/null 2>&1; then
-            shasum -a 256 "dist/$ARCHIVE" > "dist/$ARCHIVE.sha256"
-          else
-            sha256sum "dist/$ARCHIVE" > "dist/$ARCHIVE.sha256"
-          fi
-
-      - name: Smoke test packaged Unix artifact
-        if: matrix.target_os != 'windows'
-        shell: bash
-        run: |
-          set -euo pipefail
-          ARCHIVE="dist/ixos-${VERSION}-${{ matrix.target_os }}-${{ matrix.target_arch }}.tar.gz"
-          mkdir -p dist/smoke
-          tar -xzf "$ARCHIVE" -C dist/smoke
-          test -x dist/smoke/ixos
-          host_arch="$(uname -m)"
-          if [[ "$host_arch" == "arm64" || "$host_arch" == "aarch64" ]]; then
-            host_arch="arm64"
-          elif [[ "$host_arch" == "x86_64" || "$host_arch" == "amd64" ]]; then
-            host_arch="x86_64"
-          fi
-
-          if [[ "$host_arch" == "${{ matrix.target_arch }}" ]]; then
-            dist/smoke/ixos --version
-          else
-            echo "Skipping execution smoke test for cross-arch artifact (host=$host_arch target=${{ matrix.target_arch }})"
-            file dist/smoke/ixos || true
-          fi
-
-      - name: Package Windows artifact
-        if: matrix.target_os == 'windows'
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Path dist -Force | Out-Null
-          $archive = "ixos-$env:VERSION-${{ matrix.target_os }}-${{ matrix.target_arch }}.zip"
-          $files = @("target/${{ matrix.rust_target }}/release/ixos.exe")
-          if (Test-Path "README.md") { $files += "README.md" }
-          if (Test-Path "LICENSE") { $files += "LICENSE" }
-          Compress-Archive -Path $files -DestinationPath (Join-Path "dist" $archive) -Force
-          $hash = (Get-FileHash -Path (Join-Path "dist" $archive) -Algorithm SHA256).Hash.ToLower()
-          Set-Content -Path (Join-Path "dist" "$archive.sha256") -Value "$hash  $archive"
-
-      - name: Smoke test packaged Windows artifact
-        if: matrix.target_os == 'windows'
-        shell: pwsh
-        run: |
-          $archive = Join-Path "dist" "ixos-$env:VERSION-${{ matrix.target_os }}-${{ matrix.target_arch }}.zip"
-          $smokeDir = Join-Path "dist" "smoke"
-          New-Item -ItemType Directory -Path $smokeDir -Force | Out-Null
-          Expand-Archive -Path $archive -DestinationPath $smokeDir -Force
-          & (Join-Path $smokeDir "ixos.exe") --version
-
-      - name: Validate installer scripts syntax
-        shell: bash
-        run: |
-          bash -n scripts/install.sh
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+          ref: ${{ inputs.tag }}
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
         with:
-          name: cli-${{ matrix.target_os }}-${{ matrix.target_arch }}
+          python-version: '3.11'
+      - name: Test core
+        run: cargo test --locked -p ixos-protocol --lib --bin ixos --test settings_matrix --jobs 2
+      - name: Build native CLI
+        run: cargo build --locked --release --bin ixos --jobs 2
+      - name: Prepare pinned actual models
+        run: |
+          python -m pip install numpy==2.3.5
+          python scripts/setup_models.py --profile all --destination models/release-check
+      - name: Actual model integration
+        run: python scripts/verify_restored_cli.py --binary ${{ matrix.binary }} --code-model models/release-check/potion-code-16M-v2-unbounded --documents-model models/release-check/potion-retrieval-32M-row-int8 --output reports/release/profile.json
+      - name: Package model setup and CLI
+        run: python scripts/package_cli.py --binary ${{ matrix.binary }} --output dist/ixos-${{ matrix.label }}.${{ matrix.extension }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cli-${{ matrix.label }}
           path: |
-            dist/*.tar.gz
-            dist/*.zip
-            dist/*.sha256
-
-      - name: Upload assets to private GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          files: |
-            dist/*.tar.gz
-            dist/*.zip
-            dist/*.sha256
-
-  publish-to-releases:
-    needs: build-cli
+            dist/*
+            reports/release/profile.json
+  draft:
+    needs: build
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Derive version
-        shell: bash
-        run: |
-          VERSION="${GITHUB_REF_NAME#cli-v}"
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/download-artifact@v4
         with:
           path: artifacts
-          merge-multiple: true
-
-      - name: Prepare release assets
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p release-assets
-
-          while IFS= read -r -d '' file; do
-            cp "$file" "release-assets/$(basename "$file")"
-          done < <(find artifacts -type f -print0)
-
-          if compgen -G "release-assets/*.sha256" > /dev/null; then
-            cat release-assets/*.sha256 > release-assets/SHA256SUMS
-          fi
-
-          # Publish stable installer script entrypoints from release assets.
-          cp scripts/install.sh release-assets/install.sh
-          cp scripts/install.ps1 release-assets/install.ps1
-
-          if ! find release-assets -maxdepth 1 -type f | grep -q .; then
-            echo "No file artifacts were found to publish." >&2
-            exit 1
-          fi
-
-          ls -la release-assets
-
-      - name: Upload to ixos-releases
+      - name: Create draft on the monorepo
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.RELEASES_PAT }}
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
-          TAG="${{ github.ref_name }}"
-          REPO="IxosProtocol/ixos-releases"
-          DEFAULT_BRANCH="$(gh api "repos/$REPO" --jq '.default_branch' || true)"
-
-          if [[ -z "$DEFAULT_BRANCH" || "$DEFAULT_BRANCH" == "null" ]]; then
-            echo "Unable to resolve default branch for $REPO. Ensure the repository has at least one commit." >&2
-            exit 1
-          fi
-
-          if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
-            gh release create "$TAG" \
-              --repo "$REPO" \
-              --target "$DEFAULT_BRANCH" \
-              --title "Ixos CLI $TAG" \
-              --notes "CLI release $TAG"
-          fi
-
-          mapfile -t files < <(find release-assets -maxdepth 1 -type f | sort)
-          gh release upload "$TAG" \
-            --repo "$REPO" \
-            --clobber \
-            "${files[@]}"
+          [[ "$RELEASE_TAG" =~ ^cli-v[0-9][A-Za-z0-9._-]*$ ]]
+          mapfile -d '' files < <(find artifacts -type f \( -name '*.zip' -o -name '*.tar.gz' -o -name '*.sha256' \) -print0)
+          [[ ${#files[@]} -ge 8 ]]
+          gh release create "$RELEASE_TAG" --verify-tag --draft --title "Ixos CLI $RELEASE_TAG" --notes "Free CPU retrieval CLI. Pinned model setup is included; see docs/CLI.md and the restoration evidence for conditions and limits." "${files[@]}"

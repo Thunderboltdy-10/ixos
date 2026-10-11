@@ -236,7 +236,7 @@ export function AskModeV4() {
             transition={{ duration: 0.6 }}
           >
             <p className="font-mono text-[10px] tracking-[0.35em] uppercase mb-5" style={{ color: "rgba(255,255,255,0.2)" }}>
-              Pro Feature · Ask Mode
+              Free · Ask Mode
             </p>
             <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
               Ask, don&apos;t{" "}

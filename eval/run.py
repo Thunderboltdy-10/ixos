@@ -22,16 +22,7 @@ from eval.backends import run_ixos
 from eval.contract import ContractError, canonical_hash, cluster_mean_ci, digest, load_dataset, score_query
 from eval.lexical import BM25, run_rg
 from eval.provenance import snapshot
-
-
-def artifact_identity(folder: Path) -> dict:
-    hashes = {name: digest((folder/name).read_bytes()) for name in ["model.safetensors", "tokenizer.json", "config.json"]}
-    payload = bytearray(b"ixos:model2vec-rs:0.1.4:unit-normalization-v1")
-    for name, sha in hashes.items():
-        payload.extend(name.encode())
-        payload.extend(bytes.fromhex(sha))
-    tokenizer=json.loads((folder/'tokenizer.json').read_text(encoding='utf-8'))
-    return {"path": str(folder.resolve()), "files": hashes, "fingerprint": digest(payload), "file_bytes": sum((folder/n).stat().st_size for n in hashes),'tokenizer_settings':{key:tokenizer.get(key) for key in ['truncation','padding']}}
+from eval.artifacts import artifact_identity
 
 
 def bundle_check(datasets):

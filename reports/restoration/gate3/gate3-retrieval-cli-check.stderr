@@ -1,0 +1,11 @@
+    Checking ixos-protocol v0.1.0 (C:\Users\pablo\Downloads\Ixos)
+warning: unused import: `HashSet`
+  --> src\ixos_rank\candidate_generator\mod.rs:53:33
+   |
+53 | use std::collections::{HashMap, HashSet};
+   |                                 ^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `ixos-protocol` (lib) generated 1 warning (run `cargo fix --lib -p ixos-protocol` to apply 1 suggestion)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.91s

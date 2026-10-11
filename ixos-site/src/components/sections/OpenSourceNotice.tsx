@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-/** Shared replacement for the retired subscription surfaces. */
+/** Shared free-access notice. */
 export function OpenSourceNotice({ variant, className = "" }: { variant?: string; className?: string }) {
   const prefix = variant && variant !== "main" ? `/${variant}` : "";
   return (

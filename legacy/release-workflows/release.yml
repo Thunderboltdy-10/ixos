@@ -1,0 +1,414 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            args: '--target aarch64-apple-darwin'
+          - platform: 'macos-latest'
+            args: '--target x86_64-apple-darwin'
+          - platform: 'ubuntu-22.04'
+            args: ''
+          - platform: 'windows-latest'
+            args: ''
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Install dependencies (Ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev librsvg2-dev patchelf
+
+          if apt-cache show libwebkit2gtk-4.1-dev >/dev/null 2>&1; then
+            WEBKIT_PKG="libwebkit2gtk-4.1-dev"
+            JSCORE_PKG="libjavascriptcoregtk-4.1-dev"
+          else
+            WEBKIT_PKG="libwebkit2gtk-4.0-dev"
+            JSCORE_PKG="libjavascriptcoregtk-4.0-dev"
+          fi
+
+          if apt-cache show libayatana-appindicator3-dev >/dev/null 2>&1; then
+            APPINDICATOR_PKG="libayatana-appindicator3-dev"
+          else
+            APPINDICATOR_PKG="libappindicator3-dev"
+          fi
+
+          sudo apt-get install -y "$WEBKIT_PKG" "$JSCORE_PKG" "$APPINDICATOR_PKG"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install Rust (default target)
+        if: matrix.platform != 'macos-latest'
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Rust (macOS cross-targets)
+        if: matrix.platform == 'macos-latest'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Install npm dependencies
+        run: npm ci --no-audit
+
+      - name: Ensure bundled model assets
+        shell: bash
+        env:
+          FLASH_MODEL_REPO: ${{ vars.FLASH_MODEL_REPO }}
+          FLASH_MODEL_REF: ${{ vars.FLASH_MODEL_REF }}
+          FLASH_MODEL_SUBDIR: ${{ vars.FLASH_MODEL_SUBDIR }}
+          POTION_MODEL_REPO: ${{ vars.POTION_MODEL_REPO }}
+          POTION_MODEL_REF: ${{ vars.POTION_MODEL_REF }}
+        run: |
+          set -euo pipefail
+
+          FLASH_MODEL_REPO="${FLASH_MODEL_REPO:-Thunderboltdy10/Ixos-Flash}"
+          FLASH_MODEL_REF="${FLASH_MODEL_REF:-main}"
+          FLASH_MODEL_SUBDIR="${FLASH_MODEL_SUBDIR:-ixos-flash-v2}"
+          POTION_MODEL_REPO="${POTION_MODEL_REPO:-minishlab/potion-base-8M}"
+          POTION_MODEL_REF="${POTION_MODEL_REF:-main}"
+
+          fetch_if_missing() {
+            local target="$1"
+            shift
+            if [[ -s "$target" ]]; then
+              return 0
+            fi
+
+            mkdir -p "$(dirname "$target")"
+            rm -f "$target"
+            for url in "$@"; do
+              echo "Attempting download: $url"
+              if curl -fsSL "$url" -o "$target"; then
+                if [[ -s "$target" ]]; then
+                  echo "Downloaded $(basename "$target")"
+                  return 0
+                fi
+                rm -f "$target"
+              fi
+            done
+
+            echo "Failed to download required model file: $target" >&2
+            return 1
+          }
+
+          fetch_if_missing "models/ixos-flash-v2/config.json" \
+            "https://huggingface.co/$FLASH_MODEL_REPO/resolve/$FLASH_MODEL_REF/$FLASH_MODEL_SUBDIR/config.json" \
+            "https://huggingface.co/$FLASH_MODEL_REPO/resolve/$FLASH_MODEL_REF/config.json"
+
+          fetch_if_missing "models/ixos-flash-v2/model.safetensors" \
+            "https://huggingface.co/$FLASH_MODEL_REPO/resolve/$FLASH_MODEL_REF/$FLASH_MODEL_SUBDIR/model.safetensors" \
+            "https://huggingface.co/$FLASH_MODEL_REPO/resolve/$FLASH_MODEL_REF/model.safetensors"
+
+          fetch_if_missing "models/ixos-flash-v2/tokenizer.json" \
+            "https://huggingface.co/$FLASH_MODEL_REPO/resolve/$FLASH_MODEL_REF/$FLASH_MODEL_SUBDIR/tokenizer.json" \
+            "https://huggingface.co/$FLASH_MODEL_REPO/resolve/$FLASH_MODEL_REF/tokenizer.json"
+
+          fetch_if_missing "models/potion-base-8M-int8/config.json" \
+            "https://huggingface.co/$POTION_MODEL_REPO/resolve/$POTION_MODEL_REF/config.json"
+          fetch_if_missing "models/potion-base-8M-int8/model.safetensors" \
+            "https://huggingface.co/$POTION_MODEL_REPO/resolve/$POTION_MODEL_REF/model.safetensors"
+          fetch_if_missing "models/potion-base-8M-int8/tokenizer.json" \
+            "https://huggingface.co/$POTION_MODEL_REPO/resolve/$POTION_MODEL_REF/tokenizer.json"
+
+          mkdir -p models/ixos-pro-v2
+          if [[ ! -s "models/ixos-pro-v2/pro_v2.json" ]]; then
+            cat > models/ixos-pro-v2/pro_v2.json <<'JSON'
+          {
+            "id": "ixos-pro-v2",
+            "type": "fusion",
+            "description": "Pro v2 cascade: potion fast pass -> flash top-K refinement -> lexical fusion",
+            "flash_model": "ixos-flash-v2",
+            "pro_model": "potion-base-8m-int8",
+            "fusion": {
+              "flash": 0.2672,
+              "pro": 0.2725,
+              "lexical": 0.4602,
+              "dir_prior": 0.0
+            },
+            "cascade": {
+              "top_k": 120,
+              "gap_threshold": 0.05,
+              "lexical_threshold": 0.15,
+              "short_query_len": 2,
+              "entropy_threshold": 0.9
+            },
+            "notes": "Potion is an internal dependency and not exposed as a user mode."
+          }
+          JSON
+          fi
+
+          required=(
+            "models/ixos-flash-v2/config.json"
+            "models/ixos-flash-v2/model.safetensors"
+            "models/ixos-flash-v2/tokenizer.json"
+            "models/potion-base-8M-int8/config.json"
+            "models/potion-base-8M-int8/model.safetensors"
+            "models/potion-base-8M-int8/tokenizer.json"
+            "models/ixos-pro-v2/pro_v2.json"
+          )
+          for file in "${required[@]}"; do
+            test -s "$file" || { echo "Required model file missing/empty: $file" >&2; exit 1; }
+          done
+
+          # Guard against accidentally bundling LFS pointers instead of real model weights.
+          flash_size="$(wc -c < models/ixos-flash-v2/model.safetensors)"
+          potion_size="$(wc -c < models/potion-base-8M-int8/model.safetensors)"
+          if [[ "$flash_size" -lt 1000000 || "$potion_size" -lt 1000000 ]]; then
+            echo "Model safetensors files look too small (possible LFS pointer checkout)." >&2
+            echo "ixos-flash-v2/model.safetensors: $flash_size bytes" >&2
+            echo "potion-base-8M-int8/model.safetensors: $potion_size bytes" >&2
+            exit 1
+          fi
+
+      - name: Derive version from tag
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "Derived version: $VERSION"
+
+      - name: Update version in tauri.conf.json and package.json
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: |
+          # Update version in tauri.conf.json using Node.js (cross-platform)
+          node -e "
+            const fs = require('fs');
+            const version = process.env.VERSION;
+            const tauri = JSON.parse(fs.readFileSync('ixos-search/src-tauri/tauri.conf.json', 'utf8'));
+            tauri.version = version;
+            fs.writeFileSync('ixos-search/src-tauri/tauri.conf.json', JSON.stringify(tauri, null, 2) + '\n');
+            console.log('Updated tauri.conf.json to ' + version);
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = version;
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+            console.log('Updated package.json to ' + version);
+          "
+
+      - name: Verify desktop build env
+        run: node scripts/verify-desktop-build-env.js
+
+      - name: Build UI
+        working-directory: ixos-search/ui
+        env:
+        run: npm run build
+
+      - name: Clean prior Tauri bundle outputs
+        shell: bash
+        run: node scripts/clean-tauri-output.js
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Ixos ${{ github.ref_name }}'
+          releaseBody: 'See the assets to download this version and install.'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+
+  copy-to-releases:
+    needs: publish-tauri
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download release artifacts from private draft
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          SOURCE_REPO="${{ github.repository }}"
+
+          for attempt in $(seq 1 18); do
+            asset_count="$(gh release view "$TAG" --repo "$SOURCE_REPO" --json assets --jq '.assets | length' 2>/dev/null || echo 0)"
+            if [[ "$asset_count" -gt 0 ]]; then
+              echo "Found draft release $TAG in $SOURCE_REPO with $asset_count assets"
+              break
+            fi
+            if [[ "$attempt" -eq 18 ]]; then
+              echo "Release $TAG with assets was not found in $SOURCE_REPO after waiting." >&2
+              gh release list --repo "$SOURCE_REPO" --limit 10 || true
+              exit 1
+            fi
+            echo "Waiting for draft release assets (attempt $attempt/18)..."
+            sleep 10
+          done
+
+          gh release download "$TAG" \
+            --repo "$SOURCE_REPO" \
+            --dir artifacts \
+            --clobber
+
+      - name: Prepare fixed-name artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          cd artifacts
+          # Create fixed-name copies for stable "latest" URLs
+          for file in ./*_x64-setup.exe; do cp "$file" ixos-setup.exe; done
+          for file in ./*_aarch64.dmg; do cp "$file" ixos-aarch64.dmg; done
+          for file in ./*_x64.dmg; do cp "$file" ixos-x64.dmg; done
+          for file in ./*.AppImage; do cp "$file" ixos.AppImage; done
+          cd ..
+
+      - name: Upload desktop installers to ixos-releases
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_PAT }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          REPO="IxosProtocol/ixos-releases"
+
+          if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --repo "$REPO" \
+              --title "Ixos $TAG" \
+              --notes "Desktop release $TAG"
+          fi
+
+          files=()
+          for candidate in artifacts/ixos-setup.exe artifacts/ixos-aarch64.dmg artifacts/ixos-x64.dmg artifacts/ixos.AppImage; do
+            if [[ -f "$candidate" ]]; then
+              files+=("$candidate")
+            fi
+          done
+
+          while IFS= read -r -d '' candidate; do
+            files+=("$candidate")
+          done < <(find artifacts -type f \( \
+            -name "*.app.tar.gz" -o \
+            -name "*.app.tar.gz.sig" -o \
+            -name "*.AppImage.tar.gz" -o \
+            -name "*.AppImage.tar.gz.sig" -o \
+            -name "*.nsis.zip" -o \
+            -name "*.nsis.zip.sig" -o \
+            -name "*.msi.zip" -o \
+            -name "*.msi.zip.sig" \
+          \) -print0)
+
+          if [[ "${#files[@]}" -eq 0 ]]; then
+            echo "No desktop release files were prepared." >&2
+            exit 1
+          fi
+
+          gh release upload "$TAG" \
+            --repo "$REPO" \
+            --clobber \
+            "${files[@]}" \
+            scripts/install.sh \
+            scripts/install.ps1
+
+  generate-latest-json:
+    needs: copy-to-releases
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Download release artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_PAT }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          REPO="IxosProtocol/ixos-releases"
+
+          # Wait for release to be fully available with extended timeout
+          for attempt in $(seq 1 30); do
+            if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+              asset_count="$(gh release view "$TAG" --repo "$REPO" --json assets --jq '.assets | length' 2>/dev/null || echo 0)"
+              if [[ "$asset_count" -gt 0 ]]; then
+                echo "Found release $TAG in $REPO with $asset_count assets"
+                break
+              fi
+            fi
+            if [[ "$attempt" -eq 30 ]]; then
+              echo "Release $TAG not found or has no assets in $REPO after maximum wait." >&2
+              echo "Checking if release exists at all..." >&2
+              gh release list --repo "$REPO" --limit 5 || true
+              exit 1
+            fi
+            echo "Waiting for $REPO release (attempt $attempt/30)..."
+            sleep 10
+          done
+
+          gh release download "$TAG" \
+            --repo "$REPO" \
+            --dir artifacts \
+            --clobber
+
+      - name: Generate and upload latest.json
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_PAT }}
+          ARTIFACTS_DIR: artifacts
+          VERSION: ${{ github.ref_name }}
+        run: node scripts/generate-latest-json.js
+
+  publish-draft:
+    needs: copy-to-releases
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish source repo draft if present
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          SOURCE_REPO="${{ github.repository }}"
+
+          # Wait for draft release to be available in source repo
+          for attempt in $(seq 1 18); do
+            if gh release view "$TAG" --repo "$SOURCE_REPO" >/dev/null 2>&1; then
+              echo "Found draft release $TAG in $SOURCE_REPO"
+              break
+            fi
+            if [[ "$attempt" -eq 18 ]]; then
+              echo "No draft release $TAG found in $SOURCE_REPO after waiting. This is normal if Tauri didn't create one."
+              echo "Skipping publish-draft."
+              exit 0
+            fi
+            echo "Waiting for draft release (attempt $attempt/18)..."
+            sleep 10
+          done
+
+          # Now try to publish
+          if gh release view "$TAG" --repo "$SOURCE_REPO" >/dev/null 2>&1; then
+            gh release edit "$TAG" --draft=false --repo "$SOURCE_REPO"
+            echo "Published draft release $TAG in $SOURCE_REPO"
+          else
+            echo "No release to publish in $SOURCE_REPO"
+          fi

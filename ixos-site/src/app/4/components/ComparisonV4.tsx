@@ -6,7 +6,7 @@ import { motion, useInView, AnimatePresence } from "framer-motion";
 // ─── Qualitative capability matrix ───────────────────────────────────────────
 // Replaces the invented numeric bar chart.
 // Uses checkmarks / partial / not-applicable — no fabricated scores.
-// "Pro" denotes Ixos Pro tier only. Competitor info is broadly accurate
+// "Pro" denotes an optional advanced facility. Competitor info is broadly accurate
 // to public documentation, not a precise benchmark.
 
 type Support = "yes" | "partial" | "no" | "pro";
@@ -62,8 +62,8 @@ const ROWS: Row[] = [
   },
   {
     feature: "Natural language queries",
-    note: "Intent-aware query understanding (Pro tier)",
-    ixos: "pro",
+    note: "Free intent-aware query understanding in the retained pipeline",
+    ixos: "yes",
     grep: "no",
     spotlight: "no",
     vscode: "no",
@@ -114,7 +114,7 @@ function SupportCell({ support, isIxos }: { support: Support; isIxos: boolean })
     pro: {
       icon: "◆",
       color: "#7C3AED",
-      label: "Pro tier",
+      label: "Optional advanced",
     },
   };
   const c = configs[support];
@@ -130,7 +130,7 @@ function SupportCell({ support, isIxos }: { support: Support; isIxos: boolean })
       </span>
       {support === "pro" && (
         <span className="font-mono text-[8px] tracking-[0.15em]" style={{ color: "#7C3AED", opacity: 0.7 }}>
-          Pro
+          Optional
         </span>
       )}
     </div>
@@ -289,7 +289,7 @@ export function ComparisonV4() {
               { icon: "■", label: "Supported", color: "#2DD4BF" },
               { icon: "◐", label: "Partial", color: "rgba(255,255,255,0.22)" },
               { icon: "—", label: "Not supported", color: "rgba(255,255,255,0.1)" },
-              { icon: "◆", label: "Pro tier", color: "#7C3AED" },
+              { icon: "◆", label: "Optional advanced", color: "#7C3AED" },
             ].map((item) => (
               <div key={item.label} className="flex items-center gap-2">
                 <span className="font-mono text-xs" style={{ color: item.color }}>{item.icon}</span>

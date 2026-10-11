@@ -1,0 +1,6 @@
+{
+  "manifest": "dataset\\restoration\\own-sessions-v2\\sessions.json",
+  "sha256": "d4668f335f0a336a8e1db03f2f21d44a2fdd90d600ed0624d80159a1edf61e64",
+  "queries": 12,
+  "sources": 111
+}

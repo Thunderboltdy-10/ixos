@@ -1,0 +1,8 @@
+test_drift_clears_bounded_history (eval.test_retrieval.SessionAlgorithmTests.test_drift_clears_bounded_history) ... ok
+test_feedback_cannot_read_unreturned_documents (eval.test_retrieval.SessionAlgorithmTests.test_feedback_cannot_read_unreturned_documents) ... ok
+test_short_anaphora_retains_topic_but_explicit_switch_resets (eval.test_retrieval.SessionAlgorithmTests.test_short_anaphora_retains_topic_but_explicit_switch_resets) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.064s
+
+OK

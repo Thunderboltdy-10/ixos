@@ -1,0 +1,8 @@
+{
+  "file_count": 2108,
+  "git_index_tree": "fac55adcaf944e8c66d8e03af4fec82a86d48279",
+  "verified_archives": 98,
+  "verified_moved_receipts": 453,
+  "tested_runtime_and_setup_files_unchanged": 124,
+  "runtime_inputs_sha256": "32d6c4a55e468053f511113237c3b7fc20f31ae44ed72bedf7bd79df866388c7"
+}

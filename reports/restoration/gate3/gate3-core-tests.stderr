@@ -1,0 +1,25 @@
+   Compiling ixos-protocol v0.1.0 (C:\Users\pablo\Downloads\Ixos)
+warning: unused import: `HashSet`
+  --> src\ixos_rank\candidate_generator\mod.rs:53:33
+   |
+53 | use std::collections::{HashMap, HashSet};
+   |                                 ^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `ixos-protocol` (lib test) generated 1 warning (1 duplicate)
+warning: `ixos-protocol` (lib) generated 1 warning (run `cargo fix --lib -p ixos-protocol` to apply 1 suggestion)
+warning: unused import: `LexicalEngine`
+  --> src\main.rs:25:45
+   |
+25 |     CandidateLexicalEngine, IntentDetector, LexicalEngine, ProgressiveSearchConfig,
+   |                                             ^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `ixos-protocol` (bin "ixos" test) generated 1 warning
+warning: `ixos-protocol` (bin "ixos") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 19.43s
+     Running unittests src\lib.rs (target\debug\deps\ixos_protocol-1112a63a901a6c40.exe)
+     Running unittests src\main.rs (target\debug\deps\ixos-c1980c318a02669b.exe)
+     Running tests\settings_matrix.rs (target\debug\deps\settings_matrix-0bbaee840d4f494c.exe)

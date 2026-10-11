@@ -1,0 +1,31 @@
+
+> ixos-site@0.1.0 test:visual:update
+> playwright test tests/landing.visual.spec.ts --update-snapshots
+
+
+Running 13 tests using 1 worker
+
+C:\Users\pablo\Downloads\Ixos\ixos-site\.visual\landing.visual.spec.ts\variant-1-1440.png is re-generated, writing actual.
+  ok  1 tests\landing.visual.spec.ts:13:9 › /1 w1440 (22.2s)
+C:\Users\pablo\Downloads\Ixos\ixos-site\.visual\landing.visual.spec.ts\variant-1-1024.png is re-generated, writing actual.
+  ok  2 tests\landing.visual.spec.ts:13:9 › /1 w1024 (21.8s)
+C:\Users\pablo\Downloads\Ixos\ixos-site\.visual\landing.visual.spec.ts\variant-1-390.png is re-generated, writing actual.
+  ok  3 tests\landing.visual.spec.ts:13:9 › /1 w390 (20.4s)
+C:\Users\pablo\Downloads\Ixos\ixos-site\.visual\landing.visual.spec.ts\variant-2-1440.png is re-generated, writing actual.
+  ok  4 tests\landing.visual.spec.ts:13:9 › /2 w1440 (22.0s)
+C:\Users\pablo\Downloads\Ixos\ixos-site\.visual\landing.visual.spec.ts\variant-2-1024.png is re-generated, writing actual.
+  ok  5 tests\landing.visual.spec.ts:13:9 › /2 w1024 (21.3s)
+C:\Users\pablo\Downloads\Ixos\ixos-site\.visual\landing.visual.spec.ts\variant-2-390.png is re-generated, writing actual.
+  ok  6 tests\landing.visual.spec.ts:13:9 › /2 w390 (20.1s)
+C:\Users\pablo\Downloads\Ixos\ixos-site\.visual\landing.visual.spec.ts\variant-3-1440.png is re-generated, writing actual.
+  ok  7 tests\landing.visual.spec.ts:13:9 › /3 w1440 (24.3s)
+C:\Users\pablo\Downloads\Ixos\ixos-site\.visual\landing.visual.spec.ts\variant-3-1024.png is re-generated, writing actual.
+  ok  8 tests\landing.visual.spec.ts:13:9 › /3 w1024 (21.3s)
+C:\Users\pablo\Downloads\Ixos\ixos-site\.visual\landing.visual.spec.ts\variant-3-390.png is re-generated, writing actual.
+  ok  9 tests\landing.visual.spec.ts:13:9 › /3 w390 (20.6s)
+  ok 10 tests\landing.visual.spec.ts:80:7 › /1 no horizontal overflow (2.3s)
+  ok 11 tests\landing.visual.spec.ts:80:7 › /2 no horizontal overflow (2.1s)
+  ok 12 tests\landing.visual.spec.ts:80:7 › /3 no horizontal overflow (2.1s)
+  ok 13 tests\landing.visual.spec.ts:80:7 › /demo no horizontal overflow (1.9s)
+
+  13 passed (4.1m)

@@ -46,7 +46,7 @@ color = false
 ''', encoding="utf-8")
 
         def run(label, query, directory, *flags, expect_success=True):
-            argv = [str(binary), "--config", str(config), "search", query, "--dir", str(directory), *flags]
+            argv = [str(binary), "--config", str(config), "search", query, "--retrieval", "legacy", "--dir", str(directory), *flags]
             started = time.perf_counter()
             result = subprocess.run(argv, capture_output=True, timeout=60)
             elapsed = round((time.perf_counter() - started) * 1000, 3)
@@ -105,27 +105,27 @@ color = false
             assert len(metadata) == 69 + dimensions * 2 + 32
             records.append(dict(label="native-metadata", schema=metadata[0], dimensions=dimensions, bytes=len(metadata)))
 
-        initial_stats = utility("cache-stats-initial", "cache", "stats", "--dir", corpus, "--json")
+        initial_stats = utility("cache-stats-initial", "cache", "stats", "--legacy", "--dir", corpus, "--json")
         assert initial_stats["present_entries"] == 1 and initial_stats["cached_files"] == 1, initial_stats
         # Edit the existing stream: CREATE_ALWAYS can drop ADS on Windows and would
         # test cache removal rather than validation of a surviving stale entry.
         with source.open("r+b") as stream:
             stream.write(b"Photosynthesis light chlorophyll: changed facts and a different source version.\n")
             stream.truncate()
-        stale = utility("cache-stats-stale", "cache", "stats", "--dir", corpus, "--json")
+        stale = utility("cache-stats-stale", "cache", "stats", "--legacy", "--dir", corpus, "--json")
         assert stale["present_entries"] == 1 and stale["cached_files"] == 0, stale
         _, changed_stats = run("native-edited", "photosynthesis light chlorophyll", corpus,
                                "--cache-mode", "native-cache", "--stats", "--limit", "5")
         assert changed_stats[-1]["diagnostics"]["embedding"]["candidates_embedded"] > 0
-        valid = utility("cache-stats-valid", "cache", "stats", "--dir", corpus, "--json")
+        valid = utility("cache-stats-valid", "cache", "stats", "--legacy", "--dir", corpus, "--json")
         assert valid["cached_files"] == 1 and valid["cache_size_bytes"] == 1125, valid
         changed_hash = hashlib.sha256(source.read_bytes()).hexdigest()
         utility("cache-clear-targeted", "cache", "clear", "--dir", corpus, "--force")
         assert hashlib.sha256(source.read_bytes()).hexdigest() == changed_hash
-        cleared = utility("cache-stats-cleared", "cache", "stats", "--dir", corpus, "--json")
+        cleared = utility("cache-stats-cleared", "cache", "stats", "--legacy", "--dir", corpus, "--json")
         assert cleared["present_entries"] == 0 and cleared["cached_files"] == 0, cleared
         utility("index-warmup", "index", corpus, "--use-xattr")
-        indexed = utility("cache-stats-indexed", "cache", "stats", "--dir", corpus, "--json")
+        indexed = utility("cache-stats-indexed", "cache", "stats", "--legacy", "--dir", corpus, "--json")
         assert indexed["cached_files"] == 2 and indexed["cache_size_bytes"] == 2250, indexed
         assert sorted(p.name for p in corpus.iterdir()) == before_names
         assert hashlib.sha256(source.read_bytes()).hexdigest() == changed_hash

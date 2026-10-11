@@ -59,6 +59,9 @@ pub struct IxosConfig {
     /// Security settings
     #[serde(default)]
     pub security: SecurityConfig,
+    /// Evidence-selected engine defaults; legacy settings remain under `search`.
+    #[serde(default)]
+    pub retrieval: super::retrieval_config::RetrievalConfig,
 }
 
 fn default_config_version() -> u32 {
@@ -121,7 +124,7 @@ pub struct SearchConfig {
     #[serde(default = "default_search_mode")]
     pub search_mode: String,
 
-    /// Enable local personal ranking signals (Pro feature)
+    /// Enable optional local personal ranking signals in the retained pipeline.
     #[serde(default)]
     pub personal_ranking_enabled: bool,
 }
@@ -280,6 +283,7 @@ impl Default for IxosConfig {
             output: OutputConfig::default(),
             index: IndexConfig::default(),
             security: SecurityConfig::default(),
+            retrieval: super::retrieval_config::RetrievalConfig::default(),
         }
     }
 }
@@ -342,6 +346,25 @@ impl Default for SecurityConfig {
 // =============================================================================
 
 impl IxosConfig {
+    /// CLI loads fail explicitly instead of silently replacing malformed settings.
+    pub fn load_for_cli(path: PathBuf) -> anyhow::Result<Self> {
+        let content = match std::fs::read_to_string(&path) {
+            Ok(content) => content,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                return Ok(Self::default())
+            }
+            Err(error) => return Err(error.into()),
+        };
+        let mut config: Self = toml::from_str(&content).map_err(|error| {
+            anyhow::anyhow!("Invalid configuration {}: {error}", path.display())
+        })?;
+        config.retrieval.validate()?;
+        config.migrate_if_needed();
+        config.search.cache_mode = normalize_cache_mode(&config.search.cache_mode);
+        config.search.model_type = normalize_flash_model_type(&config.search.model_type);
+        config.search.pro_model_type = normalize_pro_model_type(&config.search.pro_model_type);
+        Ok(config)
+    }
     /// Get the default configuration file path
     ///
     /// Returns platform-specific config directory:
@@ -434,7 +457,7 @@ impl IxosConfig {
                 // Migration from unversioned (v0) to v1
                 // Ensure personal_ranking_enabled defaults to false for security
                 if self.search.personal_ranking_enabled {
-                    tracing::info!("Migrating config: Resetting personal_ranking_enabled to false (requires Pro)");
+                    tracing::info!("Migrating legacy config: personal ranking remains opt-in");
                     self.search.personal_ranking_enabled = false;
                 }
                 self.search.cache_mode = normalize_cache_mode(&self.search.cache_mode);
@@ -478,6 +501,9 @@ impl IxosConfig {
     ///
     /// Key path uses dot notation: `search.default_limit`
     pub fn get(&self, key: &str) -> Option<String> {
+        if let Some(key) = key.strip_prefix("retrieval.") {
+            return self.retrieval.get(key);
+        }
         let parts: Vec<&str> = key.split('.').collect();
 
         match parts.as_slice() {
@@ -516,6 +542,16 @@ impl IxosConfig {
     /// Key path uses dot notation: `search.default_limit`
     /// Returns an error if the key is invalid or the value can't be parsed.
     pub fn set(&mut self, key: &str, value: &str) -> Result<(), ConfigError> {
+        if let Some(field) = key.strip_prefix("retrieval.") {
+            return self
+                .retrieval
+                .set(field, value)
+                .map_err(|error| ConfigError::InvalidValue {
+                    key: key.to_string(),
+                    value: value.to_string(),
+                    expected: error.to_string(),
+                });
+        }
         let parts: Vec<&str> = key.split('.').collect();
 
         match parts.as_slice() {
@@ -699,7 +735,7 @@ impl IxosConfig {
 
     /// List all configuration keys with their current values
     pub fn list(&self) -> Vec<(String, String)> {
-        vec![
+        let mut values = vec![
             (
                 "search.default_limit".to_string(),
                 self.search.default_limit.to_string(),
@@ -773,7 +809,15 @@ impl IxosConfig {
                 "security.telemetry_opt_in".to_string(),
                 self.security.telemetry_opt_in.to_string(),
             ),
-        ]
+        ];
+        if let Ok(serde_json::Value::Object(fields)) = serde_json::to_value(&self.retrieval) {
+            values.extend(fields.keys().filter_map(|field| {
+                self.retrieval
+                    .get(field)
+                    .map(|value| (format!("retrieval.{field}"), value))
+            }));
+        }
+        values
     }
 }
 

@@ -327,6 +327,8 @@ enum Request {
         query: String,
         #[serde(default)]
         feedback: Option<Feedback>,
+        #[serde(default)]
+        stats: bool,
     },
     Reset {
         id: String,
@@ -350,6 +352,8 @@ enum Request {
         fixed: bool,
         #[serde(default)]
         ignore_case: bool,
+        #[serde(default)]
+        stats: bool,
     },
 }
 fn one() -> usize {
@@ -359,7 +363,16 @@ fn eighty() -> usize {
     80
 }
 
-pub fn serve(root: &Path, model_path: Option<&Path>, mut options: Options) -> anyhow::Result<()> {
+pub fn serve(root: &Path, model_path: Option<&Path>, options: Options) -> anyhow::Result<()> {
+    serve_with_diagnostics(root, model_path, options, false)
+}
+
+pub fn serve_with_diagnostics(
+    root: &Path,
+    model_path: Option<&Path>,
+    mut options: Options,
+    quiet_stats: bool,
+) -> anyhow::Result<()> {
     let budget = options.output_bytes;
     anyhow::ensure!(
         budget >= 512,
@@ -416,11 +429,14 @@ pub fn serve(root: &Path, model_path: Option<&Path>, mut options: Options) -> an
                     id,
                     query,
                     feedback,
+                    stats: requested_stats,
                 } => {
                     let (raw, stats) = engine.search(&query, &id, feedback.as_ref())?;
                     let mut value: serde_json::Value = serde_json::from_slice(&raw)?;
                     value["id"] = json!(id);
-                    eprintln!("{}", json!({"id":id,"type":"stats","diagnostics":stats}));
+                    if !quiet_stats || requested_stats {
+                        eprintln!("{}", json!({"id":id,"type":"stats","diagnostics":stats}));
+                    }
                     Ok((id, value))
                 }
                 Request::Reset { id } => {
@@ -451,6 +467,7 @@ pub fn serve(root: &Path, model_path: Option<&Path>, mut options: Options) -> an
                     pattern,
                     fixed,
                     ignore_case,
+                    stats: requested_stats,
                 } => {
                     let (raw, stats) = grep(
                         root,
@@ -461,7 +478,9 @@ pub fn serve(root: &Path, model_path: Option<&Path>, mut options: Options) -> an
                         limit,
                         budget.saturating_sub(300),
                     )?;
-                    eprintln!("{}", json!({"id":id,"type":"stats","diagnostics":stats}));
+                    if !quiet_stats || requested_stats {
+                        eprintln!("{}", json!({"id":id,"type":"stats","diagnostics":stats}));
+                    }
                     Ok((id, serde_json::from_slice(&raw)?))
                 }
             }

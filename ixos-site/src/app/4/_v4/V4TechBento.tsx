@@ -93,8 +93,8 @@ function StorageDiagram({ inView }: { inView: boolean }) {
           letterSpacing: '0.03em',
         }}
       >
-        <span style={{ color: 'rgba(255,255,255,0.45)' }}>225 bytes per entry</span>
-        {' · '}[version | fingerprint | hash | embedding | signature]
+        <span style={{ color: 'rgba(255,255,255,0.45)' }}>643–2,375 bytes per CLI record</span>
+        {' · '}[IXD1 | recipe | source | locators | vectors | signature]
       </motion.div>
     </div>
   )

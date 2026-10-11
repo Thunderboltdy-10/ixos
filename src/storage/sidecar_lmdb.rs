@@ -154,10 +154,11 @@ impl LmdbSidecarCache {
 
     /// Check if LMDB sidecar caching is available
     ///
-    /// Always returns true since we can create the temp directory.
-    /// The actual database operations might fail, but that's handled gracefully.
+    /// This backend can be attempted independently of the source filesystem.
+    /// Application-cache permissions or capacity can still make operations fail.
     pub fn is_supported_static(_path: &Path) -> bool {
-        // LMDB sidecar is a universal fallback - it works on any filesystem
+        // Availability is decided by actual application-cache I/O, not the
+        // source filesystem's support for ADS/xattr.
         // The temp directory should always be writable
         true
     }

@@ -2,6 +2,8 @@
 
 Date: 2026-10-11. Windows x86-64, AMD Ryzen 7 5800X (8 cores / 16 logical processors). Gates 1/2: `6a7ec7f`, `8afa75f`. Gate 3 adds a measured CPU retrieval path; convenient defaults and current product documentation follow in Gate 4.
 
+Raw receipts now live in [gate3/](gate3/). Their bytes and historical command paths are preserved; [PATH_MAP.json](PATH_MAP.json) resolves earlier flat paths. The final aggregate is [gate3-final-comparisons.json](gate3/gate3-final-comparisons.json). Frozen identities and results are unchanged.
+
 ## Frozen held-out result
 
 The selected code and document recipes outperform the strong lexical baselines on these **restricted, frozen retrieval suites**. They do not establish general superiority over Cursor/Augment or autonomous agent task success.

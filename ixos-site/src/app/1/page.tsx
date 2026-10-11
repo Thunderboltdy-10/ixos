@@ -1186,7 +1186,7 @@ export default function Page1CommandCenter() {
                 {[
                   "int8 quantized model — 16.6 MB, MRR@10 = 0.834",
                   "HMAC-verified cache with NTFS ADS / xattr backends",
-                  "Cosine similarity in 64-dimensional embedding space",
+                  "Cosine similarity in model-dependent embedding space",
                 ].map((t, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <Dot color={T} />
@@ -1254,7 +1254,7 @@ export default function Page1CommandCenter() {
                   t: "Semantic Score",
                   v: "0.94",
                   c: T,
-                  d: "Cosine similarity between query embedding and cached file chunk embedding (64-dim).",
+                  d: "Cosine similarity between query embedding and cached file chunk embedding (complete dimensions).",
                 },
                 {
                   t: "Hybrid Score",

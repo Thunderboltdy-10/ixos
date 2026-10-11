@@ -28,8 +28,5 @@
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
-  "overrides": {},
-  "dependencies": {
-    "@vercel/blob": "^2.0.1"
-  }
+  "overrides": {}
 }

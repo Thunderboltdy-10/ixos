@@ -1,0 +1,1144 @@
+{
+  "binary_sha256": "eada77de4366c7a177669919ced28d83b9f905e834ed1fb25133b41d50c4139d",
+  "note": "Real production Flash, controlled correctness fixtures; not a quality or throughput benchmark.",
+  "records": [
+    {
+      "label": "native-cold",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "search",
+        "photosynthesis light chlorophyll",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache",
+        "--cache-mode",
+        "native-cache",
+        "--stats",
+        "--limit",
+        "5"
+      ],
+      "exit_code": 0,
+      "wall_ms": 1067.957,
+      "stdout_bytes": 433,
+      "payloads": [
+        {
+          "count": 1,
+          "results": [
+            {
+              "context": {
+                "after": [],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "Photosynthesis converts light into glucose inside chlorophyll-containing leaves."
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache\\botany.md",
+              "score": 0.6637256145477295,
+              "snippet": "Photosynthesis converts light into glucose inside chlorophyll-containing leaves."
+            }
+          ],
+          "type": "semantic"
+        }
+      ],
+      "stats": [
+        {
+          "cacheMode": "cached",
+          "diagnostics": {
+            "candidates": {
+              "directory_walk_ms": 1,
+              "files_scanned": 2,
+              "final_candidates": 1,
+              "merge_ms": 0,
+              "merged_candidates": 1,
+              "path_candidates": 0,
+              "path_scoring_ms": 1,
+              "paths_scanned": 2,
+              "ripgrep_candidates": 1,
+              "ripgrep_capped": false,
+              "ripgrep_ms": 1,
+              "truncated": false
+            },
+            "embedding": {
+              "cache_hits": 0,
+              "candidates_embedded": 1,
+              "embedding_ms": 0,
+              "io_read_bytes": 82
+            }
+          },
+          "durationMs": 108,
+          "firstResultMs": 108,
+          "model": "ixos-flash-v2",
+          "outputBytes": 433,
+          "resultCount": 1,
+          "type": "searchStats"
+        }
+      ],
+      "stderr": "{\"cacheMode\":\"cached\",\"diagnostics\":{\"candidates\":{\"directory_walk_ms\":1,\"files_scanned\":2,\"final_candidates\":1,\"merge_ms\":0,\"merged_candidates\":1,\"path_candidates\":0,\"path_scoring_ms\":1,\"paths_scanned\":2,\"ripgrep_candidates\":1,\"ripgrep_capped\":false,\"ripgrep_ms\":1,\"truncated\":false},\"embedding\":{\"cache_hits\":0,\"candidates_embedded\":1,\"embedding_ms\":0,\"io_read_bytes\":82}},\"durationMs\":108,\"firstResultMs\":108,\"model\":\"ixos-flash-v2\",\"outputBytes\":433,\"resultCount\":1,\"type\":\"searchStats\"}\n"
+    },
+    {
+      "label": "native-warm",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "search",
+        "photosynthesis light chlorophyll",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache",
+        "--cache-mode",
+        "native-cache",
+        "--stats",
+        "--limit",
+        "5"
+      ],
+      "exit_code": 0,
+      "wall_ms": 176.003,
+      "stdout_bytes": 433,
+      "payloads": [
+        {
+          "count": 1,
+          "results": [
+            {
+              "context": {
+                "after": [],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "Photosynthesis converts light into glucose inside chlorophyll-containing leaves."
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache\\botany.md",
+              "score": 0.6637345552444458,
+              "snippet": "Photosynthesis converts light into glucose inside chlorophyll-containing leaves."
+            }
+          ],
+          "type": "semantic"
+        }
+      ],
+      "stats": [
+        {
+          "cacheMode": "cached",
+          "diagnostics": {
+            "candidates": {
+              "directory_walk_ms": 1,
+              "files_scanned": 2,
+              "final_candidates": 1,
+              "merge_ms": 0,
+              "merged_candidates": 1,
+              "path_candidates": 0,
+              "path_scoring_ms": 1,
+              "paths_scanned": 2,
+              "ripgrep_candidates": 1,
+              "ripgrep_capped": false,
+              "ripgrep_ms": 1,
+              "truncated": false
+            },
+            "embedding": {
+              "cache_hits": 1,
+              "candidates_embedded": 0,
+              "embedding_ms": 0,
+              "io_read_bytes": 82
+            }
+          },
+          "durationMs": 113,
+          "firstResultMs": 113,
+          "model": "ixos-flash-v2",
+          "outputBytes": 433,
+          "resultCount": 1,
+          "type": "searchStats"
+        }
+      ],
+      "stderr": "{\"cacheMode\":\"cached\",\"diagnostics\":{\"candidates\":{\"directory_walk_ms\":1,\"files_scanned\":2,\"final_candidates\":1,\"merge_ms\":0,\"merged_candidates\":1,\"path_candidates\":0,\"path_scoring_ms\":1,\"paths_scanned\":2,\"ripgrep_candidates\":1,\"ripgrep_capped\":false,\"ripgrep_ms\":1,\"truncated\":false},\"embedding\":{\"cache_hits\":1,\"candidates_embedded\":0,\"embedding_ms\":0,\"io_read_bytes\":82}},\"durationMs\":113,\"firstResultMs\":113,\"model\":\"ixos-flash-v2\",\"outputBytes\":433,\"resultCount\":1,\"type\":\"searchStats\"}\n"
+    },
+    {
+      "label": "native-metadata",
+      "schema": 3,
+      "dimensions": 512,
+      "bytes": 1125
+    },
+    {
+      "label": "cache-stats-initial",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "cache",
+        "stats",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"total_files\": 2,\n  \"cached_files\": 1,\n  \"present_entries\": 1,\n  \"cache_size_bytes\": 1125,\n  \"hit_rate_percent\": 50.0\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "cache-stats-stale",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "cache",
+        "stats",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"total_files\": 2,\n  \"cached_files\": 0,\n  \"present_entries\": 1,\n  \"cache_size_bytes\": 0,\n  \"hit_rate_percent\": 0.0\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "native-edited",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "search",
+        "photosynthesis light chlorophyll",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache",
+        "--cache-mode",
+        "native-cache",
+        "--stats",
+        "--limit",
+        "5"
+      ],
+      "exit_code": 0,
+      "wall_ms": 172.397,
+      "stdout_bytes": 431,
+      "payloads": [
+        {
+          "count": 1,
+          "results": [
+            {
+              "context": {
+                "after": [],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "Photosynthesis light chlorophyll: changed facts and a different source version."
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache\\botany.md",
+              "score": 0.6347146034240723,
+              "snippet": "Photosynthesis light chlorophyll: changed facts and a different source version."
+            }
+          ],
+          "type": "semantic"
+        }
+      ],
+      "stats": [
+        {
+          "cacheMode": "cached",
+          "diagnostics": {
+            "candidates": {
+              "directory_walk_ms": 1,
+              "files_scanned": 2,
+              "final_candidates": 1,
+              "merge_ms": 0,
+              "merged_candidates": 1,
+              "path_candidates": 0,
+              "path_scoring_ms": 1,
+              "paths_scanned": 2,
+              "ripgrep_candidates": 1,
+              "ripgrep_capped": false,
+              "ripgrep_ms": 1,
+              "truncated": false
+            },
+            "embedding": {
+              "cache_hits": 0,
+              "candidates_embedded": 1,
+              "embedding_ms": 0,
+              "io_read_bytes": 80
+            }
+          },
+          "durationMs": 107,
+          "firstResultMs": 107,
+          "model": "ixos-flash-v2",
+          "outputBytes": 431,
+          "resultCount": 1,
+          "type": "searchStats"
+        }
+      ],
+      "stderr": "{\"cacheMode\":\"cached\",\"diagnostics\":{\"candidates\":{\"directory_walk_ms\":1,\"files_scanned\":2,\"final_candidates\":1,\"merge_ms\":0,\"merged_candidates\":1,\"path_candidates\":0,\"path_scoring_ms\":1,\"paths_scanned\":2,\"ripgrep_candidates\":1,\"ripgrep_capped\":false,\"ripgrep_ms\":1,\"truncated\":false},\"embedding\":{\"cache_hits\":0,\"candidates_embedded\":1,\"embedding_ms\":0,\"io_read_bytes\":80}},\"durationMs\":107,\"firstResultMs\":107,\"model\":\"ixos-flash-v2\",\"outputBytes\":431,\"resultCount\":1,\"type\":\"searchStats\"}\n"
+    },
+    {
+      "label": "cache-stats-valid",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "cache",
+        "stats",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"total_files\": 2,\n  \"cached_files\": 1,\n  \"present_entries\": 1,\n  \"cache_size_bytes\": 1125,\n  \"hit_rate_percent\": 50.0\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "cache-clear-targeted",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "cache",
+        "clear",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache",
+        "--force"
+      ],
+      "exit_code": 0,
+      "stdout": "Clearing cache for: C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache\nCleared 1 cache entries.\n",
+      "stderr": ""
+    },
+    {
+      "label": "cache-stats-cleared",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "cache",
+        "stats",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"total_files\": 2,\n  \"cached_files\": 0,\n  \"present_entries\": 0,\n  \"cache_size_bytes\": 0,\n  \"hit_rate_percent\": 0.0\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "index-warmup",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "index",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache",
+        "--use-xattr"
+      ],
+      "exit_code": 0,
+      "stdout": "Indexing 1 directories...\n  - \\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache (2 eligible files, 2 embeddings warmed)\nUsing xattr/ADS caching: enabled\nIndexing complete.\n",
+      "stderr": ""
+    },
+    {
+      "label": "cache-stats-indexed",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "cache",
+        "stats",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\cache",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"total_files\": 2,\n  \"cached_files\": 2,\n  \"present_entries\": 2,\n  \"cache_size_bytes\": 2250,\n  \"hit_rate_percent\": 100.0\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "jit-0",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "search",
+        "witness_embedding",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\jit",
+        "--cache-mode",
+        "ephemeral",
+        "--stats"
+      ],
+      "exit_code": 0,
+      "wall_ms": 172.411,
+      "stdout_bytes": 369,
+      "payloads": [
+        {
+          "count": 1,
+          "results": [
+            {
+              "context": {
+                "after": [],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "export const witness_embedding = 'CPU retrieval';"
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\jit\\code.tsx",
+              "score": 0.34291842579841614,
+              "snippet": "export const witness_embedding = 'CPU retrieval';"
+            }
+          ],
+          "type": "semantic"
+        }
+      ],
+      "stats": [
+        {
+          "cacheMode": "jit",
+          "diagnostics": {
+            "candidates": {
+              "directory_walk_ms": 0,
+              "files_scanned": 1,
+              "final_candidates": 1,
+              "merge_ms": 0,
+              "merged_candidates": 1,
+              "path_candidates": 0,
+              "path_scoring_ms": 0,
+              "paths_scanned": 1,
+              "ripgrep_candidates": 1,
+              "ripgrep_capped": false,
+              "ripgrep_ms": 1,
+              "truncated": false
+            },
+            "embedding": {
+              "cache_hits": 0,
+              "candidates_embedded": 1,
+              "embedding_ms": 0,
+              "io_read_bytes": 51
+            }
+          },
+          "durationMs": 110,
+          "firstResultMs": 110,
+          "model": "ixos-flash-v2",
+          "outputBytes": 369,
+          "resultCount": 1,
+          "type": "searchStats"
+        }
+      ],
+      "stderr": "{\"cacheMode\":\"jit\",\"diagnostics\":{\"candidates\":{\"directory_walk_ms\":0,\"files_scanned\":1,\"final_candidates\":1,\"merge_ms\":0,\"merged_candidates\":1,\"path_candidates\":0,\"path_scoring_ms\":0,\"paths_scanned\":1,\"ripgrep_candidates\":1,\"ripgrep_capped\":false,\"ripgrep_ms\":1,\"truncated\":false},\"embedding\":{\"cache_hits\":0,\"candidates_embedded\":1,\"embedding_ms\":0,\"io_read_bytes\":51}},\"durationMs\":110,\"firstResultMs\":110,\"model\":\"ixos-flash-v2\",\"outputBytes\":369,\"resultCount\":1,\"type\":\"searchStats\"}\n"
+    },
+    {
+      "label": "jit-1",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "search",
+        "witness_embedding",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\jit",
+        "--cache-mode",
+        "ephemeral",
+        "--stats"
+      ],
+      "exit_code": 0,
+      "wall_ms": 171.461,
+      "stdout_bytes": 369,
+      "payloads": [
+        {
+          "count": 1,
+          "results": [
+            {
+              "context": {
+                "after": [],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "export const witness_embedding = 'CPU retrieval';"
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\jit\\code.tsx",
+              "score": 0.34291842579841614,
+              "snippet": "export const witness_embedding = 'CPU retrieval';"
+            }
+          ],
+          "type": "semantic"
+        }
+      ],
+      "stats": [
+        {
+          "cacheMode": "jit",
+          "diagnostics": {
+            "candidates": {
+              "directory_walk_ms": 0,
+              "files_scanned": 1,
+              "final_candidates": 1,
+              "merge_ms": 0,
+              "merged_candidates": 1,
+              "path_candidates": 0,
+              "path_scoring_ms": 0,
+              "paths_scanned": 1,
+              "ripgrep_candidates": 1,
+              "ripgrep_capped": false,
+              "ripgrep_ms": 1,
+              "truncated": false
+            },
+            "embedding": {
+              "cache_hits": 0,
+              "candidates_embedded": 1,
+              "embedding_ms": 0,
+              "io_read_bytes": 51
+            }
+          },
+          "durationMs": 108,
+          "firstResultMs": 108,
+          "model": "ixos-flash-v2",
+          "outputBytes": 369,
+          "resultCount": 1,
+          "type": "searchStats"
+        }
+      ],
+      "stderr": "{\"cacheMode\":\"jit\",\"diagnostics\":{\"candidates\":{\"directory_walk_ms\":0,\"files_scanned\":1,\"final_candidates\":1,\"merge_ms\":0,\"merged_candidates\":1,\"path_candidates\":0,\"path_scoring_ms\":0,\"paths_scanned\":1,\"ripgrep_candidates\":1,\"ripgrep_capped\":false,\"ripgrep_ms\":1,\"truncated\":false},\"embedding\":{\"cache_hits\":0,\"candidates_embedded\":1,\"embedding_ms\":0,\"io_read_bytes\":51}},\"durationMs\":108,\"firstResultMs\":108,\"model\":\"ixos-flash-v2\",\"outputBytes\":369,\"resultCount\":1,\"type\":\"searchStats\"}\n"
+    },
+    {
+      "label": "late-lexical-witness",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "search",
+        "TAIL_WITNESS_7391",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\coverage",
+        "--evidence",
+        "--limit",
+        "5"
+      ],
+      "exit_code": 0,
+      "wall_ms": 170.226,
+      "stdout_bytes": 646,
+      "payloads": [
+        {
+          "count": 1,
+          "results": [
+            {
+              "context": {
+                "after": [],
+                "before": [],
+                "line_number": 903,
+                "matched": [
+                  "TAIL_WITNESS_7391: cache freshness checks modified content."
+                ]
+              },
+              "evidence": {
+                "explanation": "Strong keyword match: tail_witness_7391 | Path contains: coverage, mixed",
+                "file_type": "md",
+                "lexical_hit_count": 1,
+                "matched_terms": [
+                  "tail_witness_7391"
+                ],
+                "path_tags": [
+                  "coverage",
+                  "mixed"
+                ],
+                "tags": [
+                  "Keywords: tail_witness_7391"
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\coverage\\mixed.md",
+              "score": 0.4139855206012726,
+              "snippet": "TAIL_WITNESS_7391: cache freshness checks modified content."
+            }
+          ],
+          "type": "semantic"
+        }
+      ],
+      "stats": [],
+      "stderr": ""
+    },
+    {
+      "label": "ignore-consistency",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "search",
+        "lexical_witness",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\ignored",
+        "--limit",
+        "10"
+      ],
+      "exit_code": 0,
+      "wall_ms": 167.044,
+      "stdout_bytes": 311,
+      "payloads": [
+        {
+          "count": 1,
+          "results": [
+            {
+              "context": {
+                "after": [],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "lexical_witness"
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\ignored\\source\\code.rs",
+              "score": 0.3732810318470001,
+              "snippet": "lexical_witness"
+            }
+          ],
+          "type": "semantic"
+        }
+      ],
+      "stats": [],
+      "stderr": ""
+    },
+    {
+      "label": "configured-defaults",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "search",
+        "embedding",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices"
+      ],
+      "exit_code": 0,
+      "wall_ms": 182.962,
+      "stdout_bytes": 328,
+      "payloads": [
+        {
+          "count": 1,
+          "results": [
+            {
+              "context": {
+                "after": [],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "embedding retrieval notes"
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-10.md",
+              "score": 0.22658096253871918,
+              "snippet": "embedding retrieval notes"
+            }
+          ],
+          "type": "semantic"
+        }
+      ],
+      "stats": [],
+      "stderr": ""
+    },
+    {
+      "label": "bounded-valid-json",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "search",
+        "embedding",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices",
+        "--limit",
+        "20",
+        "--context",
+        "5",
+        "--max-output-bytes",
+        "1800",
+        "--snippet-chars",
+        "20",
+        "--stats"
+      ],
+      "exit_code": 0,
+      "wall_ms": 187.724,
+      "stdout_bytes": 1791,
+      "payloads": [
+        {
+          "count": 5,
+          "results": [
+            {
+              "context": {
+                "after": [
+                  "context line",
+                  "context line",
+                  "context line",
+                  "context line",
+                  "context line"
+                ],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "embedding retrieval "
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-18.md",
+              "score": 0.2316906601190567,
+              "snippet": "embedding retrieval "
+            },
+            {
+              "context": {
+                "after": [
+                  "context line",
+                  "context line",
+                  "context line",
+                  "context line",
+                  "context line"
+                ],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "embedding retrieval "
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-19.md",
+              "score": 0.23151881992816925,
+              "snippet": "embedding retrieval "
+            },
+            {
+              "context": {
+                "after": [
+                  "context line",
+                  "context line",
+                  "context line",
+                  "context line",
+                  "context line"
+                ],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "embedding retrieval "
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-17.md",
+              "score": 0.23100920021533966,
+              "snippet": "embedding retrieval "
+            },
+            {
+              "context": {
+                "after": [
+                  "context line",
+                  "context line",
+                  "context line",
+                  "context line",
+                  "context line"
+                ],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "embedding retrieval "
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-20.md",
+              "score": 0.23053188621997833,
+              "snippet": "embedding retrieval "
+            },
+            {
+              "context": {
+                "after": [
+                  "context line",
+                  "context line",
+                  "context line",
+                  "context line",
+                  "context line"
+                ],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "embedding retrieval "
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-16.md",
+              "score": 0.22753389179706573,
+              "snippet": "embedding retrieval "
+            }
+          ],
+          "type": "semantic"
+        }
+      ],
+      "stats": [
+        {
+          "cacheMode": "jit",
+          "diagnostics": {
+            "candidates": {
+              "directory_walk_ms": 2,
+              "files_scanned": 25,
+              "final_candidates": 25,
+              "merge_ms": 0,
+              "merged_candidates": 25,
+              "path_candidates": 0,
+              "path_scoring_ms": 2,
+              "paths_scanned": 25,
+              "ripgrep_candidates": 25,
+              "ripgrep_capped": false,
+              "ripgrep_ms": 3,
+              "truncated": false
+            },
+            "embedding": {
+              "cache_hits": 0,
+              "candidates_embedded": 25,
+              "embedding_ms": 3,
+              "io_read_bytes": 3475
+            }
+          },
+          "durationMs": 119,
+          "firstResultMs": 118,
+          "model": "ixos-flash-v2",
+          "outputBytes": 1791,
+          "resultCount": 5,
+          "type": "searchStats"
+        }
+      ],
+      "stderr": "{\"cacheMode\":\"jit\",\"diagnostics\":{\"candidates\":{\"directory_walk_ms\":2,\"files_scanned\":25,\"final_candidates\":25,\"merge_ms\":0,\"merged_candidates\":25,\"path_candidates\":0,\"path_scoring_ms\":2,\"paths_scanned\":25,\"ripgrep_candidates\":25,\"ripgrep_capped\":false,\"ripgrep_ms\":3,\"truncated\":false},\"embedding\":{\"cache_hits\":0,\"candidates_embedded\":25,\"embedding_ms\":3,\"io_read_bytes\":3475}},\"durationMs\":119,\"firstResultMs\":118,\"model\":\"ixos-flash-v2\",\"outputBytes\":1791,\"resultCount\":5,\"type\":\"searchStats\"}\n"
+    },
+    {
+      "label": "progressive-limits",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "search",
+        "embedding",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices",
+        "--limit",
+        "5",
+        "--progressive"
+      ],
+      "exit_code": 0,
+      "wall_ms": 181.524,
+      "stdout_bytes": 7514,
+      "payloads": [
+        {
+          "count": 5,
+          "results": [
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-0.md",
+              "score": 0.13862943649291992,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-1.md",
+              "score": 0.13862943649291992,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-10.md",
+              "score": 0.13862943649291992,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-11.md",
+              "score": 0.13862943649291992,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-12.md",
+              "score": 0.13862943649291992,
+              "snippet": "embedding retrieval notes"
+            }
+          ],
+          "type": "lexical"
+        },
+        {
+          "count": 5,
+          "results": [
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-5.md",
+              "score": 0.13862943649291992,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-6.md",
+              "score": 0.13862943649291992,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-7.md",
+              "score": 0.13862943649291992,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-8.md",
+              "score": 0.13862943649291992,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-9.md",
+              "score": 0.13862943649291992,
+              "snippet": "embedding retrieval notes"
+            }
+          ],
+          "type": "lexical"
+        },
+        {
+          "count": 5,
+          "results": [
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-0.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-1.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-10.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-11.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-12.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            }
+          ],
+          "type": "lexical"
+        },
+        {
+          "count": 5,
+          "results": [
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-5.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-6.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-7.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-8.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-9.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            }
+          ],
+          "type": "lexical"
+        },
+        {
+          "count": 5,
+          "results": [
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-0.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-1.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-10.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-11.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "integrity_verified": false,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-12.md",
+              "score": 0.33045172691345215,
+              "snippet": "embedding retrieval notes"
+            }
+          ],
+          "type": "lexical"
+        },
+        {
+          "message": "Understanding meaning...",
+          "type": "status"
+        },
+        {
+          "count": 5,
+          "results": [
+            {
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-18.md",
+              "score": 0.2316906601190567
+            },
+            {
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-19.md",
+              "score": 0.23151881992816925
+            },
+            {
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-17.md",
+              "score": 0.23100920021533966
+            },
+            {
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-20.md",
+              "score": 0.23053188621997833
+            },
+            {
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-16.md",
+              "score": 0.22753389179706573
+            }
+          ],
+          "type": "semantic"
+        },
+        {
+          "message": "Collecting evidence...",
+          "type": "status"
+        },
+        {
+          "count": 5,
+          "results": [
+            {
+              "context": {
+                "after": [],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "embedding retrieval notes"
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-18.md",
+              "score": 0.2316906601190567,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "context": {
+                "after": [],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "embedding retrieval notes"
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-19.md",
+              "score": 0.23151881992816925,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "context": {
+                "after": [],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "embedding retrieval notes"
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-17.md",
+              "score": 0.23100920021533966,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "context": {
+                "after": [],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "embedding retrieval notes"
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-20.md",
+              "score": 0.23053188621997833,
+              "snippet": "embedding retrieval notes"
+            },
+            {
+              "context": {
+                "after": [],
+                "before": [],
+                "line_number": 1,
+                "matched": [
+                  "embedding retrieval notes"
+                ]
+              },
+              "integrity_verified": true,
+              "path": "\\\\?\\C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\choices\\notes-16.md",
+              "score": 0.22753389179706573,
+              "snippet": "embedding retrieval notes"
+            }
+          ],
+          "type": "semantic"
+        },
+        {
+          "type": "complete"
+        }
+      ],
+      "stats": [],
+      "stderr": ""
+    },
+    {
+      "label": "missing-directory-exit",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\config.toml",
+        "search",
+        "embedding",
+        "--dir",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\missing"
+      ],
+      "exit_code": 1,
+      "wall_ms": 43.122,
+      "stdout_bytes": 148,
+      "payloads": [
+        {
+          "message": "Search directory not found or not a directory: C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\missing",
+          "type": "error"
+        }
+      ],
+      "stats": [],
+      "stderr": "Error: Search directory not found or not a directory: C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-contract-d6u11vhp\\missing\n"
+    }
+  ]
+}

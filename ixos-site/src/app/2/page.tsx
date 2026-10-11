@@ -93,7 +93,7 @@ const PIPELINE_STEPS = [
   {
     label: "Embed",
     tag: "03",
-    desc: "Vectorize with local Model2Vec. 64-dim per file, on-device.",
+    desc: "Vectorize with local Model2Vec. model-dependent dimensions, on-device.",
     icon: "M13 10V3L4 14h7v7l9-11h-7z",
     detail: "No network",
   },
@@ -293,7 +293,7 @@ function EmbeddingSpaceSection() {
             Files mapped by meaning.
           </h2>
           <p className="mb-12 max-w-lg text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>
-            Every file becomes a 64-dimension vector. Related files cluster together.
+            Files receive model-dependent vectors. Related files cluster together.
             Your query lands in this space and retrieves neighbors by cosine similarity — no keywords required.
           </p>
         </Reveal>
@@ -393,7 +393,7 @@ function EmbeddingSpaceSection() {
                 className="text-[10px] font-mono"
                 style={{ color: "rgba(255,255,255,0.2)" }}
               >
-                cosine similarity · 64-dim
+                cosine similarity · complete dimensions
               </div>
             </div>
           </div>
@@ -822,7 +822,7 @@ export default function Page2SignalArchitecture() {
               style={{ color: "rgba(255,255,255,0.45)" }}
             >
               Ixos runs a parallel scoring pipeline. The lexical engine matches exact tokens
-              for precision. The semantic engine embeds your query into a 64-dim vector space
+              for precision. The semantic engine embeds your query into the selected model’s vector space
               to capture conceptual similarity. Both are fused with an adaptive weighting
               algorithm that detects degradation attacks and adjusts automatically.
             </p>

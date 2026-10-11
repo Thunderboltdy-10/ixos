@@ -1,0 +1,78 @@
+
+> ixos-site@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.1.4 (webpack)
+- Environments: .env.local
+- Experiments (use with caution):
+  ✓ externalDir
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 6.8s
+  Running TypeScript ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/51) ...
+  Generating static pages using 15 workers (12/51) 
+  Generating static pages using 15 workers (25/51) 
+  Generating static pages using 15 workers (38/51) 
+✓ Generating static pages using 15 workers (51/51) in 643.0ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /1
+├ ○ /1/account
+├ ○ /1/docs
+├ ○ /1/download
+├ ○ /1/open-source
+├ ○ /1/signin
+├ ○ /1/signup
+├ ○ /2
+├ ○ /2/account
+├ ○ /2/docs
+├ ○ /2/download
+├ ○ /2/open-source
+├ ○ /2/signin
+├ ○ /2/signup
+├ ○ /3
+├ ○ /3/account
+├ ○ /3/docs
+├ ○ /3/download
+├ ○ /3/open-source
+├ ○ /3/signin
+├ ○ /3/signup
+├ ○ /4
+├ ○ /4/account
+├ ○ /4/docs
+├ ○ /4/download
+├ ○ /4/open-source
+├ ○ /4/signin
+├ ○ /4/signup
+├ ○ /5
+├ ○ /5/account
+├ ○ /5/docs
+├ ○ /5/download
+├ ○ /5/open-source
+├ ○ /5/signin
+├ ○ /5/signup
+├ ○ /account
+├ ƒ /api/support/contact
+├ ○ /cli
+├ ○ /demo
+├ ○ /developers
+├ ○ /docs
+├ ○ /download
+├ ○ /ixplorer
+├ ○ /open-source
+├ ○ /privacy
+├ ƒ /sign-in/[[...sign-in]]
+├ ƒ /sign-up/[[...sign-up]]
+├ ○ /support
+└ ○ /terms
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

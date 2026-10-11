@@ -1,147 +1,37 @@
-# Repository Guidelines
+# Ixos repository contract
 
-## Project Structure & Module Organization
-- `src/` contains the Rust core library and CLI (`src/main.rs`, `src/lib.rs`) plus domain modules (e.g., `src/ixos_rank`, `src/ixos_embed`, `src/security`).
-- `src-tauri/` holds the Tauri desktop shell (Rust commands under `src-tauri/src/` plus `tauri.conf.json`).
-- `ui/` is the Vite + React front-end for the desktop app (`ui/src/`).
-- `landing/` is the Next.js marketing site (`landing/app`, `landing/components`, `landing/public`).
-- `scripts/` includes Python and PowerShell utilities for model work and deployment.
+The primary product is the Rust CLI for code and document retrieval. The desktop is a secondary interface; this remains a monorepo. All features are free/open source. The February Flash/Pro restoration contract is preserved under `docs/archive/pre-restoration/AGENTS.md`; its unmeasured targets and model branding are historical.
 
-## Build, Test, and Development Commands
-- `cargo build` builds the Rust workspace (core + Tauri).
-- `cargo test` runs Rust unit tests (many modules have inline `mod tests`).
-- `npm run tauri:dev` starts the Tauri app with the UI.
-- `npm run tauri:build` builds the Tauri app.
-- `npm run dev` (from repo root) runs the Vite UI in `ui/`.
-- `cd landing && npm run dev` runs the Next.js site.
+## Structure and commands
 
-## Coding Style & Naming Conventions
-- Rust uses edition 2021; follow standard `rustfmt` defaults and keep modules in `snake_case`.
-- React components in `ui/src/components/**` use `PascalCase` filenames (e.g., `SearchResults.tsx`).
-- Tailwind is the styling system in `ui/` and `landing/`; keep utility class blocks grouped by layout, spacing, color.
+- `src/retrieval/`: current search/grep/read/serve, records, stats and bounded sessions.
+- `src/ixos_embed/`, `src/parsers/`, `src/storage/`, `src/ixos_rank/`: CPU runtime/extraction/shared and retained progressive facilities.
+- `ixos-search/src-tauri/`, `ixos-search/ui/`: desktop Rust/React. `ixos-site/`: Next.js. `packages/` and `shared/`: shared product primitives.
+- `eval/`, `scripts/`, `config/`: versioned evaluation and model setup. `reports/restoration/`: receipts. `legacy/` and `docs/archive/`: historical, not current truth.
+- `cargo build --release --locked --bin ixos`; `cargo test --workspace --locked --jobs 2`.
+- `python -m unittest discover -s eval -t .`; real model probes under `scripts/verify_*`.
+- `npm ci`; `npm run dev`; `npm run tauri:dev`; `npm run site:dev`. UI/site builds are separate from core runtime proof. Local site guardrails also apply.
 
-## Testing Guidelines
-- Rust tests live alongside modules with `mod tests` and use `#[test]` or `#[tokio::test]`.
-- Run `cargo test` before changes that touch ranking, embedding, or compliance logic.
-- Frontend tests are not configured yet; validate UI changes via `npm run dev` in `ui/`.
+## Engineering and evidence
 
-## Commit & Pull Request Guidelines
-- Commit messages follow a Conventional Commit style (e.g., `feat: add secure embedder`).
-- PRs should include a short summary, testing notes, and screenshots/GIFs for UI changes.
-- Link any relevant issues or roadmap docs when applicable.
+1. Observe → Hypothesize → Implement → Measure → Decide → Document. Baseline/profile before optimizing. Never count stub inference as actual-model quality or cache proof.
+2. Each performance/quality claim needs commands, raw receipts, exact source/binary/model/corpus identities and before/after conditions. Preserve failures. Sample size is unique labeled queries/families, not repeated commands.
+3. Select using dev/validation. Frozen held-out recipes in `eval/final-selection.json` cannot be tuned from inspected test results. New inspection-driven changes need fresh held-out data or exploratory labeling.
+4. Distinguish fresh JIT, fresh native warm and resident warm. Verify actual cache hits. Count stdout and diagnostic stderr tokens. Input byte limits are not process RSS guarantees.
+5. Preserve primary source bytes and ignore policy. No embedding sidecars in searched folders; ADS/xattr or application-cache DB only. Edits invalidate disk and RAM representations. JIT remains available.
+6. Retain external model names/licenses/cards. Removing tokenizer limits or row storage quantization is not training, distillation or integer inference. Legacy IDs remain compatibility baselines, not invented new generations.
+7. Bounded session intelligence is explicit, resettable and optional. Feedback must refer to actually displayed results and current sources. Silence is unknown; external rg is not observed.
 
-## Configuration & Data Notes
-- The marketing site expects environment variables based on `landing/.env.example`.
-- Large assets and model artifacts live under `models/` and `dataset/`; avoid committing derived outputs unless required.
+## Persistent state
 
-# Ixos Agent Operating System (AGENTS.md)
+Maintain `PLAN.md` (current next steps), append-only `RUNLOG.md` and `DECISIONS.md` (keep/revert/pivot). Before compaction or a large pivot, append a **STATE SNAPSHOT** with current baselines/best measured results, bottlenecks and next three tasks. Public receipts live under reports; private authorship/application/chat records stay excluded through `.git/info/exclude`.
 
-This repo is optimized for autonomous agents (Codex). Follow this file as the top-level operating contract.
+## Changes and history
 
-## North Star
-Ship **Flash v2** and **Pro v2** (true Pro, not legacy), and materially improve **end-to-end search** speed + accuracy with reproducible evidence.
+Use Rust 2021/rustfmt, snake_case modules and PascalCase React components. Format changed files without recursively rewriting unrelated modules. Run relevant correctness checks and real-artifact probes for ranking/cache/extraction changes. Use Conventional Commits, `codex/` branches and coherent gate-sized commits. Never stage envs, downloaded weights/data, private records or build outputs. No public push, destructive history rewrite or release until historical keys are revoked/rotated and a reviewed history plan is applied.
 
-## Authoritative context
-- Treat the user-provided **Ixos Model Optimization Context Report (2026-02-02)** as CANON until measurements prove otherwise.
-- If repo docs/code contradict it, reconcile and **update repo docs/code** to match reality.
+Archived documents are immutable progression evidence. Copy/move with hash verification before replacing an active guide. Retired Ixplorer and old experiments may remain in legacy; do not restore them into the default product implicitly.
 
-## Hard non-negotiables
-1) **No stubs**: benches must run on real model artifacts (safetensors actually loaded).
-2) **Measure-first**: no optimization without baseline and profiling.
-3) Every claim must have:
-   - command(s)
-   - captured output artifact under `/reports` or `/models/lab`
-   - before/after table
-4) **Privacy**: preserve “zero-index philosophy”. Any indexing must be optional, gated, documented, and privacy-safe.
-5) **Naming clarity**: eliminate model naming confusion globally.
+## Product surfaces
 
-## Persistent memory (compaction-proof)
-Maintain these files continuously:
-- `PLAN.md` (current goals + next steps + state snapshot)
-- `RUNLOG.md` (append-only experiment log; include command outputs or references)
-- `DECISIONS.md` (why we chose X over Y; short bullets)
-- `/reports/` (benchmark tables, profiling notes, final writeups)
-
-### State snapshot rule
-Before ANY compaction or large pivot:
-- write a **STATE SNAPSHOT** block into `PLAN.md` including:
-  - current baseline numbers
-  - current best v2 numbers
-  - current bottleneck ranking
-  - what's next (top 3 tasks)
-This rule exists so the agent can resume even if all chat context is lost.
-
-## The Ralph Loop (required workflow)
-Repeat until targets hit or progress plateaus:
-
-**Observe → Hypothesize → Implement → Measure → Decide → Document → Repeat**
-
-Each loop iteration must end with:
-- PLAN.md updated (what’s next)
-- RUNLOG.md appended (what changed + outputs)
-- DECISIONS.md updated if a choice was made (KEEP/REVERT/PIVOT)
-
-## Versioning & naming policy (mandatory)
-Canonical model ids/folders:
-- `ixos-flash-v1` = legacy/current production baseline (keep for comparison)
-- `ixos-flash-v2` = NEW generation (not a rename)
-- `ixos-pro-v1` = legacy (hidden; never presented as “Pro”)
-- `ixos-pro-v2` = NEW true Pro definition (may be fusion system, but version it)
-- `potion-base-8m-int8` = internal dependency (not user-facing mode)
-
-You must audit and fix:
-- registry ids
-- CLI flags
-- UI switcher labels
-- docs and screenshots
-- any “flash-v2” that is actually v1
-
-## Bench & profile: required commands (update if repo differs)
-You must run baseline and final, and store outputs.
-
-- Build release:
-  - `cargo build --release`
-
-- Quality eval (canonical):
-  - `python scripts/ixos_eval.py --suite both --output models/lab/results_*.json ...`
-  - Include Flash, Potion, Pro fusion, legacy pro-v1 for evidence, then v2s.
-
-- Performance:
-  - `./target/release/ixos-bench --dir dataset --runs 10 --cache-mode jit --model <...>`
-  - `./target/release/ixos-profile --dir dataset --model <...> --cache-mode jit`
-
-Artifacts:
-- `/reports/baseline_*`
-- `/reports/v2_*`
-- `/reports/V2_FINAL_WRITEUP.md`
-- Update `/models/lab/CANONICAL_RESULTS.md` if it is the repo source-of-truth.
-
-## Performance targets (extreme)
-Strive for:
-- Flash v2: MRR@10 ≥ 0.85 AND latency < 350 ms/1k AND model footprint < 50MB
-- Pro v2: MRR@10 ≥ 0.95 AND latency < 550 ms/1k (or progressive TTFR win)
-- TTFR: < 35 ms warm-cache
-- Ask Mode: must NOT force Pro; must respect selected model; remain fast
-
-If impossible on current hardware, maximize improvement % and explain limits.
-
-## Ask Mode rule (critical)
-Ask Mode is query understanding + evidence extraction. It must:
-- respect user-selected model
-- never silently force slow Pro path
-- keep progressive search snappy
-
-## Shipping checklist (must pass before stop)
-- full bench suite before/after
-- docs updated and consistent
-- installer/model download manifests updated
-- HF upload playbook written
-- CLI + UI verified end-to-end
-
-### Diagram Ban
-- Do not ship generic AI flowcharts, node-link diagrams, or decorative architecture maps.
-- Any explanatory surface must be built from real product UI primitives: chips, rows, result cards, source badges, drawers, and real labels.
-
-### Shared Demo Surface Requirement
-- Landing variants must use the shared desktop surfaces from `@ixos/ixos-ui` through `src/landing/DemoSurface.tsx` and `src/landing/DemoSurfaceShell.tsx`.
-- No one-off fake app mockups per route.
+Do not ship generic AI flowcharts, node-link diagrams or decorative architecture maps. Explanations use real product labels, rows, result cards, chips and source badges. Landing app demos use `@ixos/ixos-ui` via `src/landing/DemoSurface.tsx` and `DemoSurfaceShell.tsx`. Preserve desktop animations/general styling unless an actual failure requires a fix. Do not imply the desktop uses the measured CLI engine before an integration verifies that.

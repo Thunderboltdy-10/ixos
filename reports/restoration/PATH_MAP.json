@@ -1,0 +1,2267 @@
+[
+  {
+    "old": "reports/restoration/gate1-baseline-tests.stderr",
+    "current": "reports/restoration/gate1/gate1-baseline-tests.stderr",
+    "sha256": "dd9c6a54876da3cee38d6c8abf1f3c5bff9bad1265c2b56edb65ff120197e7f9"
+  },
+  {
+    "old": "reports/restoration/gate1-baseline-tests.stdout",
+    "current": "reports/restoration/gate1/gate1-baseline-tests.stdout",
+    "sha256": "c1a8cc62b6461f792ade68008a99dfc016bec505152e81729e91417ad8f3a982"
+  },
+  {
+    "old": "reports/restoration/gate1-cache-regression-before.stderr",
+    "current": "reports/restoration/gate1/gate1-cache-regression-before.stderr",
+    "sha256": "ba42682140afebd238578ef876fdf81c632a1643a1bd6cbfaa2cc2513d4e8346"
+  },
+  {
+    "old": "reports/restoration/gate1-cache-regression-before.stdout",
+    "current": "reports/restoration/gate1/gate1-cache-regression-before.stdout",
+    "sha256": "42bc63ce6f6b7855c18e916cda96ae824aca2b33d7d52ddbf8369dfa8a82e364"
+  },
+  {
+    "old": "reports/restoration/gate1-check.stderr",
+    "current": "reports/restoration/gate1/gate1-check.stderr",
+    "sha256": "a951e771b8c950a56ccb0a34a86f72a5eb164fd51d44149a43f523e5cad72200"
+  },
+  {
+    "old": "reports/restoration/gate1-check.stdout",
+    "current": "reports/restoration/gate1/gate1-check.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate1-cli-check.stderr",
+    "current": "reports/restoration/gate1/gate1-cli-check.stderr",
+    "sha256": "c9b9a2f82aa65673823d5bb404eddb14be8f11b2a2036ab67c73c16e4b0d5dc1"
+  },
+  {
+    "old": "reports/restoration/gate1-cli-check.stdout",
+    "current": "reports/restoration/gate1/gate1-cli-check.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate1-cli-contract.json",
+    "current": "reports/restoration/gate1/gate1-cli-contract.json",
+    "sha256": "7cd1c083774475ff2053a4700824b9db1a2b0e2d4028802d54de653593e39c75"
+  },
+  {
+    "old": "reports/restoration/gate1-contract.stderr",
+    "current": "reports/restoration/gate1/gate1-contract.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate1-contract.stdout",
+    "current": "reports/restoration/gate1/gate1-contract.stdout",
+    "sha256": "6710abb5acf589db56422bcc1bb8df8601e3d27f9028e2f9ff18b1d70c3b8371"
+  },
+  {
+    "old": "reports/restoration/gate1-core-tests.stderr",
+    "current": "reports/restoration/gate1/gate1-core-tests.stderr",
+    "sha256": "8b2038e9907d31541d11ca05c5be220906556bbe174c9b18c8b25110b536bb94"
+  },
+  {
+    "old": "reports/restoration/gate1-core-tests.stdout",
+    "current": "reports/restoration/gate1/gate1-core-tests.stdout",
+    "sha256": "9cbbe2a560d5960ec48304724bd3bc9a31e448a097b000ec291967c49d6bf3f8"
+  },
+  {
+    "old": "reports/restoration/gate1-link-retry.stderr",
+    "current": "reports/restoration/gate1/gate1-link-retry.stderr",
+    "sha256": "751539c46833671bfc922b6e6c3be77c4ae46b58f0674b2de74a158242685ac4"
+  },
+  {
+    "old": "reports/restoration/gate1-release-build.stderr",
+    "current": "reports/restoration/gate1/gate1-release-build.stderr",
+    "sha256": "040dcf497106fde51c666ec408c520979d34d14786c20eabc06229b9ef380f3d"
+  },
+  {
+    "old": "reports/restoration/gate1-release-build.stdout",
+    "current": "reports/restoration/gate1/gate1-release-build.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate1-self-identifier.stderr",
+    "current": "reports/restoration/gate1/gate1-self-identifier.stderr",
+    "sha256": "c26ff9bc439f4ddf0352dba6a4c7fb3e983a3cf770e7b05116a32cb748a0c48a"
+  },
+  {
+    "old": "reports/restoration/gate1-self-identifier.stdout",
+    "current": "reports/restoration/gate1/gate1-self-identifier.stdout",
+    "sha256": "8a09ae59e28b957fafe94f3cce0f036e2ee413667033af12426160e5b892f70e"
+  },
+  {
+    "old": "reports/restoration/gate1-self-navigation.stderr",
+    "current": "reports/restoration/gate1/gate1-self-navigation.stderr",
+    "sha256": "d593e260313aa05a2d3b52e40619754fe45d1574666b63e60bf42a8abe9d22e9"
+  },
+  {
+    "old": "reports/restoration/gate1-self-navigation.stdout",
+    "current": "reports/restoration/gate1/gate1-self-navigation.stdout",
+    "sha256": "9529663a0623d85d741f47c94dc65989b22e1d12d3ca0df200312a87417ae421"
+  },
+  {
+    "old": "reports/restoration/gate1-tests.stderr",
+    "current": "reports/restoration/gate1/gate1-tests.stderr",
+    "sha256": "ab9e551f41bf08cb91ff2a2ac54738c1d3a29169a41e8bbf64e479fcb1140604"
+  },
+  {
+    "old": "reports/restoration/gate1-tests.stdout",
+    "current": "reports/restoration/gate1/gate1-tests.stdout",
+    "sha256": "feaf5c2c844627e0ddcd17bbf31d28a219129deb3862425b83363f5dfe626633"
+  },
+  {
+    "old": "reports/restoration/gate2-commit.stderr",
+    "current": "reports/restoration/gate2/gate2-commit.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate2-commit.stdout",
+    "current": "reports/restoration/gate2/gate2-commit.stdout",
+    "sha256": "90ace29873f539ae30b39f625c7f72931f1272172a66021f17e585699bfce761"
+  },
+  {
+    "old": "reports/restoration/gate2-desktop-check.stderr",
+    "current": "reports/restoration/gate2/gate2-desktop-check.stderr",
+    "sha256": "b3cd740ca742ef69639f2d2916fe1b1954b8a363df25466f5a62f1aba8e13e9b"
+  },
+  {
+    "old": "reports/restoration/gate2-desktop-check.stdout",
+    "current": "reports/restoration/gate2/gate2-desktop-check.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate2-desktop-tests.stderr",
+    "current": "reports/restoration/gate2/gate2-desktop-tests.stderr",
+    "sha256": "cdc4af0ea6bf8fa499456bbcb9740048c2aa8e514a8c9eb2642dd9627c64ee93"
+  },
+  {
+    "old": "reports/restoration/gate2-desktop-tests.stdout",
+    "current": "reports/restoration/gate2/gate2-desktop-tests.stdout",
+    "sha256": "4bc7640b6fd53ef5c3130d1741eadc71c6cad8cb38c62f6576f599f3dbd172dd"
+  },
+  {
+    "old": "reports/restoration/gate2-env-preparation.json",
+    "current": "reports/restoration/gate2/gate2-env-preparation.json",
+    "sha256": "19f9897d2945b9736b74c928c74707fe67373c3444b4d6e7cf511426c24090c4"
+  },
+  {
+    "old": "reports/restoration/gate2-local-lock-test.stderr",
+    "current": "reports/restoration/gate2/gate2-local-lock-test.stderr",
+    "sha256": "d0de281719a7d7420a1c535eb8c0ccd6645f12c8f882f0509869a9e786785c8c"
+  },
+  {
+    "old": "reports/restoration/gate2-local-lock-test.stdout",
+    "current": "reports/restoration/gate2/gate2-local-lock-test.stdout",
+    "sha256": "f47ac5577a48ca05bbd1b4bc322b759229c86104ab0a9634e7a1100303c90e11"
+  },
+  {
+    "old": "reports/restoration/gate2-npm-lock.stderr",
+    "current": "reports/restoration/gate2/gate2-npm-lock.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate2-npm-lock.stdout",
+    "current": "reports/restoration/gate2/gate2-npm-lock.stdout",
+    "sha256": "9984d9e1f2ad8ca58f126608162e9cd0a7a3a3e34bb5551de1c5bd4816b68940"
+  },
+  {
+    "old": "reports/restoration/gate2-site-build.stderr",
+    "current": "reports/restoration/gate2/gate2-site-build.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate2-site-build.stdout",
+    "current": "reports/restoration/gate2/gate2-site-build.stdout",
+    "sha256": "3013c4e7f7ceeb0717862062f6a1e0a46934d7db4d49e2f84913ed0f58ebd6e4"
+  },
+  {
+    "old": "reports/restoration/gate2-site-check.stderr",
+    "current": "reports/restoration/gate2/gate2-site-check.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate2-site-check.stdout",
+    "current": "reports/restoration/gate2/gate2-site-check.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate2-site-visual-faq.stderr",
+    "current": "reports/restoration/gate2/gate2-site-visual-faq.stderr",
+    "sha256": "1e8e190366a6bebb6e8619f6ee5a764485f1b25072e68f6d4846f82527a395fb"
+  },
+  {
+    "old": "reports/restoration/gate2-site-visual-faq.stdout",
+    "current": "reports/restoration/gate2/gate2-site-visual-faq.stdout",
+    "sha256": "3e3afb596d862db74818d4a897e1c3271fa323e6564e5cf6c8621aa6c37cbcb7"
+  },
+  {
+    "old": "reports/restoration/gate2-site-visual.stderr",
+    "current": "reports/restoration/gate2/gate2-site-visual.stderr",
+    "sha256": "7385879e47d35854882e17466cc9f4f3b2d41c15713a60aaa2066c110aab2ad4"
+  },
+  {
+    "old": "reports/restoration/gate2-site-visual.stdout",
+    "current": "reports/restoration/gate2/gate2-site-visual.stdout",
+    "sha256": "99a0763aeb306b6463cdf32b15e6f6529520061bdc921548d0111f1313ae955c"
+  },
+  {
+    "old": "reports/restoration/gate2-ui-build.stderr",
+    "current": "reports/restoration/gate2/gate2-ui-build.stderr",
+    "sha256": "84c069857e95bdc9b9ac8c696475bd10afe47ad312528fc43a0ed26142540138"
+  },
+  {
+    "old": "reports/restoration/gate2-ui-build.stdout",
+    "current": "reports/restoration/gate2/gate2-ui-build.stdout",
+    "sha256": "7d8fdcac8459a01a794ac594c06c9e45aef5b07f9c1ea80cb7e9e2bd2374be53"
+  },
+  {
+    "old": "reports/restoration/gate2-ui-check.stderr",
+    "current": "reports/restoration/gate2/gate2-ui-check.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate2-ui-check.stdout",
+    "current": "reports/restoration/gate2/gate2-ui-check.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate2-workspace-tests.stderr",
+    "current": "reports/restoration/gate2/gate2-workspace-tests.stderr",
+    "sha256": "f20836ce86e412217ea06e77cbd9943f45cb01945a0b7195d82634bae1ddb538"
+  },
+  {
+    "old": "reports/restoration/gate2-workspace-tests.stdout",
+    "current": "reports/restoration/gate2/gate2-workspace-tests.stdout",
+    "sha256": "3bfbdda1b49515c46ad5b395f5e66bedb55eb11dcb4bece2dab51580778710db"
+  },
+  {
+    "old": "reports/restoration/gate3-adapter-smoke.stderr",
+    "current": "reports/restoration/gate3/gate3-adapter-smoke.stderr",
+    "sha256": "cc6268f6858531e30de9fbd4f80bb961ac2086e1fc0ad9030daab09b022427a9"
+  },
+  {
+    "old": "reports/restoration/gate3-adapter-smoke.stdout",
+    "current": "reports/restoration/gate3/gate3-adapter-smoke.stdout",
+    "sha256": "9865abcc8cc50943a029bfcc6a5fc478bf2d97dae70542a0b2e22e5eb48255cd"
+  },
+  {
+    "old": "reports/restoration/gate3-after-cost-flash-code-jit.stderr",
+    "current": "reports/restoration/gate3/gate3-after-cost-flash-code-jit.stderr",
+    "sha256": "20c370ca450259fc48d7efb85e2cf671940d0b0414b4559072aa6d6ab1f713ee"
+  },
+  {
+    "old": "reports/restoration/gate3-after-cost-flash-code-jit.stdout",
+    "current": "reports/restoration/gate3/gate3-after-cost-flash-code-jit.stdout",
+    "sha256": "3934ea4108042f8d93c1dc27f11b8365be04657c3a280bd02994739c3b77c6f7"
+  },
+  {
+    "old": "reports/restoration/gate3-after-cost-flash-scifact-jit.stderr",
+    "current": "reports/restoration/gate3/gate3-after-cost-flash-scifact-jit.stderr",
+    "sha256": "7b3b0e2147b09d7eb4ebd7c8db4a04a52caccc9eab1c4953e8af3c1967b119d1"
+  },
+  {
+    "old": "reports/restoration/gate3-after-cost-flash-scifact-jit.stdout",
+    "current": "reports/restoration/gate3/gate3-after-cost-flash-scifact-jit.stdout",
+    "sha256": "d476ef9e30c684e390b05b03c2b4ce087bf901857f4ac026986a10819ab8f6b1"
+  },
+  {
+    "old": "reports/restoration/gate3-after-cost-flash-scifact-native-warm.stderr",
+    "current": "reports/restoration/gate3/gate3-after-cost-flash-scifact-native-warm.stderr",
+    "sha256": "7b3b0e2147b09d7eb4ebd7c8db4a04a52caccc9eab1c4953e8af3c1967b119d1"
+  },
+  {
+    "old": "reports/restoration/gate3-after-cost-flash-scifact-native-warm.stdout",
+    "current": "reports/restoration/gate3/gate3-after-cost-flash-scifact-native-warm.stdout",
+    "sha256": "bdb13ae8a8538b2cd1f4695d894154336ebf9f03e1c820a5dfe1db46da1f5e08"
+  },
+  {
+    "old": "reports/restoration/gate3-ambiguous-session-context-v7.stderr",
+    "current": "reports/restoration/gate3/gate3-ambiguous-session-context-v7.stderr",
+    "sha256": "b155f729323641dc2a4e49bd600e817c9eb1e369380907a01f8b49a853dc7c63"
+  },
+  {
+    "old": "reports/restoration/gate3-ambiguous-session-context-v7.stdout",
+    "current": "reports/restoration/gate3/gate3-ambiguous-session-context-v7.stdout",
+    "sha256": "862d29b9b2806b437a6816c713d2786e4398cbb35719ce4fc842387ce05ab4da"
+  },
+  {
+    "old": "reports/restoration/gate3-ambiguous-session-prepare.stderr",
+    "current": "reports/restoration/gate3/gate3-ambiguous-session-prepare.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-ambiguous-session-sources.json",
+    "current": "reports/restoration/gate3/gate3-ambiguous-session-sources.json",
+    "sha256": "7d1967ea19936d08d90b795c3ac29f32f4e13a05a0d6b9e8358515fd2a917c9d"
+  },
+  {
+    "old": "reports/restoration/gate3-ambiguous-session-v1.stderr",
+    "current": "reports/restoration/gate3/gate3-ambiguous-session-v1.stderr",
+    "sha256": "69e185c1c5af286ed8d45aaf560b3c7986b8a66c8be93a48ed225f598c60e419"
+  },
+  {
+    "old": "reports/restoration/gate3-ambiguous-session-v1.stdout",
+    "current": "reports/restoration/gate3/gate3-ambiguous-session-v1.stdout",
+    "sha256": "b9a43429cd0c8bdde79b773160988020523c0abe22d51c2a688b937b6ac58a24"
+  },
+  {
+    "old": "reports/restoration/gate3-ambiguous-session-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-ambiguous-session-v2.stderr",
+    "sha256": "69e185c1c5af286ed8d45aaf560b3c7986b8a66c8be93a48ed225f598c60e419"
+  },
+  {
+    "old": "reports/restoration/gate3-ambiguous-session-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-ambiguous-session-v2.stdout",
+    "sha256": "b9a43429cd0c8bdde79b773160988020523c0abe22d51c2a688b937b6ac58a24"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-bm25.stderr",
+    "current": "reports/restoration/gate3/gate3-baseline-bm25.stderr",
+    "sha256": "eca5659b5a90db9607702fa47afaaebdbccc4cf16c087aa4282f5c3f3952aca3"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-bm25.stdout",
+    "current": "reports/restoration/gate3/gate3-baseline-bm25.stdout",
+    "sha256": "fb9848da0262e32d5bfe5af613359baa66abf1f3bf2ab2655b9b0da3db6e6e38"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-build.stderr",
+    "current": "reports/restoration/gate3/gate3-baseline-build.stderr",
+    "sha256": "b531b7724eea5fe93c8f1c5bc45d203fccffaeedbaf7dd101f53666d2fb06965"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-build.stdout",
+    "current": "reports/restoration/gate3/gate3-baseline-build.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-flash-jit-plain.stderr",
+    "current": "reports/restoration/gate3/gate3-baseline-flash-jit-plain.stderr",
+    "sha256": "eca5659b5a90db9607702fa47afaaebdbccc4cf16c087aa4282f5c3f3952aca3"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-flash-jit-plain.stdout",
+    "current": "reports/restoration/gate3/gate3-baseline-flash-jit-plain.stdout",
+    "sha256": "b8ac3fb6778fe29a9979b0a970e56d55005ccdd3ca0f77e4f55b269a8de06c8c"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-flash-jit.stderr",
+    "current": "reports/restoration/gate3/gate3-baseline-flash-jit.stderr",
+    "sha256": "3ff5448e329462c426dec8c8a5c7d9095147c3d2c7b10ff309a7c17ebaee194f"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-flash-jit.stdout",
+    "current": "reports/restoration/gate3/gate3-baseline-flash-jit.stdout",
+    "sha256": "ff87de86ea61ed0faedf39091753b1d949f02aba7238ea74f9eca1d2587525bb"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-flash-native-cold-plain.stderr",
+    "current": "reports/restoration/gate3/gate3-baseline-flash-native-cold-plain.stderr",
+    "sha256": "eca5659b5a90db9607702fa47afaaebdbccc4cf16c087aa4282f5c3f3952aca3"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-flash-native-cold-plain.stdout",
+    "current": "reports/restoration/gate3/gate3-baseline-flash-native-cold-plain.stdout",
+    "sha256": "0a0d34db2c72fb6b4690849e0d53a3dfad98bbb2895dd001decb94662d4e386b"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-flash-native-warm-plain.stderr",
+    "current": "reports/restoration/gate3/gate3-baseline-flash-native-warm-plain.stderr",
+    "sha256": "eca5659b5a90db9607702fa47afaaebdbccc4cf16c087aa4282f5c3f3952aca3"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-flash-native-warm-plain.stdout",
+    "current": "reports/restoration/gate3/gate3-baseline-flash-native-warm-plain.stdout",
+    "sha256": "0d8c3beb1f1e89e55e08596913b1fe9a2860ba2d5b0a915776bfe438a601d277"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-profile.json",
+    "current": "reports/restoration/gate3/gate3-baseline-profile.json",
+    "sha256": "c8cd9722bd4ae2e5c053b30933d607374c4f0ad50b6cb0644716014f4b9bc438"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-profile.stderr",
+    "current": "reports/restoration/gate3/gate3-baseline-profile.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-profile.stdout",
+    "current": "reports/restoration/gate3/gate3-baseline-profile.stdout",
+    "sha256": "30736ff2132a566b9e5461fd8bed015e60979fb61c067e49d29d8c0d628b2dd9"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-rg-context.stderr",
+    "current": "reports/restoration/gate3/gate3-baseline-rg-context.stderr",
+    "sha256": "3ff5448e329462c426dec8c8a5c7d9095147c3d2c7b10ff309a7c17ebaee194f"
+  },
+  {
+    "old": "reports/restoration/gate3-baseline-rg-context.stdout",
+    "current": "reports/restoration/gate3/gate3-baseline-rg-context.stdout",
+    "sha256": "7f32b5b837cdc47fe3a429f3aee46328323f2aef39443cfd10961267465a338e"
+  },
+  {
+    "old": "reports/restoration/gate3-chunker-after.stderr",
+    "current": "reports/restoration/gate3/gate3-chunker-after.stderr",
+    "sha256": "759f3ecd443da0adec7a4839c9ddb74297ba942fe2c3811799c1df267d5a3a81"
+  },
+  {
+    "old": "reports/restoration/gate3-chunker-after.stdout",
+    "current": "reports/restoration/gate3/gate3-chunker-after.stdout",
+    "sha256": "cd54492a00969b5bf539a645eebe8e8d09e818c27aa29f83ff555fe5f7be95ed"
+  },
+  {
+    "old": "reports/restoration/gate3-chunker-before.stderr",
+    "current": "reports/restoration/gate3/gate3-chunker-before.stderr",
+    "sha256": "21a24f302490d82bbf6606e099b9d714989dbd4b00545add846e15398d9d270a"
+  },
+  {
+    "old": "reports/restoration/gate3-chunker-before.stdout",
+    "current": "reports/restoration/gate3/gate3-chunker-before.stdout",
+    "sha256": "0a4b98f079249ea06ac13dea3f479a6f125d8d705c136d6edc929712e1bb7731"
+  },
+  {
+    "old": "reports/restoration/gate3-cli-contract-after-cost.json",
+    "current": "reports/restoration/gate3/gate3-cli-contract-after-cost.json",
+    "sha256": "d03b5293d5003dc16fcb2f4ace53673d986f3876162efb8c5468cecb36cdc954"
+  },
+  {
+    "old": "reports/restoration/gate3-cli-contract-after-cost.stderr",
+    "current": "reports/restoration/gate3/gate3-cli-contract-after-cost.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-cli-contract-after-cost.stdout",
+    "current": "reports/restoration/gate3/gate3-cli-contract-after-cost.stdout",
+    "sha256": "6a895bd8ab188725d00a19939782b88885804f6c0f795ca63c1bc16dcd271625"
+  },
+  {
+    "old": "reports/restoration/gate3-cli-contract.json",
+    "current": "reports/restoration/gate3/gate3-cli-contract.json",
+    "sha256": "5ba5b39fdeda5f580106e79b3f15d1ff79008e5b67cd949c9110288a1ba9b1ce"
+  },
+  {
+    "old": "reports/restoration/gate3-cli-contract.stderr",
+    "current": "reports/restoration/gate3/gate3-cli-contract.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-cli-contract.stdout",
+    "current": "reports/restoration/gate3/gate3-cli-contract.stdout",
+    "sha256": "c53dc33b4d9a746541d926756b7323c394afb153c07739683363c6ffb8d73437"
+  },
+  {
+    "old": "reports/restoration/gate3-code-tokenizer-normalization.json",
+    "current": "reports/restoration/gate3/gate3-code-tokenizer-normalization.json",
+    "sha256": "8a7d1fcc36b6002fc0ff7759e6a63f43270c606ff10e3d1441315840899c1685"
+  },
+  {
+    "old": "reports/restoration/gate3-code-tokenizer-normalization.stderr",
+    "current": "reports/restoration/gate3/gate3-code-tokenizer-normalization.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-code-tokenizer-normalization.stdout",
+    "current": "reports/restoration/gate3/gate3-code-tokenizer-normalization.stdout",
+    "sha256": "a17c32dea2f09048e4f580755b1b06868113b122038d9b5d20be7d709c1a5601"
+  },
+  {
+    "old": "reports/restoration/gate3-commit.stderr",
+    "current": "reports/restoration/gate3/gate3-commit.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-commit.stdout",
+    "current": "reports/restoration/gate3/gate3-commit.stdout",
+    "sha256": "a41de557c8403b4e245935c4b72c5c3af65cfa309d650ba63e0a4ba45fa5d6e1"
+  },
+  {
+    "old": "reports/restoration/gate3-compressed-dev-v1.stderr",
+    "current": "reports/restoration/gate3/gate3-compressed-dev-v1.stderr",
+    "sha256": "a2b3232ff028472ff8487826834a259857d17417494aca1477b13444ae2bd8a2"
+  },
+  {
+    "old": "reports/restoration/gate3-compressed-dev-v1.stdout",
+    "current": "reports/restoration/gate3/gate3-compressed-dev-v1.stdout",
+    "sha256": "d5816e3ebe6118e862671b91b36a155edf954ad15be11ada647b69c08b554fef"
+  },
+  {
+    "old": "reports/restoration/gate3-compressed-development-analysis.json",
+    "current": "reports/restoration/gate3/gate3-compressed-development-analysis.json",
+    "sha256": "b1c781affd7c262b7c0cea105fbb25e22649921420c2b8dff45526e351df0d95"
+  },
+  {
+    "old": "reports/restoration/gate3-compressed-validation-v1.stderr",
+    "current": "reports/restoration/gate3/gate3-compressed-validation-v1.stderr",
+    "sha256": "69e185c1c5af286ed8d45aaf560b3c7986b8a66c8be93a48ed225f598c60e419"
+  },
+  {
+    "old": "reports/restoration/gate3-compressed-validation-v1.stdout",
+    "current": "reports/restoration/gate3/gate3-compressed-validation-v1.stdout",
+    "sha256": "f277388b1685ecccb29628bb8ee7ec1e74d997de7fd0789d7031d67435fc0d50"
+  },
+  {
+    "old": "reports/restoration/gate3-controlled-bm25-fixed.stderr",
+    "current": "reports/restoration/gate3/gate3-controlled-bm25-fixed.stderr",
+    "sha256": "548274acdcf8f45a7604cfad8d8841d16bb5593963f8b7f0ce2a0d113f101c15"
+  },
+  {
+    "old": "reports/restoration/gate3-controlled-bm25-fixed.stdout",
+    "current": "reports/restoration/gate3/gate3-controlled-bm25-fixed.stdout",
+    "sha256": "9bfa7dc2cc42450bbd6c6801637c8dbd9dfae3639875b9a583cd40f405149551"
+  },
+  {
+    "old": "reports/restoration/gate3-controlled-ixos-fixed.stderr",
+    "current": "reports/restoration/gate3/gate3-controlled-ixos-fixed.stderr",
+    "sha256": "548274acdcf8f45a7604cfad8d8841d16bb5593963f8b7f0ce2a0d113f101c15"
+  },
+  {
+    "old": "reports/restoration/gate3-controlled-ixos-fixed.stdout",
+    "current": "reports/restoration/gate3/gate3-controlled-ixos-fixed.stdout",
+    "sha256": "8ced18028f0e13bfad17556ced9c58f3a1610538bb43deab0f91d4f0f0c246ae"
+  },
+  {
+    "old": "reports/restoration/gate3-controlled-ixos.stderr",
+    "current": "reports/restoration/gate3/gate3-controlled-ixos.stderr",
+    "sha256": "76650a49150c21653f3edbaa581f52ab7d9497de6e1d9f08c43db3e6fdb3019c"
+  },
+  {
+    "old": "reports/restoration/gate3-controlled-ixos.stdout",
+    "current": "reports/restoration/gate3/gate3-controlled-ixos.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-controlled-prepare-fixed.stderr",
+    "current": "reports/restoration/gate3/gate3-controlled-prepare-fixed.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-controlled-prepare.stderr",
+    "current": "reports/restoration/gate3/gate3-controlled-prepare.stderr",
+    "sha256": "a73f1cc6d496e160033e97498b117d0746b01b053ea1a517d4a375166fe32639"
+  },
+  {
+    "old": "reports/restoration/gate3-controlled-rg-fixed.stderr",
+    "current": "reports/restoration/gate3/gate3-controlled-rg-fixed.stderr",
+    "sha256": "548274acdcf8f45a7604cfad8d8841d16bb5593963f8b7f0ce2a0d113f101c15"
+  },
+  {
+    "old": "reports/restoration/gate3-controlled-rg-fixed.stdout",
+    "current": "reports/restoration/gate3/gate3-controlled-rg-fixed.stdout",
+    "sha256": "7439fbaf381ae02b10042b010f8a632d7ee1560ba55aa33894625311fea5bb1e"
+  },
+  {
+    "old": "reports/restoration/gate3-controlled-sources.json",
+    "current": "reports/restoration/gate3/gate3-controlled-sources.json",
+    "sha256": "c16903679d7a5aacea8202a9d8f053e67b3fbb6c60edf4caebb1c8cd68d116f2"
+  },
+  {
+    "old": "reports/restoration/gate3-core-tests.stderr",
+    "current": "reports/restoration/gate3/gate3-core-tests.stderr",
+    "sha256": "75ed6c638de68885a57c72baeb28633923157ae380b8ac5bdbc4ee91eb25806a"
+  },
+  {
+    "old": "reports/restoration/gate3-core-tests.stdout",
+    "current": "reports/restoration/gate3/gate3-core-tests.stdout",
+    "sha256": "8e482f449ed9e8124664df14754d2424dd645b118a656e21f904a6799f53da0e"
+  },
+  {
+    "old": "reports/restoration/gate3-corpus-integrity.stderr",
+    "current": "reports/restoration/gate3/gate3-corpus-integrity.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-corpus-integrity.stdout",
+    "current": "reports/restoration/gate3/gate3-corpus-integrity.stdout",
+    "sha256": "56d2f031553478bcde1289e07c719d2fab04ead71c74c79fa59a7ab7e64576c4"
+  },
+  {
+    "old": "reports/restoration/gate3-development-analysis.json",
+    "current": "reports/restoration/gate3/gate3-development-analysis.json",
+    "sha256": "c45903b7afb601d88fa18cb684f97d9ebb8d7133d5925a5cfdac684bea5a3c97"
+  },
+  {
+    "old": "reports/restoration/gate3-document-fetch.stderr",
+    "current": "reports/restoration/gate3/gate3-document-fetch.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-document-fetch.stdout",
+    "current": "reports/restoration/gate3/gate3-document-fetch.stdout",
+    "sha256": "5501f46fa16197346184fafd1b65113d74914c0248351d7bf89f3196b7e3dc4b"
+  },
+  {
+    "old": "reports/restoration/gate3-document-sources.json",
+    "current": "reports/restoration/gate3/gate3-document-sources.json",
+    "sha256": "1550530091b899b730c8c23170a49621d18639076ca833bd7680b9755e2ef74f"
+  },
+  {
+    "old": "reports/restoration/gate3-engine-tests-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-engine-tests-v2.stderr",
+    "sha256": "17adefbe7ad4f1da7e77857975fc86d18adf5226c7ed6fc03ddf9f9ba88a5e31"
+  },
+  {
+    "old": "reports/restoration/gate3-engine-tests-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-engine-tests-v2.stdout",
+    "sha256": "b13c11e1bd8b493bd5c67177a7ea8826e904c1695cc52521552d50118a6c9e0c"
+  },
+  {
+    "old": "reports/restoration/gate3-engine-tests-v3.stderr",
+    "current": "reports/restoration/gate3/gate3-engine-tests-v3.stderr",
+    "sha256": "34331921d5567072e89cb429984a5134c3a83bbe5d2d5e47528c500d177af851"
+  },
+  {
+    "old": "reports/restoration/gate3-engine-tests-v3.stdout",
+    "current": "reports/restoration/gate3/gate3-engine-tests-v3.stdout",
+    "sha256": "9429e120e44fc374325d55989cf7c30104bb8bc9ac53c9c4433948c3ac4e4f04"
+  },
+  {
+    "old": "reports/restoration/gate3-engine-tests-v6.stderr",
+    "current": "reports/restoration/gate3/gate3-engine-tests-v6.stderr",
+    "sha256": "c3a4fb6d884d65a5653654cc16965ffadb0b9ab1224785ae783844a71a1fe0d7"
+  },
+  {
+    "old": "reports/restoration/gate3-engine-tests-v6.stdout",
+    "current": "reports/restoration/gate3/gate3-engine-tests-v6.stdout",
+    "sha256": "5cf6df364db64cbf46ebdb04521a4cc08c637ed320cf6a3d76fe36ba3c904c12"
+  },
+  {
+    "old": "reports/restoration/gate3-eval-contract-tests.stderr",
+    "current": "reports/restoration/gate3/gate3-eval-contract-tests.stderr",
+    "sha256": "08f2a7b6c8dea7ba252e9412c0ad5c7d2ba2bbddffb1c26adae291bfaccbc45e"
+  },
+  {
+    "old": "reports/restoration/gate3-eval-contract-tests.stdout",
+    "current": "reports/restoration/gate3/gate3-eval-contract-tests.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-eval-dependencies.stderr",
+    "current": "reports/restoration/gate3/gate3-eval-dependencies.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-eval-dependencies.stdout",
+    "current": "reports/restoration/gate3/gate3-eval-dependencies.stdout",
+    "sha256": "1c2dcea8d7dc17d389f933565115bfcc2f5f1a54384bc86a4ce8c1f77f0c3649"
+  },
+  {
+    "old": "reports/restoration/gate3-eval-tests-updated.stderr",
+    "current": "reports/restoration/gate3/gate3-eval-tests-updated.stderr",
+    "sha256": "48e9b8d7501ce5ac4b2f5a0f49e75df9e05650535813e95597f8152954ae90e1"
+  },
+  {
+    "old": "reports/restoration/gate3-eval-tests-updated.stdout",
+    "current": "reports/restoration/gate3/gate3-eval-tests-updated.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-eval-tests-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-eval-tests-v2.stderr",
+    "sha256": "614a60da79e6477fcb27ca0e663ab1259d5e3f6ba2f2ee801d2b0bca389c52ff"
+  },
+  {
+    "old": "reports/restoration/gate3-eval-tests-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-eval-tests-v2.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-eval-tests-v3.stderr",
+    "current": "reports/restoration/gate3/gate3-eval-tests-v3.stderr",
+    "sha256": "61fc0b5a8c40eee304a39222f3ec09d55ef159e2c73df995303b2292bd0fd6ee"
+  },
+  {
+    "old": "reports/restoration/gate3-eval-tests-v3.stdout",
+    "current": "reports/restoration/gate3/gate3-eval-tests-v3.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-eval-tests-v4.stderr",
+    "current": "reports/restoration/gate3/gate3-eval-tests-v4.stderr",
+    "sha256": "91e875cc3a809162ddf37cff9a4109b5a0f958da9c3f8ce2b29e68e311fe39f1"
+  },
+  {
+    "old": "reports/restoration/gate3-eval-tests-v4.stdout",
+    "current": "reports/restoration/gate3/gate3-eval-tests-v4.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-evidence-window-dev-v1.json",
+    "current": "reports/restoration/gate3/gate3-evidence-window-dev-v1.json",
+    "sha256": "be62114e614066a538c28d2f16266ef6e942dc87ba6ee038e18763e37eab1a62"
+  },
+  {
+    "old": "reports/restoration/gate3-evidence-window-dev-v1.stderr",
+    "current": "reports/restoration/gate3/gate3-evidence-window-dev-v1.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-evidence-window-dev-v2.json",
+    "current": "reports/restoration/gate3/gate3-evidence-window-dev-v2.json",
+    "sha256": "02f6fdc91ec83ed3c8946b645b47dfb7927ebb2d02b8f63ba51f15b2a7a01a1e"
+  },
+  {
+    "old": "reports/restoration/gate3-evidence-window-dev-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-evidence-window-dev-v2.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-existing-artifacts.stderr",
+    "current": "reports/restoration/gate3/gate3-existing-artifacts.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-existing-artifacts.stdout",
+    "current": "reports/restoration/gate3/gate3-existing-artifacts.stdout",
+    "sha256": "cedf9fe2516227a778900be60223417007da515de1eb51995a88ce8a65a55e33"
+  },
+  {
+    "old": "reports/restoration/gate3-experiment-build.stderr",
+    "current": "reports/restoration/gate3/gate3-experiment-build.stderr",
+    "sha256": "6b996cd297f08365538f0d40ea9855f62f9df5f5721b0227bbe1a03f88085a54"
+  },
+  {
+    "old": "reports/restoration/gate3-experiment-build.stdout",
+    "current": "reports/restoration/gate3/gate3-experiment-build.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-final-build.stderr",
+    "current": "reports/restoration/gate3/gate3-final-build.stderr",
+    "sha256": "b6da5fc94a41f0b00c17774e6bf49b0794c111759ef09447006b5181554ceed0"
+  },
+  {
+    "old": "reports/restoration/gate3-final-build.stdout",
+    "current": "reports/restoration/gate3/gate3-final-build.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-final-comparisons.json",
+    "current": "reports/restoration/gate3/gate3-final-comparisons.json",
+    "sha256": "f505d4d4d61462620cd6da44df263722e22e98b1096151a36367e93b40d9c8e3"
+  },
+  {
+    "old": "reports/restoration/gate3-final-comparisons.stderr",
+    "current": "reports/restoration/gate3/gate3-final-comparisons.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-final-comparisons.stdout",
+    "current": "reports/restoration/gate3/gate3-final-comparisons.stdout",
+    "sha256": "2ac5fb1dfb3773bdcd4a27abd10b2545f1453031f8fee1f02ed79a45db208078"
+  },
+  {
+    "old": "reports/restoration/gate3-final-eval-tests.stderr",
+    "current": "reports/restoration/gate3/gate3-final-eval-tests.stderr",
+    "sha256": "52db7295814e08f98aef25ac36382fd7f20b82bc242a1df14b818df552c61b71"
+  },
+  {
+    "old": "reports/restoration/gate3-final-eval-tests.stdout",
+    "current": "reports/restoration/gate3/gate3-final-eval-tests.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-final-legacy-contract.json",
+    "current": "reports/restoration/gate3/gate3-final-legacy-contract.json",
+    "sha256": "57e796a7c89e3ef638b07ce084852fbd211672a310428af71505bb34ec0eaec7"
+  },
+  {
+    "old": "reports/restoration/gate3-final-legacy-contract.stderr",
+    "current": "reports/restoration/gate3/gate3-final-legacy-contract.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-final-legacy-contract.stdout",
+    "current": "reports/restoration/gate3/gate3-final-legacy-contract.stdout",
+    "sha256": "837a2271288688c2187d5291451fb657505f7db84af88040e549d9618ca90442"
+  },
+  {
+    "old": "reports/restoration/gate3-final-real-probes.json",
+    "current": "reports/restoration/gate3/gate3-final-real-probes.json",
+    "sha256": "db46c2fd1262b7ecc06f26bff24a7418ddb79dcd3e54c1dfba9d2e9a7e6cb4ba"
+  },
+  {
+    "old": "reports/restoration/gate3-final-real-probes.stderr",
+    "current": "reports/restoration/gate3/gate3-final-real-probes.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-final-real-probes.stdout",
+    "current": "reports/restoration/gate3/gate3-final-real-probes.stdout",
+    "sha256": "6124be613be96a3cb8516a12d7c23fdb3d698cdfcb435405c8df9db9654e0736"
+  },
+  {
+    "old": "reports/restoration/gate3-final-selection.stderr",
+    "current": "reports/restoration/gate3/gate3-final-selection.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-final-selection.stdout",
+    "current": "reports/restoration/gate3/gate3-final-selection.stdout",
+    "sha256": "50be96c27797f81fe0791d5d1d7fb4bb6b3971a9d3f9ccaffc138b887191bda7"
+  },
+  {
+    "old": "reports/restoration/gate3-final-settings.stderr",
+    "current": "reports/restoration/gate3/gate3-final-settings.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-final-settings.stdout",
+    "current": "reports/restoration/gate3/gate3-final-settings.stdout",
+    "sha256": "8eaeeae83aa9a742504defbc531764e96038e4d1178cc8bdeff3419cbbce61d0"
+  },
+  {
+    "old": "reports/restoration/gate3-final-workspace-tests-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-final-workspace-tests-v2.stderr",
+    "sha256": "25377874a4086b4d178bbdcc4883397bd9a4705eac6ca59a84076040de01ea18"
+  },
+  {
+    "old": "reports/restoration/gate3-final-workspace-tests-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-final-workspace-tests-v2.stdout",
+    "sha256": "2b83e4e2dff44d13727168bfa920d311df1dd1067f5ba4afbb3d331b51afa412"
+  },
+  {
+    "old": "reports/restoration/gate3-final-workspace-tests-v3.stderr",
+    "current": "reports/restoration/gate3/gate3-final-workspace-tests-v3.stderr",
+    "sha256": "35b79169761e0b1ca42cdd36b3198ce5699fd9c4154fef1b3bb8d924de31bb3a"
+  },
+  {
+    "old": "reports/restoration/gate3-final-workspace-tests-v3.stdout",
+    "current": "reports/restoration/gate3/gate3-final-workspace-tests-v3.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-final-workspace-tests-v4.stderr",
+    "current": "reports/restoration/gate3/gate3-final-workspace-tests-v4.stderr",
+    "sha256": "caae7c302c0d6b228f36e0c821bc58ce987b1eef329ccc434b04b8b13413d877"
+  },
+  {
+    "old": "reports/restoration/gate3-final-workspace-tests-v4.stdout",
+    "current": "reports/restoration/gate3/gate3-final-workspace-tests-v4.stdout",
+    "sha256": "d7782b27f7dc71acc9a4f74165e2c6ee4e5f44774e222bd144a281115750f078"
+  },
+  {
+    "old": "reports/restoration/gate3-final-workspace-tests.stderr",
+    "current": "reports/restoration/gate3/gate3-final-workspace-tests.stderr",
+    "sha256": "e4a4165d4299623cf68d7a72992c32a02dda9ad8a3ae9d933830676d67faa011"
+  },
+  {
+    "old": "reports/restoration/gate3-final-workspace-tests.stdout",
+    "current": "reports/restoration/gate3/gate3-final-workspace-tests.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-flash-tokenizer-normalization.json",
+    "current": "reports/restoration/gate3/gate3-flash-tokenizer-normalization.json",
+    "sha256": "06c6b1f1f1ce1e5ca2f25e5811d15da0c989c678ae4f7aae1a4010119e2add78"
+  },
+  {
+    "old": "reports/restoration/gate3-flash-tokenizer-normalization.stderr",
+    "current": "reports/restoration/gate3/gate3-flash-tokenizer-normalization.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-flash-tokenizer-normalization.stdout",
+    "current": "reports/restoration/gate3/gate3-flash-tokenizer-normalization.stdout",
+    "sha256": "1b06f72317bfd86a0e298d41f81b47bb44cb7ad5a1e63bca623216de766a31ea"
+  },
+  {
+    "old": "reports/restoration/gate3-general-quantization.json",
+    "current": "reports/restoration/gate3/gate3-general-quantization.json",
+    "sha256": "13e39cfa26516987be00f9d26c56863d9a60a3c21026b56e5c05d99584ecc8d1"
+  },
+  {
+    "old": "reports/restoration/gate3-general-quantization.stderr",
+    "current": "reports/restoration/gate3/gate3-general-quantization.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-general-quantization.stdout",
+    "current": "reports/restoration/gate3/gate3-general-quantization.stdout",
+    "sha256": "361189a16034cf3838fde8eaa5b8ceb948b634e9840cbe2a6d6889a8e15d984f"
+  },
+  {
+    "old": "reports/restoration/gate3-json-context-after.stderr",
+    "current": "reports/restoration/gate3/gate3-json-context-after.stderr",
+    "sha256": "ba0e75e0de5e5038fa02d9cbcfb6a5f381cff16beb17eb28c0d137a2ff3c652f"
+  },
+  {
+    "old": "reports/restoration/gate3-json-context-after.stdout",
+    "current": "reports/restoration/gate3/gate3-json-context-after.stdout",
+    "sha256": "165c1af0075ee4b047b1fb6f0f21e52b78832f70a464a531f2fdaf89ae402fa8"
+  },
+  {
+    "old": "reports/restoration/gate3-json-context-before.stderr",
+    "current": "reports/restoration/gate3/gate3-json-context-before.stderr",
+    "sha256": "c5ccb1de7c57f25028e010c0ab1c02f25d7274565cc40794a8498bd60271b46c"
+  },
+  {
+    "old": "reports/restoration/gate3-json-context-before.stdout",
+    "current": "reports/restoration/gate3/gate3-json-context-before.stdout",
+    "sha256": "f16a0968ce10f6dae84e4d891b62864ec23f0d804767c9315ae7accfbb782c35"
+  },
+  {
+    "old": "reports/restoration/gate3-matrix-dev-v1.stderr",
+    "current": "reports/restoration/gate3/gate3-matrix-dev-v1.stderr",
+    "sha256": "7b3b0e2147b09d7eb4ebd7c8db4a04a52caccc9eab1c4953e8af3c1967b119d1"
+  },
+  {
+    "old": "reports/restoration/gate3-matrix-dev-v1.stdout",
+    "current": "reports/restoration/gate3/gate3-matrix-dev-v1.stdout",
+    "sha256": "5ebeb7c25c9577440496da543a69a95a651be384889b102f3f4cec074671d55b"
+  },
+  {
+    "old": "reports/restoration/gate3-matrix-validation-v1.stderr",
+    "current": "reports/restoration/gate3/gate3-matrix-validation-v1.stderr",
+    "sha256": "a2b3232ff028472ff8487826834a259857d17417494aca1477b13444ae2bd8a2"
+  },
+  {
+    "old": "reports/restoration/gate3-matrix-validation-v1.stdout",
+    "current": "reports/restoration/gate3/gate3-matrix-validation-v1.stdout",
+    "sha256": "46e5bea408b4c6c84660dbc01d099f869bb763125d1a8125f327e78aa4d0e066"
+  },
+  {
+    "old": "reports/restoration/gate3-model-contract-v1.stderr",
+    "current": "reports/restoration/gate3/gate3-model-contract-v1.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-model-contract-v1.stdout",
+    "current": "reports/restoration/gate3/gate3-model-contract-v1.stdout",
+    "sha256": "62b2ee69c970de58dd114790e18d7aea3325fe0a699c03824ad5d1ddd97429d7"
+  },
+  {
+    "old": "reports/restoration/gate3-model-download.stderr",
+    "current": "reports/restoration/gate3/gate3-model-download.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-model-download.stdout",
+    "current": "reports/restoration/gate3/gate3-model-download.stdout",
+    "sha256": "0370d5d741c282c82c3d4a8b9a2b5612e30473c6d2d2c6e6c03658ac687182f2"
+  },
+  {
+    "old": "reports/restoration/gate3-model-sources.json",
+    "current": "reports/restoration/gate3/gate3-model-sources.json",
+    "sha256": "8a61b8f8306e04bd2fad2f66bcea267482541a0c1c706f9085982f2aae0c60da"
+  },
+  {
+    "old": "reports/restoration/gate3-normalized-development-analysis.json",
+    "current": "reports/restoration/gate3/gate3-normalized-development-analysis.json",
+    "sha256": "164d6ab0ce5b51a56358bd15a77744052b953932a409d8cdce24755de7fc4eba"
+  },
+  {
+    "old": "reports/restoration/gate3-normalized-validation-analysis.json",
+    "current": "reports/restoration/gate3/gate3-normalized-validation-analysis.json",
+    "sha256": "45929c1e685573f6fbaea92147185ef7ae21228969a899b20950be454a8d43c1"
+  },
+  {
+    "old": "reports/restoration/gate3-output-tests-v3.stderr",
+    "current": "reports/restoration/gate3/gate3-output-tests-v3.stderr",
+    "sha256": "83190a62fbf21af5d649889076d2c7f5fb0ccb9eb56c90b7e849783e392985bf"
+  },
+  {
+    "old": "reports/restoration/gate3-output-tests-v3.stdout",
+    "current": "reports/restoration/gate3/gate3-output-tests-v3.stdout",
+    "sha256": "ef1e78a155e6be998a2760834258eabe3c68c5b94b4ea1634b9a440c8069ecc9"
+  },
+  {
+    "old": "reports/restoration/gate3-own-session-combined-v6.stderr",
+    "current": "reports/restoration/gate3/gate3-own-session-combined-v6.stderr",
+    "sha256": "b155f729323641dc2a4e49bd600e817c9eb1e369380907a01f8b49a853dc7c63"
+  },
+  {
+    "old": "reports/restoration/gate3-own-session-combined-v6.stdout",
+    "current": "reports/restoration/gate3/gate3-own-session-combined-v6.stdout",
+    "sha256": "dfd03933c5624f39ef9b0b3fa1a4d72128ef82f01bd352204fbd682d7a2e61eb"
+  },
+  {
+    "old": "reports/restoration/gate3-own-session-context-v7.stderr",
+    "current": "reports/restoration/gate3/gate3-own-session-context-v7.stderr",
+    "sha256": "b155f729323641dc2a4e49bd600e817c9eb1e369380907a01f8b49a853dc7c63"
+  },
+  {
+    "old": "reports/restoration/gate3-own-session-context-v7.stdout",
+    "current": "reports/restoration/gate3/gate3-own-session-context-v7.stdout",
+    "sha256": "dfd03933c5624f39ef9b0b3fa1a4d72128ef82f01bd352204fbd682d7a2e61eb"
+  },
+  {
+    "old": "reports/restoration/gate3-own-session-feedback-v6.stderr",
+    "current": "reports/restoration/gate3/gate3-own-session-feedback-v6.stderr",
+    "sha256": "b155f729323641dc2a4e49bd600e817c9eb1e369380907a01f8b49a853dc7c63"
+  },
+  {
+    "old": "reports/restoration/gate3-own-session-feedback-v6.stdout",
+    "current": "reports/restoration/gate3/gate3-own-session-feedback-v6.stdout",
+    "sha256": "dfd03933c5624f39ef9b0b3fa1a4d72128ef82f01bd352204fbd682d7a2e61eb"
+  },
+  {
+    "old": "reports/restoration/gate3-own-session-off-v6.stderr",
+    "current": "reports/restoration/gate3/gate3-own-session-off-v6.stderr",
+    "sha256": "b155f729323641dc2a4e49bd600e817c9eb1e369380907a01f8b49a853dc7c63"
+  },
+  {
+    "old": "reports/restoration/gate3-own-session-off-v6.stdout",
+    "current": "reports/restoration/gate3/gate3-own-session-off-v6.stdout",
+    "sha256": "dfd03933c5624f39ef9b0b3fa1a4d72128ef82f01bd352204fbd682d7a2e61eb"
+  },
+  {
+    "old": "reports/restoration/gate3-own-session-related-v6.stderr",
+    "current": "reports/restoration/gate3/gate3-own-session-related-v6.stderr",
+    "sha256": "b155f729323641dc2a4e49bd600e817c9eb1e369380907a01f8b49a853dc7c63"
+  },
+  {
+    "old": "reports/restoration/gate3-own-session-related-v6.stdout",
+    "current": "reports/restoration/gate3/gate3-own-session-related-v6.stdout",
+    "sha256": "dfd03933c5624f39ef9b0b3fa1a4d72128ef82f01bd352204fbd682d7a2e61eb"
+  },
+  {
+    "old": "reports/restoration/gate3-own-session-source-v2.json",
+    "current": "reports/restoration/gate3/gate3-own-session-source-v2.json",
+    "sha256": "733f55195ba2f65fcaefcf864a07fa71da3c78209fa751a4b5a597ced3054e66"
+  },
+  {
+    "old": "reports/restoration/gate3-own-session-source-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-own-session-source-v2.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-own-session-source.json",
+    "current": "reports/restoration/gate3/gate3-own-session-source.json",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-own-session-source.stderr",
+    "current": "reports/restoration/gate3/gate3-own-session-source.stderr",
+    "sha256": "8a9fde280c2118779b8ae5188cc408d137ff551d9b4709395aba5132ad7298bf"
+  },
+  {
+    "old": "reports/restoration/gate3-parity-query-jit.stderr",
+    "current": "reports/restoration/gate3/gate3-parity-query-jit.stderr",
+    "sha256": "d8c4abb5edbeff4db85957521e955166f835c5821dc21c13977b5eea4646cb6d"
+  },
+  {
+    "old": "reports/restoration/gate3-parity-query-jit.stdout",
+    "current": "reports/restoration/gate3/gate3-parity-query-jit.stdout",
+    "sha256": "6b55bbb9057e2fba2b56e70a63e5b82391e9e237f07d80d7949fb38cbc2621aa"
+  },
+  {
+    "old": "reports/restoration/gate3-parity-query-warm.stderr",
+    "current": "reports/restoration/gate3/gate3-parity-query-warm.stderr",
+    "sha256": "5efeb5087c713b70edcd2b04ed5825d34755a9c6672d778c792bc5e1e0cc5d63"
+  },
+  {
+    "old": "reports/restoration/gate3-parity-query-warm.stdout",
+    "current": "reports/restoration/gate3/gate3-parity-query-warm.stdout",
+    "sha256": "09167ebb1a9618e276bd21c3c75f75543a1c9c16d00be10256a48f57d9ab2a27"
+  },
+  {
+    "old": "reports/restoration/gate3-production-code-clean-off-v5.stderr",
+    "current": "reports/restoration/gate3/gate3-production-code-clean-off-v5.stderr",
+    "sha256": "ee97de95a05b75fa61a728243407475cea4a301f01a114222a040d467e6ab18c"
+  },
+  {
+    "old": "reports/restoration/gate3-production-code-clean-off-v5.stdout",
+    "current": "reports/restoration/gate3/gate3-production-code-clean-off-v5.stdout",
+    "sha256": "43aaed3a7352caaccfc3380f24894ea614c4657cec369f090b1ca5e4dd5c993f"
+  },
+  {
+    "old": "reports/restoration/gate3-production-code-clean-on-v5.stderr",
+    "current": "reports/restoration/gate3/gate3-production-code-clean-on-v5.stderr",
+    "sha256": "ee97de95a05b75fa61a728243407475cea4a301f01a114222a040d467e6ab18c"
+  },
+  {
+    "old": "reports/restoration/gate3-production-code-clean-on-v5.stdout",
+    "current": "reports/restoration/gate3/gate3-production-code-clean-on-v5.stdout",
+    "sha256": "dcaa2f98caf997b0b1ec1f633723d50d2c2d8fbab43139d196ec98685b63d479"
+  },
+  {
+    "old": "reports/restoration/gate3-production-code-dev-compact-warm-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-production-code-dev-compact-warm-v2.stderr",
+    "sha256": "ee97de95a05b75fa61a728243407475cea4a301f01a114222a040d467e6ab18c"
+  },
+  {
+    "old": "reports/restoration/gate3-production-code-dev-compact-warm-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-production-code-dev-compact-warm-v2.stdout",
+    "sha256": "0b7f68aa517e5ae52ebd656cf82ad6ea318adb60d0fd735b12ccdc89adf59af0"
+  },
+  {
+    "old": "reports/restoration/gate3-production-code-dev-jit-v1.stderr",
+    "current": "reports/restoration/gate3/gate3-production-code-dev-jit-v1.stderr",
+    "sha256": "69e185c1c5af286ed8d45aaf560b3c7986b8a66c8be93a48ed225f598c60e419"
+  },
+  {
+    "old": "reports/restoration/gate3-production-code-dev-jit-v1.stdout",
+    "current": "reports/restoration/gate3/gate3-production-code-dev-jit-v1.stdout",
+    "sha256": "983b02814cd998e6e207ea60df457a7321b6c0324e617d2f777e2878da21ac10"
+  },
+  {
+    "old": "reports/restoration/gate3-production-code-validation-coverage.stderr",
+    "current": "reports/restoration/gate3/gate3-production-code-validation-coverage.stderr",
+    "sha256": "6bfc4e4275a23e54893056620b237b93e689156ec18b771db38388d12a74d268"
+  },
+  {
+    "old": "reports/restoration/gate3-production-code-validation-coverage.stdout",
+    "current": "reports/restoration/gate3/gate3-production-code-validation-coverage.stdout",
+    "sha256": "3e3d03a578a3916d70b5f125410aecdc2d2f7d3c476f6ab649191449ac8a7fee"
+  },
+  {
+    "old": "reports/restoration/gate3-production-code-validation-v6.stderr",
+    "current": "reports/restoration/gate3/gate3-production-code-validation-v6.stderr",
+    "sha256": "b2f969def69bb76d4990e0dd937b05d747f7156145ab43ec405a1b5956fa15e9"
+  },
+  {
+    "old": "reports/restoration/gate3-production-code-validation-v6.stdout",
+    "current": "reports/restoration/gate3/gate3-production-code-validation-v6.stdout",
+    "sha256": "4efb239a59f6ac910d367d0eb248158c7b7e2813bb39a906a4aeb2ef7f03c4b5"
+  },
+  {
+    "old": "reports/restoration/gate3-production-code-validation-warm-v1.stderr",
+    "current": "reports/restoration/gate3/gate3-production-code-validation-warm-v1.stderr",
+    "sha256": "69e185c1c5af286ed8d45aaf560b3c7986b8a66c8be93a48ed225f598c60e419"
+  },
+  {
+    "old": "reports/restoration/gate3-production-code-validation-warm-v1.stdout",
+    "current": "reports/restoration/gate3/gate3-production-code-validation-warm-v1.stdout",
+    "sha256": "a18549809039e933bfa5291b88ff6e128aa3ddb164a3f068459533536c8ead68"
+  },
+  {
+    "old": "reports/restoration/gate3-production-doc-dev80-compact-jit-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-production-doc-dev80-compact-jit-v2.stderr",
+    "sha256": "ee97de95a05b75fa61a728243407475cea4a301f01a114222a040d467e6ab18c"
+  },
+  {
+    "old": "reports/restoration/gate3-production-doc-dev80-compact-jit-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-production-doc-dev80-compact-jit-v2.stdout",
+    "sha256": "490a40f9b46406636080b339fdc195c910e44f03d88482842592132828765a8d"
+  },
+  {
+    "old": "reports/restoration/gate3-production-doc-dev80-compact-warm-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-production-doc-dev80-compact-warm-v2.stderr",
+    "sha256": "ee97de95a05b75fa61a728243407475cea4a301f01a114222a040d467e6ab18c"
+  },
+  {
+    "old": "reports/restoration/gate3-production-doc-dev80-compact-warm-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-production-doc-dev80-compact-warm-v2.stdout",
+    "sha256": "2d89c964574a36196e95cb168b33fa650a6e2bcf06bb1f7451a9830f14e67efe"
+  },
+  {
+    "old": "reports/restoration/gate3-production-doc-validation-v6.stderr",
+    "current": "reports/restoration/gate3/gate3-production-doc-validation-v6.stderr",
+    "sha256": "b2f969def69bb76d4990e0dd937b05d747f7156145ab43ec405a1b5956fa15e9"
+  },
+  {
+    "old": "reports/restoration/gate3-production-doc-validation-v6.stdout",
+    "current": "reports/restoration/gate3/gate3-production-doc-validation-v6.stdout",
+    "sha256": "0ba4a81810da4c53d7361b770c9a598329b302ec5e690746968d5056344ab1ab"
+  },
+  {
+    "old": "reports/restoration/gate3-production-session-combined-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-production-session-combined-v2.stderr",
+    "sha256": "0184c7fb8d161d1fba73df2739ac1d7779699b8090a32f907b4a6d4de9a6d468"
+  },
+  {
+    "old": "reports/restoration/gate3-production-session-combined-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-production-session-combined-v2.stdout",
+    "sha256": "862d29b9b2806b437a6816c713d2786e4398cbb35719ce4fc842387ce05ab4da"
+  },
+  {
+    "old": "reports/restoration/gate3-production-session-feedback-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-production-session-feedback-v2.stderr",
+    "sha256": "0184c7fb8d161d1fba73df2739ac1d7779699b8090a32f907b4a6d4de9a6d468"
+  },
+  {
+    "old": "reports/restoration/gate3-production-session-feedback-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-production-session-feedback-v2.stdout",
+    "sha256": "862d29b9b2806b437a6816c713d2786e4398cbb35719ce4fc842387ce05ab4da"
+  },
+  {
+    "old": "reports/restoration/gate3-production-session-off-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-production-session-off-v2.stderr",
+    "sha256": "0184c7fb8d161d1fba73df2739ac1d7779699b8090a32f907b4a6d4de9a6d468"
+  },
+  {
+    "old": "reports/restoration/gate3-production-session-off-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-production-session-off-v2.stdout",
+    "sha256": "862d29b9b2806b437a6816c713d2786e4398cbb35719ce4fc842387ce05ab4da"
+  },
+  {
+    "old": "reports/restoration/gate3-production-session-related-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-production-session-related-v2.stderr",
+    "sha256": "0184c7fb8d161d1fba73df2739ac1d7779699b8090a32f907b4a6d4de9a6d468"
+  },
+  {
+    "old": "reports/restoration/gate3-production-session-related-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-production-session-related-v2.stdout",
+    "sha256": "862d29b9b2806b437a6816c713d2786e4398cbb35719ce4fc842387ce05ab4da"
+  },
+  {
+    "old": "reports/restoration/gate3-profile-code-io4-v6.stderr",
+    "current": "reports/restoration/gate3/gate3-profile-code-io4-v6.stderr",
+    "sha256": "b155f729323641dc2a4e49bd600e817c9eb1e369380907a01f8b49a853dc7c63"
+  },
+  {
+    "old": "reports/restoration/gate3-profile-code-io4-v6.stdout",
+    "current": "reports/restoration/gate3/gate3-profile-code-io4-v6.stdout",
+    "sha256": "ef4152006c82f54292308596597f1e36073b21615e0b750701edbe8f6e7ef80d"
+  },
+  {
+    "old": "reports/restoration/gate3-profile-dense-io1-v4.stderr",
+    "current": "reports/restoration/gate3/gate3-profile-dense-io1-v4.stderr",
+    "sha256": "0184c7fb8d161d1fba73df2739ac1d7779699b8090a32f907b4a6d4de9a6d468"
+  },
+  {
+    "old": "reports/restoration/gate3-profile-dense-io1-v4.stdout",
+    "current": "reports/restoration/gate3/gate3-profile-dense-io1-v4.stdout",
+    "sha256": "5f11e0c27562c7a3e069e90305f2369e402f60c7b6e12f5af2074c542ed7c44b"
+  },
+  {
+    "old": "reports/restoration/gate3-profile-dense-io2-v4.stderr",
+    "current": "reports/restoration/gate3/gate3-profile-dense-io2-v4.stderr",
+    "sha256": "0184c7fb8d161d1fba73df2739ac1d7779699b8090a32f907b4a6d4de9a6d468"
+  },
+  {
+    "old": "reports/restoration/gate3-profile-dense-io2-v4.stdout",
+    "current": "reports/restoration/gate3/gate3-profile-dense-io2-v4.stdout",
+    "sha256": "331a1b4680d4aaedbe2e000efc775dbb0853ad8362633d3d1891aa0cfe4edf8b"
+  },
+  {
+    "old": "reports/restoration/gate3-profile-dense-io4-v4.stderr",
+    "current": "reports/restoration/gate3/gate3-profile-dense-io4-v4.stderr",
+    "sha256": "0184c7fb8d161d1fba73df2739ac1d7779699b8090a32f907b4a6d4de9a6d468"
+  },
+  {
+    "old": "reports/restoration/gate3-profile-dense-io4-v4.stdout",
+    "current": "reports/restoration/gate3/gate3-profile-dense-io4-v4.stdout",
+    "sha256": "a10a5d7b2d133ce76e09ebd19facbde1f2d415773ec3463d934436ec42a1836f"
+  },
+  {
+    "old": "reports/restoration/gate3-profile-dense-io8-v4.stderr",
+    "current": "reports/restoration/gate3/gate3-profile-dense-io8-v4.stderr",
+    "sha256": "0184c7fb8d161d1fba73df2739ac1d7779699b8090a32f907b4a6d4de9a6d468"
+  },
+  {
+    "old": "reports/restoration/gate3-profile-dense-io8-v4.stdout",
+    "current": "reports/restoration/gate3/gate3-profile-dense-io8-v4.stdout",
+    "sha256": "a3d8303c8d8c521b8811ce933bb438fda05fb59c506ce53cf36051648c6bcbf1"
+  },
+  {
+    "old": "reports/restoration/gate3-profile-dense-v3.stderr",
+    "current": "reports/restoration/gate3/gate3-profile-dense-v3.stderr",
+    "sha256": "0184c7fb8d161d1fba73df2739ac1d7779699b8090a32f907b4a6d4de9a6d468"
+  },
+  {
+    "old": "reports/restoration/gate3-profile-dense-v3.stdout",
+    "current": "reports/restoration/gate3/gate3-profile-dense-v3.stdout",
+    "sha256": "30de8ef7d14d52eade025a19c74114e4e75d82080e549e1979b35f65e1817fc4"
+  },
+  {
+    "old": "reports/restoration/gate3-public-fetch-initial.stderr",
+    "current": "reports/restoration/gate3/gate3-public-fetch-initial.stderr",
+    "sha256": "c4060ac151c8b614304f7bb593e231f2328bd6bd99b932dc224b048d7db6ef52"
+  },
+  {
+    "old": "reports/restoration/gate3-public-fetch.stderr",
+    "current": "reports/restoration/gate3/gate3-public-fetch.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-public-fetch.stdout",
+    "current": "reports/restoration/gate3/gate3-public-fetch.stdout",
+    "sha256": "46da5b120cd58ba02a5b2fbb26b5816d806e662f373c57282774e6fec61c8c93"
+  },
+  {
+    "old": "reports/restoration/gate3-public-sources.json",
+    "current": "reports/restoration/gate3/gate3-public-sources.json",
+    "sha256": "221ae37487956e03e09d6a6e3746e0da1bbd9cade9c03951843856e68d97637a"
+  },
+  {
+    "old": "reports/restoration/gate3-record-cache-probes-final.json",
+    "current": "reports/restoration/gate3/gate3-record-cache-probes-final.json",
+    "sha256": "45db1385ef1b3a69532363494612d5de602b337010a0883cb5275e0cc56181b7"
+  },
+  {
+    "old": "reports/restoration/gate3-record-cache-probes-final.stderr",
+    "current": "reports/restoration/gate3/gate3-record-cache-probes-final.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-record-cache-probes-final.stdout",
+    "current": "reports/restoration/gate3/gate3-record-cache-probes-final.stdout",
+    "sha256": "6124be613be96a3cb8516a12d7c23fdb3d698cdfcb435405c8df9db9654e0736"
+  },
+  {
+    "old": "reports/restoration/gate3-record-cache-probes-v2.json",
+    "current": "reports/restoration/gate3/gate3-record-cache-probes-v2.json",
+    "sha256": "6f28d9d2d1644f6b7b4a800e257d5e33551475a04d5507a2ba43a163916eca41"
+  },
+  {
+    "old": "reports/restoration/gate3-record-cache-probes-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-record-cache-probes-v2.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-record-cache-probes-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-record-cache-probes-v2.stdout",
+    "sha256": "f3026a6a9157d869ef52d9a61a432916b7f93a37f9b96c065b55f881ff9aff72"
+  },
+  {
+    "old": "reports/restoration/gate3-record-cache-probes-v6.json",
+    "current": "reports/restoration/gate3/gate3-record-cache-probes-v6.json",
+    "sha256": "e63ea4d743b06e9e3c8d805082b9ccdf180decb151df307b198b081ab70054ea"
+  },
+  {
+    "old": "reports/restoration/gate3-record-cache-probes-v6.stderr",
+    "current": "reports/restoration/gate3/gate3-record-cache-probes-v6.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-record-cache-probes-v6.stdout",
+    "current": "reports/restoration/gate3/gate3-record-cache-probes-v6.stdout",
+    "sha256": "f3026a6a9157d869ef52d9a61a432916b7f93a37f9b96c065b55f881ff9aff72"
+  },
+  {
+    "old": "reports/restoration/gate3-record-cache-probes.json",
+    "current": "reports/restoration/gate3/gate3-record-cache-probes.json",
+    "sha256": "baca70fbf97e09ca0c6f510e47336078e2f652f96d6e86b6ff260dc3c294db66"
+  },
+  {
+    "old": "reports/restoration/gate3-record-cache-probes.stderr",
+    "current": "reports/restoration/gate3/gate3-record-cache-probes.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-record-cache-probes.stdout",
+    "current": "reports/restoration/gate3/gate3-record-cache-probes.stdout",
+    "sha256": "90bf2b1f7d652e25e3d3697962d1b797d19cdb379402341bbc46df741dd59a7b"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-coverage.stderr",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-coverage.stderr",
+    "sha256": "970f2bbdf61c77b4ce92f4dad5ac5f3b6ad0453b47baeeade040c16e89109e95"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-coverage.stdout",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-coverage.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-final.stderr",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-final.stderr",
+    "sha256": "f5edc3091713610e26d712dc9a4c11560df751e89edf5a46799dad5184d951be"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-final.stdout",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-final.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-v2.stderr",
+    "sha256": "9cd868144f6c85c25aa4f177d50ae604307c5e9376135cfa1b921c73017c0f45"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-v2.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-v3.stderr",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-v3.stderr",
+    "sha256": "b15b44ef0927c215f208c28824c17bb198441a696e28ec8aa5ec7caa59ef62f0"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-v3.stdout",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-v3.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-v4.stderr",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-v4.stderr",
+    "sha256": "fdeea6b575a32fe040352f216ec87c4faaec68bf3a216aff54996e6887685238"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-v4.stdout",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-v4.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-v5.stderr",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-v5.stderr",
+    "sha256": "95bf5fc436c5d5a869b70b75c4a2077177bb6999554393b67ba54770a5ea603f"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-v5.stdout",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-v5.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-v6.stderr",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-v6.stderr",
+    "sha256": "559a08e1bb5c688aedf84233a3b0c3c32be5f352af41c644dc1dd2af3164ce9b"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-v6.stdout",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-v6.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-v7.stderr",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-v7.stderr",
+    "sha256": "db15c87fb5476737555a0d0f313f1892d20ee430f2a8a95552605ce89166c390"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-v7.stdout",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-v7.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-v8.stderr",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-v8.stderr",
+    "sha256": "559a08e1bb5c688aedf84233a3b0c3c32be5f352af41c644dc1dd2af3164ce9b"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build-v8.stdout",
+    "current": "reports/restoration/gate3/gate3-retrieval-build-v8.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build.stderr",
+    "current": "reports/restoration/gate3/gate3-retrieval-build.stderr",
+    "sha256": "2977dc71d8050a058d3f0fa1156d07125209ec0951b438a006bf133f9a265a51"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-build.stdout",
+    "current": "reports/restoration/gate3/gate3-retrieval-build.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-check.stderr",
+    "current": "reports/restoration/gate3/gate3-retrieval-check.stderr",
+    "sha256": "525fc35af953d8948c86f4f0e6b03ab06a3dced847e6f4473ec5950451dec8d0"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-check.stdout",
+    "current": "reports/restoration/gate3/gate3-retrieval-check.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-cli-check.stderr",
+    "current": "reports/restoration/gate3/gate3-retrieval-cli-check.stderr",
+    "sha256": "311309e41a3107d33f8d033c586e4a7be46ead5858a788eeb213d4bef72494c8"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-cli-check.stdout",
+    "current": "reports/restoration/gate3/gate3-retrieval-cli-check.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-tests-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-retrieval-tests-v2.stderr",
+    "sha256": "27ba0614bb3f6d4c57908a3ddcb53cecb874f70d87b60c571529aad3612596ad"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-tests-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-retrieval-tests-v2.stdout",
+    "sha256": "1bad3adba5275055bcc9f3e4b3d4856e943bd24df6edc8bf6aec48ee9f6a3d68"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-tests.stderr",
+    "current": "reports/restoration/gate3/gate3-retrieval-tests.stderr",
+    "sha256": "a3a0255c7d1fad6e44001aea9d1d65130547e0e5f978ea23e67091560bf2322d"
+  },
+  {
+    "old": "reports/restoration/gate3-retrieval-tests.stdout",
+    "current": "reports/restoration/gate3/gate3-retrieval-tests.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-scifact-dev80-bm25.stderr",
+    "current": "reports/restoration/gate3/gate3-scifact-dev80-bm25.stderr",
+    "sha256": "20c370ca450259fc48d7efb85e2cf671940d0b0414b4559072aa6d6ab1f713ee"
+  },
+  {
+    "old": "reports/restoration/gate3-scifact-dev80-bm25.stdout",
+    "current": "reports/restoration/gate3/gate3-scifact-dev80-bm25.stdout",
+    "sha256": "2a48abd9f8fe62fe928fd8bb8313e42126fdca95e30014757985400ef67f9778"
+  },
+  {
+    "old": "reports/restoration/gate3-scifact-dev80-ixos-native-warm.stderr",
+    "current": "reports/restoration/gate3/gate3-scifact-dev80-ixos-native-warm.stderr",
+    "sha256": "20c370ca450259fc48d7efb85e2cf671940d0b0414b4559072aa6d6ab1f713ee"
+  },
+  {
+    "old": "reports/restoration/gate3-scifact-dev80-ixos-native-warm.stdout",
+    "current": "reports/restoration/gate3/gate3-scifact-dev80-ixos-native-warm.stdout",
+    "sha256": "0829d0b486d8f6bfc81db460f270371baf6426e20ee98e535171f3455bd9c04c"
+  },
+  {
+    "old": "reports/restoration/gate3-scifact-dev80-ixos.stderr",
+    "current": "reports/restoration/gate3/gate3-scifact-dev80-ixos.stderr",
+    "sha256": "548274acdcf8f45a7604cfad8d8841d16bb5593963f8b7f0ce2a0d113f101c15"
+  },
+  {
+    "old": "reports/restoration/gate3-scifact-dev80-ixos.stdout",
+    "current": "reports/restoration/gate3/gate3-scifact-dev80-ixos.stdout",
+    "sha256": "a5de0223ae7d427e201bf2f6eb028c187ac89488278baf0e58a3a82391e3b648"
+  },
+  {
+    "old": "reports/restoration/gate3-scifact-dev80-rg.stderr",
+    "current": "reports/restoration/gate3/gate3-scifact-dev80-rg.stderr",
+    "sha256": "95dd99a2ba7e6afc0f3045b2a385f7b910073483dfd78079a8f1e5ff758cf642"
+  },
+  {
+    "old": "reports/restoration/gate3-scifact-dev80-rg.stdout",
+    "current": "reports/restoration/gate3/gate3-scifact-dev80-rg.stdout",
+    "sha256": "ab792afc036479d3ecc35b7c414f56844164e6e2438edfed08ddbf2854820416"
+  },
+  {
+    "old": "reports/restoration/gate3-self-grep.stderr",
+    "current": "reports/restoration/gate3/gate3-self-grep.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-self-grep.stdout",
+    "current": "reports/restoration/gate3/gate3-self-grep.stdout",
+    "sha256": "98c97770010b17ce68605675d71f91f016331ee9eebfedbeb34b63ef9277ab47"
+  },
+  {
+    "old": "reports/restoration/gate3-self-hash-navigation-v6.stderr",
+    "current": "reports/restoration/gate3/gate3-self-hash-navigation-v6.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-self-hash-navigation-v6.stdout",
+    "current": "reports/restoration/gate3/gate3-self-hash-navigation-v6.stdout",
+    "sha256": "385cb6d32873e006e7af0051bcdd41ca80a9ff353ec425c11c183cf40814a9c1"
+  },
+  {
+    "old": "reports/restoration/gate3-self-hash-read-v6.stderr",
+    "current": "reports/restoration/gate3/gate3-self-hash-read-v6.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-self-hash-read-v6.stdout",
+    "current": "reports/restoration/gate3/gate3-self-hash-read-v6.stdout",
+    "sha256": "bcb0eee4787d9509345702f7cb5a2b82c8d42ed8da11522067dff62df0c2428f"
+  },
+  {
+    "old": "reports/restoration/gate3-self-navigation.stderr",
+    "current": "reports/restoration/gate3/gate3-self-navigation.stderr",
+    "sha256": "4e1eab6d8e8a268d15e226bcd7e1f008507d4928cc5350c003b14f8992e3cdcf"
+  },
+  {
+    "old": "reports/restoration/gate3-self-navigation.stdout",
+    "current": "reports/restoration/gate3/gate3-self-navigation.stdout",
+    "sha256": "64777485b3fa0364dc62ecf104837024f785d65d815f2ac15d3f9b7b8f7d5e4b"
+  },
+  {
+    "old": "reports/restoration/gate3-self-read-v2.stderr",
+    "current": "reports/restoration/gate3/gate3-self-read-v2.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-self-read-v2.stdout",
+    "current": "reports/restoration/gate3/gate3-self-read-v2.stdout",
+    "sha256": "953f3a9a7238e08bb38e3ad7205be3b3fc2bcb1aefc7efed1b0e14bf16cb7eef"
+  },
+  {
+    "old": "reports/restoration/gate3-self-read.stderr",
+    "current": "reports/restoration/gate3/gate3-self-read.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-self-read.stdout",
+    "current": "reports/restoration/gate3/gate3-self-read.stdout",
+    "sha256": "3c9df71b2bbf454e6585a8a54784e069b0538e6401d09d872b1c64e403731e19"
+  },
+  {
+    "old": "reports/restoration/gate3-session-normalized-final-off.stderr",
+    "current": "reports/restoration/gate3/gate3-session-normalized-final-off.stderr",
+    "sha256": "b345911211d2ae973693b5c2fbd483795afa2b581a464ef7a771e8af0ed307bb"
+  },
+  {
+    "old": "reports/restoration/gate3-session-normalized-final-off.stdout",
+    "current": "reports/restoration/gate3/gate3-session-normalized-final-off.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-session-normalized-final-v2-combined.stderr",
+    "current": "reports/restoration/gate3/gate3-session-normalized-final-v2-combined.stderr",
+    "sha256": "73291f88e7b666690028a60e58c7e91216d1201a5293062818a34fd51329d60e"
+  },
+  {
+    "old": "reports/restoration/gate3-session-normalized-final-v2-combined.stdout",
+    "current": "reports/restoration/gate3/gate3-session-normalized-final-v2-combined.stdout",
+    "sha256": "862d29b9b2806b437a6816c713d2786e4398cbb35719ce4fc842387ce05ab4da"
+  },
+  {
+    "old": "reports/restoration/gate3-session-normalized-final-v2-context.stderr",
+    "current": "reports/restoration/gate3/gate3-session-normalized-final-v2-context.stderr",
+    "sha256": "73291f88e7b666690028a60e58c7e91216d1201a5293062818a34fd51329d60e"
+  },
+  {
+    "old": "reports/restoration/gate3-session-normalized-final-v2-context.stdout",
+    "current": "reports/restoration/gate3/gate3-session-normalized-final-v2-context.stdout",
+    "sha256": "862d29b9b2806b437a6816c713d2786e4398cbb35719ce4fc842387ce05ab4da"
+  },
+  {
+    "old": "reports/restoration/gate3-session-normalized-final-v2-off.stderr",
+    "current": "reports/restoration/gate3/gate3-session-normalized-final-v2-off.stderr",
+    "sha256": "73291f88e7b666690028a60e58c7e91216d1201a5293062818a34fd51329d60e"
+  },
+  {
+    "old": "reports/restoration/gate3-session-normalized-final-v2-off.stdout",
+    "current": "reports/restoration/gate3/gate3-session-normalized-final-v2-off.stdout",
+    "sha256": "862d29b9b2806b437a6816c713d2786e4398cbb35719ce4fc842387ce05ab4da"
+  },
+  {
+    "old": "reports/restoration/gate3-session-v2-tests.stderr",
+    "current": "reports/restoration/gate3/gate3-session-v2-tests.stderr",
+    "sha256": "d0b23ff90cbf8999fdb8c249f0b01c69bec1c08d50d393853e191a4c693388cf"
+  },
+  {
+    "old": "reports/restoration/gate3-session-v2-tests.stdout",
+    "current": "reports/restoration/gate3/gate3-session-v2-tests.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-sessions-bm25.stderr",
+    "current": "reports/restoration/gate3/gate3-sessions-bm25.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-sessions-bm25.stdout",
+    "current": "reports/restoration/gate3/gate3-sessions-bm25.stdout",
+    "sha256": "db344f1591580d2e813f8751652830bb599dc6769e45becfea72d4dfff11726d"
+  },
+  {
+    "old": "reports/restoration/gate3-sessions-ixos.stderr",
+    "current": "reports/restoration/gate3/gate3-sessions-ixos.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-sessions-ixos.stdout",
+    "current": "reports/restoration/gate3/gate3-sessions-ixos.stdout",
+    "sha256": "975522cf3abf46556cf06d5f1949b2dde3b3cf7f60672773fc6d7792ceccc931"
+  },
+  {
+    "old": "reports/restoration/gate3-sessions-rg.stderr",
+    "current": "reports/restoration/gate3/gate3-sessions-rg.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-sessions-rg.stdout",
+    "current": "reports/restoration/gate3/gate3-sessions-rg.stdout",
+    "sha256": "a3c8bd715c7df2886b08480700d09a560d2b57879081ea2b6ad117f9f74eb8d6"
+  },
+  {
+    "old": "reports/restoration/gate3-snapshot-metadata.stderr",
+    "current": "reports/restoration/gate3/gate3-snapshot-metadata.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-stress-build.stderr",
+    "current": "reports/restoration/gate3/gate3-stress-build.stderr",
+    "sha256": "5b42fea8da50130db6979ecf30f508e38885aa506b050d79bb0a95ea22c7d6f6"
+  },
+  {
+    "old": "reports/restoration/gate3-stress-build.stdout",
+    "current": "reports/restoration/gate3/gate3-stress-build.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-bm25.stderr",
+    "current": "reports/restoration/gate3/gate3-test-code-bm25.stderr",
+    "sha256": "6bfc4e4275a23e54893056620b237b93e689156ec18b771db38388d12a74d268"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-bm25.stdout",
+    "current": "reports/restoration/gate3/gate3-test-code-bm25.stdout",
+    "sha256": "5f68ba38c19f2dd21b2d2abb9e87a607a081255acc20b1491f39d4ced69bcb69"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-flash-legacy.stderr",
+    "current": "reports/restoration/gate3/gate3-test-code-flash-legacy.stderr",
+    "sha256": "6bfc4e4275a23e54893056620b237b93e689156ec18b771db38388d12a74d268"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-flash-legacy.stdout",
+    "current": "reports/restoration/gate3/gate3-test-code-flash-legacy.stdout",
+    "sha256": "44569ad6fa4790173a9013060f3fde99b2f37086e8c719f7846c5947383fcee1"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-jit.stderr",
+    "current": "reports/restoration/gate3/gate3-test-code-jit.stderr",
+    "sha256": "6bfc4e4275a23e54893056620b237b93e689156ec18b771db38388d12a74d268"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-jit.stdout",
+    "current": "reports/restoration/gate3/gate3-test-code-jit.stdout",
+    "sha256": "5ab7f80c7b7c6e268bae7029a9367c56ebe9f41b68bc5490ba5603e6c21f42ca"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-lexical.stderr",
+    "current": "reports/restoration/gate3/gate3-test-code-lexical.stderr",
+    "sha256": "6bfc4e4275a23e54893056620b237b93e689156ec18b771db38388d12a74d268"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-lexical.stdout",
+    "current": "reports/restoration/gate3/gate3-test-code-lexical.stdout",
+    "sha256": "3525063aeaf89cbedb86368f6cfcbb186111a7d8689cb7d50d86e89cb398c9fa"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-native-warm.stderr",
+    "current": "reports/restoration/gate3/gate3-test-code-native-warm.stderr",
+    "sha256": "6bfc4e4275a23e54893056620b237b93e689156ec18b771db38388d12a74d268"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-native-warm.stdout",
+    "current": "reports/restoration/gate3/gate3-test-code-native-warm.stdout",
+    "sha256": "833f0e629ac952500bf9f7b478efa24777a17e48f7cb8f76308e568bdee245c1"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-report.json",
+    "current": "reports/restoration/gate3/gate3-test-code-report.json",
+    "sha256": "e1aac3e8d5a6ab0ffcb94655b7ccfaf39e3e9987edf1798c7633ce1f94c3d0e7"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-report.stderr",
+    "current": "reports/restoration/gate3/gate3-test-code-report.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-report.stdout",
+    "current": "reports/restoration/gate3/gate3-test-code-report.stdout",
+    "sha256": "67a8be36cbfedd1dd8d927e9471e9b3431e7a60a9ed2d098ad315b37f40bd952"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-rg.stderr",
+    "current": "reports/restoration/gate3/gate3-test-code-rg.stderr",
+    "sha256": "6bfc4e4275a23e54893056620b237b93e689156ec18b771db38388d12a74d268"
+  },
+  {
+    "old": "reports/restoration/gate3-test-code-rg.stdout",
+    "current": "reports/restoration/gate3/gate3-test-code-rg.stdout",
+    "sha256": "529e569c9f7529e2e6b48677c4d0679ecc761c85488433923f6fe66b46f75344"
+  },
+  {
+    "old": "reports/restoration/gate3-test-doc-bm25.stderr",
+    "current": "reports/restoration/gate3/gate3-test-doc-bm25.stderr",
+    "sha256": "6bfc4e4275a23e54893056620b237b93e689156ec18b771db38388d12a74d268"
+  },
+  {
+    "old": "reports/restoration/gate3-test-doc-bm25.stdout",
+    "current": "reports/restoration/gate3/gate3-test-doc-bm25.stdout",
+    "sha256": "f7c1b10df277f92511731e9f30861bd13c558099291ae190669434d1af34ccab"
+  },
+  {
+    "old": "reports/restoration/gate3-test-doc-flash-legacy.stderr",
+    "current": "reports/restoration/gate3/gate3-test-doc-flash-legacy.stderr",
+    "sha256": "6bfc4e4275a23e54893056620b237b93e689156ec18b771db38388d12a74d268"
+  },
+  {
+    "old": "reports/restoration/gate3-test-doc-flash-legacy.stdout",
+    "current": "reports/restoration/gate3/gate3-test-doc-flash-legacy.stdout",
+    "sha256": "230778574b6d45f43b722af5bf36dba82b80675d1215425b2f7dbe7cc10aca10"
+  },
+  {
+    "old": "reports/restoration/gate3-test-doc-jit.stderr",
+    "current": "reports/restoration/gate3/gate3-test-doc-jit.stderr",
+    "sha256": "6bfc4e4275a23e54893056620b237b93e689156ec18b771db38388d12a74d268"
+  },
+  {
+    "old": "reports/restoration/gate3-test-doc-jit.stdout",
+    "current": "reports/restoration/gate3/gate3-test-doc-jit.stdout",
+    "sha256": "714dc6be24c4c62e3d5f9d5c5cef45bbb87414f7daf6924cacdac46b4be451b3"
+  },
+  {
+    "old": "reports/restoration/gate3-test-doc-lexical.stderr",
+    "current": "reports/restoration/gate3/gate3-test-doc-lexical.stderr",
+    "sha256": "6bfc4e4275a23e54893056620b237b93e689156ec18b771db38388d12a74d268"
+  },
+  {
+    "old": "reports/restoration/gate3-test-doc-lexical.stdout",
+    "current": "reports/restoration/gate3/gate3-test-doc-lexical.stdout",
+    "sha256": "5ca1c069759cd83a82dfce7bd1f6b2abc92de8e5da164b72c926048cd15a7dd5"
+  },
+  {
+    "old": "reports/restoration/gate3-test-doc-native-warm.stderr",
+    "current": "reports/restoration/gate3/gate3-test-doc-native-warm.stderr",
+    "sha256": "6bfc4e4275a23e54893056620b237b93e689156ec18b771db38388d12a74d268"
+  },
+  {
+    "old": "reports/restoration/gate3-test-doc-native-warm.stdout",
+    "current": "reports/restoration/gate3/gate3-test-doc-native-warm.stdout",
+    "sha256": "69d9533e6eab9d16df0ce6c7a721b78755288fa1508c2c984bdacfc8bcd9cbae"
+  },
+  {
+    "old": "reports/restoration/gate3-test-doc-rg.stderr",
+    "current": "reports/restoration/gate3/gate3-test-doc-rg.stderr",
+    "sha256": "6bfc4e4275a23e54893056620b237b93e689156ec18b771db38388d12a74d268"
+  },
+  {
+    "old": "reports/restoration/gate3-test-doc-rg.stdout",
+    "current": "reports/restoration/gate3/gate3-test-doc-rg.stdout",
+    "sha256": "64fa3e754a70accd1be58e6183973bc24700925ff467385344be183f8e642923"
+  },
+  {
+    "old": "reports/restoration/gate3-tokenizer-bridge-build.stderr",
+    "current": "reports/restoration/gate3/gate3-tokenizer-bridge-build.stderr",
+    "sha256": "aa4991bf234e99f945021f8cd0edf18bb31a70f80e6a4dd0a9e4725c724268c3"
+  },
+  {
+    "old": "reports/restoration/gate3-tokenizer-bridge-build.stdout",
+    "current": "reports/restoration/gate3/gate3-tokenizer-bridge-build.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate3-tokenizer-dev-v1.stderr",
+    "current": "reports/restoration/gate3/gate3-tokenizer-dev-v1.stderr",
+    "sha256": "69e185c1c5af286ed8d45aaf560b3c7986b8a66c8be93a48ed225f598c60e419"
+  },
+  {
+    "old": "reports/restoration/gate3-tokenizer-dev-v1.stdout",
+    "current": "reports/restoration/gate3/gate3-tokenizer-dev-v1.stdout",
+    "sha256": "2873944eb36f5e3e79552bb7f7c84ba82a9ef83f11e2799593945581a6ae73ba"
+  },
+  {
+    "old": "reports/restoration/gate3-tokenizer-validation-v1.stderr",
+    "current": "reports/restoration/gate3/gate3-tokenizer-validation-v1.stderr",
+    "sha256": "69e185c1c5af286ed8d45aaf560b3c7986b8a66c8be93a48ed225f598c60e419"
+  },
+  {
+    "old": "reports/restoration/gate3-tokenizer-validation-v1.stdout",
+    "current": "reports/restoration/gate3/gate3-tokenizer-validation-v1.stdout",
+    "sha256": "fa9e5e0a31d4d547902514f6142869adaad3645ec79178fc20b28dcc1881c387"
+  },
+  {
+    "old": "reports/restoration/gate3-typo-code-off-v5.stderr",
+    "current": "reports/restoration/gate3/gate3-typo-code-off-v5.stderr",
+    "sha256": "ee97de95a05b75fa61a728243407475cea4a301f01a114222a040d467e6ab18c"
+  },
+  {
+    "old": "reports/restoration/gate3-typo-code-off-v5.stdout",
+    "current": "reports/restoration/gate3/gate3-typo-code-off-v5.stdout",
+    "sha256": "622a07b55b84d005f33166f96a61ade867ef3dd18728b4f639cf44d00ade831a"
+  },
+  {
+    "old": "reports/restoration/gate3-typo-code-on-v5.stderr",
+    "current": "reports/restoration/gate3/gate3-typo-code-on-v5.stderr",
+    "sha256": "ee97de95a05b75fa61a728243407475cea4a301f01a114222a040d467e6ab18c"
+  },
+  {
+    "old": "reports/restoration/gate3-typo-code-on-v5.stdout",
+    "current": "reports/restoration/gate3/gate3-typo-code-on-v5.stdout",
+    "sha256": "d7e220739ce8f73bf3b64c5e8fc93585da46995b9ff26b41faa86e56482f6e2e"
+  },
+  {
+    "old": "reports/restoration/gate3-typo-fastapi-prepare.json",
+    "current": "reports/restoration/gate3/gate3-typo-fastapi-prepare.json",
+    "sha256": "099cac9f76c9bcc235c4ca6fdaf158c19f43bf2659cb6241afdbeb1ebc3606d3"
+  },
+  {
+    "old": "reports/restoration/gate3-typo-serde-prepare.json",
+    "current": "reports/restoration/gate3/gate3-typo-serde-prepare.json",
+    "sha256": "c3fc7de8717df32f92080032013a053b39f9a95f9b0717db49e9ec8b5d0373f3"
+  },
+  {
+    "old": "reports/restoration/gate3-validation-analysis.json",
+    "current": "reports/restoration/gate3/gate3-validation-analysis.json",
+    "sha256": "9f8436dcb7746290683b902aa5c863c18d72b7011e939fad7a0dbee2e38c16a7"
+  },
+  {
+    "old": "reports/restoration/gate3-validation-code-bm25-final.stderr",
+    "current": "reports/restoration/gate3/gate3-validation-code-bm25-final.stderr",
+    "sha256": "b2f969def69bb76d4990e0dd937b05d747f7156145ab43ec405a1b5956fa15e9"
+  },
+  {
+    "old": "reports/restoration/gate3-validation-code-bm25-final.stdout",
+    "current": "reports/restoration/gate3/gate3-validation-code-bm25-final.stdout",
+    "sha256": "fa521bd8dbb6abd23af3f711e0b28f85d9351812cd3af07aa9af59de7ef06582"
+  },
+  {
+    "old": "reports/restoration/gate3-validation-code-rg-final.stderr",
+    "current": "reports/restoration/gate3/gate3-validation-code-rg-final.stderr",
+    "sha256": "b2f969def69bb76d4990e0dd937b05d747f7156145ab43ec405a1b5956fa15e9"
+  },
+  {
+    "old": "reports/restoration/gate3-validation-code-rg-final.stdout",
+    "current": "reports/restoration/gate3/gate3-validation-code-rg-final.stdout",
+    "sha256": "d84affc4664e18061fe23d2106db8cdd732003cf874f98d493c72fc6538771e1"
+  },
+  {
+    "old": "reports/restoration/gate3-validation-doc-bm25-final.stderr",
+    "current": "reports/restoration/gate3/gate3-validation-doc-bm25-final.stderr",
+    "sha256": "b2f969def69bb76d4990e0dd937b05d747f7156145ab43ec405a1b5956fa15e9"
+  },
+  {
+    "old": "reports/restoration/gate3-validation-doc-bm25-final.stdout",
+    "current": "reports/restoration/gate3/gate3-validation-doc-bm25-final.stdout",
+    "sha256": "d445b6efdd67a3b4a902e1d09d5b8df0dc3b732ff49230f8ab40eb3403fdeaf3"
+  },
+  {
+    "old": "reports/restoration/gate3-validation-doc-rg-final.stderr",
+    "current": "reports/restoration/gate3/gate3-validation-doc-rg-final.stderr",
+    "sha256": "b2f969def69bb76d4990e0dd937b05d747f7156145ab43ec405a1b5956fa15e9"
+  },
+  {
+    "old": "reports/restoration/gate3-validation-doc-rg-final.stdout",
+    "current": "reports/restoration/gate3/gate3-validation-doc-rg-final.stdout",
+    "sha256": "97bf512e45bb9104bec4addba096513de20ce2136e3ff084c4884e43e02f7169"
+  },
+  {
+    "old": "reports/restoration/gate4-archive-manifest.json",
+    "current": "reports/restoration/gate4/gate4-archive-manifest.json",
+    "sha256": "9eeeaf89a9a45467ae126ddc909c3576ed3bf78d8aeade8412e79d0d9a69f11e"
+  },
+  {
+    "old": "reports/restoration/gate4-archive.stderr",
+    "current": "reports/restoration/gate4/gate4-archive.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-archive.stdout",
+    "current": "reports/restoration/gate4/gate4-archive.stdout",
+    "sha256": "034b589f6da435da5ad115a16c9d61a0406aa0db370767343023aa6fd1d26e49"
+  },
+  {
+    "old": "reports/restoration/gate4-cache-check-retry.stderr",
+    "current": "reports/restoration/gate4/gate4-cache-check-retry.stderr",
+    "sha256": "f3c4e858e5aa5334721d1c481585f2fc65d193625c03743d05135676ae0389e1"
+  },
+  {
+    "old": "reports/restoration/gate4-cache-check-retry.stdout",
+    "current": "reports/restoration/gate4/gate4-cache-check-retry.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-cache-check.stderr",
+    "current": "reports/restoration/gate4/gate4-cache-check.stderr",
+    "sha256": "60634a9ba55e09d51b16ca45dd73b484b78e292665886f40a57e964fc5d424c1"
+  },
+  {
+    "old": "reports/restoration/gate4-cache-check.stdout",
+    "current": "reports/restoration/gate4/gate4-cache-check.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-cache-visual-final.stderr",
+    "current": "reports/restoration/gate4/gate4-cache-visual-final.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-cache-visual-final.stdout",
+    "current": "reports/restoration/gate4/gate4-cache-visual-final.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-cache-visual.json",
+    "current": "reports/restoration/gate4/gate4-cache-visual.json",
+    "sha256": "16a818bb6763db368ce3880a42ebbda601da18d11cdc4092c72dcbe9f5321283"
+  },
+  {
+    "old": "reports/restoration/gate4-cache-visual.stderr",
+    "current": "reports/restoration/gate4/gate4-cache-visual.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-cache-visual.stdout",
+    "current": "reports/restoration/gate4/gate4-cache-visual.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-eval-final.stderr",
+    "current": "reports/restoration/gate4/gate4-eval-final.stderr",
+    "sha256": "59aef1bc88969c75411b6eb721e344f8b1c4001177aae58e25a12ff9755dda64"
+  },
+  {
+    "old": "reports/restoration/gate4-eval-final.stdout",
+    "current": "reports/restoration/gate4/gate4-eval-final.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-eval-tests.stderr",
+    "current": "reports/restoration/gate4/gate4-eval-tests.stderr",
+    "sha256": "80ee311911483fa8160d3db1c26436266421d46a7c0337e41f43dacf93645578"
+  },
+  {
+    "old": "reports/restoration/gate4-eval-tests.stdout",
+    "current": "reports/restoration/gate4/gate4-eval-tests.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-final-build.stderr",
+    "current": "reports/restoration/gate4/gate4-final-build.stderr",
+    "sha256": "21b974421ab5be43d2d5650ca33647bc936d8eb4ed40760c5c3346b4c9e946df"
+  },
+  {
+    "old": "reports/restoration/gate4-final-build.stdout",
+    "current": "reports/restoration/gate4/gate4-final-build.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-final-profile-contract.json",
+    "current": "reports/restoration/gate4/gate4-final-profile-contract.json",
+    "sha256": "c606ba74332d682d717dacba380880f2991428a4389db550d2d0c9abdbb8c5dc"
+  },
+  {
+    "old": "reports/restoration/gate4-final-profile-contract.stderr",
+    "current": "reports/restoration/gate4/gate4-final-profile-contract.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-final-profile-contract.stdout",
+    "current": "reports/restoration/gate4/gate4-final-profile-contract.stdout",
+    "sha256": "c606ba74332d682d717dacba380880f2991428a4389db550d2d0c9abdbb8c5dc"
+  },
+  {
+    "old": "reports/restoration/gate4-final-real-probes.json",
+    "current": "reports/restoration/gate4/gate4-final-real-probes.json",
+    "sha256": "f0a3745158c03e6e050011987bd3a7d5c264c44fb052117c70494eb8328c94ca"
+  },
+  {
+    "old": "reports/restoration/gate4-final-real-probes.stderr",
+    "current": "reports/restoration/gate4/gate4-final-real-probes.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-final-real-probes.stdout",
+    "current": "reports/restoration/gate4/gate4-final-real-probes.stdout",
+    "sha256": "6124be613be96a3cb8516a12d7c23fdb3d698cdfcb435405c8df9db9654e0736"
+  },
+  {
+    "old": "reports/restoration/gate4-final-workspace.stderr",
+    "current": "reports/restoration/gate4/gate4-final-workspace.stderr",
+    "sha256": "8c1d1f247deca27aef9a016806de9fd23db8057121e8b6504b7d3d1d05476585"
+  },
+  {
+    "old": "reports/restoration/gate4-final-workspace.stdout",
+    "current": "reports/restoration/gate4/gate4-final-workspace.stdout",
+    "sha256": "8576191970383b38ace3db53854ad5d729a281bf8d4fa6b4f86f4b0995406fbc"
+  },
+  {
+    "old": "reports/restoration/gate4-legacy-contract.json",
+    "current": "reports/restoration/gate4/gate4-legacy-contract.json",
+    "sha256": "e8c67a3c783eb94f1d3e6e7496217ef3cb9ea0918d9c5e7f6cd1ae32f1eec9a4"
+  },
+  {
+    "old": "reports/restoration/gate4-legacy-contract.stderr",
+    "current": "reports/restoration/gate4/gate4-legacy-contract.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-legacy-contract.stdout",
+    "current": "reports/restoration/gate4/gate4-legacy-contract.stdout",
+    "sha256": "3f4fcb4d5d744f481e1b29a2fb62c3b60d34a8525a976b4affe7358e942831f1"
+  },
+  {
+    "old": "reports/restoration/gate4-model-setup-repeat.stderr",
+    "current": "reports/restoration/gate4/gate4-model-setup-repeat.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-model-setup-repeat.stdout",
+    "current": "reports/restoration/gate4/gate4-model-setup-repeat.stdout",
+    "sha256": "48660ec7d0166714c7ed92de3a80d08f6197f79161cde10e7b5971983ef35f0e"
+  },
+  {
+    "old": "reports/restoration/gate4-model-setup.stderr",
+    "current": "reports/restoration/gate4/gate4-model-setup.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-model-setup.stdout",
+    "current": "reports/restoration/gate4/gate4-model-setup.stdout",
+    "sha256": "03e7e9d7e4292e3274a19c15d080bdd1db022967e9c76d45c4df196f15e549e3"
+  },
+  {
+    "old": "reports/restoration/gate4-network-setup.stderr",
+    "current": "reports/restoration/gate4/gate4-network-setup.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-network-setup.stdout",
+    "current": "reports/restoration/gate4/gate4-network-setup.stdout",
+    "sha256": "8aa39368b4ec324906a5c89fb59cfb894bbfa9906fbd74c4174af3186b298f50"
+  },
+  {
+    "old": "reports/restoration/gate4-package-setup.stderr",
+    "current": "reports/restoration/gate4/gate4-package-setup.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-package-setup.stdout",
+    "current": "reports/restoration/gate4/gate4-package-setup.stdout",
+    "sha256": "3501c1947c2eca2d0de39a561b788d7c27be34cc41c1457aad359036e8d4bd15"
+  },
+  {
+    "old": "reports/restoration/gate4-package.stderr",
+    "current": "reports/restoration/gate4/gate4-package.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-package.stdout",
+    "current": "reports/restoration/gate4/gate4-package.stdout",
+    "sha256": "1f24d6e7c00fed68ff59671d39c588a3ca5a33112cfb9c3315cd095442c04780"
+  },
+  {
+    "old": "reports/restoration/gate4-profile-check.stderr",
+    "current": "reports/restoration/gate4/gate4-profile-check.stderr",
+    "sha256": "a4d8622a23e9c4ad4308b62bb60f81234e7cf52e9238dda9d2423fe66b86ace3"
+  },
+  {
+    "old": "reports/restoration/gate4-profile-check.stdout",
+    "current": "reports/restoration/gate4/gate4-profile-check.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-profile-contract-final.stderr",
+    "current": "reports/restoration/gate4/gate4-profile-contract-final.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-profile-contract-final.stdout",
+    "current": "reports/restoration/gate4/gate4-profile-contract-final.stdout",
+    "sha256": "b72369fb1e194cf048007313e6f92f455964ba392cd6979516730a4539e723e8"
+  },
+  {
+    "old": "reports/restoration/gate4-profile-contract-retry.stderr",
+    "current": "reports/restoration/gate4/gate4-profile-contract-retry.stderr",
+    "sha256": "6934f809c60bffa9b0256ecd0d543a783baebae0ec71846f687c9cb9983567b1"
+  },
+  {
+    "old": "reports/restoration/gate4-profile-contract-retry.stdout",
+    "current": "reports/restoration/gate4/gate4-profile-contract-retry.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-profile-contract.json",
+    "current": "reports/restoration/gate4/gate4-profile-contract.json",
+    "sha256": "b72369fb1e194cf048007313e6f92f455964ba392cd6979516730a4539e723e8"
+  },
+  {
+    "old": "reports/restoration/gate4-profile-contract.stderr",
+    "current": "reports/restoration/gate4/gate4-profile-contract.stderr",
+    "sha256": "e2baa7a7381ea3ef844d9c0459e419bb207085f6698d7183ce992352aeeadaae"
+  },
+  {
+    "old": "reports/restoration/gate4-profile-contract.stdout",
+    "current": "reports/restoration/gate4/gate4-profile-contract.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-real-probes.json",
+    "current": "reports/restoration/gate4/gate4-real-probes.json",
+    "sha256": "ed38d15feae9e6c75c64473f406d37d2d8fa9ffd7a2d0f65ec4c69dc3729cfe8"
+  },
+  {
+    "old": "reports/restoration/gate4-real-probes.stderr",
+    "current": "reports/restoration/gate4/gate4-real-probes.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-real-probes.stdout",
+    "current": "reports/restoration/gate4/gate4-real-probes.stdout",
+    "sha256": "6124be613be96a3cb8516a12d7c23fdb3d698cdfcb435405c8df9db9654e0736"
+  },
+  {
+    "old": "reports/restoration/gate4-release-build-final.stderr",
+    "current": "reports/restoration/gate4/gate4-release-build-final.stderr",
+    "sha256": "8983fb1bc4e4d83e1567fbbb8666d6dcdb4b4e5da2b2fda4b1400a40392a9052"
+  },
+  {
+    "old": "reports/restoration/gate4-release-build-final.stdout",
+    "current": "reports/restoration/gate4/gate4-release-build-final.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-release-build.stderr",
+    "current": "reports/restoration/gate4/gate4-release-build.stderr",
+    "sha256": "5632dd922946fb350ec584ee6828c1158a784b2a1406c4a969f36ebeef204174"
+  },
+  {
+    "old": "reports/restoration/gate4-release-build.stdout",
+    "current": "reports/restoration/gate4/gate4-release-build.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-remove-blob.stderr",
+    "current": "reports/restoration/gate4/gate4-remove-blob.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-remove-blob.stdout",
+    "current": "reports/restoration/gate4/gate4-remove-blob.stdout",
+    "sha256": "e4be097c20b2c81efd379e1b7e4e9e7ce892ee4faadfcccc8cfcdbc2348e8575"
+  },
+  {
+    "old": "reports/restoration/gate4-self-grep.json",
+    "current": "reports/restoration/gate4/gate4-self-grep.json",
+    "sha256": "886332721e31525fb5172f0ab5e76a981435db8f7bda690d026adb9e9331ed58"
+  },
+  {
+    "old": "reports/restoration/gate4-self-read.json",
+    "current": "reports/restoration/gate4/gate4-self-read.json",
+    "sha256": "7fd2aee91ac1e54a50ea403f4d2791e38b2906a95ba51290d52a5b8601bffd73"
+  },
+  {
+    "old": "reports/restoration/gate4-self-search.json",
+    "current": "reports/restoration/gate4/gate4-self-search.json",
+    "sha256": "89629efba67010228d9b18a9773c63d23c686f01dc5ee2a4502c813abf2cf175"
+  },
+  {
+    "old": "reports/restoration/gate4-self-search.stderr",
+    "current": "reports/restoration/gate4/gate4-self-search.stderr",
+    "sha256": "0f9dc9de3a508813a0b972f38ad8c50766c862f464c020f727331ab4b648a97d"
+  },
+  {
+    "old": "reports/restoration/gate4-site-build.stderr",
+    "current": "reports/restoration/gate4/gate4-site-build.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "old": "reports/restoration/gate4-site-build.stdout",
+    "current": "reports/restoration/gate4/gate4-site-build.stdout",
+    "sha256": "808a086fa085023b83fceed066315734a460540049797910b6e9f0c9c4eb5669"
+  },
+  {
+    "old": "reports/restoration/gate4-site-visual.stderr",
+    "current": "reports/restoration/gate4/gate4-site-visual.stderr",
+    "sha256": "70554bff1ea9bc80c0ab865381e64c9e649d3d96c4585e5e4077bd297b4969f6"
+  },
+  {
+    "old": "reports/restoration/gate4-site-visual.stdout",
+    "current": "reports/restoration/gate4/gate4-site-visual.stdout",
+    "sha256": "a72402a93a75dd745c7e3d3953524ae0a0d10fb78f9fba0149a427999df91dc7"
+  },
+  {
+    "old": "reports/restoration/gate4-ui-build.stderr",
+    "current": "reports/restoration/gate4/gate4-ui-build.stderr",
+    "sha256": "e8c5decace632424e10571262641fdb2d32a449fa6b851ad16397f31e58e0b41"
+  },
+  {
+    "old": "reports/restoration/gate4-ui-build.stdout",
+    "current": "reports/restoration/gate4/gate4-ui-build.stdout",
+    "sha256": "cc9031d3f4fb3a8f888d3a3b84889819ef3c6d6b420a74e7205d3636aadab029"
+  },
+  {
+    "old": "reports/restoration/gate4-workspace-tests-retry.stderr",
+    "current": "reports/restoration/gate4/gate4-workspace-tests-retry.stderr",
+    "sha256": "907474f04e9a0e6af97d85e0888ac6cb9d6910cf04430d7cd4a06b6d5d295241"
+  },
+  {
+    "old": "reports/restoration/gate4-workspace-tests-retry.stdout",
+    "current": "reports/restoration/gate4/gate4-workspace-tests-retry.stdout",
+    "sha256": "67fb7abed66992a68f26bd63786f2893d4a6e85fb476399ed3d7660e98dcf8cc"
+  },
+  {
+    "old": "reports/restoration/gate4-workspace-tests.stderr",
+    "current": "reports/restoration/gate4/gate4-workspace-tests.stderr",
+    "sha256": "34f697ac56161e38b44b53f0cee8e8647f3c00db976259be0a2181fdb1f15ff8"
+  },
+  {
+    "old": "reports/restoration/gate4-workspace-tests.stdout",
+    "current": "reports/restoration/gate4/gate4-workspace-tests.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

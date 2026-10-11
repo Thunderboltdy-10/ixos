@@ -1,46 +1,15 @@
-# IXOS DOCUMENTATION HUB
+# Current documentation
 
-This directory is the canonical starting point for product, model, and engineering documentation.
+Start with [installation](getting-started/INSTALLATION.md), [CLI usage](CLI.md) and [architecture](ARCHITECTURE.md). The architecture explains full-source freshness, lexical/semantic fusion, compact caches, source views and bounded history with their limits.
 
-## CORE ENTRY POINTS
+| Guide | Purpose |
+|---|---|
+| [Feature inventory](FEATURES.md) | Implemented CLI, retained desktop/legacy facilities and incomplete features |
+| [Models](models/README.md) | Pinned parents, transforms, attribution and runtime cost |
+| [Evaluation protocol](../eval/README.md) | Splits, evidence integrity, context cost, interaction experiments |
+| [Measured report](../reports/restoration/GATE3.md) | Frozen results with reproducibility and limits |
+| [Agent skill](../skills/ixos-retrieval/SKILL.md) | Choose search/grep/read, budgets, sessions and feedback |
+| [Release preparation](engineering/RELEASE.md) | Native Mac checks, public history and release boundaries |
+| [Model publication playbook](models/PUBLISHING.md) | Verified recipes, upstream cards and responsible uploads |
 
-- Getting started: `docs/getting-started/INSTALLATION.md`
-- Desktop app guide: `docs/product/DESKTOP_APP.md`
-- CLI reliability quickcheck: `docs/product/CLI_RELIABILITY_QUICKCHECK.md`
-- Phases 0-2 implementation + testing guide: `docs/product/PHASES_0_2_IMPLEMENTATION_AND_TESTING.md`
-- Models and Hugging Face: `docs/models/HUGGINGFACE_AND_MODELS.md`
-- Benchmark and profiling runbook: `docs/engineering/BENCHMARKING.md`
-- Desktop search fallback behavior: `docs/engineering/SEARCH_MODE_FALLBACKS.md`
-- Agent workflow and skills: `docs/agents/SKILLS_AND_WORKFLOWS.md`
-- Markdown catalog for the full repo: `docs/MARKDOWN_INVENTORY.md`
-- Markdown governance and organization rules: `docs/engineering/MARKDOWN_ORGANIZATION.md`
-
-## CANONICAL MODEL NAMING
-
-- `ixos-flash-v1`: legacy baseline for comparison.
-- `ixos-flash-v2`: current Flash v2 generation.
-- `ixos-pro-v1`: legacy hidden Pro baseline.
-- `ixos-pro-v2`: current true Pro v2 system.
-- `potion-base-8m-int8`: internal dependency (not user-facing mode).
-
-## AUTHORITATIVE OPERATION FILES
-
-Keep these continuously maintained during implementation loops:
-
-- `PLAN.md`
-- `RUNLOG.md`
-- `DECISIONS.md`
-- `/reports/*` benchmark and validation artifacts
-
-## RELATED LEGACY/DEEP-DIVE DOCS
-
-Existing specialized docs are still valid and linked through:
-
-- `docs/PROJECT_GUIDE.md`
-- `docs/models/README.md`
-- `docs/modeling/PROCESS.md`
-- `reports/V2_FINAL_WRITEUP.md`
-
-Archived former root docs are now grouped under:
-
-- `docs/archive/root/`
+`archive/pre-restoration/` contains the previous active guides, byte-preserved with the archive manifest under reports. Existing `archive/root/`, `archive/old_plans/`, `archive/site/` and `research` material relocated into the archive retain earlier plans. Archived claims do not describe the current default engine.

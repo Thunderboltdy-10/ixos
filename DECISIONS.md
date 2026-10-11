@@ -45,3 +45,12 @@
 - KEEP (frozen Gate 3): normalized attributed Potion code parent + intro/spaced representatives and compressed attributed general parent + whole-token centroid, normalized hybrid, source-verified compact JSON. These were selected on dev/validation before test; held-out code/docs confirm gains over lexical baselines in the restricted suites.
 - KEEP lexical/exact tools: new lexical mode matches the strong code BM25 ranking and is much faster than hybrid for literal work. Standalone native rg remains useful. Do not force slow semantic search for a known identifier.
 - LIMIT claims: only two held-out code repositories; incomplete spans; SciFact is clean text; fresh CLI/rg and prepared BM25 timings differ. No autonomous-agent task success, worst-device guarantee, new training or matched Cursor/Augment superiority claim.
+
+- KEEP Gate4 measured code/documents/lexical CLI profiles as defaults after frozen selection; persistent retrieval overrides and query flags remain explicit. Retain default stateless history and optional correction/context until broader independent evidence supports defaults.
+- KEEP strict configuration failures and desktop-owned-section updates; never discard CLI preferences or silently overwrite malformed files.
+- KEEP free source setup with exact pinned parent/derivative fingerprints and cards; minimal package reproduces models without repository checkout. Storage transforms are not new training or integer inference.
+- RETIRE force-pushed partial mirror/private Pro/Blob publication paths; preserve original code under legacy. Prepared CI/draft packaging is not executed native-platform/release proof.
+- PRESERVE raw receipts/archive bytes through -text attributes and explicit path/hash maps. Keep failed/negative results; current docs distinguish historical claims and feature parity.
+- MEASURE actual working set, not artifact size: current small-code resident peak131/203MiB. Direct pooling from compressed mapped rows is a future measured memory experiment, not assumed benefit.
+
+- KEEP (Gate4 reproduction): export only staged source and use a fresh target plus independent pinned downloads to verify source install. Explicit temporary config/custom model path isolates algorithm/model preferences; record reused OS key/cache/toolchain facilities instead of claiming a clean OS. Separate binary path/hash is expected, actual frozen-fixture output equivalence is required. Clarify that grep/read always emit JSON after an agent smoke command incorrectly assumed a search-only flag.

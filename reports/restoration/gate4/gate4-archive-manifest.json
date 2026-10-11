@@ -1,0 +1,590 @@
+[
+  {
+    "source": "AGENTS.md",
+    "archive": "docs/archive/pre-restoration/AGENTS.md",
+    "sha256": "29407a6f4fd820e0cb789875af1ef1252de8f56a41e81e54d89d4882674caf28",
+    "operation": "move"
+  },
+  {
+    "source": "CLAUDE.md",
+    "archive": "docs/archive/pre-restoration/CLAUDE.md",
+    "sha256": "158ee4324fcf0c6e0ec0d86ac6b83e13fa3ae25a775a4edb22d65995ca68e405",
+    "operation": "move"
+  },
+  {
+    "source": "CODEX.md",
+    "archive": "docs/archive/pre-restoration/CODEX.md",
+    "sha256": "c52f0163b6f9b8f84a41e2ed5f9649d6fca3e3d6d0343aec8a915a082dac3b0b",
+    "operation": "move"
+  },
+  {
+    "source": "README.md",
+    "archive": "docs/archive/pre-restoration/README.md",
+    "sha256": "ff63c7a25ad4e561a3e8d691fe6cb75695098d1a466f953bc685c98519fa8778",
+    "operation": "move"
+  },
+  {
+    "source": "bench/README.md",
+    "archive": "docs/archive/pre-restoration/bench/README.md",
+    "sha256": "a8148282798dcbdb0c2a5a996f8fdda6c2087e7ac75e54ee31783b4b784c0f49",
+    "operation": "move"
+  },
+  {
+    "source": "docs/ARCHITECTURE_AUDIT_2026-02.md",
+    "archive": "docs/archive/pre-restoration/docs/ARCHITECTURE_AUDIT_2026-02.md",
+    "sha256": "2ba29d3c2cb9a6928475bb64dc40d8f3f36d969d8cb71364c77b5f4d721f10d4",
+    "operation": "move"
+  },
+  {
+    "source": "docs/CHANGELOG_MODELS.md",
+    "archive": "docs/archive/pre-restoration/docs/CHANGELOG_MODELS.md",
+    "sha256": "6553a38c56c9a02379ef28c4e96367665e452743aede4d94baf8477790acf027",
+    "operation": "move"
+  },
+  {
+    "source": "docs/CHANGELOG_SEARCH.md",
+    "archive": "docs/archive/pre-restoration/docs/CHANGELOG_SEARCH.md",
+    "sha256": "c4ae005d355ee0cf9fe5a3185362b1872a4be55b72e94a5ecace9fa1b0c4e0fd",
+    "operation": "move"
+  },
+  {
+    "source": "docs/Ixos_Master_Roadmap.md",
+    "archive": "docs/archive/pre-restoration/docs/Ixos_Master_Roadmap.md",
+    "sha256": "90422d781b35c6d41d2ef87d2adad7db0cc3d214b8300ed0f48716cd022f0f92",
+    "operation": "move"
+  },
+  {
+    "source": "docs/PROJECT_GUIDE.md",
+    "archive": "docs/archive/pre-restoration/docs/PROJECT_GUIDE.md",
+    "sha256": "a319306a63aba504a373e5a72f22e7b31447e9159b6a5b205735c2cff63162c5",
+    "operation": "move"
+  },
+  {
+    "source": "docs/README.md",
+    "archive": "docs/archive/pre-restoration/docs/README.md",
+    "sha256": "9c04666b55e260a803eeecd459487f7838fa0dd03f10e0940721dd07fd2f695d",
+    "operation": "move"
+  },
+  {
+    "source": "docs/agents/PRE_ROADMAP_AUDIT_PROMPT.md",
+    "archive": "docs/archive/pre-restoration/docs/agents/PRE_ROADMAP_AUDIT_PROMPT.md",
+    "sha256": "7b37997954240720ca56a587912e549b9a9c715654bdc02cdb9141ad54c30332",
+    "operation": "move"
+  },
+  {
+    "source": "docs/agents/SKILLS_AND_WORKFLOWS.md",
+    "archive": "docs/archive/pre-restoration/docs/agents/SKILLS_AND_WORKFLOWS.md",
+    "sha256": "1d57c4a4bcdccfbcc5dadaa685bab54ab198913b808b993ec6ed21158fa116ce",
+    "operation": "move"
+  },
+  {
+    "source": "docs/capability-matrix.md",
+    "archive": "docs/archive/pre-restoration/docs/capability-matrix.md",
+    "sha256": "72015a8f4e1b84f9a6126558a552a4f8e6db59739e5b8aabef269f073d3d11ee",
+    "operation": "move"
+  },
+  {
+    "source": "docs/control-plane.md",
+    "archive": "docs/archive/pre-restoration/docs/control-plane.md",
+    "sha256": "713a5fd7db7f5742e68d0aaa9188135ba35825743cb7103fc08f207ffb3544e9",
+    "operation": "move"
+  },
+  {
+    "source": "docs/engineering/BENCHMARKING.md",
+    "archive": "docs/archive/pre-restoration/docs/engineering/BENCHMARKING.md",
+    "sha256": "6eb0d111e1f78230541e1179494c28eda9343bcb2ff22ec6fb86bf05c3776158",
+    "operation": "move"
+  },
+  {
+    "source": "docs/engineering/MARKDOWN_ORGANIZATION.md",
+    "archive": "docs/archive/pre-restoration/docs/engineering/MARKDOWN_ORGANIZATION.md",
+    "sha256": "a673ffdaf3a7a5f89050c63c328643f86e6270fc59cb9aeec339053b9790e519",
+    "operation": "move"
+  },
+  {
+    "source": "docs/engineering/SEARCH_MODE_FALLBACKS.md",
+    "archive": "docs/archive/pre-restoration/docs/engineering/SEARCH_MODE_FALLBACKS.md",
+    "sha256": "3a7d67c8e47b38e0499f74e6f37dca967c448e3a42e2c718c8411e310848412b",
+    "operation": "move"
+  },
+  {
+    "source": "docs/flow-map.md",
+    "archive": "docs/archive/pre-restoration/docs/flow-map.md",
+    "sha256": "0b3a457fe82af4eb854508142e2cc66b13888a1c743ea64b9230c74e32d2ba5b",
+    "operation": "move"
+  },
+  {
+    "source": "docs/gaps.md",
+    "archive": "docs/archive/pre-restoration/docs/gaps.md",
+    "sha256": "5be666469dc6eb421c19b70a817f6be1616bcfa25bb40d4bda11f29044216db8",
+    "operation": "move"
+  },
+  {
+    "source": "docs/getting-started/INSTALLATION.md",
+    "archive": "docs/archive/pre-restoration/docs/getting-started/INSTALLATION.md",
+    "sha256": "8b7128d305a214c0a0a8fbe5490213fdfcd28c4097dbc717747d87b13b2eb4da",
+    "operation": "move"
+  },
+  {
+    "source": "docs/licensing/STRATEGY.md",
+    "archive": "docs/archive/pre-restoration/docs/licensing/STRATEGY.md",
+    "sha256": "6f2e31ef6dc6994990e1820c58ff38549748de0931f616218593fca594df297b",
+    "operation": "move"
+  },
+  {
+    "source": "docs/modeling/PERF_PROFILE.md",
+    "archive": "docs/archive/pre-restoration/docs/modeling/PERF_PROFILE.md",
+    "sha256": "4dcb62c14736832b5b3b0e2f327c7776f54eed4477b94436654f90bfe9c39e5e",
+    "operation": "move"
+  },
+  {
+    "source": "docs/modeling/PROCESS.md",
+    "archive": "docs/archive/pre-restoration/docs/modeling/PROCESS.md",
+    "sha256": "6c126c95d0a49d636414be719019b5a521b4b273ae63d390cf81bc3fd833dd14",
+    "operation": "move"
+  },
+  {
+    "source": "docs/modeling/RANKING_OPTIMIZATIONS.md",
+    "archive": "docs/archive/pre-restoration/docs/modeling/RANKING_OPTIMIZATIONS.md",
+    "sha256": "fb5970fbcadcb084671168c41413ac3767400a20cf777036bd42fc14e69d94f8",
+    "operation": "move"
+  },
+  {
+    "source": "docs/models/BRANDING.md",
+    "archive": "docs/archive/pre-restoration/docs/models/BRANDING.md",
+    "sha256": "2ccfba26195764380acb6f80f14b8b77256691a537c2ca459fe06f056afdcb07",
+    "operation": "move"
+  },
+  {
+    "source": "docs/models/HUGGINGFACE_AND_MODELS.md",
+    "archive": "docs/archive/pre-restoration/docs/models/HUGGINGFACE_AND_MODELS.md",
+    "sha256": "30985f03ec77a90eae08cbe362063ec572014aa302c00ca9ffb78154b9cec9df",
+    "operation": "move"
+  },
+  {
+    "source": "docs/models/QUANTIZATION_RESEARCH.md",
+    "archive": "docs/archive/pre-restoration/docs/models/QUANTIZATION_RESEARCH.md",
+    "sha256": "88387bb6aa6c7a5797205efd246b6298cbad35165a0b7c7db791b230bac9559c",
+    "operation": "move"
+  },
+  {
+    "source": "docs/models/README.md",
+    "archive": "docs/archive/pre-restoration/docs/models/README.md",
+    "sha256": "b496fc7235a05184bfa75d77de614a4ccdbd69a9383720db203132832b7fe2a1",
+    "operation": "move"
+  },
+  {
+    "source": "docs/models/flash-v1.md",
+    "archive": "docs/archive/pre-restoration/docs/models/flash-v1.md",
+    "sha256": "9ad813c9f4d2444ae6371a97391d90ee8c5b768d6212a9d5556c1201d619e6f3",
+    "operation": "move"
+  },
+  {
+    "source": "docs/models/flash-v2.md",
+    "archive": "docs/archive/pre-restoration/docs/models/flash-v2.md",
+    "sha256": "dfba888bf0312e855e33abde3f1c0a82003cb11e858a54e4c39cb167bc357e90",
+    "operation": "move"
+  },
+  {
+    "source": "docs/models/flash-v4-512.md",
+    "archive": "docs/archive/pre-restoration/docs/models/flash-v4-512.md",
+    "sha256": "5f8d6997f971d7e80ff7264d2439e1fadc632432eaa9ad5eb039217b02a00356",
+    "operation": "move"
+  },
+  {
+    "source": "docs/models/flash-v4-fast-192.md",
+    "archive": "docs/archive/pre-restoration/docs/models/flash-v4-fast-192.md",
+    "sha256": "e36c24ab7fc9e6a903a685f6edf01156a84de96754b0a4ee8d4e4cd59d53fde5",
+    "operation": "move"
+  },
+  {
+    "source": "docs/models/ixos-pro-v1.md",
+    "archive": "docs/archive/pre-restoration/docs/models/ixos-pro-v1.md",
+    "sha256": "f1fb76aaf229b11b46b682cf76c8a4f2f7375fe22895e2a161ce79a596ecb0e6",
+    "operation": "move"
+  },
+  {
+    "source": "docs/models/potion-8m-int8.md",
+    "archive": "docs/archive/pre-restoration/docs/models/potion-8m-int8.md",
+    "sha256": "5b7da5e875b45bd306cc17a400466fca0a67d114ca36a07c177e4a75d3ac24b6",
+    "operation": "move"
+  },
+  {
+    "source": "docs/models/pro-fusion.md",
+    "archive": "docs/archive/pre-restoration/docs/models/pro-fusion.md",
+    "sha256": "705d5b7ad2fdc195d8ddc0d83c01d3d91dba13e149b65a8238e4d9029421386f",
+    "operation": "move"
+  },
+  {
+    "source": "docs/models/pro-v2.md",
+    "archive": "docs/archive/pre-restoration/docs/models/pro-v2.md",
+    "sha256": "50f1c319d064ec620b9058ca25205ce171a94244072c330015597338523695cf",
+    "operation": "move"
+  },
+  {
+    "source": "docs/product/CLI_RELIABILITY_QUICKCHECK.md",
+    "archive": "docs/archive/pre-restoration/docs/product/CLI_RELIABILITY_QUICKCHECK.md",
+    "sha256": "b2565058d39f6522c5be944fc47e0967a709984823fba7c50366e7a0f25b39b5",
+    "operation": "move"
+  },
+  {
+    "source": "docs/product/COPY_MAP.md",
+    "archive": "docs/archive/pre-restoration/docs/product/COPY_MAP.md",
+    "sha256": "c2b5eb8c4f712473833f69544d083319d3d4d33532240088c000ede008f6269c",
+    "operation": "move"
+  },
+  {
+    "source": "docs/product/DESKTOP_APP.md",
+    "archive": "docs/archive/pre-restoration/docs/product/DESKTOP_APP.md",
+    "sha256": "82ccd4687663ea5671daa912acf1d999f7307637490dc97b416ca6df2580007d",
+    "operation": "move"
+  },
+  {
+    "source": "docs/product/DESKTOP_UI_AUDIT.md",
+    "archive": "docs/archive/pre-restoration/docs/product/DESKTOP_UI_AUDIT.md",
+    "sha256": "abd87f5e18ce81e549be08c90e1fd1be10d32be35ad0bb25dc08af276c55d917",
+    "operation": "move"
+  },
+  {
+    "source": "docs/product/GEMINI.md",
+    "archive": "docs/archive/pre-restoration/docs/product/GEMINI.md",
+    "sha256": "118e3022c13d0c26913097c50f3c87d8d7c575d684f535020a6385951bc725e6",
+    "operation": "move"
+  },
+  {
+    "source": "docs/product/PHASES_0_2_IMPLEMENTATION_AND_TESTING.md",
+    "archive": "docs/archive/pre-restoration/docs/product/PHASES_0_2_IMPLEMENTATION_AND_TESTING.md",
+    "sha256": "e483453b95e890990762ad9557964d4a754d154eeb802f740d97b523c3fc6fa6",
+    "operation": "move"
+  },
+  {
+    "source": "docs/product/TIERS.md",
+    "archive": "docs/archive/pre-restoration/docs/product/TIERS.md",
+    "sha256": "065f10895f15b29d7506f6dd0e7a68d4701ac98b8597f0e63e1c0f5a007fe0ed",
+    "operation": "move"
+  },
+  {
+    "source": "docs/research/final_best_direction.md",
+    "archive": "docs/archive/pre-restoration/docs/research/final_best_direction.md",
+    "sha256": "30ecb5f9a751eb2e1293a0bcf151874825fa22f35fd7a8eb9488a0268f8856d7",
+    "operation": "move"
+  },
+  {
+    "source": "docs/research/hero_object_candidates.md",
+    "archive": "docs/archive/pre-restoration/docs/research/hero_object_candidates.md",
+    "sha256": "247e2e472af4d4517b647bf9bb333ab730a0f792e9aa0f8e5e409c31afa1235b",
+    "operation": "move"
+  },
+  {
+    "source": "docs/research/idea_bank_50plus.md",
+    "archive": "docs/archive/pre-restoration/docs/research/idea_bank_50plus.md",
+    "sha256": "b33988b20d7b8e9d6eee19fdb63dc2ecfd6007a694ba9c8b81ac06c95fc13ca9",
+    "operation": "move"
+  },
+  {
+    "source": "docs/research/lit_scan_bibliography.md",
+    "archive": "docs/archive/pre-restoration/docs/research/lit_scan_bibliography.md",
+    "sha256": "17be7f840506c8caebd80bd815fa3e4efbbc9ddfa3f493790e1b4f10bd088428",
+    "operation": "move"
+  },
+  {
+    "source": "docs/research/novelty_audit_hawkes_router.md",
+    "archive": "docs/archive/pre-restoration/docs/research/novelty_audit_hawkes_router.md",
+    "sha256": "499d06e3b8bebaea744bc6850c3df23f017c0f201220f589272fecd4cefea1bb",
+    "operation": "move"
+  },
+  {
+    "source": "docs/research/novelty_audit_hero_objects.md",
+    "archive": "docs/archive/pre-restoration/docs/research/novelty_audit_hero_objects.md",
+    "sha256": "12c92bf57135c72f9690e9a90aa63f173b1da2c365107c54162b0fea0471471a",
+    "operation": "move"
+  },
+  {
+    "source": "docs/research/ralph_loop_log.md",
+    "archive": "docs/archive/pre-restoration/docs/research/ralph_loop_log.md",
+    "sha256": "a9b3f7db5c63d0857157afa9e320bf391a32d8a866837fcc08e3cab1da07a084",
+    "operation": "move"
+  },
+  {
+    "source": "docs/research/recommendation_best1.md",
+    "archive": "docs/archive/pre-restoration/docs/research/recommendation_best1.md",
+    "sha256": "616b38f5194db54aee554462ca96502e9dc9d157c6e005348f6763e31b01d065",
+    "operation": "move"
+  },
+  {
+    "source": "docs/research/recommendation_v2.md",
+    "archive": "docs/archive/pre-restoration/docs/research/recommendation_v2.md",
+    "sha256": "d59caa4d2499e7510a95d8250ec26f1d51888efd50fbf4c146a10283be646fe0",
+    "operation": "move"
+  },
+  {
+    "source": "docs/research/top10_deepdive.md",
+    "archive": "docs/archive/pre-restoration/docs/research/top10_deepdive.md",
+    "sha256": "4fbb78376ea2120249b3b70f6da0364e625937d72163ed42296fd08c501e7bce",
+    "operation": "move"
+  },
+  {
+    "source": "docs/research/top12_deepdive.md",
+    "archive": "docs/archive/pre-restoration/docs/research/top12_deepdive.md",
+    "sha256": "c8fb38c9bc64e29de301df7e21361bb9f0d3670bbb4ea38648f9ab516e6a6353",
+    "operation": "move"
+  },
+  {
+    "source": "docs/research/upper_bounds.md",
+    "archive": "docs/archive/pre-restoration/docs/research/upper_bounds.md",
+    "sha256": "decc422ca87a3c6cd79699e8c0c0dd7bd66144bc6ddf06dd934abba861cd6842",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-search/ui/COMPONENT_SHOWCASE.md",
+    "archive": "docs/archive/pre-restoration/ixos-search/ui/COMPONENT_SHOWCASE.md",
+    "sha256": "e3e0743039d52fcb5857adf98db12be786df1e4a4ccda25aa0c8f0a138f99dcb",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-search/ui/DATA_FEATURES.md",
+    "archive": "docs/archive/pre-restoration/ixos-search/ui/DATA_FEATURES.md",
+    "sha256": "e80f5efce75360cec7fd9380a0be72babbdbea9830635428584ebed9075a55f6",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-search/ui/MIGRATION_GUIDE.md",
+    "archive": "docs/archive/pre-restoration/ixos-search/ui/MIGRATION_GUIDE.md",
+    "sha256": "cbb8491e11b66c8cb4f4fc3057c42aa19aa96c732774b041ce48d61ce54ae5f4",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/README.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/README.md",
+    "sha256": "8b4c5a314e4f6d71d115e9454b53d5aa3b6fff8c189e211ae1b351b93b794685",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/app/4/V4_DESIGN_TRUTH.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/app/4/V4_DESIGN_TRUTH.md",
+    "sha256": "d15003a754d256fe8249e3448585f800bfcef0ade6acc68c81a121c0d0233eeb",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/app/4/V4_HERO_STORYBOARD.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/app/4/V4_HERO_STORYBOARD.md",
+    "sha256": "5c74b8a1629bc2b5798722e5b5af0470fd37d3860b988c6ad45e161fe52b4f5a",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/app/4/V4_MOTION_BIBLE.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/app/4/V4_MOTION_BIBLE.md",
+    "sha256": "602137b820cecad39b31832c2616b08356181fe89b3992b93c5c909ce9b84afa",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/app/4/V4_PRODUCT_TRUTH.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/app/4/V4_PRODUCT_TRUTH.md",
+    "sha256": "7af63be9d3d2548c88765dbdc349adf1e00821eab2c9205a005a26a744f39e58",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/app/5/V4_DESIGN_TRUTH.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/app/5/V4_DESIGN_TRUTH.md",
+    "sha256": "d15003a754d256fe8249e3448585f800bfcef0ade6acc68c81a121c0d0233eeb",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/app/5/V4_HERO_STORYBOARD.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/app/5/V4_HERO_STORYBOARD.md",
+    "sha256": "5c74b8a1629bc2b5798722e5b5af0470fd37d3860b988c6ad45e161fe52b4f5a",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/app/5/V4_MOTION_BIBLE.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/app/5/V4_MOTION_BIBLE.md",
+    "sha256": "602137b820cecad39b31832c2616b08356181fe89b3992b93c5c909ce9b84afa",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/app/5/V4_PRODUCT_TRUTH.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/app/5/V4_PRODUCT_TRUTH.md",
+    "sha256": "7af63be9d3d2548c88765dbdc349adf1e00821eab2c9205a005a26a744f39e58",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/landing/COPY_DECK.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/landing/COPY_DECK.md",
+    "sha256": "3c743746dc6496db2f8c7c2160e477fcbadc4dd26655cea407c7a74421960fbd",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/landing/FEATURE_INVENTORY.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/landing/FEATURE_INVENTORY.md",
+    "sha256": "7d40ac7b9c66dd12622f3a490655fe326f813804733043778a80012a68a8770b",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/landing/INSPIRATION_MATRIX.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/landing/INSPIRATION_MATRIX.md",
+    "sha256": "fc0cc2d344698bc57f3bdfef2a97e6c59a41d5ccfa80da0f58b8b1a08df12898",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/landing/INSPIRATION_MATRIX_V2_1.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/landing/INSPIRATION_MATRIX_V2_1.md",
+    "sha256": "5e2079097d7f60a7986d84f84ecbcab9815b356ae6feac892f5c234d5066b8b1",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/landing/RESET_PLAN.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/landing/RESET_PLAN.md",
+    "sha256": "006fd6a3640a570ec8d8c98b09871ce324d3dcc9fbe8e156b4281b456506f066",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/landing/VARIANT_STATUS.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/landing/VARIANT_STATUS.md",
+    "sha256": "ac7983da8df4951d01058be3a94181993b3da61ac5bca603565e08b490c4494c",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/landing/WORLDS.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/landing/WORLDS.md",
+    "sha256": "448f0f8f18e36f32b030f91c9ba56f3c356a4f338b37dace60b5ae46d8301a42",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/landing/WORLDS_V2_1.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/landing/WORLDS_V2_1.md",
+    "sha256": "30a4bc4f700e193dbf8615ff8ae3e960e2f47c8730515ac5091ffb87b7a2b539",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/landing/demo/DEMO_ADAPTER.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/landing/demo/DEMO_ADAPTER.md",
+    "sha256": "7c6109e57f3883251b52d2cc9adcdfa1a292c0567cf1322d20f7ebbdc2c2f3aa",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/presets/preset-1-command-center.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/presets/preset-1-command-center.md",
+    "sha256": "267f4746d064552335f1a1bdc79e16cb06b099ff556234f1de753248b6d3ee36",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/presets/preset-2-signal-architecture.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/presets/preset-2-signal-architecture.md",
+    "sha256": "ebf247979acc0f2330e188622735ef7c01fbc3efe601cda1e26343a92a17b20d",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/presets/preset-3-precision-grid.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/presets/preset-3-precision-grid.md",
+    "sha256": "13dfe18e69ece689d11ede084b8f5c92785381c517986635aa6908af2484fa62",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/presets/preset-4-spatial-immersion.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/presets/preset-4-spatial-immersion.md",
+    "sha256": "4589c987d4b22b70f35f05bf8a478558889d051bcb8aaf62edcc7f76370c22e8",
+    "operation": "move"
+  },
+  {
+    "source": "ixos-site/src/presets/preset-5-directors-cut.md",
+    "archive": "docs/archive/pre-restoration/ixos-site/src/presets/preset-5-directors-cut.md",
+    "sha256": "1258149f34337ac85bc04dc9fc62dd42d67ee674d66242f44e22c76ae76e6727",
+    "operation": "move"
+  },
+  {
+    "source": "release/CHECKLIST.md",
+    "archive": "docs/archive/pre-restoration/release/CHECKLIST.md",
+    "sha256": "fa75b8be94f13937ee4fcde5714fb3b563d2c68bf0442574ff5f69dc98b7dbc9",
+    "operation": "move"
+  },
+  {
+    "source": "scripts/README.md",
+    "archive": "docs/archive/pre-restoration/scripts/README.md",
+    "sha256": "d7fba5b8272b081850240c74a1e97fc87976fa8f2b14e82cdd2fc93cca4f3758",
+    "operation": "move"
+  },
+  {
+    "source": "scripts/run_settings_matrix.py",
+    "archive": "legacy/tools/run_settings_matrix.py",
+    "sha256": "19b6412b11cc288d64b215fee17542da231c5a83d985dd587bce0c2e8a3cdf43",
+    "operation": "move"
+  },
+  {
+    "source": ".github/workflows/mirror-cli.yml",
+    "archive": "legacy/release-workflows/mirror-cli.yml",
+    "sha256": "03c97b73ff17d708d0dbe063b883236e899d102fbde7a99cc6e1a63f5ff97a13",
+    "operation": "move"
+  },
+  {
+    "source": ".github/workflows/build-pro-module.yml",
+    "archive": "legacy/release-workflows/build-pro-module.yml",
+    "sha256": "7a75ef80deeaedf7009e55c8b99fad24bc8155c3892fa2e3ef279e577cbbf5d1",
+    "operation": "move"
+  },
+  {
+    "source": ".github/workflows/release.yml",
+    "archive": "legacy/release-workflows/release.yml",
+    "sha256": "5f512e4b003d24443090badbac6273cc256a37e0806de3689f281db8c189be68",
+    "operation": "move"
+  },
+  {
+    "source": ".github/workflows/release-postprocess.yml",
+    "archive": "legacy/release-workflows/release-postprocess.yml",
+    "sha256": "fc88e6224c7056c8568267e2f3f1834c851bef5b342a30d8d96e54dcd71cf607",
+    "operation": "move"
+  },
+  {
+    "source": ".github/workflows/cli-release.yml",
+    "archive": "legacy/release-workflows/cli-release.yml",
+    "sha256": "e971013ae261c4c44d74d285bb1d05104f211f8b9abf610b3daaa3816261ebac",
+    "operation": "copy-before-replacement"
+  },
+  {
+    "source": "models/lab/CANONICAL_RESULTS.md",
+    "archive": "docs/archive/pre-restoration/models/lab/CANONICAL_RESULTS.md",
+    "sha256": "e592eab2e6d332adaa9e92673f83d3b45f51f292634ec386f1c0001b660e15ca",
+    "operation": "copy-before-replacement"
+  },
+  {
+    "source": "models/lab/EXPERIMENT_LOG.md",
+    "archive": "docs/archive/pre-restoration/models/lab/EXPERIMENT_LOG.md",
+    "sha256": "b2c7eb079aa15b0fe5635b9e3ddca186f27c05dec990e0ed3bf7529e28007e49",
+    "operation": "move"
+  },
+  {
+    "source": "models/lab/LEADERBOARD.md",
+    "archive": "docs/archive/pre-restoration/models/lab/LEADERBOARD.md",
+    "sha256": "405153100986dad1b080926bca91b00ba370488a41d7028a9d7554dde46e8642",
+    "operation": "move"
+  },
+  {
+    "source": "models/lab/MODELS_DOWNLOADED.md",
+    "archive": "docs/archive/pre-restoration/models/lab/MODELS_DOWNLOADED.md",
+    "sha256": "ea450add3c0b63c55451254587989b8f13dcea848399654e0276a782ab974678",
+    "operation": "move"
+  },
+  {
+    "source": "models/lab/PERF_LEADERBOARD.md",
+    "archive": "docs/archive/pre-restoration/models/lab/PERF_LEADERBOARD.md",
+    "sha256": "98743d2e238ce9965799cdb3ccc395d6dfda7fd1c6933ae4a2598263e95961dd",
+    "operation": "move"
+  },
+  {
+    "source": "models/lab/PLAN.md",
+    "archive": "docs/archive/pre-restoration/models/lab/PLAN.md",
+    "sha256": "fa68578485755ad7648a37be91c70a80e6eb5da8cb4539b8f91145c813361f06",
+    "operation": "move"
+  },
+  {
+    "source": "models/lab/SEARCH_OPT_PLAN.md",
+    "archive": "docs/archive/pre-restoration/models/lab/SEARCH_OPT_PLAN.md",
+    "sha256": "72d24c9289fa1f4074cc49a242df09e1ad27c33a84d9981ac1404681bfe56673",
+    "operation": "move"
+  },
+  {
+    "source": "scripts/upload-release.js",
+    "archive": "legacy/release-workflows/upload-release.js",
+    "sha256": "72a74e382e77e62886cd5f127fbf98b5797218c876863add1eb8aa3b126dd233",
+    "operation": "move"
+  }
+]

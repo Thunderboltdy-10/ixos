@@ -99,12 +99,9 @@ pub fn extract_text(path: &Path, max_bytes: usize, max_chars: usize) -> Option<S
     extract_text_from_bytes(path, &bytes, max_chars)
 }
 
-/// Parse a stable snapshot; binary containers never fall back to raw text.
-pub(crate) fn extract_text_from_bytes(
-    path: &Path,
-    bytes: &[u8],
-    max_chars: usize,
-) -> Option<String> {
+/// Parse an already bounded, stable snapshot; binary containers never fall back
+/// to raw text. The caller owns the input byte limit (this avoids a second read).
+pub fn extract_text_from_bytes(path: &Path, bytes: &[u8], max_chars: usize) -> Option<String> {
     let ext = path
         .extension()
         .and_then(|e| e.to_str())

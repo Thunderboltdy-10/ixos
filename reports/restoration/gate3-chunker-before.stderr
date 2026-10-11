@@ -1,4 +1,0 @@
-   Compiling ixos-protocol v0.1.0 (C:\Users\pablo\Downloads\Ixos)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.10s
-     Running unittests src\lib.rs (target\debug\deps\ixos_protocol-1112a63a901a6c40.exe)
-error: test failed, to rerun pass `-p ixos-protocol --lib`

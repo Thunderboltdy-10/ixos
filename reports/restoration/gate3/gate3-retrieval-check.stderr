@@ -1,0 +1,19 @@
+    Checking ixos-protocol v0.1.0 (C:\Users\pablo\Downloads\Ixos)
+warning: unused import: `HashSet`
+  --> src\ixos_rank\candidate_generator\mod.rs:53:33
+   |
+53 | use std::collections::{HashMap, HashSet};
+   |                                 ^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `NAME` is never used
+  --> src\retrieval\cache.rs:11:7
+   |
+11 | const NAME: &str = "user.ixos.document-v1";
+   |       ^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `ixos-protocol` (lib) generated 2 warnings (run `cargo fix --lib -p ixos-protocol` to apply 1 suggestion)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.39s

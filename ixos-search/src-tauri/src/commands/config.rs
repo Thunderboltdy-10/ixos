@@ -143,6 +143,7 @@ impl From<ConfigPayload> for IxosConfig {
 
         Self {
             version: IxosConfig::default().version,
+            retrieval: Default::default(),
             search: ixos_protocol::cli::SearchConfig {
                 default_limit: payload.search.default_limit,
                 default_directory: payload.search.default_directory.map(PathBuf::from),
@@ -188,15 +189,48 @@ impl From<ConfigPayload> for IxosConfig {
 /// Get current configuration
 #[tauri::command]
 pub async fn get_config() -> Result<ConfigPayload, String> {
-    let config = IxosConfig::load();
+    let config = IxosConfig::load_for_cli(IxosConfig::default_path()).map_err(|e| e.to_string())?;
     Ok(config.into())
 }
 
 /// Update configuration
 #[tauri::command]
 pub async fn update_config(config: ConfigPayload) -> Result<(), String> {
-    let ixos_config: IxosConfig = config.into();
-    ixos_config.save().map_err(|e| e.to_string())
+    let current =
+        IxosConfig::load_for_cli(IxosConfig::default_path()).map_err(|e| e.to_string())?;
+    apply_desktop_settings(current, config)
+        .save()
+        .map_err(|e| e.to_string())
+}
+
+/// The desktop payload owns only these three sections. Preserve CLI retrieval
+/// and index settings when a desktop preference changes.
+fn apply_desktop_settings(mut current: IxosConfig, payload: ConfigPayload) -> IxosConfig {
+    let replacement: IxosConfig = payload.into();
+    current.search = replacement.search;
+    current.output = replacement.output;
+    current.security = replacement.security;
+    current
+}
+
+#[cfg(test)]
+mod integration_tests {
+    use super::*;
+    #[test]
+    fn desktop_updates_preserve_cli_retrieval_preferences() {
+        let mut current = IxosConfig::default();
+        current.retrieval.limit = 3;
+        current.retrieval.model_path = Some(PathBuf::from("custom-model"));
+        let mut payload: ConfigPayload = current.clone().into();
+        payload.output.show_scores = true;
+        let updated = apply_desktop_settings(current, payload);
+        assert_eq!(updated.retrieval.limit, 3);
+        assert_eq!(
+            updated.retrieval.model_path,
+            Some(PathBuf::from("custom-model"))
+        );
+        assert!(updated.output.show_scores);
+    }
 }
 
 /// Reset configuration to defaults

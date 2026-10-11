@@ -1,8 +1,7 @@
-# Retired prototypes and design references
+# Retired code and plans
 
-This folder preserves historical material outside the active Rust engine, Tauri desktop, and site workspaces.
+Ixplorer and its architecture are retained for progression under this directory and may be removed later. They are outside the active monorepo builds.
 
-- `ixplorer/`: the retired Qt file-explorer experiment, moved intact from the repository root. Its source, resources, README, and local build artifacts were preserved. Existing build artifacts may contain paths from the old location; this archive is not a supported build target.
-- `design-references/`: the former root-level explorer/sidebar inspiration images and old logo reference. Active application assets remain in their existing packages.
+`release-workflows/` preserves older private-source/mirroring/Pro publication flows. They are inactive here; particularly the partial mirror's force push must not become an active monorepo release step. `tools/run_settings_matrix.py` is an old stub-dependent runner; its failed restoration receipt is preserved, not counted as a passing quality/cache check.
 
-Historical plans and reports remain in their existing locations. References in those documents describe the project at the time they were written. Further archive organization will follow the engine restoration decisions.
+Historical active guides and immutable archive documents live in `docs/archive/`; current instructions are the root README/AGENTS and docs hub. Nothing under legacy becomes shipping behavior merely because its source is preserved.

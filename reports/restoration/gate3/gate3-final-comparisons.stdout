@@ -1,0 +1,12 @@
+code-jit: nDCG=0.695682, MRR=0.645278, p50/p95=271.83/310.12ms, stdout/total=728.8/1066.8 tokens
+code-native-warm: nDCG=0.695682, MRR=0.645278, p50/p95=244.32/280.93ms, stdout/total=729.5/1067.2 tokens
+code-bm25: nDCG=0.639743, MRR=0.583571, p50/p95=13.41/17.64ms, stdout/total=779.7/779.7 tokens
+code-rg: nDCG=0.570616, MRR=0.527321, p50/p95=27.84/46.08ms, stdout/total=728.5/728.5 tokens
+code-lexical: nDCG=0.639743, MRR=0.583571, p50/p95=43.83/53.24ms, stdout/total=731.7/1025.6 tokens
+code-flash-legacy: nDCG=0.455079, MRR=0.421759, p50/p95=193.48/225.21ms, stdout/total=997.5/1239.3 tokens
+documents-jit: nDCG=0.697409, MRR=0.668060, p50/p95=1636.61/1675.99ms, stdout/total=1343.1/1695.4 tokens
+documents-native-warm: nDCG=0.697409, MRR=0.668060, p50/p95=717.00/749.74ms, stdout/total=1342.6/1691.6 tokens
+documents-bm25: nDCG=0.662116, MRR=0.633690, p50/p95=12.21/19.81ms, stdout/total=1353.1/1353.1 tokens
+documents-rg: nDCG=0.530732, MRR=0.515792, p50/p95=266.26/364.71ms, stdout/total=1333.5/1333.5 tokens
+documents-lexical: nDCG=0.663544, MRR=0.634023, p50/p95=434.47/448.63ms, stdout/total=1342.5/1645.7 tokens
+documents-flash-legacy: nDCG=0.028102, MRR=0.028745, p50/p95=714.83/725.67ms, stdout/total=1089.7/1335.8 tokens

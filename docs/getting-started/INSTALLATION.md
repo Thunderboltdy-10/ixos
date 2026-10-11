@@ -1,46 +1,33 @@
-# INSTALLATION
+# Install from source
 
-## SUPPORTED PLATFORMS
+Builds require Rust 1.89+ with the platform C toolchain (Visual Studio C++ build tools on Windows, Command Line Tools on macOS, GCC/Clang on Linux). Python 3.11+ prepares pinned model variants. Code preparation uses the standard library; documents additionally use `numpy==2.3.5`. Runtime search uses Rust/CPU and needs no Python process or network request.
 
-- Windows 10/11 (x64)
-- macOS 12+
-- Linux: developer flow only unless installer is explicitly shipped
+```sh
+cargo build --release --locked --bin ixos
+python scripts/setup_models.py --profile code
+```
 
-## HARDWARE BASELINE
+On Windows run `target/release/ixos.exe`; on Unix run `./target/release/ixos`. Add that directory to PATH or copy only the executable to your chosen bin directory. A source installation is the currently verified path; release artifacts/auto-updates are separate and have not been published for this restoration.
 
-- CPU: modern multi-core processor (AVX2 recommended)
-- Memory: 8 GB minimum, 16 GB recommended
-- Disk: 500 MB app + model footprint (varies by selected model)
+For dense documents:
 
-## DESKTOP INSTALL FLOW
+```sh
+python -m pip install numpy==2.3.5
+python scripts/setup_models.py --profile documents
+```
 
-1. Download the installer from `/download` or release artifacts.
-2. Run installer and complete OS prompts.
-3. Launch Ixos and sign in.
-4. Open model settings and ensure at least one model is installed.
-5. Run your first search in the default directory.
+Models install in `%LOCALAPPDATA%/ixos/models` (Windows), `~/Library/Application Support/ixos/models` (macOS), or `$XDG_DATA_HOME/ixos/models` / `~/.local/share/ixos/models` (Linux). Pinned parents, exact sizes/SHA256s, revisions, transforms and runtime fingerprints are in `config/retrieval-models.json`. Existing folders must match hashes; conflicting artifacts are rejected. Downloads/conversion occur in a temporary model folder, then a verified folder is renamed into place. Existing sources are untouched. Preserve each upstream model card and install receipt.
 
-## MODEL INSTALLATION
+Offline: provide `--source-root PATH`, containing the original `potion-code-16M-v2` and/or `potion-retrieval-32M` folders at their pinned revisions. A custom `--destination PATH` requires `--model-path PATH/FOLDER`, `IXOS_MODEL_PATH` or `retrieval.model_path` configuration.
 
-- Automatic install can be triggered from in-app model controls.
-- Manual scripts and artifact details:
-  - `scripts/README.md`
-  - `models/lab/MODELS_DOWNLOADED.md`
-  - `docs/models/HUGGINGFACE_AND_MODELS.md`
+```sh
+ixos search "where are source edits verified" --dir . --json
+ixos search "source hash" --profile lexical --dir . --json
+ixos doctor --json
+```
 
-## QUICK VALIDATION
+`doctor` still describes some legacy model facilities; a current profile search is the definitive runtime probe. Missing models do not silently produce stub results. Lexical and exact grep/read need no model. Config paths can be found with `ixos config --path`. Native caching may write ADS/xattr metadata; use `--cache-mode ephemeral` to disable persistent embedding records. No adjacent embedding files are created.
 
-After install, validate these:
+Windows source installation was also checked from an exported staged tree with a fresh build directory and independently downloaded models in a custom destination. All eight profile checks and eight native/source/cache probes passed with that executable; receipts and exact isolation conditions are in `reports/restoration/GATE4.md`. Mac/Linux CI is configured but native execution has not been verified locally. The release checklist includes Mac Unicode/long-source, native xattr failure/fallback, edits and actual default-model search. A passing build alone is insufficient.
 
-- App opens and auth completes.
-- Search returns results from a local directory.
-- Model switcher shows installed/ready state.
-- Ask mode respects selected model.
-
-## TROUBLESHOOTING
-
-- Auth issues: check Clerk config and app/site URLs in `.env`.
-- Missing models: use model download action in app settings.
-- Slow first search: expected for first-load model warmup.
-- Blank results: verify scanned directory and file permissions.
-
+Desktop development: `npm ci`, then `npm run tauri:dev`; website: `npm run site:dev`. Linux desktop development additionally needs WebKitGTK/GTK dependencies. Desktop legacy model resources remain separate from these current CLI models; packaging and visual polish are separate workstreams.

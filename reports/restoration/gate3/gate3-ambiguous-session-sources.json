@@ -1,0 +1,6 @@
+{
+  "manifest": "dataset\\restoration\\ambiguous-sessions-v1\\sessions.json",
+  "sha256": "3f4c0f7ae5730511aa4c1553b821b9ec27c654c5f68726bfcbf940863a1fe84c",
+  "queries": 40,
+  "sequences": 8
+}

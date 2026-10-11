@@ -1,0 +1,21 @@
+{
+  "archive": "ixos-windows-final.zip",
+  "sha256": "d12cd58323e066778179af01cb84836a40fc8c55c9b8fa522c68e5dcd421b264",
+  "files": [
+    "LICENSE",
+    "config/retrieval-models.json",
+    "scripts/setup_models.py",
+    "eval/__init__.py",
+    "eval/artifacts.py",
+    "eval/normalize_tokenizer.py",
+    "eval/compress_model.py",
+    "skills/ixos-retrieval/SKILL.md",
+    "docs/CLI.md",
+    "docs/ARCHITECTURE.md",
+    "docs/models/README.md",
+    "docs/models/PUBLISHING.md",
+    "ixos.exe",
+    "README.md"
+  ],
+  "bundled_weights": false
+}

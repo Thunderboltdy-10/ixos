@@ -7,7 +7,7 @@ import argparse
 import json
 from pathlib import Path
 import shutil
-from eval.run import artifact_identity
+from eval.artifacts import artifact_identity
 
 
 def prepare(source,output):

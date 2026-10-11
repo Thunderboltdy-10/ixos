@@ -38,12 +38,12 @@ export function Benchmarks() {
           <div className="mb-16 grid grid-cols-1 items-end gap-8 md:grid-cols-12">
             <div className="md:col-span-5">
               <h2 className="text-3xl font-semibold leading-tight md:text-4xl">
-                Fast first answer, <br />
-                <span className="heading-gradient bg-clip-text text-transparent">measured in real runs.</span>
+                Earlier performance sketch, <br />
+                <span className="heading-gradient bg-clip-text text-transparent">historical illustration.</span>
               </h2>
             </div>
             <div className="flex items-end justify-between border-b border-white/10 pb-2 md:col-span-7">
-              <span className="font-mono text-xs text-accent-violet">Ralph benchmark snapshot</span>
+              <span className="font-mono text-xs text-accent-violet">Illustrative figures · not current CLI measurements</span>
               <span className="font-mono text-xs text-fg-muted opacity-50">
                 {benchmarkData.corpus.files.toLocaleString()} files • Tier {benchmarkData.corpus.tier}
               </span>
@@ -99,7 +99,7 @@ export function Benchmarks() {
                 </div>
 
                 <div className="mt-4 border-t border-white/10 pt-4 text-[10px] font-mono text-fg-muted opacity-60">
-                  Source: {benchmarkData.source}
+                  Historical source: {benchmarkData.source}. Current verified conditions and results are in reports/restoration/GATE3.md; these illustrative values are not a current performance guarantee.
                 </div>
               </div>
             </div>

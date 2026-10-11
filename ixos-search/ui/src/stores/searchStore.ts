@@ -301,11 +301,8 @@ export const useSearchStore = create<SearchState>((set, get) => ({
                         const lowered = event.message.toLowerCase();
                         const askModeActivated = lowered.includes('ask mode active') ||
                             lowered.includes('understanding your question');
-                        const askModeLocked = lowered.includes('ask mode requires pro');
                         return {
-                            isAskModeActive: askModeLocked
-                                ? false
-                                : state.isAskModeActive || askModeActivated,
+                            isAskModeActive: state.isAskModeActive || askModeActivated,
                         };
                     })(),
                     statusMessage: event.message,
@@ -463,7 +460,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
                         // Silent failure - activity logging is non-critical
                     });
                 }
-                // Auto-recluster workstreams after search completes (Pro feature)
+                // Auto-recluster local workstreams after search completes.
                 // This ensures the Today Tab stays up-to-date without manual intervention
                 tauri.reclusterWorkstreams().catch(() => {
                     // Reclustering is optional; search remains usable if it fails

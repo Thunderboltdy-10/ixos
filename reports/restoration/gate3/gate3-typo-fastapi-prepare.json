@@ -1,0 +1,6 @@
+{
+  "source_manifest_sha256": "6e54dc2d2174e0d1d88610cfceb100ab50c92d976520330a21438fbbbbab862e",
+  "derived_manifest_sha256": "df454c388a6301234c9c11cb3430c9f2f0326bbd123935ed296097d6f7c381f9",
+  "queries": 15,
+  "rule": "one internal adjacent transposition in the longest eligible ordinary lowercase word"
+}

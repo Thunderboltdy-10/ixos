@@ -1,36 +1,5 @@
-# Ixos Phase 1 Bench Harness
+# Benchmarks and fixtures
 
-This folder holds the Phase 1 benchmark harness (fixtures, budgets, and results).
+Canonical retrieval quality/output/timing protocol: [eval/README.md](../eval/README.md). Frozen final results: [Gate 3](../reports/restoration/GATE3.md). Source/model/config identity and exact request/cache conditions accompany each claim.
 
-## Run perf suite (small/medium/huge)
-
-```powershell
-cargo run --bin ixos-perf-suite -- --config bench/perf_suite.toml
-```
-
-Output: `bench/results/PERF_REGRESSION.json`
-
-## Check perf budgets
-
-```powershell
-python scripts/check_perf_budget.py --report bench/results/PERF_REGRESSION.json --budget bench/perf_budget.json
-```
-
-## Run end-to-end benchmark on real corpus
-
-```powershell
-cargo run --bin ixos-bench -- --dir dataset --runs 5 --cache-mode ephemeral --model ixos-flash-v2 --out bench/results/PERF_JIT.md
-cargo run --bin ixos-bench -- --dir dataset --runs 5 --cache-mode native-cache --model ixos-flash-v2 --out bench/results/PERF_CACHE.md
-```
-
-## Slow query profiler (opt-in, real corpus)
-
-```powershell
-cargo run --bin ixos-profile -- --dir dataset --runs 6 --cache-mode ephemeral --model ixos-flash-v2 --slow-threshold-ms 1500 --slow-out bench/results/slow_queries.json
-```
-
-## Notes
-
-- All benchmarks use **real models** (no stub models). If a model is missing, commands fail.
-- Synthetic corpora are generated under `target/perf_corpus/`.
-- Update `bench/perf_budget.json` after you establish baselines on your primary machine.
+Existing Rust `benches/`, `bench/` utilities and root `corpus_tiny`, `corpus_medium`, `corpus_edgecases`, `golden_data` fixtures are historical microbenchmarks/authored checks. They do not replace held-out source/evidence evaluation or establish public leaderboard performance. The older guide is preserved under `docs/archive/pre-restoration/bench/README.md`.

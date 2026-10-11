@@ -9,28 +9,28 @@ const PIPELINE_STAGES = [
   {
     stage: "01",
     title: "Scan",
-    desc: "Rust file-watcher daemon monitors your project in real-time. Rate-limited at 100 events/sec with dedup and symlink protection. Changes are captured instantly.",
+    desc: "An on-demand ignore-aware walk discovers eligible files. Complete bounded source bytes are hashed on every request, including cache hits.",
     color: "#F6B94C",
     tag: "FS_WATCH",
   },
   {
     stage: "02",
     title: "Lexical",
-    desc: "BM25-powered keyword matching with parallel Rayon processing. Pre-filters millions of tokens across your entire directory tree in under 10ms.",
+    desc: "BM25 uses complete extracted source text and path terms. Exact identifiers retain lexical evidence; bounded parallel I/O prepares source snapshots.",
     color: "#14B8A6",
     tag: "BM25_ENGINE",
   },
   {
     stage: "03",
     title: "Semantic",
-    desc: "Model2Vec embeddings generated locally via ONNX runtime. Cosine similarity ranking surfaces intent-matching results that keyword search alone would miss.",
+    desc: "Static embeddings run locally on CPU through model2vec-rs. Code stores bounded representatives; documents pool full token input. Compact vectors can miss or dilute rare topics.",
     color: "#7C5CFF",
     tag: "EMBED_LOCAL",
   },
   {
     stage: "04",
     title: "Locked",
-    desc: "Final hybrid score fuses lexical, semantic, and quality signals. Results are integrity-verified with behavioral scoring and attack detection. Deterministic output.",
+    desc: "Hybrid ranking combines normalized BM25 and semantic cosine. Bounded results include exact source views; scores are rankings, not confidence probabilities.",
     color: "#F6B94C",
     tag: "HYBRID_LOCK",
   },
@@ -45,7 +45,7 @@ const SECURITY_FEATURES = [
   },
   {
     metric: "mlock memory protection",
-    detail: "Sensitive buffers locked in RAM and zeroized on drop. Never swapped to disk.",
+    detail: "Legacy protected-buffer facilities are available. The current engine does not claim that all model and source allocations are locked or never swapped.",
     color: "#14B8A6",
     tag: "SECMEM",
   },
@@ -57,13 +57,17 @@ const SECURITY_FEATURES = [
   },
 ];
 
-const CACHE_FORMAT = `[version:u8]           1 byte
-[model_fingerprint:32b] 32 bytes
-[file_hash:32b]         32 bytes
-[embedding:128b]        128 bytes  (64-dim × f16)
-[signature:32b]         32 bytes   (HMAC-SHA256)
+const CACHE_FORMAT = `[magic:IXD1]           4 bytes
+[recipe fingerprint]  32 bytes
+[source fingerprint]  32 bytes
+[dimensions/count]     3 bytes
+[each vector]         28 + dimensions bytes
+[HMAC-SHA256]         32 bytes
 ────────────────────────────────
-Total:                  225 bytes per entry`;
+Total: 103 + count × (28 + dimensions)
+Code: eight × 256d = 2,375 bytes
+Documents: one × 512d = 643 bytes
+Filesystem allocation overhead is additional`;
 
 import { useState } from "react";
 
@@ -76,7 +80,7 @@ const COMP_FEATURES = [
   { feature: "Hybrid retrieval", ixos: "yes", grep: "no", spotlight: "no", vscode: "no", note: 'Lexical + semantic in a single pass.' },
   { feature: "Cryptographic cache signing", ixos: "yes", grep: "no", spotlight: "no", vscode: "no", note: 'HMAC-SHA256 on every cached embedding.' },
   { feature: "Cross-platform", ixos: "yes", grep: "yes", spotlight: "no", vscode: "yes", note: 'Windows, macOS, Linux. Spotlight is macOS-only.' },
-  { feature: "Natural language queries", ixos: "pro", grep: "no", spotlight: "no", vscode: "no", note: 'Pro tier only.' },
+  { feature: "Natural language queries", ixos: "yes", grep: "no", spotlight: "no", vscode: "no", note: 'Free concept search and retained Ask facilities.' },
 ];
 
 type CellValue = "yes" | "no" | "partial" | "pro";
@@ -188,7 +192,7 @@ export default function DevelopersPage() {
                   className="text-3xl md:text-4xl font-semibold font-display text-white"
                   style={{ letterSpacing: "-0.02em", lineHeight: 1.1 }}
                 >
-                  225 bytes per entry.
+                  Compact records, complete dimensions.
                 </h2>
               </div>
             </FadeInView>
@@ -198,7 +202,7 @@ export default function DevelopersPage() {
                 <CornerBrackets size={14} color="rgba(246,185,76,0.12)" />
                 <div className="px-5 py-3 border-b border-amber-400/8 bg-amber-400/[0.02]">
                   <span className="font-mono text-xs text-amber-400/40 uppercase tracking-widest">
-                    embedding_cache.bin
+                    ADS / xattr document record
                   </span>
                 </div>
                 <pre className="p-6 font-mono text-[13px] leading-relaxed text-white/50 overflow-x-auto">
@@ -304,7 +308,7 @@ export default function DevelopersPage() {
                     { symbol: "■", label: "Supported", color: "rgba(246,185,76,0.7)" },
                     { symbol: "◐", label: "Partial", color: "rgba(245,158,11,0.6)" },
                     { symbol: "—", label: "Not supported", color: "rgba(255,255,255,0.2)" },
-                    { symbol: "◆", label: "Pro tier", color: "#F6B94C" },
+                    { symbol: "◆", label: "Optional advanced", color: "#F6B94C" },
                   ].map((item) => (
                     <div key={item.label} className="font-mono" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, color: "rgba(255,255,255,0.25)" }}>
                       <span style={{ color: item.color, fontSize: 12 }}>{item.symbol}</span>

@@ -11,6 +11,7 @@
 //! - `compliance` - Privacy and compliance management
 //! - `version` - Show version and diagnostics
 
+use super::retrieval_config::RetrievalProfile;
 use crate::retrieval::record::Representation;
 use crate::retrieval::{RetrievalMode, SessionPolicy};
 use clap::{Parser, Subcommand, ValueEnum};
@@ -125,6 +126,9 @@ pub enum Commands {
     Search {
         /// Search query
         query: String,
+        /// Task profile; explicit retrieval settings/flags override profile choices
+        #[arg(long, value_enum)]
+        profile: Option<RetrievalProfile>,
 
         /// Retrieval engine: lexical, semantic, hybrid, or historical legacy
         #[arg(long, value_enum)]
@@ -135,14 +139,14 @@ pub enum Commands {
         model_path: Option<PathBuf>,
 
         /// Bounded workers for measured source/ADS reads (1..8)
-        #[arg(long, default_value_t = 1)]
-        io_workers: usize,
-        /// Recover a unique ordinary-word transposition from live corpus terms
         #[arg(long)]
-        typo_correction: bool,
+        io_workers: Option<usize>,
+        /// Recover a unique ordinary-word transposition from live corpus terms
+        #[arg(long, num_args = 0..=1, default_missing_value = "true")]
+        typo_correction: Option<bool>,
 
         /// Query-independent document representation
-        #[arg(long, value_enum, requires = "retrieval")]
+        #[arg(long, value_enum)]
         representation: Option<Representation>,
 
         /// Maximum number of results to return
@@ -215,7 +219,7 @@ pub enum Commands {
         #[arg(long)]
         secure_timing: bool,
 
-        /// Number of lines of context to show around matches (default: 5)
+        /// Lines of surrounding source; defaults come from the retrieval config
         #[arg(short = 'C', long)]
         context: Option<usize>,
 
@@ -242,18 +246,25 @@ pub enum Commands {
         dir: PathBuf,
         #[arg(long)]
         model_path: Option<PathBuf>,
-        #[arg(long, default_value_t = 1)]
-        io_workers: usize,
-        #[arg(long, value_enum, default_value = "hybrid")]
-        retrieval: RetrievalMode,
-        #[arg(long, value_enum, default_value = "intro-uniform")]
-        representation: Representation,
-        #[arg(long, value_enum, default_value = "off")]
-        session: SessionPolicy,
+        #[arg(long, value_enum)]
+        profile: Option<RetrievalProfile>,
+        #[arg(long)]
+        io_workers: Option<usize>,
+        #[arg(long, value_enum)]
+        retrieval: Option<RetrievalMode>,
+        #[arg(long, value_enum)]
+        representation: Option<Representation>,
+        #[arg(long, value_enum)]
+        session: Option<SessionPolicy>,
+        #[arg(long, num_args = 0..=1, default_missing_value = "true")]
+        typo_correction: Option<bool>,
+        /// Suppress routine stderr diagnostics; individual searches can set stats:true
+        #[arg(long)]
+        quiet_stats: bool,
         #[arg(long)]
         jit: bool,
-        #[arg(long, default_value_t = 12000)]
-        max_output_bytes: usize,
+        #[arg(long)]
+        max_output_bytes: Option<usize>,
     },
 
     /// Read exact lines from a source file, with an explicit output budget
@@ -292,7 +303,7 @@ pub enum Commands {
         max_output_bytes: usize,
     },
 
-    /// Index directories for faster search
+    /// Fill retained legacy vectors; use cache warm for current profiles
     Index {
         /// Directories to index
         dirs: Vec<PathBuf>,
@@ -380,14 +391,14 @@ pub enum Commands {
         verbose: bool,
     },
 
-    /// Run release readiness checks (stub; full flow in Phase 7)
+    /// Show the release checklist (returns failure until checks are established)
     ReleaseCheck {
         /// Skip long-running suites
         #[arg(long)]
         quick: bool,
     },
 
-    /// Download and manage embedding models
+    /// Manage retained legacy models (current setup: scripts/setup_models.py)
     Model {
         /// Model action
         #[command(subcommand)]
@@ -460,6 +471,19 @@ impl From<CliOutputFormat> for super::output::OutputFormat {
 /// Cache management subcommands
 #[derive(Subcommand, Debug)]
 pub enum CacheCommands {
+    /// Fill current document records, using the configured task profile
+    Warm {
+        #[arg(short, long, default_value = ".")]
+        dir: PathBuf,
+        #[arg(long, value_enum)]
+        profile: Option<RetrievalProfile>,
+        #[arg(long)]
+        model_path: Option<PathBuf>,
+        #[arg(long, value_enum)]
+        representation: Option<Representation>,
+        #[arg(long)]
+        io_workers: Option<usize>,
+    },
     /// Show cache statistics
     Stats {
         /// Directory to check (default: all watched directories)
@@ -469,6 +493,9 @@ pub enum CacheCommands {
         /// Output as JSON
         #[arg(long)]
         json: bool,
+        /// Inspect the retained legacy embedding namespace and selected Flash model
+        #[arg(long)]
+        legacy: bool,
     },
 
     /// Clear cached embeddings

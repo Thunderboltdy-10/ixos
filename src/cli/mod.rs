@@ -36,6 +36,7 @@
 pub mod commands;
 pub mod config;
 pub mod output;
+pub mod retrieval_config;
 pub mod self_update;
 
 // Re-exports for convenience
@@ -48,3 +49,4 @@ pub use config::{
     ConfigError, IndexConfig, IxosConfig, OutputConfig, SearchConfig, SecurityConfig,
 };
 pub use output::{create_formatter, create_formatter_with_options, OutputFormat, OutputFormatter};
+pub use retrieval_config::{RetrievalConfig, RetrievalProfile};

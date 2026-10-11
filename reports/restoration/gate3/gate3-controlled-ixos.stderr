@@ -1,0 +1,29 @@
+warning: in the working copy of 'RUNLOG.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/cli/output.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/ixos_embed/chunker.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/ixos_rank/snippet.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/main.rs', LF will be replaced by CRLF the next time Git touches it
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\pablo\Downloads\Ixos\eval\run.py", line 188, in <module>
+    main()
+  File "C:\Users\pablo\Downloads\Ixos\eval\run.py", line 143, in main
+    response = run_ixos(args.binary,config,root,dataset,query.text,cache_mode="ephemeral" if args.cache=="jit" else "native-cache",limit=args.limit,context=args.context,output_bytes=args.output_bytes,extra_args=["--search-mode","flash","--model","ixos-flash-v2"],capture=capture)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\Downloads\Ixos\eval\backends.py", line 85, in run_ixos
+    paths, views, failures = decode_ixos(raw.stdout, root, dataset)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\Downloads\Ixos\eval\backends.py", line 40, in decode_ixos
+    messages = [json.loads(line) for line in stdout.decode("utf-8").splitlines() if line.strip()]
+                ^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\json\decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\json\decoder.py", line 354, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Unterminated string starting at: line 1 column 1090 (char 1089)

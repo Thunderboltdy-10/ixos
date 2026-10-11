@@ -61,8 +61,8 @@ const FEATURES: Feature[] = [
   },
   {
     feature: 'Natural language queries',
-    ixos: 'pro', grep: 'no', spotlight: 'no', vscode: 'no',
-    note: 'Pro tier. Planned feature.',
+    ixos: 'yes', grep: 'no', spotlight: 'no', vscode: 'no',
+    note: 'Free concept retrieval; retained Ask intent/evidence pipeline.',
   },
 ]
 
@@ -115,8 +115,8 @@ function Symbol({
   // pro
   return (
     <span
-      aria-label="Pro tier"
-      title="Pro tier feature"
+      aria-label="Optional advanced"
+      title="Optional advanced feature"
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -393,7 +393,7 @@ export function V4Comparison() {
               { symbol: '■', label: 'Supported', color: 'rgba(45,212,191,0.7)' },
               { symbol: '◐', label: 'Partial', color: 'rgba(245,158,11,0.6)' },
               { symbol: '—', label: 'Not supported', color: 'rgba(255,255,255,0.25)' },
-              { symbol: '◆', label: 'Pro tier', color: '#7C3AED' },
+              { symbol: '◆', label: 'Optional advanced', color: '#7C3AED' },
             ].map((item) => (
               <div
                 key={item.label}

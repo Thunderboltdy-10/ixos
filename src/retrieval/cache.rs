@@ -73,7 +73,11 @@ impl DocumentCache {
         let data = {
             let (env, db) = self.database().ok()?;
             let txn = env.read_txn().ok()?;
-            db.get(&txn, &key).ok()??.to_vec()
+            let stored = db.get(&txn, &key).ok()??;
+            if stored.len() > MAX_RECORD {
+                return None;
+            }
+            stored.to_vec()
         };
         decode(&data, &self.key, &self.recipe, source)
             .ok()
@@ -95,6 +99,50 @@ impl DocumentCache {
         db.put(&mut txn, &key, &data)?;
         txn.commit()?;
         Ok("application-db")
+    }
+    /// Inspect signed current-source records without loading a particular model.
+    /// Validity here is not a promise that the next search's recipe will match.
+    pub fn inspect(&mut self, path: &Path, source: &[u8; 32], text: &str) -> (bool, bool, usize) {
+        let native = native_read(path).ok().flatten();
+        let fallback = (|| -> Option<Vec<u8>> {
+            let exists = dirs::cache_dir()?
+                .join("ixos/documents-v1/data.mdb")
+                .exists();
+            if !exists && self.fallback.is_none() {
+                return None;
+            }
+            let (env, db) = self.database().ok()?;
+            let txn = env.read_txn().ok()?;
+            Some(
+                db.get(&txn, &Self::path_key(path))
+                    .ok()??
+                    .iter()
+                    .take(MAX_RECORD + 1)
+                    .copied()
+                    .collect(),
+            )
+        })();
+        let mut present = false;
+        let mut size = 0;
+        for data in native.into_iter().chain(fallback) {
+            present = true;
+            size = data.len();
+            let Some(recipe) = data.get(4..36).and_then(|s| <[u8; 32]>::try_from(s).ok()) else {
+                continue;
+            };
+            if let Ok(rows) = decode(&data, &self.key, &recipe, source) {
+                if rows.iter().all(|p| {
+                    p.end_byte <= text.len()
+                        && text.is_char_boundary(p.start_byte)
+                        && text.is_char_boundary(p.end_byte)
+                        && p.end_line <= text.split('\n').count()
+                        && p.vector.iter().all(|v| v.is_finite())
+                }) {
+                    return (true, true, size);
+                }
+            }
+        }
+        (present, false, size)
     }
     pub fn remove_fallback(&mut self, path: &Path) {
         if let Some((env, db)) = &self.fallback {

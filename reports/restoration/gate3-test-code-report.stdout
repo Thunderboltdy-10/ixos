@@ -1,6 +1,0 @@
-code-jit: nDCG=0.695682, MRR=0.645278, p50/p95=271.83/310.12ms, stdout/total=728.8/1066.8 tokens
-code-native-warm: nDCG=0.695682, MRR=0.645278, p50/p95=244.32/280.93ms, stdout/total=729.5/1067.2 tokens
-code-bm25: nDCG=0.639743, MRR=0.583571, p50/p95=13.41/17.64ms, stdout/total=779.7/779.7 tokens
-code-rg: nDCG=0.570616, MRR=0.527321, p50/p95=27.84/46.08ms, stdout/total=728.5/728.5 tokens
-code-lexical: nDCG=0.639743, MRR=0.583571, p50/p95=43.83/53.24ms, stdout/total=731.7/1025.6 tokens
-code-flash-legacy: nDCG=0.455079, MRR=0.421759, p50/p95=193.48/225.21ms, stdout/total=997.5/1239.3 tokens

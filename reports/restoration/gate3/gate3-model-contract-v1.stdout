@@ -1,0 +1,65 @@
+[
+  {
+    "model": "potion-code-16M-v2-unbounded",
+    "artifact": {
+      "path": "C:\\Users\\pablo\\Downloads\\Ixos\\models\\lab\\artifacts\\potion-code-16M-v2-unbounded",
+      "files": {
+        "model.safetensors": "75cf7a6c2171b230ad19b1e7d8e0b1aee86da5a02af8e7cacedd9921d227623c",
+        "tokenizer.json": "936b2d026b9e81fb683eab537ea37c5a1a65a4d02ad9cb92ce269fb8bc561ebf",
+        "config.json": "148e5691a6fcc553437156859701fba017a1ba5d340b170f17e0f3668fb861a7"
+      },
+      "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+      "file_bytes": 33514284,
+      "tokenizer_settings": {
+        "truncation": null,
+        "padding": null
+      }
+    },
+    "batch_max_abs_difference": 0.0,
+    "full_vs_prefix_l2": 0.7240281701087952,
+    "status": "passed",
+    "scope": "Synthetic invariants only, no relevance/quality claim"
+  },
+  {
+    "model": "ixos-flash-v2-unbounded",
+    "artifact": {
+      "path": "C:\\Users\\pablo\\Downloads\\Ixos\\models\\lab\\artifacts\\ixos-flash-v2-unbounded",
+      "files": {
+        "model.safetensors": "cfcdb24299494cd575b22617a1c334f61483d45697e812b160be8f9a3af5b483",
+        "tokenizer.json": "b910fcff6c72feb483e4b8b288b41fff61363fddeaa34e6c2f6aeea84030b11a",
+        "config.json": "18b0e36c1b5b792b6ca859855b87b6b783220382a4a37d12c4760c2a8c9b7f43"
+      },
+      "fingerprint": "a9bfd17acc7564c1129328ef33d027619bd9906c65fe0a531210344b69a4643a",
+      "file_bytes": 18502077,
+      "tokenizer_settings": {
+        "truncation": null,
+        "padding": null
+      }
+    },
+    "batch_max_abs_difference": 0.0,
+    "full_vs_prefix_l2": 0.739116907119751,
+    "status": "passed",
+    "scope": "Synthetic invariants only, no relevance/quality claim"
+  },
+  {
+    "model": "potion-retrieval-32M-row-int8",
+    "artifact": {
+      "path": "C:\\Users\\pablo\\Downloads\\Ixos\\models\\lab\\artifacts\\potion-retrieval-32M-row-int8",
+      "files": {
+        "model.safetensors": "f3a9a9297a228914ca7cd0dc9601616ccb81a198676172ff6ff52658f5251ee2",
+        "tokenizer.json": "7d75cbc54318138807c401b0f0c9721117c628b39de8e8e0edb6cb17e0ee7d18",
+        "config.json": "63c00d90824c832c04ec1d02b6a983fb90489bf049f29fbff15ba481b8a432ee"
+      },
+      "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+      "file_bytes": 34048476,
+      "tokenizer_settings": {
+        "truncation": null,
+        "padding": null
+      }
+    },
+    "batch_max_abs_difference": 0.0,
+    "full_vs_prefix_l2": 0.6937040686607361,
+    "status": "passed",
+    "scope": "Synthetic invariants only, no relevance/quality claim"
+  }
+]

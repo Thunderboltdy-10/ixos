@@ -1,0 +1,48 @@
+name: Build Pro Module
+
+on:
+  push:
+    tags:
+      - "pro-v*"
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build ixos CLI release binary
+        run: cargo build --locked --release --bin ixos
+
+      - name: Package module artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $binName = if ($env:RUNNER_OS -eq "Windows") { "ixos.exe" } else { "ixos" }
+          $source = Join-Path "target/release" $binName
+          if (!(Test-Path $source)) {
+            throw "Binary not found: $source"
+          }
+          $dest = Join-Path "dist" $binName
+          Copy-Item $source $dest -Force
+          if (Test-Path "README.md") {
+            Copy-Item "README.md" (Join-Path "dist" "README.md") -Force
+          }
+          if (Test-Path "LICENSE") {
+            Copy-Item "LICENSE" (Join-Path "dist" "LICENSE") -Force
+          }
+          $hash = (Get-FileHash -Path $dest -Algorithm SHA256).Hash.ToLower()
+          Set-Content -Path (Join-Path "dist" "$binName.sha256") -Value "$hash  $binName"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ixos-pro-${{ matrix.os }}
+          path: dist

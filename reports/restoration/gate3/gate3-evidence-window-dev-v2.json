@@ -1,0 +1,317 @@
+[
+  {
+    "dataset": "ixos-controlled-independent",
+    "style": "line",
+    "metrics": {
+      "ndcg": {
+        "mean": 0.9209936139610416,
+        "ci95": [
+          0.8084353873376703,
+          1.0
+        ],
+        "families": 11,
+        "queries": 11
+      },
+      "span_recall": {
+        "mean": 0.9818181818181819,
+        "ci95": [
+          0.9454545454545454,
+          1.0
+        ],
+        "families": 11,
+        "queries": 11
+      },
+      "span_precision": {
+        "mean": 0.3230628725688014,
+        "ci95": [
+          0.2026983885679538,
+          0.46191460055096417
+        ],
+        "families": 11,
+        "queries": 11
+      },
+      "false_positive": {
+        "mean": 0.5,
+        "ci95": [
+          0.0,
+          1.0
+        ],
+        "families": 2,
+        "queries": 2
+      }
+    },
+    "stdout_tokens": 281.7692307692308
+  },
+  {
+    "dataset": "ixos-controlled-independent",
+    "style": "window",
+    "metrics": {
+      "ndcg": {
+        "mean": 0.9209936139610416,
+        "ci95": [
+          0.8084353873376703,
+          1.0
+        ],
+        "families": 11,
+        "queries": 11
+      },
+      "span_recall": {
+        "mean": 0.7484848484848484,
+        "ci95": [
+          0.5878787878787879,
+          0.9090909090909091
+        ],
+        "families": 11,
+        "queries": 11
+      },
+      "span_precision": {
+        "mean": 0.2586612882067427,
+        "ci95": [
+          0.14891774891774892,
+          0.39155844155844155
+        ],
+        "families": 11,
+        "queries": 11
+      },
+      "false_positive": {
+        "mean": 0.5,
+        "ci95": [
+          0.0,
+          1.0
+        ],
+        "families": 2,
+        "queries": 2
+      }
+    },
+    "stdout_tokens": 277.0769230769231
+  },
+  {
+    "dataset": "ixos-controlled-independent",
+    "style": "window-center",
+    "metrics": {
+      "ndcg": {
+        "mean": 0.9209936139610416,
+        "ci95": [
+          0.8084353873376703,
+          1.0
+        ],
+        "families": 11,
+        "queries": 11
+      },
+      "span_recall": {
+        "mean": 0.9818181818181819,
+        "ci95": [
+          0.9454545454545454,
+          1.0
+        ],
+        "families": 11,
+        "queries": 11
+      },
+      "span_precision": {
+        "mean": 0.3230628725688014,
+        "ci95": [
+          0.2026983885679538,
+          0.46191460055096417
+        ],
+        "families": 11,
+        "queries": 11
+      },
+      "false_positive": {
+        "mean": 0.5,
+        "ci95": [
+          0.0,
+          1.0
+        ],
+        "families": 2,
+        "queries": 2
+      }
+    },
+    "stdout_tokens": 281.7692307692308
+  },
+  {
+    "dataset": "semble-fastapi",
+    "style": "line",
+    "metrics": {
+      "ndcg": {
+        "mean": 0.7256058420966206,
+        "ci95": null,
+        "families": 1,
+        "queries": 20
+      },
+      "span_recall": {
+        "mean": 0.15,
+        "ci95": null,
+        "families": 1,
+        "queries": 5
+      },
+      "span_precision": {
+        "mean": 0.012,
+        "ci95": null,
+        "families": 1,
+        "queries": 5
+      },
+      "false_positive": {
+        "mean": null,
+        "ci95": null,
+        "families": 0,
+        "queries": 0
+      }
+    },
+    "stdout_tokens": 908.05
+  },
+  {
+    "dataset": "semble-fastapi",
+    "style": "window",
+    "metrics": {
+      "ndcg": {
+        "mean": 0.7256058420966206,
+        "ci95": null,
+        "families": 1,
+        "queries": 20
+      },
+      "span_recall": {
+        "mean": 0.05,
+        "ci95": null,
+        "families": 1,
+        "queries": 5
+      },
+      "span_precision": {
+        "mean": 0.004,
+        "ci95": null,
+        "families": 1,
+        "queries": 5
+      },
+      "false_positive": {
+        "mean": null,
+        "ci95": null,
+        "families": 0,
+        "queries": 0
+      }
+    },
+    "stdout_tokens": 908.55
+  },
+  {
+    "dataset": "semble-fastapi",
+    "style": "window-center",
+    "metrics": {
+      "ndcg": {
+        "mean": 0.7256058420966206,
+        "ci95": null,
+        "families": 1,
+        "queries": 20
+      },
+      "span_recall": {
+        "mean": 0.15,
+        "ci95": null,
+        "families": 1,
+        "queries": 5
+      },
+      "span_precision": {
+        "mean": 0.012,
+        "ci95": null,
+        "families": 1,
+        "queries": 5
+      },
+      "false_positive": {
+        "mean": null,
+        "ci95": null,
+        "families": 0,
+        "queries": 0
+      }
+    },
+    "stdout_tokens": 920.8
+  },
+  {
+    "dataset": "semble-serde",
+    "style": "line",
+    "metrics": {
+      "ndcg": {
+        "mean": 0.6386604064414602,
+        "ci95": null,
+        "families": 1,
+        "queries": 20
+      },
+      "span_recall": {
+        "mean": null,
+        "ci95": null,
+        "families": 0,
+        "queries": 0
+      },
+      "span_precision": {
+        "mean": null,
+        "ci95": null,
+        "families": 0,
+        "queries": 0
+      },
+      "false_positive": {
+        "mean": null,
+        "ci95": null,
+        "families": 0,
+        "queries": 0
+      }
+    },
+    "stdout_tokens": 1174.35
+  },
+  {
+    "dataset": "semble-serde",
+    "style": "window",
+    "metrics": {
+      "ndcg": {
+        "mean": 0.6386604064414602,
+        "ci95": null,
+        "families": 1,
+        "queries": 20
+      },
+      "span_recall": {
+        "mean": null,
+        "ci95": null,
+        "families": 0,
+        "queries": 0
+      },
+      "span_precision": {
+        "mean": null,
+        "ci95": null,
+        "families": 0,
+        "queries": 0
+      },
+      "false_positive": {
+        "mean": null,
+        "ci95": null,
+        "families": 0,
+        "queries": 0
+      }
+    },
+    "stdout_tokens": 1171.05
+  },
+  {
+    "dataset": "semble-serde",
+    "style": "window-center",
+    "metrics": {
+      "ndcg": {
+        "mean": 0.6386604064414602,
+        "ci95": null,
+        "families": 1,
+        "queries": 20
+      },
+      "span_recall": {
+        "mean": null,
+        "ci95": null,
+        "families": 0,
+        "queries": 0
+      },
+      "span_precision": {
+        "mean": null,
+        "ci95": null,
+        "families": 0,
+        "queries": 0
+      },
+      "false_positive": {
+        "mean": null,
+        "ci95": null,
+        "families": 0,
+        "queries": 0
+      }
+    },
+    "stdout_tokens": 1187.95
+  }
+]

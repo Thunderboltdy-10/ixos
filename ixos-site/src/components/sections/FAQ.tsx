@@ -79,6 +79,6 @@ const faqItems = [
     },
     {
         question: "What is Deep Search Mode?",
-        answer: "Deep Search Mode is a Pro feature that reads more files, expands candidate limits, and cross-references more evidence for tougher questions. It is slower than standard search but much more comprehensive.",
+        answer: "Deep Search is a free option in the retained desktop pipeline. It expands candidate limits and evidence work for tougher questions, so it can take longer. The current CLI offers explicit lexical, semantic and hybrid retrieval profiles.",
     },
 ];

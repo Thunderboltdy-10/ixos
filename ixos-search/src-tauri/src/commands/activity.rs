@@ -314,7 +314,7 @@ impl From<MoveRecommendation> for MoveRecommendationPayload {
 /// Log an activity event
 ///
 /// This is called from the frontend whenever a user action occurs.
-/// Activity is always tracked in memory; persistence requires Pro.
+/// Activity is tracked in memory; persistence is a local opt-in setting.
 #[tauri::command]
 pub fn log_activity(
     request: LogActivityRequest,

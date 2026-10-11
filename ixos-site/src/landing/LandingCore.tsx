@@ -346,7 +346,7 @@ function LandingPageInner({ Connector }: { Connector: ConnectorComponent }) {
                 index={13}
                 sectionId="open-source"
                 rank="14"
-                file="docs/product/PRICING.md"
+                file="docs/FEATURES.md"
                 tone="cyan"
                 title="free local access"
                 isRevealed={maxRevealedIndex >= 13}

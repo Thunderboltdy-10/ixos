@@ -1,0 +1,7 @@
+potion-retrieval-32M-row-int8: semble-fastapi intro-uniform; 142/427 passages
+potion-retrieval-32M-row-int8: semble-fastapi whole-token-centroid; 46/427 passages
+potion-retrieval-32M-row-int8: semble-serde intro-uniform; 449/869 passages
+potion-retrieval-32M-row-int8: semble-serde whole-token-centroid; 219/869 passages
+potion-retrieval-32M-row-int8: beir-scifact intro-uniform; 6554/6558 passages
+potion-retrieval-32M-row-int8: beir-scifact whole-token-centroid; 5183/6558 passages
+Completed 18 dataset/configuration screens; unique queries are reported separately.

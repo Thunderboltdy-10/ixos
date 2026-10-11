@@ -302,6 +302,9 @@ pub enum Commands {
         fixed: bool,
         #[arg(short = 'i', long)]
         ignore_case: bool,
+        /// Spread a compact result limit across files; omit for all within-file matches
+        #[arg(long)]
+        max_matches_per_file: Option<usize>,
         #[arg(short = 'C', long, default_value_t = 2)]
         context: usize,
         #[arg(short, long, default_value_t = 20)]

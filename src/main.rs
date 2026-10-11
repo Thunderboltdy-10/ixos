@@ -291,11 +291,12 @@ async fn main() -> anyhow::Result<()> {
             dir,
             fixed,
             ignore_case,
+            max_matches_per_file,
             context,
             limit,
             max_output_bytes,
         } => {
-            let (raw, stats) = ixos_protocol::retrieval::commands::grep(
+            let (raw, stats) = ixos_protocol::retrieval::commands::grep_with_file_cap(
                 &dir,
                 &pattern,
                 fixed,
@@ -303,6 +304,7 @@ async fn main() -> anyhow::Result<()> {
                 context,
                 limit,
                 max_output_bytes,
+                max_matches_per_file,
             )?;
             stdout().write_all(&raw)?;
             if cli.verbose {

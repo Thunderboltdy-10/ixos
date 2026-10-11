@@ -1,0 +1,15 @@
+2026-10-11T21:16:59.019289Z DEBUG ignore::gitignore: opened gitignore file: C:\Users\pablo\.config\git/ignore
+2026-10-11T21:16:59.019377Z DEBUG globset: built glob set; 1 literals, 0 basenames, 0 extensions, 0 prefixes, 1 suffixes, 0 required extensions, 0 regexes
+2026-10-11T21:16:59.020013Z DEBUG ignore::gitignore: opened gitignore file: \\?\C:\Users\pablo\Downloads\Ixos\.gitignore
+2026-10-11T21:16:59.020103Z DEBUG globset: glob `Glob("models/**/*")` converted to regex: `"(?-u)^models(?:/|/.*/)[^/]*$"`
+2026-10-11T21:16:59.020114Z DEBUG globset: glob `Glob("**/.env.*")` converted to regex: `"(?-u)^(?:/?|.*/)\\.env\\.[^/]*$"`
+2026-10-11T21:16:59.020122Z DEBUG globset: built glob set; 5 literals, 18 basenames, 7 extensions, 0 prefixes, 0 suffixes, 2 required extensions, 2 regexes
+2026-10-11T21:16:59.020401Z DEBUG ignore::gitignore: opened gitignore file: \\?\C:\Users\pablo\Downloads\Ixos\.git\info\exclude
+2026-10-11T21:16:59.020444Z DEBUG globset: built glob set; 1 literals, 0 basenames, 0 extensions, 0 prefixes, 0 suffixes, 0 required extensions, 0 regexes
+2026-10-11T21:16:59.021010Z DEBUG ignore::gitignore: opened gitignore file: \\?\C:\Users\pablo\Downloads\Ixos\.tmp\gate20\data\sources\C01\.gitignore
+2026-10-11T21:16:59.021056Z DEBUG globset: built glob set; 4 literals, 2 basenames, 2 extensions, 0 prefixes, 0 suffixes, 0 required extensions, 0 regexes
+2026-10-11T21:16:59.021168Z DEBUG ignore::walk: ignoring \\?\C:\Users\pablo\Downloads\Ixos\.tmp\gate20\data\sources\C01\.dockerignore: Ignore(IgnoreMatch(Hidden))
+2026-10-11T21:16:59.021187Z DEBUG ignore::walk: ignoring \\?\C:\Users\pablo\Downloads\Ixos\.tmp\gate20\data\sources\C01\.gitignore: Ignore(IgnoreMatch(Hidden))
+2026-10-11T21:16:59.025168Z DEBUG ignore::gitignore: opened gitignore file: \\?\C:\Users\pablo\Downloads\Ixos\.tmp\gate20\data\sources\C01\tests\fixtures\no-composefile\.gitignore
+2026-10-11T21:16:59.025245Z DEBUG ignore::walk: ignoring \\?\C:\Users\pablo\Downloads\Ixos\.tmp\gate20\data\sources\C01\tests\fixtures\no-composefile\.gitignore: Ignore(IgnoreMatch(Hidden))
+{"filesSearched":119,"matchesSuppressedByFileCap":11,"matchingLines":19,"maxMatchesPerFile":1,"modelLoaded":false,"requestMs":17.2714,"returnedResults":5,"skippedFiles":5,"truncated":true}

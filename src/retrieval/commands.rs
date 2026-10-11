@@ -191,12 +191,37 @@ pub fn grep(
     limit: usize,
     budget: usize,
 ) -> anyhow::Result<(Vec<u8>, serde_json::Value)> {
+    grep_with_file_cap(
+        root,
+        pattern,
+        fixed,
+        ignore_case,
+        context,
+        limit,
+        budget,
+        None,
+    )
+}
+
+/// Limit displayed match coordinates per file without changing exact matching
+/// or the total matching-line count. None preserves the original grep contract.
+pub fn grep_with_file_cap(
+    root: &Path,
+    pattern: &str,
+    fixed: bool,
+    ignore_case: bool,
+    context: usize,
+    limit: usize,
+    budget: usize,
+    max_matches_per_file: Option<usize>,
+) -> anyhow::Result<(Vec<u8>, serde_json::Value)> {
     anyhow::ensure!(
         !pattern.is_empty()
             && pattern.len() <= 65536
             && context <= 1000
             && limit > 0
             && limit <= 10000
+            && max_matches_per_file.is_none_or(|cap| (1..=10000).contains(&cap))
             && budget >= 15,
         "Invalid grep request/budget"
     );
@@ -216,6 +241,7 @@ pub fn grep(
     let mut searched = 0;
     let mut skipped = 0;
     let mut matches = 0;
+    let mut suppressed_by_file_cap = 0;
     let mut entries: Vec<_> = search_walk(&root, true, true, false, None)
         .build()
         .filter_map(Result::ok)
@@ -249,6 +275,8 @@ pub fn grep(
             };
         searched += 1;
         let mut matching = Vec::new();
+        let mut file_matches = 0;
+        let retained_per_file = limit.min(max_matches_per_file.unwrap_or(limit));
         // Bound retained match coordinates; grep scans all eligible sources but
         // never emits an unbounded list or loads any embedding model.
         SearcherBuilder::new()
@@ -259,7 +287,11 @@ pub fn grep(
                 text.as_bytes(),
                 UTF8(|line_number, _| {
                     matches += 1;
-                    if matching.len() < limit {
+                    file_matches += 1;
+                    if max_matches_per_file.is_some_and(|cap| file_matches > cap) {
+                        suppressed_by_file_cap += 1;
+                    }
+                    if matching.len() < retained_per_file {
                         matching.push(line_number as usize);
                     }
                     Ok(true)
@@ -288,10 +320,12 @@ pub fn grep(
     }
     let retained = rows.len();
     let raw = rows.finish();
-    Ok((
-        raw,
-        json!({"filesSearched":searched,"skippedFiles":skipped,"matchingLines":matches,"returnedResults":retained,"truncated":matches>retained,"requestMs":began.elapsed().as_secs_f64()*1000.0,"modelLoaded":false}),
-    ))
+    let mut stats = json!({"filesSearched":searched,"skippedFiles":skipped,"matchingLines":matches,"returnedResults":retained,"truncated":matches>retained,"requestMs":began.elapsed().as_secs_f64()*1000.0,"modelLoaded":false});
+    if let Some(cap) = max_matches_per_file {
+        stats["maxMatchesPerFile"] = json!(cap);
+        stats["matchesSuppressedByFileCap"] = json!(suppressed_by_file_cap);
+    }
+    Ok((raw, stats))
 }
 
 pub fn print_human(raw: &[u8]) -> anyhow::Result<()> {
@@ -354,6 +388,8 @@ enum Request {
         fixed: bool,
         #[serde(default)]
         ignore_case: bool,
+        #[serde(default)]
+        max_matches_per_file: Option<usize>,
         #[serde(default)]
         stats: bool,
     },
@@ -476,9 +512,10 @@ pub fn serve_with_diagnostics(
                     pattern,
                     fixed,
                     ignore_case,
+                    max_matches_per_file,
                     stats: requested_stats,
                 } => {
-                    let (raw, stats) = grep(
+                    let (raw, stats) = grep_with_file_cap(
                         root,
                         &pattern,
                         fixed,
@@ -486,6 +523,7 @@ pub fn serve_with_diagnostics(
                         context,
                         limit,
                         budget.saturating_sub(300),
+                        max_matches_per_file,
                     )?;
                     if !quiet_stats || requested_stats {
                         eprintln!("{}", json!({"id":id,"type":"stats","diagnostics":stats}));
@@ -524,6 +562,68 @@ pub fn serve_with_diagnostics(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn grep_file_cap_spreads_results_without_changing_match_counts() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("a.txt"), "witness\nwitness\nwitness\n").unwrap();
+        std::fs::write(dir.path().join("b.txt"), "中😀 WITNESS\n").unwrap();
+        std::fs::write(dir.path().join("c.txt"), "witness\n").unwrap();
+        std::fs::write(dir.path().join(".gitignore"), "ignored.txt\n").unwrap();
+        std::fs::write(dir.path().join("ignored.txt"), "witness\n").unwrap();
+        let (original, original_stats) =
+            grep(dir.path(), "witness", true, true, 0, 3, 2000).unwrap();
+        let (default, _) =
+            grep_with_file_cap(dir.path(), "witness", true, true, 0, 3, 2000, None).unwrap();
+        assert_eq!(default, original);
+        let value: serde_json::Value = serde_json::from_slice(&original).unwrap();
+        assert!(value["results"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|row| row["path"] == "a.txt"));
+        let (raw, stats) =
+            grep_with_file_cap(dir.path(), "witness", true, true, 0, 3, 2000, Some(1)).unwrap();
+        let value: serde_json::Value = serde_json::from_slice(&raw).unwrap();
+        assert_eq!(value["results"][0]["path"], "a.txt");
+        assert_eq!(value["results"][1]["path"], "b.txt");
+        assert_eq!(value["results"][1]["view"]["text"], "中😀 WITNESS");
+        assert_eq!(value["results"][2]["path"], "c.txt");
+        assert_eq!(stats["matchingLines"], 5);
+        assert_eq!(stats["matchingLines"], original_stats["matchingLines"]);
+        assert_eq!(stats["matchesSuppressedByFileCap"], 2);
+        assert_eq!(stats["filesSearched"], 3);
+        assert_eq!(stats["truncated"], true);
+        assert_eq!(stats["modelLoaded"], false);
+    }
+
+    #[test]
+    fn grep_file_cap_validates_limits_and_preserves_file_only_budget() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("a.txt"),
+            format!("{} needle\n", "中😀".repeat(2000)),
+        )
+        .unwrap();
+        std::fs::write(dir.path().join("b.txt"), "needle\n").unwrap();
+        for cap in [0, 10001] {
+            assert!(
+                grep_with_file_cap(dir.path(), "needle", true, false, 2, 10, 512, Some(cap))
+                    .is_err()
+            );
+        }
+        let (raw, stats) =
+            grep_with_file_cap(dir.path(), "needle", true, false, 2, 10, 512, Some(1)).unwrap();
+        assert!(raw.len() <= 512);
+        let value: serde_json::Value = serde_json::from_slice(&raw).unwrap();
+        assert_eq!(value["results"][0]["evidence_omitted"], true);
+        assert!(value["results"][0].get("view").is_none());
+        assert_eq!(value["results"][1]["view"]["text"], "needle");
+        assert_eq!(stats["matchingLines"], 2);
+        assert_eq!(stats["matchesSuppressedByFileCap"], 0);
+        let (unbounded, _) = grep(dir.path(), "needle", true, false, 2, 10, 512).unwrap();
+        assert_eq!(raw, unbounded);
+    }
+
     #[test]
     fn grep_and_read_keep_unicode_lines_and_respect_ignores() {
         let dir = tempfile::tempdir().unwrap();

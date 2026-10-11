@@ -2,7 +2,7 @@
 
 Current working state, 2026-10-11. Earlier working plans/logs/decisions are preserved byte-for-byte in `docs/archive/restoration-pre-2026-10-10/`. Personal contribution/application/chat notes remain locally excluded under `private-process/`.
 
-Gates 1–19 are committed; Gate 20 human code-issue navigation is frozen and verified for its commit. Three original training issues require 19 actual CLI calls / 9,469 stdout tokens. FastAPI/pip source localization succeeds; Docker dependency update is missed. All three lack test patches, so no resolved-bug claim. Current engine/model/defaults remain unchanged. Next: measured optional per-file grep cap, followed by test-backed agent tasks and evidence/session experiments. Native Mac is deferred; credential remediation precedes publication.
+Gates 1–20 are committed; Gate 21 optional grep per-file cap is verified for its commit. Saved diagnostic: five rows expand from one to five distinct files at cap1, stdout407→370tokens, all19matching lines still counted. Seven default/control comparisons per OS and all28cross-platform output pairs agree; all sources preserved. Windows549core/16desktop/settings/13docs and Linux547core/settings pass; eight actual-model profile contracts each OS pass. No default/model promotion. Next: test-backed human code tasks and explicit source-inspection feedback/evidence experiments. Native Mac deferred; credential remediation precedes publication.
 
 ## Current instructions
 
@@ -368,3 +368,11 @@ Next three: commit Gate18; fresh label-blind multi-call task pilot with referenc
 - Five contracts pass, four before live tasks/one after reference scoring. Raw wire tokens and patch context verify. Existing current core547Windows/545Linux remains unchanged; no model/default/frozen evaluator edits.
 - Bottlenecks: compact grep budget can be exhausted by one file, evidence scope/interpretation, primary test-backed code-agent evaluation. Earlier QASPER pilot default0.10060/bounded0.15574byte recall; frozen RepoQA optional evidence +0.05258, no default promotion.
 - Next three tasks: commit Gate20; implement opt-in per-file grep cap with baseline/real-source/author-controlled correctness/cost checks; advance test-backed tasks and explicit inspection feedback/evidence experiments using fresh selection data.
+
+## STATE SNAPSHOT — Gate 21 implementation/verification
+
+- Gates19/20 committed `9541729` / `9411235`. G21 optional per-file grep cap is uncommitted: original grep wrapper/default/API unchanged; CLI --max-matches-per-file and resident max_matches_per_file accept1..10000, omitted/null unlimited per file up to global budget. All matching lines still counted; cap suppression stats explicit.
+- Baseline actual Docker tty|attach_socket query gives5rows/1distinctfile/19totalmatchinglines. Current Windows549core/16desktop/settings/13doc tests pass(6core/2docignored), release7aefee83a857f0592be6e320abe8729655ce2f35b2f18f3e9cc1204c96fb4c6f. Eight real code/doc profile contracts match G17control and preserve source; skill validates. No relevance/model/default tuning.
+- NativeLinux initial full-workspace attempt failed missing pkg-config/native desktop dependencies; logs preserved workspace-missing-deps. Scoped core/settings/current release build running session99597 using .tmp/gate21/build-linux-core.sh. No numeric benchmark has started; compiler/profile-contract overlap does not produce reported performance claims.
+- Next three tasks: finish Linux scoped tests/build; sequential saved-request/default/cap1/cap2 probe (sevenprocesses/arm,twoexcludedwarmups) and authored JSONL cap/error/source proof after compilers stop; final cross-platform source/binary/default-output audit, docs/report/memory and G21commit.
+- No processes for older tasks; six document/three code submissions remain frozen. Frozen eval SHA95afba09… and original held-out binary unchanged. Native Mac deferred, public key remediation outstanding, no publication/historyrewrite.

@@ -1,0 +1,7 @@
+{"id":"capped","results":[{"line":1,"path":"a.txt","view":{"end_line":1,"path":"a.txt","start_line":1,"text":"needle"}},{"line":1,"path":"b.txt","view":{"end_line":1,"path":"b.txt","start_line":1,"text":"🙂 needle"}},{"line":1,"path":"c.txt","view":{"end_line":1,"path":"c.txt","start_line":1,"text":"needle"}}]}
+{"message":"Invalid grep request/budget","type":"error"}
+{"message":"Invalid grep request/budget","type":"error"}
+{"message":"invalid type: string \"one\", expected usize","type":"error"}
+{"id":"default","results":[{"line":1,"path":"a.txt","view":{"end_line":1,"path":"a.txt","start_line":1,"text":"needle"}},{"line":2,"path":"a.txt","view":{"end_line":2,"path":"a.txt","start_line":2,"text":"needle"}},{"line":3,"path":"a.txt","view":{"end_line":3,"path":"a.txt","start_line":3,"text":"needle"}}]}
+{"id":"explicit-null","results":[{"line":1,"path":"a.txt","view":{"end_line":1,"path":"a.txt","start_line":1,"text":"needle"}},{"line":2,"path":"a.txt","view":{"end_line":2,"path":"a.txt","start_line":2,"text":"needle"}},{"line":3,"path":"a.txt","view":{"end_line":3,"path":"a.txt","start_line":3,"text":"needle"}}]}
+{"id":"no-match","results":[]}

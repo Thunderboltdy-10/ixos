@@ -121,3 +121,6 @@
 
 - KEEP (Gate20): human issue navigation with original source commits and frozen observed-only diagnoses. Treat patch-location coverage as proxy, not task resolution. Empty supplied test fields cannot support a resolved score. Preserve dependency-file miss and partial diagnosis scope.
 - EXPERIMENT NEXT: optional per-file grep match cap, prompted by five repeated early-file rows exhausting compact output. Preserve default exact ordering/matches and ability to inspect all within-file hits; measure result diversity, bytes/tokens and cost without relevance labels or pretending a re-run is a fresh agent task.
+
+- KEEP (Gate21): optional per-file grep match cap with unchanged defaults and full exact matching counts. It spreads a compact output budget across files and can omit useful later within-file matches; never imply relevance ranking or automatic quality improvement.
+- KEEP independent raw token/byte/latency reporting, invalid-request recovery, source integrity and both native platforms. Retain environment/harness failures. Do not call repeated consumed-source probes new agent labels or promote presets from one regex.

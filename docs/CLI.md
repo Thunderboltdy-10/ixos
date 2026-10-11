@@ -63,6 +63,7 @@ Use global `--config FILE` for an isolated configuration. Missing files use defa
 
 ```sh
 ixos grep 'PATTERN' --dir ROOT -C 2 --limit 10
+ixos grep 'PATTERN' --dir ROOT --limit 5 --max-matches-per-file 1
 ixos grep 'literal_symbol' --dir ROOT -F -i
 ixos grep --dir ROOT -F -- '--literal-option'
 ixos read relative/path.rs --dir ROOT --start 50 --lines 30 --max-output-bytes 6000
@@ -70,6 +71,8 @@ ixos read relative/path.txt --dir ROOT --start 1 --lines 1 --characters 1000 --c
 ```
 
 Grep and read always emit JSON; they do not take a `--json` flag. Grep uses embedded grep crates against extracted text, loads no model and honors discovery limits. It is a useful exact companion, not full syntax parity with standalone ripgrep. Read returns actual source hashes and coordinates; character mode supplies UTF-8 byte locators and the next character offset. Returned `evidence_omitted:true` is file-only evidence, never a complete answer span. PDF/Office coordinates address extracted text. Images/OCR and `.doc`/`.ppt` extraction are unsupported; raw RTF has limited fidelity.
+
+Grep defaults to path/line order and can return several matches from the same file. `--max-matches-per-file N` (1–10,000) caps displayed matches per file so a compact result limit can cover more files. Omit it for the existing behavior. It does not rank relevance, group overlapping views or guarantee every matching file appears within the total limit/byte budget. Every eligible source is still scanned; `matchingLines` counts all matches. Optional stats report `maxMatchesPerFile` and `matchesSuppressedByFileCap`, including matches that the global budget could also omit. In `serve`, a grep request can set `"max_matches_per_file":1`; omitted/null means no per-file cap, and the setting lasts only that request.
 
 ## Caching
 

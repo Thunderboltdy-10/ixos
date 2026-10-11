@@ -1,0 +1,31 @@
+{
+  "status": "prepared",
+  "train_rows": 19008,
+  "cases": [
+    {
+      "id": "C01",
+      "repo": "docker/compose",
+      "instance_id": "docker__compose-1688",
+      "base_commit": "81707ef1ad94403789166d2fe042c8a718a4c748",
+      "source_files": 127,
+      "source_bytes": 419566
+    },
+    {
+      "id": "C02",
+      "repo": "tiangolo/fastapi",
+      "instance_id": "tiangolo__fastapi-437",
+      "base_commit": "033bc2a6c9aec3a245eb1f1b4fadb2fbb7a514b8",
+      "source_files": 555,
+      "source_bytes": 5540671
+    },
+    {
+      "id": "C03",
+      "repo": "pypa/pip",
+      "instance_id": "pypa__pip-7348",
+      "base_commit": "44db4d81b2e4b6dbcfd4ff04af08859b4429da56",
+      "source_files": 853,
+      "source_bytes": 10643069
+    }
+  ],
+  "reference_columns_loaded": false
+}

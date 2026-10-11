@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "total_calls": 19,
+  "stdout_tokens": 9469,
+  "diagnostic_tokens": 2201,
+  "request_tokens": 1680,
+  "boundary": "Three training issue diagnoses; all lack supplied test patches. Localization is not resolution or independent factual grading. Insertion anchors use the next original line, previous at EOF. No thresholds/defaults selected."
+}
+C01 {'initial': {'changed_file_recall': 0.0, 'original_changed_or_insertion_anchor_line_recall': 0.0, 'covered_lines': 0, 'reference_lines': 2}, 'observed': {'changed_file_recall': 0.0, 'original_changed_or_insertion_anchor_line_recall': 0.0, 'covered_lines': 0, 'reference_lines': 2}, 'cited': {'changed_file_recall': 0.0, 'original_changed_or_insertion_anchor_line_recall': 0.0, 'covered_lines': 0, 'reference_lines': 2}} {'search': 2, 'grep': 4, 'read': 4}
+C02 {'initial': {'changed_file_recall': 1.0, 'original_changed_or_insertion_anchor_line_recall': 0.041666666666666664, 'covered_lines': 1, 'reference_lines': 24}, 'observed': {'changed_file_recall': 1.0, 'original_changed_or_insertion_anchor_line_recall': 0.5416666666666666, 'covered_lines': 13, 'reference_lines': 24}, 'cited': {'changed_file_recall': 1.0, 'original_changed_or_insertion_anchor_line_recall': 0.2916666666666667, 'covered_lines': 7, 'reference_lines': 24}} {'search': 1, 'grep': 1, 'read': 1}
+C03 {'initial': {'changed_file_recall': 0.0, 'original_changed_or_insertion_anchor_line_recall': 0.0, 'covered_lines': 0, 'reference_lines': 4}, 'observed': {'changed_file_recall': 1.0, 'original_changed_or_insertion_anchor_line_recall': 1.0, 'covered_lines': 4, 'reference_lines': 4}, 'cited': {'changed_file_recall': 1.0, 'original_changed_or_insertion_anchor_line_recall': 1.0, 'covered_lines': 4, 'reference_lines': 4}} {'search': 2, 'grep': 2, 'read': 2}

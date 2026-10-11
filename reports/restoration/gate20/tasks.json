@@ -1,0 +1,90 @@
+{
+  "dataset": "princeton-nlp/SWE-bench",
+  "revision": "e48e2bd1e9fecd5bbd641e9414ac59da9f2e69f6",
+  "split": "train",
+  "train_rows": 19008,
+  "excluded_lite_dev_repositories": [
+    "marshmallow-code/marshmallow",
+    "pvlib/pvlib-python",
+    "pydicom/pydicom",
+    "pylint-dev/astroid",
+    "pyvista/pyvista",
+    "sqlfluff/sqlfluff"
+  ],
+  "downloads": [
+    {
+      "url": "https://huggingface.co/datasets/princeton-nlp/SWE-bench/resolve/e48e2bd1e9fecd5bbd641e9414ac59da9f2e69f6/data/train-00000-of-00001.parquet",
+      "path": ".tmp\\gate20\\data\\train.parquet",
+      "sha256": "0ba403a7060af657e1f0476937a703726c07da15b759836694b16e553705a10f",
+      "bytes": 106606519
+    },
+    {
+      "url": "https://huggingface.co/datasets/princeton-nlp/SWE-bench_Lite/resolve/6ec7bb89b9342f664a54a6e0a6ea6501d3437cc2/data/dev-00000-of-00001.parquet",
+      "path": ".tmp\\gate20\\data\\lite-dev.parquet",
+      "sha256": "8312f321838051849d2fa7c6ca071244733a3e90bb517ff6ca8186f722199b5c",
+      "bytes": 119551
+    },
+    {
+      "url": "https://codeload.github.com/docker/compose/tar.gz/81707ef1ad94403789166d2fe042c8a718a4c748",
+      "path": ".tmp\\gate20\\data\\C01.tar.gz",
+      "sha256": "68e54931587548293c03aff89d7da094ef9d6d2fae84bce33df2d0f79defbf81",
+      "bytes": 101030
+    },
+    {
+      "url": "https://codeload.github.com/tiangolo/fastapi/tar.gz/033bc2a6c9aec3a245eb1f1b4fadb2fbb7a514b8",
+      "path": ".tmp\\gate20\\data\\C02.tar.gz",
+      "sha256": "9fced0168588ce2cfc821cbebd743f3e663277ad0f5605912b907aa406cce75f",
+      "bytes": 4304399
+    },
+    {
+      "url": "https://codeload.github.com/pypa/pip/tar.gz/44db4d81b2e4b6dbcfd4ff04af08859b4429da56",
+      "path": ".tmp\\gate20\\data\\C03.tar.gz",
+      "sha256": "b3a502350ecd7fd0badfd36effb226ea89e5054ccacad86f8e0e5b3cda90bdd1",
+      "bytes": 6429936
+    }
+  ],
+  "tasks": [
+    {
+      "repo": "docker/compose",
+      "instance_id": "docker__compose-1688",
+      "base_commit": "81707ef1ad94403789166d2fe042c8a718a4c748",
+      "problem_statement": "Output missing with container in TTY mode\nI'm trying to run several containers with TTY mode enabled (`tty: true` in config). When I enable TTY mode, commands such as `compose up` and `compose logs` do not show the container's output. However I can run `docker logs $cid` and the output shows up just fine.\nThe output does show up when the container exits, but not until then. And when it does show up, the first several bytes of the stream are missing. For example:\n\n```\nhello:\n  image: busybox\n  command: sh -c 'echo hello world; sleep 2; echo done'\n  tty: true\n```\n\n```\n# compose up\nRecreating code_hello_1...\nAttaching to code_hello_1\nhello_1 | rld\nhello_1 | done\ncode_hello_1 exited with code 0\nGracefully stopping... (press Ctrl+C again to force)\n```\n\nBoth lines showed up at the exact same time instead of having a 2 second pause, and note that the `hello wo` is missing.\n\nThis is using current master https://github.com/docker/compose/commit/43369cda9ce5f0fe4860c7160cfa6550d31e2417\n\n",
+      "id": "C01",
+      "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate20\\data\\sources\\C01",
+      "inventory_path": "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate20\\C01-source-inventory.json",
+      "inventory_identity": "63f163ae3c82c3f254b901778c6fa855778f906064ee9c9b0b0673138d7baaa6",
+      "source_files": 127,
+      "source_bytes": 419566,
+      "excluded_links": []
+    },
+    {
+      "repo": "tiangolo/fastapi",
+      "instance_id": "tiangolo__fastapi-437",
+      "base_commit": "033bc2a6c9aec3a245eb1f1b4fadb2fbb7a514b8",
+      "problem_statement": "OpenAPI: HTTP_422 response does not use custom media_type\n**Describe the bug**\r\nFastAPI automatically adds an HTTP_422 response to all paths in the OpenAPI specification that have parameters or request body. This response does not use the media_type of response_class if any custom defined. Furthermore, it overwrites any error object format with the default one.\r\n\r\n**To Reproduce**\r\nCreate a path with parameters and add custom response_class to decorator. Add custom exception handlers that reformat the default error responses as per your liking. Then observe generated openapi.json\r\n\r\n```python\r\nfrom fastapi import FastAPI, HTTPException\r\nfrom fastapi.exceptions import RequestValidationError\r\nfrom starlette import status\r\nfrom starlette.responses import JSONResponse\r\nfrom . import schemas\r\n\r\napp = FastAPI()\r\n\r\nclass JsonApiResponse(JSONResponse):\r\n    media_type = 'application/vnd+json.api'\r\n\r\n@app.exception_handler(HTTPException)\r\nasync def http_exception_handler(request, exc: HTTPException) -> JsonApiResponse:\r\n    headers = getattr(exc, \"headers\", None)\r\n    content = schemas.ErrorResponse(errors=[dict(title=\"Bad request\", detail=exc.detail, status=exc.status_code)]).dict()\r\n    status_code = exc.status_code\r\n    if headers:\r\n        return JsonApiResponse(content=content, status_code=status_code, headers=headers)\r\n    else:\r\n        return JsonApiResponse(content=content, status_code=status_code)\r\n\r\n@app.exception_handler(RequestValidationError)\r\nasync def request_validation_exception_handler(request, exc: RequestValidationError) -> JsonApiResponse:\r\n    http422 = status.HTTP_422_UNPROCESSABLE_ENTITY\r\n    return JsonApiResponse(\r\n        content=schemas.ErrorResponse(errors=[\r\n            dict(title=err['type'], detail=err['msg'], source='/'.join(err['loc']), status=http422)\r\n            for err in exc.errors()\r\n        ]).dict(),\r\n        status_code=http422,\r\n    )\r\n\r\n@app.post('/customers',\r\n         status_code=status.HTTP_201_CREATED,\r\n         response_model=schemas.CustomerDetailsResponse,\r\n         response_class=JsonApiResponse,\r\n         )\r\ndef customer_create(data: schemas.Customer = Body(..., media_type='application/vnd+json.api', embed=True)):\r\n    created_customer = {**data.dict(), **{'id': '1'}}\r\n    return {'data': created_customer}\r\n``` \r\n\r\nThe openapi.json will include the unwanted 422 response with the FastAPI default error object definitions:\r\n\r\n```yaml\r\n  # ...\r\n  '422':\r\n    description: Validation Error\r\n    content:\r\n      application/json:\r\n        schema:\r\n          \"$ref\": \"#/components/schemas/HTTPValidationError\"\r\n```\r\n\r\n**Expected behavior**\r\nAt least, the media_type of the response_class should be respected. But the best would be if the 422 would not be added to the specification unless requested via the path decorator. Or if the 422 definitions of mine were respected.\r\n\r\n```python\r\n@app.post('/customers',\r\n         status_code=status.HTTP_201_CREATED,\r\n         response_model=schemas.CustomerDetailsResponse,\r\n         response_class=JsonApiResponse,\r\n         responses={\r\n             422: {\r\n                 'model': schemas.ErrorResponse\r\n             },\r\n         })\r\ndata: schemas.Customer = Body(..., media_type='application/vnd+json.api', embed=True)):\r\n    pass\r\n```\r\n\r\n**Environment:**\r\n - OS: masOS 10.14.6\r\n - Python: 3.6.5\r\n - FastAPI: 0.35.0\n",
+      "id": "C02",
+      "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate20\\data\\sources\\C02",
+      "inventory_path": "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate20\\C02-source-inventory.json",
+      "inventory_identity": "b3ca477c00f8551fc89cab0f5f0babddce54d1292da6f253c65105fc588af8f0",
+      "source_files": 555,
+      "source_bytes": 5540671,
+      "excluded_links": []
+    },
+    {
+      "repo": "pypa/pip",
+      "instance_id": "pypa__pip-7348",
+      "base_commit": "44db4d81b2e4b6dbcfd4ff04af08859b4429da56",
+      "problem_statement": "In the documentation the links for the pip commands index options are mixed up\nIn the documentation the links for the pip commands index options are mixed up.\r\n\r\nFor example in the [\"Requirements File Format\" of the _pip install_ chapter](https://pip.pypa.io/en/stable/reference/pip_install/#requirements-file-format) some of the links for the supported options point to the _pip wheel_ chapter.\n",
+      "id": "C03",
+      "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate20\\data\\sources\\C03",
+      "inventory_path": "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate20\\C03-source-inventory.json",
+      "inventory_identity": "85906e8155702066572ae05035895a0e09594149b7501b0535ec96aa16f70771",
+      "source_files": 853,
+      "source_bytes": 10643069,
+      "excluded_links": []
+    }
+  ],
+  "task_identity": "6f65808d552b602d26af97e39d2ee4d2e658ff796f1017a3302dde9eb9d6d5d8",
+  "references_loaded": false,
+  "reference_input": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate20\\data\\train.parquet"
+}

@@ -1,0 +1,2464 @@
+{
+  "status": "submitted",
+  "task": {
+    "repo": "tiangolo/fastapi",
+    "instance_id": "tiangolo__fastapi-437",
+    "base_commit": "033bc2a6c9aec3a245eb1f1b4fadb2fbb7a514b8",
+    "problem_statement": "OpenAPI: HTTP_422 response does not use custom media_type\n**Describe the bug**\r\nFastAPI automatically adds an HTTP_422 response to all paths in the OpenAPI specification that have parameters or request body. This response does not use the media_type of response_class if any custom defined. Furthermore, it overwrites any error object format with the default one.\r\n\r\n**To Reproduce**\r\nCreate a path with parameters and add custom response_class to decorator. Add custom exception handlers that reformat the default error responses as per your liking. Then observe generated openapi.json\r\n\r\n```python\r\nfrom fastapi import FastAPI, HTTPException\r\nfrom fastapi.exceptions import RequestValidationError\r\nfrom starlette import status\r\nfrom starlette.responses import JSONResponse\r\nfrom . import schemas\r\n\r\napp = FastAPI()\r\n\r\nclass JsonApiResponse(JSONResponse):\r\n    media_type = 'application/vnd+json.api'\r\n\r\n@app.exception_handler(HTTPException)\r\nasync def http_exception_handler(request, exc: HTTPException) -> JsonApiResponse:\r\n    headers = getattr(exc, \"headers\", None)\r\n    content = schemas.ErrorResponse(errors=[dict(title=\"Bad request\", detail=exc.detail, status=exc.status_code)]).dict()\r\n    status_code = exc.status_code\r\n    if headers:\r\n        return JsonApiResponse(content=content, status_code=status_code, headers=headers)\r\n    else:\r\n        return JsonApiResponse(content=content, status_code=status_code)\r\n\r\n@app.exception_handler(RequestValidationError)\r\nasync def request_validation_exception_handler(request, exc: RequestValidationError) -> JsonApiResponse:\r\n    http422 = status.HTTP_422_UNPROCESSABLE_ENTITY\r\n    return JsonApiResponse(\r\n        content=schemas.ErrorResponse(errors=[\r\n            dict(title=err['type'], detail=err['msg'], source='/'.join(err['loc']), status=http422)\r\n            for err in exc.errors()\r\n        ]).dict(),\r\n        status_code=http422,\r\n    )\r\n\r\n@app.post('/customers',\r\n         status_code=status.HTTP_201_CREATED,\r\n         response_model=schemas.CustomerDetailsResponse,\r\n         response_class=JsonApiResponse,\r\n         )\r\ndef customer_create(data: schemas.Customer = Body(..., media_type='application/vnd+json.api', embed=True)):\r\n    created_customer = {**data.dict(), **{'id': '1'}}\r\n    return {'data': created_customer}\r\n``` \r\n\r\nThe openapi.json will include the unwanted 422 response with the FastAPI default error object definitions:\r\n\r\n```yaml\r\n  # ...\r\n  '422':\r\n    description: Validation Error\r\n    content:\r\n      application/json:\r\n        schema:\r\n          \"$ref\": \"#/components/schemas/HTTPValidationError\"\r\n```\r\n\r\n**Expected behavior**\r\nAt least, the media_type of the response_class should be respected. But the best would be if the 422 would not be added to the specification unless requested via the path decorator. Or if the 422 definitions of mine were respected.\r\n\r\n```python\r\n@app.post('/customers',\r\n         status_code=status.HTTP_201_CREATED,\r\n         response_model=schemas.CustomerDetailsResponse,\r\n         response_class=JsonApiResponse,\r\n         responses={\r\n             422: {\r\n                 'model': schemas.ErrorResponse\r\n             },\r\n         })\r\ndata: schemas.Customer = Body(..., media_type='application/vnd+json.api', embed=True)):\r\n    pass\r\n```\r\n\r\n**Environment:**\r\n - OS: masOS 10.14.6\r\n - Python: 3.6.5\r\n - FastAPI: 0.35.0\n",
+    "id": "C02",
+    "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate20\\data\\sources\\C02",
+    "inventory_path": "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate20\\C02-source-inventory.json",
+    "inventory_identity": "b3ca477c00f8551fc89cab0f5f0babddce54d1292da6f253c65105fc588af8f0",
+    "source_files": 555,
+    "source_bytes": 5540671,
+    "excluded_links": []
+  },
+  "task_identity": "6f65808d552b602d26af97e39d2ee4d2e658ff796f1017a3302dde9eb9d6d5d8",
+  "binary_sha256": "7aab8d7d627e98f190e3af2519b4b520722d9d23663d377bc496a3e6b4ed1418",
+  "model": {
+    "path": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+    "files": {
+      "model.safetensors": "75cf7a6c2171b230ad19b1e7d8e0b1aee86da5a02af8e7cacedd9921d227623c",
+      "tokenizer.json": "936b2d026b9e81fb683eab537ea37c5a1a65a4d02ad9cb92ce269fb8bc561ebf",
+      "config.json": "148e5691a6fcc553437156859701fba017a1ba5d340b170f17e0f3668fb861a7"
+    },
+    "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+    "file_bytes": 33514284,
+    "tokenizer_settings": {
+      "truncation": null,
+      "padding": null
+    }
+  },
+  "helper_sha256": "a2e18bca3bee08a7c5095f0095591335beb5c0057a376064e7419676f4ca506b",
+  "sources": {
+    ".github/ISSUE_TEMPLATE/bug_report.md": [
+      "d6ca62e5714bb2d4896193d1dcc9134fd90a05a6c7a184d7d9e80cf1b46a87a8",
+      1791752277298218800
+    ],
+    ".github/ISSUE_TEMPLATE/feature_request.md": [
+      "bc03cf87a7daaf000289f812a172417327cdc31a41ee7deac9aa252f10e5d456",
+      1791752277298218800
+    ],
+    ".github/ISSUE_TEMPLATE/question.md": [
+      "a14e1fdac5b37b046c71f8d3bbf9c3d5e6f9beca59f1f2fcc9c7b1c830a5ae42",
+      1791752277299219000
+    ],
+    ".gitignore": [
+      "d8dec97f0b43f9c9748ad20a0032b3f82fb29a00deb21e67386595093322b095",
+      1791752277299219000
+    ],
+    ".travis.yml": [
+      "c0df6baabf793a70b4865448253af2bd04351aa77b617e013265a19f8df22cb8",
+      1791752277299219000
+    ],
+    "CONTRIBUTING.md": [
+      "5ccc970d6793e7cc734038292f683e1eefc50019f40c1211766b0214d006bcc3",
+      1791752277300218000
+    ],
+    "docs/alternatives.md": [
+      "e4559d9a7205d3b0cf4d257291abf158cb54b3777b799d459a47c3a3ff5e1f1f",
+      1791752277301215900
+    ],
+    "docs/async.md": [
+      "9ee8411edf399a8ee89311d61150cbd6f87e56245f6e2b61bb6851f40c38bd3c",
+      1791752277302216000
+    ],
+    "docs/benchmarks.md": [
+      "b7526f8dc2a9cd21a2d6441ef2a856718f129489098593e6a92cbd4684d7efd2",
+      1791752277302216000
+    ],
+    "docs/contributing.md": [
+      "d3598f7896157e04678c2b5e16967354b404b1e4389f9f64a5edd1f0618087c3",
+      1791752277303217800
+    ],
+    "docs/deployment.md": [
+      "2c92005616059bfa19cd7c733d4a76c589dcf9bdc44b92f6b6a362d66b0ce715",
+      1791752277303217800
+    ],
+    "docs/external-links.md": [
+      "126fcf29917ebc564f7f58a7847ee45ee0fb14cb507d718076afb5a4b5f7e150",
+      1791752277303723500
+    ],
+    "docs/features.md": [
+      "a6c0672871989e519db7f82aa5a97ef4796e80505e829fe9d0f519b054e436bb",
+      1791752277303723500
+    ],
+    "docs/help-fastapi.md": [
+      "da3e2010037882e9924c4ca07fffc3a2d44afdad357bb36a5f466104101633bb",
+      1791752277303723500
+    ],
+    "docs/history-design-future.md": [
+      "4012b55698e1fcf94b4ac0f6f40f2675adf8922c7b54237f5d7242f3a6fd5217",
+      1791752277303723500
+    ],
+    "docs/img/favicon.png": [
+      "70e3dea052100a322b3ceb2d015306943aba383be7d5a740bb0560aac57cdef3",
+      1791752277305229300
+    ],
+    "docs/img/icon-transparent-bg.png": [
+      "60f5e1838e7e79dd0da2fc82d63d9b55ea36bd19dc7309f6f929d51a63d4e0d4",
+      1791752277305229300
+    ],
+    "docs/img/icon-white-bg.png": [
+      "d3f0073afa24802a29973a5e42d74f38332fdcc10f0d3176d980abf7c77e7f63",
+      1791752277305229300
+    ],
+    "docs/img/icon-white.svg": [
+      "15f14e4a12fba7812f8200d2d74e950dc33323f39eef3006ec682a68adf8087d",
+      1791752277306233700
+    ],
+    "docs/img/index/index-01-swagger-ui-simple.png": [
+      "a1cb761f3f2073ecbf50d9c627b8b7c6dc59e25b66bcfb29c14026635edce550",
+      1791752277306738900
+    ],
+    "docs/img/index/index-02-redoc-simple.png": [
+      "3c721c4c0f98034f8568cd7c0b4e92d4cd2fa30a021c88287a9de47642e0608e",
+      1791752277306738900
+    ],
+    "docs/img/index/index-03-swagger-02.png": [
+      "0d5a1fe5fd64e54b741efaf3f030a75499af556569414b5b148ad539a21d1fdd",
+      1791752277307740600
+    ],
+    "docs/img/index/index-04-swagger-03.png": [
+      "3a02a6e56c6f4ae41bdf8113f54f467c54caa155dc934a01d556499a1c6a1619",
+      1791752277307740600
+    ],
+    "docs/img/index/index-05-swagger-04.png": [
+      "8506a5f636726ca544a579b7aaa858af79226c8b6602e3a108a0a0fda4fd2275",
+      1791752277307740600
+    ],
+    "docs/img/index/index-06-redoc-02.png": [
+      "6b84abd88727302c42875f80458eab463d0e91821efa422175e6796dcf5cd44c",
+      1791752277308741900
+    ],
+    "docs/img/logo-margin/logo-teal-vector.svg": [
+      "ae56dd072de3db3e07bfbc0c3d6860b47941c1e287b4023b3cd0d21791fb86da",
+      1791752277308741900
+    ],
+    "docs/img/logo-margin/logo-teal.png": [
+      "d1a6ac6ed8ce20a6b578b4e92cc3b25cc41b3867dd4f8fb7d0972f4814009d33",
+      1791752277309740100
+    ],
+    "docs/img/logo-margin/logo-teal.svg": [
+      "a648db9ace711bbb9eac07115ee4fc015777dd08441ff562ff25cdb95720452e",
+      1791752277309740100
+    ],
+    "docs/img/logo-margin/logo-white-bg.png": [
+      "6383b4b9428db0d69a5af6e5691e61b1ead629640b07d873a6fe81b19c611bee",
+      1791752277309740100
+    ],
+    "docs/img/logo-teal-vector.svg": [
+      "fece610e9d23eb1399bffba45801172c8621faba9f570f772d700e1fba15e805",
+      1791752277310740300
+    ],
+    "docs/img/logo-teal.svg": [
+      "41b034540873c04628e64566410c620c02b7d8e26804460cda9ffb7172424fe9",
+      1791752277310740300
+    ],
+    "docs/img/pycharm-completion.png": [
+      "ca2eb4bef8e679d7b54f41ba434b11a8fd2ad234760cdc65f16d8b43282d0151",
+      1791752277311740300
+    ],
+    "docs/img/python-types/image01.png": [
+      "09276bb053e153b8462d86d02d8bb3a15f65dee45147ed15878612f476a22c9e",
+      1791752277311740300
+    ],
+    "docs/img/python-types/image02.png": [
+      "e37e493c27b908ec67cca21224a34c3994e80f57789942fac8220f22b4f78bb2",
+      1791752277311740300
+    ],
+    "docs/img/python-types/image03.png": [
+      "28e182691de0fa16dedfd064d6dcf482fb319a585e3757789a4c35168305132a",
+      1791752277311740300
+    ],
+    "docs/img/python-types/image04.png": [
+      "7b234dca25f68b66cbb4d692438b9cf37897a1eb84f1561cc8ee0c1ccc3d6db9",
+      1791752277313244000
+    ],
+    "docs/img/python-types/image05.png": [
+      "c7b757b6be2d13237d8db39842894c89ef26aa223e16bee7ca4f3c5a4a9868a8",
+      1791752277313244000
+    ],
+    "docs/img/python-types/image06.png": [
+      "cc7833ec4a57e77d611343fd0fe941e0e5c241c82b4771eee73003754e8e403b",
+      1791752277313244000
+    ],
+    "docs/img/tutorial/additional-responses/image01.png": [
+      "1dcbad82a1a809156274f6eaeb99e4336e9acd157228d7c98de3c562eb13048b",
+      1791752277314249600
+    ],
+    "docs/img/tutorial/application-configuration/image01.png": [
+      "6ac1488a9a3ddc8d8d5d330d708d6a40887b738a567e6885e09fb8ea9b028424",
+      1791752277315248500
+    ],
+    "docs/img/tutorial/async-sql-databases/image01.png": [
+      "ee7a1a0ca43878c2b7024a1b113d0a7027dd97487b5c0bab19f02d4e7133b4ef",
+      1791752277315248500
+    ],
+    "docs/img/tutorial/bigger-applications/image01.png": [
+      "cf6f3c5e263cdc2fad7b6b1bb159c2bb24c28048e566d026c644b6ebf79a5b09",
+      1791752277315248500
+    ],
+    "docs/img/tutorial/body/image01.png": [
+      "582409e7904019ccb80cec490373c12f8e60878be2598f74f9db81a91722afdd",
+      1791752277317248700
+    ],
+    "docs/img/tutorial/body/image02.png": [
+      "98fb7affab8be6d0125cadf492f9a02af95511c8c1eaa5a662c98bb1eaeb2d39",
+      1791752277318247800
+    ],
+    "docs/img/tutorial/body/image03.png": [
+      "efe0a0c6ce0d380668e3d22161ddd78a9aa3b4d10fcb3667b45187feea3861ba",
+      1791752277318247800
+    ],
+    "docs/img/tutorial/body/image04.png": [
+      "eafe88707c97e9d02e3b598af48c02116e9ad52caede160fbf0d09a735861c37",
+      1791752277319247800
+    ],
+    "docs/img/tutorial/body/image05.png": [
+      "f579eaba23c48bfbab27c466d19d65bae824acd67dba81af51354ac42d3ff834",
+      1791752277319247800
+    ],
+    "docs/img/tutorial/body-nested-models/image01.png": [
+      "3a6fe49e73200991d6c6f386849f6b4b301340348aae0487f94b398397db87c6",
+      1791752277316248000
+    ],
+    "docs/img/tutorial/body-schema/image01.png": [
+      "27c8f3cbc190790aaad49d32e88fb8d413aa4c07cc3bae0f307319a02d828d17",
+      1791752277317248700
+    ],
+    "docs/img/tutorial/custom-response/image01.png": [
+      "f2da459426e86f5b19ee4cd2462ab0537c0f6999c62f54c07ff8024dd31cabc8",
+      1791752277320247800
+    ],
+    "docs/img/tutorial/debugging/image01.png": [
+      "923f48192da1a177a8ec708e76ffa18c0443982049eb20b0dc9d70dc9d0700f1",
+      1791752277320247800
+    ],
+    "docs/img/tutorial/dependencies/image01.png": [
+      "97b9a92ce0037e818e7417486a2a8b80e7b8731a90d1909b416c0dc4dfc9fb33",
+      1791752277321248600
+    ],
+    "docs/img/tutorial/dependencies/image02.png": [
+      "cc07e42d6fbb436e5c58b18bb020a2e7c5f1531187bbce2ec819423741d61215",
+      1791752277321248600
+    ],
+    "docs/img/tutorial/extending-openapi/image01.png": [
+      "237231d53341e9d002b979160a5969319b8a9cb6c72e732f03921b6c499ee59f",
+      1791752277322247800
+    ],
+    "docs/img/tutorial/graphql/image01.png": [
+      "52ffa30a47ebf19916061b2114de48b14c7f28cf90b20afa77bb85949467d931",
+      1791752277322247800
+    ],
+    "docs/img/tutorial/path-operation-configuration/image01.png": [
+      "bc934274a400455d3c1101d7cd5f2f8bb6fa286e24cbdef072ff13c920787f1b",
+      1791752277323247800
+    ],
+    "docs/img/tutorial/path-operation-configuration/image02.png": [
+      "312c32307979aced4586a35b9f2e6257ea681840b6d897496595d957eca5763b",
+      1791752277323752900
+    ],
+    "docs/img/tutorial/path-operation-configuration/image03.png": [
+      "a6ec3c1f7052f4040a721813f89a86f538fda78d4a82402fc0bfefe0f92f3433",
+      1791752277323752900
+    ],
+    "docs/img/tutorial/path-operation-configuration/image04.png": [
+      "64aa86b083fd7ae8363f825718b591144d06631c71f9609ae1e413024e3be3c0",
+      1791752277324755400
+    ],
+    "docs/img/tutorial/path-operation-configuration/image05.png": [
+      "2085eefd449f1cc127ef79f5441556b23883dc69c940811ef33c9481e486f70e",
+      1791752277324755400
+    ],
+    "docs/img/tutorial/path-params/image01.png": [
+      "fcda17b18a0092c6b919b43e29efa0731a26d7e64be627a09715e40ac8ebe3bf",
+      1791752277325754800
+    ],
+    "docs/img/tutorial/path-params/image02.png": [
+      "337408b812efeaa07f01d17074ecd21785dd200d6597c51674c31a891a4c72b8",
+      1791752277326754400
+    ],
+    "docs/img/tutorial/path-params/image03.png": [
+      "9272b506f462eadf3bd8dc1b6dde962137b0c66792504a2a11251b123866d2d4",
+      1791752277326754400
+    ],
+    "docs/img/tutorial/query-params-str-validations/image01.png": [
+      "64110b458efca8ef803c6e0fd38442ed4c70de4235c89c5fb57fd32648438846",
+      1791752277327754400
+    ],
+    "docs/img/tutorial/query-params-str-validations/image02.png": [
+      "cbf61fa77ad1101686c3c542663295a3fba5a570bbcd0c93619f2bf32e0048da",
+      1791752277327754400
+    ],
+    "docs/img/tutorial/response-model/image01.png": [
+      "0c0766f38717a478be9cd3ee1e86f2c8a62fdc595fb0b742a0792f73f7075787",
+      1791752277327754400
+    ],
+    "docs/img/tutorial/response-model/image02.png": [
+      "5c1cb4b97ef10038ea2b4333c4fd411315cf0ed5c9e1ac82d028ce1eb968f694",
+      1791752277328754400
+    ],
+    "docs/img/tutorial/response-status-code/image01.png": [
+      "fc380b92f8bed0af1eb4d6676085b192023787c68775471c1b83a2ddb5257b35",
+      1791752277329757400
+    ],
+    "docs/img/tutorial/response-status-code/image02.png": [
+      "37ea5f53706bd8838b3c422f38521a15eb1587971702f93e4476001d6a9da07c",
+      1791752277329757400
+    ],
+    "docs/img/tutorial/security/image01.png": [
+      "dce3aa612a907c0046e375660c8785524cea858fed936482c654714f50e3ae8a",
+      1791752277330754100
+    ],
+    "docs/img/tutorial/security/image02.png": [
+      "20067e10946ce6a80bb1bcd6408c3cdd94c6faabe20a684536dd6bac0203d8e2",
+      1791752277330754100
+    ],
+    "docs/img/tutorial/security/image03.png": [
+      "0208253fe6cd6eb31d02df6b1e72832598fc8afd9a37bac04a1b9773cb20823e",
+      1791752277330754100
+    ],
+    "docs/img/tutorial/security/image04.png": [
+      "593ff0abcef1c232e87668b3bd28646aa6d79e37570948ead97fdd241fc763f8",
+      1791752277331754400
+    ],
+    "docs/img/tutorial/security/image05.png": [
+      "a2fbaeb5d3d937cb033b4c22355d5b21a99542d1f03629aa95f1b426a2def65a",
+      1791752277331754400
+    ],
+    "docs/img/tutorial/security/image06.png": [
+      "a7d6bb2344db4cdb1d8ded040f5897b0f4aac1c75e425d8761a207ee2876af29",
+      1791752277331754400
+    ],
+    "docs/img/tutorial/security/image07.png": [
+      "1c5b48bf7ff2c2a5dadde7fbc7a13caa455536c79f7a6ea34568c683df82eaf1",
+      1791752277333258600
+    ],
+    "docs/img/tutorial/security/image08.png": [
+      "bb3755895691a8382c4b3ea316adcc20659203e5ffc78f403f02d32da81da73e",
+      1791752277333258600
+    ],
+    "docs/img/tutorial/security/image09.png": [
+      "e35e5122cc2310c506a4ef018421fa8300dc9c5de68f91f5754b13cb182c25d2",
+      1791752277333258600
+    ],
+    "docs/img/tutorial/security/image10.png": [
+      "4a55b1a1d9c98510665e528706b91d7a8a7229074566eb3500cd24212dbd3fd8",
+      1791752277334264800
+    ],
+    "docs/img/tutorial/security/image11.png": [
+      "b494c10d125e68467abf7cfa995288cca04735f3a4b4de62c92885f7b225b01e",
+      1791752277335262800
+    ],
+    "docs/img/tutorial/security/image12.png": [
+      "003f580b6b047545569c66bc229a71505926a6a66abda394dcda2f2e27c90f41",
+      1791752277335262800
+    ],
+    "docs/img/tutorial/sql-databases/image01.png": [
+      "6f87995249511acc57389f52d00c9132b727f15f029e381f37468cf4e710dc3e",
+      1791752277336264600
+    ],
+    "docs/img/tutorial/sql-databases/image02.png": [
+      "fc458e519b90a1c13563b8be5835813abf471f822c7a88d58f0550d651db4cb6",
+      1791752277336264600
+    ],
+    "docs/img/tutorial/sub-applications/image01.png": [
+      "1f301476b36fb0bb22ce5c27742872c37b37af63f653decc800c0c43e66ba332",
+      1791752277337264600
+    ],
+    "docs/img/tutorial/sub-applications/image02.png": [
+      "c89f2c9d0f381916ea91b7d1a6a637862663b0168441a79eb6b2ad8c0f71de66",
+      1791752277337264600
+    ],
+    "docs/img/tutorial/websockets/image01.png": [
+      "12fdf653b7316e44ce4c23994540c4b4232a4340243a1dea0cdb3788b7d84a8b",
+      1791752277338263600
+    ],
+    "docs/img/tutorial/websockets/image02.png": [
+      "6d9219d1186ef01e6cb67f697ef9a040a77b094781d9eed7e7118a036ce376fd",
+      1791752277338263600
+    ],
+    "docs/img/tutorial/websockets/image03.png": [
+      "70c658f9fd945cb99fbc37e63332c61a51b0946a925b8a53cc6541b3875aed71",
+      1791752277338263600
+    ],
+    "docs/img/tutorial/websockets/image04.png": [
+      "cb3b6226d76e799adb5272403fb89ef8040c2cbc25ac9960141c5f5f5295fc25",
+      1791752277339263500
+    ],
+    "docs/img/vscode-completion.png": [
+      "6b7ea1939367e094971bd5d2bd504754922d5668a2c9071bb88605ff45a52a0d",
+      1791752277339263500
+    ],
+    "docs/index.md": [
+      "ff2a63cb5c09f99cb17918833e513bcfb44fa093bb167ca3c65aa54b0592113b",
+      1791752277339263500
+    ],
+    "docs/project-generation.md": [
+      "165c685cc3b889235d4c3c4efcffbac6f19cec7527a4464d269640be52253ba9",
+      1791752277340265000
+    ],
+    "docs/python-types.md": [
+      "bee738c4e76d9a807be1dfed990530c918abc691317dfb03cad1dc5f5b587814",
+      1791752277340265000
+    ],
+    "docs/release-notes.md": [
+      "7baa330d41f67657dbee2022221231dd48d0124703d1c976e76b0b47b31a3016",
+      1791752277340265000
+    ],
+    "docs/src/additional_responses/tutorial001.py": [
+      "afb0530abed34b66608d22b6e0bd9d152a4bb32cb2ab56431ac7d5b00bc6c4a9",
+      1791752277341263200
+    ],
+    "docs/src/additional_responses/tutorial002.py": [
+      "a3ed7aa21c9e2da43f67d30ff7e42feec577d9fed5384e00657f67f5b138ecd8",
+      1791752277341263200
+    ],
+    "docs/src/additional_responses/tutorial003.py": [
+      "6ae2e66953fade6da1355e286995a5720710c5b36bd9246c6c81761d6dc578c1",
+      1791752277342263800
+    ],
+    "docs/src/additional_responses/tutorial004.py": [
+      "098577aca4e36c8698b5ca1bf7925913d5f9be02dfbef79da301e6735e045968",
+      1791752277342263800
+    ],
+    "docs/src/additional_status_codes/tutorial001.py": [
+      "10056aa749783bbd672aa73b36bc37b0dcedd864e561a07bf524fb2b604e6106",
+      1791752277343264500
+    ],
+    "docs/src/app_testing/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277343769200
+    ],
+    "docs/src/app_testing/main.py": [
+      "799a66ca241638380ba6e08101ed0da161b8635b4938b46fe30beb3694cb8ab0",
+      1791752277343769200
+    ],
+    "docs/src/app_testing/main_b.py": [
+      "99d311f264b1e0d942b395ff1a60f584d462d6364c1954aa00c7e69979a41848",
+      1791752277343769200
+    ],
+    "docs/src/app_testing/test_main.py": [
+      "877852a238fe659c8ab0c07ff83dffff082c213e4ba8e64a367c65776ac89291",
+      1791752277344771700
+    ],
+    "docs/src/app_testing/test_main_b.py": [
+      "f90ba39237d9f87d1bb3b165bd67ebb6261971f976930c1a85a5dc047b5785ed",
+      1791752277344771700
+    ],
+    "docs/src/app_testing/tutorial001.py": [
+      "f03f719e90d8ab0618103e04a3d8291b7bae829b4acdd9c6c7ea5a987bac4359",
+      1791752277345771600
+    ],
+    "docs/src/app_testing/tutorial002.py": [
+      "5ad94018e708c86fb025ccde8a247994278c264fb491cbbe7f40c9d0ef96b33f",
+      1791752277345771600
+    ],
+    "docs/src/app_testing/tutorial003.py": [
+      "60bd4585b9470a30d44e865e5fc96843797a43eb8872eb2263b9ca6bf956866f",
+      1791752277345771600
+    ],
+    "docs/src/application_configuration/tutorial001.py": [
+      "135f47c7ea55c14d671e680fa0af4cf49c9c6eccef7a08cf5e3c6d6dfb94a4e0",
+      1791752277346771200
+    ],
+    "docs/src/application_configuration/tutorial002.py": [
+      "943c4dc2fe678f95f80c11573ee5177c3630dd4b7b4dab09ea1dc04c110da6da",
+      1791752277346771200
+    ],
+    "docs/src/application_configuration/tutorial003.py": [
+      "b8f358b495345ff80b8170d21ac9feee940b0f5a2e6dee022ac7ddf33027d401",
+      1791752277347770600
+    ],
+    "docs/src/async_sql_databases/tutorial001.py": [
+      "0abae02ebcc0129263324fa5829946e3945b9c41ba5884873ad4c5316dddbf8f",
+      1791752277347770600
+    ],
+    "docs/src/background_tasks/tutorial001.py": [
+      "8218ad01272cffb42643773619fe7025bee2d3a826361fe9db4f7cf5db8a8308",
+      1791752277347770600
+    ],
+    "docs/src/background_tasks/tutorial002.py": [
+      "0425897cc5bd41e834f95c0b3c04e3851f2f3462d64229e77da1379fd2d89424",
+      1791752277348770700
+    ],
+    "docs/src/bigger_applications/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277348770700
+    ],
+    "docs/src/bigger_applications/app/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277348770700
+    ],
+    "docs/src/bigger_applications/app/main.py": [
+      "95532dfffe662f86ea6def8857523d487bae79f5d4ecfaf3be0a835dfe925e64",
+      1791752277349772400
+    ],
+    "docs/src/bigger_applications/app/routers/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277349772400
+    ],
+    "docs/src/bigger_applications/app/routers/items.py": [
+      "d7e0791737c542dc3afb9a31fa4fb3ec852e3068a34146144e1a95b9f8d58f74",
+      1791752277350771200
+    ],
+    "docs/src/bigger_applications/app/routers/users.py": [
+      "2b0008f5982461749e157babb26335c98e69e5eb780f35b7a97f6fd6bd507251",
+      1791752277350771200
+    ],
+    "docs/src/body/tutorial001.py": [
+      "c38bbd6f260e287a05b3b7d1568dbe42ca966c6fd4172c1a8cc181ffa548f7c7",
+      1791752277351772700
+    ],
+    "docs/src/body/tutorial002.py": [
+      "66f1da7a35b81e11454cefeec43aeab61c98e7801164f0643156f243e3709607",
+      1791752277351772700
+    ],
+    "docs/src/body/tutorial003.py": [
+      "c27bfe340e7af611ebfbeb04a126f8f561159f8408e646fb994dea7efbd3fa4f",
+      1791752277351772700
+    ],
+    "docs/src/body/tutorial004.py": [
+      "571d470f8fc60505082ee6113f5f6dad6be3e1f35b2746be96857a7b97c337e2",
+      1791752277351772700
+    ],
+    "docs/src/body_multiple_params/tutorial001.py": [
+      "a709a3f17c5f9803b8e1e09b700f10d7fa6ab1702c4d1299c35919ea68e2b0e9",
+      1791752277353277000
+    ],
+    "docs/src/body_multiple_params/tutorial002.py": [
+      "a251ff2336b0ff1c4aab8d7fa58f1859e70a60fd01fc25e8e0b43d0db50cc21e",
+      1791752277353277000
+    ],
+    "docs/src/body_multiple_params/tutorial003.py": [
+      "47756d2ba793df697be9b68fd6f9de7fb0fd4ada489e279436346da6e32cc636",
+      1791752277353277000
+    ],
+    "docs/src/body_multiple_params/tutorial004.py": [
+      "59be0491357f09e02c808b3ab6e27fb2df1fbaa2c6c467639a07a9765059d477",
+      1791752277354281800
+    ],
+    "docs/src/body_multiple_params/tutorial005.py": [
+      "aed8bd3b9e3ccf9eac74ae09ef35e2d15bfe952cd3e8ed8a75b3997ce73ad1cc",
+      1791752277354281800
+    ],
+    "docs/src/body_nested_models/tutorial001.py": [
+      "92388b4e06fdad79d2ff089833bda4f9d39e1dd194d885e6cba23f13234d412c",
+      1791752277355281600
+    ],
+    "docs/src/body_nested_models/tutorial002.py": [
+      "9a0f6732d1b73ffe64bbd51382c8c63dadb56aaceeda34a64f4ac5a6616bb2f6",
+      1791752277355281600
+    ],
+    "docs/src/body_nested_models/tutorial003.py": [
+      "925e1685a85a90f351057e8b2a0abeeff6cb6b6a5d30e9ef15bc1ac9a4cd1e62",
+      1791752277355281600
+    ],
+    "docs/src/body_nested_models/tutorial004.py": [
+      "5e70bef4643793ea83746c886569a99c8a6c8aee4028fc41ade1f81f596ea0d5",
+      1791752277356280900
+    ],
+    "docs/src/body_nested_models/tutorial005.py": [
+      "ebac8aa66808de434dcbd2a2f45e69f1054bc825cbb0060caebfa6be06dcf29e",
+      1791752277356280900
+    ],
+    "docs/src/body_nested_models/tutorial006.py": [
+      "25a10e3ebc0caf1f5fdd69a1a31c8653c95ff6f7e7409500234a4797b058e5e3",
+      1791752277357280900
+    ],
+    "docs/src/body_nested_models/tutorial007.py": [
+      "75c5fb87380ef751b108f7abd296ff05468a17e8b499f6254c3954d309c02a30",
+      1791752277357280900
+    ],
+    "docs/src/body_nested_models/tutorial008.py": [
+      "1461a94dbb0ae831374effe9819285a203bd9af6e7762b6b4448c5846796e952",
+      1791752277357280900
+    ],
+    "docs/src/body_nested_models/tutorial009.py": [
+      "3c620cee875712ca857f4c4ac278b170222847d901dc678876f729cdd278c1ed",
+      1791752277358281600
+    ],
+    "docs/src/body_schema/tutorial001.py": [
+      "37d1b5a1882ee8104fde147c4b3b07410507f5469ec36871f285a0372ffea381",
+      1791752277358281600
+    ],
+    "docs/src/body_schema/tutorial002.py": [
+      "76e995525ba6cc13bde2b67b43cfb697e2bd967aa0b5b6a6b5e200110aead9b8",
+      1791752277358281600
+    ],
+    "docs/src/body_updates/tutorial001.py": [
+      "3c150857de4f8b8eab855b8b06614f2a6fd36c7909249d4b19f63ce5cf700ddc",
+      1791752277359280900
+    ],
+    "docs/src/body_updates/tutorial002.py": [
+      "e364df5258652a92333f61de265e40436dee052f10fba40d6d0d4a9aafb6f476",
+      1791752277359280900
+    ],
+    "docs/src/cookie_params/tutorial001.py": [
+      "87395b398a6b9c06cce4bdc6f778c414c1e1969f9c7b671e6e6711c9431ed161",
+      1791752277360280900
+    ],
+    "docs/src/cors/tutorial001.py": [
+      "cb80d291e36eb65d2d2052c1727cfb466989f8bc02fafbdc0b503e48d32e421a",
+      1791752277360280900
+    ],
+    "docs/src/custom_response/tutorial001.py": [
+      "0d525aed69f8987f96915d0216ffa99bab13a436d74bec9e5d2e38b2e566a08c",
+      1791752277361281400
+    ],
+    "docs/src/custom_response/tutorial002.py": [
+      "aa6835c46883dc597c43466694ecefff664270aa2869f806034fde87dfb86a0a",
+      1791752277361281400
+    ],
+    "docs/src/custom_response/tutorial003.py": [
+      "5330506a29c41884a439ed668e50e9d8d966bc9a13ddf4573063032d92155985",
+      1791752277361281400
+    ],
+    "docs/src/custom_response/tutorial004.py": [
+      "4a844556e69ca87d3a31f34c84c31f001d59786091e750b999b24a2b1c593d93",
+      1791752277362282100
+    ],
+    "docs/src/debugging/tutorial001.py": [
+      "2bc07b02cd97cd215de0accc4ca3295003d7cad7860999e2678ff1bfd681c19a",
+      1791752277362282100
+    ],
+    "docs/src/dependencies/tutorial001.py": [
+      "ca3cbeaeee55d5bf2e38423ac983e375e8b6087f2f21b4bd55ebaf9d021fe99c",
+      1791752277363281100
+    ],
+    "docs/src/dependencies/tutorial002.py": [
+      "ba1f23b7ba52be60eb0b92c088c0b234a07289edb98665c61d8d73d35c431873",
+      1791752277363281100
+    ],
+    "docs/src/dependencies/tutorial003.py": [
+      "e938db12d2ae91d9411e774e357930904703b16d26bb24324d8f360898c77b9a",
+      1791752277363785600
+    ],
+    "docs/src/dependencies/tutorial004.py": [
+      "eee66484d1b4a197548e4b7f10701b4904597d29332cd3f9dfdb68a8e3f441a7",
+      1791752277363785600
+    ],
+    "docs/src/dependencies/tutorial005.py": [
+      "bc419ab3c484f58153b3bd8ffc000142b1ec330c9fb9abf249aaccc28255c2b0",
+      1791752277364790100
+    ],
+    "docs/src/dependencies/tutorial006.py": [
+      "1dbd98cb987a789554ea00b7b0ce43b6749ddede719bb8eca653c10d66f617bb",
+      1791752277364790100
+    ],
+    "docs/src/dependencies/tutorial007.py": [
+      "25d1fcf73d07d8510537978cca549c83de9f4c3d24d36a5258551934bc87056b",
+      1791752277364790100
+    ],
+    "docs/src/dependency_testing/tutorial001.py": [
+      "29a5b1172e4fd291af5de569555d5d877d7e2faf3dc5eababdbcfff11aed20ff",
+      1791752277365787000
+    ],
+    "docs/src/encoder/tutorial001.py": [
+      "4b4a1160c4caa33b5d3c403176e617485bcafc7a94157496ba03935f9e1f357a",
+      1791752277365787000
+    ],
+    "docs/src/events/tutorial001.py": [
+      "604cbccedd27a9b4923c143b21df0d2bcf7e74635ee76af610c555c7244cc9c0",
+      1791752277366790400
+    ],
+    "docs/src/events/tutorial002.py": [
+      "2fcaf57d6821142045a7e66ced2591164d83983286e5339ee30d51efc0dc7386",
+      1791752277366790400
+    ],
+    "docs/src/extending_openapi/tutorial001.py": [
+      "cefb0529a250eb14725c22594c4d744eacd2ec5c22451bd21aafe21c38e02a9f",
+      1791752277366790400
+    ],
+    "docs/src/extra_data_types/tutorial001.py": [
+      "54bc9964e5f48f6757189ac6036ed0e14e173f145fa929106946f9fb9eb9f6a0",
+      1791752277367787000
+    ],
+    "docs/src/extra_models/tutorial001.py": [
+      "102cd5091d0d6bdf8f0aaa5736bfc744f5cce7e5455185c0139b13bcfd957069",
+      1791752277367787000
+    ],
+    "docs/src/extra_models/tutorial002.py": [
+      "62d62469179a2b7f9cc00edec2ba6249f727b8aa0da7e49113afa4ffaad5030d",
+      1791752277367787000
+    ],
+    "docs/src/extra_models/tutorial003.py": [
+      "3a1b2446e17a96791b024dd2b2d161f766602b801df4b2c335bccb833ad5abed",
+      1791752277368787200
+    ],
+    "docs/src/extra_models/tutorial004.py": [
+      "fb20bd0e220bbb9a61744047d763fadbe96ffb4d1c2787b2c5828b6b9952d9da",
+      1791752277368787200
+    ],
+    "docs/src/extra_models/tutorial005.py": [
+      "788b83564ec64c4f13af83caab2478ff20d453ae0992a217d3cc2b64d32b48a4",
+      1791752277368787200
+    ],
+    "docs/src/first_steps/tutorial001.py": [
+      "88c744bf8154cc2a96793f9df1058431588029f7422ee0bcb62b74130a801650",
+      1791752277369787300
+    ],
+    "docs/src/first_steps/tutorial002.py": [
+      "fcf695469747a98628dd4ffe2df8e6a60fe715aba4e8e351c88b9fb5582fe6d1",
+      1791752277369787300
+    ],
+    "docs/src/first_steps/tutorial003.py": [
+      "b0ba3b1d47204510640516d3808558eb6fa65f15cc027dd86db2e236eea57375",
+      1791752277369787300
+    ],
+    "docs/src/graphql/tutorial001.py": [
+      "c77f061fa8e390a4423c3f8d60f955e8487a2baf31c01e7989a81ced650f0a81",
+      1791752277370788400
+    ],
+    "docs/src/handling_errors/tutorial001.py": [
+      "ae11c344b30574d3ef126de0d05a96b6c9d2466fc7c566e4e8bf989704807b5c",
+      1791752277370788400
+    ],
+    "docs/src/handling_errors/tutorial002.py": [
+      "c022ef435507bef0a0dcb8c889b8c1a9d0abf48da9b83cb5f626ac5c9c3fd38d",
+      1791752277370788400
+    ],
+    "docs/src/handling_errors/tutorial003.py": [
+      "3a28322e0b363a6362813b5afa4ed690e2598b15136b9034f921c7fb455f823b",
+      1791752277371787000
+    ],
+    "docs/src/handling_errors/tutorial004.py": [
+      "63f08b35f82ab849aaebf688ebd3a12d4bb7f234403c0f18356e8ca379864e04",
+      1791752277371787000
+    ],
+    "docs/src/handling_errors/tutorial005.py": [
+      "e0bcca0b831ad7715f284581209a76a962274c058613345ed0a22486b663c3a2",
+      1791752277371787000
+    ],
+    "docs/src/header_params/tutorial001.py": [
+      "a0d887d24f6fc9e2b1a1eedf89400b816dbf6c94d52a0c2648ed3b0b9c2c4786",
+      1791752277371787000
+    ],
+    "docs/src/header_params/tutorial002.py": [
+      "21c22f49bcb11c7c1e159b4b31911e31e05a52adb03d104bae5921ce073de0d6",
+      1791752277373290400
+    ],
+    "docs/src/header_params/tutorial003.py": [
+      "a8718264377df00778165f5e15fb029692100026fff8408312fdc7d4aa7c8d82",
+      1791752277373290400
+    ],
+    "docs/src/middleware/tutorial001.py": [
+      "45bb56fd4e5339e98331f1d5ff636ca575c55e9fb9a0e7ac909f548f535e61f3",
+      1791752277373290400
+    ],
+    "docs/src/nosql_databases/tutorial001.py": [
+      "256499b9d5a5552184d505054f36dfe296aa1036e9143cd16ecfb488f0685028",
+      1791752277373290400
+    ],
+    "docs/src/path_operation_advanced_configuration/tutorial001.py": [
+      "67b4b2b3e1edaaae45c0bf141c40d8976249608ed1df1e161ad8f92339497398",
+      1791752277374805300
+    ],
+    "docs/src/path_operation_advanced_configuration/tutorial002.py": [
+      "941873b2122df66345d4f4cc14d4e9b5d16ac352b43e3aa9b38bea7425c85699",
+      1791752277374805300
+    ],
+    "docs/src/path_operation_configuration/tutorial001.py": [
+      "94610bcbe26bfd1c8d81ffde0c464751ab67456c783a136c81efe2c09be5ad92",
+      1791752277375812300
+    ],
+    "docs/src/path_operation_configuration/tutorial002.py": [
+      "8efb3e7fe4576762c9c97874d8d0fc7fc149f22f7ed980a76c827fb68b2fe44d",
+      1791752277375812300
+    ],
+    "docs/src/path_operation_configuration/tutorial003.py": [
+      "4aa542142613081ac21a3bf7f8fda616d76ea0a14daac5663ab91b4c30953a1a",
+      1791752277376811800
+    ],
+    "docs/src/path_operation_configuration/tutorial004.py": [
+      "7b946149ccbb725bee7cd34bf84bbac70ab616ab4ed085584aab23d4003349ab",
+      1791752277377316600
+    ],
+    "docs/src/path_operation_configuration/tutorial005.py": [
+      "d8b22c6bb416b19790b4160814e8834ee836443d290a976082d97b0dc78be15a",
+      1791752277377316600
+    ],
+    "docs/src/path_operation_configuration/tutorial006.py": [
+      "5056b0c416045694765968b7a4f7c3dfbaffe4a1cee1947826b03add7b1ea8a1",
+      1791752277377316600
+    ],
+    "docs/src/path_params/tutorial001.py": [
+      "c10c9be93c07a592e1bc473ff53027152459d6565043d9fef5548089752fd0e2",
+      1791752277378318400
+    ],
+    "docs/src/path_params/tutorial002.py": [
+      "e315342e8a391de45042201b39fd985c65f9107559581e2516b06f97e433e0f4",
+      1791752277378318400
+    ],
+    "docs/src/path_params/tutorial003.py": [
+      "8e61b9cf938034484ada46a920f68e7ac54e28e9fc1b5305e591cd88247bdca2",
+      1791752277378318400
+    ],
+    "docs/src/path_params/tutorial004.py": [
+      "f24d3eb981908d8d5edaf47bf1a7ebaea1ff884c490947d87a88ca3c0c3268fb",
+      1791752277379318400
+    ],
+    "docs/src/path_params/tutorial005.py": [
+      "c9105c375c71a81dc00bdb30472272e34587f783dffebad5142df1409f4d48bb",
+      1791752277379318400
+    ],
+    "docs/src/path_params_numeric_validations/tutorial001.py": [
+      "0c106da90a705592d055b17c00ed9efffba35c5f81f43a35603c2ecddc0360e1",
+      1791752277380320900
+    ],
+    "docs/src/path_params_numeric_validations/tutorial002.py": [
+      "9231e5024179a20e8334aa83fe5d724b9e7b19fb0684547e4f9221396524e6e5",
+      1791752277380320900
+    ],
+    "docs/src/path_params_numeric_validations/tutorial003.py": [
+      "26a66c6a4210e7092554dce150846d12cbb4f22d4c9809574c3845e55d7102fb",
+      1791752277380320900
+    ],
+    "docs/src/path_params_numeric_validations/tutorial004.py": [
+      "69139cdf20c7e8e1245f4999f9aca946346a0727838c83e567723e14b41ef274",
+      1791752277381318500
+    ],
+    "docs/src/path_params_numeric_validations/tutorial005.py": [
+      "521c0709591f6ed59e6bd4083c935648561e6354de58cdb1b2f7268dd4697bfb",
+      1791752277381318500
+    ],
+    "docs/src/path_params_numeric_validations/tutorial006.py": [
+      "c0c46b1d528de327128c04ed783e0183dd38dd4e38a788ac67f91bbbb01c9975",
+      1791752277381318500
+    ],
+    "docs/src/python_types/tutorial001.py": [
+      "7e0aec6cd29ab9831d0703b5f6d5674c825ac3cc8947d039f30697934ed93f2e",
+      1791752277382318200
+    ],
+    "docs/src/python_types/tutorial002.py": [
+      "d816e1f852c5b4cb90b2ad64bc5f304757c7f2c1e900601aea0c2a354384b034",
+      1791752277382318200
+    ],
+    "docs/src/python_types/tutorial003.py": [
+      "01e3456e1ae5a448238d2d379313728f493668a752425f2f45848d210f1a16b3",
+      1791752277382318200
+    ],
+    "docs/src/python_types/tutorial004.py": [
+      "d034531ea797bc39eec359c114f8fbfcc2d7493b9f924a4e5467aff24ad927a5",
+      1791752277383321700
+    ],
+    "docs/src/python_types/tutorial005.py": [
+      "db06ab760d6af4442d36a8fa7cd696ea56e56f0008c654ef9fc959af75b6b09e",
+      1791752277383321700
+    ],
+    "docs/src/python_types/tutorial006.py": [
+      "b7a8217ad5d70f9436e4ab2ce3e247db1575293d2c0394c55ce95d9308fcb855",
+      1791752277383826200
+    ],
+    "docs/src/python_types/tutorial007.py": [
+      "1d95c6c3e475f74c7af6c2045329d648b871049336a6f74570b68cae7a8b94ed",
+      1791752277383826200
+    ],
+    "docs/src/python_types/tutorial008.py": [
+      "86ddddc623f84c867c40c44a6e397d511e81748c67b9f836f1e3492bb37734ac",
+      1791752277383826200
+    ],
+    "docs/src/python_types/tutorial009.py": [
+      "e482f69ff93d2d7b9668df7cec33e93809efe4362302ebf374416066055207b8",
+      1791752277384832300
+    ],
+    "docs/src/python_types/tutorial010.py": [
+      "eb8f2653d7827318d062011b94b2d87bc55a384876d62fe6f1cb880cd2ab3a29",
+      1791752277384832300
+    ],
+    "docs/src/query_params/tutorial001.py": [
+      "6adfaedf0f557cb2ebe4b75b805c7f6c783c61e50845572f4020e888dac69489",
+      1791752277385830300
+    ],
+    "docs/src/query_params/tutorial002.py": [
+      "93ad2fb1e67c520c29ac10ffa1ccf8934def41fca4e45c7a4b5e4f318691a73e",
+      1791752277385830300
+    ],
+    "docs/src/query_params/tutorial003.py": [
+      "3562113594316076c45d12676393c4dd39162d69017bc3ed20305c1834a6b119",
+      1791752277385830300
+    ],
+    "docs/src/query_params/tutorial004.py": [
+      "b7addd8aa4208ee96dd1681878cbe83445b952805f9a58fcdd69c78b74a8f002",
+      1791752277386830200
+    ],
+    "docs/src/query_params/tutorial005.py": [
+      "c532cc66d7a9b90cf79773b7fcbdbe306a88353aac72bc72ffd7bc990d91c25f",
+      1791752277386830200
+    ],
+    "docs/src/query_params/tutorial006.py": [
+      "53814b3e901196f30f82cde40ab50fef24f7a5828e3903a98ec445ffd4c81da1",
+      1791752277386830200
+    ],
+    "docs/src/query_params/tutorial007.py": [
+      "56190a53d346880831e9b7be411cab31d82e1e0a0f25801ab9f1231ace11b0b2",
+      1791752277387831000
+    ],
+    "docs/src/query_params_str_validations/tutorial001.py": [
+      "032a5eec420349b4947bff25a4f583a95a9fb75d3f928a57b9acfae8dc6b5361",
+      1791752277387831000
+    ],
+    "docs/src/query_params_str_validations/tutorial002.py": [
+      "bb12ea1456197ed30b36fc1249ace7a69d0ca3aa746d72a5caf7bd6b4f598546",
+      1791752277387831000
+    ],
+    "docs/src/query_params_str_validations/tutorial003.py": [
+      "a5d72f6619141f4aa096d9d925d34f172fc6eac30764a505d1aab55ead4692bc",
+      1791752277388829800
+    ],
+    "docs/src/query_params_str_validations/tutorial004.py": [
+      "c7189bc180ab4fad6ebe0de9b983589e01409318fba710b620f284d2418c41d6",
+      1791752277388829800
+    ],
+    "docs/src/query_params_str_validations/tutorial005.py": [
+      "26c9aee0db9ff3c37bd18849ebfdea22b5a266c5810797c37b26ad98b689b8fe",
+      1791752277388829800
+    ],
+    "docs/src/query_params_str_validations/tutorial006.py": [
+      "4ded332102dce4c51d4f2b7c1dc941805fd7ee0f5550067bdca2009c17551752",
+      1791752277389830200
+    ],
+    "docs/src/query_params_str_validations/tutorial007.py": [
+      "0d2a8ff4bb30eb7ba327c369cfccd68718bac2405eb073ae78a5d98bbc6bfe45",
+      1791752277389830200
+    ],
+    "docs/src/query_params_str_validations/tutorial008.py": [
+      "4b98fa0dc039c3c469e1f51c51e36dd67c28cce72441bc10e4d1094e40c598a7",
+      1791752277389830200
+    ],
+    "docs/src/query_params_str_validations/tutorial009.py": [
+      "21acad8a5cbaca7b3fa4b82c98006233102d948c3b39a018549161199cfa80a3",
+      1791752277389830200
+    ],
+    "docs/src/query_params_str_validations/tutorial010.py": [
+      "367efe91f4c1b06e900b3d4f8693316675a289c630bcd615c4f97994f2457ca1",
+      1791752277390830200
+    ],
+    "docs/src/query_params_str_validations/tutorial011.py": [
+      "4df5a6c1c501780002acf5de7c41fd4a72ecb87f67b0a33d4402b118401a2dab",
+      1791752277390830200
+    ],
+    "docs/src/query_params_str_validations/tutorial012.py": [
+      "a417e57c3826d64db832ee5d4c78ef7e85ce4bb05ee708c4430b4535afc4e1f9",
+      1791752277390830200
+    ],
+    "docs/src/query_params_str_validations/tutorial013.py": [
+      "db299433df7cc71fa84ea9b2904014c62f0f3e0b7e01c3764d1e930af0ecce5a",
+      1791752277390830200
+    ],
+    "docs/src/request_files/tutorial001.py": [
+      "8e46301747d6852fac06c20c2fd416ac3b69208a11228efe4573fff0bc09cf61",
+      1791752277390830200
+    ],
+    "docs/src/request_files/tutorial002.py": [
+      "c08cde790cc86002f2b400dba30fcf3babdad6d760cf542aa449316b0c750d7a",
+      1791752277392333700
+    ],
+    "docs/src/request_forms/tutorial001.py": [
+      "b57966a0054635e45f742ae20ba94318b9e0759124783c7f5d733defb2c2f6d2",
+      1791752277392333700
+    ],
+    "docs/src/request_forms_and_files/tutorial001.py": [
+      "1afec171374baa2ee869bf961ba2d8c2ec5970f8cde18031b35bf5dedb630e84",
+      1791752277393338200
+    ],
+    "docs/src/response_change_status_code/tutorial001.py": [
+      "081052610b8a927050f51351a4c03419a63e14edc3dc332fd2c7473a8e3e3323",
+      1791752277393338200
+    ],
+    "docs/src/response_cookies/tutorial001.py": [
+      "36f92764e3557343d91214212b3580d96fb9f557e2c4f4b2bef1c0892cefef2a",
+      1791752277393338200
+    ],
+    "docs/src/response_cookies/tutorial002.py": [
+      "3a2727ec075d64bc7492cfdf37df018139778b7ba83d60c52be169dc7287a370",
+      1791752277393338200
+    ],
+    "docs/src/response_directly/tutorial001.py": [
+      "508e8c8d246d28488fa9de99cde1386e2b4b06724fceec95b4958f46cc4cd501",
+      1791752277394737100
+    ],
+    "docs/src/response_directly/tutorial002.py": [
+      "089b882be586a93fcb92124888cf5c2c5bffe64b159ef16841a80219ea46ba23",
+      1791752277394737100
+    ],
+    "docs/src/response_headers/tutorial001.py": [
+      "46e2e2d669a6178609c97cef30fa1a5425e8cc5403d772ff1cbd25387aa7fd02",
+      1791752277394737100
+    ],
+    "docs/src/response_headers/tutorial002.py": [
+      "9b2233a97e26c78f8c03ce53b115244eb666056ae3d40b07e5d1bfc2f74d9d06",
+      1791752277395735000
+    ],
+    "docs/src/response_model/tutorial001.py": [
+      "bc2d51233ce0b154c99b3187a5337990349696b50ebe63f48e3ca6002a1b7cf5",
+      1791752277395735000
+    ],
+    "docs/src/response_model/tutorial002.py": [
+      "1fdd0a79afa619895767aed49d849c69a7de3055e76e77e5dfcfaff190314695",
+      1791752277395735000
+    ],
+    "docs/src/response_model/tutorial003.py": [
+      "da2d43cb4f3ccf430443b2c38625fd01213423e8e6e0396faae687f1c48842c1",
+      1791752277396734500
+    ],
+    "docs/src/response_model/tutorial004.py": [
+      "3bfdb77e0ea595a3903180f5e22695808922b43b4b6c27b36c8208f2be997371",
+      1791752277396734500
+    ],
+    "docs/src/response_model/tutorial005.py": [
+      "c76d61f072cbfc88e00f80591fcbd0424a607180f85e8c18b259e8f9a5bddb44",
+      1791752277397735600
+    ],
+    "docs/src/response_model/tutorial006.py": [
+      "f8bb9148371828650c18f581c891302e440616e4fca526f599c619f5b6052db7",
+      1791752277397735600
+    ],
+    "docs/src/response_status_code/tutorial001.py": [
+      "0315c8641f1ceeb35e89813bb09edb1d236c458c6c3f096184f5b3c2e0db044b",
+      1791752277397735600
+    ],
+    "docs/src/response_status_code/tutorial002.py": [
+      "2e50fac1f85559132a3dd2d21db9d63f86bbb0203ead5a3d8b4b0118d4a16d47",
+      1791752277398735000
+    ],
+    "docs/src/security/tutorial001.py": [
+      "fa42dc49dd392132461a065d3b3aba28075b6ccccf17484317fa75e22642c716",
+      1791752277398735000
+    ],
+    "docs/src/security/tutorial002.py": [
+      "658b1a81b0fd54f7145aa54763936e5c207f8b5ec7af81d305a64d90bece69d9",
+      1791752277398735000
+    ],
+    "docs/src/security/tutorial003.py": [
+      "8118a9686ced7e86f31340708e9e32519f59567d9925397bee631f017125cc42",
+      1791752277399736900
+    ],
+    "docs/src/security/tutorial004.py": [
+      "f54cf5c2abb3dfb60ebe9f5c0deec5c2ec73c68d0af636aedffc1cb92314d6ce",
+      1791752277399736900
+    ],
+    "docs/src/security/tutorial005.py": [
+      "f88b3b9df10e5ac6e44c0e193d26266e2c8a641a60e9381a5fde537a2e5be298",
+      1791752277399736900
+    ],
+    "docs/src/security/tutorial006.py": [
+      "ede0ecaab51b57274b91d9d5eeb32b6056fd68908d253f5d837de822d741b03c",
+      1791752277400735300
+    ],
+    "docs/src/security/tutorial007.py": [
+      "1e6227624eea699f896695d85d23fda606ef2f4e95f5bd5fbef69013ddaf83d9",
+      1791752277400735300
+    ],
+    "docs/src/sql_databases/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277400735300
+    ],
+    "docs/src/sql_databases/sql_app/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277401735100
+    ],
+    "docs/src/sql_databases/sql_app/crud.py": [
+      "40e6718b1ec52be7120c9fc9e0e674da89ac4df799a23a86fe4759a84242c33e",
+      1791752277401735100
+    ],
+    "docs/src/sql_databases/sql_app/database.py": [
+      "54066de6cd894df20ac98d73f2fb3e9ce03cbd8c18f316c56e951b4397c2f1b5",
+      1791752277401735100
+    ],
+    "docs/src/sql_databases/sql_app/main.py": [
+      "064be0b3a580943e8554b8aed8bee91236df6ca3bd949a7dc3bdfbcad45a50c4",
+      1791752277401735100
+    ],
+    "docs/src/sql_databases/sql_app/models.py": [
+      "d4ed157d95da513d7c6e037c5b52d5ac84306b21a82cc893bb320ad8bc63c8fc",
+      1791752277403238600
+    ],
+    "docs/src/sql_databases/sql_app/schemas.py": [
+      "8f0e6ae5e7bd97098028ac44663b7fff242207639104bc106ab1d4bb42e5e0fe",
+      1791752277403238600
+    ],
+    "docs/src/static_files/tutorial001.py": [
+      "c3bce4cda79ad9f97ad8f6dc52ac9c95110d06c5aa01e42230e636f0a7323d88",
+      1791752277403238600
+    ],
+    "docs/src/sub_applications/tutorial001.py": [
+      "e420beed2c85ce834b111ab4197350c85640f01cc46dc9790c0db64a0dcbbb8d",
+      1791752277404243500
+    ],
+    "docs/src/templates/static/styles.css": [
+      "ea1071274c154fcc6f6747d11f13d3770e1c9ea703a76cc022474c6e4a0617e5",
+      1791752277404243500
+    ],
+    "docs/src/templates/templates/item.html": [
+      "41a9f60efbe9d916ce92dca4a38843e28d52be9b443474afd3522c67ed47563c",
+      1791752277405242500
+    ],
+    "docs/src/templates/tutorial001.py": [
+      "3ac3facbd811265d690720453eae6385058eb095414d0a43c4733dc7657e71f6",
+      1791752277405242500
+    ],
+    "docs/src/using_request_directly/tutorial001.py": [
+      "e6175846930fc0b60aae763cd251735e5e8d337b22a50186a8ab7b30ba467f61",
+      1791752277405746600
+    ],
+    "docs/src/websockets/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277405746600
+    ],
+    "docs/src/websockets/tutorial001.py": [
+      "62392ba2244334fd5587df58c10db833f7c81d1cae51d615990fa6430722e0b5",
+      1791752277405746600
+    ],
+    "docs/src/websockets/tutorial002.py": [
+      "1890ee07dba731deb632f47cbb2a2f8f595ae9bfcdc337e7f4e3853f439af842",
+      1791752277406749800
+    ],
+    "docs/tutorial/additional-responses.md": [
+      "010452358066af3143595c34e94a689b3fd498ca5732487b70e32ad43f304222",
+      1791752277406749800
+    ],
+    "docs/tutorial/additional-status-codes.md": [
+      "38d3dc672abc816e92e477a4f12b42e1923a1010140be95a7adbe84c1cdcd244",
+      1791752277406749800
+    ],
+    "docs/tutorial/application-configuration.md": [
+      "9f560a9c0ff81b2ab0616db8434dfe26c9a3cdea922ae5b0aa671159598fd697",
+      1791752277407754400
+    ],
+    "docs/tutorial/async-sql-databases.md": [
+      "4021cbb7c119fc312633d9cb8ab91b6eaa0102e72a9c1fd57a81461e044831d9",
+      1791752277407754400
+    ],
+    "docs/tutorial/background-tasks.md": [
+      "da223357ebabc79c60d26b938ee041308b185510761d9abb0fe70da6fdf12908",
+      1791752277408758300
+    ],
+    "docs/tutorial/bigger-applications.md": [
+      "b3351c761bb11aa4eb456b30ebaeb4f09a219d0acb848cf446536bf3a686392b",
+      1791752277408758300
+    ],
+    "docs/tutorial/body-multiple-params.md": [
+      "5a338fe3921a4622763d23d421471b725a89ce9cea4d131edbabbf4ba149ffeb",
+      1791752277408758300
+    ],
+    "docs/tutorial/body-nested-models.md": [
+      "cbd478bdee39674ed92525ec48966f027db5b93bc1526c7b00cab1d5d97c6b4d",
+      1791752277409812100
+    ],
+    "docs/tutorial/body-schema.md": [
+      "37681944094eddeb7a12df753464b332d94de139402f62b03db586dddba15683",
+      1791752277409812100
+    ],
+    "docs/tutorial/body-updates.md": [
+      "387d06a7bef7e405a13be8705f5d4d551f1e0cb35b463cb58c38d2bcad35fe20",
+      1791752277409812100
+    ],
+    "docs/tutorial/body.md": [
+      "e8d25a1bb70bb435c4f1bfae2414f1f45cfa69a4af56d94a42be0acbf60059c5",
+      1791752277410812000
+    ],
+    "docs/tutorial/cookie-params.md": [
+      "bfa7dc8e013fac2a6148702f752b4596d98c742eb3b26287b8a495ad1ea2e83f",
+      1791752277410812000
+    ],
+    "docs/tutorial/cors.md": [
+      "bac2808455195781e6467065c251bb3a09eb3fb66f77e132a72bcb8e10a6dd34",
+      1791752277410812000
+    ],
+    "docs/tutorial/custom-response.md": [
+      "af5afacf2958a738878983de6e581a5fafb93f9428a00b284db36fef7eb799ff",
+      1791752277411814600
+    ],
+    "docs/tutorial/debugging.md": [
+      "97c6583d8db4b24d726ee4cbc33b71ce3fb5001d97fee59af60349304106c9ed",
+      1791752277411814600
+    ],
+    "docs/tutorial/dependencies/advanced-dependencies.md": [
+      "840d25bca9b6d717f10da6faf92dad2e954f88fb052b5ef972a547bcc7c6079a",
+      1791752277411814600
+    ],
+    "docs/tutorial/dependencies/classes-as-dependencies.md": [
+      "0484ea39fb57ff9d056fa73ad2b6d0f063fd5dc06d398db69582ee0d925e29cd",
+      1791752277411814600
+    ],
+    "docs/tutorial/dependencies/dependencies-in-path-operation-decorators.md": [
+      "530b41ace4ce5a8ff85cae162e38ae2069dbac99de8d0de6f2e79f87d682a561",
+      1791752277413322500
+    ],
+    "docs/tutorial/dependencies/first-steps.md": [
+      "161039b878880cf41012f18eae9387d20f16f9bec5d23a9ee651befd2640f66d",
+      1791752277413322500
+    ],
+    "docs/tutorial/dependencies/sub-dependencies.md": [
+      "df4e6fef7d09408552640879b9d4660798d4428c93c3fd9ce653ec8ab9603061",
+      1791752277414328300
+    ],
+    "docs/tutorial/encoder.md": [
+      "6086c9a7ac9a4bc86de3732818a9dd7172ea82a52fcf862813412171d0011d66",
+      1791752277414328300
+    ],
+    "docs/tutorial/events.md": [
+      "e667bc77303c3e7d53cdf1b50a0db3da96cdc063b2642a4921896b68f87e0e87",
+      1791752277414328300
+    ],
+    "docs/tutorial/extending-openapi.md": [
+      "9ad32c92257bc312588239f0b529f35a378ab56551bdacf71bb8a9e8ebc545f0",
+      1791752277415327600
+    ],
+    "docs/tutorial/extra-data-types.md": [
+      "f62cefa108eecfc767076d0e42c4ae6b648b056317d197ed929ae763f223a10f",
+      1791752277415327600
+    ],
+    "docs/tutorial/extra-models.md": [
+      "8fafcfbfb7e578286ddaf32990cec19de71d2d5dfd62bf4cd50dfcd22a11d2b2",
+      1791752277416330000
+    ],
+    "docs/tutorial/first-steps.md": [
+      "126f70c1f4578887e0de8865117bc5fae398f03752cef862ea36cb6531455c70",
+      1791752277416330000
+    ],
+    "docs/tutorial/graphql.md": [
+      "b051b87fd3f17e5d1cb101855ecffda8c85ea5efb75aefa806c58bc10bca584a",
+      1791752277416330000
+    ],
+    "docs/tutorial/handling-errors.md": [
+      "231d12fdf3be1b975745e0287a60048797b6308abeb98d81066cca5de0185f8e",
+      1791752277416330000
+    ],
+    "docs/tutorial/header-params.md": [
+      "9f9516ce2751aac56d70f1f8576cd73e6193faa5aea527617e50ff873babf464",
+      1791752277417329700
+    ],
+    "docs/tutorial/intro.md": [
+      "f4ff80a981f63afb724f4b99cf02447f44515c7f399fc09443d425febf3214c5",
+      1791752277417329700
+    ],
+    "docs/tutorial/middleware.md": [
+      "535f661fd3f500127e8bcf1a8bbd923860fbcaef2ed6ac5e85ea15a597d531c6",
+      1791752277417329700
+    ],
+    "docs/tutorial/nosql-databases.md": [
+      "52a3ee3be3bf2f8ac56840e56113d8b38f47506a0442cb995073cfe280c519a2",
+      1791752277418327400
+    ],
+    "docs/tutorial/path-operation-advanced-configuration.md": [
+      "0c6a4f62226451c55eaaee9fcda2a6f30d181e309de8e666e29af9033f1ec497",
+      1791752277418327400
+    ],
+    "docs/tutorial/path-operation-configuration.md": [
+      "ff3da6911b9a6e42c38dc16a9ebd77d68d5b8cd6387ad235879d20e67fdd9f8a",
+      1791752277418327400
+    ],
+    "docs/tutorial/path-params-numeric-validations.md": [
+      "a2b23ecc62dd5aea4a81655f425f9b4d2e862133ab79d61e8d80b8fa157d45ea",
+      1791752277419327100
+    ],
+    "docs/tutorial/path-params.md": [
+      "c8a5bc27a07b32a214ac50b45ca6bc4128362237b80a904a7dcac02617fd8c00",
+      1791752277419327100
+    ],
+    "docs/tutorial/query-params-str-validations.md": [
+      "453e6e61154e13df1356ff47c69288cbe45cb09093830a752d6e1500078674b1",
+      1791752277419327100
+    ],
+    "docs/tutorial/query-params.md": [
+      "7490a1286707a4b1996dc46b910660ca944e5058536a32a65e75aec507e42e6f",
+      1791752277420327100
+    ],
+    "docs/tutorial/request-files.md": [
+      "367ca2aff5de481f3df8fec80acd37f5f370b918530dcd9b71598c357f261d29",
+      1791752277420327100
+    ],
+    "docs/tutorial/request-forms-and-files.md": [
+      "6ef09151f5a5bc12ccf106c536ec1b15feacfb057ca9fba9a224c435957eee7a",
+      1791752277420327100
+    ],
+    "docs/tutorial/request-forms.md": [
+      "bcc95c2d3ab2fa043c4205e0085ee5396dc916c98b1f2f440ad7398d0ab05958",
+      1791752277421327400
+    ],
+    "docs/tutorial/response-change-status-code.md": [
+      "c17ded964ee1231f07098f0ffd7e0301993e602b54c6c6d9d7c91ecb7b69357c",
+      1791752277421327400
+    ],
+    "docs/tutorial/response-cookies.md": [
+      "d38f5d8c7d8849aeaee3341ab84bc33f6ed08c13fcae933b9d46f1d6cac29ba9",
+      1791752277421327400
+    ],
+    "docs/tutorial/response-directly.md": [
+      "50d89fbbc9a8d6c9e7fe501740ef36fd4daab7cb2c919d747451837fce50e7ea",
+      1791752277422329800
+    ],
+    "docs/tutorial/response-headers.md": [
+      "51612f6087a9ede5cdeb1ad3bf263f5c9df4a7683ab589cc403e0bcd8d6076a1",
+      1791752277422329800
+    ],
+    "docs/tutorial/response-model.md": [
+      "1f73c379ebe15964eeb1bc459d223ee08f54b9d868417f41b05edc8ff812b647",
+      1791752277423331300
+    ],
+    "docs/tutorial/response-status-code.md": [
+      "2c48205efe5600799ebceecfa2e2c538fc9db41dfd5d50bbe1d79783c777ad55",
+      1791752277423331300
+    ],
+    "docs/tutorial/security/first-steps.md": [
+      "b24a3545acdec540d0fb22fa09624de9a10e6765fb03772c850ab9e5cd6ef324",
+      1791752277423331300
+    ],
+    "docs/tutorial/security/get-current-user.md": [
+      "edaf8f00b5b6897231e6fa5fcc247867dd1270f3b6b41c7979c7a7dcb862710b",
+      1791752277424592600
+    ],
+    "docs/tutorial/security/http-basic-auth.md": [
+      "4a833274c9f49ecd363f2d4eb0023b57e6358f9b64f2a423c3e64e5560dad7ed",
+      1791752277424592600
+    ],
+    "docs/tutorial/security/intro.md": [
+      "ffba281f0181e43875df28faec3818f05bd96384059d816a5acdada40a972734",
+      1791752277424592600
+    ],
+    "docs/tutorial/security/oauth2-jwt.md": [
+      "8f2437b31d469f394b5b2b931107296d7d2705d0aed4570f1ec56bab90604309",
+      1791752277425592800
+    ],
+    "docs/tutorial/security/oauth2-scopes.md": [
+      "c89531dc62271efec00f7b872823eff15e8f83f2b1d2b6e9c03f4884b8507555",
+      1791752277425592800
+    ],
+    "docs/tutorial/security/simple-oauth2.md": [
+      "5f030e7d2da041d1c95d8a80aca536dd889368135e9e2994eea247a12ea4f112",
+      1791752277425592800
+    ],
+    "docs/tutorial/sql-databases.md": [
+      "9b2bd71daab5165fced858361dbf66a653112a74c4467891c9a63058b5e4beed",
+      1791752277426591200
+    ],
+    "docs/tutorial/static-files.md": [
+      "aecdaa82f2cb184df5da88434196b62a10314c548084315178be30b4131c3891",
+      1791752277426591200
+    ],
+    "docs/tutorial/sub-applications-proxy.md": [
+      "5fd419f3c7ac1a98046615b031bd8b9ec26edaea6776a17864c3b49568a077aa",
+      1791752277426591200
+    ],
+    "docs/tutorial/templates.md": [
+      "1438a2aab853aeb68105fb3788c3ad17850b5782ae19c6c6e1a8f0183fdc1b74",
+      1791752277427590200
+    ],
+    "docs/tutorial/testing-dependencies.md": [
+      "548ba4b1eeee6f6c45cd166e76dd719fcdc7365322e621ad3c9ff3b66d701f5c",
+      1791752277427590200
+    ],
+    "docs/tutorial/testing.md": [
+      "159d6b98aadab9d1937659c8fcffcc1a9af3fdd3d92d7983f6a20e1f1053e42b",
+      1791752277428590200
+    ],
+    "docs/tutorial/using-request-directly.md": [
+      "f203cd15b4619b7608ff7d17f0f2d8e1c756e0bd07219b1095a17bf58871d263",
+      1791752277428590200
+    ],
+    "docs/tutorial/websockets.md": [
+      "692e1136db0cabedacf4f1b606f473f43ddb25b1272150a5df0bf4ba730b933b",
+      1791752277428590200
+    ],
+    "fastapi/__init__.py": [
+      "4cce0ccc1fccc703dddfb53eb7c6c61b19d8b225b978b7e52fd3e66d50971356",
+      1791752277429591000
+    ],
+    "fastapi/applications.py": [
+      "61172705a6421996ac332cdc28856f1cb9a13df327195797217ebc70bd2c4e21",
+      1791752277429591000
+    ],
+    "fastapi/datastructures.py": [
+      "4ebb57cf78498b9fe2b918d60dbb1dca5f3ba4be2c55928eaec1c44f9ccef4b6",
+      1791752277429591000
+    ],
+    "fastapi/dependencies/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277430591600
+    ],
+    "fastapi/dependencies/models.py": [
+      "19e5cc6c976243f64a4ad5356cf109b55bb5c008961e392f5b85608b824b36a4",
+      1791752277430591600
+    ],
+    "fastapi/dependencies/utils.py": [
+      "1c246fc14ab9d4de6cd25e4f659e9b9384c74c85c7bf32d3f077bb5f8dcdb9f0",
+      1791752277430591600
+    ],
+    "fastapi/encoders.py": [
+      "8a5122a5a220e20af2b31284ff1d1fe9ff9b8e080d32b1dd9a40ed77845c4328",
+      1791752277431590300
+    ],
+    "fastapi/exception_handlers.py": [
+      "4ee9cb26881402ab350bc0361ecb1750ae98932f55f7ec7c59eaefc1e33cd378",
+      1791752277431590300
+    ],
+    "fastapi/exceptions.py": [
+      "f43204c8da5e0365b99a76c8fa923336860f5b66ce1c33cec7eb0ded0c3025c8",
+      1791752277431590300
+    ],
+    "fastapi/openapi/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277431590300
+    ],
+    "fastapi/openapi/constants.py": [
+      "5f84d11a6fce23bc688294885848805fef450158035e412d4bafe765783f3fc7",
+      1791752277431590300
+    ],
+    "fastapi/openapi/docs.py": [
+      "f029b56e22638c45e0a193fd373c667fa4d81f9dadd499d8909988b1b16c4cd8",
+      1791752277433095100
+    ],
+    "fastapi/openapi/models.py": [
+      "a8b74728bf8d44b9a9e6576c75a5ef3d98108ee45519cc9c4a30cadd0e17aac0",
+      1791752277433095100
+    ],
+    "fastapi/openapi/utils.py": [
+      "80d348ee41fe6a6c72fda01acc822b517ea3fc714ad6ca168924e9066e6fb508",
+      1791752277433095100
+    ],
+    "fastapi/param_functions.py": [
+      "ab1fdf59f95ab6d8ceb9ab6a1658320c95ec3fc0465e27c3a4ec221db939ca82",
+      1791752277434102100
+    ],
+    "fastapi/params.py": [
+      "e44903a30753152394e34359647749c66c3c1c78c6879b540082b5659e9a030c",
+      1791752277434102100
+    ],
+    "fastapi/py.typed": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277434102100
+    ],
+    "fastapi/routing.py": [
+      "6b96bb46c1ff1b917c237baaef9a5bd93e9aa4ee6f2270f52c96d7b9c51b51f5",
+      1791752277435101600
+    ],
+    "fastapi/security/__init__.py": [
+      "b9e70539f7e8d96634223e809470a26975f3e634cb4576d13ffd1dc4613ed52f",
+      1791752277435101600
+    ],
+    "fastapi/security/api_key.py": [
+      "bac88fc4466ea4b4c0654f5209896bce4f701967bcfa13acad0515e3530a96da",
+      1791752277435101600
+    ],
+    "fastapi/security/base.py": [
+      "765e29bdb0be4718df6d680fb4259df0c554fbb081d92676dab2435d50973ba7",
+      1791752277436099600
+    ],
+    "fastapi/security/http.py": [
+      "04656ffd1f5b7c97584c239dc3f55fb73cfe8485573999a628ba175eafe3a203",
+      1791752277436099600
+    ],
+    "fastapi/security/oauth2.py": [
+      "8a6a88d942fedb6ac1f94ff5b0af1851f67cca310571c1d3d51ca39aa6081a44",
+      1791752277436099600
+    ],
+    "fastapi/security/open_id_connect_url.py": [
+      "38a5e581cf37bc3d9eb161138c30bc7c89d5aa58111866fbefb723e1c7493fc6",
+      1791752277436099600
+    ],
+    "fastapi/security/utils.py": [
+      "8b3961f8705a2f556725e39e453427c8d808de181316cef7782c8bcbeb276f80",
+      1791752277437099300
+    ],
+    "fastapi/utils.py": [
+      "e56c24879e6091832e667c499e41299ef3f4d300f836dc877b863e92a6de36bf",
+      1791752277437099300
+    ],
+    "LICENSE": [
+      "4ec89ffc81485b97fec584b2d4a961032eeffe834453894fd9c1274906cc744e",
+      1791752277300218000
+    ],
+    "mkdocs.yml": [
+      "bc63047cba917999e803e929aaff19a76b2abebd7c1ba0d846a576ec57440df1",
+      1791752277437099300
+    ],
+    "mypy.ini": [
+      "d770e718ecd51725ed9171fee3c2e56e508b7e25dcd976f393bf2996508a6d2a",
+      1791752277438102200
+    ],
+    "pending_tests/main.py": [
+      "c47e496132fd8028056110dd0791e6bb60dd476a846fb48ae98c34f5dc75871f",
+      1791752277438102200
+    ],
+    "Pipfile": [
+      "b608f0f60eef7e7ef29142f4d6911de09af89be8990e4d62ccc8ab997efa6c4e",
+      1791752277301215900
+    ],
+    "pyproject.toml": [
+      "c84a81e4649578afa474a1ebff8f704818680cf94a13efca640479edd3fcc2b5",
+      1791752277439099100
+    ],
+    "README.md": [
+      "ff2a63cb5c09f99cb17918833e513bcfb44fa093bb167ca3c65aa54b0592113b",
+      1791752277301215900
+    ],
+    "scripts/build-docs.sh": [
+      "74d7975b2ffb673dacfe3bd61d6f547b546384de256d999154fea3f48970f3c5",
+      1791752277439099100
+    ],
+    "scripts/clean.sh": [
+      "09bb4e328e44483e338de719a14d4d76d07cc672b114111761d02654418e1842",
+      1791752277439099100
+    ],
+    "scripts/deploy.sh": [
+      "eac0639bae1d3769e037e885f3731f3034849b3bc23d6f92bb6c6370e419a4fd",
+      1791752277440100900
+    ],
+    "scripts/docs-live.sh": [
+      "35e0b5d9859e4904d3c66a569b0a5e60a865e7e1895c014707fc6de7f03e7394",
+      1791752277440100900
+    ],
+    "scripts/format-imports.sh": [
+      "f3c32662c893e141f8ca76aeb2389a78ebde83072cee0a0c1f5bf7eb5d3e3caf",
+      1791752277440100900
+    ],
+    "scripts/format.sh": [
+      "ee8ef83d1e7daf82fffe0f38f15f7fc7fcf265b66dcc363e80f8f9a33922d7f5",
+      1791752277441099200
+    ],
+    "scripts/gitter_releases_bot.py": [
+      "5b3dfc892222d5441822dc62404f635f9d036a1698165df97163b9d0b3959254",
+      1791752277441099200
+    ],
+    "scripts/lint.sh": [
+      "b98423211c754ae902ab3dc9e53df3982f8cc9cda11507f3390aa3ec223c6894",
+      1791752277441099200
+    ],
+    "scripts/netlify-docs.sh": [
+      "ef451233995fff8cf5caa07380539163fd81a01bda42870eeaeaf4221c2e7344",
+      1791752277441099200
+    ],
+    "scripts/publish.sh": [
+      "f68e21315834d98112aeeee27e046887cb2a8cb83b9a7024aa2752367a046cd5",
+      1791752277442100200
+    ],
+    "scripts/test-cov-html.sh": [
+      "4b55d5b814c83ec4f7c66900eb25aab56272cea654b6486103f5b807808b3c39",
+      1791752277442100200
+    ],
+    "scripts/test.sh": [
+      "3009613a5d29b26b4abaa7ad579c6c4a118c2ae277dce0ae04881ce0bef1c880",
+      1791752277443099300
+    ],
+    "scripts/trigger-docker.sh": [
+      "7db4b9e8f724c6276f47f0f5c98a9e34a702fd0cb8dab2679cf60d50ec1d8ef3",
+      1791752277443099300
+    ],
+    "tests/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277443604600
+    ],
+    "tests/main.py": [
+      "fdc2c6ba7f9eb493cc0c20fdca72e34211388944529f1ff76330055ea16caa08",
+      1791752277443604600
+    ],
+    "tests/test_additional_properties.py": [
+      "38e5afb384f423149970c6337b574b8e4695763ef817846034a2bba2bc949dcb",
+      1791752277443604600
+    ],
+    "tests/test_additional_response_extra.py": [
+      "fe73ed28eae0b4f87efce532a13a119c0ee0cd1399d6049fff61fa15cb855f45",
+      1791752277444609300
+    ],
+    "tests/test_additional_responses_router.py": [
+      "3ad76025d047e5748cf7cf36fd65effc57272ec228d66c717b91067fa920af79",
+      1791752277444609300
+    ],
+    "tests/test_application.py": [
+      "1f5751e113b237bebfde943c7f5953333e072321a5f91925d4f7fda19320efe8",
+      1791752277445606600
+    ],
+    "tests/test_custom_swagger_ui_redirect.py": [
+      "f4405b17fdebce3a9fda6cdfbf9dc1330c9c612441373a0ee5c48f9f6d8660cb",
+      1791752277445606600
+    ],
+    "tests/test_datastructures.py": [
+      "11e86f4ab9cfb1a963a0845c14bd1b98292cfe04dc912ea852428120bb988184",
+      1791752277445606600
+    ],
+    "tests/test_datetime_custom_encoder.py": [
+      "12be739acc6bc8d88a6819572458073d39616465c6c700352e6b42a58cfcaba8",
+      1791752277446608000
+    ],
+    "tests/test_dependency_cache.py": [
+      "787e0a87681ecfbc9f8e36280b1dd68234214ed7662a016f99fd9deb2b5b949f",
+      1791752277446608000
+    ],
+    "tests/test_dependency_overrides.py": [
+      "6d5606623267737adbfedcba0a9b8ab3ad477b2c3586c0d5b75426028dcc5be0",
+      1791752277446608000
+    ],
+    "tests/test_duplicate_models_openapi.py": [
+      "d65ebe6483e9713ebdb90c0723d932d7a447eb77818ebfe5b192213adb0562c4",
+      1791752277446608000
+    ],
+    "tests/test_extra_routes.py": [
+      "078e75c8945248f153a056b6860bbeb2645ee63121fd92eccd52408176feb46a",
+      1791752277447608700
+    ],
+    "tests/test_include_route.py": [
+      "113575e52c0dde8762181ca67aa17a599a89eb7f5ea2629620bf668deee7c318",
+      1791752277447608700
+    ],
+    "tests/test_invalid_path_param.py": [
+      "227ca2a0967500e7f86c582dc4f8f1a83223b4fbd204a61813e8f89d3efcdbe6",
+      1791752277447608700
+    ],
+    "tests/test_invalid_sequence_param.py": [
+      "af6940633aa9b972d1389babe7dfe6e6b6bcfb94f985e67b9d79472a2e7b6758",
+      1791752277448606200
+    ],
+    "tests/test_jsonable_encoder.py": [
+      "76d97b09dd430825629694a105dfe7a41285fa62aa93c0f822045d747f4b85fc",
+      1791752277448606200
+    ],
+    "tests/test_local_docs.py": [
+      "0828901c90bb42e6eb35beca679c9db0bfb2ed4bbfdcea04595460808a2af16f",
+      1791752277448606200
+    ],
+    "tests/test_modules_same_name_body/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277449606000
+    ],
+    "tests/test_modules_same_name_body/app/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277449606000
+    ],
+    "tests/test_modules_same_name_body/app/a.py": [
+      "2d0737a6984294eaa0501b9142ce44e39e31f14215c9782b92fa6c5b9b6e4f0b",
+      1791752277449606000
+    ],
+    "tests/test_modules_same_name_body/app/b.py": [
+      "3c3fb1b1d42e9d651814022fce305e1e4a01576f0b22b72f75341c6adfe79f60",
+      1791752277450608000
+    ],
+    "tests/test_modules_same_name_body/app/main.py": [
+      "c0141eb7b7031210334e6d10bbc17b17f2046d5abe85891cc6407c007a3d66ce",
+      1791752277450608000
+    ],
+    "tests/test_modules_same_name_body/test_main.py": [
+      "010ebccc3f6ef61b63e43e7af7587d627fe646eba15a0b55bcdf61de9e4e435f",
+      1791752277451606200
+    ],
+    "tests/test_multi_body_errors.py": [
+      "a08a8b25f7583aa39ca1393166ca9475f1a00661ccd50aa690ead917d37f5a75",
+      1791752277451606200
+    ],
+    "tests/test_multi_query_errors.py": [
+      "8fa1c1b8cf70e04a3795cbd44511937009a29ed62755d79b73fb20b16254595b",
+      1791752277451606200
+    ],
+    "tests/test_no_swagger_ui_redirect.py": [
+      "9b3744c5295c1e12b02bf5f6dd9c6c3720cc5130ab894644e170cb0850883d8d",
+      1791752277451606200
+    ],
+    "tests/test_operations_signatures.py": [
+      "f491a8f09ca5dfdfb4ce29c4448687014e7d81c5a01b2deb08982bc50ae03796",
+      1791752277453109600
+    ],
+    "tests/test_param_class.py": [
+      "5b5d5d1f871b11bd58778a08cedd8563b1c3a599417dae6f8b68f4030793a55f",
+      1791752277453109600
+    ],
+    "tests/test_path.py": [
+      "a968e48f205aebd52760a909447df48de1e8a9b2e8c8085b31d747dedd9ac4ac",
+      1791752277453109600
+    ],
+    "tests/test_put_no_body.py": [
+      "20ca27a856593863eb0b8eb53030ab5bd27bf3f50e2f4b22a28ea7c0b81a4de4",
+      1791752277454114400
+    ],
+    "tests/test_query.py": [
+      "7b5103769c4c4cc271f4bfe6f482ed258fa79e61eda1fb78f7b30417e4e8a8e6",
+      1791752277454114400
+    ],
+    "tests/test_response_change_status_code.py": [
+      "ab3578e75ff623059b797af90bd96bf1c3188910a41a684fcae5248b0f447766",
+      1791752277455116600
+    ],
+    "tests/test_router_prefix_with_template.py": [
+      "3a5cf3509ea41f54a9f726d5e98a418637faa0a5e68370970e77c919c36af969",
+      1791752277455116600
+    ],
+    "tests/test_security_api_key_cookie.py": [
+      "cc371631555d0b602608248c8027ea3e4b250103c8b8964c9eac4b2eccc7927d",
+      1791752277455116600
+    ],
+    "tests/test_security_api_key_cookie_optional.py": [
+      "12b08ea39ac1c05c803a41c5d1d3c9e1bc5b9a4f71307a6b59e9d9811b9599fd",
+      1791752277456115000
+    ],
+    "tests/test_security_api_key_header.py": [
+      "74882069b13b33c9875fcc00ebf25c0cce396ee5f36ea7ac9716e9156ef2043e",
+      1791752277456115000
+    ],
+    "tests/test_security_api_key_header_optional.py": [
+      "768519af510feff851c429207e295f654debb08d3b471ea3ae892c9ed51f2eb4",
+      1791752277456115000
+    ],
+    "tests/test_security_api_key_query.py": [
+      "5391094e7be7d14c133cba8b49fd4d88ad8db13518619fff16054daa59a84eae",
+      1791752277457113800
+    ],
+    "tests/test_security_api_key_query_optional.py": [
+      "5f9ed5710a763504bc89fc7515192210adae608ee79b40b4fae56f7cd8aa7ca2",
+      1791752277457113800
+    ],
+    "tests/test_security_http_base.py": [
+      "26c532c3691d2b7521222f0b8ccad39a771d3081305c7f15c638dda6a53c5692",
+      1791752277458113600
+    ],
+    "tests/test_security_http_base_optional.py": [
+      "f2641bdcd534d03c653596231da3446623ccfa8ef5f380dbab46bdafe1c722f1",
+      1791752277458113600
+    ],
+    "tests/test_security_http_basic_optional.py": [
+      "cfe6effd7938d3d9e973669add69b12b855ec300ac63b1683b243974937fa64f",
+      1791752277459117600
+    ],
+    "tests/test_security_http_basic_realm.py": [
+      "33006271b202474bcc121e03c8c47c838489ae4a518db91afc8f7f9c874ed07b",
+      1791752277459117600
+    ],
+    "tests/test_security_http_bearer.py": [
+      "add10ed7bf965682841c96a82f2cb753f4be221bfd700f183afc752ae9d2ca08",
+      1791752277459117600
+    ],
+    "tests/test_security_http_bearer_optional.py": [
+      "afdd37b25e50ae9fd94f7e310edf1cefaa98615a03601edb1c855c6b6974c97a",
+      1791752277460113900
+    ],
+    "tests/test_security_http_digest.py": [
+      "68872b285a86baa7b74712ba1885f4c00c5692e22eee3d930ceb0a6f19bd1c76",
+      1791752277460113900
+    ],
+    "tests/test_security_http_digest_optional.py": [
+      "750cac0161b259b94eca4a03c3cc0f9514a4f998ec12d31ba3747dd5d55f11bc",
+      1791752277461114500
+    ],
+    "tests/test_security_oauth2.py": [
+      "505594a6998d78d46838116ff55967cbdeb94c9af64456b3fe9f560b19e7c821",
+      1791752277461114500
+    ],
+    "tests/test_security_oauth2_optional.py": [
+      "f8916636eece2ac3e96963dc951be8ece53cad8b9168b96df6ee3cc5a71748a9",
+      1791752277461114500
+    ],
+    "tests/test_security_oauth2_password_bearer_optional.py": [
+      "a3d669ff62b57baa46427709ab6da8c56b66c2e0f6150521e90b38eb7a4a8d67",
+      1791752277462114100
+    ],
+    "tests/test_security_openid_connect.py": [
+      "64b4762a0b03459495c99f5ec1948acdd75a289f2350c27c4776d2c24a295261",
+      1791752277462114100
+    ],
+    "tests/test_security_openid_connect_optional.py": [
+      "26c193e01ea3fb2a1528c1db09ce02e222f73b1d23155796f6a9fc4f559c66ce",
+      1791752277462114100
+    ],
+    "tests/test_serialize_response.py": [
+      "7ea23ef9e57bd2c8adbadefe4194841b48e087540903526c213320326599fc5e",
+      1791752277463115000
+    ],
+    "tests/test_starlette_exception.py": [
+      "f59fc3410c9e480a183234ce96d09d47b0c2cc97e68b1bf406e0ab86113a25d5",
+      1791752277463619700
+    ],
+    "tests/test_starlette_urlconvertors.py": [
+      "9c0fa1adaee9ed245be70b2628379c0af67f42559995e0f34a4699f71e78424d",
+      1791752277463619700
+    ],
+    "tests/test_tutorial/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277463619700
+    ],
+    "tests/test_tutorial/test_additional_responses/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277464625100
+    ],
+    "tests/test_tutorial/test_additional_responses/test_tutorial001.py": [
+      "7ba786114fa09dc10fceb3e36613f3b201a6d0282153698cd9cd741459534cd0",
+      1791752277464625100
+    ],
+    "tests/test_tutorial/test_additional_responses/test_tutorial002.py": [
+      "ae6d6f4541e5825da1c1bf6e0d29be9d35d00c4621834c3d1ec5076e849de09c",
+      1791752277465620500
+    ],
+    "tests/test_tutorial/test_additional_responses/test_tutorial003.py": [
+      "11ea8acc21ee0e3f488242c14b28a5ce9ad6676c83eb8d1942a8b00743b35e3c",
+      1791752277465620500
+    ],
+    "tests/test_tutorial/test_additional_responses/test_tutorial004.py": [
+      "58de78ee196b2760a68310bd741acc89d3258a97d8aa17bc9fcbd5537f4be912",
+      1791752277465620500
+    ],
+    "tests/test_tutorial/test_additional_status_codes/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277466622100
+    ],
+    "tests/test_tutorial/test_additional_status_codes/test_tutorial001.py": [
+      "e8d3c76b98156ee285b1025e418e8a595c8f9f22aa78e82e6f0cd4c306c3c6e6",
+      1791752277466622100
+    ],
+    "tests/test_tutorial/test_application_configuration/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277467620900
+    ],
+    "tests/test_tutorial/test_application_configuration/test_tutorial001.py": [
+      "f670d69389161878c6e26b33bc596d438843d7282bf985b039fe34a5dc0f6b20",
+      1791752277467620900
+    ],
+    "tests/test_tutorial/test_async_sql_databases/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277467620900
+    ],
+    "tests/test_tutorial/test_async_sql_databases/test_tutorial001.py": [
+      "0da7556897bc8ea7eb37fdef639e506eabf40bb39dc6630d5046a52cbf4ac563",
+      1791752277468621200
+    ],
+    "tests/test_tutorial/test_background_tasks/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277468621200
+    ],
+    "tests/test_tutorial/test_background_tasks/test_tutorial001.py": [
+      "90cae19c511184b7c8e32896137ce3de5f7b4b953389197890cf073fe96a7f33",
+      1791752277469622100
+    ],
+    "tests/test_tutorial/test_background_tasks/test_tutorial002.py": [
+      "b595771a8002e7cd78a3b53fe8764e8e31df2b1380e5e69795ff0d4267af9269",
+      1791752277469622100
+    ],
+    "tests/test_tutorial/test_bigger_applications/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277469622100
+    ],
+    "tests/test_tutorial/test_bigger_applications/test_main.py": [
+      "95f406b575438f435b7f2207acd2a4d666c3dc1530db0cec2e78b77c2bf6e15a",
+      1791752277470620800
+    ],
+    "tests/test_tutorial/test_body/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277470620800
+    ],
+    "tests/test_tutorial/test_body/test_tutorial001.py": [
+      "076c7e08fa720be65e870c9b339e965be1e19914e1ef9a791417e3c2af3f545c",
+      1791752277470620800
+    ],
+    "tests/test_tutorial/test_body_multiple_params/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277471621500
+    ],
+    "tests/test_tutorial/test_body_multiple_params/test_tutorial001.py": [
+      "222f3be04c9d54fa25413e3d4c986bf44275db4d51aff5564927b71f5faa14df",
+      1791752277471621500
+    ],
+    "tests/test_tutorial/test_body_multiple_params/test_tutorial003.py": [
+      "2fb11328fe000b66e755b40387fa210909d4b286568a0dbb0f1231f67246797e",
+      1791752277471621500
+    ],
+    "tests/test_tutorial/test_body_nested_models/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277471621500
+    ],
+    "tests/test_tutorial/test_body_nested_models/test_tutorial009.py": [
+      "b85f618950d8ab925ec826ee5622bf4e29de0acf021bef4fd860663784c03b53",
+      1791752277471621500
+    ],
+    "tests/test_tutorial/test_body_schema/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277473125500
+    ],
+    "tests/test_tutorial/test_body_schema/test_tutorial001.py": [
+      "30bbdbee17b5f85a2c051fe9cae93f333c0664b39f71b1b300c30a2576cf41dd",
+      1791752277473125500
+    ],
+    "tests/test_tutorial/test_body_updates/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277473125500
+    ],
+    "tests/test_tutorial/test_body_updates/test_tutorial001.py": [
+      "9cbb1b9be28a6a89ca5c37f53b1fa153376d986018f025438eaa0cf949c43b79",
+      1791752277474129800
+    ],
+    "tests/test_tutorial/test_cookie_params/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277474129800
+    ],
+    "tests/test_tutorial/test_cookie_params/test_tutorial001.py": [
+      "21decd9c11cd651318487862f0bdd4227321841c543b04e0952841c71ec31c8a",
+      1791752277474129800
+    ],
+    "tests/test_tutorial/test_custom_response/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277475129900
+    ],
+    "tests/test_tutorial/test_custom_response/test_tutorial001.py": [
+      "1812be44dbaa9dbf5e6ddcc2531e22e350bc816fde542a064bb5bb7cf47d5f2a",
+      1791752277475129900
+    ],
+    "tests/test_tutorial/test_custom_response/test_tutorial004.py": [
+      "3fda7e228ccfc34bf05397ab34ccaaf7a21c731efd0069a166fb5df950df9896",
+      1791752277475634400
+    ],
+    "tests/test_tutorial/test_dependencies/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277475634400
+    ],
+    "tests/test_tutorial/test_dependencies/test_tutorial001.py": [
+      "140ded51d2c7222554e56728ca99795fa755df00a35da85e21d22bc303eceba0",
+      1791752277475634400
+    ],
+    "tests/test_tutorial/test_dependencies/test_tutorial004.py": [
+      "41683c9c00b89b63cb5442f3b2e81289c283b9964d5374f42b955de75babca82",
+      1791752277476637100
+    ],
+    "tests/test_tutorial/test_dependencies/test_tutorial006.py": [
+      "185f44349d8ffa8057016afd4fa516e1509f166cf6ad3067dfa407d23b66e32b",
+      1791752277476637100
+    ],
+    "tests/test_tutorial/test_events/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277477635700
+    ],
+    "tests/test_tutorial/test_events/test_tutorial001.py": [
+      "848ca80f9fe43adf37615c936689a15f90b1961ca2190d294f2afa41c6131edb",
+      1791752277477635700
+    ],
+    "tests/test_tutorial/test_events/test_tutorial002.py": [
+      "bbb39972cfc575636b9ad4ff6563baa3a7dc7c057b2897de879b457bfc52a774",
+      1791752277477635700
+    ],
+    "tests/test_tutorial/test_extending_openapi/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277478637000
+    ],
+    "tests/test_tutorial/test_extending_openapi/test_tutorial001.py": [
+      "e8dfbbb079064c626288a9f2b23c062959db7e7927b7683b72dd6290663352b3",
+      1791752277478637000
+    ],
+    "tests/test_tutorial/test_extra_data_types/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277479640600
+    ],
+    "tests/test_tutorial/test_extra_data_types/test_tutorial001.py": [
+      "965958ea579e2c0e5d8f03d5eaeb2b252db3c0e1e3405d01a541449221463188",
+      1791752277479640600
+    ],
+    "tests/test_tutorial/test_extra_models/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277480637200
+    ],
+    "tests/test_tutorial/test_extra_models/test_tutorial003.py": [
+      "4fdab8b6a4c07d1448db41e84a9a41373d4d2646ecd03e8ae915e96a2eb09bcd",
+      1791752277480637200
+    ],
+    "tests/test_tutorial/test_extra_models/test_tutorial004.py": [
+      "c7b20a6cea0f1a4958f2d8354d37ebb9b187fc5a95fc54de93b8f06216dda390",
+      1791752277481637300
+    ],
+    "tests/test_tutorial/test_extra_models/test_tutorial005.py": [
+      "2d0d13d5b4d2901e3a02a1473f8cb71811653150a2225815f36845adc623b309",
+      1791752277481637300
+    ],
+    "tests/test_tutorial/test_first_steps/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277481637300
+    ],
+    "tests/test_tutorial/test_first_steps/test_tutorial001.py": [
+      "f0bd3cb702670c7388c8ef013e2e18e7516c5e5118621384e19ee0f7e592e923",
+      1791752277481637300
+    ],
+    "tests/test_tutorial/test_handling_errors/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277481637300
+    ],
+    "tests/test_tutorial/test_handling_errors/test_tutorial001.py": [
+      "45d4d87e8ccc612449e04f097a591715a5deb4e3f06e84a7f0718bfd34f2475b",
+      1791752277483141400
+    ],
+    "tests/test_tutorial/test_handling_errors/test_tutorial002.py": [
+      "a821cc4ad4f496fec84f8f93b87492ba601c449454c0e72709dad29cb820364a",
+      1791752277483141400
+    ],
+    "tests/test_tutorial/test_handling_errors/test_tutorial003.py": [
+      "ec751876f935996b8949285c978e54d63589313b5c9013d3e216243302984559",
+      1791752277484145900
+    ],
+    "tests/test_tutorial/test_handling_errors/test_tutorial004.py": [
+      "a97b8ed723badccd3bb26a5191e723bf9914fa065afcd45902656735a40580db",
+      1791752277484145900
+    ],
+    "tests/test_tutorial/test_handling_errors/test_tutorial005.py": [
+      "584d6237af213689be9521684dd72b5dc469924474c61d6b82057d661f876e88",
+      1791752277484145900
+    ],
+    "tests/test_tutorial/test_header_params/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277484145900
+    ],
+    "tests/test_tutorial/test_header_params/test_tutorial001.py": [
+      "b99558fecc4873383f6b56e4e1c7b59be65cca01cdb147bbf2f588fe6c09618c",
+      1791752277485222600
+    ],
+    "tests/test_tutorial/test_path_operation_advanced_configurations/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277485222600
+    ],
+    "tests/test_tutorial/test_path_operation_advanced_configurations/test_tutorial001.py": [
+      "e205038f22c2daabe7f25e96b8da785abe069206a5c7cfbd44bd3bfabc67a4a6",
+      1791752277485222600
+    ],
+    "tests/test_tutorial/test_path_operation_advanced_configurations/test_tutorial002.py": [
+      "2edce5812445c2618a2c506132bd74f61a669272d240a8903b3c67345e4ea721",
+      1791752277486223300
+    ],
+    "tests/test_tutorial/test_path_operation_configurations/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277486223300
+    ],
+    "tests/test_tutorial/test_path_operation_configurations/test_tutorial005.py": [
+      "f1492e14197d705e6bcdfb83bd06d9778704445cda97f6901f93113d83702de4",
+      1791752277487221800
+    ],
+    "tests/test_tutorial/test_path_operation_configurations/test_tutorial006.py": [
+      "8aab915350a4b98457ecdc5dbeb55c951704ce0debe9a4b2407d050de710064d",
+      1791752277487221800
+    ],
+    "tests/test_tutorial/test_path_params/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277487221800
+    ],
+    "tests/test_tutorial/test_path_params/test_tutorial004.py": [
+      "eaa54f2312c27b63b774c09537e93cbbc56dfd6e714c492354e7aa2b215823fa",
+      1791752277488222300
+    ],
+    "tests/test_tutorial/test_path_params/test_tutorial005.py": [
+      "ef1d0e49cc1b279c6979a8762916cc509d7c20914dfc5689df7d026fed66726e",
+      1791752277488222300
+    ],
+    "tests/test_tutorial/test_query_params/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277489221900
+    ],
+    "tests/test_tutorial/test_query_params/test_tutorial005.py": [
+      "6a37329f0b282dfaea78f96e5f2835066900140a26ca47c3495f32eeee7c7b89",
+      1791752277489221900
+    ],
+    "tests/test_tutorial/test_query_params/test_tutorial006.py": [
+      "aff9ba88733e48a69929eebc4411a85e2ba9ecb3de4e1bdc744fcc56ca115667",
+      1791752277489221900
+    ],
+    "tests/test_tutorial/test_query_params/test_tutorial007.py": [
+      "0fc947619d4f6c459aa756ec6c56226f5af7b3e01cda1cda0616f92a0d40f568",
+      1791752277490221800
+    ],
+    "tests/test_tutorial/test_query_params_str_validations/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277490221800
+    ],
+    "tests/test_tutorial/test_query_params_str_validations/test_tutorial001.py": [
+      "09879522107120d6f8e4c86ebd80865206377172070c911d8d00d695d86786ec",
+      1791752277491221900
+    ],
+    "tests/test_tutorial/test_query_params_str_validations/test_tutorial011.py": [
+      "23104b1d3b308f9f580e93f525293408777d15dd688623b96bb7af3a1e41a773",
+      1791752277491221900
+    ],
+    "tests/test_tutorial/test_query_params_str_validations/test_tutorial012.py": [
+      "1c6e15b67dbeadb4768d14b49a0b36f9315339e9d8e3dbec4d13462b48767fa2",
+      1791752277492222000
+    ],
+    "tests/test_tutorial/test_query_params_str_validations/test_tutorial013.py": [
+      "319f0080166a7139763911baa41ac26a32ef9c0a1e55759db2ef943dc3fbbc62",
+      1791752277492222000
+    ],
+    "tests/test_tutorial/test_request_files/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277492222000
+    ],
+    "tests/test_tutorial/test_request_files/test_tutorial001.py": [
+      "dc08f958cbb98bfb16459576295b0fd0980a9c3f8736e859c93b470d541c86d3",
+      1791752277493221900
+    ],
+    "tests/test_tutorial/test_request_files/test_tutorial002.py": [
+      "05b0d7fc62f5dea04707001e853926fefc170d3dd225e08c66b7def3ac562b2f",
+      1791752277493727200
+    ],
+    "tests/test_tutorial/test_request_forms/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277493727200
+    ],
+    "tests/test_tutorial/test_request_forms/test_tutorial001.py": [
+      "3482c7e4247605e8f9aba690495eb1e38724de4a54bb54d9c1322249ee3513e2",
+      1791752277493727200
+    ],
+    "tests/test_tutorial/test_request_forms_and_files/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277494731500
+    ],
+    "tests/test_tutorial/test_request_forms_and_files/test_tutorial001.py": [
+      "28c6a361da25356032c3364b7eea1e669e2d1e7e3ea2f8ee27a0d542fc208ba7",
+      1791752277494731500
+    ],
+    "tests/test_tutorial/test_response_change_status_code/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277494731500
+    ],
+    "tests/test_tutorial/test_response_change_status_code/test_tutorial001.py": [
+      "6afa0d803f8292b4868bfc24e0fd704662364735a39a99c6f01eb712a1b29bd8",
+      1791752277495729400
+    ],
+    "tests/test_tutorial/test_response_cookies/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277495729400
+    ],
+    "tests/test_tutorial/test_response_cookies/test_tutorial001.py": [
+      "093e2e9cbfa2f2d125262a946caa8377bd8294296d169a757de7789bb2ae980c",
+      1791752277496728200
+    ],
+    "tests/test_tutorial/test_response_cookies/test_tutorial002.py": [
+      "a85b424e635adccd8431f9061c82d86c8ddc2808451cdd3b696a813f16a23330",
+      1791752277496728200
+    ],
+    "tests/test_tutorial/test_response_headers/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277496728200
+    ],
+    "tests/test_tutorial/test_response_headers/test_tutorial001.py": [
+      "7c684b5bbbadb77f7dc3b064484a00826024afb83443b998b2b7324869090edc",
+      1791752277497728700
+    ],
+    "tests/test_tutorial/test_response_headers/test_tutorial002.py": [
+      "d184da979d450903b416d5c372e6dabed23f18dc4d73b4c10c7b0e077cd10ef3",
+      1791752277497728700
+    ],
+    "tests/test_tutorial/test_response_model/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277498728700
+    ],
+    "tests/test_tutorial/test_response_model/test_tutorial003.py": [
+      "2e377de609a3e097cd58dac9a1522ce6555ad5d6e798e48dc09aac99ca4f786c",
+      1791752277498728700
+    ],
+    "tests/test_tutorial/test_response_model/test_tutorial004.py": [
+      "50b96cdd0cd63332f0cd0d8a8367996da348f21da1f24f933cfe76371b877470",
+      1791752277498728700
+    ],
+    "tests/test_tutorial/test_response_model/test_tutorial005.py": [
+      "4118d2f3221a0dde0715d73b76c00ce52d21df2e83da86e4fca2d3c8c82536fe",
+      1791752277499728000
+    ],
+    "tests/test_tutorial/test_response_model/test_tutorial006.py": [
+      "b24f07ce09c176dca93a0034fba4a2bf7132a672c23c80cbd885752a478e820c",
+      1791752277499728000
+    ],
+    "tests/test_tutorial/test_security/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277500729200
+    ],
+    "tests/test_tutorial/test_security/test_tutorial001.py": [
+      "147c77c65873dbbdb61b8dbd3570d0bf1741488903ab61ba57fb9df16ca0789b",
+      1791752277500729200
+    ],
+    "tests/test_tutorial/test_security/test_tutorial003.py": [
+      "b0312f2788bfafaec39e20f81a062c250acc6c058d7100f5173d9ddc5c961dfe",
+      1791752277500729200
+    ],
+    "tests/test_tutorial/test_security/test_tutorial005.py": [
+      "db840d598c53a4bf9a5bd0b2603d2fe987d5ad757eaca96bb0e82c14d93577b0",
+      1791752277501729800
+    ],
+    "tests/test_tutorial/test_security/test_tutorial006.py": [
+      "30548ad5b94c1fa5fb5a1cf34aece5709b0eeaf43ef9a3325b93e548c7356264",
+      1791752277501729800
+    ],
+    "tests/test_tutorial/test_sql_databases/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277501729800
+    ],
+    "tests/test_tutorial/test_sql_databases/test_sql_databases.py": [
+      "70111dfcbef9a41c7a0daf70105013e3ebd3126997994b681b228e340183758d",
+      1791752277501729800
+    ],
+    "tests/test_tutorial/test_sub_applications/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277503233900
+    ],
+    "tests/test_tutorial/test_sub_applications/test_tutorial001.py": [
+      "c472ee52f2d3fba9de1d4d731b7e9e61e28d059cee2e97b2c4ed4897ab766b14",
+      1791752277503233900
+    ],
+    "tests/test_tutorial/test_templates/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277504238200
+    ],
+    "tests/test_tutorial/test_templates/test_tutorial001.py": [
+      "b9fd230bfa0e3db6945f913b9f71480b782bf5a0a1cf05ff570d1f02199eadb7",
+      1791752277504238200
+    ],
+    "tests/test_tutorial/test_testing/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277504238200
+    ],
+    "tests/test_tutorial/test_testing/test_main.py": [
+      "895366552d4387e30ce517aacf68ceaad723f61984ceec90a147ba41817ca475",
+      1791752277505240000
+    ],
+    "tests/test_tutorial/test_testing/test_tutorial001.py": [
+      "fc1c5b7226f0175bdc3f3f91c7cee9bc814ef610543321684a176592faaf7087",
+      1791752277505240000
+    ],
+    "tests/test_tutorial/test_testing/test_tutorial002.py": [
+      "251f7ccc5fff76e133664e4bb4f7e6c0dbb0f8800b05f870e59873fd385e7825",
+      1791752277505240000
+    ],
+    "tests/test_tutorial/test_testing/test_tutorial003.py": [
+      "d9a9b4a513893772b50e134f09d8a98ab5da9962d739fb63c5a329576fe6176e",
+      1791752277506472700
+    ],
+    "tests/test_tutorial/test_testing_dependencies/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277506472700
+    ],
+    "tests/test_tutorial/test_testing_dependencies/test_tutorial001.py": [
+      "cdfa6a4ea23c5c7448af39faffe7b879c40ae3c821fb63450c1c29dc6adc068b",
+      1791752277506472700
+    ],
+    "tests/test_tutorial/test_websockets/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791752277507471600
+    ],
+    "tests/test_tutorial/test_websockets/test_tutorial001.py": [
+      "1725cfe57a183b0b2b1ed2a77d8c523969375c36a6df1fbf262772ad0013e319",
+      1791752277507471600
+    ],
+    "tests/test_tutorial/test_websockets/test_tutorial002.py": [
+      "35161bf67e69a98f3077b53060ce7e0d413eaa4babeb6cd80463bbed40566a41",
+      1791752277507471600
+    ],
+    "tests/test_union_body.py": [
+      "4906695c5d4090de31cea3ecf3c3579a848dd689bd0c3b582db7f9b488940555",
+      1791752277508472300
+    ],
+    "tests/test_union_inherited_body.py": [
+      "29619198a9076c55c247b5351e49c51224436fda28a7aeab788743c64752289f",
+      1791752277508472300
+    ],
+    "tests/test_ws_router.py": [
+      "c155b9691d2e8113ee74ebd85455bb2075e00733173ff0d37d9ecf9f103649e7",
+      1791752277508472300
+    ]
+  },
+  "calls": [
+    {
+      "request": {
+        "op": "search",
+        "id": "q1",
+        "query": "OpenAPI: HTTP_422 response does not use custom media_type\n**Describe the bug**\r\nFastAPI automatically adds an HTTP_422 response to all paths in the OpenAPI specification that have parameters or request body. This response does not use the media_type of response_class if any custom defined. Furthermore, it overwrites any error object format with the default one.\r\n\r\n**To Reproduce**\r\nCreate a path with parameters and add custom response_class to decorator. Add custom exception handlers that reformat the default error responses as per your liking. Then observe generated openapi.json\r\n\r\n```python\r\nfrom fastapi import FastAPI, HTTPException\r\nfrom fastapi.exceptions import RequestValidationError\r\nfrom starlette import status\r\nfrom starlette.responses import JSONResponse\r\nfrom . import schemas\r\n\r\napp = FastAPI()\r\n\r\nclass JsonApiResponse(JSONResponse):\r\n    media_type = 'application/vnd+json.api'\r\n\r\n@app.exception_handler(HTTPException)\r\nasync def http_exception_handler(request, exc: HTTPException) -> JsonApiResponse:\r\n    headers = getattr(exc, \"headers\", None)\r\n    content = schemas.ErrorResponse(errors=[dict(title=\"Bad request\", detail=exc.detail, status=exc.status_code)]).dict()\r\n    status_code = exc.status_code\r\n    if headers:\r\n        return JsonApiResponse(content=content, status_code=status_code, headers=headers)\r\n    else:\r\n        return JsonApiResponse(content=content, status_code=status_code)\r\n\r\n@app.exception_handler(RequestValidationError)\r\nasync def request_validation_exception_handler(request, exc: RequestValidationError) -> JsonApiResponse:\r\n    http422 = status.HTTP_422_UNPROCESSABLE_ENTITY\r\n    return JsonApiResponse(\r\n        content=schemas.ErrorResponse(errors=[\r\n            dict(title=err['type'], detail=err['msg'], source='/'.join(err['loc']), status=http422)\r\n            for err in exc.errors()\r\n        ]).dict(),\r\n        status_code=http422,\r\n    )\r\n\r\n@app.post('/customers',\r\n         status_code=status.HTTP_201_CREATED,\r\n         response_model=schemas.CustomerDetailsResponse,\r\n         response_class=JsonApiResponse,\r\n         )\r\ndef customer_create(data: schemas.Customer = Body(..., media_type='application/vnd+json.api', embed=True)):\r\n    created_customer = {**data.dict(), **{'id': '1'}}\r\n    return {'data': created_customer}\r\n``` \r\n\r\nThe openapi.json will include the unwanted 422 response with the FastAPI default error object definitions:\r\n\r\n```yaml\r\n  # ...\r\n  '422':\r\n    description: Validation Error\r\n    content:\r\n      application/json:\r\n        schema:\r\n          \"$ref\": \"#/components/schemas/HTTPValidationError\"\r\n```\r\n\r\n**Expected behavior**\r\nAt least, the media_type of the response_class should be respected. But the best would be if the 422 would not be added to the specification unless requested via the path decorator. Or if the 422 definitions of mine were respected.\r\n\r\n```python\r\n@app.post('/customers',\r\n         status_code=status.HTTP_201_CREATED,\r\n         response_model=schemas.CustomerDetailsResponse,\r\n         response_class=JsonApiResponse,\r\n         responses={\r\n             422: {\r\n                 'model': schemas.ErrorResponse\r\n             },\r\n         })\r\ndata: schemas.Customer = Body(..., media_type='application/vnd+json.api', embed=True)):\r\n    pass\r\n```\r\n\r\n**Environment:**\r\n - OS: masOS 10.14.6\r\n - Python: 3.6.5\r\n - FastAPI: 0.35.0\n",
+        "stats": true
+      },
+      "wall_ms": 249.6943000005558,
+      "exposed_ranges": [
+        [
+          "fastapi/exception_handlers.py",
+          705,
+          838
+        ],
+        [
+          "fastapi/openapi/utils.py",
+          693,
+          869
+        ],
+        [
+          "docs/tutorial/additional-responses.md",
+          8023,
+          8586
+        ],
+        [
+          "docs/tutorial/handling-errors.md",
+          5531,
+          5993
+        ],
+        [
+          "tests/test_tutorial/test_request_files/test_tutorial001.py",
+          1104,
+          1340
+        ]
+      ],
+      "stdout_tokens": 593,
+      "diagnostic_tokens": 377,
+      "diagnostics": {
+        "applicationCacheHits": 0,
+        "cacheReadMs": 13.817900000000007,
+        "cacheWriteErrors": 0,
+        "cacheWriteMs": 94.10540000000003,
+        "cacheWrites": 426,
+        "contextualLexical": false,
+        "discoveredFiles": 550,
+        "documentEmbedMs": 67.77499999999998,
+        "driftReset": false,
+        "evidence": {
+          "candidatePassages": 22,
+          "extraEmbedMs": 1.1814,
+          "extraPassagesEmbedded": 5,
+          "policy": "bounded-rerank",
+          "selectionMs": 3.7165000000000004
+        },
+        "extractionMs": 0.7038999999999994,
+        "feedbackConsumed": false,
+        "ioBatchWallMs": 17.907799999999984,
+        "ioReadMs": 34.43319999999998,
+        "ioWorkers": 4,
+        "lexicalCandidates": 421,
+        "lexicalPrepareMs": 24.543699999999983,
+        "literalGuard": false,
+        "memoryCacheHits": 0,
+        "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "nativeCacheHits": 0,
+        "outputBytes": 2431,
+        "passagesEmbedded": 798,
+        "queryEmbedMs": 1.1611,
+        "queryMs": 10.040500000000002,
+        "refreshMs": 238.6952,
+        "representation": "intro-uniform",
+        "requestMs": 248.80669999999998,
+        "returnedResults": 5,
+        "searchableFiles": 426,
+        "semanticCandidates": 284,
+        "sessionEntries": 1,
+        "skippedFiles": 124,
+        "sourceBytesRead": 5538469,
+        "sourceHashMs": 3.2004000000000348,
+        "tokenizerSettings": {
+          "padding": null,
+          "truncation": null
+        },
+        "vectorsScored": 798
+      }
+    },
+    {
+      "request": {
+        "op": "grep",
+        "id": "g1",
+        "pattern": "HTTP_422_UNPROCESSABLE_ENTITY",
+        "fixed": true,
+        "stats": true
+      },
+      "wall_ms": 56.49900000571506,
+      "exposed_ranges": [
+        [
+          "fastapi/exception_handlers.py",
+          101,
+          245
+        ],
+        [
+          "fastapi/exception_handlers.py",
+          705,
+          838
+        ],
+        [
+          "fastapi/openapi/utils.py",
+          693,
+          869
+        ],
+        [
+          "fastapi/openapi/utils.py",
+          8879,
+          9130
+        ]
+      ],
+      "stdout_tokens": 310,
+      "diagnostic_tokens": 54,
+      "diagnostics": {
+        "filesSearched": 426,
+        "matchingLines": 4,
+        "modelLoaded": false,
+        "requestMs": 55.9911,
+        "returnedResults": 4,
+        "skippedFiles": 124,
+        "truncated": false
+      }
+    },
+    {
+      "request": {
+        "op": "read",
+        "id": "r1",
+        "path": "fastapi/openapi/utils.py",
+        "start": 166,
+        "lines": 77
+      },
+      "wall_ms": 48.743999999715015,
+      "exposed_ranges": [
+        [
+          "fastapi/openapi/utils.py",
+          6187,
+          9684
+        ]
+      ],
+      "stdout_tokens": 737,
+      "diagnostic_tokens": 0,
+      "diagnostics": {}
+    }
+  ],
+  "references_loaded_by_actor": false,
+  "stdout_tokens": 1640,
+  "diagnostic_tokens": 431,
+  "request_tokens": 919,
+  "argv": [
+    "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+    "--config",
+    "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-agent-config-o8rpp1tc\\config.toml",
+    "serve",
+    "--dir",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate20\\data\\sources\\C02",
+    "--profile",
+    "code",
+    "--model-path",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+    "--representation",
+    "intro-uniform",
+    "--session",
+    "combined",
+    "--evidence-policy",
+    "bounded-rerank",
+    "--quiet-stats"
+  ],
+  "startup_ms": 147.35340000333963,
+  "ready_tokens": 23,
+  "submission": {
+    "op": "submit",
+    "status": "answered",
+    "diagnosis": "get_openapi_path first copies route.responses into operation responses, then unconditionally assigns the generated 422 entry whenever parameters or a body exist. That later assignment overwrites an explicitly supplied 422 model. Both additional-response model schemas and the generated validation response hard-code application/json, whereas the primary response already uses route.response_class.media_type. Custom exception handlers affect runtime behavior and are not consulted by this schema builder.",
+    "proposed_change": "Preserve an explicitly documented 422 response instead of replacing it; add the automatic validation response only when no relevant error response has been supplied. Use the selected response class media type when constructing response content, with an explicit fallback if it is absent. Add schema tests covering custom media types, custom 422 models and the default JSON behavior. Do not infer an arbitrary exception handler's error schema automatically.",
+    "citations": [
+      {
+        "call_id": "r1",
+        "path": "fastapi/openapi/utils.py",
+        "start_line": 180,
+        "end_line": 201
+      },
+      {
+        "call_id": "r1",
+        "path": "fastapi/openapi/utils.py",
+        "start_line": 211,
+        "end_line": 228
+      }
+    ],
+    "source_ranges": {
+      "fastapi/openapi/utils.py": [
+        [
+          6930,
+          8115
+        ],
+        [
+          8519,
+          9371
+        ]
+      ]
+    }
+  },
+  "source_preserved": true
+}

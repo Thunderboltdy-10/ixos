@@ -118,3 +118,6 @@
 - KEEP (Gate19): immutable observed-only answer/citation submissions, then separate evidence exposure, literal answer overlap and actual CLI wire costs. Preserve narrow-answer and false-abstention failures; six train tasks do not establish independent factual accuracy or commercial superiority.
 - CLARIFY current session contract: only search response IDs enter feedback history. Grep/read source inspection cannot currently steer the anchor via acceptance. Consider an explicit bounded/freshness-checked inspection feedback experiment, not automatic inference from external tools.
 - PRIORITIZE fresh human code tasks and useful evidence selection. Do not promote defaults/models from these six document cases or turn verbose answer F1 into retrieval truth.
+
+- KEEP (Gate20): human issue navigation with original source commits and frozen observed-only diagnoses. Treat patch-location coverage as proxy, not task resolution. Empty supplied test fields cannot support a resolved score. Preserve dependency-file miss and partial diagnosis scope.
+- EXPERIMENT NEXT: optional per-file grep match cap, prompted by five repeated early-file rows exhausting compact output. Preserve default exact ordering/matches and ability to inspect all within-file hits; measure result diversity, bytes/tokens and cost without relevance labels or pretending a re-run is a fresh agent task.

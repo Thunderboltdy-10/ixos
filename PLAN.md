@@ -2,7 +2,7 @@
 
 Current working state, 2026-10-11. Earlier working plans/logs/decisions are preserved byte-for-byte in `docs/archive/restoration-pre-2026-10-10/`. Personal contribution/application/chat notes remain locally excluded under `private-process/`.
 
-Gates 1–18 are committed; Gate 19 live document tasks are complete, frozen, graded and verified for its coherent commit. Six new QASPER training papers required 16 actual retrieval calls: seven searches, eight greps, one read, with 11,396 CLI stdout tokens. All four cases with supported text references exposed the expected passage after follow-ups, but one answer cited a narrower interpretation and another case incorrectly abstained against its boolean reference. Coverage is not task success. No preset/model promotion. Current engine checks remain 547/545 core tests. Gate 10's frozen 260-description study stays immutable. Next: prepare fresh code-agent tasks, then measured evidence/session improvements. Native Mac is deferred; historical credential remediation precedes publication.
+Gates 1–19 are committed; Gate 20 human code-issue navigation is frozen and verified for its commit. Three original training issues require 19 actual CLI calls / 9,469 stdout tokens. FastAPI/pip source localization succeeds; Docker dependency update is missed. All three lack test patches, so no resolved-bug claim. Current engine/model/defaults remain unchanged. Next: measured optional per-file grep cap, followed by test-backed agent tasks and evidence/session experiments. Native Mac is deferred; credential remediation precedes publication.
 
 ## Current instructions
 
@@ -360,3 +360,11 @@ Next three: commit Gate18; fresh label-blind multi-call task pilot with referenc
 - Earlier full-paper pilot: default byte recall 0.10060, bounded 0.15574, paired uncertainty touches zero; more stored document passages give no clear gain. No new optimized model/defaults or fresh primary-code task-success result yet.
 - Current bottlenecks: useful evidence selection and interpretation; fresh primary code-agent evaluation; feedback scope across lexical/source inspection. Only search responses currently enter session history: grep/read cannot be cited as accepted feedback IDs.
 - Next three tasks: verify live exposure/citation contracts and clarify skill/docs, commit Gate 19; pin and validate new human code tasks without loading solutions; run actual observed-only code retrieval and then measured evidence/session candidates.
+
+## STATE SNAPSHOT — Gate 20 frozen code diagnoses
+
+- Gate19 committed `9541729`. New metadata-only human issue selection pins SWE-bench train revision/hash, excludes six contaminated Lite-dev repositories prospectively. Original archives for DockerCompose/FastAPI/pip:127/555/853files. FastAPI is familiar from earlier development; no unseen-repository claim.
+- Three diagnoses/citations frozen before patch/test fields were opened; source hash/mtime/inventory preserved. Actual19calls(5search/7grep/7read),9469stdout/2201diagnostic/1680request tokens. Docker reference dependency-file miss retained; FastAPI observed13/24changed/anchor lines,cited7/24;pip4/4. All test patches/FAIL_TO_PASS empty: no resolved-bug score.
+- Five contracts pass, four before live tasks/one after reference scoring. Raw wire tokens and patch context verify. Existing current core547Windows/545Linux remains unchanged; no model/default/frozen evaluator edits.
+- Bottlenecks: compact grep budget can be exhausted by one file, evidence scope/interpretation, primary test-backed code-agent evaluation. Earlier QASPER pilot default0.10060/bounded0.15574byte recall; frozen RepoQA optional evidence +0.05258, no default promotion.
+- Next three tasks: commit Gate20; implement opt-in per-file grep cap with baseline/real-source/author-controlled correctness/cost checks; advance test-backed tasks and explicit inspection feedback/evidence experiments using fresh selection data.

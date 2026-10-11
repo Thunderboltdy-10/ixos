@@ -23,6 +23,7 @@ Start with the current [installation guide](../../docs/getting-started/INSTALLAT
 | 17 | Canonical multi-file feedback reduction and exact platform/compiler responses | [Deterministic feedback](GATE17.md) | [gate17](gate17/) |
 | 18 | Human full-paper evidence baseline, no-answer limits and document-cache capacity | [Full-paper evidence](GATE18.md) | [gate18](gate18/) |
 | 19 | Six frozen live document tasks, observed citations and separate answer/token costs | [Live CLI tasks](GATE19.md) | [gate19](gate19/) |
+| 20 | Three human code-issue diagnoses with original source/patch localization and failures | [Code navigation](GATE20.md) | [gate20](gate20/) |
 
 The held-out studies retain their exact original binary/model/evaluator identities. Later correctness or packaging checks do not silently replace their quality/performance figures. Repeated calls and authored diagnostic fixtures are not independent labeled tasks. JIT/native/resident timing, stdout/diagnostic context cost and source-preservation evidence are distinct.
 

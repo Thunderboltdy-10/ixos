@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "binary_sha256": "e72e219eb83453702c45db0cdc9c2dfbb8580928281c07da98108c19f1259fb5",
+  "exported_binary_sha256": "f92a833300f6520a4b5c53b70fd2a057254be65671b1da6ba4769378c0f8e115",
+  "archive_sha256": "8c8add0678eff1ddea420766da6b2f3006c846262962a7dfe6a2ec4d42e6a16f",
+  "frozen_evaluator_matches": true,
+  "exported_file_count": 4639,
+  "condition": "Fresh source index export/rebuild with reused dependency/toolchain cache; extracted local package setup verifies existing Gate11 independent downloads, no PYTHONPATH/checkout imports. Not a clean OS or fresh download proof."
+}

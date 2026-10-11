@@ -336,8 +336,24 @@ async fn main() -> anyhow::Result<()> {
             handle_compliance(action)?;
         }
 
-        Commands::Doctor { json, verbose } => {
-            handle_doctor(json, verbose).await?;
+        Commands::Doctor {
+            json,
+            verbose,
+            profile,
+            model_path,
+            dir,
+        } => {
+            handle_doctor(
+                json,
+                verbose,
+                profile,
+                model_path,
+                dir,
+                &config,
+                config_path_override
+                    .as_deref()
+                    .unwrap_or(&IxosConfig::default_path()),
+            )?;
         }
 
         Commands::Version { verbose } => {
@@ -1807,13 +1823,34 @@ async fn handle_release_check(quick: bool) -> anyhow::Result<()> {
     anyhow::bail!("Release readiness is not established by this command; native platform and historical credential checks remain required")
 }
 
-async fn handle_doctor(json: bool, verbose: bool) -> anyhow::Result<()> {
-    use ixos_protocol::diagnostics::{run_doctor, DoctorOptions, DoctorStatus};
-
-    let report = run_doctor(DoctorOptions { verbose }).await;
+fn handle_doctor(
+    json: bool,
+    verbose: bool,
+    profile: Option<ixos_protocol::cli::RetrievalProfile>,
+    model_path: Option<PathBuf>,
+    dir: PathBuf,
+    config: &IxosConfig,
+    config_path: &Path,
+) -> anyhow::Result<()> {
+    use ixos_protocol::diagnostics::{run_cli_doctor, CliDoctorOptions, DoctorStatus};
+    let report = run_cli_doctor(
+        config,
+        config_path,
+        CliDoctorOptions {
+            verbose,
+            root: dir,
+            profile,
+            model_path,
+        },
+    );
 
     if json {
         println!("{}", serde_json::to_string_pretty(&report)?);
+        anyhow::ensure!(
+            report.summary.fail == 0,
+            "Ixos doctor reported {} failed checks",
+            report.summary.fail
+        );
         return Ok(());
     }
 
@@ -1842,7 +1879,7 @@ async fn handle_doctor(json: bool, verbose: bool) -> anyhow::Result<()> {
     );
 
     if report.summary.fail > 0 {
-        std::process::exit(2);
+        anyhow::bail!("Ixos doctor reported {} failed checks", report.summary.fail);
     }
 
     Ok(())

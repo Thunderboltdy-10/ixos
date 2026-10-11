@@ -1,0 +1,74 @@
+{
+  "generatedAtUnixS": 1791746185,
+  "checks": [
+    {
+      "id": "config_resolution",
+      "name": "Config resolution",
+      "status": "PASS",
+      "message": "Configuration loaded",
+      "details": "path=C:\\Users\\pablo\\AppData\\Roaming\\ixos\\config.toml, cache_mode=ephemeral, search_mode=auto, model=ixos-flash-v2, pro_model=ixos-pro-v2"
+    },
+    {
+      "id": "cache_backend",
+      "name": "ADS/xattr capability",
+      "status": "PASS",
+      "message": "Detected cache backend: LMDB"
+    },
+    {
+      "id": "flash_model",
+      "name": "Flash model",
+      "status": "PASS",
+      "message": "ixos-flash-v2 load check passed"
+    },
+    {
+      "id": "pro_model",
+      "name": "Pro model",
+      "status": "PASS",
+      "message": "potion-base-8m-int8 load check passed"
+    },
+    {
+      "id": "compliance_storage",
+      "name": "Compliance storage",
+      "status": "PASS",
+      "message": "Compliance storage directory exists",
+      "details": "path=C:\\Users\\pablo\\AppData\\Roaming\\ixos\\compliance"
+    },
+    {
+      "id": "config_persistence",
+      "name": "Config persistence",
+      "status": "PASS",
+      "message": "Config round-trip check passed"
+    },
+    {
+      "id": "deep_search_write_prevention",
+      "name": "Deep Search write prevention",
+      "status": "PASS",
+      "message": "No persistent cache writes detected in deep search mode check"
+    },
+    {
+      "id": "progressive_event_order",
+      "name": "Progressive output integrity",
+      "status": "PASS",
+      "message": "Progressive events arrived in expected lexical -> semantic -> complete order"
+    },
+    {
+      "id": "platform_info",
+      "name": "Platform info",
+      "status": "INFO",
+      "message": "os=windows, arch=x86_64, cache_backend=LMDB"
+    },
+    {
+      "id": "model_warm_status",
+      "name": "Model warm status",
+      "status": "INFO",
+      "message": "available_models=6",
+      "details": "Potion:ready:C:\\Users\\pablo\\Downloads\\Ixos\\models/potion-base-8M-int8, Qwen:ready:C:\\Users\\pablo\\Downloads\\Ixos\\models/ixos-embedder-v1, IxosFlashV1:ready:C:\\Users\\pablo\\Downloads\\Ixos\\models/ixos-flash-v1, IxosFlashV2:ready:C:\\Users\\pablo\\Downloads\\Ixos\\models/ixos-flash-v2, IxosFlashV4:missing:-, IxosFlashV4Fast:missing:-, IxosProV2:ready:C:\\Users\\pablo\\Downloads\\Ixos\\models/potion-base-8M-int8, IxosProV1:ready:C:\\Users\\pablo\\Downloads\\Ixos\\models/ixos-pro-v1"
+    }
+  ],
+  "summary": {
+    "pass": 8,
+    "warn": 0,
+    "fail": 0,
+    "info": 2
+  }
+}

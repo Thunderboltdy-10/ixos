@@ -382,6 +382,18 @@ pub enum Commands {
 
     /// Run installation and runtime diagnostics
     Doctor {
+        /// Current retrieval profile (otherwise use effective configuration)
+        #[arg(long, value_enum)]
+        profile: Option<super::RetrievalProfile>,
+
+        /// Current local embedding model (same precedence as search)
+        #[arg(long)]
+        model_path: Option<PathBuf>,
+
+        /// Filesystem to test with an isolated temporary witness
+        #[arg(long, default_value = ".")]
+        dir: PathBuf,
+
         /// Output diagnostics as JSON
         #[arg(long)]
         json: bool,

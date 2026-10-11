@@ -1,5 +1,8 @@
 //! Runtime diagnostics and health checks for CLI and desktop.
 
+mod retrieval;
+pub use retrieval::{run_cli_doctor, CliDoctorOptions};
+
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
@@ -218,6 +221,7 @@ async fn check_deep_search_write_prevention() -> Result<(), String> {
     }
 }
 
+/// Retained desktop/legacy diagnostics; current CLI uses `run_cli_doctor`.
 pub async fn run_doctor(options: DoctorOptions) -> DoctorReport {
     let mut checks = Vec::new();
 
@@ -313,7 +317,7 @@ pub async fn run_doctor(options: DoctorOptions) -> DoctorReport {
     let probe_path = config_path
         .parent()
         .unwrap_or_else(|| Path::new("."))
-        .join("config.doctor.tmp.toml");
+        .join(format!("config.doctor-{}.tmp.toml", uuid::Uuid::new_v4()));
 
     let mut probe_cfg = config.clone();
     probe_cfg.search.timeout_seconds = probe_timeout;

@@ -1,0 +1,36 @@
+{
+  "generatedAtUnixS": 1791747028,
+  "checks": [
+    {
+      "id": "config_resolution",
+      "name": "CLI configuration",
+      "status": "PASS",
+      "message": "Effective CLI configuration loaded",
+      "details": "path=C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-doctor-contract-bae_vqbi\\chosen.toml"
+    },
+    {
+      "id": "retrieval_options",
+      "name": "Retrieval settings",
+      "status": "PASS",
+      "message": "profile=Lexical, mode=Lexical, representation=IntroUniform, persistent_cache=true"
+    },
+    {
+      "id": "retrieval_model",
+      "name": "Current retrieval model",
+      "status": "INFO",
+      "message": "Lexical retrieval requires no embedding model"
+    },
+    {
+      "id": "search_root",
+      "name": "Search root",
+      "status": "FAIL",
+      "message": "Not an accessible directory: C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-doctor-contract-bae_vqbi\\missing-root"
+    }
+  ],
+  "summary": {
+    "pass": 2,
+    "warn": 0,
+    "fail": 1,
+    "info": 1
+  }
+}

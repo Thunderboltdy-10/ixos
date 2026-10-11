@@ -1,0 +1,85 @@
+{
+  "status": "passed",
+  "quality_benchmark": false,
+  "note": "Already-informed exploratory navigation after implementing the doctor fix; no task-completion or quality score.",
+  "source_preserved": true,
+  "binary_sha256": "e72e219eb83453702c45db0cdc9c2dfbb8580928281c07da98108c19f1259fb5",
+  "search_paths": [
+    "main.rs",
+    "cli/commands.rs",
+    "diagnostics/retrieval.rs",
+    "cli/mod.rs",
+    "diagnostics.rs",
+    "cli/retrieval_config.rs",
+    "cli/config.rs",
+    "compliance/transparency.rs",
+    "ixos_embed/model2vec.rs",
+    "lib.rs"
+  ],
+  "commands": [
+    {
+      "label": "doctor",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate15\\absent.toml",
+        "doctor",
+        "--dir",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\src",
+        "--json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "search",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate15\\absent.toml",
+        "search",
+        "where does the CLI choose which model to diagnose",
+        "--dir",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\src",
+        "--json",
+        "--cache-mode",
+        "ephemeral"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "grep",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate15\\absent.toml",
+        "grep",
+        "run_cli_doctor",
+        "--dir",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\src",
+        "-F",
+        "--limit",
+        "5"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "read",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate15\\absent.toml",
+        "read",
+        "diagnostics/retrieval.rs",
+        "--dir",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\src",
+        "--start",
+        "67",
+        "--lines",
+        "64",
+        "--max-output-bytes",
+        "5000"
+      ],
+      "exit_code": 0
+    }
+  ]
+}

@@ -98,3 +98,8 @@
 - KEEP (Gate14): reproducible CPU/virtual-address stress and exact-output/source contracts, including intermittent 40-second code cliff and document allocation abort. RLIMIT_AS is not physical RAM and this Ryzen/WSL affinity scenario is not a weak-device guarantee.
 - REJECT unconditional MALLOC_ARENA_MAX=1: constrained virtual reservations improve, but all-CPU fresh preparation regresses 4.13x/code and4.87x/documents. Document optional constrained glibc settings; preserve normal parallelism and new negative evidence.
 - KEEP causal limits: thousands of mmap failures under AS256 versus none with arena1 support allocation pressure; aggregate traces do not prove the exact stalled allocation or guarantee all failures eliminated. Default diagnostics consume context; keep stats opt-in and count stderr.
+
+- KEEP (Gate15): installation-facing CLI doctor tests the effective current profile with actual encoded inference, current lexical witness and signed cache capability. Legacy desktop checks stay separate; no stub event-order success may stand in for current retrieval proof.
+- KEEP effective config/model precedence and failing JSON exit status. A required model failure remains a failure even when lexical retrieval works. Read-only-root inability to create a diagnostic witness is an explicit capability warning, not a claimed failed read-only search.
+- KEEP isolated unique probe names, source byte/mtime integrity and cleanup; replace legacy fixed config scratch filename to avoid overwriting existing files. No user corpus indexing or adjacent persistent records by doctor.
+- VERIFY NEXT declared Rust1.89 minimum rather than infer it from Rust1.92 builds. New diagnosis does not select retrieval/model defaults or refresh consumed quality labels.

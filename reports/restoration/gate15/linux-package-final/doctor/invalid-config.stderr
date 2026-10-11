@@ -1,0 +1,7 @@
+Error: Invalid configuration /home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-doctor-contract-lk59wgit/chosen.toml: TOML parse error at line 2, column 9
+  |
+2 | profile=not-valid
+  |         ^
+invalid string
+expected `"`, `'`
+

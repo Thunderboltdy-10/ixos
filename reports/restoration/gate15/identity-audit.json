@@ -1,0 +1,57 @@
+{
+  "status": "passed",
+  "quality_benchmark": false,
+  "model_selections": [
+    {
+      "path": "after/code-config.stdout",
+      "expected_model": "code",
+      "sha256": "e92f95305ab2dcf68053fe118091064eca73cba3c9a0778db1e5869532af2fea"
+    },
+    {
+      "path": "after/documents-config.stdout",
+      "expected_model": "documents",
+      "sha256": "f641f51e5a483fd483f79df6c959e266c53e84bba4b26cc8231909bed41014c3"
+    },
+    {
+      "path": "after/explicit-code.stdout",
+      "expected_model": "code",
+      "sha256": "099c797c624e26e9a484565c0437571b93f2b031526b93f2ef587c5aa9a660ba"
+    },
+    {
+      "path": "after/environment-precedence.stdout",
+      "expected_model": "documents",
+      "sha256": "e06a317bf929c3055cbb10709896979062f7c317ca560a70133a79fa023eac97"
+    },
+    {
+      "path": "after/explicit-over-environment.stdout",
+      "expected_model": "code",
+      "sha256": "ad1f563409f530385900506a4741d6960901e3c52e105890e8f8bebb2ad86eaf"
+    },
+    {
+      "path": "linux/doctor/code-config.stdout",
+      "expected_model": "code",
+      "sha256": "b936eaf0ef36d257ff2297d8fd16cac45e598b971ff35e58d68b975c4b4b6532"
+    },
+    {
+      "path": "linux/doctor/documents-config.stdout",
+      "expected_model": "documents",
+      "sha256": "9126d92b678da655c4671851bca5aeb4d689b870849b6af213465e2650841e48"
+    },
+    {
+      "path": "linux/doctor/explicit-code.stdout",
+      "expected_model": "code",
+      "sha256": "2c6db6998c5d568fe53e4010cc06466f0b40a7e8b85e2843db8b028b73fd28b3"
+    },
+    {
+      "path": "linux/doctor/environment-precedence.stdout",
+      "expected_model": "documents",
+      "sha256": "6198c638706433e022e637f903e9df57b71cc24befa52985a53448abc85ecfc7"
+    },
+    {
+      "path": "linux/doctor/explicit-over-environment.stdout",
+      "expected_model": "code",
+      "sha256": "e71b2c3b15802caed3309077797ee6a72a5956487937e1f9ade35d06ebdfd0c5"
+    }
+  ],
+  "legacy_json_failure_exited_zero": true
+}

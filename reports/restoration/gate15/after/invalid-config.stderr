@@ -1,0 +1,7 @@
+Error: Invalid configuration C:\Users\pablo\AppData\Local\Temp\ixos-doctor-contract-_904ne5m\chosen.toml: TOML parse error at line 2, column 9
+  |
+2 | profile=not-valid
+  |         ^
+invalid string
+expected `"`, `'`
+

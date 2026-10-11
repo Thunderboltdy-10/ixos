@@ -67,6 +67,8 @@ Search requests may set `"evidence_policy":"bounded-rerank"` or `"global-line"` 
 
 Index `0` means the first actually displayed result in response `q1`. Submit acceptance only when inspected evidence established that it was useful. Omit feedback when uncertain or when no result was correct; do not spend substantial effort classifying all results. Path strings can be used instead of indices. Stale/unknown responses, unseen indices and edited sources cannot supply valid feedback. History is bounded, and the experimental context policy may drift; reset or fall back to stateless/exact search when necessary.
 
+For installation failures, `ixos doctor --json` checks the effective current model with actual inference and an isolated lexical/cache witness. Add the same `--profile` / `--model-path` / global `--config` as the failing search, and `--dir ROOT` for filesystem capability. Failed checks return nonzero, including JSON mode. It removes its temporary witness and does not scan existing sources; a passing doctor does not prove retrieval quality on the task. Keep this diagnostic out of the routine query loop.
+
 ## Coverage limits
 
 The walker respects `.gitignore` and Git boundaries, and prunes hidden, symlink, dependency/cache and recognized virtual-environment sources. Source modules named `build` remain visible; ignore rules exclude generated outputs. A per-file 16 MiB primary-byte limit and 256 MiB source budget apply. Unsupported/oversized sources are skipped or explicitly rejected. PDF/Office locators refer to extracted text, not original pages. Image/OCR retrieval and perfect document-layout fidelity are not implemented.

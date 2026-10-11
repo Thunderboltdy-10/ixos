@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "expected_legacy": true,
+  "quality_benchmark": false,
+  "binary_sha256": "afbbbfe2df00d1fa6bfb031fb7a5fba5a29ace7cb1295552d66c7a38dbb06bb3",
+  "helper_sha256": "b3865e95430b8df3e6b2d6b1bd20deffa3dc490c55ed03224ae1666d74c27be4",
+  "source_preserved": true,
+  "commands": [
+    {
+      "name": "legacy-config-override",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate15\\control-ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-doctor-contract-z1ofkzpt\\chosen.toml",
+        "doctor",
+        "--json",
+        "--verbose"
+      ],
+      "cwd": "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-doctor-contract-z1ofkzpt\\corpus",
+      "exit_code": 0
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "generatedAtUnixS": 1791746878,
+  "checks": [
+    {
+      "id": "config_resolution",
+      "name": "CLI configuration",
+      "status": "PASS",
+      "message": "Effective CLI configuration loaded",
+      "details": "path=/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-doctor-readonly-n4ifamd5/chosen.toml"
+    },
+    {
+      "id": "retrieval_options",
+      "name": "Retrieval settings",
+      "status": "PASS",
+      "message": "profile=Lexical, mode=Lexical, representation=IntroUniform, persistent_cache=true"
+    },
+    {
+      "id": "retrieval_model",
+      "name": "Current retrieval model",
+      "status": "INFO",
+      "message": "Lexical retrieval requires no embedding model"
+    },
+    {
+      "id": "search_root",
+      "name": "Search root",
+      "status": "PASS",
+      "message": "Directory is accessible",
+      "details": "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-doctor-readonly-n4ifamd5/corpus"
+    },
+    {
+      "id": "runtime_probe",
+      "name": "Isolated runtime/cache probe",
+      "status": "WARN",
+      "message": "Could not create temporary witness: Permission denied (os error 13). Read-only search may still work; cache capability unverified."
+    }
+  ],
+  "summary": {
+    "pass": 3,
+    "warn": 1,
+    "fail": 0,
+    "info": 1
+  }
+}

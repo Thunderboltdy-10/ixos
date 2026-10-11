@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FILES = ['LICENSE', 'docs/licenses/model2vec-rs-MIT.txt', 'config/retrieval-models.json', 'scripts/setup_models.py',
          'eval/__init__.py', 'eval/artifacts.py', 'eval/normalize_tokenizer.py', 'eval/compress_model.py',
          'skills/ixos-retrieval/SKILL.md', 'docs/CLI.md', 'docs/ARCHITECTURE.md',
-         'docs/getting-started/INSTALLATION.md', 'docs/models/README.md', 'docs/models/PUBLISHING.md']
+         'docs/getting-started/INSTALLATION.md', 'docs/engineering/RESOURCES.md', 'docs/models/README.md', 'docs/models/PUBLISHING.md']
 
 
 def main():

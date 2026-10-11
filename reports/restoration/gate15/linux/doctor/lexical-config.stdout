@@ -1,0 +1,61 @@
+{
+  "generatedAtUnixS": 1791746793,
+  "checks": [
+    {
+      "id": "config_resolution",
+      "name": "CLI configuration",
+      "status": "PASS",
+      "message": "Effective CLI configuration loaded",
+      "details": "path=/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-doctor-contract-1q7njw9v/chosen.toml"
+    },
+    {
+      "id": "retrieval_options",
+      "name": "Retrieval settings",
+      "status": "PASS",
+      "message": "profile=Lexical, mode=Lexical, representation=IntroUniform, persistent_cache=true"
+    },
+    {
+      "id": "retrieval_model",
+      "name": "Current retrieval model",
+      "status": "INFO",
+      "message": "Lexical retrieval requires no embedding model"
+    },
+    {
+      "id": "search_root",
+      "name": "Search root",
+      "status": "PASS",
+      "message": "Directory is accessible",
+      "details": "/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-doctor-contract-1q7njw9v/corpus"
+    },
+    {
+      "id": "lexical_runtime",
+      "name": "Current lexical retrieval",
+      "status": "PASS",
+      "message": "Real current-engine search returned exact witness evidence; no stub model"
+    },
+    {
+      "id": "cache_backend",
+      "name": "Current document cache",
+      "status": "INFO",
+      "message": "Not probed: selected model unavailable or lexical mode; no embedding records written"
+    },
+    {
+      "id": "probe_cleanup",
+      "name": "Temporary probe cleanup",
+      "status": "PASS",
+      "message": "Temporary probe removed; existing source files were not touched"
+    },
+    {
+      "id": "platform_info",
+      "name": "Platform",
+      "status": "INFO",
+      "message": "os=linux, arch=x86_64; diagnostic witness is not a relevance/performance benchmark"
+    }
+  ],
+  "summary": {
+    "pass": 5,
+    "warn": 0,
+    "fail": 0,
+    "info": 3
+  }
+}

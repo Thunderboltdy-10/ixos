@@ -2,6 +2,17 @@
 
 The default `search` and `serve` use the measured document engine. Install the pinned code model first. Use `--profile lexical` for model-free retrieval. `--retrieval legacy` explicitly selects the retained progressive pipeline; old Flash/Pro, Ask/deep, CSV and stub flags require it.
 
+## Installation diagnostics
+
+```sh
+ixos doctor --json
+ixos doctor --profile documents --dir ROOT --json --verbose
+ixos --config SETTINGS.toml doctor --model-path MODEL_FOLDER --json
+ixos doctor --profile lexical --json
+```
+
+Doctor uses the current effective profile and the same model-path precedence as search. Semantic/hybrid profiles perform actual encoded-row inference; lexical mode requires no model. An isolated temporary witness tests current lexical evidence and, when persistent caching is enabled and a model is available, a signed document-cache round trip. The record and probe folder are removed; existing source files are not scanned/modified. Native and application-DB outcomes are distinct. Cache capability concerns the selected filesystem, not every file. Inability to create a probe in a read-only folder is a warning, since source search may still work. FAIL checks produce nonzero exit status with either JSON or human output. Malformed configuration fails before diagnostics. These authored checks do not establish relevance quality, platform release readiness or desktop progressive behavior.
+
 ## Search and profiles
 
 ```sh

@@ -1,0 +1,14 @@
+2026-10-11T19:16:25.811853Z DEBUG ixos_protocol::cli::config: Loaded config from "C:\\Users\\pablo\\AppData\\Roaming\\ixos\\config.toml"
+2026-10-11T19:16:25.814593Z  INFO ixos_protocol::storage::sidecar_lmdb: LMDB sidecar cache opened at "C:\\Users\\pablo\\AppData\\Local\\ixos\\embeddings"
+2026-10-11T19:16:25.815200Z  INFO ixos_protocol::ixos_embed::mmap_model: Using Ixos-Flash-v2 model from "C:\\Users\\pablo\\Downloads\\Ixos\\models/ixos-flash-v2"
+2026-10-11T19:16:25.815770Z  INFO ixos_protocol::ixos_embed::mmap_model: Using Potion-8M-int8 model from "C:\\Users\\pablo\\Downloads\\Ixos\\models/potion-base-8M-int8"
+2026-10-11T19:16:25.816405Z DEBUG ixos_protocol::cli::config: Saved config to "C:\\Users\\pablo\\AppData\\Roaming\\ixos\\config.doctor.tmp.toml"
+2026-10-11T19:16:25.816600Z DEBUG ixos_protocol::cli::config: Loaded config from "C:\\Users\\pablo\\AppData\\Roaming\\ixos\\config.doctor.tmp.toml"
+2026-10-11T19:16:25.817125Z  INFO ixos_protocol::journalist_mode: Deep Search mode enabled
+2026-10-11T19:16:25.818615Z DEBUG ignore::gitignore: opened gitignore file: C:\Users\pablo\.config\git/ignore
+2026-10-11T19:16:25.818717Z DEBUG globset: built glob set; 1 literals, 0 basenames, 0 extensions, 0 prefixes, 1 suffixes, 0 required extensions, 0 regexes
+2026-10-11T19:16:25.820058Z DEBUG ixos_protocol::ixos_rank::semantic_engine: FSTD topology state quality_score=0.3499999940395355 enabled=false anchors=1
+2026-10-11T19:16:25.820075Z DEBUG ixos_protocol::ixos_rank::semantic_engine: Collected 1 files from "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-doctor-deep-search-2ca752b0-a705-40ed-b7df-5b2935179e52" (lazy indexing)
+2026-10-11T19:16:25.847233Z DEBUG ixos_protocol::ixos_rank::secure_ranker: Recently modified file: "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-doctor-progressive-279cc982-b73e-45c1-9c21-36cd4a40ad17\\doctor_progressive.txt"
+2026-10-11T19:16:25.847357Z DEBUG ixos_protocol::ixos_rank::progressive: Auto-mode Pro refinement gate query=quarterly report query_terms=2 lexical_results=1 semantic_results=1 should_refine=false
+2026-10-11T19:16:25.863347Z  INFO ixos_protocol::storage::sidecar_lmdb: LMDB sidecar cache opened at "C:\\Users\\pablo\\AppData\\Local\\ixos\\embeddings"

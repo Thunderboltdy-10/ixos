@@ -9,15 +9,15 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-/// Hardcoded directories to skip regardless of .gitignore settings.
-/// These directories are commonly massive and rarely contain user-searchable content.
+/// Dependency/cache directories skipped regardless of .gitignore settings.
+/// `build` is intentionally absent: it can be a source module (e.g. Clap).
+/// Generated build outputs should be excluded by the repository's ignore rules.
 pub const HARDCODED_SKIP_DIRS: &[&str] = &[
     "node_modules",
     ".next",
     "vendor",
     "target",
     "dist",
-    "build",
     "__pycache__",
     ".git",
     ".svn",
@@ -50,12 +50,18 @@ pub fn search_walk(
     max_file_size: Option<u64>,
 ) -> WalkBuilder {
     let mut builder = WalkBuilder::new(root);
+    // Outside Git, honor ordinary folder .gitignore files. Inside Git, use the
+    // nearest repository boundary: require_git(false) also reads ignores above
+    // a nested Git root, which can prune unrelated imported repositories.
+    let inside_git = root
+        .ancestors()
+        .any(|ancestor| ancestor.join(".git").exists());
     builder
         .hidden(skip_hidden)
         .git_ignore(respect_gitignore)
         .git_global(respect_gitignore)
         .git_exclude(respect_gitignore)
-        .require_git(false)
+        .require_git(inside_git)
         .follow_links(follow_symlinks)
         .max_filesize(max_file_size);
     builder.filter_entry(|entry| {
@@ -637,6 +643,56 @@ mod tests {
             !HARDCODED_SKIP_DIRS.contains(&".env"),
             ".env must not be hard-skipped; users often store searchable config there"
         );
+    }
+
+    #[test]
+    fn build_source_module_is_visible_while_ignored_outputs_stay_excluded() {
+        let temp = TempDir::new().unwrap();
+        let root = temp.path();
+        std::fs::create_dir_all(root.join("src/build/app")).unwrap();
+        std::fs::create_dir_all(root.join("build")).unwrap();
+        std::fs::create_dir_all(root.join("node_modules/library")).unwrap();
+        std::fs::write(
+            root.join("src/build/app/mod.rs"),
+            "fn propagate_version() {}",
+        )
+        .unwrap();
+        std::fs::write(root.join("build/generated.rs"), "generated output").unwrap();
+        std::fs::write(root.join("node_modules/library/code.js"), "dependency").unwrap();
+        std::fs::write(root.join(".gitignore"), "/build/\n").unwrap();
+
+        let walked: Vec<_> = search_walk(root, true, true, false, None)
+            .build()
+            .filter_map(Result::ok)
+            .filter(|entry| entry.file_type().is_some_and(|kind| kind.is_file()))
+            .map(|entry| entry.path().strip_prefix(root).unwrap().to_path_buf())
+            .collect();
+        assert_eq!(walked, vec![PathBuf::from("src/build/app/mod.rs")]);
+        let index = PathIndex::build_from_walk(root, &PathIndexConfig::default());
+        assert_eq!(index.entries.len(), 1);
+        assert_eq!(index.entries[0].path, root.join("src/build/app/mod.rs"));
+    }
+
+    #[test]
+    fn nested_repository_does_not_inherit_outer_gitignore() {
+        let temp = TempDir::new().unwrap();
+        let host = temp.path();
+        std::fs::create_dir(host.join(".git")).unwrap();
+        std::fs::write(host.join(".gitignore"), "build/\n").unwrap();
+        let nested = host.join("foreign");
+        std::fs::create_dir_all(nested.join(".git")).unwrap();
+        let corpus = nested.join("corpus");
+        std::fs::create_dir_all(corpus.join("src/build")).unwrap();
+        std::fs::write(corpus.join("src/build/module.rs"), "source").unwrap();
+        std::fs::write(corpus.join("ignored.rs"), "ignored").unwrap();
+        std::fs::write(nested.join(".gitignore"), "ignored.rs\n").unwrap();
+        let walked: Vec<_> = search_walk(&corpus, true, true, false, None)
+            .build()
+            .filter_map(Result::ok)
+            .filter(|entry| entry.file_type().is_some_and(|kind| kind.is_file()))
+            .map(|entry| entry.path().strip_prefix(&corpus).unwrap().to_path_buf())
+            .collect();
+        assert_eq!(walked, vec![PathBuf::from("src/build/module.rs")]);
     }
 
     #[test]

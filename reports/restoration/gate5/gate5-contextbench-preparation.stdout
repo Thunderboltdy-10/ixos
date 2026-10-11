@@ -1,0 +1,8 @@
+SWE-Bench-Verified__python__maintenance__bugfix__982277e4: failed: Annotation content differs from pinned source at src/_pytest/mark/expression.py:36-57
+Multi-SWE-Bench__go__maintenance__bugfix__d129d52f: failed: Source interval is reversed or outside the source
+Multi-SWE-Bench__rust__maintenance__bugfix__3be02163: failed: Source interval is reversed or outside the source
+Multi-SWE-Bench__java__maintenance__bugfix__747c7f60: failed: Source interval is reversed or outside the source
+Multi-SWE-Bench__cpp__maintenance__bugfix__3e497d27: failed: Source interval is reversed or outside the source
+Multi-SWE-Bench__c__maintenance__bugfix__cdbc5890: passed
+SWE-PolyBench__typescript__evolution__feature__41cd3842: failed: Annotation content differs from pinned source at src/node/app.ts:22-28
+Multi-SWE-Bench__javascript__maintenance__bugfix__cbea412a: failed: Source interval is reversed or outside the source

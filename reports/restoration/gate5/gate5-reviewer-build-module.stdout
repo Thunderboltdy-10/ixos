@@ -1,0 +1,1 @@
+{"results":[{"path":"src/build/app/mod.rs","score":1.8299085,"view":{"path":"src/build/app/mod.rs","start_line":1,"end_line":1,"text":"fn propagate_cli_version() {}"}}]}

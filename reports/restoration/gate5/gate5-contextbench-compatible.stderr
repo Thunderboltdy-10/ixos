@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\pablo\Downloads\Ixos\eval\contextbench.py", line 283, in <module>
+    main()
+  File "C:\Users\pablo\Downloads\Ixos\eval\contextbench.py", line 278, in main
+    receipt = prepare(json.loads(args.plan.read_text()), args.parquet, args.destination, args.receipt, args.coordinate_policy)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\Downloads\Ixos\eval\contextbench.py", line 245, in prepare
+    gold, content_checks = gold_rows(row['gold_context'], folder / 'corpus', {s['path'] for s in sources}, policy)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\Downloads\Ixos\eval\contextbench.py", line 66, in gold_rows
+    if policy not in {'strict', 'upstream-compatible'}:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: unhashable type: 'dict'

@@ -37,6 +37,8 @@ Development/validation selected the models and recipes before held-out scoring. 
 
 Code scores cover only two held-out repositories and use upstream LLM-derived labels with incomplete span annotations. SciFact is clean text. Prepared BM25 is much faster; these results support hybrid file-quality gains on these suites, not a universal speed win or autonomous task success. Mean hybrid stdout was about 729 code / 1,343 document tokens under a 6,000-byte budget; detailed diagnostics add context cost. [Full conditions, paired intervals, provenance and failures](reports/restoration/GATE3.md), [evaluation protocol](eval/README.md).
 
+A separate eight-task/eight-language ContextBench development diagnostic found additional discovery errors and shows why file ranking alone is insufficient: hybrid has higher file recall, slightly lower first-hit rank than BM25, and compact previews cover less than1% of the broad annotated context. Both paired ranking intervals include zero. [Follow-up corrections, actual results and limits](reports/restoration/GATE5.md), [context protocol](docs/evaluation/CONTEXTBENCH.md). This is retrieval-only development evidence, not the official coding-agent leaderboard.
+
 ## Monorepo map
 
 | Location | Responsibility |

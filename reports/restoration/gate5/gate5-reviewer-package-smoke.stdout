@@ -1,0 +1,8 @@
+{
+  "file_count": 2191,
+  "git_index_tree": "44c4e67a189b7db2e90fb491b261cbb7915926e3",
+  "binary_sha256": "e50d62729cb3be246ccc21ef9dc62cc9f91e028a79528addf9d59ac5e21afdcb",
+  "build_elapsed_seconds_reported_by_cargo": 333,
+  "profile_contract": "Eight exported-source actual-model profile/config/protocol checks pass; default/explicit/frozen fixture equals.",
+  "discovery_probe": "Expected source build module found; ignored generated root build excluded."
+}

@@ -34,6 +34,8 @@ All displayed evidence must match its claimed frozen source lines. A backend ada
 
 Sources: [Semble benchmark methods](https://github.com/MinishLab/semble/blob/main/benchmarks/README.md), [ContextBench](https://github.com/EuniAI/ContextBench), [BEIR datasets](https://github.com/beir-cellar/beir/wiki/Datasets-available). Cursor's [regex architecture](https://cursor.com/blog/fast-regex-search) and Augment's [eval methodology](https://www.augmentcode.com/blog/you-make-your-evals-then-your-evals-make-you-introducing-augmentqa) inform engineering questions. Their internal numbers do not provide an interchangeable public Ixos leaderboard; do not claim superiority without a matched runnable protocol.
 
+The ContextBench development adapter and sequential three-backend runner are now executable. [Its protocol](../docs/evaluation/CONTEXTBENCH.md) documents the metadata-only eight-task selection, strict audit failures, explicit upstream-compatible EOF interpretation, source-content mismatch counters, independent corpus preparation and exact coverage guards. These line/ranking diagnostics are not the upstream byte/symbol/agent leaderboard. Use a fresh independent held-out cohort before selecting further changes from them.
+
 ## Selection and interaction matrix
 
 1. Freeze corpus revisions, label provenance, family-based splits, query kinds, expected ignores, task budgets and manifest hashes before scoring configurations. Every external corpus is pinned; queries/gold cannot be passed to a backend's document-preparation stage.

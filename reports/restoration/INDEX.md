@@ -6,6 +6,7 @@
 | 2 | [Free monorepo preparation](GATE2.md) | [gate2](gate2/) |
 | 3 | [Measured engine](GATE3.md) | [gate3](gate3/) |
 | 4 | [Integration](GATE4.md) | [gate4](gate4/) |
+| 5 | [Source discovery and context diagnostics](GATE5.md) | [gate5](gate5/) |
 
 Raw files were moved without altering their bytes. [PATH_MAP.json](PATH_MAP.json) records old and current paths plus SHA256. Historical commands/JSON receipts keep the original paths they used; resolve them through this map. Failed builds, invalid older corpus captures and rejected experiments remain preserved. Gate3 test recipes/identities remain frozen. Current source/binary integration checks do not replace those timings.
 

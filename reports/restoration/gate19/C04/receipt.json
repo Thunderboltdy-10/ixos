@@ -1,0 +1,161 @@
+{
+  "status": "submitted",
+  "task": {
+    "id": "C04",
+    "paper_id": "1610.00879",
+    "question_id": "45306b26447ea4b120655d6bb2e3636079d3d6e0",
+    "title": "A Computational Approach to Automatic Prediction of Drunk Texting",
+    "question": "Do they report results only on English data?",
+    "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate19\\tasks\\C04",
+    "source_sha256": "ed86786613ebafd0d2c58acdde6f431e09a5c60cd8b9fd10275a3e4a057b0454",
+    "source_bytes": 10890,
+    "prior_audit_excerpt_of_paper": false
+  },
+  "task_identity": "b355610b710ae453c89f6cc7334d5d68fea7c5f4e69e8ee6dbc25e66466eada0",
+  "binary_sha256": "7aab8d7d627e98f190e3af2519b4b520722d9d23663d377bc496a3e6b4ed1418",
+  "model": {
+    "path": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+    "files": {
+      "model.safetensors": "f3a9a9297a228914ca7cd0dc9601616ccb81a198676172ff6ff52658f5251ee2",
+      "tokenizer.json": "7d75cbc54318138807c401b0f0c9721117c628b39de8e8e0edb6cb17e0ee7d18",
+      "config.json": "63c00d90824c832c04ec1d02b6a983fb90489bf049f29fbff15ba481b8a432ee"
+    },
+    "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+    "file_bytes": 34048476,
+    "tokenizer_settings": {
+      "truncation": null,
+      "padding": null
+    }
+  },
+  "helper_sha256": "21ed6e0489ea7acce9a817d3eb5882fc3ba5e56ee99be98e5c6c5d434ff8b34f",
+  "sources": {
+    "paper.txt": [
+      "ed86786613ebafd0d2c58acdde6f431e09a5c60cd8b9fd10275a3e4a057b0454",
+      1791751025745515200
+    ]
+  },
+  "calls": [
+    {
+      "request": {
+        "op": "search",
+        "id": "q1",
+        "query": "Do they report results only on English data?",
+        "stats": true
+      },
+      "wall_ms": 12.443299994629342,
+      "exposed_ranges": [
+        [
+          3843,
+          4834
+        ]
+      ],
+      "stdout_tokens": 259,
+      "diagnostic_tokens": 361,
+      "diagnostics": {
+        "applicationCacheHits": 0,
+        "cacheReadMs": 1.0823,
+        "cacheWriteErrors": 0,
+        "cacheWriteMs": 0.45849999999999996,
+        "cacheWrites": 1,
+        "contextualLexical": false,
+        "discoveredFiles": 1,
+        "documentEmbedMs": 4.0081999999999995,
+        "driftReset": false,
+        "evidence": {
+          "candidatePassages": 5,
+          "extraEmbedMs": 1.1184999999999998,
+          "extraPassagesEmbedded": 4,
+          "policy": "bounded-rerank",
+          "selectionMs": 2.478
+        },
+        "extractionMs": 0.0163,
+        "feedbackConsumed": false,
+        "ioBatchWallMs": 0.1631,
+        "ioReadMs": 0.0921,
+        "ioWorkers": 4,
+        "lexicalCandidates": 1,
+        "lexicalPrepareMs": 0.2673,
+        "literalGuard": false,
+        "memoryCacheHits": 0,
+        "modelFingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+        "nativeCacheHits": 0,
+        "outputBytes": 1115,
+        "passagesEmbedded": 1,
+        "queryEmbedMs": 0.06219999999999999,
+        "queryMs": 2.6235,
+        "refreshMs": 8.2857,
+        "representation": "whole-token-centroid",
+        "requestMs": 10.9145,
+        "returnedResults": 1,
+        "searchableFiles": 1,
+        "semanticCandidates": 0,
+        "sessionEntries": 1,
+        "skippedFiles": 0,
+        "sourceBytesRead": 10890,
+        "sourceHashMs": 0.010100000000000001,
+        "tokenizerSettings": {
+          "padding": null,
+          "truncation": null
+        },
+        "vectorsScored": 1
+      }
+    },
+    {
+      "request": {
+        "op": "grep",
+        "id": "g1",
+        "pattern": "English|language|Hindi|Spanish|German|French",
+        "ignore_case": true
+      },
+      "wall_ms": 4.04510000225855,
+      "exposed_ranges": [],
+      "stdout_tokens": 10,
+      "diagnostic_tokens": 0,
+      "diagnostics": {}
+    }
+  ],
+  "references_loaded_by_actor": false,
+  "stdout_tokens": 269,
+  "diagnostic_tokens": 361,
+  "request_tokens": 56,
+  "argv": [
+    "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+    "--config",
+    "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-agent-config-mgw2jazc\\config.toml",
+    "serve",
+    "--dir",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate19\\tasks\\C04",
+    "--profile",
+    "documents",
+    "--model-path",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+    "--representation",
+    "whole-token-centroid",
+    "--session",
+    "combined",
+    "--evidence-policy",
+    "bounded-rerank",
+    "--quiet-stats"
+  ],
+  "startup_ms": 146.2175999986357,
+  "ready_tokens": 26,
+  "submission": {
+    "op": "submit",
+    "status": "not-established",
+    "answer": "The supplied text does not specify the language of its tweets, so I cannot establish that the results are English-only.",
+    "citations": [
+      {
+        "call_id": "q1",
+        "start_line": 25,
+        "end_line": 25
+      }
+    ],
+    "source_ranges": [
+      [
+        3861,
+        4444
+      ]
+    ]
+  },
+  "source_preserved": true
+}

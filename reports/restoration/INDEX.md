@@ -22,6 +22,7 @@ Start with the current [installation guide](../../docs/getting-started/INSTALLAT
 | 16 | Rust1.89 locked core build and exact actual-model response compatibility | [Minimum compiler](GATE16.md) | [gate16](gate16/) |
 | 17 | Canonical multi-file feedback reduction and exact platform/compiler responses | [Deterministic feedback](GATE17.md) | [gate17](gate17/) |
 | 18 | Human full-paper evidence baseline, no-answer limits and document-cache capacity | [Full-paper evidence](GATE18.md) | [gate18](gate18/) |
+| 19 | Six frozen live document tasks, observed citations and separate answer/token costs | [Live CLI tasks](GATE19.md) | [gate19](gate19/) |
 
 The held-out studies retain their exact original binary/model/evaluator identities. Later correctness or packaging checks do not silently replace their quality/performance figures. Repeated calls and authored diagnostic fixtures are not independent labeled tasks. JIT/native/resident timing, stdout/diagnostic context cost and source-preservation evidence are distinct.
 

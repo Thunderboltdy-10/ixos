@@ -1,0 +1,187 @@
+{
+  "status": "submitted",
+  "task": {
+    "id": "C01",
+    "paper_id": "1911.11933",
+    "question_id": "046ff04d1018447b22e00acb125125cae5a23fb7",
+    "title": "Simultaneous Neural Machine Translation using Connectionist Temporal Classification",
+    "question": "Which dataset do they use?",
+    "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate19\\tasks\\C01",
+    "source_sha256": "51c62744fe58a39820e846ed3ea0a27e8feb4ce7565c76cd5ce33d1f9f145699",
+    "source_bytes": 17065,
+    "prior_audit_excerpt_of_paper": false
+  },
+  "task_identity": "b355610b710ae453c89f6cc7334d5d68fea7c5f4e69e8ee6dbc25e66466eada0",
+  "binary_sha256": "7aab8d7d627e98f190e3af2519b4b520722d9d23663d377bc496a3e6b4ed1418",
+  "model": {
+    "path": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+    "files": {
+      "model.safetensors": "f3a9a9297a228914ca7cd0dc9601616ccb81a198676172ff6ff52658f5251ee2",
+      "tokenizer.json": "7d75cbc54318138807c401b0f0c9721117c628b39de8e8e0edb6cb17e0ee7d18",
+      "config.json": "63c00d90824c832c04ec1d02b6a983fb90489bf049f29fbff15ba481b8a432ee"
+    },
+    "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+    "file_bytes": 34048476,
+    "tokenizer_settings": {
+      "truncation": null,
+      "padding": null
+    }
+  },
+  "helper_sha256": "21ed6e0489ea7acce9a817d3eb5882fc3ba5e56ee99be98e5c6c5d434ff8b34f",
+  "sources": {
+    "paper.txt": [
+      "51c62744fe58a39820e846ed3ea0a27e8feb4ce7565c76cd5ce33d1f9f145699",
+      1791751025743515200
+    ]
+  },
+  "calls": [
+    {
+      "request": {
+        "op": "search",
+        "id": "q1",
+        "query": "Which dataset do they use?",
+        "stats": true
+      },
+      "wall_ms": 17.559300002176315,
+      "exposed_ranges": [
+        [
+          6981,
+          7488
+        ]
+      ],
+      "stdout_tokens": 154,
+      "diagnostic_tokens": 360,
+      "diagnostics": {
+        "applicationCacheHits": 0,
+        "cacheReadMs": 1.2509000000000001,
+        "cacheWriteErrors": 0,
+        "cacheWriteMs": 0.3059,
+        "cacheWrites": 1,
+        "contextualLexical": false,
+        "discoveredFiles": 1,
+        "documentEmbedMs": 7.8549999999999995,
+        "driftReset": false,
+        "evidence": {
+          "candidatePassages": 9,
+          "extraEmbedMs": 1.7239,
+          "extraPassagesEmbedded": 8,
+          "policy": "bounded-rerank",
+          "selectionMs": 3.5106
+        },
+        "extractionMs": 0.011899999999999999,
+        "feedbackConsumed": false,
+        "ioBatchWallMs": 0.19890000000000002,
+        "ioReadMs": 0.1216,
+        "ioWorkers": 4,
+        "lexicalCandidates": 1,
+        "lexicalPrepareMs": 0.46190000000000003,
+        "literalGuard": false,
+        "memoryCacheHits": 0,
+        "modelFingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+        "nativeCacheHits": 0,
+        "outputBytes": 637,
+        "passagesEmbedded": 1,
+        "queryEmbedMs": 0.0322,
+        "queryMs": 3.6004,
+        "refreshMs": 12.7025,
+        "representation": "whole-token-centroid",
+        "requestMs": 16.3056,
+        "returnedResults": 1,
+        "searchableFiles": 1,
+        "semanticCandidates": 0,
+        "sessionEntries": 1,
+        "skippedFiles": 0,
+        "sourceBytesRead": 17065,
+        "sourceHashMs": 0.016,
+        "tokenizerSettings": {
+          "padding": null,
+          "truncation": null
+        },
+        "vectorsScored": 1
+      }
+    },
+    {
+      "request": {
+        "op": "grep",
+        "id": "g1",
+        "pattern": "dataset|corpus|IWSLT|WMT",
+        "ignore_case": true,
+        "stats": true
+      },
+      "wall_ms": 4.206099998555146,
+      "exposed_ranges": [
+        [
+          1711,
+          4802
+        ],
+        [
+          11405,
+          12875
+        ],
+        [
+          13323,
+          13374
+        ],
+        [
+          14095,
+          14144
+        ]
+      ],
+      "stdout_tokens": 1167,
+      "diagnostic_tokens": 54,
+      "diagnostics": {
+        "filesSearched": 1,
+        "matchingLines": 5,
+        "modelLoaded": false,
+        "requestMs": 3.5968,
+        "returnedResults": 5,
+        "skippedFiles": 0,
+        "truncated": false
+      }
+    }
+  ],
+  "references_loaded_by_actor": false,
+  "stdout_tokens": 1321,
+  "diagnostic_tokens": 414,
+  "request_tokens": 56,
+  "argv": [
+    "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+    "--config",
+    "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-agent-config-mf070u59\\config.toml",
+    "serve",
+    "--dir",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate19\\tasks\\C01",
+    "--profile",
+    "documents",
+    "--model-path",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+    "--representation",
+    "whole-token-centroid",
+    "--session",
+    "combined",
+    "--evidence-policy",
+    "bounded-rerank",
+    "--quiet-stats"
+  ],
+  "startup_ms": 148.7150000029942,
+  "ready_tokens": 23,
+  "submission": {
+    "op": "submit",
+    "status": "answered",
+    "answer": "small_parallel_enja and the Asian Scientific Paper Excerpt Corpus (ASPEC).",
+    "citations": [
+      {
+        "call_id": "g1",
+        "start_line": 89,
+        "end_line": 89
+      }
+    ],
+    "source_ranges": [
+      [
+        12131,
+        12485
+      ]
+    ]
+  },
+  "source_preserved": true
+}

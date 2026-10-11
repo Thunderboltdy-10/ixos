@@ -1,0 +1,36 @@
+{
+  "task_identity": "b355610b710ae453c89f6cc7334d5d68fea7c5f4e69e8ee6dbc25e66466eada0",
+  "submissions": [
+    {
+      "id": "C01",
+      "receipt_sha256": "afe2826dfca6dfcda37d801d621bc5ccd382c0a048073f4fe5edb8fea6fc6090",
+      "submission_sha256": "f6622ad9ee1ba2943c4a877f59df5565ef3b7290cd9d971fcc8b706b09f6db5c"
+    },
+    {
+      "id": "C02",
+      "receipt_sha256": "3094f71d1f7bab9eb9b68b10e7a0fda6ab396ca2f8eedce0420b39539bb07f03",
+      "submission_sha256": "20b6615bd19e2b80a45a681fd0257cf22cfb875ed54ad0df7dea1ec7efa06754"
+    },
+    {
+      "id": "C03",
+      "receipt_sha256": "1299b1ab97bf1bf6ee956cdbcabe374bb6ab2b5f4b13130207b683229ea35642",
+      "submission_sha256": "ee974733c9da131a114527ff49039b0529ac333360d1452c159ab6fed8c6f9ea"
+    },
+    {
+      "id": "C04",
+      "receipt_sha256": "65489cebf05bd80fa11bc6231b9691363b69e7cdd528521873936e50a992c446",
+      "submission_sha256": "ce1efc3512600c5bd76c839c14067b877b9f63dde75f4535b93579fb230c3dcc"
+    },
+    {
+      "id": "C05",
+      "receipt_sha256": "5025cda4e6f12304ca26ae75bfb98cf534f8710245e0647cdc3edbdc83951288",
+      "submission_sha256": "a4a2831c34b7db3c996e9d8521778b95bc01debf5d1e0f263d03a279e85e9cdc"
+    },
+    {
+      "id": "C06",
+      "receipt_sha256": "7dcf704a49fdc900b459301a6324c8861050d66b455c09aa2e4255506e92297d",
+      "submission_sha256": "bbb95029dae2a1db9c74c09209ccf5ff1da3d8eba8f0297bf58662645cf98d48"
+    }
+  ],
+  "boundary": "Saved before grading helper reads expected references. Answers/citations remain unchanged after scoring."
+}

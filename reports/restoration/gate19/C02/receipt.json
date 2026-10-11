@@ -1,0 +1,284 @@
+{
+  "status": "submitted",
+  "task": {
+    "id": "C02",
+    "paper_id": "1909.13668",
+    "question_id": "dd2f21d60cfca3917a9eb8b192c194f4de85e8b2",
+    "title": "On the Importance of the Kullback-Leibler Divergence Term in Variational Autoencoders for Text Generation",
+    "question": "What different properties of the posterior distribution are explored in the paper?",
+    "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate19\\tasks\\C02",
+    "source_sha256": "3127a9c02973030810512a742946366c613498a6635597a52e32f4b6f5e569a4",
+    "source_bytes": 28851,
+    "prior_audit_excerpt_of_paper": false
+  },
+  "task_identity": "b355610b710ae453c89f6cc7334d5d68fea7c5f4e69e8ee6dbc25e66466eada0",
+  "binary_sha256": "7aab8d7d627e98f190e3af2519b4b520722d9d23663d377bc496a3e6b4ed1418",
+  "model": {
+    "path": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+    "files": {
+      "model.safetensors": "f3a9a9297a228914ca7cd0dc9601616ccb81a198676172ff6ff52658f5251ee2",
+      "tokenizer.json": "7d75cbc54318138807c401b0f0c9721117c628b39de8e8e0edb6cb17e0ee7d18",
+      "config.json": "63c00d90824c832c04ec1d02b6a983fb90489bf049f29fbff15ba481b8a432ee"
+    },
+    "fingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+    "file_bytes": 34048476,
+    "tokenizer_settings": {
+      "truncation": null,
+      "padding": null
+    }
+  },
+  "helper_sha256": "21ed6e0489ea7acce9a817d3eb5882fc3ba5e56ee99be98e5c6c5d434ff8b34f",
+  "sources": {
+    "paper.txt": [
+      "3127a9c02973030810512a742946366c613498a6635597a52e32f4b6f5e569a4",
+      1791751025744515300
+    ]
+  },
+  "calls": [
+    {
+      "request": {
+        "op": "search",
+        "id": "q1",
+        "query": "What different properties of the posterior distribution are explored in the paper?",
+        "stats": true
+      },
+      "wall_ms": 23.06059999682475,
+      "exposed_ranges": [
+        [
+          0,
+          881
+        ]
+      ],
+      "stdout_tokens": 211,
+      "diagnostic_tokens": 353,
+      "diagnostics": {
+        "applicationCacheHits": 0,
+        "cacheReadMs": 1.1163,
+        "cacheWriteErrors": 0,
+        "cacheWriteMs": 0.3901,
+        "cacheWrites": 1,
+        "contextualLexical": false,
+        "discoveredFiles": 1,
+        "documentEmbedMs": 12.2309,
+        "driftReset": false,
+        "evidence": {
+          "candidatePassages": 9,
+          "extraEmbedMs": 1.6283999999999998,
+          "extraPassagesEmbedded": 8,
+          "policy": "bounded-rerank",
+          "selectionMs": 4.3243
+        },
+        "extractionMs": 0.0327,
+        "feedbackConsumed": false,
+        "ioBatchWallMs": 0.19340000000000002,
+        "ioReadMs": 0.1204,
+        "ioWorkers": 4,
+        "lexicalCandidates": 1,
+        "lexicalPrepareMs": 0.7636000000000001,
+        "literalGuard": false,
+        "memoryCacheHits": 0,
+        "modelFingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+        "nativeCacheHits": 0,
+        "outputBytes": 1004,
+        "passagesEmbedded": 1,
+        "queryEmbedMs": 0.0667,
+        "queryMs": 4.4554,
+        "refreshMs": 17.3498,
+        "representation": "whole-token-centroid",
+        "requestMs": 21.8095,
+        "returnedResults": 1,
+        "searchableFiles": 1,
+        "semanticCandidates": 0,
+        "sessionEntries": 1,
+        "skippedFiles": 0,
+        "sourceBytesRead": 28851,
+        "sourceHashMs": 0.026,
+        "tokenizerSettings": {
+          "padding": null,
+          "truncation": null
+        },
+        "vectorsScored": 1
+      }
+    },
+    {
+      "request": {
+        "op": "grep",
+        "id": "g1",
+        "pattern": "properties",
+        "ignore_case": true
+      },
+      "wall_ms": 3.704800001287367,
+      "exposed_ranges": [
+        [
+          0,
+          881
+        ],
+        [
+          3192,
+          4415
+        ],
+        [
+          7843,
+          8639
+        ],
+        [
+          25789,
+          26676
+        ],
+        [
+          27205,
+          27791
+        ]
+      ],
+      "stdout_tokens": 1093,
+      "diagnostic_tokens": 0,
+      "diagnostics": {}
+    },
+    {
+      "request": {
+        "op": "search",
+        "id": "q2",
+        "query": "How do they measure posterior sharpness and its variation with KL divergence?",
+        "feedback": {
+          "query_id": "q1",
+          "accepted": [],
+          "rejected": [
+            0
+          ]
+        },
+        "stats": true
+      },
+      "wall_ms": 9.095399997022469,
+      "exposed_ranges": [
+        [
+          1268,
+          3190
+        ]
+      ],
+      "stdout_tokens": 513,
+      "diagnostic_tokens": 351,
+      "diagnostics": {
+        "applicationCacheHits": 0,
+        "cacheReadMs": 0.0029000000000000002,
+        "cacheWriteErrors": 0,
+        "cacheWriteMs": 0.0,
+        "cacheWrites": 0,
+        "contextualLexical": false,
+        "discoveredFiles": 1,
+        "documentEmbedMs": 0.00039999999999999996,
+        "driftReset": false,
+        "evidence": {
+          "candidatePassages": 9,
+          "extraEmbedMs": 1.724,
+          "extraPassagesEmbedded": 8,
+          "policy": "bounded-rerank",
+          "selectionMs": 4.989000000000001
+        },
+        "extractionMs": 0.0,
+        "feedbackConsumed": true,
+        "ioBatchWallMs": 0.1988,
+        "ioReadMs": 0.1212,
+        "ioWorkers": 4,
+        "lexicalCandidates": 1,
+        "lexicalPrepareMs": 0.0,
+        "literalGuard": false,
+        "memoryCacheHits": 1,
+        "modelFingerprint": "6966e61ba93fe416b36af3190469553e7c5447c8e3675ec034d4ee7ec0223f88",
+        "nativeCacheHits": 0,
+        "outputBytes": 2055,
+        "passagesEmbedded": 0,
+        "queryEmbedMs": 0.0909,
+        "queryMs": 5.1348,
+        "refreshMs": 2.9391,
+        "representation": "whole-token-centroid",
+        "requestMs": 8.0753,
+        "returnedResults": 1,
+        "searchableFiles": 1,
+        "semanticCandidates": 1,
+        "sessionEntries": 2,
+        "skippedFiles": 0,
+        "sourceBytesRead": 28851,
+        "sourceHashMs": 0.0201,
+        "tokenizerSettings": {
+          "padding": null,
+          "truncation": null
+        },
+        "vectorsScored": 1
+      }
+    },
+    {
+      "request": {
+        "op": "grep",
+        "id": "g2",
+        "pattern": "sharpness|covariance|active units|isotropy",
+        "ignore_case": true
+      },
+      "wall_ms": 4.789200000232086,
+      "exposed_ranges": [
+        [
+          7843,
+          8639
+        ],
+        [
+          10359,
+          11986
+        ],
+        [
+          12026,
+          13699
+        ],
+        [
+          15895,
+          16949
+        ]
+      ],
+      "stdout_tokens": 1353,
+      "diagnostic_tokens": 0,
+      "diagnostics": {}
+    }
+  ],
+  "references_loaded_by_actor": false,
+  "stdout_tokens": 3170,
+  "diagnostic_tokens": 704,
+  "request_tokens": 126,
+  "argv": [
+    "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+    "--config",
+    "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-agent-config-vyl4mblh\\config.toml",
+    "serve",
+    "--dir",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate19\\tasks\\C02",
+    "--profile",
+    "documents",
+    "--model-path",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-retrieval-32M-row-int8",
+    "--representation",
+    "whole-token-centroid",
+    "--session",
+    "combined",
+    "--evidence-policy",
+    "bounded-rerank",
+    "--quiet-stats"
+  ],
+  "startup_ms": 149.62190000369446,
+  "ready_tokens": 23,
+  "submission": {
+    "op": "submit",
+    "status": "answered",
+    "answer": "Posterior sharpness (measured through the log determinant of covariance), the aggregated posterior mean and variance, and its divergence from or overlap with the prior as KL/channel capacity changes.",
+    "citations": [
+      {
+        "call_id": "g2",
+        "start_line": 57,
+        "end_line": 61
+      }
+    ],
+    "source_ranges": [
+      [
+        12026,
+        13699
+      ]
+    ]
+  },
+  "source_preserved": true
+}

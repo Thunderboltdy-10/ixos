@@ -1,0 +1,7 @@
+C01 gold answerable status answered F1 0.875 coverage {'initial': 0.0, 'observed': 1.0, 'cited': 1.0} calls 2
+C02 gold answerable status answered F1 0.08695652173913043 coverage {'initial': 0.0, 'observed': 1.0, 'cited': 0.0} calls 4
+C03 gold answerable status answered F1 0.888888888888889 coverage {'initial': 0.0, 'observed': 1.0, 'cited': 1.0} calls 3
+C04 gold answerable status not-established F1 0 coverage {'initial': None, 'observed': None, 'cited': None} calls 2
+C05 gold answerable status answered F1 0.125 coverage {'initial': 0.0, 'observed': 1.0, 'cited': 1.0} calls 3
+C06 gold answerable status answered F1 0.16666666666666669 coverage {'initial': None, 'observed': None, 'cited': None} calls 2
+CLI stdout 11396 diagnostics 2530 requests 449

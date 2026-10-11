@@ -1,0 +1,71 @@
+{
+  "tasks": [
+    {
+      "id": "C01",
+      "paper_id": "1911.11933",
+      "question_id": "046ff04d1018447b22e00acb125125cae5a23fb7",
+      "title": "Simultaneous Neural Machine Translation using Connectionist Temporal Classification",
+      "question": "Which dataset do they use?",
+      "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate19\\tasks\\C01",
+      "source_sha256": "51c62744fe58a39820e846ed3ea0a27e8feb4ce7565c76cd5ce33d1f9f145699",
+      "source_bytes": 17065,
+      "prior_audit_excerpt_of_paper": false
+    },
+    {
+      "id": "C02",
+      "paper_id": "1909.13668",
+      "question_id": "dd2f21d60cfca3917a9eb8b192c194f4de85e8b2",
+      "title": "On the Importance of the Kullback-Leibler Divergence Term in Variational Autoencoders for Text Generation",
+      "question": "What different properties of the posterior distribution are explored in the paper?",
+      "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate19\\tasks\\C02",
+      "source_sha256": "3127a9c02973030810512a742946366c613498a6635597a52e32f4b6f5e569a4",
+      "source_bytes": 28851,
+      "prior_audit_excerpt_of_paper": false
+    },
+    {
+      "id": "C03",
+      "paper_id": "1811.01399",
+      "question_id": "69a7a6675c59a4c5fb70006523b9fe0f01ca415c",
+      "title": "Logic Attention Based Neighborhood Aggregation for Inductive Knowledge Graph Embedding",
+      "question": "Which knowledge graph completion tasks do they experiment with?",
+      "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate19\\tasks\\C03",
+      "source_sha256": "fe0f81944daf6635aa39f37250806e38e7ac8a217c42ebadcda8b12090dd065b",
+      "source_bytes": 32071,
+      "prior_audit_excerpt_of_paper": false
+    },
+    {
+      "id": "C04",
+      "paper_id": "1610.00879",
+      "question_id": "45306b26447ea4b120655d6bb2e3636079d3d6e0",
+      "title": "A Computational Approach to Automatic Prediction of Drunk Texting",
+      "question": "Do they report results only on English data?",
+      "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate19\\tasks\\C04",
+      "source_sha256": "ed86786613ebafd0d2c58acdde6f431e09a5c60cd8b9fd10275a3e4a057b0454",
+      "source_bytes": 10890,
+      "prior_audit_excerpt_of_paper": false
+    },
+    {
+      "id": "C05",
+      "paper_id": "1906.01512",
+      "question_id": "ae95a7d286cb7a0d5bc1a8283ecbf803e9305951",
+      "title": "LeafNATS: An Open-Source Toolkit and Live Demo System for Neural Abstractive Text Summarization",
+      "question": "What models are included in the toolkit?",
+      "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate19\\tasks\\C05",
+      "source_sha256": "deaa22d30e2a5be439f8dc89c79e85f6187bce8121fad62072a74773418a87f5",
+      "source_bytes": 12482,
+      "prior_audit_excerpt_of_paper": false
+    },
+    {
+      "id": "C06",
+      "paper_id": "1607.06025",
+      "question_id": "ea6764a362bac95fb99969e9f8c773a61afd8f39",
+      "title": "Constructing a Natural Language Inference Dataset using Generative Neural Networks",
+      "question": "What is the highest accuracy score achieved?",
+      "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate19\\tasks\\C06",
+      "source_sha256": "ef0dbae91d10cd983a6d7ac72e3992a5aacf61cdb3a3dbec191005deaf734d57",
+      "source_bytes": 43051,
+      "prior_audit_excerpt_of_paper": false
+    }
+  ],
+  "task_identity": "b355610b710ae453c89f6cc7334d5d68fea7c5f4e69e8ee6dbc25e66466eada0"
+}

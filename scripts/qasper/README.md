@@ -2,7 +2,7 @@
 
 This is a separate harness for human information-seeking questions about known research papers. It extends the earlier abstract/function retrieval studies without modifying their frozen evaluator. Current results and limitations: [Gate18](../../reports/restoration/GATE18.md).
 
-QASPER v0.3 is by Dasigi, Lo, Beltagy, Cohan, Smith and Gardner (2021): [paper](https://aclanthology.org/2021.naacl-main.365/), [official dataset card](https://huggingface.co/datasets/allenai/qasper), [baseline/evaluator](https://github.com/allenai/qasper-led-baseline). Dataset license: CC BY4.0. Upstream baseline source is Apache2.0; it is consulted, not executed or copied into this harness. Original source text and selected question/output receipts retain this attribution. Full downloaded data stays Git-ignored.
+QASPER v0.3 is by Dasigi, Lo, Beltagy, Cohan, Smith and Gardner (2021): [paper](https://aclanthology.org/2021.naacl-main.365/), [official dataset card](https://huggingface.co/datasets/allenai/qasper), [baseline/evaluator](https://github.com/allenai/qasper-led-baseline). Dataset license: CC BY4.0. Upstream baseline source is Apache2.0. Gate 18 consulted it without execution; Gate 19 imports its pinned answer-token-F1 function only after submissions are frozen, with identity recorded in the report. It is downloaded separately, not copied into this harness. Original source text and selected question/output receipts retain this attribution. Full downloaded data stays Git-ignored.
 
 ## Scope and integrity
 

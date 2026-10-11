@@ -1,0 +1,491 @@
+{
+  "status": "passed",
+  "cases": 6,
+  "rows": [
+    {
+      "case": "C01",
+      "paper_id": "1911.11933",
+      "question": "Which dataset do they use?",
+      "answerability": "answerable",
+      "submission": {
+        "op": "submit",
+        "status": "answered",
+        "answer": "small_parallel_enja and the Asian Scientific Paper Excerpt Corpus (ASPEC).",
+        "citations": [
+          {
+            "call_id": "g1",
+            "start_line": 89,
+            "end_line": 89
+          }
+        ],
+        "source_ranges": [
+          [
+            12131,
+            12485
+          ]
+        ]
+      },
+      "raw_submitted_answer_token_f1": 0.875,
+      "reference_answers_after_freeze": [
+        {
+          "answer": "small_parallel_enja, Asian Scientific Paper Excerpt Corpus (ASPEC) BIBREF5",
+          "type": "extractive"
+        }
+      ],
+      "coverage": {
+        "initial": {
+          "answerability": "answerable",
+          "strict_text_references": 1,
+          "text_unit_f1": 0.0,
+          "text_unit_recall": 0.0,
+          "byte_recall": 0.0,
+          "text_unit_contact": 0.0,
+          "exposed_text_units": 3,
+          "touched_text_units": 3,
+          "displayed_source_bytes": 507
+        },
+        "observed": {
+          "answerability": "answerable",
+          "strict_text_references": 1,
+          "text_unit_f1": 0.16666666666666669,
+          "text_unit_recall": 1.0,
+          "byte_recall": 1.0,
+          "text_unit_contact": 1.0,
+          "exposed_text_units": 11,
+          "touched_text_units": 11,
+          "displayed_source_bytes": 5168
+        },
+        "cited": {
+          "answerability": "answerable",
+          "strict_text_references": 1,
+          "text_unit_f1": 1.0,
+          "text_unit_recall": 1.0,
+          "byte_recall": 1.0,
+          "text_unit_contact": 1.0,
+          "exposed_text_units": 1,
+          "touched_text_units": 1,
+          "displayed_source_bytes": 354
+        }
+      },
+      "calls": 2,
+      "call_types": {
+        "search": 1,
+        "grep": 1
+      },
+      "cli_stdout_tokens": 1321,
+      "diagnostic_tokens": 414,
+      "request_tokens": 56,
+      "ready_tokens": 23,
+      "request_wall_ms": 21.76540000073146,
+      "startup_ms": 148.7150000029942,
+      "feedback_consumed": 0
+    },
+    {
+      "case": "C02",
+      "paper_id": "1909.13668",
+      "question": "What different properties of the posterior distribution are explored in the paper?",
+      "answerability": "answerable",
+      "submission": {
+        "op": "submit",
+        "status": "answered",
+        "answer": "Posterior sharpness (measured through the log determinant of covariance), the aggregated posterior mean and variance, and its divergence from or overlap with the prior as KL/channel capacity changes.",
+        "citations": [
+          {
+            "call_id": "g2",
+            "start_line": 57,
+            "end_line": 61
+          }
+        ],
+        "source_ranges": [
+          [
+            12026,
+            13699
+          ]
+        ]
+      },
+      "raw_submitted_answer_token_f1": 0.08695652173913043,
+      "reference_answers_after_freeze": [
+        {
+          "answer": "interdependence between rate and distortion, impact of KL on the sharpness of the approximated posteriors, demonstrate how certain generative behaviours could be imposed on VAEs via a range of maximum channel capacities, some experiments to find if any form of syntactic information is encoded in the latent space",
+          "type": "extractive"
+        }
+      ],
+      "coverage": {
+        "initial": {
+          "answerability": "answerable",
+          "strict_text_references": 1,
+          "text_unit_f1": 0.0,
+          "text_unit_recall": 0.0,
+          "byte_recall": 0.0,
+          "text_unit_contact": 0.0,
+          "exposed_text_units": 1,
+          "touched_text_units": 1,
+          "displayed_source_bytes": 881
+        },
+        "observed": {
+          "answerability": "answerable",
+          "strict_text_references": 1,
+          "text_unit_f1": 0.0909090909090909,
+          "text_unit_recall": 1.0,
+          "byte_recall": 1.0,
+          "text_unit_contact": 1.0,
+          "exposed_text_units": 21,
+          "touched_text_units": 21,
+          "displayed_source_bytes": 10649
+        },
+        "cited": {
+          "answerability": "answerable",
+          "strict_text_references": 1,
+          "text_unit_f1": 0.0,
+          "text_unit_recall": 0.0,
+          "byte_recall": 0.0,
+          "text_unit_contact": 0.0,
+          "exposed_text_units": 3,
+          "touched_text_units": 3,
+          "displayed_source_bytes": 1673
+        }
+      },
+      "calls": 4,
+      "call_types": {
+        "search": 2,
+        "grep": 2
+      },
+      "cli_stdout_tokens": 3170,
+      "diagnostic_tokens": 704,
+      "request_tokens": 126,
+      "ready_tokens": 23,
+      "request_wall_ms": 40.64999999536667,
+      "startup_ms": 149.62190000369446,
+      "feedback_consumed": 1
+    },
+    {
+      "case": "C03",
+      "paper_id": "1811.01399",
+      "question": "Which knowledge graph completion tasks do they experiment with?",
+      "answerability": "answerable",
+      "submission": {
+        "op": "submit",
+        "status": "answered",
+        "answer": "Link prediction and triplet classification.",
+        "citations": [
+          {
+            "call_id": "g2",
+            "start_line": 123,
+            "end_line": 123
+          }
+        ],
+        "source_ranges": [
+          [
+            20397,
+            20816
+          ]
+        ]
+      },
+      "raw_submitted_answer_token_f1": 0.888888888888889,
+      "reference_answers_after_freeze": [
+        {
+          "answer": "link prediction , triplet classification",
+          "type": "extractive"
+        }
+      ],
+      "coverage": {
+        "initial": {
+          "answerability": "answerable",
+          "strict_text_references": 1,
+          "text_unit_f1": 0.0,
+          "text_unit_recall": 0.0,
+          "byte_recall": 0.0,
+          "text_unit_contact": 0.0,
+          "exposed_text_units": 1,
+          "touched_text_units": 1,
+          "displayed_source_bytes": 1154
+        },
+        "observed": {
+          "answerability": "answerable",
+          "strict_text_references": 1,
+          "text_unit_f1": 0.1111111111111111,
+          "text_unit_recall": 1.0,
+          "byte_recall": 1.0,
+          "text_unit_contact": 1.0,
+          "exposed_text_units": 17,
+          "touched_text_units": 17,
+          "displayed_source_bytes": 7272
+        },
+        "cited": {
+          "answerability": "answerable",
+          "strict_text_references": 1,
+          "text_unit_f1": 1.0,
+          "text_unit_recall": 1.0,
+          "byte_recall": 1.0,
+          "text_unit_contact": 1.0,
+          "exposed_text_units": 1,
+          "touched_text_units": 1,
+          "displayed_source_bytes": 419
+        }
+      },
+      "calls": 3,
+      "call_types": {
+        "search": 1,
+        "grep": 2
+      },
+      "cli_stdout_tokens": 2392,
+      "diagnostic_tokens": 343,
+      "request_tokens": 79,
+      "ready_tokens": 26,
+      "request_wall_ms": 31.111699994653463,
+      "startup_ms": 145.5809000035515,
+      "feedback_consumed": 0
+    },
+    {
+      "case": "C04",
+      "paper_id": "1610.00879",
+      "question": "Do they report results only on English data?",
+      "answerability": "answerable",
+      "submission": {
+        "op": "submit",
+        "status": "not-established",
+        "answer": "The supplied text does not specify the language of its tweets, so I cannot establish that the results are English-only.",
+        "citations": [
+          {
+            "call_id": "q1",
+            "start_line": 25,
+            "end_line": 25
+          }
+        ],
+        "source_ranges": [
+          [
+            3861,
+            4444
+          ]
+        ]
+      },
+      "raw_submitted_answer_token_f1": 0,
+      "reference_answers_after_freeze": [
+        {
+          "answer": "Yes",
+          "type": "boolean"
+        }
+      ],
+      "coverage": {
+        "initial": {
+          "answerability": "answerable",
+          "strict_text_references": 0,
+          "text_unit_f1": null,
+          "text_unit_recall": null,
+          "byte_recall": null,
+          "text_unit_contact": null,
+          "exposed_text_units": 3,
+          "touched_text_units": 3,
+          "displayed_source_bytes": 991
+        },
+        "observed": {
+          "answerability": "answerable",
+          "strict_text_references": 0,
+          "text_unit_f1": null,
+          "text_unit_recall": null,
+          "byte_recall": null,
+          "text_unit_contact": null,
+          "exposed_text_units": 3,
+          "touched_text_units": 3,
+          "displayed_source_bytes": 991
+        },
+        "cited": {
+          "answerability": "answerable",
+          "strict_text_references": 0,
+          "text_unit_f1": null,
+          "text_unit_recall": null,
+          "byte_recall": null,
+          "text_unit_contact": null,
+          "exposed_text_units": 1,
+          "touched_text_units": 1,
+          "displayed_source_bytes": 583
+        }
+      },
+      "calls": 2,
+      "call_types": {
+        "search": 1,
+        "grep": 1
+      },
+      "cli_stdout_tokens": 269,
+      "diagnostic_tokens": 361,
+      "request_tokens": 56,
+      "ready_tokens": 26,
+      "request_wall_ms": 16.488399996887892,
+      "startup_ms": 146.2175999986357,
+      "feedback_consumed": 0
+    },
+    {
+      "case": "C05",
+      "paper_id": "1906.01512",
+      "question": "What models are included in the toolkit?",
+      "answerability": "answerable",
+      "submission": {
+        "op": "submit",
+        "status": "answered",
+        "answer": "RNN-based sequence-to-sequence pointer-generator summarizers, with attention, temporal-attention and decoder-attention components; and the multitask headline/summary model with shared embeddings/encoder and task-specific Bi-LSTM encoder\u2013pointer-generator decoder layers.",
+        "citations": [
+          {
+            "call_id": "g1",
+            "start_line": 25,
+            "end_line": 25
+          },
+          {
+            "call_id": "r1",
+            "start_line": 47,
+            "end_line": 47
+          }
+        ],
+        "source_ranges": [
+          [
+            6097,
+            6705
+          ],
+          [
+            10272,
+            10803
+          ]
+        ]
+      },
+      "raw_submitted_answer_token_f1": 0.125,
+      "reference_answers_after_freeze": [
+        {
+          "answer": " recurrent neural network (RNN)-based sequence-to-sequence (Seq2Seq) models for NATS",
+          "type": "extractive"
+        }
+      ],
+      "coverage": {
+        "initial": {
+          "answerability": "answerable",
+          "strict_text_references": 1,
+          "text_unit_f1": 0.0,
+          "text_unit_recall": 0.0,
+          "byte_recall": 0.0,
+          "text_unit_contact": 0.0,
+          "exposed_text_units": 3,
+          "touched_text_units": 3,
+          "displayed_source_bytes": 2736
+        },
+        "observed": {
+          "answerability": "answerable",
+          "strict_text_references": 1,
+          "text_unit_f1": 0.10526315789473684,
+          "text_unit_recall": 1.0,
+          "byte_recall": 1.0,
+          "text_unit_contact": 1.0,
+          "exposed_text_units": 18,
+          "touched_text_units": 18,
+          "displayed_source_bytes": 9590
+        },
+        "cited": {
+          "answerability": "answerable",
+          "strict_text_references": 1,
+          "text_unit_f1": 0.6666666666666666,
+          "text_unit_recall": 1.0,
+          "byte_recall": 1.0,
+          "text_unit_contact": 1.0,
+          "exposed_text_units": 2,
+          "touched_text_units": 2,
+          "displayed_source_bytes": 1139
+        }
+      },
+      "calls": 3,
+      "call_types": {
+        "search": 1,
+        "grep": 1,
+        "read": 1
+      },
+      "cli_stdout_tokens": 2790,
+      "diagnostic_tokens": 353,
+      "request_tokens": 80,
+      "ready_tokens": 26,
+      "request_wall_ms": 21.003599991672672,
+      "startup_ms": 151.05839999887394,
+      "feedback_consumed": 0
+    },
+    {
+      "case": "C06",
+      "paper_id": "1607.06025",
+      "question": "What is the highest accuracy score achieved?",
+      "answerability": "answerable",
+      "submission": {
+        "op": "submit",
+        "status": "answered",
+        "answer": "82.0%, achieved by the classifier trained on the merged generated and original datasets.",
+        "citations": [
+          {
+            "call_id": "g1",
+            "start_line": 179,
+            "end_line": 179
+          }
+        ],
+        "source_ranges": [
+          [
+            34767,
+            35733
+          ]
+        ]
+      },
+      "raw_submitted_answer_token_f1": 0.16666666666666669,
+      "reference_answers_after_freeze": [
+        {
+          "answer": "82.0%",
+          "type": "abstractive"
+        }
+      ],
+      "coverage": {
+        "initial": {
+          "answerability": "answerable",
+          "strict_text_references": 0,
+          "text_unit_f1": null,
+          "text_unit_recall": null,
+          "byte_recall": null,
+          "text_unit_contact": null,
+          "exposed_text_units": 3,
+          "touched_text_units": 3,
+          "displayed_source_bytes": 2305
+        },
+        "observed": {
+          "answerability": "answerable",
+          "strict_text_references": 0,
+          "text_unit_f1": null,
+          "text_unit_recall": null,
+          "byte_recall": null,
+          "text_unit_contact": null,
+          "exposed_text_units": 12,
+          "touched_text_units": 12,
+          "displayed_source_bytes": 6535
+        },
+        "cited": {
+          "answerability": "answerable",
+          "strict_text_references": 0,
+          "text_unit_f1": null,
+          "text_unit_recall": null,
+          "byte_recall": null,
+          "text_unit_contact": null,
+          "exposed_text_units": 1,
+          "touched_text_units": 1,
+          "displayed_source_bytes": 966
+        }
+      },
+      "calls": 2,
+      "call_types": {
+        "search": 1,
+        "grep": 1
+      },
+      "cli_stdout_tokens": 1454,
+      "diagnostic_tokens": 355,
+      "request_tokens": 52,
+      "ready_tokens": 26,
+      "request_wall_ms": 33.46629999577999,
+      "startup_ms": 148.47870000085095,
+      "feedback_consumed": 0
+    }
+  ],
+  "official_token_f1_function_sha256": "781aba7cd8e524bef4f0a1b4bf3504e5b02cb1d8d5bf32a8f0a89dfa83e86bfe",
+  "mean_raw_answer_token_f1": 0.35708534621578103,
+  "total_calls": 16,
+  "cli_stdout_tokens": 11396,
+  "diagnostic_tokens": 2530,
+  "request_tokens": 449,
+  "boundary": "Six train known-paper cases, one already-informed restoration assistant, no matched product comparator or statistical generalization. Literal submitted answer token F1 is lexical overlap, not independently judged correctness; no relabeling of not-established refusal as Unanswerable. CLI wire counts exclude inherited reasoning/chat context, actor status wrappers and terminal echo."
+}

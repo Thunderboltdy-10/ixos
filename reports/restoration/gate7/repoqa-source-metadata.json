@@ -1,0 +1,24 @@
+{
+  "repository": "evalplus/repoqa_release",
+  "revision": "e3a571033de99d0b9dcaccd25577a75d4b1c70b1",
+  "files": [
+    {
+      "name": "LICENSE",
+      "size": 11558,
+      "sha": "97b358ff02b6d6dd385db5157b070dc607ca6e45",
+      "download_url": "https://raw.githubusercontent.com/evalplus/repoqa_release/e3a571033de99d0b9dcaccd25577a75d4b1c70b1/LICENSE"
+    },
+    {
+      "name": "repoqa-2024-04-20.json.gz",
+      "size": 10748755,
+      "sha": "3fac9cc963e3eab314364ad0b251e76d031dfd22",
+      "download_url": "https://raw.githubusercontent.com/evalplus/repoqa_release/e3a571033de99d0b9dcaccd25577a75d4b1c70b1/repoqa-2024-04-20.json.gz"
+    },
+    {
+      "name": "repoqa-2024-06-23.json.gz",
+      "size": 12525636,
+      "sha": "a0514a1f2c5cd20220c343a152a01db465a15153",
+      "download_url": "https://raw.githubusercontent.com/evalplus/repoqa_release/e3a571033de99d0b9dcaccd25577a75d4b1c70b1/repoqa-2024-06-23.json.gz"
+    }
+  ]
+}

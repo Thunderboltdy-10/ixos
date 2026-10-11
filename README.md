@@ -41,6 +41,8 @@ A separate eight-task/eight-language ContextBench development diagnostic found a
 
 The [multi-call follow-up and native platform report](reports/restoration/GATE6.md) measures search/read/grep context costs and checks Windows plus Linux/WSL source/cache/package behavior with actual models. Broader reading raises hybrid annotated-line coverage from0.87% to8.65–9.88%, at roughly3,481–5,060 stdout tokens, while four of eight development tasks still have no annotated overlap. Correct file ranking can leave the evidence anchor wrong; these results do not select a more verbose production default. Windows native cache writes now preserve primary modification time and reject missing primaries. Mac execution remains deferred.
 
+The [evidence-location laboratory](reports/restoration/GATE7.md) preserves current file ranking and compares four ways to choose previews. Stored-passage lexical/semantic fusion modestly improves development line coverage at similar token cost, while several wrong-region/missing-file cases persist. This remains an experiment; production defaults and frozen held-out results are unchanged. [Reproducible protocol](docs/evaluation/ANCHORS.md).
+
 ## Monorepo map
 
 | Location | Responsibility |

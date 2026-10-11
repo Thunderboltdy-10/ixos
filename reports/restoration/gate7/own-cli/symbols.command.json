@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "target/release/ixos.exe",
+    "search",
+    "Where does Engine search select the view_at line anchor using idfs and document.passages?",
+    "--dir",
+    "src",
+    "--json",
+    "--stats",
+    "--limit",
+    "3",
+    "--max-output-bytes",
+    "2600",
+    "--cache-mode",
+    "native-cache"
+  ],
+  "exit_code": 0
+}

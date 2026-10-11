@@ -1,0 +1,1357 @@
+{
+  "status": "passed",
+  "provenance": {
+    "status": "passed",
+    "argv": {
+      "preparation": "reports\\restoration\\gate5\\gate5-contextbench-isolated.json",
+      "reference": "models\\lab\\restoration\\contextbench-trajectories-v2\\hybrid",
+      "binary": "target\\release\\ixos.exe",
+      "bridge": "target\\release\\ixos-lab-embed.exe",
+      "model_path": ".tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+      "policy": "top6",
+      "output": "models\\lab\\restoration\\contextbench-anchors-top6-v1",
+      "receipt": "reports\\restoration\\gate7\\top6-v1\\comparison.json",
+      "recipe": {
+        "id": "bounded-evidence-anchors-v1",
+        "styles": [
+          "global-line",
+          "winning-local",
+          "stored-fusion",
+          "bounded-rerank"
+        ],
+        "chunk_characters": 1800,
+        "lexical_candidates": 8,
+        "representatives": "Existing introduction/uniform 4-or-8 recipe; ties to even.",
+        "candidate_ceiling": 16,
+        "fusion_semantic_weight": 0.5,
+        "lexical": "Maximum unique-query-term corpus IDF weight of a line within a chunk; normalized by the maximum across the whole returned file.",
+        "fallback": "No positive lexical match: selected passage start. Global control falls back to the strongest stored passage start.",
+        "ties": "Earliest chunk, then earliest lexical line.",
+        "ranking": "Fixed input candidate order and scores; bounded serialization can still change which trailing rows fit."
+      }
+    },
+    "recipe_sha256": "6c6fb6d1fc8ebb55719158b31eda3da1a2a39bb92b29792f84e6812567204365",
+    "policy": {
+      "id": "inspect-top6-no-cue-v1",
+      "search_limit": 10,
+      "context": 2,
+      "response_bytes": 6000,
+      "read_lines": 61,
+      "search_reads": 6,
+      "grep_limit": 10,
+      "grep_reads": 0,
+      "max_calls": 7,
+      "cue": "Disabled. Inspect up to six ranked initial results under the same seven-call ceiling.",
+      "reads": "Ranked returned files/anchors only; center requested61-line window on the shown interval. File-only results begin at line1. Skip fully covered read intervals, clipped at EOF only when a previous read reported it.",
+      "feedback": "None. Returned/inspected does not imply usefulness or acceptance.",
+      "stopping": "Fixed schedule/limits only. Never use annotation overlap or success to stop."
+    },
+    "reference_provenance_sha256": "0e42457823f4bc1b92f170423cc011711d8d4278f3402965b981f17a20415d32",
+    "reference_binary_sha256": "21e9b3fd1aee11b6308f3f2de4344ccf2a0081bb264dbb9ec93d40a729318eee",
+    "model": {
+      "path": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+      "files": {
+        "model.safetensors": "75cf7a6c2171b230ad19b1e7d8e0b1aee86da5a02af8e7cacedd9921d227623c",
+        "tokenizer.json": "936b2d026b9e81fb683eab537ea37c5a1a65a4d02ad9cb92ce269fb8bc561ebf",
+        "config.json": "148e5691a6fcc553437156859701fba017a1ba5d340b170f17e0f3668fb861a7"
+      },
+      "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+      "file_bytes": 33514284,
+      "tokenizer_settings": {
+        "truncation": null,
+        "padding": null
+      }
+    },
+    "bridge_binary_sha256": "91349fc3c6e6a67a3a8f2e293ddfbe0e1db7958b96285021a2d7e0b09a957590",
+    "plan_sha256": "9b675efff985518d60bdee4c0c9d711622f35043c1e6981c064019597c289bcb",
+    "dataset_sha256": "cd1bc4ddefa69271d4f073f31d54bf33a1c5671800211d9db7e6a3c24435a75d",
+    "coordinate_policy": "upstream-compatible",
+    "datasets": [
+      {
+        "id": "contextbench-SWE-Bench-Verified__python__maintenance__bugfix__982277e4",
+        "fingerprint": "c36c6b24986df7ed77c95816333dc97830967bd3a39736e5b12444bf055b3bfa",
+        "sources": 471
+      },
+      {
+        "id": "contextbench-Multi-SWE-Bench__go__maintenance__bugfix__d129d52f",
+        "fingerprint": "d11c66a879171b7aedcfe1a521359fee9ffc5324f3b7b716375c628cb44ef064",
+        "sources": 540
+      },
+      {
+        "id": "contextbench-Multi-SWE-Bench__rust__maintenance__bugfix__3be02163",
+        "fingerprint": "16f631a870c970ba89331dd8ce5310ee4a816978265293c5388c0268cbe7d0f6",
+        "sources": 313
+      },
+      {
+        "id": "contextbench-Multi-SWE-Bench__java__maintenance__bugfix__747c7f60",
+        "fingerprint": "10f198620cb3f8654dc96bb87f39b5d70213c2844900a6da7eb38c6317cf6836",
+        "sources": 324
+      },
+      {
+        "id": "contextbench-Multi-SWE-Bench__cpp__maintenance__bugfix__3e497d27",
+        "fingerprint": "e0b5ba4e41eb16dfcad596e045be3df7c1c93e3b80402201f296ced10ffc8a2d",
+        "sources": 102
+      },
+      {
+        "id": "contextbench-Multi-SWE-Bench__c__maintenance__bugfix__cdbc5890",
+        "fingerprint": "a63c661396dc5b51d24235ad267200995b2d9690a163e23b4bf96660f6757290",
+        "sources": 113
+      },
+      {
+        "id": "contextbench-SWE-PolyBench__typescript__evolution__feature__41cd3842",
+        "fingerprint": "e5dca6404e2d6d1a491563d92b1f685377f516a73b2ccc4649bfaa48fcd84e3a",
+        "sources": 154
+      },
+      {
+        "id": "contextbench-Multi-SWE-Bench__javascript__maintenance__bugfix__cbea412a",
+        "fingerprint": "f121e88c0a02bfc852604ed412dfc82c7ce6bd2955068049e38f913bb7fb7f07",
+        "sources": 174
+      }
+    ],
+    "platform": "Windows-11-10.0.26200-SP0",
+    "tokenizer": {
+      "name": "cl100k_base",
+      "version": "0.12.0"
+    },
+    "condition": "Frozen actual hybrid candidate order/scores; source-only evidence selection, shared real Rust bridge preparation, actual fresh Ixos read/grep follow-ups. Initial original diagnostics tokens charged equally as a frozen reference. Only follow-up tool wall time is reported; no production search latency claim.",
+    "limitations": "Eight already-inspected development issues; upstream-compatible broad/mismatched source annotations. Fixed schedule, no LLM reasoning or success. No held-out/default promotion. Output fitting can change retained trailing candidates; file ranking metrics are rescored honestly.",
+    "bridge_ready": {
+      "dimensions": 256,
+      "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+      "load_ms": 181.1478,
+      "pid": 18688,
+      "tokenizer_settings": {
+        "padding": null,
+        "truncation": null
+      },
+      "type": "ready"
+    }
+  },
+  "styles": {
+    "global-line": {
+      "tasks": 8,
+      "families": 8,
+      "cumulative_span_recall": {
+        "mean": 0.09884812946735606,
+        "ci95": [
+          0.009231234866828086,
+          0.22341966089848816
+        ],
+        "families": 8,
+        "queries": 8
+      },
+      "cumulative_span_precision": {
+        "mean": 0.08743452644532881,
+        "ci95": [
+          0.019753886010362695,
+          0.1774050279202551
+        ],
+        "families": 8,
+        "queries": 8
+      },
+      "initial_span_recall": 0.008684223028531663,
+      "initial_ndcg": 0.43047363160763,
+      "mean_stdout_tokens": 5059.5,
+      "mean_stderr_tokens": 342.25,
+      "mean_request_tokens": 303.5,
+      "mean_calls": 7,
+      "mean_followup_tool_wall_ms": 258.84571250117006,
+      "tasks_with_any_annotated_overlap": 4,
+      "per_task": [
+        {
+          "query_id": "SWE-Bench-Verified__python__maintenance__bugfix__982277e4",
+          "group": "pytest-dev/pytest",
+          "initial": {
+            "mrr": 0.0,
+            "recall": 0.0,
+            "ndcg": 0.0,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 361,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 168,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 4387,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__go__maintenance__bugfix__d129d52f",
+          "group": "cli/cli",
+          "initial": {
+            "mrr": 1.0,
+            "recall": 1.0,
+            "ndcg": 1.0,
+            "span_recall": 0.04065040650406504,
+            "span_precision": 0.1,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.4959349593495935,
+            "span_precision": 0.15803108808290156,
+            "unique_displayed_lines": 386,
+            "annotated_lines_displayed": 61,
+            "annotated_lines": 123,
+            "relevant_files_with_displayed_lines": 1,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5300,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__rust__maintenance__bugfix__3be02163",
+          "group": "clap-rs/clap",
+          "initial": {
+            "mrr": 0.2,
+            "recall": 0.3333333333333333,
+            "ndcg": 0.18154179253735267,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 335,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 538,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5859,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__java__maintenance__bugfix__747c7f60",
+          "group": "google/gson",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 1.0,
+            "ndcg": 0.5706417189553201,
+            "span_recall": 0.017699115044247787,
+            "span_precision": 0.2,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.215929203539823,
+            "span_precision": 0.35988200589970504,
+            "unique_displayed_lines": 339,
+            "annotated_lines_displayed": 122,
+            "annotated_lines": 565,
+            "relevant_files_with_displayed_lines": 2,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5142,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__cpp__maintenance__bugfix__3e497d27",
+          "group": "fmtlib/fmt",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 1.0,
+            "ndcg": 0.5267175784514114,
+            "span_recall": 0.005070993914807302,
+            "span_precision": 0.1,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.005070993914807302,
+            "span_precision": 0.013054830287206266,
+            "unique_displayed_lines": 383,
+            "annotated_lines_displayed": 5,
+            "annotated_lines": 986,
+            "relevant_files_with_displayed_lines": 1,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5228,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__c__maintenance__bugfix__cdbc5890",
+          "group": "jqlang/jq",
+          "initial": {
+            "mrr": 0.14285714285714285,
+            "recall": 1.0,
+            "ndcg": 0.3333333333333333,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 386,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 456,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5196,
+          "calls": 7
+        },
+        {
+          "query_id": "SWE-PolyBench__typescript__evolution__feature__41cd3842",
+          "group": "coder/code-server",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 1.0,
+            "ndcg": 0.5249810332008933,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 386,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 58,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5062,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__javascript__maintenance__bugfix__cbea412a",
+          "group": "expressjs/express",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 0.5,
+            "ndcg": 0.3065735963827292,
+            "span_recall": 0.006053268765133172,
+            "span_precision": 0.1,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.07384987893462469,
+            "span_precision": 0.1685082872928177,
+            "unique_displayed_lines": 362,
+            "annotated_lines_displayed": 61,
+            "annotated_lines": 826,
+            "relevant_files_with_displayed_lines": 1,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 4302,
+          "calls": 7
+        }
+      ]
+    },
+    "winning-local": {
+      "tasks": 8,
+      "families": 8,
+      "cumulative_span_recall": {
+        "mean": 0.10632784549169683,
+        "ci95": [
+          0.016227180527383367,
+          0.2303115853290952
+        ],
+        "families": 8,
+        "queries": 8
+      },
+      "cumulative_span_precision": {
+        "mean": 0.10871865648986614,
+        "ci95": [
+          0.02106353591160221,
+          0.20285445895900195
+        ],
+        "families": 8,
+        "queries": 8
+      },
+      "initial_span_recall": 0.00906454757214221,
+      "initial_ndcg": 0.43047363160763,
+      "mean_stdout_tokens": 4928.625,
+      "mean_stderr_tokens": 342.25,
+      "mean_request_tokens": 304.125,
+      "mean_calls": 7,
+      "mean_followup_tool_wall_ms": 269.49157500121146,
+      "tasks_with_any_annotated_overlap": 4,
+      "per_task": [
+        {
+          "query_id": "SWE-Bench-Verified__python__maintenance__bugfix__982277e4",
+          "group": "pytest-dev/pytest",
+          "initial": {
+            "mrr": 0.0,
+            "recall": 0.0,
+            "ndcg": 0.0,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 48,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 357,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 168,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 28
+          },
+          "stdout_tokens": 4592,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__go__maintenance__bugfix__d129d52f",
+          "group": "cli/cli",
+          "initial": {
+            "mrr": 1.0,
+            "recall": 1.0,
+            "ndcg": 1.0,
+            "span_recall": 0.04065040650406504,
+            "span_precision": 0.1,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.4959349593495935,
+            "span_precision": 0.15803108808290156,
+            "unique_displayed_lines": 386,
+            "annotated_lines_displayed": 61,
+            "annotated_lines": 123,
+            "relevant_files_with_displayed_lines": 1,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5418,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__rust__maintenance__bugfix__3be02163",
+          "group": "clap-rs/clap",
+          "initial": {
+            "mrr": 0.2,
+            "recall": 0.3333333333333333,
+            "ndcg": 0.18154179253735267,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 335,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 538,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 4155,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__java__maintenance__bugfix__747c7f60",
+          "group": "google/gson",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 1.0,
+            "ndcg": 0.5706417189553201,
+            "span_recall": 0.017699115044247787,
+            "span_precision": 0.20833333333333334,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 48,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.215929203539823,
+            "span_precision": 0.3765432098765432,
+            "unique_displayed_lines": 324,
+            "annotated_lines_displayed": 122,
+            "annotated_lines": 565,
+            "relevant_files_with_displayed_lines": 2,
+            "duplicate_displayed_lines": 28
+          },
+          "stdout_tokens": 5150,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__cpp__maintenance__bugfix__3e497d27",
+          "group": "fmtlib/fmt",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 1.0,
+            "ndcg": 0.5267175784514114,
+            "span_recall": 0.008113590263691683,
+            "span_precision": 0.16666666666666666,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 48,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.06490872210953347,
+            "span_precision": 0.16666666666666666,
+            "unique_displayed_lines": 384,
+            "annotated_lines_displayed": 64,
+            "annotated_lines": 986,
+            "relevant_files_with_displayed_lines": 2,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5096,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__c__maintenance__bugfix__cdbc5890",
+          "group": "jqlang/jq",
+          "initial": {
+            "mrr": 0.14285714285714285,
+            "recall": 1.0,
+            "ndcg": 0.3333333333333333,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 386,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 456,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5877,
+          "calls": 7
+        },
+        {
+          "query_id": "SWE-PolyBench__typescript__evolution__feature__41cd3842",
+          "group": "coder/code-server",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 1.0,
+            "ndcg": 0.5249810332008933,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 362,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 58,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 4570,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__javascript__maintenance__bugfix__cbea412a",
+          "group": "expressjs/express",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 0.5,
+            "ndcg": 0.3065735963827292,
+            "span_recall": 0.006053268765133172,
+            "span_precision": 0.1,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.07384987893462469,
+            "span_precision": 0.1685082872928177,
+            "unique_displayed_lines": 362,
+            "annotated_lines_displayed": 61,
+            "annotated_lines": 826,
+            "relevant_files_with_displayed_lines": 1,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 4571,
+          "calls": 7
+        }
+      ]
+    },
+    "stored-fusion": {
+      "tasks": 8,
+      "families": 8,
+      "cumulative_span_recall": {
+        "mean": 0.10769845952678454,
+        "ci95": [
+          0.01871543916560749,
+          0.2316821993641829
+        ],
+        "families": 8,
+        "queries": 8
+      },
+      "cumulative_span_precision": {
+        "mean": 0.10970596620655809,
+        "ci95": [
+          0.026230569948186528,
+          0.1980572966970284
+        ],
+        "families": 8,
+        "queries": 8
+      },
+      "initial_span_recall": 0.01043516160722993,
+      "initial_ndcg": 0.43047363160763,
+      "mean_stdout_tokens": 5170.375,
+      "mean_stderr_tokens": 342.25,
+      "mean_request_tokens": 304.375,
+      "mean_calls": 7,
+      "mean_followup_tool_wall_ms": 261.20390000141924,
+      "tasks_with_any_annotated_overlap": 5,
+      "per_task": [
+        {
+          "query_id": "SWE-Bench-Verified__python__maintenance__bugfix__982277e4",
+          "group": "pytest-dev/pytest",
+          "initial": {
+            "mrr": 0.0,
+            "recall": 0.0,
+            "ndcg": 0.0,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 386,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 168,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 4842,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__go__maintenance__bugfix__d129d52f",
+          "group": "cli/cli",
+          "initial": {
+            "mrr": 1.0,
+            "recall": 1.0,
+            "ndcg": 1.0,
+            "span_recall": 0.04065040650406504,
+            "span_precision": 0.1,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.4959349593495935,
+            "span_precision": 0.15803108808290156,
+            "unique_displayed_lines": 386,
+            "annotated_lines_displayed": 61,
+            "annotated_lines": 123,
+            "relevant_files_with_displayed_lines": 1,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5192,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__rust__maintenance__bugfix__3be02163",
+          "group": "clap-rs/clap",
+          "initial": {
+            "mrr": 0.2,
+            "recall": 0.3333333333333333,
+            "ndcg": 0.18154179253735267,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 335,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 538,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 4938,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__java__maintenance__bugfix__747c7f60",
+          "group": "google/gson",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 1.0,
+            "ndcg": 0.5706417189553201,
+            "span_recall": 0.017699115044247787,
+            "span_precision": 0.2,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.215929203539823,
+            "span_precision": 0.35988200589970504,
+            "unique_displayed_lines": 339,
+            "annotated_lines_displayed": 122,
+            "annotated_lines": 565,
+            "relevant_files_with_displayed_lines": 2,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5632,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__cpp__maintenance__bugfix__3e497d27",
+          "group": "fmtlib/fmt",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 1.0,
+            "ndcg": 0.5267175784514114,
+            "span_recall": 0.008113590263691683,
+            "span_precision": 0.16666666666666666,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 48,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.06490872210953347,
+            "span_precision": 0.17827298050139276,
+            "unique_displayed_lines": 359,
+            "annotated_lines_displayed": 64,
+            "annotated_lines": 986,
+            "relevant_files_with_displayed_lines": 2,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5049,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__c__maintenance__bugfix__cdbc5890",
+          "group": "jqlang/jq",
+          "initial": {
+            "mrr": 0.14285714285714285,
+            "recall": 1.0,
+            "ndcg": 0.3333333333333333,
+            "span_recall": 0.010964912280701754,
+            "span_precision": 0.1,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.010964912280701754,
+            "span_precision": 0.012953367875647668,
+            "unique_displayed_lines": 386,
+            "annotated_lines_displayed": 5,
+            "annotated_lines": 456,
+            "relevant_files_with_displayed_lines": 1,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 6086,
+          "calls": 7
+        },
+        {
+          "query_id": "SWE-PolyBench__typescript__evolution__feature__41cd3842",
+          "group": "coder/code-server",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 1.0,
+            "ndcg": 0.5249810332008933,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 385,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 58,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5040,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__javascript__maintenance__bugfix__cbea412a",
+          "group": "expressjs/express",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 0.5,
+            "ndcg": 0.3065735963827292,
+            "span_recall": 0.006053268765133172,
+            "span_precision": 0.1,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.07384987893462469,
+            "span_precision": 0.1685082872928177,
+            "unique_displayed_lines": 362,
+            "annotated_lines_displayed": 61,
+            "annotated_lines": 826,
+            "relevant_files_with_displayed_lines": 1,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 4584,
+          "calls": 7
+        }
+      ]
+    },
+    "bounded-rerank": {
+      "tasks": 8,
+      "families": 8,
+      "cumulative_span_recall": {
+        "mean": 0.10696171973104775,
+        "ci95": [
+          0.017494929006085194,
+          0.23094545956844612
+        ],
+        "families": 8,
+        "queries": 8
+      },
+      "cumulative_span_precision": {
+        "mean": 0.10826361015942804,
+        "ci95": [
+          0.0224609375,
+          0.19686108599565166
+        ],
+        "families": 8,
+        "queries": 8
+      },
+      "initial_span_recall": 0.009698421811493123,
+      "initial_ndcg": 0.43047363160763,
+      "mean_stdout_tokens": 5102.5,
+      "mean_stderr_tokens": 342.25,
+      "mean_request_tokens": 303.625,
+      "mean_calls": 7,
+      "mean_followup_tool_wall_ms": 259.1601125000125,
+      "tasks_with_any_annotated_overlap": 4,
+      "per_task": [
+        {
+          "query_id": "SWE-Bench-Verified__python__maintenance__bugfix__982277e4",
+          "group": "pytest-dev/pytest",
+          "initial": {
+            "mrr": 0.0,
+            "recall": 0.0,
+            "ndcg": 0.0,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 386,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 168,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 4674,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__go__maintenance__bugfix__d129d52f",
+          "group": "cli/cli",
+          "initial": {
+            "mrr": 1.0,
+            "recall": 1.0,
+            "ndcg": 1.0,
+            "span_recall": 0.04065040650406504,
+            "span_precision": 0.1,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.4959349593495935,
+            "span_precision": 0.15803108808290156,
+            "unique_displayed_lines": 386,
+            "annotated_lines_displayed": 61,
+            "annotated_lines": 123,
+            "relevant_files_with_displayed_lines": 1,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5371,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__rust__maintenance__bugfix__3be02163",
+          "group": "clap-rs/clap",
+          "initial": {
+            "mrr": 0.2,
+            "recall": 0.3333333333333333,
+            "ndcg": 0.18154179253735267,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 335,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 538,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5800,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__java__maintenance__bugfix__747c7f60",
+          "group": "google/gson",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 1.0,
+            "ndcg": 0.5706417189553201,
+            "span_recall": 0.017699115044247787,
+            "span_precision": 0.2,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.215929203539823,
+            "span_precision": 0.35988200589970504,
+            "unique_displayed_lines": 339,
+            "annotated_lines_displayed": 122,
+            "annotated_lines": 565,
+            "relevant_files_with_displayed_lines": 2,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5416,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__cpp__maintenance__bugfix__3e497d27",
+          "group": "fmtlib/fmt",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 1.0,
+            "ndcg": 0.5267175784514114,
+            "span_recall": 0.013184584178498986,
+            "span_precision": 0.2708333333333333,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 48,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.06997971602434078,
+            "span_precision": 0.1796875,
+            "unique_displayed_lines": 384,
+            "annotated_lines_displayed": 69,
+            "annotated_lines": 986,
+            "relevant_files_with_displayed_lines": 3,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 4617,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__c__maintenance__bugfix__cdbc5890",
+          "group": "jqlang/jq",
+          "initial": {
+            "mrr": 0.14285714285714285,
+            "recall": 1.0,
+            "ndcg": 0.3333333333333333,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 386,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 456,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 5578,
+          "calls": 7
+        },
+        {
+          "query_id": "SWE-PolyBench__typescript__evolution__feature__41cd3842",
+          "group": "coder/code-server",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 1.0,
+            "ndcg": 0.5249810332008933,
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.0,
+            "span_precision": 0.0,
+            "unique_displayed_lines": 386,
+            "annotated_lines_displayed": 0,
+            "annotated_lines": 58,
+            "relevant_files_with_displayed_lines": 0,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 4991,
+          "calls": 7
+        },
+        {
+          "query_id": "Multi-SWE-Bench__javascript__maintenance__bugfix__cbea412a",
+          "group": "expressjs/express",
+          "initial": {
+            "mrr": 0.3333333333333333,
+            "recall": 0.5,
+            "ndcg": 0.3065735963827292,
+            "span_recall": 0.006053268765133172,
+            "span_precision": 0.1,
+            "span_metrics_complete": true,
+            "false_positive": null,
+            "abstained": false,
+            "unique_viewed_lines": 50,
+            "duplicate_views": 0
+          },
+          "final": {
+            "span_recall": 0.07384987893462469,
+            "span_precision": 0.1685082872928177,
+            "unique_displayed_lines": 362,
+            "annotated_lines_displayed": 61,
+            "annotated_lines": 826,
+            "relevant_files_with_displayed_lines": 1,
+            "duplicate_displayed_lines": 30
+          },
+          "stdout_tokens": 4373,
+          "calls": 7
+        }
+      ]
+    }
+  },
+  "inputs": [
+    {
+      "query_id": "SWE-Bench-Verified__python__maintenance__bugfix__982277e4",
+      "stdout_sha256": "0fbe2073314cada4fcc0d64521024f21d490bcd860358dc5896adb475ba29736",
+      "stderr_sha256": "510256aa5926b8ec9fa9b17a416172f31e8600f2f96aa6701e15187dbf807444",
+      "ranked_paths": [
+        "doc/en/announce/release-2.9.0.rst",
+        "CONTRIBUTING.rst",
+        "doc/en/changelog.rst",
+        "doc/en/usage.rst",
+        "scripts/release-on-comment.py",
+        "testing/code/test_code.py",
+        "doc/en/example/simple.rst",
+        "src/_pytest/python_api.py",
+        "testing/test_assertrewrite.py",
+        "testing/test_faulthandler.py"
+      ]
+    },
+    {
+      "query_id": "Multi-SWE-Bench__go__maintenance__bugfix__d129d52f",
+      "stdout_sha256": "e61ddf261b489c057e8056944bdce5f3d02ca8f6cbf9006b37a7413c03c573f4",
+      "stderr_sha256": "8a2c5effe2276ae91bc17a88026692b4eac2a5ce48ebf43abf48f8fba0babc7e",
+      "ranked_paths": [
+        "pkg/cmd/issue/delete/delete.go",
+        "pkg/cmd/codespace/delete.go",
+        "pkg/cmd/pr/merge/merge.go",
+        "pkg/cmd/pr/shared/survey.go",
+        "pkg/cmd/issue/create/create.go",
+        "pkg/cmd/repo/delete/delete_test.go",
+        "pkg/cmd/release/delete/delete_test.go",
+        "pkg/cmd/repo/edit/edit.go",
+        "pkg/cmd/release/delete/delete.go",
+        "pkg/cmd/release/delete-asset/delete_asset_test.go"
+      ]
+    },
+    {
+      "query_id": "Multi-SWE-Bench__rust__maintenance__bugfix__3be02163",
+      "stdout_sha256": "ba650959650089ae2aa8ff91354b9a18be934dddd913c479a6718fda470d3362",
+      "stderr_sha256": "92e03887a01f48307c6c0855fdef575d6094ed2f1564392ff1bd5bbe82f360c5",
+      "ranked_paths": [
+        "CHANGELOG.md",
+        "src/build/arg/debug_asserts.rs",
+        "tests/builder/conflicts.rs",
+        "tests/builder/require.rs",
+        "src/parse/validator.rs",
+        "src/build/arg/mod.rs",
+        "src/build/arg/settings.rs",
+        "src/build/arg_group.rs",
+        "benches/05_ripgrep.rs",
+        "tests/builder/utils.rs"
+      ]
+    },
+    {
+      "query_id": "Multi-SWE-Bench__java__maintenance__bugfix__747c7f60",
+      "stdout_sha256": "fd1bf1a8bd2e50b45e93f0efbd60e5d7b54b026741e8566b558c5efd1cf008c4",
+      "stderr_sha256": "f3e4b972fd9cfe4f957a028f01c5aa856d305f9afa9548163d3591c9fb3169be",
+      "ranked_paths": [
+        "CHANGELOG.md",
+        "GsonDesignDocument.md",
+        "gson/src/test/java/com/google/gson/internal/bind/RecursiveTypesResolveTest.java",
+        "gson/src/main/java/com/google/gson/internal/$Gson$Types.java",
+        "UserGuide.md",
+        "gson/src/main/java/com/google/gson/stream/JsonReader.java",
+        "gson/src/main/java/com/google/gson/GsonBuilder.java",
+        "gson/src/main/java/com/google/gson/internal/LinkedHashTreeMap.java",
+        "LICENSE",
+        "gson/src/main/java/com/google/gson/internal/bind/ReflectiveTypeAdapterFactory.java"
+      ]
+    },
+    {
+      "query_id": "Multi-SWE-Bench__cpp__maintenance__bugfix__3e497d27",
+      "stdout_sha256": "5620db783c1de316a22cacfe75016380d3d02bf1630fc790acb5a70c3afba2ca",
+      "stderr_sha256": "8497ed3f76753af319e7fbcc04013ecfe014857d9c57531c6bd2dfecf8b76b02",
+      "ranked_paths": [
+        "doc/ChangeLog-old.md",
+        "doc/api.md",
+        "include/fmt/std.h",
+        "include/fmt/base.h",
+        "ChangeLog.md",
+        "include/fmt/printf.h",
+        "include/fmt/format.h",
+        "include/fmt/chrono.h",
+        "test/format-test.cc",
+        "include/fmt/xchar.h"
+      ]
+    },
+    {
+      "query_id": "Multi-SWE-Bench__c__maintenance__bugfix__cdbc5890",
+      "stdout_sha256": "ed2ce10aba9261b3881fdf15f0a5eb4661813a562e7006203abf1dd3900cd20e",
+      "stderr_sha256": "4437cd5c2ca451436693fa0672f783bbaee6765d1540f9b7f40c463ac6e01685",
+      "ranked_paths": [
+        "docs/content/manual/v1.7/manual.yml",
+        "docs/content/manual/manual.yml",
+        "docs/content/manual/v1.5/manual.yml",
+        "docs/content/manual/v1.6/manual.yml",
+        "docs/content/manual/v1.3/manual.yml",
+        "docs/content/manual/v1.4/manual.yml",
+        "src/main.c",
+        "NEWS.md",
+        "src/builtin.c",
+        "src/lexer.c"
+      ]
+    },
+    {
+      "query_id": "SWE-PolyBench__typescript__evolution__feature__41cd3842",
+      "stdout_sha256": "18b55e5700bbfa0e925f0c26682298e3569aac315fc7e45f35f0e77728b7d70d",
+      "stderr_sha256": "e3037ecb08959e2290a785033dcb08529d9a97868945ea671968d24121dcb50f",
+      "ranked_paths": [
+        "docs/FAQ.md",
+        "docs/guide.md",
+        "src/node/cli.ts",
+        "ci/helm-chart/values.yaml",
+        "docs/ipad.md",
+        "src/node/app.ts",
+        "test/unit/node/cli.test.ts",
+        "docs/termux.md",
+        "docs/requirements.md",
+        "docs/CONTRIBUTING.md"
+      ]
+    },
+    {
+      "query_id": "Multi-SWE-Bench__javascript__maintenance__bugfix__cbea412a",
+      "stdout_sha256": "70935db87d027f6a8fa95b7bb26dd579ed542c8ac24a313fdd4262ea8d47a3d4",
+      "stderr_sha256": "7b330cef93ea13c79e0a62572104568900bf6a3402ec2016add618c817677c76",
+      "ranked_paths": [
+        "Collaborator-Guide.md",
+        "History.md",
+        "lib/application.js",
+        "Readme.md",
+        "examples/view-constructor/github-view.js",
+        "Readme-Guide.md",
+        "Release-Process.md",
+        "examples/view-constructor/index.js",
+        "examples/web-service/index.js",
+        "test/app.render.js"
+      ]
+    }
+  ],
+  "shared_preparation": [
+    {
+      "query_id": "SWE-Bench-Verified__python__maintenance__bugfix__982277e4",
+      "shared_screen_ms": 141.18349999989732,
+      "lexical_prepare_ms": 181.96879999959492,
+      "embedded_passages": 89,
+      "extra_passages_vs_stored": 31,
+      "embedded_characters": 149563
+    },
+    {
+      "query_id": "Multi-SWE-Bench__go__maintenance__bugfix__d129d52f",
+      "shared_screen_ms": 39.6718999982113,
+      "lexical_prepare_ms": 190.90720000167494,
+      "embedded_passages": 43,
+      "extra_passages_vs_stored": 4,
+      "embedded_characters": 70861
+    },
+    {
+      "query_id": "Multi-SWE-Bench__rust__maintenance__bugfix__3be02163",
+      "shared_screen_ms": 167.75459999917075,
+      "lexical_prepare_ms": 151.6124999980093,
+      "embedded_passages": 102,
+      "extra_passages_vs_stored": 41,
+      "embedded_characters": 170941
+    },
+    {
+      "query_id": "Multi-SWE-Bench__java__maintenance__bugfix__747c7f60",
+      "shared_screen_ms": 84.78850000028615,
+      "lexical_prepare_ms": 177.99299999751383,
+      "embedded_passages": 91,
+      "extra_passages_vs_stored": 29,
+      "embedded_characters": 151003
+    },
+    {
+      "query_id": "Multi-SWE-Bench__cpp__maintenance__bugfix__3e497d27",
+      "shared_screen_ms": 214.33640000032028,
+      "lexical_prepare_ms": 173.02969999946072,
+      "embedded_passages": 129,
+      "extra_passages_vs_stored": 53,
+      "embedded_characters": 217611
+    },
+    {
+      "query_id": "Multi-SWE-Bench__c__maintenance__bugfix__cdbc5890",
+      "shared_screen_ms": 227.0788999994693,
+      "lexical_prepare_ms": 150.96690000063973,
+      "embedded_passages": 136,
+      "extra_passages_vs_stored": 60,
+      "embedded_characters": 233470
+    },
+    {
+      "query_id": "SWE-PolyBench__typescript__evolution__feature__41cd3842",
+      "shared_screen_ms": 55.900999999721535,
+      "lexical_prepare_ms": 36.747900001500966,
+      "embedded_passages": 69,
+      "extra_passages_vs_stored": 13,
+      "embedded_characters": 110463
+    },
+    {
+      "query_id": "Multi-SWE-Bench__javascript__maintenance__bugfix__cbea412a",
+      "shared_screen_ms": 55.77059999995981,
+      "lexical_prepare_ms": 35.53959999771905,
+      "embedded_passages": 45,
+      "extra_passages_vs_stored": 9,
+      "embedded_characters": 71755
+    }
+  ],
+  "paired_cumulative_span_recall_minus_control": {
+    "winning-local": {
+      "mean": 0.007479716024340771,
+      "ci95": [
+        0.0,
+        0.022439148073022313
+      ],
+      "families": 8,
+      "queries": 8
+    },
+    "stored-fusion": {
+      "mean": 0.00885033005942849,
+      "ci95": [
+        0.0,
+        0.023809762108110033
+      ],
+      "families": 8,
+      "queries": 8
+    },
+    "bounded-rerank": {
+      "mean": 0.008113590263691683,
+      "ci95": [
+        0.0,
+        0.02434077079107505
+      ],
+      "families": 8,
+      "queries": 8
+    }
+  }
+}

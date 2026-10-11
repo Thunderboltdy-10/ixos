@@ -1,0 +1,4 @@
+error: invalid value 'cached' for '--cache-mode <CACHE_MODE>'
+  [possible values: native-cache, ephemeral]
+
+For more information, try '--help'.

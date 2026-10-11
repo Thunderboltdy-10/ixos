@@ -124,3 +124,5 @@
 
 - KEEP (Gate21): optional per-file grep match cap with unchanged defaults and full exact matching counts. It spreads a compact output budget across files and can omit useful later within-file matches; never imply relevance ranking or automatic quality improvement.
 - KEEP independent raw token/byte/latency reporting, invalid-request recovery, source integrity and both native platforms. Retain environment/harness failures. Do not call repeated consumed-source probes new agent labels or promote presets from one regex.
+
+- Gate22 KEEP: reject unencodable JSONL envelopes before search/reset session changes and derive payload budget from actual escaped ID overhead. Preserve ordinary reserve/default output and restore temporary budgets after failures. Actual before/after code+documents probes and exact platform/control outputs support correctness, not ranking gain. Keep V1/V2 helper boundaries explicit. Add CI actual-model guard with module invocation; explicit inspection-feedback extension remains separate work.

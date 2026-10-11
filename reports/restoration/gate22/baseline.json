@@ -1,0 +1,25 @@
+{
+  "exit_code": 0,
+  "first_response": {
+    "message": "Response envelope exceeds output budget",
+    "type": "error"
+  },
+  "feedback_consumed_after_rejected_response": true,
+  "session_entries_after_rejected_response": 1,
+  "argv": [
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate22\\control-ixos.exe",
+    "--config",
+    "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-envelope-before-r_g3tz4q\\config.toml",
+    "serve",
+    "--dir",
+    "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-envelope-before-r_g3tz4q\\sources",
+    "--profile",
+    "code",
+    "--model-path",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+    "--session",
+    "feedback",
+    "--jit",
+    "--quiet-stats"
+  ]
+}

@@ -1,0 +1,200 @@
+{
+  "status": "passed",
+  "normalized_core_source_files": 118,
+  "before_helper_sha256": "99ec2be4f7134dd54de329ff3268570594bbb978ceb798de5fc05113b8a691fc",
+  "after_helper_sha256": "3f28d0ecfbf66de6656b21402c279bbbc47293af564578d884c715c4f1fc2003",
+  "frozen_evaluator_sha256": "95afba09dd7c77e0fc56ed4e922d508116f701bb679f52c0844ed7725fc14297",
+  "exact_cross_platform_sequences": [
+    {
+      "profile": "code",
+      "case": "rejected-search",
+      "budget": 512,
+      "stdout_sha256": "11dfe1b791c0ae3aafc96c4e91e06e35c3245d5c24f9cb26400b951bda343363",
+      "response_bytes": [
+        63,
+        202
+      ]
+    },
+    {
+      "profile": "code",
+      "case": "rejected-reset",
+      "budget": 512,
+      "stdout_sha256": "8033672bb10f63ef88f1301e69693f652541688c8420ecc741468d7b76d6192b",
+      "response_bytes": [
+        200,
+        63,
+        221
+      ]
+    },
+    {
+      "profile": "code",
+      "case": "rejected-grep",
+      "budget": 512,
+      "stdout_sha256": "8033672bb10f63ef88f1301e69693f652541688c8420ecc741468d7b76d6192b",
+      "response_bytes": [
+        200,
+        63,
+        221
+      ]
+    },
+    {
+      "profile": "code",
+      "case": "rejected-read",
+      "budget": 512,
+      "stdout_sha256": "8033672bb10f63ef88f1301e69693f652541688c8420ecc741468d7b76d6192b",
+      "response_bytes": [
+        200,
+        63,
+        221
+      ]
+    },
+    {
+      "profile": "code",
+      "case": "escaped-large",
+      "budget": 6000,
+      "stdout_sha256": "572994a132741ad17ada14ffb6632efc4853d73d578642ee4c30a93602a82d45",
+      "response_bytes": [
+        5198,
+        5420
+      ]
+    },
+    {
+      "profile": "code",
+      "case": "quoted-valid",
+      "budget": 2000,
+      "stdout_sha256": "cf39937e33ca6f37beb5b424c0bd286e0086f0ff6fc0c298cc844172b289316f",
+      "response_bytes": [
+        708,
+        221
+      ]
+    },
+    {
+      "profile": "code",
+      "case": "unicode-valid",
+      "budget": 512,
+      "stdout_sha256": "f76682f3b68865a6d793824a6bb21c008e2f980f2cc5728fe940e7d01c481183",
+      "response_bytes": [
+        452,
+        221
+      ]
+    },
+    {
+      "profile": "code",
+      "case": "budget-restored",
+      "budget": 6000,
+      "stdout_sha256": "c14f0b42c344a20a2d8e61dde524f2bbd67b82ede40af44f34b6cd24b5dfa5d8",
+      "response_bytes": [
+        5198,
+        104,
+        57,
+        5403
+      ]
+    },
+    {
+      "profile": "code",
+      "case": "escaped-grep-read",
+      "budget": 2000,
+      "stdout_sha256": "2c686a8b03e1bd89e0394a7b8cb32d4426f4409f3598557310011651b004f8fa",
+      "response_bytes": [
+        1559,
+        1745
+      ]
+    },
+    {
+      "profile": "documents",
+      "case": "rejected-search",
+      "budget": 512,
+      "stdout_sha256": "11dfe1b791c0ae3aafc96c4e91e06e35c3245d5c24f9cb26400b951bda343363",
+      "response_bytes": [
+        63,
+        202
+      ]
+    },
+    {
+      "profile": "documents",
+      "case": "rejected-reset",
+      "budget": 512,
+      "stdout_sha256": "ce9242854e3723610658f10aba234c964a4ff30ce66139888103db14fc335cba",
+      "response_bytes": [
+        200,
+        63,
+        219
+      ]
+    },
+    {
+      "profile": "documents",
+      "case": "rejected-grep",
+      "budget": 512,
+      "stdout_sha256": "ce9242854e3723610658f10aba234c964a4ff30ce66139888103db14fc335cba",
+      "response_bytes": [
+        200,
+        63,
+        219
+      ]
+    },
+    {
+      "profile": "documents",
+      "case": "rejected-read",
+      "budget": 512,
+      "stdout_sha256": "ce9242854e3723610658f10aba234c964a4ff30ce66139888103db14fc335cba",
+      "response_bytes": [
+        200,
+        63,
+        219
+      ]
+    },
+    {
+      "profile": "documents",
+      "case": "escaped-large",
+      "budget": 6000,
+      "stdout_sha256": "09f03f36d93a12f843fa341048be7d9d77fba98ef8800480a0fa7208c4a66d1e",
+      "response_bytes": [
+        5198,
+        5418
+      ]
+    },
+    {
+      "profile": "documents",
+      "case": "quoted-valid",
+      "budget": 2000,
+      "stdout_sha256": "c734b1112754f2773df46d22ca1325c9cb4bba06fac0d20b2cb1d4423d7d1b54",
+      "response_bytes": [
+        708,
+        219
+      ]
+    },
+    {
+      "profile": "documents",
+      "case": "unicode-valid",
+      "budget": 512,
+      "stdout_sha256": "db970090a84554bcc8ae73f51eb95f7e9b2e551047d6e945c2f8c14eb6b9bc0b",
+      "response_bytes": [
+        452,
+        219
+      ]
+    },
+    {
+      "profile": "documents",
+      "case": "budget-restored",
+      "budget": 6000,
+      "stdout_sha256": "c14f0b42c344a20a2d8e61dde524f2bbd67b82ede40af44f34b6cd24b5dfa5d8",
+      "response_bytes": [
+        5198,
+        104,
+        57,
+        5403
+      ]
+    },
+    {
+      "profile": "documents",
+      "case": "escaped-grep-read",
+      "budget": 2000,
+      "stdout_sha256": "2c686a8b03e1bd89e0394a7b8cb32d4426f4409f3598557310011651b004f8fa",
+      "response_bytes": [
+        1559,
+        1745
+      ]
+    }
+  ],
+  "boundary": "V2 adds a post-validation empty-query error to the budget-restoration case; V1 source/helper and original baseline are retained. No quality labels or timing comparison."
+}

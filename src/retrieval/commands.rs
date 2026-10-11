@@ -12,6 +12,16 @@ fn json_bytes(value: &serde_json::Value) -> anyhow::Result<Vec<u8>> {
     Ok(raw)
 }
 
+fn request_payload_budget(budget: usize, id: &str) -> anyhow::Result<usize> {
+    // Inserting an id into a nonempty object adds its serialized value plus
+    // `"id":` and the separating comma. UTF-8 length alone misses JSON escapes.
+    let overhead = serde_json::to_vec(id)?.len() + 6;
+    let available = budget.checked_sub(overhead).filter(|bytes| *bytes >= 15);
+    anyhow::ensure!(available.is_some(), "Response ID exceeds output budget");
+    // Keep ordinary requests byte-compatible with the existing reservation.
+    Ok(available.unwrap().min(budget.saturating_sub(300)))
+}
+
 /// Serialize each retained row once, without repeatedly copying earlier rows.
 pub(super) struct BoundedRows {
     raw: Vec<u8>,
@@ -463,6 +473,9 @@ pub fn serve_with_diagnostics(
                 | Request::Grep { id, .. } => id,
             };
             anyhow::ensure!(!id.is_empty() && id.len() <= 256, "Invalid request id");
+            // Validate before any search/reset mutates session state. Bound the
+            // actual escaped envelope so remembered results can be emitted.
+            let payload_budget = request_payload_budget(budget, id)?;
             match request {
                 Request::Search {
                     id,
@@ -471,12 +484,16 @@ pub fn serve_with_diagnostics(
                     stats: requested_stats,
                     evidence_policy: requested_policy,
                 } => {
-                    let (raw, stats) = engine.search_with_policy(
+                    let original_budget = engine.options.output_bytes;
+                    engine.options.output_bytes = payload_budget;
+                    let result = engine.search_with_policy(
                         &query,
                         &id,
                         feedback.as_ref(),
                         requested_policy.unwrap_or(evidence_policy),
-                    )?;
+                    );
+                    engine.options.output_bytes = original_budget;
+                    let (raw, stats) = result?;
                     let mut value: serde_json::Value = serde_json::from_slice(&raw)?;
                     value["id"] = json!(id);
                     if !quiet_stats || requested_stats {
@@ -504,7 +521,7 @@ pub fn serve_with_diagnostics(
                         lines,
                         characters,
                         character_offset,
-                        budget.saturating_sub(300),
+                        payload_budget,
                     )?)?,
                 )),
                 Request::Grep {
@@ -522,7 +539,7 @@ pub fn serve_with_diagnostics(
                         ignore_case,
                         context,
                         limit,
-                        budget.saturating_sub(300),
+                        payload_budget,
                         max_matches_per_file,
                     )?;
                     if !quiet_stats || requested_stats {
@@ -562,6 +579,29 @@ pub fn serve_with_diagnostics(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn response_id_budget_counts_json_escapes_before_session_mutation() {
+        let nul = "\0".repeat(256);
+        assert!(request_payload_budget(512, &nul).is_err());
+        assert_eq!(request_payload_budget(2000, &nul).unwrap(), 456);
+        for id in ["ordinary".to_owned(), "a".repeat(256), "é".repeat(128)] {
+            assert_eq!(request_payload_budget(512, &id).unwrap(), 212);
+        }
+        for id in [nul, "\\".repeat(256), "\"".repeat(256), "😀".repeat(64)] {
+            let budget = 2000;
+            let payload = request_payload_budget(budget, &id).unwrap();
+            let mut rows = BoundedRows::new(payload);
+            for line in 0..100 {
+                if !rows.push(&json!({"path":"source.rs","line":line})).unwrap() {
+                    break;
+                }
+            }
+            let mut value: serde_json::Value = serde_json::from_slice(&rows.finish()).unwrap();
+            value["id"] = json!(id);
+            assert!(json_bytes(&value).unwrap().len() <= budget);
+        }
+    }
+
     #[test]
     fn grep_file_cap_spreads_results_without_changing_match_counts() {
         let dir = tempfile::tempdir().unwrap();

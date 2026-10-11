@@ -25,6 +25,7 @@ Start with the current [installation guide](../../docs/getting-started/INSTALLAT
 | 19 | Six frozen live document tasks, observed citations and separate answer/token costs | [Live CLI tasks](GATE19.md) | [gate19](gate19/) |
 | 20 | Three human code-issue diagnoses with original source/patch localization and failures | [Code navigation](GATE20.md) | [gate20](gate20/) |
 | 21 | Optional grep per-file cap, exact defaults and compact cross-file evidence | [Bounded grep](GATE21.md) | [gate21](gate21/) |
+| 22 | Actual escaped-ID response budget before search/reset history changes | [Visible JSONL responses](GATE22.md) | [gate22](gate22/) |
 
 The held-out studies retain their exact original binary/model/evaluator identities. Later correctness or packaging checks do not silently replace their quality/performance figures. Repeated calls and authored diagnostic fixtures are not independent labeled tasks. JIT/native/resident timing, stdout/diagnostic context cost and source-preservation evidence are distinct.
 

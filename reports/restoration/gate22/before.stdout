@@ -1,0 +1,2 @@
+{"message":"Response envelope exceeds output budget","type":"error"}
+{"id":"follow","results":[{"path":"cache.rs","score":0.8373438,"view":{"end_line":2,"path":"cache.rs","start_line":2,"text":"Cache freshness validates current source bytes after equal-length edits."}}]}

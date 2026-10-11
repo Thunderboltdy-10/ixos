@@ -56,7 +56,7 @@ Use `--stats` when diagnosing misses or cost. It emits detailed diagnostics on s
 
 ## Resident sessions and explicit feedback
 
-`ixos serve --dir ROOT --quiet-stats` accepts one JSON request per line and avoids routine diagnostic context. Search/grep can set `"stats":true` when needed; the ready record still appears once on stderr. Requests return bounded JSON. Start with session `off`; `related`, `feedback`, `combined` and experimental `context` are explicit alternatives. Use `reset` when starting an unrelated task. Read/grep responses do not enter feedback history or update the topic anchor. Only prior search response IDs can supply feedback. Ixos cannot observe external ripgrep operations.
+`ixos serve --dir ROOT --quiet-stats` accepts one JSON request per line and avoids routine diagnostic context. Search/grep can set `"stats":true` when needed; the ready record still appears once on stderr. Requests return bounded JSON. Use unique request IDs within task history; errors do not provide an accepted result. Start with session `off`; `related`, `feedback`, `combined` and experimental `context` are explicit alternatives. Use `reset` when starting an unrelated task. Read/grep responses do not enter feedback history or update the topic anchor. Only prior search response IDs can supply feedback. Ixos cannot observe external ripgrep operations.
 
 Search requests may set `"evidence_policy":"bounded-rerank"` or `"global-line"` independently of the server default. An override lasts one request. With `stats:true`, its `evidence` diagnostics distinguish extra candidate inference from cached document work; `selectionMs` includes `extraEmbedMs`. Routine diagnostics can be omitted when context is more valuable than debugging detail.
 

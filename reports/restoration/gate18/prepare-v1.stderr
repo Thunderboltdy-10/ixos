@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\pablo\Downloads\Ixos\scripts\qasper\prepare.py", line 44, in <module>
+    main()
+  File "C:\Users\pablo\Downloads\Ixos\scripts\qasper\prepare.py", line 19, in main
+    train_sources = {pid:render(pid,data).fingerprint for pid,data in train.items()}
+                         ^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\Downloads\Ixos\scripts\qasper\contract.py", line 49, in render
+    append(section['section_name']+'\n\n')
+           ~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+TypeError: unsupported operand type(s) for +: 'NoneType' and 'str'

@@ -1,0 +1,6 @@
+documents-global byte 0.10059962339805809 F1 0.05528813824380327 eligible 80 tokens 327.3814432989691 no-answer views 6
+documents-bounded byte 0.15574236183950863 F1 0.08312065055907421 eligible 80 tokens 335.8041237113402 no-answer views 6
+documents-passages-global byte 0.10059962339805809 F1 0.05528813824380327 eligible 80 tokens 327.3917525773196 no-answer views 6
+documents-passages-bounded byte 0.15081625346512437 F1 0.08065759637188208 eligible 80 tokens 340.9072164948454 no-answer views 6
+lexical-global byte 0.10059962339805809 F1 0.05528813824380327 eligible 80 tokens 327.17525773195877 no-answer views 6
+Paired byte differences:

@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Users\pablo\Downloads\Ixos\reports\restoration\gate18\analyze.py", line 72, in <module>
+    print(name,row['byte_recall'])
+  File "C:\Users\pablo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 17: character maps to <undefined>

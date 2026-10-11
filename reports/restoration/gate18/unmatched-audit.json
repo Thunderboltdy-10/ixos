@@ -1,0 +1,67 @@
+{
+  "counts": {
+    "exact_nonparagraph_substring": 147,
+    "edge_whitespace_only": 119,
+    "internal_whitespace_only": 23
+  },
+  "bounded_training_samples": [
+    {
+      "paper_id": "1908.06606",
+      "question_id": "85d1831c28d3c19c84472589a252e28e9884500f",
+      "kind": "exact_nonparagraph_substring",
+      "evidence_prefix": "Experimental Studies ::: Comparison with State-of-the-art Methods",
+      "evidence_characters": 65
+    },
+    {
+      "paper_id": "1912.13072",
+      "question_id": "578d0b23cb983b445b1a256a34f969b34d332075",
+      "kind": "exact_nonparagraph_substring",
+      "evidence_prefix": "Data and Models ::: Emotion",
+      "evidence_characters": 27
+    },
+    {
+      "paper_id": "2002.06644",
+      "question_id": "680dc3e56d1dc4af46512284b9996a1056f89ded",
+      "kind": "exact_nonparagraph_substring",
+      "evidence_prefix": "Baselines and Approach",
+      "evidence_characters": 22
+    },
+    {
+      "paper_id": "2002.06644",
+      "question_id": "680dc3e56d1dc4af46512284b9996a1056f89ded",
+      "kind": "exact_nonparagraph_substring",
+      "evidence_prefix": "Baselines and Approach ::: Baselines",
+      "evidence_characters": 36
+    },
+    {
+      "paper_id": "2002.06644",
+      "question_id": "bd5379047c2cf090bea838c67b6ed44773bcd56f",
+      "kind": "exact_nonparagraph_substring",
+      "evidence_prefix": "Experiments ::: Dataset and Experimental Settings",
+      "evidence_characters": 49
+    },
+    {
+      "paper_id": "1809.08731",
+      "question_id": "7aa8375cdf4690fc3b9b1799b0f5a9ec1c1736ed",
+      "kind": "edge_whitespace_only",
+      "evidence_prefix": "We further compare to the negative LM cross-entropy, i.e., the log-probability which is only normalized by sentence length. The score of a sentence $S$ is calcu",
+      "evidence_characters": 168
+    },
+    {
+      "paper_id": "1809.08731",
+      "question_id": "7aa8375cdf4690fc3b9b1799b0f5a9ec1c1736ed",
+      "kind": "edge_whitespace_only",
+      "evidence_prefix": "Our next baseline is perplexity, which corresponds to the exponentiated cross-entropy:",
+      "evidence_characters": 86
+    },
+    {
+      "paper_id": "1809.08731",
+      "question_id": "7aa8375cdf4690fc3b9b1799b0f5a9ec1c1736ed",
+      "kind": "edge_whitespace_only",
+      "evidence_prefix": "We further compare to the negative LM cross-entropy, i.e., the log-probability which is only normalized by sentence length. The score of a sentence $S$ is calcu",
+      "evidence_characters": 168
+    }
+  ],
+  "normalizations_applied": false,
+  "validation_or_test_annotations_inspected": false
+}

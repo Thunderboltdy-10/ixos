@@ -110,3 +110,7 @@
 
 - KEEP (Gate17): canonical deduplicated path order for feedback-vector reduction after actual-model jitter reproduction. Equivalent reference orders/duplicates must give exact outputs. The observed~6e-8 score variation changed no file order in these probes; this is reproducibility, not measured quality gain.
 - KEEP actual-model regression and cross-platform/compiler/source preservation contracts. Do not refresh historical quality/performance labels from compatibility checks or claim Gate15 packages contain the Gate17 binary. Broaden fresh realistic evaluations next rather than repeatedly proving the same minor fix.
+
+- KEEP (Gate18): strict complete-paper textual evidence adapter, section headings mapped exactly, duplicates/no-answer/disagreement/floats/whitespace mismatches reported separately. Do not normalize bad annotations into fabricated source matches or claim adapted train metrics equal official QASPER scores.
+- KEEP current defaults. Bounded pilot coverage improves modestly with uncertainty touching zero; more stored document passages do not clearly help and exceed this ext4 metadata capacity. Preserve application-DB fallback and no ordinary sidecars.
+- PRIORITIZE evidence selection and real observed-only agent follow-ups before model training. Current single preview exposes only about10–16% of supported annotated bytes here; scores are not answerability confidence. Reserve dev/test for later selection, keep code controls and token costs.

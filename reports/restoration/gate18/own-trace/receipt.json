@@ -1,0 +1,78 @@
+{
+  "status": "passed",
+  "informed_trace_not_blind_benchmark": true,
+  "binary_sha256": "7aab8d7d627e98f190e3af2519b4b520722d9d23663d377bc496a3e6b4ed1418",
+  "source_preserved": true,
+  "commands": [
+    {
+      "label": "search",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate18\\own-trace-config.toml",
+        "search",
+        "What happens when one long source line exceeds the JSON output budget?",
+        "--dir",
+        "src",
+        "--model-path",
+        ".tmp/gate4/reviewer-models/potion-code-16M-v2-unbounded",
+        "--json",
+        "--stats"
+      ],
+      "exit_code": 0,
+      "stdout_tokens": 360,
+      "stderr_tokens": 342
+    },
+    {
+      "label": "grep",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate18\\own-trace-config.toml",
+        "grep",
+        "row.view = None",
+        "--dir",
+        "src",
+        "-F",
+        "--limit",
+        "3",
+        "--max-output-bytes",
+        "2500"
+      ],
+      "exit_code": 0,
+      "stdout_tokens": 72,
+      "stderr_tokens": 0
+    },
+    {
+      "label": "read",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate18\\own-trace-config.toml",
+        "read",
+        "retrieval/mod.rs",
+        "--dir",
+        "src",
+        "--start",
+        "805",
+        "--lines",
+        "30",
+        "--max-output-bytes",
+        "3500"
+      ],
+      "exit_code": 0,
+      "stdout_tokens": 338,
+      "stderr_tokens": 0
+    }
+  ],
+  "search_paths": [
+    "retrieval/commands.rs",
+    "cli/commands.rs",
+    "bin/ixos-lab-embed.rs",
+    "retrieval/mod.rs",
+    "main.rs"
+  ],
+  "total_stdout_tokens": 770,
+  "total_diagnostic_tokens": 342,
+  "finding": "Search supplies candidate code; exact grep/read verifies whole-view -> anchor-line -> explicit file-only fallback. No invented/truncated line is returned."
+}

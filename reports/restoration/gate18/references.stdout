@@ -1,0 +1,31 @@
+{
+  "upstream_revision": "afd0fb96bf78ce8cd8157639c6f6a6995e4f9089",
+  "files": [
+    {
+      "url": "https://raw.githubusercontent.com/allenai/qasper-led-baseline/afd0fb96bf78ce8cd8157639c6f6a6995e4f9089/scripts/evaluator.py",
+      "sha256": "781aba7cd8e524bef4f0a1b4bf3504e5b02cb1d8d5bf32a8f0a89dfa83e86bfe",
+      "bytes": 6345
+    },
+    {
+      "url": "https://raw.githubusercontent.com/allenai/qasper-led-baseline/afd0fb96bf78ce8cd8157639c6f6a6995e4f9089/scripts/evidence_retrieval_heuristic_baselines.py",
+      "sha256": "034c3053367e35e72f0e2a2efe8abaf49a512c547d2f3568ee75542a1acfc48e",
+      "bytes": 2755
+    },
+    {
+      "url": "https://raw.githubusercontent.com/allenai/qasper-led-baseline/afd0fb96bf78ce8cd8157639c6f6a6995e4f9089/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357
+    },
+    {
+      "url": "https://raw.githubusercontent.com/allenai/qasper-led-baseline/afd0fb96bf78ce8cd8157639c6f6a6995e4f9089/README.md",
+      "sha256": "3c2797e9911d9486877302d8ea754e9b943d39c8cca0dc82d9f205b68c304d2e",
+      "bytes": 2125
+    }
+  ],
+  "executed": false,
+  "paper_url": "https://aclanthology.org/2021.naacl-main.365/",
+  "dataset_card_url": "https://huggingface.co/datasets/allenai/qasper",
+  "dataset_license": "CC BY 4.0",
+  "baseline_source_license": "Apache 2.0",
+  "scope": "Reference only. Our train pilot exact text-unit/byte metrics are not the official full-dev/test Answer/Evidence F1 leaderboard."
+}

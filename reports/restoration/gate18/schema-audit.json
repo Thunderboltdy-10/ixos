@@ -1,0 +1,22 @@
+{
+  "train": {
+    "papers": 888,
+    "title_str": 888,
+    "abstract_str": 888,
+    "section_name_str": 12440,
+    "paragraph_str": 47687,
+    "paragraphs_with_cr": 0,
+    "paragraphs_with_nul": 0,
+    "section_name_NoneType": 10
+  },
+  "dev": {
+    "papers": 281,
+    "title_str": 281,
+    "abstract_str": 281,
+    "section_name_str": 3795,
+    "paragraph_str": 13594,
+    "paragraphs_with_cr": 0,
+    "paragraphs_with_nul": 0,
+    "section_name_NoneType": 1
+  }
+}

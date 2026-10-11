@@ -1,0 +1,20 @@
+{
+  "purpose": "Authored metadata-capacity probe on same isolated ext4 filesystem, not search throughput",
+  "rows": [
+    {
+      "requested_metadata_bytes": 643,
+      "status": "stored"
+    },
+    {
+      "requested_metadata_bytes": 2375,
+      "status": "stored"
+    },
+    {
+      "requested_metadata_bytes": 4423,
+      "status": "failed",
+      "errno": 28,
+      "message": "[Errno 28] No space left on device: '/home/thunderboltdy/.cache/ixos-review-298088f-20261011/probes/ixos-capacity-inkt91mu/witness.txt'"
+    }
+  ],
+  "source_preserved": true
+}

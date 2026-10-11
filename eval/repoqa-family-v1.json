@@ -1,0 +1,375 @@
+{
+  "schema": 1,
+  "dataset": "RepoQA-supplied-source-function-lines-v1",
+  "revision": "e3a571033de99d0b9dcaccd25577a75d4b1c70b1",
+  "file": "repoqa-2024-06-23.json.gz",
+  "compressed_sha256": "c050a2ad90a7df89d9dc1f1c3b3b20683edd20a56293b35fcaae43dec115d681",
+  "seed": "ixos-repoqa-family-v1/",
+  "selection": "Repository metadata only; SHA256(seed+casefold(repository)) per language. First3 dev, next2 validation, remainder held-out. All10 needles per included family.",
+  "query": "Verbatim upstream description only; no target names/paths, source snippet or function coordinates in query construction.",
+  "coordinate_policy": "Strict local UTF-8 bytes and physical LF lines; 0-based start_line/byte and exclusive end_byte, source-verified; no global byte coordinates.",
+  "families": [
+    {
+      "repository": "sass/node-sass",
+      "source_revision": "6081731aac89ce4612fe4839d4c6329539c0d8e1",
+      "language": "cpp",
+      "split": "dev"
+    },
+    {
+      "repository": "drogonframework/drogon",
+      "source_revision": "294035beb96f6d474d501c210a1b403b0b0dedb6",
+      "language": "cpp",
+      "split": "dev"
+    },
+    {
+      "repository": "scylladb/seastar",
+      "source_revision": "b74a027c819ee5b9bfcee4f32edf8f37017bba12",
+      "language": "cpp",
+      "split": "dev"
+    },
+    {
+      "repository": "oatpp/oatpp",
+      "source_revision": "17ef2a7f6c8a932498799b2a5ae5aab2869975c7",
+      "language": "cpp",
+      "split": "validation"
+    },
+    {
+      "repository": "WasmEdge/WasmEdge",
+      "source_revision": "a5e6f2d011776a1d997586b6e9af0ec01efa3642",
+      "language": "cpp",
+      "split": "validation"
+    },
+    {
+      "repository": "ml-explore/mlx",
+      "source_revision": "91eba8e4856ba9a629408e18a9d0c1e79a22dab0",
+      "language": "cpp",
+      "split": "test"
+    },
+    {
+      "repository": "ClickHouse/clickhouse-cpp",
+      "source_revision": "0fb483543b313a0979b4dbd130f834352a034ba8",
+      "language": "cpp",
+      "split": "test"
+    },
+    {
+      "repository": "apache/logging-log4cxx",
+      "source_revision": "502f5711809e7f48c215164e374a5df62821ed52",
+      "language": "cpp",
+      "split": "test"
+    },
+    {
+      "repository": "skypjack/uvw",
+      "source_revision": "ba10b27646035594fc1dd9525dede8573b71a7d7",
+      "language": "cpp",
+      "split": "test"
+    },
+    {
+      "repository": "polybar/polybar",
+      "source_revision": "11b522c313f7b2b0a10063721ec8b0bf544de6f4",
+      "language": "cpp",
+      "split": "test"
+    },
+    {
+      "repository": "projectdiscovery/nuclei",
+      "source_revision": "3dfcec0a36dbf5ebc529ce0478076279cb975b71",
+      "language": "go",
+      "split": "dev"
+    },
+    {
+      "repository": "iawia002/lux",
+      "source_revision": "59f517bb7138acd4fffcced4560197e83a592fc2",
+      "language": "go",
+      "split": "dev"
+    },
+    {
+      "repository": "nsqio/nsq",
+      "source_revision": "2127c0a1ce50a66d61d78496033b15ef5cb5e250",
+      "language": "go",
+      "split": "dev"
+    },
+    {
+      "repository": "lima-vm/lima",
+      "source_revision": "5f6bfc951f5df6f8d21e3e2ccf9693146216ef4d",
+      "language": "go",
+      "split": "validation"
+    },
+    {
+      "repository": "jesseduffield/lazydocker",
+      "source_revision": "80af149b023f4d9be68a643412183d389d73368d",
+      "language": "go",
+      "split": "validation"
+    },
+    {
+      "repository": "schollz/croc",
+      "source_revision": "d81116382fcb9dddb79b02ed4b0da99e7aecb2ab",
+      "language": "go",
+      "split": "test"
+    },
+    {
+      "repository": "caddyserver/caddy",
+      "source_revision": "4d6370bf92de163a53aec9081c5d5ae6614597a0",
+      "language": "go",
+      "split": "test"
+    },
+    {
+      "repository": "junegunn/fzf",
+      "source_revision": "e352b6887849cb6c3c8ae1d98ed357f94273e90a",
+      "language": "go",
+      "split": "test"
+    },
+    {
+      "repository": "zeromicro/go-zero",
+      "source_revision": "b337ae36e50092488c1899069f860007447fa17c",
+      "language": "go",
+      "split": "test"
+    },
+    {
+      "repository": "fatedier/frp",
+      "source_revision": "eaae212d2d1b17360754afd9432c21640f15c832",
+      "language": "go",
+      "split": "test"
+    },
+    {
+      "repository": "apache/flink-ml",
+      "source_revision": "f08f2756316c9fbd7fb7b7e39d140bfd3d959b2a",
+      "language": "java",
+      "split": "dev"
+    },
+    {
+      "repository": "karatelabs/karate",
+      "source_revision": "a378ba4f9e5af11eca1794d0bd55c428c8491bd8",
+      "language": "java",
+      "split": "dev"
+    },
+    {
+      "repository": "GoogleContainerTools/jib",
+      "source_revision": "2e9561664792f4b13f0db741ca94c996cbece949",
+      "language": "java",
+      "split": "dev"
+    },
+    {
+      "repository": "square/retrofit",
+      "source_revision": "10014c2bb7bd5fd24cf6b5b680e6917ab9a7767b",
+      "language": "java",
+      "split": "validation"
+    },
+    {
+      "repository": "microsoft/gctoolkit",
+      "source_revision": "1476fc128465991f2c531645c780d3ed7c865f2c",
+      "language": "java",
+      "split": "validation"
+    },
+    {
+      "repository": "Password4j/password4j",
+      "source_revision": "ded2c066d53df8dfaa8892a2868e04c7af655775",
+      "language": "java",
+      "split": "test"
+    },
+    {
+      "repository": "microsoft/mssql-jdbc",
+      "source_revision": "eae6d7b33571c92029169b33378b2405e8df448a",
+      "language": "java",
+      "split": "test"
+    },
+    {
+      "repository": "google/conscrypt",
+      "source_revision": "74c3c1ab7fecf9e50097a77dcac6ff2c7afd2ccf",
+      "language": "java",
+      "split": "test"
+    },
+    {
+      "repository": "palantir/palantir-java-format",
+      "source_revision": "b3ef776d8fd7be6e5a53319f7f4a40b7ee0793a4",
+      "language": "java",
+      "split": "test"
+    },
+    {
+      "repository": "ethereum/web3.py",
+      "source_revision": "257f464801d11431bf09132fb30bbeeb5937542e",
+      "language": "python",
+      "split": "dev"
+    },
+    {
+      "repository": "reactive-python/reactpy",
+      "source_revision": "4307a09dfa75e6c1b10a285e5ae4bdf0323cd018",
+      "language": "python",
+      "split": "dev"
+    },
+    {
+      "repository": "openai/openai-python",
+      "source_revision": "e41abf7b7dbc1e744d167f748e55d4dedfc0dca7",
+      "language": "python",
+      "split": "dev"
+    },
+    {
+      "repository": "locustio/locust",
+      "source_revision": "6241e9cf0a5c296da98abfaeb9d66d0ad1db2390",
+      "language": "python",
+      "split": "validation"
+    },
+    {
+      "repository": "psf/black",
+      "source_revision": "f03ee113c9f3dfeb477f2d4247bfb7de2e5f465c",
+      "language": "python",
+      "split": "validation"
+    },
+    {
+      "repository": "mlc-ai/mlc-llm",
+      "source_revision": "068d5ea9ca556f2f7a9603537b4f966da12b11f6",
+      "language": "python",
+      "split": "test"
+    },
+    {
+      "repository": "python-poetry/poetry",
+      "source_revision": "21ffd99274d299bd6d2b7b0cdd7ba273fdd941be",
+      "language": "python",
+      "split": "test"
+    },
+    {
+      "repository": "pyg-team/pytorch_geometric",
+      "source_revision": "af0f5f44d4dfa8accd898df3e8523d06b67940b0",
+      "language": "python",
+      "split": "test"
+    },
+    {
+      "repository": "Ciphey/Ciphey",
+      "source_revision": "5dfbe9330070d4aefc997e5d2648155a136a3757",
+      "language": "python",
+      "split": "test"
+    },
+    {
+      "repository": "marshmallow-code/marshmallow",
+      "source_revision": "b8149cec77d16357d11b08f86de3b13e6fe02fa0",
+      "language": "python",
+      "split": "test"
+    },
+    {
+      "repository": "AFLplusplus/LibAFL",
+      "source_revision": "527b892c1ddcc83207faaa71591e7f33a1a806a7",
+      "language": "rust",
+      "split": "dev"
+    },
+    {
+      "repository": "helix-editor/helix",
+      "source_revision": "e69292e5eb7b0f727fefa19cffec910718af31b3",
+      "language": "rust",
+      "split": "dev"
+    },
+    {
+      "repository": "alacritty/alacritty",
+      "source_revision": "d4f2f8577f763df059653dfab733dfe6ddc06913",
+      "language": "rust",
+      "split": "dev"
+    },
+    {
+      "repository": "tokio-rs/tracing",
+      "source_revision": "908cc432a5994f6e17c8f36e13c217dc40085704",
+      "language": "rust",
+      "split": "validation"
+    },
+    {
+      "repository": "seanmonstar/warp",
+      "source_revision": "ce8114b50cadedac089d496235fe9d18596f944e",
+      "language": "rust",
+      "split": "validation"
+    },
+    {
+      "repository": "rust-bakery/nom",
+      "source_revision": "e87c7da9fa2ddb943306369f6c6d9e914256edbc",
+      "language": "rust",
+      "split": "test"
+    },
+    {
+      "repository": "cloudflare/pingora",
+      "source_revision": "acee67f87020ef41267fe475bcc5cbed44782a06",
+      "language": "rust",
+      "split": "test"
+    },
+    {
+      "repository": "rust-lang/cargo",
+      "source_revision": "5da28587846d6cb2694e5bb1db1b5ca327285bf7",
+      "language": "rust",
+      "split": "test"
+    },
+    {
+      "repository": "huggingface/candle",
+      "source_revision": "33c9b6655459bd1086574cef9ba8f2e72a8804c8",
+      "language": "rust",
+      "split": "test"
+    },
+    {
+      "repository": "openai/openai-node",
+      "source_revision": "018ac718ccf6a96798ef8f91906b3b652aa50919",
+      "language": "typescript",
+      "split": "dev"
+    },
+    {
+      "repository": "cheeriojs/cheerio",
+      "source_revision": "d0b3c2f6b57cd1f835741175d463963266be0eef",
+      "language": "typescript",
+      "split": "dev"
+    },
+    {
+      "repository": "mrdoob/three.js",
+      "source_revision": "df4fb14945c896fdf628981dde31b31ef7e2e0cc",
+      "language": "typescript",
+      "split": "dev"
+    },
+    {
+      "repository": "date-fns/date-fns",
+      "source_revision": "5c1adb5369805ff552737bf8017dbe07f559b0c6",
+      "language": "typescript",
+      "split": "validation"
+    },
+    {
+      "repository": "firebase/firebase-admin-node",
+      "source_revision": "67151e620fbb7bdfc2a017e9a35d51eca035d824",
+      "language": "typescript",
+      "split": "validation"
+    },
+    {
+      "repository": "langchain-ai/langchainjs",
+      "source_revision": "1f4a4498b66af5910d02dd4b9d68d99aa1350548",
+      "language": "typescript",
+      "split": "test"
+    },
+    {
+      "repository": "xenova/transformers.js",
+      "source_revision": "642743136efa3a481b2b96d3c2c550085540d844",
+      "language": "typescript",
+      "split": "test"
+    },
+    {
+      "repository": "umami-software/umami",
+      "source_revision": "be7f69fd5d3d711ba650a21013b73c7e17125f52",
+      "language": "typescript",
+      "split": "test"
+    }
+  ],
+  "excluded_previously_seen": [
+    {
+      "repository": "google/gson",
+      "source_revision": "ee61e3f020351f0498dd3ff8f8386b96454a4dfe",
+      "language": "java",
+      "reason": "Repository family already inspected in Semble/ContextBench restoration."
+    },
+    {
+      "repository": "serde-rs/serde",
+      "source_revision": "6e38afff498d592af4ccac4cb669a86fc789207f",
+      "language": "rust",
+      "reason": "Repository family already inspected in Semble/ContextBench restoration."
+    },
+    {
+      "repository": "expressjs/express",
+      "source_revision": "815f799310a5627c000d4a5156c1c958e4947b4c",
+      "language": "typescript",
+      "reason": "Repository family already inspected in Semble/ContextBench restoration."
+    },
+    {
+      "repository": "axios/axios",
+      "source_revision": "751133eb9ed794c6f6634c52f4fe116e33bf5f09",
+      "language": "typescript",
+      "reason": "Repository family already inspected in Semble/ContextBench restoration."
+    }
+  ]
+}

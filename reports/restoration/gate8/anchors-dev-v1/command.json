@@ -1,0 +1,21 @@
+[
+  "C:\\Users\\pablo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+  "-m",
+  "eval.anchor_run",
+  "--preparation",
+  "reports/restoration/gate8/preparation-dev-v3/receipt.json",
+  "--reference",
+  "models/lab/restoration/repoqa-dev-baselines-v1/hybrid",
+  "--binary",
+  "target/release/ixos.exe",
+  "--bridge",
+  "target/release/ixos-lab-embed.exe",
+  "--model-path",
+  ".tmp/gate4/reviewer-models/potion-code-16M-v2-unbounded",
+  "--policy",
+  "top3-cue",
+  "--output",
+  "models/lab/restoration/repoqa-anchors-dev-v1",
+  "--receipt",
+  "reports\\restoration\\gate8\\anchors-dev-v1\\comparison.json"
+]

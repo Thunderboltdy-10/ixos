@@ -1,0 +1,16 @@
+[
+  "C:\\Users\\pablo\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+  "-m",
+  "eval.repoqa",
+  "prepare",
+  "--plan",
+  "eval/repoqa-family-v1.json",
+  "--archive",
+  "dataset/restoration/repoqa-download/repoqa-2024-06-23.json.gz",
+  "--split",
+  "dev",
+  "--destination",
+  "dataset/restoration/repoqa-dev-v2",
+  "--receipt",
+  "reports\\restoration\\gate8\\preparation-dev-v2\\receipt.json"
+]

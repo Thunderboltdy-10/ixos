@@ -43,6 +43,8 @@ The [multi-call follow-up and native platform report](reports/restoration/GATE6.
 
 The [evidence-location laboratory](reports/restoration/GATE7.md) preserves current file ranking and compares four ways to choose previews. Stored-passage lexical/semantic fusion modestly improves development line coverage at similar token cost, while several wrong-region/missing-file cases persist. This remains an experiment; production defaults and frozen held-out results are unchanged. [Reproducible protocol](docs/evaluation/ANCHORS.md).
 
+A [larger function-span development evaluation](reports/restoration/GATE8.md) uses 180 generated descriptions across18 fresh repository families, with exact source coordinates and strong lexical controls. Hybrid file ranking improves, while bounded query-selected passage reranking raises follow-up line coverage at a small output-token increase. The latter needs extra inference and has regressions; it remains a lab candidate pending validation and fresh held-out evaluation. [Pinned source/splits/protocol](docs/evaluation/REPOQA.md).
+
 ## Monorepo map
 
 | Location | Responsibility |

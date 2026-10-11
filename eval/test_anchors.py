@@ -7,8 +7,8 @@ import unittest
 import numpy as np
 
 from eval.anchors import AnchorScreen, STYLES, lexical_chunk_candidates, unit_rows
-from eval.anchor_run import checked_reference, modified_response
-from eval.contract import ContractError, Dataset, Source, digest, validate_view
+from eval.anchor_run import checked_reference, frozen_input, modified_response
+from eval.contract import ContractError, Dataset, Query, Source, digest, validate_view
 from eval.lexical import tokens
 from eval.trajectory import POLICY
 
@@ -126,3 +126,38 @@ class AnchorTests(unittest.TestCase):
                 path.write_text(json.dumps({**reference, field: value}))
                 with self.assertRaises(ContractError):
                     checked_reference(folder, preparation, [dataset], model, binary)
+
+    def test_repository_reference_uses_exact_real_run_contract(self):
+        dataset = Dataset('d', {}, (), 'source-fingerprint', {})
+        model = {'fingerprint': 'model'}
+        with tempfile.TemporaryDirectory() as temporary:
+            folder = Path(temporary)
+            binary = folder / 'binary'
+            binary.write_bytes(b'control identity fixture')
+            reference = {'status': 'passed', 'repetitions': 1, 'model': model,
+                         'binary_sha256': digest(binary.read_bytes()),
+                         'datasets': [{'id': 'd', 'sha256': dataset.fingerprint, 'sources': 0}],
+                         'config': {'backend': 'ixos', 'retrieval': 'hybrid', 'limit': 10, 'context': 2,
+                                    'output_bytes': 6000, 'cache': 'jit'}}
+            path = folder / 'provenance.json'
+            path.write_text(json.dumps(reference), encoding='utf-8')
+            checked_reference(folder, {'families': []}, [dataset], model, binary)
+            reference['config']['cache'] = 'stub'
+            path.write_text(json.dumps(reference), encoding='utf-8')
+            with self.assertRaises(ContractError):
+                checked_reference(folder, {'families': []}, [dataset], model, binary)
+
+    def test_frozen_repository_query_is_verbatim_utf8_and_raw_is_immutable(self):
+        query = Query('q', 'Find function Ā 中', 'repo', 'dev', 'code-agent', 'description', (), 'answerable', None, None, None)
+        with tempfile.TemporaryDirectory() as temporary:
+            folder = Path(temporary)
+            label = digest(query.id.encode())[:12] + '-0'
+            command = folder / (label + '.command.json')
+            command.write_text(json.dumps({'argv': ['binary', '--config', 'cfg', 'search', query.text], 'exit_code': 0}, ensure_ascii=False), encoding='utf-8')
+            raw = b'{"results":[]}\n'
+            (folder / (label + '.raw.stdout')).write_bytes(raw)
+            (folder / (label + '.raw.stderr')).write_bytes(b'actual diagnostics fixture')
+            self.assertEqual(frozen_input(folder, query, {'families': []})[0], raw)
+            altered = replace(query, text='Another query')
+            with self.assertRaises(ContractError):
+                frozen_input(folder, altered, {'families': []})

@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "target/release/ixos.exe",
+    "search",
+    "IxosSourceInventoryWitness",
+    "--dir",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\dataset\\restoration\\repoqa-dev-v3\\iawia002--lux\\corpus",
+    "--retrieval",
+    "lexical",
+    "--cache-mode",
+    "ephemeral",
+    "--stats",
+    "--json",
+    "--limit",
+    "1",
+    "--io-workers",
+    "4",
+    "--max-output-bytes",
+    "6000"
+  ],
+  "exit_code": 0
+}

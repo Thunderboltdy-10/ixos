@@ -22,22 +22,48 @@ from eval.contract import (ContractError, canonical_hash, cluster_mean_ci, diges
                            load_dataset, paired_family_difference, score_query)
 from eval.lexical import BM25, compact_response, view_at
 from eval.provenance import snapshot
+from eval.repoqa_run import checked_preparation
 from eval.trajectory import POLICIES, Task, grep_request, read_requests, score_steps, search_request
 from eval.trajectory_run import extract_views
 
 
 def checked_reference(folder, preparation, datasets, model, binary):
-    reference = json.loads((folder / 'provenance.json').read_text())
+    reference = json.loads((folder / 'provenance.json').read_text(encoding='utf-8'))
     identities = [{'id': d.id, 'fingerprint': d.fingerprint, 'sources': len(d.sources)} for d in datasets]
-    if (reference.get('status') != 'passed' or reference.get('backend') != 'hybrid'
-            or reference.get('datasets') != identities
-            or reference.get('plan_sha256') != preparation['plan_sha256']
-            or reference.get('dataset_sha256') != preparation['dataset_sha256']
-            or reference.get('coordinate_policy') != preparation['coordinate_policy']
+    repository_run = 'families' in preparation
+    actual_datasets = ([{'id': d['id'], 'fingerprint': d['sha256'], 'sources': d['sources']}
+                        for d in reference.get('datasets', [])] if repository_run else reference.get('datasets'))
+    run_matches = (reference.get('config', {}).get('retrieval') == 'hybrid'
+                   and reference.get('config', {}).get('backend') == 'ixos'
+                   and reference.get('repetitions') == 1
+                   and all(reference['config'].get(key) == value for key, value in
+                           [('limit', 10), ('context', 2), ('output_bytes', 6000), ('cache', 'jit')])) if repository_run else (
+        reference.get('backend') == 'hybrid'
+        and reference.get('plan_sha256') == preparation['plan_sha256']
+        and reference.get('dataset_sha256') == preparation['dataset_sha256']
+        and reference.get('coordinate_policy') == preparation['coordinate_policy'])
+    if (reference.get('status') != 'passed' or not run_matches
+            or actual_datasets != identities
             or reference.get('model', {}).get('fingerprint') != model['fingerprint']
             or reference.get('binary_sha256') != digest(binary.read_bytes())):
         raise ContractError('Frozen initial search/model/source identity does not match the experiment')
     return reference
+
+
+def frozen_input(folder, query, preparation):
+    if 'families' in preparation:
+        label = digest(query.id.encode())[:12] + '-0'
+        command = json.loads((folder / (label + '.command.json')).read_text(encoding='utf-8'))
+        if command['exit_code'] != 0 or command['argv'][3:5] != ['search', query.text]:
+            raise ContractError('Frozen repository search is not the verbatim description')
+        prefix = folder / label
+        return Path(str(prefix) + '.raw.stdout').read_bytes(), Path(str(prefix) + '.raw.stderr').read_bytes()
+    subfolder = folder / digest(query.id.encode())[:12]
+    record = json.loads((subfolder / 'record.json').read_text(encoding='utf-8'))
+    if (record['query_id'] != query.id
+            or record['steps'][0]['request'] != search_request(Task(query.id, query.text))):
+        raise ContractError('Frozen initial request is not the verbatim issue under the fixed contract')
+    return (subfolder / '01.raw.stdout').read_bytes(), (subfolder / '01.raw.stderr').read_bytes()
 
 
 def modified_response(rows, screen, style, dataset, policy):
@@ -65,12 +91,15 @@ def main():
     if args.output.exists() or args.receipt.exists():
         parser.error('Use fresh paths; previous receipts and raw outputs are immutable')
     policy = POLICIES[args.policy]
-    preparation = json.loads(args.preparation.read_text())
-    tasks = checked_tasks(preparation)
+    preparation = json.loads(args.preparation.read_text(encoding='utf-8'))
+    repository_run = 'families' in preparation
+    tasks = checked_preparation(preparation) if repository_run else checked_tasks(preparation)
     datasets = [load_dataset(Path(task['manifest']), Path(task['root'])) for task in tasks]
-    if any(len(d.queries) != 1 or d.queries[0].split != 'dev' or d.queries[0].sequence is not None for d in datasets):
-        parser.error('Evidence screens accept independent DEVELOPMENT queries only')
-    if [d.queries[0].id for d in datasets] != [t['instance_id'] for t in tasks]:
+    split = preparation['split'] if repository_run else 'dev'
+    if any(not d.queries or any(q.split != split or q.sequence is not None for q in d.queries) for d in datasets):
+        parser.error('Evidence screens accept complete independent dev/validation queries only')
+    if not repository_run and (any(len(d.queries) != 1 for d in datasets)
+                              or [d.queries[0].id for d in datasets] != [t['instance_id'] for t in tasks]):
         parser.error('Preparation/query identities disagree')
     model = artifact_identity(args.model_path)
     reference = checked_reference(args.reference, preparation, datasets, model, args.binary)
@@ -86,12 +115,13 @@ def main():
                   'reference_provenance_sha256': digest((args.reference / 'provenance.json').read_bytes()),
                   'reference_binary_sha256': reference['binary_sha256'], 'model': model,
                   'bridge_binary_sha256': digest(args.bridge.read_bytes()),
-                  'plan_sha256': preparation['plan_sha256'], 'dataset_sha256': preparation['dataset_sha256'],
+                  'plan_sha256': preparation['plan_sha256'], 'dataset_sha256': preparation['compressed_sha256'] if repository_run else preparation['dataset_sha256'],
                   'coordinate_policy': preparation['coordinate_policy'], 'datasets': reference['datasets'],
                   'platform': platform.platform(), 'source_snapshot': snapshot(args.output, args.bridge),
                   'tokenizer': {'name': 'cl100k_base', 'version': importlib.metadata.version('tiktoken')},
                   'condition': 'Frozen actual hybrid candidate order/scores; source-only evidence selection, shared real Rust bridge preparation, actual fresh Ixos read/grep follow-ups. Initial original diagnostics tokens charged equally as a frozen reference. Only follow-up tool wall time is reported; no production search latency claim.',
-                  'limitations': 'Eight already-inspected development issues; upstream-compatible broad/mismatched source annotations. Fixed schedule, no LLM reasoning or success. No held-out/default promotion. Output fitting can change retained trailing candidates; file ranking metrics are rescored honestly.'}
+                  'limitations': ('Repository-family development/validation supplied-source descriptions and strict local coordinate audits; generated semantic labels inherited, unknown pretraining overlap. ' if repository_run else 'Eight already-inspected development issues; upstream-compatible broad/mismatched source annotations. ')
+                                  + 'Fixed schedule, no LLM reasoning or success. No held-out/default promotion. Output fitting can change retained trailing candidates; file ranking metrics are rescored honestly.'}
     def write_provenance():
         (args.output / 'provenance.json').write_text(json.dumps(provenance, indent=2, default=str) + '\n')
     records, input_receipts, preparations = [], [], []
@@ -100,24 +130,23 @@ def main():
         with EmbedBridge(args.bridge, args.model_path, args.output) as bridge:
             provenance['bridge_ready'] = bridge.ready
             write_provenance()
-            for task, dataset in zip(tasks, datasets):
-                query, root = dataset.queries[0], Path(task['root'])
-                reference_folder = args.reference / digest(query.id.encode())[:12]
-                reference_record = json.loads((reference_folder / 'record.json').read_text())
-                if (reference_record['query_id'] != query.id
-                        or reference_record['steps'][0]['request'] != search_request(Task(query.id, query.text))):
-                    raise ContractError('Frozen initial request is not the verbatim issue under the fixed contract')
-                original = (reference_folder / '01.raw.stdout').read_bytes()
-                stderr = (reference_folder / '01.raw.stderr').read_bytes()
+            jobs = [(task, dataset, query) for task, dataset in zip(tasks, datasets) for query in dataset.queries]
+            indexes = {}
+            for task, dataset, query in jobs:
+                root = Path(task['root'])
+                original, stderr = frozen_input(args.reference, query, preparation)
                 observation, original_views = extract_views(original, root, dataset)
                 rows = observation['results']
                 input_receipts.append({'query_id': query.id, 'stdout_sha256': digest(original),
                                        'stderr_sha256': digest(stderr), 'ranked_paths': [r['path'] for r in rows]})
-                index = BM25(dataset)
+                new_index = dataset.id not in indexes
+                if new_index:
+                    indexes[dataset.id] = BM25(dataset)
+                index = indexes[dataset.id]
                 began = time.perf_counter()
                 screen = AnchorScreen(dataset.sources, index.tf, query.text, [r['path'] for r in rows], bridge)
                 preparations.append({'query_id': query.id, 'shared_screen_ms': (time.perf_counter()-began)*1000,
-                                     'lexical_prepare_ms': index.prepare_ms, 'embedded_passages': screen.embedded_passages,
+                                     'lexical_prepare_ms': index.prepare_ms if new_index else 0, 'embedded_passages': screen.embedded_passages,
                                      'extra_passages_vs_stored': screen.extra_passages_vs_stored,
                                      'embedded_characters': screen.embedded_characters})
                 # Control is byte-identical to the actual recorded CLI output,
@@ -190,7 +219,7 @@ def main():
         summaries, metrics = {}, {}
         for style in STYLES:
             selected = [r for r in records if r['style'] == style]
-            if len(selected) != len(tasks):
+            if len(selected) != sum(len(d.queries) for d in datasets):
                 raise ContractError('Partial evidence experiment cannot be aggregated')
             metrics[style] = [{'query_id': r['query_id'], 'group': r['group'], **r['final']} for r in selected]
             summaries[style] = {'tasks': len(selected), 'families': len({r['group'] for r in selected}),

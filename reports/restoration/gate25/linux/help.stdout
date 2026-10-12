@@ -1,0 +1,23 @@
+usage: Evaluate predications on SWEFT bugs [-h] [-d DATASET_PATH]
+                                           [-p PREDICTIONS_PATH]
+                                           [--run_id RUN_ID] [-w WORKERS]
+                                           [--redo_existing]
+                                           [-i INSTANCE_IDS [INSTANCE_IDS ...]]
+                                           [-f] [--report_only]
+
+options:
+  -h, --help            show this help message and exit
+  -d DATASET_PATH, --dataset_path DATASET_PATH
+                        Path to dataset
+  -p PREDICTIONS_PATH, --predictions_path PREDICTIONS_PATH
+                        Path to predictions
+  --run_id RUN_ID       Unique identifier for this run
+  -w WORKERS, --workers WORKERS
+                        Number of workers to use
+  --redo_existing       Redo completed evaluation instances
+  -i INSTANCE_IDS [INSTANCE_IDS ...], --instance_ids INSTANCE_IDS [INSTANCE_IDS ...]
+                        Instance IDs to evaluate (supports exact matches and
+                        glob patterns like 'repo__name.*')
+  -f, --f2p_only        (Speed up) Run evaluation using only files with f2p
+                        tests
+  --report_only         Regenerate reports only

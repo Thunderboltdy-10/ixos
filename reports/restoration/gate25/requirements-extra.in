@@ -1,0 +1,3 @@
+docker
+datasets
+swebench==4.1.0

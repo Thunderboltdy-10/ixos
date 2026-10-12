@@ -1,0 +1,33 @@
+Using default tag: latest
+latest: Pulling from swebench/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536
+3751237f91f3: Pulling fs layer
+a71ffc639925: Pulling fs layer
+9ca6d144bbf9: Pulling fs layer
+a17dda43d63c: Pulling fs layer
+099133c9c1a0: Pulling fs layer
+8f4959350c17: Pulling fs layer
+498f2bacb1b5: Pulling fs layer
+8f878f8761d7: Pulling fs layer
+f605d5d54d53: Pulling fs layer
+a17dda43d63c: Pulling fs layer
+099133c9c1a0: Download complete
+3751237f91f3: Download complete
+8f4959350c17: Download complete
+a17dda43d63c: Download complete
+f605d5d54d53: Download complete
+8f878f8761d7: Download complete
+498f2bacb1b5: Download complete
+9ca6d144bbf9: Download complete
+a71ffc639925: Download complete
+a71ffc639925: Pull complete
+099133c9c1a0: Pull complete
+8f4959350c17: Pull complete
+f605d5d54d53: Pull complete
+a17dda43d63c: Pull complete
+8f878f8761d7: Pull complete
+498f2bacb1b5: Pull complete
+3751237f91f3: Pull complete
+9ca6d144bbf9: Pull complete
+Digest: sha256:fb7e947b29f9c1cfb58245f9f290e072827e577225469648e53139580d2471c9
+Status: Downloaded newer image for swebench/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536:latest
+docker.io/swebench/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536:latest

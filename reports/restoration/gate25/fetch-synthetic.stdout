@@ -1,0 +1,12 @@
+{"downloaded_shard": "train-00000-of-00011.parquet", "bytes": 16852671, "rows": 4628}
+{"downloaded_shard": "train-00001-of-00011.parquet", "bytes": 5574116, "rows": 4628}
+{"downloaded_shard": "train-00002-of-00011.parquet", "bytes": 6006895, "rows": 4628}
+{"downloaded_shard": "train-00003-of-00011.parquet", "bytes": 117625772, "rows": 4628}
+{"downloaded_shard": "train-00004-of-00011.parquet", "bytes": 9822409, "rows": 4628}
+{"downloaded_shard": "train-00005-of-00011.parquet", "bytes": 7434902, "rows": 4628}
+{"downloaded_shard": "train-00006-of-00011.parquet", "bytes": 12282590, "rows": 4628}
+{"downloaded_shard": "train-00007-of-00011.parquet", "bytes": 6665621, "rows": 4628}
+{"downloaded_shard": "train-00008-of-00011.parquet", "bytes": 21661282, "rows": 4628}
+{"downloaded_shard": "train-00009-of-00011.parquet", "bytes": 7641038, "rows": 4628}
+{"downloaded_shard": "train-00010-of-00011.parquet", "bytes": 9078471, "rows": 4628}
+{"rows": 50908, "rows_with_nonempty_fields": {"test_patch": 0, "FAIL_TO_PASS": 50908, "PASS_TO_PASS": 50432, "image": 0, "eval_script": 0, "log_parser": 0, "eval_type": 0}}

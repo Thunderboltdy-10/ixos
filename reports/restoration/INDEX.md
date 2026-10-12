@@ -28,6 +28,7 @@ Start with the current [installation guide](../../docs/getting-started/INSTALLAT
 | 22 | Actual escaped-ID response budget before search/reset history changes | [Visible JSONL responses](GATE22.md) | [gate22](gate22/) |
 | 23 | Optional remembered read/grep views, lazy feedback vectors and retained ranking limitation | [Inspection feedback](GATE23.md) | [gate23](gate23/) |
 | 24 | Pinned official Docker negative/positive controls and exhausted eligible development split | [Executable benchmark controls](GATE24.md) | [gate24](gate24/) |
+| 25 | Executable synthetic training source, pinned shards and official excluded control | [Synthetic development tasks](GATE25.md) | [gate25](gate25/) |
 
 The held-out studies retain their exact original binary/model/evaluator identities. Later correctness or packaging checks do not silently replace their quality/performance figures. Repeated calls and authored diagnostic fixtures are not independent labeled tasks. JIT/native/resident timing, stdout/diagnostic context cost and source-preservation evidence are distinct.
 

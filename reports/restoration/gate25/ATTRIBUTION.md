@@ -1,0 +1,9 @@
+# Synthetic benchmark attribution
+
+The dataset and runner are by the SWE-smith authors: John Yang, Kilian Lieret, Carlos E. Jimenez, Alexander Wettig, Kabir Khandpur, Yanzhe Zhang, Binyuan Hui, Ofir Press, Ludwig Schmidt and Diyi Yang. See [SWE-smith: Scaling Data for Software Engineering Agents](https://arxiv.org/abs/2504.21798), [official source at the recorded commit](https://github.com/SWE-bench/SWE-smith/tree/9b74ac08118a85c39c356802f7961893af73e07f) and [Python training dataset revision](https://huggingface.co/datasets/SWE-bench/SWE-smith-py/tree/77cab9055d42ab4a5c25c89a8f937096db13558e). Dataset metadata specifies MIT; no complete task dataset is redistributed. The source notice is copied exactly in [SWE-SMITH-MIT.txt](licenses/SWE-SMITH-MIT.txt).
+
+SWE-bench harness authors/notice are retained in [SWE-BENCH-MIT.txt](licenses/SWE-BENCH-MIT.txt). This gate uses its4.1.0runtime compatibility API, separately from Gate24's5.0.2runner. Installed upstream dependencies remain separately downloaded under their own licenses.
+
+OAuthlib source/test/reference excerpts retain the OAuthlib Community's [original BSD3-Clause notice](https://github.com/oauthlib/oauthlib/blob/1fd5253630c03e3f12719dd8c13d43111f66a8d2/LICENSE), copied to [OAUTHLIB-BSD-3-CLAUSE.txt](licenses/OAUTHLIB-BSD-3-CLAUSE.txt). The control's synthetic corruption and reference reversal are upstream benchmark material, not an Ixos-generated repair. The canonical OAuthlib family and benchmark forks remain excluded from future actor selection after prior search-result exposure.
+
+SWE-bench-Live was consulted through [official repository metadata/documentation](https://github.com/microsoft/SWE-bench-Live) and dataset file lists only; no task rows or official test data were fetched. Its scores are not used as Ixos comparisons. Full source/corpora/runtime/model artifacts and private contribution/application notes remain ignored.

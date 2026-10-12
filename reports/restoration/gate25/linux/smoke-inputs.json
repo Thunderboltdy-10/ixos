@@ -1,0 +1,16 @@
+{
+  "input_sha256": "6fe065618096c2b82975bfaf05134888d07e32b166cfb6e9004fae52536d063e",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_basic__i6lxix6t",
+  "image": {
+    "id": "sha256:fb7e947b29f9c1cfb58245f9f290e072827e577225469648e53139580d2471c9",
+    "digests": [
+      "swebench/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536@sha256:fb7e947b29f9c1cfb58245f9f290e072827e577225469648e53139580d2471c9"
+    ],
+    "bytes": 1336034879,
+    "architecture": "amd64",
+    "os": "linux"
+  },
+  "marker_sha256": "0f62a1b232c6a7029fa3329fc2ae5711d8d6deb898ffd59ae17d660ae1397ac3",
+  "actor_task": false,
+  "boundary": "Official SWE-smith runner/profile, immutable image contents verified before/after while profile uses its normal local tag. Gold reverses original corruption patch, not an Ixos-generated fix."
+}

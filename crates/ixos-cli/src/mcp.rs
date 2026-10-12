@@ -61,6 +61,18 @@ fn run(mut input: impl BufRead, mut output: impl Write, server: &mut Server) -> 
                 continue;
             }
         };
+        if value["jsonrpc"] != "2.0"
+            || !value["method"].is_string()
+            || value
+                .get("id")
+                .is_some_and(|id| !id.is_string() && !id.is_number())
+        {
+            send(
+                &mut output,
+                &json!({"jsonrpc":"2.0","id":null,"error":{"code":-32600,"message":"Invalid JSON-RPC request"}}),
+            )?;
+            continue;
+        }
         let Some(id) = value.get("id") else { continue };
         let method = value["method"].as_str().unwrap_or("");
         let result = match method {
@@ -185,20 +197,22 @@ impl Server {
                 options.mode = args.mode.unwrap_or(RetrievalMode::Hybrid);
                 options.limit = args.limit.unwrap_or(options.limit);
                 options.context = args.context.unwrap_or(options.context);
-                let key = format!(
-                    "{}:{}:{:?}:{}:{}",
-                    dir.display(),
-                    profile.name(),
+                let key = format!("{}:{}", dir.display(), profile.name());
+                let model = self.config.model_path(profile, self.model_path.clone());
+                if !self.engines.contains_key(&key) {
+                    self.engines.insert(
+                        key.clone(),
+                        Engine::new(&dir, Some(&model), options.clone())?,
+                    );
+                }
+                let engine = self.engines.get_mut(&key).unwrap();
+                engine.configure_search(
                     options.mode,
                     options.limit,
-                    options.context
-                );
-                if !self.engines.contains_key(&key) {
-                    let model = self.config.model_path(profile, self.model_path.clone());
-                    self.engines
-                        .insert(key.clone(), Engine::new(&dir, Some(&model), options)?);
-                }
-                self.engines.get_mut(&key).unwrap().search(&args.query)?.0
+                    options.context,
+                    Some(&model),
+                )?;
+                engine.search(&args.query)?.0
             }
             "grep" => {
                 let args: Grep = serde_json::from_value(args)?;

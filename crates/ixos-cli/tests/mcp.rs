@@ -30,6 +30,8 @@ fn stdio_lists_and_runs_source_tools_and_recovers_from_errors() {
         json!({"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"grep","arguments":{"pattern":"cache_key","fixed":true}}}),
         json!({"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"read","arguments":{"path":"ignored.txt"}}}),
         json!({"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"read","arguments":{"path":"source.rs","start":2,"lines":1}}}),
+        json!({"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"search","arguments":{"query":"cache_key","mode":"lexical","limit":1,"context":0}}}),
+        json!({"jsonrpc":"1.0","id":8,"method":"tools/list"}),
     ];
     let mut input = process.stdin.take().unwrap();
     input.write_all(b"{bad json}\n").unwrap();
@@ -50,7 +52,15 @@ fn stdio_lists_and_runs_source_tools_and_recovers_from_errors() {
         .filter(|line| !line.is_empty())
         .map(|line| serde_json::from_slice::<Value>(line).unwrap())
         .collect::<Vec<_>>();
-    assert_eq!(responses.len(), 7);
+    assert_eq!(responses.len(), 9);
+    assert_eq!(responses[8]["error"]["code"], -32600);
+    assert_eq!(
+        responses[7]["result"]["structuredContent"]["results"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
     assert_eq!(responses[0]["error"]["code"], -32700);
     assert_eq!(
         responses[2]["result"]["tools"]

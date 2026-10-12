@@ -125,6 +125,7 @@ pub struct Output {
 struct LoadedSource {
     relative: String,
     stamp: Option<Stamp>,
+    observed: Option<SystemTime>,
     reused: bool,
     metadata_hit: bool,
     document: Option<Document>,
@@ -233,6 +234,7 @@ impl Engine {
                         let mut loaded = LoadedSource {
                             relative,
                             stamp: Stamp::read(path).ok(),
+                            observed: Some(SystemTime::now()),
                             ..Default::default()
                         };
                         let reusable = self.documents.get(&loaded.relative).is_some_and(|doc| {
@@ -349,7 +351,7 @@ impl Engine {
                 alive.insert(loaded.relative.clone());
                 if let Some(stamp) = loaded.stamp {
                     self.observations
-                        .insert(loaded.relative.clone(), (stamp, SystemTime::now()));
+                        .insert(loaded.relative.clone(), (stamp, loaded.observed.unwrap()));
                 } else {
                     self.observations.remove(&loaded.relative);
                 }
@@ -454,6 +456,36 @@ impl Engine {
         stats.refresh_ms = began.elapsed().as_secs_f64() * 1000.0;
         Ok(stats)
     }
+    /// Result formatting and mode can change without discarding resident sources.
+    pub fn configure_search(
+        &mut self,
+        mode: RetrievalMode,
+        limit: usize,
+        context: usize,
+        model_path: Option<&Path>,
+    ) -> anyhow::Result<()> {
+        anyhow::ensure!(
+            (1..=10000).contains(&limit) && context <= 1000,
+            "Invalid search limits"
+        );
+        if mode != RetrievalMode::Lexical && self.model.is_none() {
+            let model = Model::load(model_path.ok_or_else(|| {
+                anyhow::anyhow!("Install a model for semantic or hybrid search")
+            })?)?;
+            if self.options.persist {
+                let mut fingerprint = b"ixos-record".to_vec();
+                fingerprint.push(1);
+                fingerprint.push(self.options.profile as u8);
+                fingerprint.extend_from_slice(&model.fingerprint());
+                self.cache = Some(cache::DocumentCache::new(sha256(&fingerprint)));
+            }
+            self.model = Some(model);
+        }
+        self.options.mode = mode;
+        self.options.limit = limit;
+        self.options.context = context;
+        Ok(())
+    }
     fn add_terms(&mut self, document: &Document) {
         self.total_terms += document.length;
         for term in document.terms.keys() {
@@ -481,7 +513,11 @@ impl Engine {
         stats.query_corrections = corrections;
         let query = corrected.as_str();
         let began = Instant::now();
-        let query_vector = if let Some(model) = &self.model {
+        let query_vector = if let Some(model) = self
+            .model
+            .as_ref()
+            .filter(|_| self.options.mode != RetrievalMode::Lexical)
+        {
             model
                 .embed_batch_with_limit(&[query.to_owned()], None)?
                 .remove(0)
@@ -564,7 +600,7 @@ impl Engine {
             })
             .collect();
         ranked.sort_by(|a, b| b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
-        let selections = if self.model.is_some() {
+        let selections = if self.model.is_some() && self.options.mode != RetrievalMode::Lexical {
             let paths = ranked
                 .iter()
                 .take(self.options.limit)

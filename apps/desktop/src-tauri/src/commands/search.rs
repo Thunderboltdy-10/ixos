@@ -13,6 +13,7 @@ pub async fn search_progressive(
 ) -> Result<(), String> {
     let settings = Settings::load();
     let locations = settings
+        .search
         .locations
         .iter()
         .filter(|path| {

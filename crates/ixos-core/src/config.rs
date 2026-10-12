@@ -22,6 +22,7 @@ impl Profile {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct Config {
+    pub locations: Vec<PathBuf>,
     pub profile: Profile,
     pub limit: usize,
     pub context: usize,
@@ -31,6 +32,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            locations: Vec::new(),
             profile: Profile::Code,
             limit: 10,
             context: 2,

@@ -31,6 +31,8 @@ pub fn run() {
             commands::search::cancel_search,
             commands::settings::get_config,
             commands::settings::update_config,
+            commands::storage::cache_stats,
+            commands::storage::cache_clear,
             commands::system::show_overlay,
             commands::system::hide_overlay,
             commands::system::open_file,

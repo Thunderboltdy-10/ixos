@@ -60,7 +60,7 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
             }
         }
         Command::Mcp { location } => crate::mcp::serve(config, location)?,
-        Command::Cache { command } => cache::run(command)?,
+        Command::Cache { command } => cache::run(&config, command)?,
         Command::Model { command } => match command {
             ModelCommand::Install { profile, from } => {
                 let destination = ixos_core::model::install::install(
@@ -126,39 +126,23 @@ fn output(raw: &[u8], json: bool) -> anyhow::Result<()> {
 
 mod cache {
     use super::*;
-    pub fn run(command: CacheCommand) -> anyhow::Result<()> {
-        let (dir, clear, yes) = match command {
-            CacheCommand::Stats { dir } => (dir, false, false),
-            CacheCommand::Clear { dir, yes } => (dir, true, yes),
+    pub fn run(config: &Config, command: CacheCommand) -> anyhow::Result<()> {
+        let (locations, all, clear, yes) = match command {
+            CacheCommand::Stats { dir } => (vec![dir], false, false, false),
+            CacheCommand::Clear { dir, all, yes } => (
+                if all {
+                    config.locations.clone()
+                } else {
+                    vec![dir.unwrap_or_else(|| ".".into())]
+                },
+                all,
+                true,
+                yes,
+            ),
         };
-        let root = dir.canonicalize()?;
-        anyhow::ensure!(root.is_dir(), "Location must be a directory");
-        let mut cache = ixos_core::cache::DocumentCache::new([0; 32]);
-        let mut records = 0;
-        let mut bytes = 0;
-        for entry in ixos_core::discover::search_walk(&root, true, true, false, None)
-            .build()
-            .filter_map(Result::ok)
-        {
-            if !entry.file_type().is_some_and(|t| t.is_file()) {
-                continue;
-            }
-            let Some(text) =
-                ixos_core::extract::extract_text(entry.path(), 16 * 1024 * 1024, 16 * 1024 * 1024)
-            else {
-                continue;
-            };
-            let (present, _, size) = cache.inspect(entry.path(), &[0; 32], &text);
-            if present {
-                records += 1;
-                bytes += size;
-                if clear && yes {
-                    cache.remove(entry.path())?;
-                }
-            }
-        }
+        let stats = ixos_core::cache::manage(&locations, all, yes)?;
         println!(
-            "{}: {records} files, {bytes} record bytes",
+            "{}: {} files, {} record bytes, {} native records, {} fallback entries, {} old records",
             if clear {
                 if yes {
                     "Removed"
@@ -167,7 +151,12 @@ mod cache {
                 }
             } else {
                 "Ixos cache"
-            }
+            },
+            stats.files_with_records,
+            stats.record_bytes,
+            stats.native_records,
+            stats.fallback_entries,
+            stats.old_records
         );
         Ok(())
     }

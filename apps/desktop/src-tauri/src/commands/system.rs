@@ -41,8 +41,8 @@ pub fn select_directory(app: AppHandle) -> Result<Option<String>, String> {
     };
     let path = path.into_path().map_err(|e| e.to_string())?;
     let mut settings = Settings::load();
-    if !settings.locations.contains(&path) {
-        settings.locations.push(path.clone());
+    if !settings.search.locations.contains(&path) {
+        settings.search.locations.push(path.clone());
         settings.save()?;
     }
     Ok(Some(path.to_string_lossy().into_owned()))
@@ -50,6 +50,7 @@ pub fn select_directory(app: AppHandle) -> Result<Option<String>, String> {
 #[tauri::command]
 pub fn get_default_search_directory() -> String {
     Settings::load()
+        .search
         .locations
         .first()
         .map(|path| path.to_string_lossy().into_owned())

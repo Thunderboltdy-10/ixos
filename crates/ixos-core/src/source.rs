@@ -48,7 +48,7 @@ impl Stamp {
     }
 
     fn from_metadata(metadata: Metadata, identity: u128) -> std::io::Result<Self> {
-        if !metadata.is_file() || metadata.file_type().is_symlink() {
+        if !metadata.is_file() || metadata.file_type().is_symlink() || identity == 0 {
             return Err(std::io::Error::other("Source is not a regular file"));
         }
         Ok(Self {

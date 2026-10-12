@@ -18,6 +18,7 @@
     "core:window:allow-toggle-maximize",
     "shell:allow-open",
     "global-shortcut:default",
-    "global-shortcut:allow-register"
+    "global-shortcut:allow-register",
+    "dialog:allow-confirm"
   ]
 }

@@ -4,6 +4,23 @@ use std::io::Write;
 use std::os::windows::fs::OpenOptionsExt;
 use std::os::windows::io::AsRawHandle;
 use std::path::Path;
+pub(crate) fn open_primary(path: &Path) -> std::io::Result<fs::File> {
+    use std::os::windows::fs::MetadataExt;
+    use windows_sys::Win32::Storage::FileSystem::{
+        FILE_ATTRIBUTE_REPARSE_POINT, FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ,
+        FILE_SHARE_WRITE,
+    };
+    let file = fs::OpenOptions::new()
+        .read(true)
+        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE)
+        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT)
+        .open(path)?;
+    let metadata = file.metadata()?;
+    if !metadata.is_file() || metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0 {
+        return Err(std::io::Error::other("Metadata requires a regular file"));
+    }
+    Ok(file)
+}
 /// Disable automatic access/write timestamp updates from THIS metadata handle.
 /// No previously read timestamp is restored, so concurrent primary writes retain
 /// their own timestamps. Stream updates can still generate filesystem events.
@@ -31,13 +48,9 @@ fn suppress_handle_times(file: &fs::File) -> std::io::Result<()> {
 }
 
 pub(crate) fn write_metadata_stream(path: &Path, name: &str, data: &[u8]) -> std::io::Result<()> {
-    use windows_sys::Win32::Storage::FileSystem::{FILE_SHARE_READ, FILE_SHARE_WRITE};
     // Open the primary first and prevent rename/delete for this short write.
     // A missing primary must never be recreated just to attach cached metadata.
-    let _primary = fs::OpenOptions::new()
-        .read(true)
-        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE)
-        .open(path)?;
+    let _primary = open_primary(path)?;
     let mut stream = path.as_os_str().to_owned();
     stream.push(name);
     // Truncate only AFTER suppression. CREATE_ALWAYS would modify the stream
@@ -52,11 +65,14 @@ pub(crate) fn write_metadata_stream(path: &Path, name: &str, data: &[u8]) -> std
     file.write_all(data)
 }
 
-pub(crate) fn remove_metadata_stream(stream: &Path) -> std::io::Result<()> {
+pub(crate) fn remove_metadata_stream(path: &Path, name: &str) -> std::io::Result<()> {
     use windows_sys::Win32::Storage::FileSystem::{
         FileDispositionInfo, SetFileInformationByHandle, DELETE, FILE_DISPOSITION_INFO,
         FILE_WRITE_ATTRIBUTES,
     };
+    let _primary = open_primary(path)?;
+    let mut stream = path.as_os_str().to_owned();
+    stream.push(name);
     let file = fs::OpenOptions::new()
         .access_mode(DELETE | FILE_WRITE_ATTRIBUTES)
         .open(stream)?;

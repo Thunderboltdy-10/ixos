@@ -5,7 +5,6 @@ use std::path::PathBuf;
 #[derive(Clone, Default, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct Settings {
-    pub locations: Vec<PathBuf>,
     pub search: Config,
     pub quit_on_close: bool,
 }
@@ -16,16 +15,21 @@ impl Settings {
             .join("ixos/desktop.json")
     }
     pub fn load() -> Self {
-        std::fs::read(Self::path())
+        let mut settings: Self = std::fs::read(Self::path())
             .ok()
             .and_then(|bytes| serde_json::from_slice(&bytes).ok())
-            .unwrap_or_default()
+            .unwrap_or_default();
+        settings.search = Config::load(&Config::path()).unwrap_or_default();
+        settings
     }
     pub fn save(&self) -> Result<(), String> {
         self.search.validate().map_err(|e| e.to_string())?;
-        if self.locations.iter().any(|path| !path.is_dir()) {
+        if self.search.locations.iter().any(|path| !path.is_dir()) {
             return Err("Each location must be a directory".into());
         }
+        self.search
+            .save(&Config::path())
+            .map_err(|e| e.to_string())?;
         let path = Self::path();
         std::fs::create_dir_all(path.parent().unwrap()).map_err(|e| e.to_string())?;
         std::fs::write(

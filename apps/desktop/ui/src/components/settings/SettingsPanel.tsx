@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Settings, Shield, Scale, Info, Keyboard, User, Stethoscope } from 'lucide-react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { cn } from '@/lib/utils';
+import { StorageSettings } from './StorageSettings';
 import { SearchSettings } from './SearchSettings';
 import { PrivacySettings } from './PrivacySettings';
 import { ComplianceSettings } from './ComplianceSettings';
@@ -10,6 +11,7 @@ import { AccountSettings } from './AccountSettings';
 import { DiagnosticsSettings } from './DiagnosticsSettings';
 
 export type SettingsTabId =
+  | 'storage'
   | 'search'
   | 'account'
   | 'keyboard'
@@ -19,6 +21,7 @@ export type SettingsTabId =
   | 'about';
 
 const tabs: { id: SettingsTabId; label: string; icon: React.ElementType }[] = [
+  { id: 'storage', label: 'Storage', icon: Settings },
   { id: 'search', label: 'Search', icon: Settings },
   { id: 'account', label: 'Installation', icon: User },
   { id: 'keyboard', label: 'Keyboard', icon: Keyboard },
@@ -78,6 +81,7 @@ export function SettingsPanel({ initialTab }: { initialTab?: SettingsTabId }) {
       <main className="relative flex-1 overflow-y-auto bg-transparent">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.045] via-white/[0.018] to-transparent" />
         <div className="mx-auto max-w-4xl p-6 lg:p-8">
+          {activeTab === 'storage' && <StorageSettings />}
           {activeTab === 'search' && <SearchSettings />}
           {activeTab === 'account' && <AccountSettings />}
           {activeTab === 'keyboard' && <ShortcutSettings />}

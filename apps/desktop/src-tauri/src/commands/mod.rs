@@ -1,4 +1,5 @@
 pub mod search;
 pub mod settings;
 pub mod shortcut;
+pub mod storage;
 pub mod system;

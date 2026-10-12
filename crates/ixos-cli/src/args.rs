@@ -107,8 +107,9 @@ pub enum CacheCommand {
         dir: PathBuf,
     },
     Clear {
-        #[arg(default_value = ".")]
-        dir: PathBuf,
+        dir: Option<PathBuf>,
+        #[arg(long, conflicts_with = "dir")]
+        all: bool,
         #[arg(long)]
         yes: bool,
     },

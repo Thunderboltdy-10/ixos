@@ -9,6 +9,8 @@ use std::path::Path;
 #[cfg(windows)]
 use std::path::PathBuf;
 use xxhash_rust::xxh3::xxh3_64;
+mod management;
+pub use management::{manage, CacheStats};
 
 const MAX_RECORD: usize = 40 * 1024;
 #[cfg(unix)]
@@ -98,50 +100,6 @@ impl DocumentCache {
         txn.commit()?;
         Ok("application-db")
     }
-    /// Inspect current-source records without loading a particular model.
-    /// Validity here is not a promise that the next search's model_fingerprint will match.
-    pub fn inspect(&mut self, path: &Path, source: &[u8; 32], text: &str) -> (bool, bool, usize) {
-        let native = native_read(path).ok().flatten();
-        let fallback = (|| -> Option<Vec<u8>> {
-            let exists = dirs::cache_dir()?.join("ixos/records/data.mdb").exists();
-            if !exists && self.fallback.is_none() {
-                return None;
-            }
-            let (env, db) = self.database().ok()?;
-            let txn = env.read_txn().ok()?;
-            Some(
-                db.get(&txn, &Self::path_key(path))
-                    .ok()??
-                    .iter()
-                    .take(MAX_RECORD + 1)
-                    .copied()
-                    .collect(),
-            )
-        })();
-        let mut present = false;
-        let mut size = 0;
-        for data in native.into_iter().chain(fallback) {
-            present = true;
-            size = data.len();
-            let Some(model_fingerprint) =
-                data.get(5..37).and_then(|s| <[u8; 32]>::try_from(s).ok())
-            else {
-                continue;
-            };
-            if let Ok(rows) = decode(&data, &model_fingerprint, source) {
-                if rows.iter().all(|p| {
-                    p.end_byte <= text.len()
-                        && text.is_char_boundary(p.start_byte)
-                        && text.is_char_boundary(p.end_byte)
-                        && p.end_line <= text.split('\n').count()
-                        && p.vector.iter().all(|v| v.is_finite())
-                }) {
-                    return (true, true, size);
-                }
-            }
-        }
-        (present, false, size)
-    }
     pub fn remove_fallback(&mut self, path: &Path) {
         if let Some((env, db)) = &self.fallback {
             if let Ok(mut txn) = env.write_txn() {
@@ -149,24 +107,6 @@ impl DocumentCache {
                 let _ = txn.commit();
             }
         }
-    }
-    /// Clear the document record without touching primary bytes.
-    pub fn remove(&mut self, path: &Path) -> anyhow::Result<bool> {
-        let mut removed = false;
-        if native_read(path).ok().flatten().is_some() {
-            native_delete(path)?;
-            removed = true;
-        }
-        let exists = dirs::cache_dir()
-            .is_some_and(|directory| directory.join("ixos/records/data.mdb").exists());
-        if exists || self.fallback.is_some() {
-            let key = Self::path_key(path);
-            let (env, db) = self.database()?;
-            let mut txn = env.write_txn()?;
-            removed |= db.delete(&mut txn, &key)?;
-            txn.commit()?;
-        }
-        Ok(removed)
     }
 }
 
@@ -317,9 +257,9 @@ fn native_read(path: &Path) -> std::io::Result<Option<Vec<u8>>> {
 fn native_write(path: &Path, data: &[u8]) -> std::io::Result<()> {
     crate::metadata_windows::write_metadata_stream(path, ":ixos", data)
 }
-#[cfg(windows)]
+#[cfg(all(test, windows))]
 fn native_delete(path: &Path) -> std::io::Result<()> {
-    crate::metadata_windows::remove_metadata_stream(&stream(path))
+    crate::metadata_windows::remove_metadata_stream(path, ":ixos")
 }
 #[cfg(unix)]
 fn native_read(path: &Path) -> std::io::Result<Option<Vec<u8>>> {
@@ -329,7 +269,7 @@ fn native_read(path: &Path) -> std::io::Result<Option<Vec<u8>>> {
 fn native_write(path: &Path, data: &[u8]) -> std::io::Result<()> {
     xattr::set(path, NAME, data)
 }
-#[cfg(unix)]
+#[cfg(all(test, unix))]
 fn native_delete(path: &Path) -> std::io::Result<()> {
     xattr::remove(path, NAME)
 }

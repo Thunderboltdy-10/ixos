@@ -102,14 +102,21 @@ pub enum Command {
 }
 #[derive(Subcommand)]
 pub enum CacheCommand {
+    /// Show record counts and storage used by Ixos metadata.
     Stats {
-        #[arg(default_value = ".")]
+        /// Folder whose Ixos metadata to inspect.
+        #[arg(long, default_value = ".")]
         dir: PathBuf,
     },
+    /// Show what would be removed; use --yes to remove Ixos metadata.
     Clear {
+        /// Folder whose Ixos metadata to remove (defaults to the current folder).
+        #[arg(long)]
         dir: Option<PathBuf>,
+        /// Include all configured locations and the application cache.
         #[arg(long, conflicts_with = "dir")]
         all: bool,
+        /// Perform the removal instead of a dry run.
         #[arg(long)]
         yes: bool,
     },

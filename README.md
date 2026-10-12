@@ -2,33 +2,23 @@
 
 Ixos is local hybrid search over code and documents, running on CPU. Use it from the CLI, an AI client through MCP, or a tray app with a quick-search overlay.
 
-<!-- Demo GIF: add a recording of shortcut -> search -> open file here. -->
-
-*Demo GIF to be added.*
-
 ## Install
 
-Download the CLI or desktop binary from the eventual GitHub Releases page and put `ixos` on PATH. The repository URL and model repositories are awaiting Pablo's confirmation and publication.
-
-```sh
-ixos model install code
-ixos model install documents
-```
-
-To build the CLI from source, install Rust and run:
+Build the CLI from source with Rust:
 
 ```sh
 cargo install --path crates/ixos-cli --locked
 ```
 
-Before model publication, maintainers can run `python scripts/models.py build` with Python and `numpy==2.3.5`, then install locally:
+Build the models with Python and `numpy==2.3.5`, then install the local artifacts:
 
 ```sh
+python scripts/models.py build
 ixos model install code --from models/code
 ixos model install documents --from models/documents
 ```
 
-Users installing published models do not need Python. See [CONTRIBUTING.md](CONTRIBUTING.md) for desktop and site builds.
+The model downloader also supports published artifacts with `ixos model install code` and `ixos model install documents`, without Python. See [CONTRIBUTING.md](CONTRIBUTING.md) for desktop and site builds.
 
 ## Use
 

@@ -4,10 +4,8 @@ import { HeroSection } from "@/components/homepage/HeroSection";
 import { ProblemSolutionSection } from "@/components/homepage/ProblemSolutionSection";
 import { HowItWorksSection } from "@/components/homepage/HowItWorksSection";
 import { UseCasesSection } from "@/components/homepage/UseCasesSection";
-import { FeatureShowcaseSection } from "@/components/homepage/FeatureShowcaseSection";
-import { PrivacyTrustSection } from "@/components/homepage/PrivacyTrustSection";
+import { LocalSearchSection } from "@/components/homepage/LocalSearchSection";
 import { OpenSourcePreviewSection } from "@/components/homepage/OpenSourcePreviewSection";
-import { SocialProofSection } from "@/components/homepage/SocialProofSection";
 import { FinalCTASection } from "@/components/homepage/FinalCTASection";
 
 export default function HomePage() {
@@ -21,10 +19,8 @@ export default function HomePage() {
         <ProblemSolutionSection />
         <HowItWorksSection />
         <UseCasesSection />
-        <FeatureShowcaseSection />
-        <PrivacyTrustSection />
+        <LocalSearchSection />
         <OpenSourcePreviewSection />
-        <SocialProofSection />
         <FinalCTASection />
       </main>
     </div>

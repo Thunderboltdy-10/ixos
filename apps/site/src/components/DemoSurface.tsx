@@ -1,83 +1,85 @@
 "use client";
+import { useMemo, useState } from "react";
+import { SearchSurface, type IxosSearchResult } from "@ixos/ixos-ui";
 
-import { useState, useEffect } from "react";
-import { SearchSurface, createDemoAdapter, type IxosSearchResult } from "@ixos/ixos-ui";
+const SAMPLES = {
+  code: [
+    {
+      path: "cache.rs",
+      text: "fn source_is_unchanged(size: u64, modified: SystemTime, file_id: u64) -> bool {\n    previous == (size, modified, file_id)\n}",
+    },
+    {
+      path: "search.rs",
+      text: "fn hybrid_score(cosine: f32, bm25: f32) -> f32 {\n    0.5 * cosine + 0.5 * bm25\n}",
+    },
+    {
+      path: "record.rs",
+      text: "fn clear_cache(path: &Path) -> Result<()> {\n    remove_ixos_metadata(path)\n}",
+    },
+  ],
+  documents: [
+    {
+      path: "meeting.txt",
+      text: "The team meeting covered the next project milestone and the release schedule.",
+    },
+    {
+      path: "architecture.txt",
+      text: "Search combines keywords with static embeddings. Records cache vectors in file metadata.",
+    },
+    {
+      path: "notes.txt",
+      text: "Choose locations in Settings. The desktop keeps parsed text and the search model in memory.",
+    },
+  ],
+};
 
-const adapter = createDemoAdapter();
-
-export function DemoSurface({
-  initialQuery = "",
-  forcedState,
-  forcedStageLabel,
-  forcedResults
-}: {
-  initialQuery?: string;
-  forcedState?: "idle" | "searching" | "done";
-  forcedStageLabel?: string;
-  forcedResults?: IxosSearchResult[];
-}) {
+export function DemoSurface({ initialQuery = "" }: { initialQuery?: string }) {
   const [query, setQuery] = useState(initialQuery);
-  const [isSearching, setIsSearching] = useState(false);
-  const [results, setResults] = useState<IxosSearchResult[]>([]);
-  const [stats, setStats] = useState({
-    stage: 'lexical',
-    filesScanned: 0,
-    candidates: 0,
-    embedded: 0,
-    cacheHits: 0,
-    scanTrail: [] as string[]
-  });
-
-  useEffect(() => {
-    if (forcedState === "searching") {
-      setIsSearching(true);
-      setStats(prev => ({ ...prev, stage: 'lexical', scanTrail: ['src/core/matcher.rs', 'src/core/tokenizer.rs'] }));
-      setResults([]);
-    } else if (forcedState === "done") {
-      setIsSearching(false);
-      setStats(prev => ({
-        ...prev,
-        stage: 'locked',
-        filesScanned: 14205,
-        candidates: 210,
-        embedded: 45,
-        cacheHits: 120,
-        scanTrail: ['src/core/search.rs']
-      }));
-      setResults(forcedResults || []);
-    }
-  }, [forcedState, forcedResults]);
-
-  const handleSubmit = async () => {
-    if (forcedState) return;
-    setIsSearching(true);
-    const found: IxosSearchResult[] = [];
-    await adapter.search.search(query, "auto", event => {
-      if (event.type === "result" && event.result) found.push(event.result);
-    });
-    setResults(found);
-    setStats({
-      stage: 'locked',
-      filesScanned: 12450,
-      candidates: 412,
-      embedded: 120,
-      cacheHits: 80,
-      scanTrail: []
-    });
-    setIsSearching(false);
-  };
-
+  const [submitted, setSubmitted] = useState(initialQuery);
+  const [profile, setProfile] = useState<"code" | "documents">("code");
+  const [selected, setSelected] = useState(0);
+  const results = useMemo<IxosSearchResult[]>(() => {
+    const words = submitted.toLowerCase().match(/[a-z0-9]+/g) ?? [];
+    return SAMPLES[profile]
+      .map((file) => ({
+        id: file.path,
+        title: file.path,
+        path: file.path,
+        snippet: file.text,
+        matchedLineNumber: 1,
+        score: words.filter((word) =>
+          (file.path + " " + file.text).toLowerCase().includes(word),
+        ).length,
+      }))
+      .filter((file) => words.length > 0 && file.score > 0)
+      .sort((a, b) => b.score - a.score);
+  }, [submitted, profile]);
   return (
-    <div style={{ width: '100%', maxWidth: 1000, margin: '0 auto', fontFamily: 'Inter, sans-serif' }}>
+    <div
+      style={{
+        width: "100%",
+        maxWidth: 1000,
+        margin: "0 auto",
+        fontFamily: "Inter, sans-serif",
+      }}
+    >
       <SearchSurface
         query={query}
         onQueryChange={setQuery}
-        onSubmit={handleSubmit}
-        isSearching={isSearching}
+        onSubmit={() => {
+          setSubmitted(query);
+          setSelected(0);
+        }}
+        profile={profile}
+        onProfileChange={(value) => {
+          setProfile(value);
+          setSelected(0);
+        }}
+        directoryLabel="3 sample files · illustrative keyword matches"
         results={results}
-        stageLabel={forcedStageLabel || (isSearching ? "Scanning" : "Ready")}
-        pipelineStats={stats}
-        interactive={!forcedState}
+        selectedIndex={selected}
+        onSelectResult={setSelected}
+        stageLabel="Complete"
       />
     </div>
   );

@@ -79,7 +79,7 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
                     println!(
                         "{}: {}",
                         profile.name(),
-                        if model.join("model.safetensors").is_file() {
+                        if ixos_core::model::install::verify(&model, profile).is_ok() {
                             model.display().to_string()
                         } else {
                             "not installed".into()

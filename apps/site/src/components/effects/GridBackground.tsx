@@ -25,14 +25,14 @@ export function GridBackground() {
           left: 0,
           right: 0,
           bottom: -48,
-          backgroundColor: '#0A0D0F',
+          backgroundColor: "#0A0D0F",
           backgroundImage: `
             linear-gradient(rgba(246, 185, 76, 0.04) 1px, transparent 1px),
             linear-gradient(90deg, rgba(246, 185, 76, 0.04) 1px, transparent 1px)
           `,
-          backgroundSize: '48px 48px',
+          backgroundSize: "48px 48px",
         }}
       />
     </>
-  )
+  );
 }

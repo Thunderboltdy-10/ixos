@@ -1,2 +1,0 @@
-import { redirect } from "next/navigation";
-export default function Page() { redirect("/5/download"); }

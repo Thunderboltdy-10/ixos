@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 interface AmbientIxosFieldProps {
   reducedMotion?: boolean;
   className?: string;
-  mode?: 'fixed' | 'contained';
-  energy?: 'calm' | 'dynamic';
+  mode?: "fixed" | "contained";
+  energy?: "calm" | "dynamic";
   accentRgb?: string;
   accentAltRgb?: string;
   intensity?: number;
@@ -20,27 +20,30 @@ interface PixelCell {
 export function AmbientIxosField({
   reducedMotion = false,
   className,
-  mode = 'fixed',
-  energy = 'calm',
-  accentRgb = '20, 184, 166',
-  accentAltRgb = '124, 92, 255',
+  mode = "fixed",
+  energy = "calm",
+  accentRgb = "20, 184, 166",
+  accentAltRgb = "124, 92, 255",
   intensity = 1,
 }: AmbientIxosFieldProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const frameRef = useRef<number>(0);
   const cellsRef = useRef<PixelCell[]>([]);
-  const viewportRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
+  const viewportRef = useRef<{ width: number; height: number }>({
+    width: 0,
+    height: 0,
+  });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
 
     const getViewport = () => {
-      if (mode === 'fixed') {
+      if (mode === "fixed") {
         return { width: window.innerWidth, height: window.innerHeight };
       }
 
@@ -90,14 +93,19 @@ export function AmbientIxosField({
       ctx.clearRect(0, 0, width, height);
       const t = ts * 0.001;
 
-      const driftScale = energy === 'dynamic' ? 1.38 : 1;
-      const freqX = energy === 'dynamic' ? 0.0075 : 0.006;
-      const freqY = energy === 'dynamic' ? 0.0052 : 0.004;
-      const alphaBoost = energy === 'dynamic' ? 1.22 : 1;
-      const sizeBoost = energy === 'dynamic' ? 1.12 : 1;
+      const driftScale = energy === "dynamic" ? 1.38 : 1;
+      const freqX = energy === "dynamic" ? 0.0075 : 0.006;
+      const freqY = energy === "dynamic" ? 0.0052 : 0.004;
+      const alphaBoost = energy === "dynamic" ? 1.22 : 1;
+      const sizeBoost = energy === "dynamic" ? 1.12 : 1;
 
       for (const cell of cellsRef.current) {
-        const wave = Math.sin(cell.base + t * cell.drift * driftScale + cell.x * freqX + cell.y * freqY);
+        const wave = Math.sin(
+          cell.base +
+            t * cell.drift * driftScale +
+            cell.x * freqX +
+            cell.y * freqY,
+        );
         const glow = reducedMotion ? 0.35 : (wave + 1) * 0.5;
         const alpha = (0.045 + glow * 0.09) * alphaBoost * intensity;
         const size = (2.2 + glow * 1.8) * sizeBoost;
@@ -123,10 +131,10 @@ export function AmbientIxosField({
       frameRef.current = requestAnimationFrame(render);
     }
 
-    window.addEventListener('resize', resize);
-    const host = mode === 'contained' ? canvas.parentElement : null;
+    window.addEventListener("resize", resize);
+    const host = mode === "contained" ? canvas.parentElement : null;
     const observer =
-      mode === 'contained' && host
+      mode === "contained" && host
         ? new ResizeObserver(() => {
             resize();
           })
@@ -137,7 +145,7 @@ export function AmbientIxosField({
 
     return () => {
       cancelAnimationFrame(frameRef.current);
-      window.removeEventListener('resize', resize);
+      window.removeEventListener("resize", resize);
       observer?.disconnect();
     };
   }, [accentAltRgb, accentRgb, energy, intensity, mode, reducedMotion]);
@@ -148,9 +156,16 @@ export function AmbientIxosField({
       aria-hidden
       className={className}
       style={
-        mode === 'fixed'
-          ? { position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }
-          : { position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }
+        mode === "fixed"
+          ? { position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }
+          : {
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              pointerEvents: "none",
+              zIndex: 0,
+            }
       }
     />
   );

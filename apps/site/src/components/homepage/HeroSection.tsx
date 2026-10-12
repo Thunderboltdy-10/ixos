@@ -48,12 +48,12 @@ export function HeroSection() {
         className="relative z-10 text-center mb-12 max-w-4xl mx-auto"
       >
         <DecodedHeading
-          text="Find anything on your device — instantly and privately."
+          text="Find the code and documents you need."
           className="text-4xl sm:text-5xl md:text-7xl font-semibold font-display text-white mb-6"
         />
         <p className="text-base md:text-lg max-w-2xl mx-auto font-sans text-white/50 leading-relaxed">
-          Ixos builds a secure semantic map of your files so you can stop
-          hunting and start working.
+          Ixos combines keywords and meaning to search the folders you choose,
+          using small models on your CPU.
         </p>
       </motion.div>
 
@@ -63,7 +63,7 @@ export function HeroSection() {
         transition={{ duration: 0.6, delay: 0.5 }}
         className="relative z-10 w-full max-w-5xl overflow-hidden shadow-2xl shadow-black/50"
       >
-          <DemoSurface />
+        <DemoSurface />
       </motion.div>
 
       <motion.div

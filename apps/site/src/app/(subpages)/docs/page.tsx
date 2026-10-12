@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function DocsPage() {
-  return <DocsContent variant="3" />;
+  return <DocsContent />;
 }

@@ -70,7 +70,7 @@ export function SearchInput({
     );
   }, [profile]);
   const activePalette = modePalette[profile];
-  const searchBarTone = profile === "code" ? "cache" : "jit";
+  const searchBarTone = profile === "code" ? "teal" : "amber";
   useEffect(() => {
     if (!searchBarRef.current) return;
     const measure = () => {

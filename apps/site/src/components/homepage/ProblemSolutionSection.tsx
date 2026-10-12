@@ -26,7 +26,10 @@ export function ProblemSolutionSection() {
           <FadeInView direction="left">
             <div className="relative p-8 border border-white/8 bg-white/[0.01]">
               <CornerBrackets size={14} color="rgba(255,255,255,0.12)" />
-              <h2 className="text-3xl md:text-4xl font-semibold font-display text-white mb-2" style={{ lineHeight: 1.12 }}>
+              <h2
+                className="text-3xl md:text-4xl font-semibold font-display text-white mb-2"
+                style={{ lineHeight: 1.12 }}
+              >
                 Your files are everywhere.
                 <br />
                 <span className="text-white/40">Your time is nowhere.</span>
@@ -49,7 +52,10 @@ export function ProblemSolutionSection() {
           <FadeInView direction="right" delay={120}>
             <div className="relative p-8 border border-amber-400/15 bg-amber-400/[0.02]">
               <CornerBrackets size={14} color="rgba(246,185,76,0.2)" />
-              <h2 className="text-3xl md:text-4xl font-semibold font-display text-white mb-2" style={{ lineHeight: 1.12 }}>
+              <h2
+                className="text-3xl md:text-4xl font-semibold font-display text-white mb-2"
+                style={{ lineHeight: 1.12 }}
+              >
                 One search bar.
                 <br />
                 <span className="text-amber-400">Everything found.</span>

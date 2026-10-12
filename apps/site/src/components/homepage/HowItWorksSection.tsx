@@ -11,7 +11,7 @@ const STEPS = [
     num: "01",
     id: "scan",
     title: "Index",
-    desc: "Point Ixos at any folder. It scans your files in milliseconds — documents, code, PDFs, and more.",
+    desc: "Choose locations. Ixos discovers code, text, PDFs and Office files while honoring ignore rules.",
     color: "#F6B94C",
     icon: Database,
   },
@@ -19,7 +19,7 @@ const STEPS = [
     num: "02",
     id: "map",
     title: "Map",
-    desc: "A local semantic model maps meaning. Embeddings are cached and cryptographically signed on-device.",
+    desc: "A static embedding model represents meaning. Compact records live in file metadata or the application cache.",
     color: "#F6B94C",
     icon: Network,
   },
@@ -27,7 +27,7 @@ const STEPS = [
     num: "03",
     id: "find",
     title: "Find",
-    desc: "Search naturally. Ranked results with verified evidence — file, line, and a full score breakdown.",
+    desc: "Search with words or concepts. Open a ranked file and inspect the selected snippet and line numbers.",
     color: "#F6B94C",
     icon: SearchCode,
   },
@@ -44,7 +44,10 @@ export function HowItWorksSection() {
   const pathLength = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
   return (
-    <section id="how-it-works" className="relative z-10 py-32 px-6 overflow-hidden">
+    <section
+      id="how-it-works"
+      className="relative z-10 py-32 px-6 overflow-hidden"
+    >
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(ellipse_50%_50%_at_50%_50%,rgba(246,185,76,0.02),transparent)] pointer-events-none" />
 
       <div className="max-w-6xl mx-auto" ref={containerRef}>
@@ -57,7 +60,7 @@ export function HowItWorksSection() {
               className="text-3xl md:text-5xl font-semibold font-display text-white"
               style={{ letterSpacing: "-0.02em", lineHeight: 1.1 }}
             >
-              Three steps to instant search.
+              Three steps to local search.
             </h2>
           </div>
         </FadeInView>
@@ -65,15 +68,25 @@ export function HowItWorksSection() {
         <div className="relative">
           {/* Desktop SVG Pipeline */}
           <div className="hidden md:block absolute top-[48px] left-[16.6%] right-[16.6%] h-[2px] pointer-events-none z-0">
-            <svg width="100%" height="2" className="overflow-visible absolute top-0 left-0">
+            <svg
+              width="100%"
+              height="2"
+              className="overflow-visible absolute top-0 left-0"
+            >
               <line
-                x1="0" y1="1" x2="100%" y2="1"
+                x1="0"
+                y1="1"
+                x2="100%"
+                y2="1"
                 stroke="rgba(246,185,76,0.15)"
                 strokeWidth="1"
                 strokeDasharray="4 6"
               />
               <motion.line
-                x1="0" y1="1" x2="100%" y2="1"
+                x1="0"
+                y1="1"
+                x2="100%"
+                y2="1"
                 stroke="rgba(246,185,76,0.5)"
                 strokeWidth="1"
                 style={{ pathLength }}
@@ -89,11 +102,12 @@ export function HowItWorksSection() {
                 <FadeInView key={step.id} direction="up" delay={i * 200}>
                   <div className="flex flex-col items-center">
                     {/* Node */}
-                    <div
-                      className="relative w-24 h-24 mb-6 bg-[#0A0D14] flex flex-col items-center justify-center group overflow-hidden z-10"
-                    >
+                    <div className="relative w-24 h-24 mb-6 bg-[#0A0D14] flex flex-col items-center justify-center group overflow-hidden z-10">
                       <CornerBrackets size={12} color="rgba(246,185,76,0.3)" />
-                      <Icon className="w-8 h-8 mb-2 transition-transform duration-500 group-hover:scale-110" style={{ color: step.color }} />
+                      <Icon
+                        className="w-8 h-8 mb-2 transition-transform duration-500 group-hover:scale-110"
+                        style={{ color: step.color }}
+                      />
                       <span className="font-mono text-[9px] font-bold tracking-[0.2em] text-white/50 group-hover:text-white/90 transition-colors uppercase">
                         STAGE_0{i + 1}
                       </span>

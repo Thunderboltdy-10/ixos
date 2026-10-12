@@ -9,42 +9,41 @@ import { CLI_INSTALL_COMMANDS, type InstallOs } from "@/lib/downloads";
 
 const CLI_EXAMPLES = [
   {
-    cmd: 'search "authentication token refresh" --progressive',
-    hint: "Stream results as each pipeline stage completes",
+    cmd: 'search "authentication token refresh" --dir . --profile code',
+    hint: "Find source files by meaning and keywords",
   },
   {
-    cmd: "search --show-scores --json",
-    hint: "Pipe structured JSON with full score breakdown",
+    cmd: 'search "cell growth" --dir ./papers --profile documents --json',
+    hint: "Print ranked document results as JSON",
   },
   {
-    cmd: 'search "source protection" --journalist-mode',
-    hint: "Maximum privacy: ephemeral cache, no logs, no history",
+    cmd: 'grep "fn refresh" --dir . --fixed',
+    hint: "Find an exact source pattern",
   },
   {
-    cmd: 'search "config" --cache-mode ephemeral',
-    hint: "All embeddings discarded after query. Zero footprint.",
+    cmd: "mcp --dir . --profile code",
+    hint: "Serve search, grep and read tools over stdio",
   },
 ];
-
 const FEATURES = [
   {
-    title: "Progressive Output",
-    desc: "Results stream as each pipeline stage completes — lexical matches first, then semantic re-ranking.",
+    title: "Hybrid search",
+    desc: "Combine full-text BM25 with static embeddings, or choose either mode.",
     color: "#F6B94C",
   },
   {
-    title: "JSON Export",
-    desc: "Structured output with full score breakdowns for scripting and integration into CI/CD pipelines.",
+    title: "JSON output",
+    desc: "File paths, ranking scores and source snippets for scripts and AI clients.",
     color: "#14B8A6",
   },
   {
-    title: "Journalist Mode",
-    desc: "Maximum privacy mode — ephemeral cache, no logs, no search history. For sensitive investigations.",
+    title: "MCP tools",
+    desc: "Keep the engine resident between search, grep and read calls.",
     color: "#7C5CFF",
   },
   {
-    title: "Cryptographic Attestation",
-    desc: "Ed25519 signatures on every search result — prove exactly what was found and when.",
+    title: "Cache management",
+    desc: "Inspect records. Clear them with a dry run first and explicit confirmation.",
     color: "#F6B94C",
   },
 ];
@@ -59,7 +58,9 @@ function InstallBlock() {
       await navigator.clipboard.writeText(cmd.command);
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   };
 
   return (
@@ -105,7 +106,10 @@ function InstallBlock() {
 
 export default function CLIPage() {
   return (
-    <div className="relative min-h-screen text-[#f3f5f7] selection:bg-amber-400/30" style={{ overflowX: "clip" }}>
+    <div
+      className="relative min-h-screen text-[#f3f5f7] selection:bg-amber-400/30"
+      style={{ overflowX: "clip" }}
+    >
       <main className="relative z-10">
         {/* Hero */}
         <section className="relative pt-36 pb-20 px-6">
@@ -125,8 +129,8 @@ export default function CLIPage() {
                 The Ixos CLI.
               </h1>
               <p className="text-base md:text-lg text-white/50 max-w-xl mx-auto leading-relaxed mb-12">
-                Scriptable, privacy-first search from your terminal. Pipe results,
-                export JSON, and integrate into any workflow.
+                Scriptable local search from your terminal. Pipe results, export
+                JSON, and integrate into any workflow.
               </p>
             </motion.div>
 
@@ -241,8 +245,8 @@ export default function CLIPage() {
                 Download the Desktop App
               </Link>
               <p className="mt-4 text-xs text-white/25 font-mono">
-                The CLI is included with the desktop installer, or install
-                standalone via the script above.
+                Download a CLI binary from Releases, or build it from the
+                repository with the command above.
               </p>
             </FadeInView>
           </div>

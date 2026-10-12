@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
-import { Analytics } from '@vercel/analytics/next';
+
 import { IxosNav } from "@/components/IxosNav";
 import { GridBackground } from "@/components/effects/GridBackground";
 import { PageGlow } from "@/components/effects/PageGlow";
-
-const analyticsEnabled = process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === "1";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-ixo-heading",
@@ -44,18 +41,17 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${spaceGrotesk.variable} ${geistMono.variable} antialiased`}
-        style={{ backgroundColor: '#0A0D0F' }}
+        style={{ backgroundColor: "#0A0D0F" }}
       >
         <>
-          <SmoothScrollProvider>
+          <>
             <div id="app-root" className="relative min-h-screen flex flex-col">
               <GridBackground />
               <PageGlow color="amber" />
               <IxosNav />
               <div className="flex-1 flex flex-col">{children}</div>
-              {analyticsEnabled ? <Analytics /> : null}
             </div>
-          </SmoothScrollProvider>
+          </>
         </>
       </body>
     </html>

@@ -1,2 +1,0 @@
-# Optional pinned-Parquet adapter dependency; not required for CLI model setup.
-pyarrow==21.0.0

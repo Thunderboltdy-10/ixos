@@ -1,0 +1,2737 @@
+{
+  "suite": "repoqa",
+  "split": "test",
+  "method": "rg",
+  "config": {
+    "profile": "code",
+    "limit": 10,
+    "context": 2,
+    "output_bytes": 6000,
+    "cache": false,
+    "execution": "ranked rg"
+  },
+  "binary_sha256": "d8512f2e8c74b1adc965881fd858c8d88ba3df39e19621a140c2ec657197f99e",
+  "model_hashes": {
+    "model.safetensors": "75cf7a6c2171b230ad19b1e7d8e0b1aee86da5a02af8e7cacedd9921d227623c",
+    "tokenizer.json": "936b2d026b9e81fb683eab537ea37c5a1a65a4d02ad9cb92ce269fb8bc561ebf",
+    "config.json": "148e5691a6fcc553437156859701fba017a1ba5d340b170f17e0f3668fb861a7"
+  },
+  "suite_hashes": [
+    {
+      "suite": "apache--logging-log4cxx",
+      "sha256": "4f7d3efbc106478e46b53f9ab8bdd45a98d445707631f6ac850b72e49554c25a"
+    },
+    {
+      "suite": "caddyserver--caddy",
+      "sha256": "b92d49e6846b244b7ba269cf04158c9452d7fea0b69b848569ecebc0b61132d8"
+    },
+    {
+      "suite": "Ciphey--Ciphey",
+      "sha256": "a2610ef6f18f21dc6331c44c0cefb9bf1044a2c2e58e6643854374ce79890b60"
+    },
+    {
+      "suite": "ClickHouse--clickhouse-cpp",
+      "sha256": "a79130eb268777d5c7e2b9a18b53a67c8bc3e8af81e35b31e6fdef1fba63e79b"
+    },
+    {
+      "suite": "cloudflare--pingora",
+      "sha256": "6ed68f0180ce4d03eb52cf8818b55ab99f0d25f39cf30f4237ec919c13a50013"
+    },
+    {
+      "suite": "fatedier--frp",
+      "sha256": "118aa7cf9f7ade27e04a17cc2fab8a840d3fca1ead868457ad07b411b1bd514a"
+    },
+    {
+      "suite": "google--conscrypt",
+      "sha256": "67d1f7b9bd4fcf5010d54d782ec1e0ec0c59202c65f51a5fddbc7a3f7cbecb3a"
+    },
+    {
+      "suite": "huggingface--candle",
+      "sha256": "83953f9cc789b7956b3bae16d25f7f25bce6950421c999b8ce19bdcc83f4a6ef"
+    },
+    {
+      "suite": "junegunn--fzf",
+      "sha256": "e95c67f76f674f5fcbe1e356feaeda313eb3e170e6f4459139c12472d2b455bb"
+    },
+    {
+      "suite": "langchain-ai--langchainjs",
+      "sha256": "7e3336094e6a982f9e65ca5544cbacb6c37b7c0de07e26545a8e45544f48a426"
+    },
+    {
+      "suite": "marshmallow-code--marshmallow",
+      "sha256": "3521e2ec682c75116863b4462b427d77dc3fd8838df8811a72f7c8fe8048fcee"
+    },
+    {
+      "suite": "microsoft--mssql-jdbc",
+      "sha256": "73b005991fe80f41fef472fbda692043a905f8e06d07ad5eca6cb2034c5009ab"
+    },
+    {
+      "suite": "ml-explore--mlx",
+      "sha256": "45e8b337f616b0b3febe3e9408378a661022bb88398ba1ada66b9cb209f41097"
+    },
+    {
+      "suite": "mlc-ai--mlc-llm",
+      "sha256": "c1e49df1e2424e051a3d1e60b83213e853fa1049b1fea51cc369b9fbfbb4c27f"
+    },
+    {
+      "suite": "palantir--palantir-java-format",
+      "sha256": "7aa283d2bc1684fcee887c35c6a878fcf4b2fe30cc88f48deb9d103d9b630661"
+    },
+    {
+      "suite": "Password4j--password4j",
+      "sha256": "11c2c0dea809a3da68449719076ba0fa3db2629caa74461b86a4a4f013f61d82"
+    },
+    {
+      "suite": "polybar--polybar",
+      "sha256": "56258c0c207199316f8f0c9bc9d6c7babdb95829cf2fcbad505529d50aea13f1"
+    },
+    {
+      "suite": "pyg-team--pytorch_geometric",
+      "sha256": "25bf9e75258ec519404a517e3d83e735a1cd06f3f591532b6cda0547bc2ed94c"
+    },
+    {
+      "suite": "python-poetry--poetry",
+      "sha256": "15a135abd5a9f44915d9be17870f05db9ab7741889ad286cdb7794744b3d68ab"
+    },
+    {
+      "suite": "rust-bakery--nom",
+      "sha256": "48dfa6d18303b0e3bcb3eb7344bd706cb35aea280a1695a7b129bffa5f0489d8"
+    },
+    {
+      "suite": "rust-lang--cargo",
+      "sha256": "9bdb500582c99b313b76a7ccff8f0a9fcc19c7548efb55683790a49d5e540550"
+    },
+    {
+      "suite": "schollz--croc",
+      "sha256": "598ff516f9281bbf4f061511e3d3ce0059be9e2999db1066dd0424605993fa49"
+    },
+    {
+      "suite": "skypjack--uvw",
+      "sha256": "967769cfd72d2ebe4cfc4927f036dfbad2e95225d8e7654c0764ce015a068bc0"
+    },
+    {
+      "suite": "umami-software--umami",
+      "sha256": "3d6c868a4b69cbd49292d1452b7537f4a02607d0a25d28ba05061ec153e29bed"
+    },
+    {
+      "suite": "xenova--transformers.js",
+      "sha256": "55f3421e1b96a63139675119352c376627000cd49bbe5e154fc5f0eac2bde8cf"
+    },
+    {
+      "suite": "zeromicro--go-zero",
+      "sha256": "ce4322444c401f24dde8e3def4282c3b1157a9d405cdfc0eadd303e812414118"
+    }
+  ],
+  "summary": {
+    "ndcg": 0.44690149923002537,
+    "mrr": 0.36141636141636135,
+    "recall": 0.723076923076923,
+    "line_recall": 0.09058263825064874,
+    "queries": 260,
+    "families": 26,
+    "bytes": 1008852,
+    "tokens": 266004
+  },
+  "queries": [
+    {
+      "query_id": "repoqa-bd8d6a33d3cf2197c196",
+      "group": "apache/logging-log4cxx",
+      "ndcg": 0.2890648263178878,
+      "mrr": 0.1,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3451,
+      "tokens": 996
+    },
+    {
+      "query_id": "repoqa-8e2aca59191a0b4a6f76",
+      "group": "apache/logging-log4cxx",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.42857142857142855,
+      "bytes": 3616,
+      "tokens": 1040
+    },
+    {
+      "query_id": "repoqa-d2f081aead106d7a2a63",
+      "group": "apache/logging-log4cxx",
+      "ndcg": 0.3154648767857287,
+      "mrr": 0.125,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4087,
+      "tokens": 995
+    },
+    {
+      "query_id": "repoqa-9dd4d489b79019d2e5f6",
+      "group": "apache/logging-log4cxx",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.06521739130434782,
+      "bytes": 3560,
+      "tokens": 1046
+    },
+    {
+      "query_id": "repoqa-1552b6a06da940255141",
+      "group": "apache/logging-log4cxx",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3389,
+      "tokens": 1034
+    },
+    {
+      "query_id": "repoqa-fd4ed49eb5bbd3ec63f6",
+      "group": "apache/logging-log4cxx",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3324,
+      "tokens": 932
+    },
+    {
+      "query_id": "repoqa-053648a01f5113905c32",
+      "group": "apache/logging-log4cxx",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3553,
+      "tokens": 980
+    },
+    {
+      "query_id": "repoqa-4268dbba88f1d3317ab6",
+      "group": "apache/logging-log4cxx",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3621,
+      "tokens": 1012
+    },
+    {
+      "query_id": "repoqa-6c055d97ff07a717e54e",
+      "group": "apache/logging-log4cxx",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3465,
+      "tokens": 991
+    },
+    {
+      "query_id": "repoqa-eb4b0d4b0573644109db",
+      "group": "apache/logging-log4cxx",
+      "ndcg": 0.2890648263178878,
+      "mrr": 0.1,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4102,
+      "tokens": 1183
+    },
+    {
+      "query_id": "repoqa-245fe284dc5b64e3361d",
+      "group": "caddyserver/caddy",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4161,
+      "tokens": 1058
+    },
+    {
+      "query_id": "repoqa-c0d793b90b91bf22262b",
+      "group": "caddyserver/caddy",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4126,
+      "tokens": 1059
+    },
+    {
+      "query_id": "repoqa-39cf8eee87ff47f22e81",
+      "group": "caddyserver/caddy",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.07142857142857142,
+      "bytes": 4458,
+      "tokens": 1133
+    },
+    {
+      "query_id": "repoqa-a9040bcc660c1e6df182",
+      "group": "caddyserver/caddy",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4073,
+      "tokens": 1119
+    },
+    {
+      "query_id": "repoqa-b944290e78009cd8f931",
+      "group": "caddyserver/caddy",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4169,
+      "tokens": 1122
+    },
+    {
+      "query_id": "repoqa-5faa9026fc833e13a071",
+      "group": "caddyserver/caddy",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4075,
+      "tokens": 1010
+    },
+    {
+      "query_id": "repoqa-34cb20568988f722a4e1",
+      "group": "caddyserver/caddy",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4644,
+      "tokens": 1146
+    },
+    {
+      "query_id": "repoqa-46b314f18354aa1c3b17",
+      "group": "caddyserver/caddy",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.1,
+      "bytes": 3766,
+      "tokens": 980
+    },
+    {
+      "query_id": "repoqa-4fa219c2a0481b4ee3f4",
+      "group": "caddyserver/caddy",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3885,
+      "tokens": 1107
+    },
+    {
+      "query_id": "repoqa-bed67aaaab8a89ead713",
+      "group": "caddyserver/caddy",
+      "ndcg": 0.3154648767857287,
+      "mrr": 0.125,
+      "recall": 1.0,
+      "line_recall": 0.25,
+      "bytes": 4386,
+      "tokens": 1147
+    },
+    {
+      "query_id": "repoqa-6af22dff0f28243d518d",
+      "group": "Ciphey/Ciphey",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3775,
+      "tokens": 1019
+    },
+    {
+      "query_id": "repoqa-e09ca3b52cafb97ebbcd",
+      "group": "Ciphey/Ciphey",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3617,
+      "tokens": 959
+    },
+    {
+      "query_id": "repoqa-4969b8c7d6dd6427964c",
+      "group": "Ciphey/Ciphey",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3315,
+      "tokens": 908
+    },
+    {
+      "query_id": "repoqa-04c4217d9da7b2313089",
+      "group": "Ciphey/Ciphey",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3734,
+      "tokens": 1046
+    },
+    {
+      "query_id": "repoqa-accbc777c67de944fa50",
+      "group": "Ciphey/Ciphey",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3855,
+      "tokens": 1053
+    },
+    {
+      "query_id": "repoqa-75d32b6b4588f4187d94",
+      "group": "Ciphey/Ciphey",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.2,
+      "bytes": 3689,
+      "tokens": 1024
+    },
+    {
+      "query_id": "repoqa-dd48f7d2fec842ddf530",
+      "group": "Ciphey/Ciphey",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.5714285714285714,
+      "bytes": 3977,
+      "tokens": 1057
+    },
+    {
+      "query_id": "repoqa-481b81680199db605be2",
+      "group": "Ciphey/Ciphey",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.2857142857142857,
+      "bytes": 3660,
+      "tokens": 1003
+    },
+    {
+      "query_id": "repoqa-70f9ef031cab5de61f10",
+      "group": "Ciphey/Ciphey",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.18518518518518517,
+      "bytes": 3630,
+      "tokens": 970
+    },
+    {
+      "query_id": "repoqa-6ab9d7a543d5808259c4",
+      "group": "Ciphey/Ciphey",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.8333333333333334,
+      "bytes": 3604,
+      "tokens": 995
+    },
+    {
+      "query_id": "repoqa-1b4a966c83d6ed6cd4b1",
+      "group": "ClickHouse/clickhouse-cpp",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": 0.2727272727272727,
+      "bytes": 3592,
+      "tokens": 936
+    },
+    {
+      "query_id": "repoqa-83a0f541a20afc025453",
+      "group": "ClickHouse/clickhouse-cpp",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3352,
+      "tokens": 884
+    },
+    {
+      "query_id": "repoqa-8ba980ece92f4222d4c4",
+      "group": "ClickHouse/clickhouse-cpp",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3401,
+      "tokens": 881
+    },
+    {
+      "query_id": "repoqa-f652a96d957b05b45b33",
+      "group": "ClickHouse/clickhouse-cpp",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3882,
+      "tokens": 986
+    },
+    {
+      "query_id": "repoqa-dcd582f3df396f27b569",
+      "group": "ClickHouse/clickhouse-cpp",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3702,
+      "tokens": 939
+    },
+    {
+      "query_id": "repoqa-e8e4ded140287fc83941",
+      "group": "ClickHouse/clickhouse-cpp",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.5,
+      "bytes": 3379,
+      "tokens": 865
+    },
+    {
+      "query_id": "repoqa-d64f1333be771dadee8d",
+      "group": "ClickHouse/clickhouse-cpp",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3271,
+      "tokens": 872
+    },
+    {
+      "query_id": "repoqa-318a4fdfc29ae8e79f14",
+      "group": "ClickHouse/clickhouse-cpp",
+      "ndcg": 0.3154648767857287,
+      "mrr": 0.125,
+      "recall": 1.0,
+      "line_recall": 0.375,
+      "bytes": 3729,
+      "tokens": 929
+    },
+    {
+      "query_id": "repoqa-8ca0d211632031445dc0",
+      "group": "ClickHouse/clickhouse-cpp",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3788,
+      "tokens": 976
+    },
+    {
+      "query_id": "repoqa-944e688a2c8104da2195",
+      "group": "ClickHouse/clickhouse-cpp",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.4444444444444444,
+      "bytes": 3580,
+      "tokens": 904
+    },
+    {
+      "query_id": "repoqa-67866dbb62ea178cda8b",
+      "group": "cloudflare/pingora",
+      "ndcg": 0.3154648767857287,
+      "mrr": 0.125,
+      "recall": 1.0,
+      "line_recall": 0.6666666666666666,
+      "bytes": 3986,
+      "tokens": 1040
+    },
+    {
+      "query_id": "repoqa-e25066d9158c4c30476a",
+      "group": "cloudflare/pingora",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4326,
+      "tokens": 1106
+    },
+    {
+      "query_id": "repoqa-04701ed503950f34539c",
+      "group": "cloudflare/pingora",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4437,
+      "tokens": 1146
+    },
+    {
+      "query_id": "repoqa-14083945a9c0df8d7f30",
+      "group": "cloudflare/pingora",
+      "ndcg": 0.3010299956639812,
+      "mrr": 0.1111111111111111,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4256,
+      "tokens": 1120
+    },
+    {
+      "query_id": "repoqa-cb8a4187f973b3c38dfe",
+      "group": "cloudflare/pingora",
+      "ndcg": 0.2890648263178878,
+      "mrr": 0.1,
+      "recall": 1.0,
+      "line_recall": 0.7142857142857143,
+      "bytes": 3905,
+      "tokens": 1036
+    },
+    {
+      "query_id": "repoqa-9fba5587c90dfbad6734",
+      "group": "cloudflare/pingora",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4087,
+      "tokens": 1058
+    },
+    {
+      "query_id": "repoqa-290c4f9a52d0f9786665",
+      "group": "cloudflare/pingora",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.6,
+      "bytes": 4119,
+      "tokens": 1094
+    },
+    {
+      "query_id": "repoqa-1186acc5b947fc63e1be",
+      "group": "cloudflare/pingora",
+      "ndcg": 0.3010299956639812,
+      "mrr": 0.1111111111111111,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4340,
+      "tokens": 1122
+    },
+    {
+      "query_id": "repoqa-1064ea107d0257f7aedc",
+      "group": "cloudflare/pingora",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4006,
+      "tokens": 1018
+    },
+    {
+      "query_id": "repoqa-91bbedbd0897c29230f8",
+      "group": "cloudflare/pingora",
+      "ndcg": 0.2890648263178878,
+      "mrr": 0.1,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3804,
+      "tokens": 1034
+    },
+    {
+      "query_id": "repoqa-6cd2f025c030f299ab40",
+      "group": "fatedier/frp",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4013,
+      "tokens": 1072
+    },
+    {
+      "query_id": "repoqa-2f00b105a819693dbd1d",
+      "group": "fatedier/frp",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.11627906976744186,
+      "bytes": 4093,
+      "tokens": 1120
+    },
+    {
+      "query_id": "repoqa-fb2fa278d8373d68442d",
+      "group": "fatedier/frp",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4203,
+      "tokens": 1145
+    },
+    {
+      "query_id": "repoqa-a458f80502b1896d76e7",
+      "group": "fatedier/frp",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.3125,
+      "bytes": 3747,
+      "tokens": 1058
+    },
+    {
+      "query_id": "repoqa-034c46d11834b775e561",
+      "group": "fatedier/frp",
+      "ndcg": 0.4306765580733931,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": 0.17647058823529413,
+      "bytes": 4135,
+      "tokens": 1074
+    },
+    {
+      "query_id": "repoqa-dcc7ab86ecd96cec4bb9",
+      "group": "fatedier/frp",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.06896551724137931,
+      "bytes": 3794,
+      "tokens": 1017
+    },
+    {
+      "query_id": "repoqa-2ec9d85c94c7dba7dd13",
+      "group": "fatedier/frp",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.14705882352941177,
+      "bytes": 3949,
+      "tokens": 1065
+    },
+    {
+      "query_id": "repoqa-ba8a970dcaec782e0078",
+      "group": "fatedier/frp",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4044,
+      "tokens": 1010
+    },
+    {
+      "query_id": "repoqa-748cc06ac9af53f81e0d",
+      "group": "fatedier/frp",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3687,
+      "tokens": 993
+    },
+    {
+      "query_id": "repoqa-b39f56a2add6409c291f",
+      "group": "fatedier/frp",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4002,
+      "tokens": 1056
+    },
+    {
+      "query_id": "repoqa-9a026c073b7d70d7242a",
+      "group": "google/conscrypt",
+      "ndcg": 0.4306765580733931,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4337,
+      "tokens": 1044
+    },
+    {
+      "query_id": "repoqa-a305c907f6cff1485b81",
+      "group": "google/conscrypt",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4414,
+      "tokens": 1061
+    },
+    {
+      "query_id": "repoqa-cae9461a7ef607959711",
+      "group": "google/conscrypt",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4802,
+      "tokens": 1133
+    },
+    {
+      "query_id": "repoqa-e3808dd49d03029cad07",
+      "group": "google/conscrypt",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4380,
+      "tokens": 1066
+    },
+    {
+      "query_id": "repoqa-0b4e849011cefca33e89",
+      "group": "google/conscrypt",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4919,
+      "tokens": 1207
+    },
+    {
+      "query_id": "repoqa-ccddf606e06a9bc504ae",
+      "group": "google/conscrypt",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4079,
+      "tokens": 993
+    },
+    {
+      "query_id": "repoqa-9155c9f49743e505a39c",
+      "group": "google/conscrypt",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4608,
+      "tokens": 1120
+    },
+    {
+      "query_id": "repoqa-6bcc22ffa28f732eae19",
+      "group": "google/conscrypt",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3441,
+      "tokens": 895
+    },
+    {
+      "query_id": "repoqa-e242f3ac495080286084",
+      "group": "google/conscrypt",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4463,
+      "tokens": 1099
+    },
+    {
+      "query_id": "repoqa-7b2bc82f1346d07b6d38",
+      "group": "google/conscrypt",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": 0.25,
+      "bytes": 4634,
+      "tokens": 1065
+    },
+    {
+      "query_id": "repoqa-f929160f6360a3b73ff3",
+      "group": "huggingface/candle",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3640,
+      "tokens": 990
+    },
+    {
+      "query_id": "repoqa-b7ce4132456c0cf67ae3",
+      "group": "huggingface/candle",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.4444444444444444,
+      "bytes": 3401,
+      "tokens": 923
+    },
+    {
+      "query_id": "repoqa-b251e865b387a8a500f8",
+      "group": "huggingface/candle",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3725,
+      "tokens": 1038
+    },
+    {
+      "query_id": "repoqa-cb08128a93aeb82e5efa",
+      "group": "huggingface/candle",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3661,
+      "tokens": 1015
+    },
+    {
+      "query_id": "repoqa-53da972ea9563ab17db5",
+      "group": "huggingface/candle",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3732,
+      "tokens": 994
+    },
+    {
+      "query_id": "repoqa-415b050e2e63f385e184",
+      "group": "huggingface/candle",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3810,
+      "tokens": 1037
+    },
+    {
+      "query_id": "repoqa-ee2fc0d01d6b1ced09dd",
+      "group": "huggingface/candle",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.5,
+      "bytes": 3681,
+      "tokens": 1025
+    },
+    {
+      "query_id": "repoqa-6dfd238fee2e3e551999",
+      "group": "huggingface/candle",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3706,
+      "tokens": 993
+    },
+    {
+      "query_id": "repoqa-fc785b35359cf09e3f6b",
+      "group": "huggingface/candle",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3862,
+      "tokens": 1088
+    },
+    {
+      "query_id": "repoqa-983e60186f1395c7f38c",
+      "group": "huggingface/candle",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3402,
+      "tokens": 970
+    },
+    {
+      "query_id": "repoqa-649d18a7123c48860257",
+      "group": "junegunn/fzf",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3624,
+      "tokens": 1045
+    },
+    {
+      "query_id": "repoqa-9998f6c6812e401f1487",
+      "group": "junegunn/fzf",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3707,
+      "tokens": 1062
+    },
+    {
+      "query_id": "repoqa-1c44c3635999c7944adc",
+      "group": "junegunn/fzf",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3383,
+      "tokens": 962
+    },
+    {
+      "query_id": "repoqa-ca6c8567956f3cdd0369",
+      "group": "junegunn/fzf",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.6666666666666666,
+      "bytes": 2981,
+      "tokens": 884
+    },
+    {
+      "query_id": "repoqa-b66c10630efd6c1133a7",
+      "group": "junegunn/fzf",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3731,
+      "tokens": 1038
+    },
+    {
+      "query_id": "repoqa-e36dd2b4590e763dd591",
+      "group": "junegunn/fzf",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.45454545454545453,
+      "bytes": 3378,
+      "tokens": 971
+    },
+    {
+      "query_id": "repoqa-04e7b42e6268fd25fb84",
+      "group": "junegunn/fzf",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.5555555555555556,
+      "bytes": 3462,
+      "tokens": 918
+    },
+    {
+      "query_id": "repoqa-cc914bd88d9ba46bf99a",
+      "group": "junegunn/fzf",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3515,
+      "tokens": 1010
+    },
+    {
+      "query_id": "repoqa-7f253aecb3d794960e4d",
+      "group": "junegunn/fzf",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3136,
+      "tokens": 916
+    },
+    {
+      "query_id": "repoqa-ca8b065cdc5723e1d899",
+      "group": "junegunn/fzf",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3661,
+      "tokens": 1058
+    },
+    {
+      "query_id": "repoqa-624b3bbda26e2334b0dd",
+      "group": "langchain-ai/langchainjs",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3630,
+      "tokens": 950
+    },
+    {
+      "query_id": "repoqa-b7e038bce2e3d3dad07c",
+      "group": "langchain-ai/langchainjs",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3951,
+      "tokens": 1010
+    },
+    {
+      "query_id": "repoqa-1aa19809553ef12f7769",
+      "group": "langchain-ai/langchainjs",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 5699,
+      "tokens": 1537
+    },
+    {
+      "query_id": "repoqa-0b33421cb70c19c28a04",
+      "group": "langchain-ai/langchainjs",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4075,
+      "tokens": 1041
+    },
+    {
+      "query_id": "repoqa-00749debfa22e2f1a80c",
+      "group": "langchain-ai/langchainjs",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4301,
+      "tokens": 1091
+    },
+    {
+      "query_id": "repoqa-ca6c0746c568ea31d456",
+      "group": "langchain-ai/langchainjs",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4744,
+      "tokens": 1157
+    },
+    {
+      "query_id": "repoqa-010eddb9d93537e41a16",
+      "group": "langchain-ai/langchainjs",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4924,
+      "tokens": 1197
+    },
+    {
+      "query_id": "repoqa-33c6e902f4bf952b67ca",
+      "group": "langchain-ai/langchainjs",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4093,
+      "tokens": 1018
+    },
+    {
+      "query_id": "repoqa-ed280e20e64b00737c70",
+      "group": "langchain-ai/langchainjs",
+      "ndcg": 0.3154648767857287,
+      "mrr": 0.125,
+      "recall": 1.0,
+      "line_recall": 0.13333333333333333,
+      "bytes": 4070,
+      "tokens": 1009
+    },
+    {
+      "query_id": "repoqa-ac2d76cabd3b9461ce97",
+      "group": "langchain-ai/langchainjs",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3745,
+      "tokens": 932
+    },
+    {
+      "query_id": "repoqa-34dd186ba2b654054c2b",
+      "group": "marshmallow-code/marshmallow",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.125,
+      "bytes": 3498,
+      "tokens": 936
+    },
+    {
+      "query_id": "repoqa-8c153147bc485c68e974",
+      "group": "marshmallow-code/marshmallow",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": 0.3333333333333333,
+      "bytes": 3816,
+      "tokens": 974
+    },
+    {
+      "query_id": "repoqa-479296fa0088ef5c02b0",
+      "group": "marshmallow-code/marshmallow",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3300,
+      "tokens": 878
+    },
+    {
+      "query_id": "repoqa-1f2d19c4674b3d394737",
+      "group": "marshmallow-code/marshmallow",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.2777777777777778,
+      "bytes": 3497,
+      "tokens": 933
+    },
+    {
+      "query_id": "repoqa-1151096ebbbc6bd77b2b",
+      "group": "marshmallow-code/marshmallow",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3583,
+      "tokens": 921
+    },
+    {
+      "query_id": "repoqa-dad405683807cef3df8d",
+      "group": "marshmallow-code/marshmallow",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3478,
+      "tokens": 911
+    },
+    {
+      "query_id": "repoqa-f5b21474a19aa76ce289",
+      "group": "marshmallow-code/marshmallow",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3661,
+      "tokens": 962
+    },
+    {
+      "query_id": "repoqa-e09bc8d02ef7a93fcf5f",
+      "group": "marshmallow-code/marshmallow",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3369,
+      "tokens": 905
+    },
+    {
+      "query_id": "repoqa-dff636de0058604fbb1a",
+      "group": "marshmallow-code/marshmallow",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3710,
+      "tokens": 959
+    },
+    {
+      "query_id": "repoqa-3daae8a047ba5d56a254",
+      "group": "marshmallow-code/marshmallow",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3402,
+      "tokens": 914
+    },
+    {
+      "query_id": "repoqa-567b765592e0cc131541",
+      "group": "microsoft/mssql-jdbc",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 5310,
+      "tokens": 1233
+    },
+    {
+      "query_id": "repoqa-cceb6c28d22756f3707e",
+      "group": "microsoft/mssql-jdbc",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 5644,
+      "tokens": 1326
+    },
+    {
+      "query_id": "repoqa-98796e9597ddf52141bb",
+      "group": "microsoft/mssql-jdbc",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 5339,
+      "tokens": 1244
+    },
+    {
+      "query_id": "repoqa-a7b16e7ca1bf51059b54",
+      "group": "microsoft/mssql-jdbc",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.16666666666666666,
+      "bytes": 5339,
+      "tokens": 1295
+    },
+    {
+      "query_id": "repoqa-d15e3599fcaaccbad69c",
+      "group": "microsoft/mssql-jdbc",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 5076,
+      "tokens": 1168
+    },
+    {
+      "query_id": "repoqa-5d53a371d464387ee953",
+      "group": "microsoft/mssql-jdbc",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 5955,
+      "tokens": 1321
+    },
+    {
+      "query_id": "repoqa-a42de57d6cc095628463",
+      "group": "microsoft/mssql-jdbc",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 5426,
+      "tokens": 1348
+    },
+    {
+      "query_id": "repoqa-ed54ed75682ba85bf90a",
+      "group": "microsoft/mssql-jdbc",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4751,
+      "tokens": 1177
+    },
+    {
+      "query_id": "repoqa-4b54b7d7efdccbbde654",
+      "group": "microsoft/mssql-jdbc",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.35714285714285715,
+      "bytes": 5632,
+      "tokens": 1362
+    },
+    {
+      "query_id": "repoqa-eb0eae1f8d554fdf3a6c",
+      "group": "microsoft/mssql-jdbc",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 5323,
+      "tokens": 1255
+    },
+    {
+      "query_id": "repoqa-ef5a892e114605e972fb",
+      "group": "ml-explore/mlx",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3539,
+      "tokens": 988
+    },
+    {
+      "query_id": "repoqa-bdcefa2d30ead4f411ec",
+      "group": "ml-explore/mlx",
+      "ndcg": 0.4306765580733931,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": 0.08771929824561403,
+      "bytes": 3447,
+      "tokens": 941
+    },
+    {
+      "query_id": "repoqa-1a082bae6d1719f0853f",
+      "group": "ml-explore/mlx",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": 0.3333333333333333,
+      "bytes": 3081,
+      "tokens": 838
+    },
+    {
+      "query_id": "repoqa-aebc7785d52486615969",
+      "group": "ml-explore/mlx",
+      "ndcg": 0.3010299956639812,
+      "mrr": 0.1111111111111111,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3294,
+      "tokens": 901
+    },
+    {
+      "query_id": "repoqa-db260085277bc19f6437",
+      "group": "ml-explore/mlx",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3361,
+      "tokens": 915
+    },
+    {
+      "query_id": "repoqa-7571b8e0e05fadee6d1a",
+      "group": "ml-explore/mlx",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": 0.6,
+      "bytes": 3145,
+      "tokens": 878
+    },
+    {
+      "query_id": "repoqa-19a3ecdaedf25e2bf71e",
+      "group": "ml-explore/mlx",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3306,
+      "tokens": 912
+    },
+    {
+      "query_id": "repoqa-4029c371dfec88970554",
+      "group": "ml-explore/mlx",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3107,
+      "tokens": 886
+    },
+    {
+      "query_id": "repoqa-85d70278360dd668c2ff",
+      "group": "ml-explore/mlx",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 2981,
+      "tokens": 840
+    },
+    {
+      "query_id": "repoqa-c0097551851f5ac3f138",
+      "group": "ml-explore/mlx",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3419,
+      "tokens": 937
+    },
+    {
+      "query_id": "repoqa-c6b5e7bf26039f30b447",
+      "group": "mlc-ai/mlc-llm",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3547,
+      "tokens": 1019
+    },
+    {
+      "query_id": "repoqa-794ec5ff5c1ca3a23900",
+      "group": "mlc-ai/mlc-llm",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3464,
+      "tokens": 960
+    },
+    {
+      "query_id": "repoqa-49b7e21434a0266082ff",
+      "group": "mlc-ai/mlc-llm",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3522,
+      "tokens": 984
+    },
+    {
+      "query_id": "repoqa-b26ec80e48accdfd0f05",
+      "group": "mlc-ai/mlc-llm",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3532,
+      "tokens": 980
+    },
+    {
+      "query_id": "repoqa-d9ad15f88be8de81ae7b",
+      "group": "mlc-ai/mlc-llm",
+      "ndcg": 0.3010299956639812,
+      "mrr": 0.1111111111111111,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3443,
+      "tokens": 968
+    },
+    {
+      "query_id": "repoqa-c3eaf8f422313c62fe82",
+      "group": "mlc-ai/mlc-llm",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3822,
+      "tokens": 1098
+    },
+    {
+      "query_id": "repoqa-bdd60d2c924e228c5a8e",
+      "group": "mlc-ai/mlc-llm",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3917,
+      "tokens": 1079
+    },
+    {
+      "query_id": "repoqa-c0fc9288c3c823ca75f3",
+      "group": "mlc-ai/mlc-llm",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3819,
+      "tokens": 1156
+    },
+    {
+      "query_id": "repoqa-50167a35ae5eff0a5298",
+      "group": "mlc-ai/mlc-llm",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4049,
+      "tokens": 1174
+    },
+    {
+      "query_id": "repoqa-400ae83100937dbdfd74",
+      "group": "mlc-ai/mlc-llm",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3553,
+      "tokens": 976
+    },
+    {
+      "query_id": "repoqa-04fc7eda241b1e2f4ae5",
+      "group": "palantir/palantir-java-format",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 5112,
+      "tokens": 1318
+    },
+    {
+      "query_id": "repoqa-060c163f1125d8392c33",
+      "group": "palantir/palantir-java-format",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 5094,
+      "tokens": 1290
+    },
+    {
+      "query_id": "repoqa-d56ca6363fe2a9f8a12c",
+      "group": "palantir/palantir-java-format",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4917,
+      "tokens": 1190
+    },
+    {
+      "query_id": "repoqa-4bfcb5f7308c50e252d5",
+      "group": "palantir/palantir-java-format",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.42857142857142855,
+      "bytes": 4882,
+      "tokens": 1205
+    },
+    {
+      "query_id": "repoqa-beff46375cbacebf81f3",
+      "group": "palantir/palantir-java-format",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.3076923076923077,
+      "bytes": 5470,
+      "tokens": 1381
+    },
+    {
+      "query_id": "repoqa-d83898936dcf17a62078",
+      "group": "palantir/palantir-java-format",
+      "ndcg": 0.3010299956639812,
+      "mrr": 0.1111111111111111,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 5123,
+      "tokens": 1268
+    },
+    {
+      "query_id": "repoqa-971bab3110229f35271c",
+      "group": "palantir/palantir-java-format",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 5384,
+      "tokens": 1375
+    },
+    {
+      "query_id": "repoqa-47c1945da77b21faa8c5",
+      "group": "palantir/palantir-java-format",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": 1.0,
+      "bytes": 4700,
+      "tokens": 1166
+    },
+    {
+      "query_id": "repoqa-5fc6e89f0870c848f1b3",
+      "group": "palantir/palantir-java-format",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 5009,
+      "tokens": 1254
+    },
+    {
+      "query_id": "repoqa-61ca0f70ac159587c8ef",
+      "group": "palantir/palantir-java-format",
+      "ndcg": 0.4306765580733931,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": 0.15384615384615385,
+      "bytes": 5066,
+      "tokens": 1260
+    },
+    {
+      "query_id": "repoqa-2839e979632e2c1e517d",
+      "group": "Password4j/password4j",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3946,
+      "tokens": 1011
+    },
+    {
+      "query_id": "repoqa-0e9f11dcdeb0e6287dc9",
+      "group": "Password4j/password4j",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4101,
+      "tokens": 1085
+    },
+    {
+      "query_id": "repoqa-47ec28aed4556003a43d",
+      "group": "Password4j/password4j",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.13513513513513514,
+      "bytes": 4121,
+      "tokens": 1034
+    },
+    {
+      "query_id": "repoqa-f74ca003a1301fba8cbf",
+      "group": "Password4j/password4j",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3806,
+      "tokens": 986
+    },
+    {
+      "query_id": "repoqa-c24e2ca9f229c2478eef",
+      "group": "Password4j/password4j",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3793,
+      "tokens": 1001
+    },
+    {
+      "query_id": "repoqa-6d1487f1698578ac644b",
+      "group": "Password4j/password4j",
+      "ndcg": 0.4306765580733931,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4026,
+      "tokens": 1009
+    },
+    {
+      "query_id": "repoqa-6c1914099b4b715c283f",
+      "group": "Password4j/password4j",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3793,
+      "tokens": 976
+    },
+    {
+      "query_id": "repoqa-7c07943440446d41b630",
+      "group": "Password4j/password4j",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3861,
+      "tokens": 1000
+    },
+    {
+      "query_id": "repoqa-0c99c8869a522478ee13",
+      "group": "Password4j/password4j",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4359,
+      "tokens": 1109
+    },
+    {
+      "query_id": "repoqa-93ce26746996c7d22af6",
+      "group": "Password4j/password4j",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.3125,
+      "bytes": 3850,
+      "tokens": 985
+    },
+    {
+      "query_id": "repoqa-1296dae496af9dc5ce46",
+      "group": "polybar/polybar",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": 0.3,
+      "bytes": 3589,
+      "tokens": 1001
+    },
+    {
+      "query_id": "repoqa-f9ea619578ebadb1d3fc",
+      "group": "polybar/polybar",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3919,
+      "tokens": 1058
+    },
+    {
+      "query_id": "repoqa-abf58d68d9639ba03ef0",
+      "group": "polybar/polybar",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3715,
+      "tokens": 1018
+    },
+    {
+      "query_id": "repoqa-0362ab9f2dbe30be8ec8",
+      "group": "polybar/polybar",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3174,
+      "tokens": 876
+    },
+    {
+      "query_id": "repoqa-217e04b9cb6ac988e027",
+      "group": "polybar/polybar",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3223,
+      "tokens": 845
+    },
+    {
+      "query_id": "repoqa-60af1e49d035fc91901b",
+      "group": "polybar/polybar",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.2727272727272727,
+      "bytes": 3466,
+      "tokens": 942
+    },
+    {
+      "query_id": "repoqa-8e9415765cba485dab08",
+      "group": "polybar/polybar",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.07692307692307693,
+      "bytes": 3375,
+      "tokens": 905
+    },
+    {
+      "query_id": "repoqa-2432d579f2c3db26b084",
+      "group": "polybar/polybar",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3596,
+      "tokens": 958
+    },
+    {
+      "query_id": "repoqa-a3a3224069225d07661f",
+      "group": "polybar/polybar",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": 0.5,
+      "bytes": 3008,
+      "tokens": 790
+    },
+    {
+      "query_id": "repoqa-487e92a644730754ed51",
+      "group": "polybar/polybar",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3391,
+      "tokens": 923
+    },
+    {
+      "query_id": "repoqa-c1c26206b349d1ebf2bc",
+      "group": "pyg-team/pytorch_geometric",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3987,
+      "tokens": 987
+    },
+    {
+      "query_id": "repoqa-aa93272d36d0bd69f150",
+      "group": "pyg-team/pytorch_geometric",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4269,
+      "tokens": 1066
+    },
+    {
+      "query_id": "repoqa-2919a70b9318ec432e99",
+      "group": "pyg-team/pytorch_geometric",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4309,
+      "tokens": 1060
+    },
+    {
+      "query_id": "repoqa-53ce76a46a8a59b049ea",
+      "group": "pyg-team/pytorch_geometric",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4174,
+      "tokens": 1038
+    },
+    {
+      "query_id": "repoqa-d45a6a148f19fc29b5b5",
+      "group": "pyg-team/pytorch_geometric",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4167,
+      "tokens": 1016
+    },
+    {
+      "query_id": "repoqa-1bcdf28083f2e907e994",
+      "group": "pyg-team/pytorch_geometric",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4302,
+      "tokens": 1101
+    },
+    {
+      "query_id": "repoqa-e79e6279dc32ffe8a7c0",
+      "group": "pyg-team/pytorch_geometric",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4344,
+      "tokens": 1086
+    },
+    {
+      "query_id": "repoqa-842869e44b61e1ae0d7f",
+      "group": "pyg-team/pytorch_geometric",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.5,
+      "bytes": 3853,
+      "tokens": 957
+    },
+    {
+      "query_id": "repoqa-cf48216c2133742b145e",
+      "group": "pyg-team/pytorch_geometric",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4031,
+      "tokens": 1019
+    },
+    {
+      "query_id": "repoqa-ccf1b749b799205e871b",
+      "group": "pyg-team/pytorch_geometric",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4074,
+      "tokens": 1011
+    },
+    {
+      "query_id": "repoqa-c8d01a5027f562c575ad",
+      "group": "python-poetry/poetry",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3821,
+      "tokens": 921
+    },
+    {
+      "query_id": "repoqa-e5406ce0fee8217fef55",
+      "group": "python-poetry/poetry",
+      "ndcg": 0.3010299956639812,
+      "mrr": 0.1111111111111111,
+      "recall": 1.0,
+      "line_recall": 0.6,
+      "bytes": 3765,
+      "tokens": 934
+    },
+    {
+      "query_id": "repoqa-ee5d4d31ac43fbc12d01",
+      "group": "python-poetry/poetry",
+      "ndcg": 0.2890648263178878,
+      "mrr": 0.1,
+      "recall": 1.0,
+      "line_recall": 0.2777777777777778,
+      "bytes": 3756,
+      "tokens": 933
+    },
+    {
+      "query_id": "repoqa-d07ff48731cab7a85052",
+      "group": "python-poetry/poetry",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3993,
+      "tokens": 968
+    },
+    {
+      "query_id": "repoqa-8fbe77db62f3920c7dfe",
+      "group": "python-poetry/poetry",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3763,
+      "tokens": 952
+    },
+    {
+      "query_id": "repoqa-79f39e791b486c0567fa",
+      "group": "python-poetry/poetry",
+      "ndcg": 0.4306765580733931,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3915,
+      "tokens": 950
+    },
+    {
+      "query_id": "repoqa-d6950a3c68088af6e67f",
+      "group": "python-poetry/poetry",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3517,
+      "tokens": 857
+    },
+    {
+      "query_id": "repoqa-812c1b47b42c1acf24c1",
+      "group": "python-poetry/poetry",
+      "ndcg": 0.3154648767857287,
+      "mrr": 0.125,
+      "recall": 1.0,
+      "line_recall": 0.3333333333333333,
+      "bytes": 3740,
+      "tokens": 952
+    },
+    {
+      "query_id": "repoqa-b01c62790fc377465185",
+      "group": "python-poetry/poetry",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.4,
+      "bytes": 3642,
+      "tokens": 909
+    },
+    {
+      "query_id": "repoqa-185f1c589c5942e61fd0",
+      "group": "python-poetry/poetry",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3938,
+      "tokens": 943
+    },
+    {
+      "query_id": "repoqa-30b233f3810c54105977",
+      "group": "rust-bakery/nom",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3208,
+      "tokens": 887
+    },
+    {
+      "query_id": "repoqa-20d9c52d841257b25e46",
+      "group": "rust-bakery/nom",
+      "ndcg": 0.4306765580733931,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 2957,
+      "tokens": 835
+    },
+    {
+      "query_id": "repoqa-73c2e111e6f24fac881f",
+      "group": "rust-bakery/nom",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 2975,
+      "tokens": 888
+    },
+    {
+      "query_id": "repoqa-0370408c9e3dc92757ad",
+      "group": "rust-bakery/nom",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3414,
+      "tokens": 915
+    },
+    {
+      "query_id": "repoqa-2932c6242eae42eefbcc",
+      "group": "rust-bakery/nom",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3104,
+      "tokens": 901
+    },
+    {
+      "query_id": "repoqa-132566c13062985c9ebf",
+      "group": "rust-bakery/nom",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3751,
+      "tokens": 1064
+    },
+    {
+      "query_id": "repoqa-97284f34c1bb48d600a0",
+      "group": "rust-bakery/nom",
+      "ndcg": 0.4306765580733931,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": 0.058823529411764705,
+      "bytes": 3327,
+      "tokens": 975
+    },
+    {
+      "query_id": "repoqa-2b3c46aa5c78fba04344",
+      "group": "rust-bakery/nom",
+      "ndcg": 0.4306765580733931,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3309,
+      "tokens": 928
+    },
+    {
+      "query_id": "repoqa-9f12f5b3745cbc475395",
+      "group": "rust-bakery/nom",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3055,
+      "tokens": 825
+    },
+    {
+      "query_id": "repoqa-e58299a5d788b5e62ac2",
+      "group": "rust-bakery/nom",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 2920,
+      "tokens": 821
+    },
+    {
+      "query_id": "repoqa-9887a272273063b969e5",
+      "group": "rust-lang/cargo",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3966,
+      "tokens": 966
+    },
+    {
+      "query_id": "repoqa-d078e5049ad50135f458",
+      "group": "rust-lang/cargo",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4220,
+      "tokens": 1063
+    },
+    {
+      "query_id": "repoqa-ed24c4a753c51632d5b7",
+      "group": "rust-lang/cargo",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4223,
+      "tokens": 1031
+    },
+    {
+      "query_id": "repoqa-59b305468cc2a49a56eb",
+      "group": "rust-lang/cargo",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4427,
+      "tokens": 1110
+    },
+    {
+      "query_id": "repoqa-1ad94035595c56af4345",
+      "group": "rust-lang/cargo",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": 0.375,
+      "bytes": 3890,
+      "tokens": 983
+    },
+    {
+      "query_id": "repoqa-da5bd2d712e9552820d1",
+      "group": "rust-lang/cargo",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3821,
+      "tokens": 970
+    },
+    {
+      "query_id": "repoqa-daac94fdfe20a44d3819",
+      "group": "rust-lang/cargo",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.5714285714285714,
+      "bytes": 4691,
+      "tokens": 1149
+    },
+    {
+      "query_id": "repoqa-ecd4cf786e9efe1b3c37",
+      "group": "rust-lang/cargo",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 4103,
+      "tokens": 1019
+    },
+    {
+      "query_id": "repoqa-4d3cbf1101fc1f83f0a4",
+      "group": "rust-lang/cargo",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3937,
+      "tokens": 1017
+    },
+    {
+      "query_id": "repoqa-37a8fb7c7230830c8876",
+      "group": "rust-lang/cargo",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4010,
+      "tokens": 1035
+    },
+    {
+      "query_id": "repoqa-2579b0deae6026545524",
+      "group": "schollz/croc",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4177,
+      "tokens": 1180
+    },
+    {
+      "query_id": "repoqa-018f3e69dfd3c399d2fc",
+      "group": "schollz/croc",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.06578947368421052,
+      "bytes": 3444,
+      "tokens": 1052
+    },
+    {
+      "query_id": "repoqa-02560fd59b5185c89690",
+      "group": "schollz/croc",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3741,
+      "tokens": 1034
+    },
+    {
+      "query_id": "repoqa-8b7bc0fe213bfa215f50",
+      "group": "schollz/croc",
+      "ndcg": 0.4306765580733931,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": 0.15384615384615385,
+      "bytes": 4155,
+      "tokens": 1179
+    },
+    {
+      "query_id": "repoqa-8c53584ba7eff63fff5f",
+      "group": "schollz/croc",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.06521739130434782,
+      "bytes": 3663,
+      "tokens": 1039
+    },
+    {
+      "query_id": "repoqa-9a244ea712717c5fb287",
+      "group": "schollz/croc",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.05,
+      "bytes": 3866,
+      "tokens": 1139
+    },
+    {
+      "query_id": "repoqa-ba9931a41b791516a9cd",
+      "group": "schollz/croc",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.10416666666666667,
+      "bytes": 4180,
+      "tokens": 1229
+    },
+    {
+      "query_id": "repoqa-e63f6a80fe78cb3b74af",
+      "group": "schollz/croc",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": 0.375,
+      "bytes": 3607,
+      "tokens": 1028
+    },
+    {
+      "query_id": "repoqa-5ee08d68252c8104cd03",
+      "group": "schollz/croc",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3394,
+      "tokens": 962
+    },
+    {
+      "query_id": "repoqa-70570002a8419799834e",
+      "group": "schollz/croc",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 2995,
+      "tokens": 886
+    },
+    {
+      "query_id": "repoqa-c47f48d198a58799475a",
+      "group": "skypjack/uvw",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3420,
+      "tokens": 958
+    },
+    {
+      "query_id": "repoqa-1528651b5d4db7e604df",
+      "group": "skypjack/uvw",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 2868,
+      "tokens": 808
+    },
+    {
+      "query_id": "repoqa-d33fa0f4e78f98505ff5",
+      "group": "skypjack/uvw",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3456,
+      "tokens": 909
+    },
+    {
+      "query_id": "repoqa-98e52f23bd8eacc04106",
+      "group": "skypjack/uvw",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3068,
+      "tokens": 885
+    },
+    {
+      "query_id": "repoqa-f1d90ee48534b65296a8",
+      "group": "skypjack/uvw",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3624,
+      "tokens": 954
+    },
+    {
+      "query_id": "repoqa-62c93c39a060900f4022",
+      "group": "skypjack/uvw",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3141,
+      "tokens": 851
+    },
+    {
+      "query_id": "repoqa-82b6df84bfefdd6edfa9",
+      "group": "skypjack/uvw",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3434,
+      "tokens": 930
+    },
+    {
+      "query_id": "repoqa-200ea434b36221d142ef",
+      "group": "skypjack/uvw",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3474,
+      "tokens": 918
+    },
+    {
+      "query_id": "repoqa-0e1cd2466d8ca627e32e",
+      "group": "skypjack/uvw",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 2948,
+      "tokens": 814
+    },
+    {
+      "query_id": "repoqa-f8d35d75f50ba1beacc2",
+      "group": "skypjack/uvw",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3410,
+      "tokens": 915
+    },
+    {
+      "query_id": "repoqa-802eb3db0854463c9162",
+      "group": "umami-software/umami",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": 0.42857142857142855,
+      "bytes": 2614,
+      "tokens": 737
+    },
+    {
+      "query_id": "repoqa-66db7fd9d58b3b3c49c4",
+      "group": "umami-software/umami",
+      "ndcg": 0.4306765580733931,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3424,
+      "tokens": 953
+    },
+    {
+      "query_id": "repoqa-fec9a5ad31450b682491",
+      "group": "umami-software/umami",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.5714285714285714,
+      "bytes": 2828,
+      "tokens": 788
+    },
+    {
+      "query_id": "repoqa-1500a6bb924e68086e03",
+      "group": "umami-software/umami",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3512,
+      "tokens": 954
+    },
+    {
+      "query_id": "repoqa-1bc7937d574d24bb7e3c",
+      "group": "umami-software/umami",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": 0.42857142857142855,
+      "bytes": 3487,
+      "tokens": 935
+    },
+    {
+      "query_id": "repoqa-7e568991bc551396a224",
+      "group": "umami-software/umami",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.5,
+      "bytes": 3032,
+      "tokens": 835
+    },
+    {
+      "query_id": "repoqa-2c1ded4ecaa2813cb459",
+      "group": "umami-software/umami",
+      "ndcg": 0.3010299956639812,
+      "mrr": 0.1111111111111111,
+      "recall": 1.0,
+      "line_recall": 0.16666666666666666,
+      "bytes": 3058,
+      "tokens": 819
+    },
+    {
+      "query_id": "repoqa-25dd5dcb184ca21937eb",
+      "group": "umami-software/umami",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3247,
+      "tokens": 893
+    },
+    {
+      "query_id": "repoqa-c31bfc4fd8a9c8d99e8a",
+      "group": "umami-software/umami",
+      "ndcg": 0.4306765580733931,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": 0.23076923076923078,
+      "bytes": 3245,
+      "tokens": 901
+    },
+    {
+      "query_id": "repoqa-f30b8dcf83678f876174",
+      "group": "umami-software/umami",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3663,
+      "tokens": 985
+    },
+    {
+      "query_id": "repoqa-a89552274e43e37c613e",
+      "group": "xenova/transformers.js",
+      "ndcg": 0.4306765580733931,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": 0.17857142857142858,
+      "bytes": 4003,
+      "tokens": 993
+    },
+    {
+      "query_id": "repoqa-39cbb2f3656c30c87c09",
+      "group": "xenova/transformers.js",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 5482,
+      "tokens": 1437
+    },
+    {
+      "query_id": "repoqa-aeb4379d2cf06c66d350",
+      "group": "xenova/transformers.js",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 5331,
+      "tokens": 1341
+    },
+    {
+      "query_id": "repoqa-9369b7266a63f5aea4d9",
+      "group": "xenova/transformers.js",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4799,
+      "tokens": 1204
+    },
+    {
+      "query_id": "repoqa-4520ef0331d77fa9ec82",
+      "group": "xenova/transformers.js",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4776,
+      "tokens": 1230
+    },
+    {
+      "query_id": "repoqa-d6cb33eee54c0d528bcd",
+      "group": "xenova/transformers.js",
+      "ndcg": 0.2890648263178878,
+      "mrr": 0.1,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4538,
+      "tokens": 1152
+    },
+    {
+      "query_id": "repoqa-80ea5c16e4aca0f54292",
+      "group": "xenova/transformers.js",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4258,
+      "tokens": 1059
+    },
+    {
+      "query_id": "repoqa-a9f6825fb30516994547",
+      "group": "xenova/transformers.js",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.625,
+      "bytes": 4266,
+      "tokens": 1095
+    },
+    {
+      "query_id": "repoqa-05afe8286e2d271c1194",
+      "group": "xenova/transformers.js",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 4043,
+      "tokens": 1050
+    },
+    {
+      "query_id": "repoqa-058a443c20ef6d015328",
+      "group": "xenova/transformers.js",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 5777,
+      "tokens": 1474
+    },
+    {
+      "query_id": "repoqa-5dc23cf01c0014e7d46c",
+      "group": "zeromicro/go-zero",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3201,
+      "tokens": 913
+    },
+    {
+      "query_id": "repoqa-d69270f299f365168719",
+      "group": "zeromicro/go-zero",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3889,
+      "tokens": 1137
+    },
+    {
+      "query_id": "repoqa-e498cf7be48f548dfb77",
+      "group": "zeromicro/go-zero",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3348,
+      "tokens": 918
+    },
+    {
+      "query_id": "repoqa-3c074928a9b0b1224aae",
+      "group": "zeromicro/go-zero",
+      "ndcg": 0.6309297535714574,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": 0.3333333333333333,
+      "bytes": 3419,
+      "tokens": 950
+    },
+    {
+      "query_id": "repoqa-3f46745f58d8063e437a",
+      "group": "zeromicro/go-zero",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3402,
+      "tokens": 971
+    },
+    {
+      "query_id": "repoqa-0c1f6d201fd30e3aea8a",
+      "group": "zeromicro/go-zero",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3399,
+      "tokens": 924
+    },
+    {
+      "query_id": "repoqa-8ce1242d56b025dec7b5",
+      "group": "zeromicro/go-zero",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3150,
+      "tokens": 920
+    },
+    {
+      "query_id": "repoqa-f706b18f403c11bcbf41",
+      "group": "zeromicro/go-zero",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": 0.0,
+      "bytes": 3273,
+      "tokens": 972
+    },
+    {
+      "query_id": "repoqa-ab7b5add4cacfd6149c5",
+      "group": "zeromicro/go-zero",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3105,
+      "tokens": 891
+    },
+    {
+      "query_id": "repoqa-9974e8ab8a6c3cef0cdf",
+      "group": "zeromicro/go-zero",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": 0.0,
+      "bytes": 3341,
+      "tokens": 948
+    }
+  ]
+}

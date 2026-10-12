@@ -111,7 +111,7 @@ function AboutSection() {
           <div className="text-fg-muted">Version</div>
           <div className="text-porcelain font-mono">0.1.0</div>
           <div className="text-fg-muted">License</div>
-          <div className="text-porcelain">MIT / Apache 2.0</div>
+          <div className="text-porcelain">MIT</div>
         </div>
       </div>
       <div className="text-xs text-fg-muted text-center pt-8 border-t border-stroke-hairline/50">

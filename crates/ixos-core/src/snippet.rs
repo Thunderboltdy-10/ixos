@@ -142,7 +142,7 @@ pub(crate) fn select(
     for path in paths {
         let document = &documents[path];
         let parts = candidates(document, idfs);
-        anyhow::ensure!(parts.len() <= 16, "Evidence passage ceiling exceeded");
+        anyhow::ensure!(parts.len() <= 16, "Snippet passage ceiling exceeded");
         for (index, part) in parts.iter().enumerate() {
             if part.passage.vector.is_empty() {
                 inputs
@@ -159,7 +159,7 @@ pub(crate) fn select(
         let vectors = model.embed_batch_with_limit(batch, None)?;
         anyhow::ensure!(
             vectors.len() == destinations.len(),
-            "Evidence inference dropped a passage"
+            "Snippet inference dropped a passage"
         );
         for (mut vector, &(file, part)) in vectors.into_iter().zip(destinations) {
             // Same precision as document records in both JIT and cached search.
@@ -234,7 +234,7 @@ mod tests {
         assert!(selected.iter().any(|p| p.anchor == 13002 && p.weight > 0.0));
     }
     #[test]
-    fn partial_line_does_not_inherit_evidence_outside_its_bytes() {
+    fn partial_line_does_not_match_terms_outside_its_bytes() {
         let doc = document(format!("{}needle", "x".repeat(3600)));
         let selected = candidates(&doc, &HashMap::from([("needle".into(), 1.0)]));
         assert!(selected.iter().all(|part| part.weight == 0.0));

@@ -1030,7 +1030,7 @@ mod tests {
     }
 
     #[test]
-    fn equal_lexical_evidence_always_uses_earliest_line() {
+    fn equal_lexical_snippets_always_use_earliest_line() {
         let dir = tempfile::tempdir().unwrap();
         let words = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"];
         let text = (0..200)

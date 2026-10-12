@@ -1,4 +1,4 @@
-//! Lightweight document parsers for evidence extraction.
+//! Lightweight parsers for text, PDF and Office sources.
 
 use crate::cloud::should_skip_cloud_file;
 use regex::Regex;

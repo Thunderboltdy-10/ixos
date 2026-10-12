@@ -1,0 +1,3036 @@
+{
+  "suite": "scifact",
+  "split": "test",
+  "method": "hybrid",
+  "config": {
+    "profile": "documents",
+    "limit": 10,
+    "context": 2,
+    "output_bytes": 6000,
+    "cache": false,
+    "execution": "resident MCP"
+  },
+  "binary_sha256": "d8512f2e8c74b1adc965881fd858c8d88ba3df39e19621a140c2ec657197f99e",
+  "model_hashes": {
+    "model.safetensors": "f3a9a9297a228914ca7cd0dc9601616ccb81a198676172ff6ff52658f5251ee2",
+    "tokenizer.json": "7d75cbc54318138807c401b0f0c9721117c628b39de8e8e0edb6cb17e0ee7d18",
+    "config.json": "63c00d90824c832c04ec1d02b6a983fb90489bf049f29fbff15ba481b8a432ee"
+  },
+  "suite_hashes": [
+    {
+      "suite": "manifest",
+      "sha256": "a70c373c1149ee70dca053285c9eee40f7f5a8c1b811ef6dccbb207e22b5d10c"
+    }
+  ],
+  "summary": {
+    "ndcg": 0.6949588965790646,
+    "mrr": 0.6665413533834587,
+    "recall": 0.8067476383265855,
+    "queries": 300,
+    "families": 247,
+    "bytes": 1750459,
+    "tokens": 401533
+  },
+  "queries": [
+    {
+      "query_id": "scifact-1",
+      "group": "scifact-paper-component-31715818",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5972,
+      "tokens": 1266
+    },
+    {
+      "query_id": "scifact-3",
+      "group": "scifact-paper-component-14717500",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5846,
+      "tokens": 1158
+    },
+    {
+      "query_id": "scifact-5",
+      "group": "scifact-paper-component-13734012",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5460,
+      "tokens": 1260
+    },
+    {
+      "query_id": "scifact-13",
+      "group": "scifact-paper-component-1606628",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5836,
+      "tokens": 1351
+    },
+    {
+      "query_id": "scifact-36",
+      "group": "scifact-paper-component-11705328",
+      "ndcg": 0.23719771276929622,
+      "mrr": 0.2,
+      "recall": 0.5,
+      "line_recall": null,
+      "bytes": 5492,
+      "tokens": 1416
+    },
+    {
+      "query_id": "scifact-42",
+      "group": "scifact-paper-component-18174210",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5954,
+      "tokens": 1524
+    },
+    {
+      "query_id": "scifact-48",
+      "group": "scifact-paper-component-13734012",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5451,
+      "tokens": 1238
+    },
+    {
+      "query_id": "scifact-49",
+      "group": "scifact-paper-component-5953485",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5924,
+      "tokens": 1485
+    },
+    {
+      "query_id": "scifact-50",
+      "group": "scifact-paper-component-12580014",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5936,
+      "tokens": 1340
+    },
+    {
+      "query_id": "scifact-51",
+      "group": "scifact-paper-component-45638119",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5951,
+      "tokens": 1411
+    },
+    {
+      "query_id": "scifact-53",
+      "group": "scifact-paper-component-45638119",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5978,
+      "tokens": 1282
+    },
+    {
+      "query_id": "scifact-54",
+      "group": "scifact-paper-component-49556906",
+      "ndcg": 0.43067655807339306,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5407,
+      "tokens": 1277
+    },
+    {
+      "query_id": "scifact-56",
+      "group": "scifact-paper-component-4709641",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5966,
+      "tokens": 1363
+    },
+    {
+      "query_id": "scifact-57",
+      "group": "scifact-paper-component-4709641",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5967,
+      "tokens": 1363
+    },
+    {
+      "query_id": "scifact-70",
+      "group": "scifact-paper-component-4414547",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5993,
+      "tokens": 1368
+    },
+    {
+      "query_id": "scifact-72",
+      "group": "scifact-paper-component-6076903",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5948,
+      "tokens": 1326
+    },
+    {
+      "query_id": "scifact-75",
+      "group": "scifact-paper-component-4387784",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5953,
+      "tokens": 1487
+    },
+    {
+      "query_id": "scifact-94",
+      "group": "scifact-paper-component-1215116",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5949,
+      "tokens": 1232
+    },
+    {
+      "query_id": "scifact-99",
+      "group": "scifact-paper-component-18810195",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5965,
+      "tokens": 1376
+    },
+    {
+      "query_id": "scifact-100",
+      "group": "scifact-paper-component-4381486",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5582,
+      "tokens": 1293
+    },
+    {
+      "query_id": "scifact-113",
+      "group": "scifact-paper-component-6157837",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5860,
+      "tokens": 1298
+    },
+    {
+      "query_id": "scifact-115",
+      "group": "scifact-paper-component-33872649",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5316,
+      "tokens": 1158
+    },
+    {
+      "query_id": "scifact-118",
+      "group": "scifact-paper-component-6372244",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5560,
+      "tokens": 1145
+    },
+    {
+      "query_id": "scifact-124",
+      "group": "scifact-paper-component-4883040",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5517,
+      "tokens": 1411
+    },
+    {
+      "query_id": "scifact-127",
+      "group": "scifact-paper-component-21598000",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5942,
+      "tokens": 1386
+    },
+    {
+      "query_id": "scifact-128",
+      "group": "scifact-paper-component-8290953",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5988,
+      "tokens": 1379
+    },
+    {
+      "query_id": "scifact-129",
+      "group": "scifact-paper-component-27768226",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5604,
+      "tokens": 1207
+    },
+    {
+      "query_id": "scifact-130",
+      "group": "scifact-paper-component-27768226",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5604,
+      "tokens": 1207
+    },
+    {
+      "query_id": "scifact-132",
+      "group": "scifact-paper-component-7975937",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5985,
+      "tokens": 1469
+    },
+    {
+      "query_id": "scifact-133",
+      "group": "scifact-paper-component-12640810",
+      "ndcg": 0.26761938846816513,
+      "mrr": 0.3333333333333333,
+      "recall": 0.4,
+      "line_recall": null,
+      "bytes": 5909,
+      "tokens": 1464
+    },
+    {
+      "query_id": "scifact-137",
+      "group": "scifact-paper-component-26016929",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5950,
+      "tokens": 1264
+    },
+    {
+      "query_id": "scifact-141",
+      "group": "scifact-paper-component-14437255",
+      "ndcg": 0.9197207891481876,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5957,
+      "tokens": 1173
+    },
+    {
+      "query_id": "scifact-142",
+      "group": "scifact-paper-component-10582939",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5982,
+      "tokens": 1518
+    },
+    {
+      "query_id": "scifact-143",
+      "group": "scifact-paper-component-10582939",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5980,
+      "tokens": 1518
+    },
+    {
+      "query_id": "scifact-146",
+      "group": "scifact-paper-component-10582939",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5983,
+      "tokens": 1519
+    },
+    {
+      "query_id": "scifact-148",
+      "group": "scifact-paper-component-1084345",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5983,
+      "tokens": 1243
+    },
+    {
+      "query_id": "scifact-163",
+      "group": "scifact-paper-component-18872233",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5372,
+      "tokens": 1157
+    },
+    {
+      "query_id": "scifact-171",
+      "group": "scifact-paper-component-12670680",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5987,
+      "tokens": 1525
+    },
+    {
+      "query_id": "scifact-179",
+      "group": "scifact-paper-component-16322674",
+      "ndcg": 0.7030861797445797,
+      "mrr": 1.0,
+      "recall": 0.75,
+      "line_recall": null,
+      "bytes": 5728,
+      "tokens": 1365
+    },
+    {
+      "query_id": "scifact-180",
+      "group": "scifact-paper-component-16966326",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5970,
+      "tokens": 1319
+    },
+    {
+      "query_id": "scifact-183",
+      "group": "scifact-paper-component-12827098",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5878,
+      "tokens": 1368
+    },
+    {
+      "query_id": "scifact-185",
+      "group": "scifact-paper-component-18340282",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5999,
+      "tokens": 1366
+    },
+    {
+      "query_id": "scifact-198",
+      "group": "scifact-paper-component-2177022",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5952,
+      "tokens": 1460
+    },
+    {
+      "query_id": "scifact-208",
+      "group": "scifact-paper-component-13519661",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5939,
+      "tokens": 1388
+    },
+    {
+      "query_id": "scifact-212",
+      "group": "scifact-paper-component-22038539",
+      "ndcg": 0.43067655807339306,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5948,
+      "tokens": 1202
+    },
+    {
+      "query_id": "scifact-213",
+      "group": "scifact-paper-component-13625993",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5947,
+      "tokens": 1489
+    },
+    {
+      "query_id": "scifact-216",
+      "group": "scifact-paper-component-21366394",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5960,
+      "tokens": 1485
+    },
+    {
+      "query_id": "scifact-217",
+      "group": "scifact-paper-component-21366394",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5691,
+      "tokens": 1427
+    },
+    {
+      "query_id": "scifact-218",
+      "group": "scifact-paper-component-21366394",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5903,
+      "tokens": 1436
+    },
+    {
+      "query_id": "scifact-219",
+      "group": "scifact-paper-component-21366394",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5949,
+      "tokens": 1379
+    },
+    {
+      "query_id": "scifact-230",
+      "group": "scifact-paper-component-3067015",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5968,
+      "tokens": 1372
+    },
+    {
+      "query_id": "scifact-232",
+      "group": "scifact-paper-component-10536636",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5639,
+      "tokens": 1499
+    },
+    {
+      "query_id": "scifact-233",
+      "group": "scifact-paper-component-4388470",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5970,
+      "tokens": 1347
+    },
+    {
+      "query_id": "scifact-236",
+      "group": "scifact-paper-component-4388470",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5708,
+      "tokens": 1221
+    },
+    {
+      "query_id": "scifact-237",
+      "group": "scifact-paper-component-4942718",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5891,
+      "tokens": 1343
+    },
+    {
+      "query_id": "scifact-238",
+      "group": "scifact-paper-component-2251426",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5998,
+      "tokens": 1350
+    },
+    {
+      "query_id": "scifact-239",
+      "group": "scifact-paper-component-14079881",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5753,
+      "tokens": 1210
+    },
+    {
+      "query_id": "scifact-248",
+      "group": "scifact-paper-component-1568684",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5976,
+      "tokens": 1305
+    },
+    {
+      "query_id": "scifact-249",
+      "group": "scifact-paper-component-1568684",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5968,
+      "tokens": 1315
+    },
+    {
+      "query_id": "scifact-261",
+      "group": "scifact-paper-component-10697096",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5973,
+      "tokens": 1175
+    },
+    {
+      "query_id": "scifact-268",
+      "group": "scifact-paper-component-970012",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 6000,
+      "tokens": 1339
+    },
+    {
+      "query_id": "scifact-269",
+      "group": "scifact-paper-component-970012",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5936,
+      "tokens": 1317
+    },
+    {
+      "query_id": "scifact-274",
+      "group": "scifact-paper-component-11614737",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5221,
+      "tokens": 1340
+    },
+    {
+      "query_id": "scifact-275",
+      "group": "scifact-paper-component-14241418",
+      "ndcg": 0.6364391809889587,
+      "mrr": 1.0,
+      "recall": 0.6666666666666666,
+      "line_recall": null,
+      "bytes": 5912,
+      "tokens": 1402
+    },
+    {
+      "query_id": "scifact-279",
+      "group": "scifact-paper-component-14376683",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5944,
+      "tokens": 1341
+    },
+    {
+      "query_id": "scifact-294",
+      "group": "scifact-paper-component-10874408",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5990,
+      "tokens": 1401
+    },
+    {
+      "query_id": "scifact-295",
+      "group": "scifact-paper-component-20310709",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5819,
+      "tokens": 1439
+    },
+    {
+      "query_id": "scifact-298",
+      "group": "scifact-paper-component-39381118",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5990,
+      "tokens": 1352
+    },
+    {
+      "query_id": "scifact-300",
+      "group": "scifact-paper-component-3553087",
+      "ndcg": 0.3010299956639812,
+      "mrr": 0.1111111111111111,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5867,
+      "tokens": 1289
+    },
+    {
+      "query_id": "scifact-303",
+      "group": "scifact-paper-component-4388470",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5469,
+      "tokens": 1235
+    },
+    {
+      "query_id": "scifact-312",
+      "group": "scifact-paper-component-6173523",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5955,
+      "tokens": 1240
+    },
+    {
+      "query_id": "scifact-314",
+      "group": "scifact-paper-component-4347374",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5841,
+      "tokens": 1378
+    },
+    {
+      "query_id": "scifact-324",
+      "group": "scifact-paper-component-2014909",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5949,
+      "tokens": 1393
+    },
+    {
+      "query_id": "scifact-327",
+      "group": "scifact-paper-component-17997584",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5999,
+      "tokens": 1357
+    },
+    {
+      "query_id": "scifact-338",
+      "group": "scifact-paper-component-23349986",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5969,
+      "tokens": 1564
+    },
+    {
+      "query_id": "scifact-343",
+      "group": "scifact-paper-component-5884524",
+      "ndcg": 0.6509209298071326,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 4813,
+      "tokens": 1164
+    },
+    {
+      "query_id": "scifact-350",
+      "group": "scifact-paper-component-16927286",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5979,
+      "tokens": 1415
+    },
+    {
+      "query_id": "scifact-354",
+      "group": "scifact-paper-component-8774475",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5987,
+      "tokens": 1340
+    },
+    {
+      "query_id": "scifact-362",
+      "group": "scifact-paper-component-38587347",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5457,
+      "tokens": 1233
+    },
+    {
+      "query_id": "scifact-380",
+      "group": "scifact-paper-component-19005293",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5992,
+      "tokens": 1367
+    },
+    {
+      "query_id": "scifact-384",
+      "group": "scifact-paper-component-13770184",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5963,
+      "tokens": 1328
+    },
+    {
+      "query_id": "scifact-385",
+      "group": "scifact-paper-component-9767444",
+      "ndcg": 0.3065735963827292,
+      "mrr": 0.3333333333333333,
+      "recall": 0.5,
+      "line_recall": null,
+      "bytes": 5983,
+      "tokens": 1234
+    },
+    {
+      "query_id": "scifact-386",
+      "group": "scifact-paper-component-16495649",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5919,
+      "tokens": 1283
+    },
+    {
+      "query_id": "scifact-388",
+      "group": "scifact-paper-component-1148122",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5790,
+      "tokens": 1220
+    },
+    {
+      "query_id": "scifact-399",
+      "group": "scifact-paper-component-791050",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5972,
+      "tokens": 1267
+    },
+    {
+      "query_id": "scifact-410",
+      "group": "scifact-paper-component-14924526",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5952,
+      "tokens": 1266
+    },
+    {
+      "query_id": "scifact-411",
+      "group": "scifact-paper-component-14924526",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5951,
+      "tokens": 1266
+    },
+    {
+      "query_id": "scifact-415",
+      "group": "scifact-paper-component-6309659",
+      "ndcg": 0.2890648263178879,
+      "mrr": 0.1,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5963,
+      "tokens": 1460
+    },
+    {
+      "query_id": "scifact-421",
+      "group": "scifact-paper-component-11172205",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5722,
+      "tokens": 1205
+    },
+    {
+      "query_id": "scifact-431",
+      "group": "scifact-paper-component-28937856",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5989,
+      "tokens": 1269
+    },
+    {
+      "query_id": "scifact-436",
+      "group": "scifact-paper-component-14637235",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5925,
+      "tokens": 1336
+    },
+    {
+      "query_id": "scifact-437",
+      "group": "scifact-paper-component-18399038",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5978,
+      "tokens": 1406
+    },
+    {
+      "query_id": "scifact-439",
+      "group": "scifact-paper-component-4423559",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5996,
+      "tokens": 1323
+    },
+    {
+      "query_id": "scifact-440",
+      "group": "scifact-paper-component-4423559",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5997,
+      "tokens": 1324
+    },
+    {
+      "query_id": "scifact-443",
+      "group": "scifact-paper-component-10165258",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5414,
+      "tokens": 1260
+    },
+    {
+      "query_id": "scifact-452",
+      "group": "scifact-paper-component-12804937",
+      "ndcg": 0.2640681225725909,
+      "mrr": 0.25,
+      "recall": 0.5,
+      "line_recall": null,
+      "bytes": 5987,
+      "tokens": 1240
+    },
+    {
+      "query_id": "scifact-475",
+      "group": "scifact-paper-component-18678095",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5997,
+      "tokens": 1312
+    },
+    {
+      "query_id": "scifact-478",
+      "group": "scifact-paper-component-14767844",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5964,
+      "tokens": 1408
+    },
+    {
+      "query_id": "scifact-491",
+      "group": "scifact-paper-component-56893404",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5968,
+      "tokens": 1323
+    },
+    {
+      "query_id": "scifact-501",
+      "group": "scifact-paper-component-17930286",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5945,
+      "tokens": 1253
+    },
+    {
+      "query_id": "scifact-502",
+      "group": "scifact-paper-component-13071728",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5955,
+      "tokens": 1189
+    },
+    {
+      "query_id": "scifact-507",
+      "group": "scifact-paper-component-30774694",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5784,
+      "tokens": 1324
+    },
+    {
+      "query_id": "scifact-508",
+      "group": "scifact-paper-component-13980338",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5983,
+      "tokens": 1414
+    },
+    {
+      "query_id": "scifact-513",
+      "group": "scifact-paper-component-13230773",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5455,
+      "tokens": 1281
+    },
+    {
+      "query_id": "scifact-514",
+      "group": "scifact-paper-component-16256507",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5941,
+      "tokens": 1644
+    },
+    {
+      "query_id": "scifact-516",
+      "group": "scifact-paper-component-29564505",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5765,
+      "tokens": 1436
+    },
+    {
+      "query_id": "scifact-517",
+      "group": "scifact-paper-component-15663829",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5952,
+      "tokens": 1415
+    },
+    {
+      "query_id": "scifact-521",
+      "group": "scifact-paper-component-34873974",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5641,
+      "tokens": 1298
+    },
+    {
+      "query_id": "scifact-525",
+      "group": "scifact-paper-component-13639330",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5313,
+      "tokens": 1110
+    },
+    {
+      "query_id": "scifact-527",
+      "group": "scifact-paper-component-3863543",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5969,
+      "tokens": 1336
+    },
+    {
+      "query_id": "scifact-528",
+      "group": "scifact-paper-component-5476778",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5947,
+      "tokens": 1420
+    },
+    {
+      "query_id": "scifact-532",
+      "group": "scifact-paper-component-12991445",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5971,
+      "tokens": 1447
+    },
+    {
+      "query_id": "scifact-533",
+      "group": "scifact-paper-component-12991445",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5813,
+      "tokens": 1410
+    },
+    {
+      "query_id": "scifact-535",
+      "group": "scifact-paper-component-39368721",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5915,
+      "tokens": 1411
+    },
+    {
+      "query_id": "scifact-536",
+      "group": "scifact-paper-component-16056514",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5962,
+      "tokens": 1382
+    },
+    {
+      "query_id": "scifact-539",
+      "group": "scifact-paper-component-13282296",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5999,
+      "tokens": 1517
+    },
+    {
+      "query_id": "scifact-540",
+      "group": "scifact-paper-component-10534299",
+      "ndcg": 0.3065735963827292,
+      "mrr": 0.3333333333333333,
+      "recall": 0.5,
+      "line_recall": null,
+      "bytes": 5998,
+      "tokens": 1382
+    },
+    {
+      "query_id": "scifact-544",
+      "group": "scifact-paper-component-24221369",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5961,
+      "tokens": 1335
+    },
+    {
+      "query_id": "scifact-549",
+      "group": "scifact-paper-component-9433958",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5496,
+      "tokens": 1214
+    },
+    {
+      "query_id": "scifact-551",
+      "group": "scifact-paper-component-33499189",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5641,
+      "tokens": 1318
+    },
+    {
+      "query_id": "scifact-552",
+      "group": "scifact-paper-component-1471041",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5980,
+      "tokens": 1366
+    },
+    {
+      "query_id": "scifact-554",
+      "group": "scifact-paper-component-1049501",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5445,
+      "tokens": 1238
+    },
+    {
+      "query_id": "scifact-560",
+      "group": "scifact-paper-component-40096222",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5948,
+      "tokens": 1237
+    },
+    {
+      "query_id": "scifact-569",
+      "group": "scifact-paper-component-23460562",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5972,
+      "tokens": 1284
+    },
+    {
+      "query_id": "scifact-575",
+      "group": "scifact-paper-component-10300888",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5936,
+      "tokens": 1346
+    },
+    {
+      "query_id": "scifact-577",
+      "group": "scifact-paper-component-5289038",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5807,
+      "tokens": 1184
+    },
+    {
+      "query_id": "scifact-578",
+      "group": "scifact-paper-component-8764879",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5992,
+      "tokens": 1449
+    },
+    {
+      "query_id": "scifact-587",
+      "group": "scifact-paper-component-16999023",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5409,
+      "tokens": 1240
+    },
+    {
+      "query_id": "scifact-589",
+      "group": "scifact-paper-component-10984005",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5419,
+      "tokens": 1337
+    },
+    {
+      "query_id": "scifact-593",
+      "group": "scifact-paper-component-19675911",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5348,
+      "tokens": 1254
+    },
+    {
+      "query_id": "scifact-597",
+      "group": "scifact-paper-component-12779444",
+      "ndcg": 0.7653606369886217,
+      "mrr": 1.0,
+      "recall": 0.6666666666666666,
+      "line_recall": null,
+      "bytes": 5966,
+      "tokens": 1342
+    },
+    {
+      "query_id": "scifact-598",
+      "group": "scifact-paper-component-12779444",
+      "ndcg": 0.2890648263178879,
+      "mrr": 0.1,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5285,
+      "tokens": 1273
+    },
+    {
+      "query_id": "scifact-613",
+      "group": "scifact-paper-component-9638032",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5938,
+      "tokens": 1377
+    },
+    {
+      "query_id": "scifact-619",
+      "group": "scifact-paper-component-20888849",
+      "ndcg": 0.3065735963827292,
+      "mrr": 0.3333333333333333,
+      "recall": 0.5,
+      "line_recall": null,
+      "bytes": 5980,
+      "tokens": 1305
+    },
+    {
+      "query_id": "scifact-623",
+      "group": "scifact-paper-component-17000834",
+      "ndcg": 0.3333333333333333,
+      "mrr": 0.14285714285714285,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5957,
+      "tokens": 1458
+    },
+    {
+      "query_id": "scifact-628",
+      "group": "scifact-paper-component-24512064",
+      "ndcg": 0.43067655807339306,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5990,
+      "tokens": 1399
+    },
+    {
+      "query_id": "scifact-636",
+      "group": "scifact-paper-component-24294572",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5944,
+      "tokens": 1608
+    },
+    {
+      "query_id": "scifact-637",
+      "group": "scifact-paper-component-25649714",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5944,
+      "tokens": 1124
+    },
+    {
+      "query_id": "scifact-641",
+      "group": "scifact-paper-component-31554917",
+      "ndcg": 0.7903864795495061,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5991,
+      "tokens": 1386
+    },
+    {
+      "query_id": "scifact-644",
+      "group": "scifact-paper-component-13619127",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5739,
+      "tokens": 1448
+    },
+    {
+      "query_id": "scifact-649",
+      "group": "scifact-paper-component-12789595",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5955,
+      "tokens": 1279
+    },
+    {
+      "query_id": "scifact-659",
+      "group": "scifact-paper-component-1215116",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5974,
+      "tokens": 1232
+    },
+    {
+      "query_id": "scifact-660",
+      "group": "scifact-paper-component-1215116",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5654,
+      "tokens": 1255
+    },
+    {
+      "query_id": "scifact-674",
+      "group": "scifact-paper-component-2095573",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5731,
+      "tokens": 1307
+    },
+    {
+      "query_id": "scifact-684",
+      "group": "scifact-paper-component-4942718",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5950,
+      "tokens": 1346
+    },
+    {
+      "query_id": "scifact-690",
+      "group": "scifact-paper-component-18750453",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5601,
+      "tokens": 1352
+    },
+    {
+      "query_id": "scifact-691",
+      "group": "scifact-paper-component-10991183",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5973,
+      "tokens": 1331
+    },
+    {
+      "query_id": "scifact-692",
+      "group": "scifact-paper-component-24088502",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5984,
+      "tokens": 1285
+    },
+    {
+      "query_id": "scifact-693",
+      "group": "scifact-paper-component-24088502",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5599,
+      "tokens": 1262
+    },
+    {
+      "query_id": "scifact-700",
+      "group": "scifact-paper-component-4350400",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5962,
+      "tokens": 1295
+    },
+    {
+      "query_id": "scifact-702",
+      "group": "scifact-paper-component-4350400",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5892,
+      "tokens": 1301
+    },
+    {
+      "query_id": "scifact-715",
+      "group": "scifact-paper-component-18421962",
+      "ndcg": 0.43067655807339306,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5980,
+      "tokens": 1267
+    },
+    {
+      "query_id": "scifact-716",
+      "group": "scifact-paper-component-18421962",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5977,
+      "tokens": 1292
+    },
+    {
+      "query_id": "scifact-718",
+      "group": "scifact-paper-component-17587795",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5991,
+      "tokens": 1301
+    },
+    {
+      "query_id": "scifact-721",
+      "group": "scifact-paper-component-1834762",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5984,
+      "tokens": 1423
+    },
+    {
+      "query_id": "scifact-723",
+      "group": "scifact-paper-component-5531479",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5939,
+      "tokens": 1228
+    },
+    {
+      "query_id": "scifact-727",
+      "group": "scifact-paper-component-22406695",
+      "ndcg": 0.43067655807339306,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5947,
+      "tokens": 1311
+    },
+    {
+      "query_id": "scifact-728",
+      "group": "scifact-paper-component-22406695",
+      "ndcg": 0.5706417189553201,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5952,
+      "tokens": 1296
+    },
+    {
+      "query_id": "scifact-729",
+      "group": "scifact-paper-component-26851674",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5553,
+      "tokens": 1313
+    },
+    {
+      "query_id": "scifact-742",
+      "group": "scifact-paper-component-32159283",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5989,
+      "tokens": 1368
+    },
+    {
+      "query_id": "scifact-743",
+      "group": "scifact-paper-component-32159283",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5493,
+      "tokens": 1289
+    },
+    {
+      "query_id": "scifact-744",
+      "group": "scifact-paper-component-8460275",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5856,
+      "tokens": 1306
+    },
+    {
+      "query_id": "scifact-756",
+      "group": "scifact-paper-component-2831620",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5953,
+      "tokens": 1278
+    },
+    {
+      "query_id": "scifact-759",
+      "group": "scifact-paper-component-1805641",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5993,
+      "tokens": 1160
+    },
+    {
+      "query_id": "scifact-768",
+      "group": "scifact-paper-component-6421792",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5539,
+      "tokens": 1418
+    },
+    {
+      "query_id": "scifact-770",
+      "group": "scifact-paper-component-15476777",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5728,
+      "tokens": 1423
+    },
+    {
+      "query_id": "scifact-775",
+      "group": "scifact-paper-component-32275758",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5931,
+      "tokens": 1365
+    },
+    {
+      "query_id": "scifact-781",
+      "group": "scifact-paper-component-24338780",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5969,
+      "tokens": 1362
+    },
+    {
+      "query_id": "scifact-783",
+      "group": "scifact-paper-component-40632104",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5497,
+      "tokens": 1358
+    },
+    {
+      "query_id": "scifact-784",
+      "group": "scifact-paper-component-2356950",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5993,
+      "tokens": 1314
+    },
+    {
+      "query_id": "scifact-785",
+      "group": "scifact-paper-component-12471115",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5960,
+      "tokens": 1276
+    },
+    {
+      "query_id": "scifact-793",
+      "group": "scifact-paper-component-8551160",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5955,
+      "tokens": 1298
+    },
+    {
+      "query_id": "scifact-800",
+      "group": "scifact-paper-component-22543403",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5958,
+      "tokens": 1312
+    },
+    {
+      "query_id": "scifact-805",
+      "group": "scifact-paper-component-22180793",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5671,
+      "tokens": 1327
+    },
+    {
+      "query_id": "scifact-808",
+      "group": "scifact-paper-component-36606083",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5949,
+      "tokens": 1230
+    },
+    {
+      "query_id": "scifact-811",
+      "group": "scifact-paper-component-19799455",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5953,
+      "tokens": 1432
+    },
+    {
+      "query_id": "scifact-814",
+      "group": "scifact-paper-component-33387953",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5943,
+      "tokens": 1378
+    },
+    {
+      "query_id": "scifact-820",
+      "group": "scifact-paper-component-8646760",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5974,
+      "tokens": 1260
+    },
+    {
+      "query_id": "scifact-821",
+      "group": "scifact-paper-component-8646760",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5975,
+      "tokens": 1259
+    },
+    {
+      "query_id": "scifact-823",
+      "group": "scifact-paper-component-15319019",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5985,
+      "tokens": 1427
+    },
+    {
+      "query_id": "scifact-830",
+      "group": "scifact-paper-component-1897324",
+      "ndcg": 0.43067655807339306,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5667,
+      "tokens": 1313
+    },
+    {
+      "query_id": "scifact-831",
+      "group": "scifact-paper-component-1897324",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5950,
+      "tokens": 1333
+    },
+    {
+      "query_id": "scifact-832",
+      "group": "scifact-paper-component-30303335",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5944,
+      "tokens": 1348
+    },
+    {
+      "query_id": "scifact-834",
+      "group": "scifact-paper-component-5483793",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5960,
+      "tokens": 1419
+    },
+    {
+      "query_id": "scifact-837",
+      "group": "scifact-paper-component-15928989",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5981,
+      "tokens": 1311
+    },
+    {
+      "query_id": "scifact-839",
+      "group": "scifact-paper-component-1469751",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5617,
+      "tokens": 1209
+    },
+    {
+      "query_id": "scifact-845",
+      "group": "scifact-paper-component-17741440",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5972,
+      "tokens": 1370
+    },
+    {
+      "query_id": "scifact-847",
+      "group": "scifact-paper-component-16787954",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5883,
+      "tokens": 1327
+    },
+    {
+      "query_id": "scifact-852",
+      "group": "scifact-paper-component-13843341",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5600,
+      "tokens": 1213
+    },
+    {
+      "query_id": "scifact-859",
+      "group": "scifact-paper-component-1982286",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5961,
+      "tokens": 1309
+    },
+    {
+      "query_id": "scifact-870",
+      "group": "scifact-paper-component-195689316",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5952,
+      "tokens": 1292
+    },
+    {
+      "query_id": "scifact-873",
+      "group": "scifact-paper-component-1180972",
+      "ndcg": 0.14606834984270645,
+      "mrr": 0.25,
+      "recall": 0.2,
+      "line_recall": null,
+      "bytes": 5955,
+      "tokens": 1258
+    },
+    {
+      "query_id": "scifact-879",
+      "group": "scifact-paper-component-8426046",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5866,
+      "tokens": 1413
+    },
+    {
+      "query_id": "scifact-880",
+      "group": "scifact-paper-component-8426046",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5259,
+      "tokens": 1312
+    },
+    {
+      "query_id": "scifact-882",
+      "group": "scifact-paper-component-14803797",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5897,
+      "tokens": 1429
+    },
+    {
+      "query_id": "scifact-887",
+      "group": "scifact-paper-component-18855191",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5954,
+      "tokens": 1288
+    },
+    {
+      "query_id": "scifact-903",
+      "group": "scifact-paper-component-10648422",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5953,
+      "tokens": 1370
+    },
+    {
+      "query_id": "scifact-904",
+      "group": "scifact-paper-component-7370282",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5706,
+      "tokens": 1324
+    },
+    {
+      "query_id": "scifact-907",
+      "group": "scifact-paper-component-6923961",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5636,
+      "tokens": 1261
+    },
+    {
+      "query_id": "scifact-911",
+      "group": "scifact-paper-component-11254556",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5678,
+      "tokens": 1312
+    },
+    {
+      "query_id": "scifact-913",
+      "group": "scifact-paper-component-3203590",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5936,
+      "tokens": 1367
+    },
+    {
+      "query_id": "scifact-914",
+      "group": "scifact-paper-component-3203590",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5634,
+      "tokens": 1408
+    },
+    {
+      "query_id": "scifact-921",
+      "group": "scifact-paper-component-1642727",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5991,
+      "tokens": 1228
+    },
+    {
+      "query_id": "scifact-922",
+      "group": "scifact-paper-component-17077004",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5931,
+      "tokens": 1314
+    },
+    {
+      "query_id": "scifact-936",
+      "group": "scifact-paper-component-5483793",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5505,
+      "tokens": 1396
+    },
+    {
+      "query_id": "scifact-956",
+      "group": "scifact-paper-component-12956194",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5997,
+      "tokens": 1336
+    },
+    {
+      "query_id": "scifact-957",
+      "group": "scifact-paper-component-123859",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5821,
+      "tokens": 1326
+    },
+    {
+      "query_id": "scifact-960",
+      "group": "scifact-paper-component-8780599",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5977,
+      "tokens": 1307
+    },
+    {
+      "query_id": "scifact-967",
+      "group": "scifact-paper-component-2119889",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5964,
+      "tokens": 1377
+    },
+    {
+      "query_id": "scifact-971",
+      "group": "scifact-paper-component-27446873",
+      "ndcg": 0.6271823208439088,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5285,
+      "tokens": 1273
+    },
+    {
+      "query_id": "scifact-975",
+      "group": "scifact-paper-component-5304891",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5944,
+      "tokens": 1331
+    },
+    {
+      "query_id": "scifact-982",
+      "group": "scifact-paper-component-2988714",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5461,
+      "tokens": 1302
+    },
+    {
+      "query_id": "scifact-985",
+      "group": "scifact-paper-component-6828370",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5279,
+      "tokens": 1270
+    },
+    {
+      "query_id": "scifact-993",
+      "group": "scifact-paper-component-16472469",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5942,
+      "tokens": 1363
+    },
+    {
+      "query_id": "scifact-1012",
+      "group": "scifact-paper-component-9745001",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5876,
+      "tokens": 1548
+    },
+    {
+      "query_id": "scifact-1014",
+      "group": "scifact-paper-component-6277638",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5932,
+      "tokens": 1528
+    },
+    {
+      "query_id": "scifact-1019",
+      "group": "scifact-paper-component-11603066",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5984,
+      "tokens": 1332
+    },
+    {
+      "query_id": "scifact-1020",
+      "group": "scifact-paper-component-9433958",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5987,
+      "tokens": 1405
+    },
+    {
+      "query_id": "scifact-1021",
+      "group": "scifact-paper-component-9433958",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5984,
+      "tokens": 1404
+    },
+    {
+      "query_id": "scifact-1024",
+      "group": "scifact-paper-component-5373138",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5239,
+      "tokens": 1206
+    },
+    {
+      "query_id": "scifact-1029",
+      "group": "scifact-paper-component-11899391",
+      "ndcg": 0.7653606369886217,
+      "mrr": 1.0,
+      "recall": 0.6666666666666666,
+      "line_recall": null,
+      "bytes": 5650,
+      "tokens": 1311
+    },
+    {
+      "query_id": "scifact-1041",
+      "group": "scifact-paper-component-16626264",
+      "ndcg": 0.2640681225725909,
+      "mrr": 0.25,
+      "recall": 0.5,
+      "line_recall": null,
+      "bytes": 5947,
+      "tokens": 1403
+    },
+    {
+      "query_id": "scifact-1049",
+      "group": "scifact-paper-component-12486491",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5937,
+      "tokens": 1298
+    },
+    {
+      "query_id": "scifact-1062",
+      "group": "scifact-paper-component-20381484",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5953,
+      "tokens": 1418
+    },
+    {
+      "query_id": "scifact-1086",
+      "group": "scifact-paper-component-39281140",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5102,
+      "tokens": 1141
+    },
+    {
+      "query_id": "scifact-1088",
+      "group": "scifact-paper-component-37549932",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5270,
+      "tokens": 1216
+    },
+    {
+      "query_id": "scifact-1089",
+      "group": "scifact-paper-component-17628888",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5997,
+      "tokens": 1446
+    },
+    {
+      "query_id": "scifact-1099",
+      "group": "scifact-paper-component-7662206",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5962,
+      "tokens": 1347
+    },
+    {
+      "query_id": "scifact-1100",
+      "group": "scifact-paper-component-7662206",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5958,
+      "tokens": 1393
+    },
+    {
+      "query_id": "scifact-1104",
+      "group": "scifact-paper-component-3898784",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5946,
+      "tokens": 1668
+    },
+    {
+      "query_id": "scifact-1107",
+      "group": "scifact-paper-component-20532591",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5916,
+      "tokens": 1309
+    },
+    {
+      "query_id": "scifact-1110",
+      "group": "scifact-paper-component-13770184",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5939,
+      "tokens": 1240
+    },
+    {
+      "query_id": "scifact-1121",
+      "group": "scifact-paper-component-4456756",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5961,
+      "tokens": 1256
+    },
+    {
+      "query_id": "scifact-1130",
+      "group": "scifact-paper-component-17997584",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5970,
+      "tokens": 1297
+    },
+    {
+      "query_id": "scifact-1132",
+      "group": "scifact-paper-component-33499189",
+      "ndcg": 0.21840743681816419,
+      "mrr": 0.16666666666666666,
+      "recall": 0.5,
+      "line_recall": null,
+      "bytes": 5675,
+      "tokens": 1339
+    },
+    {
+      "query_id": "scifact-1137",
+      "group": "scifact-paper-component-33370",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5980,
+      "tokens": 1427
+    },
+    {
+      "query_id": "scifact-1140",
+      "group": "scifact-paper-component-12009265",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5999,
+      "tokens": 1436
+    },
+    {
+      "query_id": "scifact-1144",
+      "group": "scifact-paper-component-10071552",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5821,
+      "tokens": 1367
+    },
+    {
+      "query_id": "scifact-1146",
+      "group": "scifact-paper-component-13906581",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5976,
+      "tokens": 1171
+    },
+    {
+      "query_id": "scifact-1150",
+      "group": "scifact-paper-component-11369420",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5944,
+      "tokens": 1386
+    },
+    {
+      "query_id": "scifact-1163",
+      "group": "scifact-paper-component-15305881",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5435,
+      "tokens": 1266
+    },
+    {
+      "query_id": "scifact-1175",
+      "group": "scifact-paper-component-31272411",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5969,
+      "tokens": 1378
+    },
+    {
+      "query_id": "scifact-1179",
+      "group": "scifact-paper-component-31272411",
+      "ndcg": 0.2890648263178879,
+      "mrr": 0.1,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5489,
+      "tokens": 1320
+    },
+    {
+      "query_id": "scifact-1180",
+      "group": "scifact-paper-component-31272411",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5963,
+      "tokens": 1572
+    },
+    {
+      "query_id": "scifact-1185",
+      "group": "scifact-paper-component-16737210",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5845,
+      "tokens": 1229
+    },
+    {
+      "query_id": "scifact-1187",
+      "group": "scifact-paper-component-52873726",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5938,
+      "tokens": 1332
+    },
+    {
+      "query_id": "scifact-1191",
+      "group": "scifact-paper-component-30655442",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5536,
+      "tokens": 1259
+    },
+    {
+      "query_id": "scifact-1194",
+      "group": "scifact-paper-component-11419230",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5963,
+      "tokens": 1325
+    },
+    {
+      "query_id": "scifact-1196",
+      "group": "scifact-paper-component-25649714",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5506,
+      "tokens": 1173
+    },
+    {
+      "query_id": "scifact-1197",
+      "group": "scifact-paper-component-25649714",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5506,
+      "tokens": 1174
+    },
+    {
+      "query_id": "scifact-1199",
+      "group": "scifact-paper-component-16760369",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5974,
+      "tokens": 1330
+    },
+    {
+      "query_id": "scifact-1200",
+      "group": "scifact-paper-component-3441524",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5988,
+      "tokens": 1526
+    },
+    {
+      "query_id": "scifact-1202",
+      "group": "scifact-paper-component-3475317",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5984,
+      "tokens": 1249
+    },
+    {
+      "query_id": "scifact-1204",
+      "group": "scifact-paper-component-31141365",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5482,
+      "tokens": 1350
+    },
+    {
+      "query_id": "scifact-1207",
+      "group": "scifact-paper-component-18909530",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5553,
+      "tokens": 1297
+    },
+    {
+      "query_id": "scifact-1213",
+      "group": "scifact-paper-component-14407673",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5983,
+      "tokens": 1295
+    },
+    {
+      "query_id": "scifact-1216",
+      "group": "scifact-paper-component-24142891",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5954,
+      "tokens": 1361
+    },
+    {
+      "query_id": "scifact-1221",
+      "group": "scifact-paper-component-19736671",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5563,
+      "tokens": 1284
+    },
+    {
+      "query_id": "scifact-1225",
+      "group": "scifact-paper-component-9650982",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5855,
+      "tokens": 1517
+    },
+    {
+      "query_id": "scifact-1226",
+      "group": "scifact-paper-component-13777138",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5378,
+      "tokens": 1252
+    },
+    {
+      "query_id": "scifact-1232",
+      "group": "scifact-paper-component-13905670",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5982,
+      "tokens": 1317
+    },
+    {
+      "query_id": "scifact-1241",
+      "group": "scifact-paper-component-21387297",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5920,
+      "tokens": 1275
+    },
+    {
+      "query_id": "scifact-1245",
+      "group": "scifact-paper-component-7662395",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5946,
+      "tokens": 1190
+    },
+    {
+      "query_id": "scifact-1259",
+      "group": "scifact-paper-component-24341590",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5999,
+      "tokens": 1549
+    },
+    {
+      "query_id": "scifact-1262",
+      "group": "scifact-paper-component-44172171",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5678,
+      "tokens": 1287
+    },
+    {
+      "query_id": "scifact-1266",
+      "group": "scifact-paper-component-37480103",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5945,
+      "tokens": 1391
+    },
+    {
+      "query_id": "scifact-1270",
+      "group": "scifact-paper-component-13900610",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5965,
+      "tokens": 1283
+    },
+    {
+      "query_id": "scifact-1271",
+      "group": "scifact-paper-component-13768432",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5974,
+      "tokens": 1449
+    },
+    {
+      "query_id": "scifact-1272",
+      "group": "scifact-paper-component-17081238",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5580,
+      "tokens": 1218
+    },
+    {
+      "query_id": "scifact-1273",
+      "group": "scifact-paper-component-11041152",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5961,
+      "tokens": 1319
+    },
+    {
+      "query_id": "scifact-1274",
+      "group": "scifact-paper-component-12428814",
+      "ndcg": 0.8710785440003369,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5987,
+      "tokens": 1400
+    },
+    {
+      "query_id": "scifact-1278",
+      "group": "scifact-paper-component-11335781",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5217,
+      "tokens": 1232
+    },
+    {
+      "query_id": "scifact-1279",
+      "group": "scifact-paper-component-11335781",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5966,
+      "tokens": 1378
+    },
+    {
+      "query_id": "scifact-1280",
+      "group": "scifact-paper-component-4387784",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5963,
+      "tokens": 1566
+    },
+    {
+      "query_id": "scifact-1281",
+      "group": "scifact-paper-component-4387784",
+      "ndcg": 0.38685280723454163,
+      "mrr": 0.2,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5989,
+      "tokens": 1572
+    },
+    {
+      "query_id": "scifact-1282",
+      "group": "scifact-paper-component-23649163",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5971,
+      "tokens": 1440
+    },
+    {
+      "query_id": "scifact-1290",
+      "group": "scifact-paper-component-4687948",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5589,
+      "tokens": 1281
+    },
+    {
+      "query_id": "scifact-1292",
+      "group": "scifact-paper-component-56893404",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5430,
+      "tokens": 1302
+    },
+    {
+      "query_id": "scifact-1298",
+      "group": "scifact-paper-component-11718220",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5985,
+      "tokens": 1368
+    },
+    {
+      "query_id": "scifact-1303",
+      "group": "scifact-paper-component-12631697",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5981,
+      "tokens": 1350
+    },
+    {
+      "query_id": "scifact-1316",
+      "group": "scifact-paper-component-27910499",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5950,
+      "tokens": 1350
+    },
+    {
+      "query_id": "scifact-1319",
+      "group": "scifact-paper-component-16284655",
+      "ndcg": 0.6309297535714575,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5991,
+      "tokens": 1279
+    },
+    {
+      "query_id": "scifact-1320",
+      "group": "scifact-paper-component-16284655",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5963,
+      "tokens": 1244
+    },
+    {
+      "query_id": "scifact-1332",
+      "group": "scifact-paper-component-5304891",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5980,
+      "tokens": 1635
+    },
+    {
+      "query_id": "scifact-1335",
+      "group": "scifact-paper-component-27910499",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5887,
+      "tokens": 1440
+    },
+    {
+      "query_id": "scifact-1336",
+      "group": "scifact-paper-component-27910499",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5890,
+      "tokens": 1440
+    },
+    {
+      "query_id": "scifact-1337",
+      "group": "scifact-paper-component-20231138",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5976,
+      "tokens": 1442
+    },
+    {
+      "query_id": "scifact-1339",
+      "group": "scifact-paper-component-15482274",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5822,
+      "tokens": 1450
+    },
+    {
+      "query_id": "scifact-1344",
+      "group": "scifact-paper-component-9559146",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5966,
+      "tokens": 1320
+    },
+    {
+      "query_id": "scifact-1352",
+      "group": "scifact-paper-component-12885341",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5964,
+      "tokens": 1374
+    },
+    {
+      "query_id": "scifact-1359",
+      "group": "scifact-paper-component-11614737",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5215,
+      "tokens": 1337
+    },
+    {
+      "query_id": "scifact-1362",
+      "group": "scifact-paper-component-8290953",
+      "ndcg": 0.5,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5989,
+      "tokens": 1379
+    },
+    {
+      "query_id": "scifact-1363",
+      "group": "scifact-paper-component-8290953",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5982,
+      "tokens": 1377
+    },
+    {
+      "query_id": "scifact-1368",
+      "group": "scifact-paper-component-2425364",
+      "ndcg": 0.0,
+      "mrr": 0,
+      "recall": 0.0,
+      "line_recall": null,
+      "bytes": 5974,
+      "tokens": 1446
+    },
+    {
+      "query_id": "scifact-1370",
+      "group": "scifact-paper-component-2425364",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5988,
+      "tokens": 1396
+    },
+    {
+      "query_id": "scifact-1379",
+      "group": "scifact-paper-component-16322674",
+      "ndcg": 0.5028746730079328,
+      "mrr": 0.5,
+      "recall": 0.75,
+      "line_recall": null,
+      "bytes": 5299,
+      "tokens": 1239
+    },
+    {
+      "query_id": "scifact-1382",
+      "group": "scifact-paper-component-17755060",
+      "ndcg": 0.31546487678572877,
+      "mrr": 0.125,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5978,
+      "tokens": 1342
+    },
+    {
+      "query_id": "scifact-1385",
+      "group": "scifact-paper-component-306006",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5327,
+      "tokens": 1223
+    },
+    {
+      "query_id": "scifact-1389",
+      "group": "scifact-paper-component-23895668",
+      "ndcg": 1.0,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5991,
+      "tokens": 1373
+    },
+    {
+      "query_id": "scifact-1395",
+      "group": "scifact-paper-component-17717391",
+      "ndcg": 0.3562071871080222,
+      "mrr": 0.16666666666666666,
+      "recall": 1.0,
+      "line_recall": null,
+      "bytes": 5978,
+      "tokens": 1469
+    }
+  ]
+}

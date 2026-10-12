@@ -251,12 +251,12 @@ def publish(destination):
     api = HfApi()
     for profile, spec in specs.items():
         api.create_repo(spec["repository"], repo_type="model", exist_ok=True)
-        api.upload_folder(
+        published = api.upload_folder(
             repo_id=spec["repository"],
             folder_path=destination / profile,
-            revision=spec["revision"],
             allow_patterns=[*FILES, "README.md", "UPSTREAM_MODEL_CARD.md"],
         )
+        print(f"Published {profile}: {published}")
 
 
 def main():

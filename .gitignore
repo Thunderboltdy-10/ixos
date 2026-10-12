@@ -29,10 +29,6 @@ eval/runs/
 models/**
 dataset/
 
-# Allow lightweight lab docs in the models tree
-!models/lab/
-!models/lab/*.md
-
 # Local config
 .env
 .env.*
@@ -40,7 +36,7 @@ dataset/
 
 # Coverage
 /coverage/
-*.profrawP
+*.profraw
 *.profdata
 
 # Benchmarks

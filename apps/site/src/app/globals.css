@@ -59,7 +59,7 @@ video::-moz-media-controls {
   /* Brighter pink/magenta */
   --color-accent-magenta-glow: hsl(290 90% 75%);
 
-  /* Legacy */
+  /* Shared typography tokens */
   --color-accent-spark: #f6b94c;
   --color-accent-arc: #5ea3ff;
   --color-accent-ion: #9b7dff;
@@ -309,24 +309,6 @@ video::-moz-media-controls {
   z-index: 0;
 }
 
-.section-pricing {
-  position: relative;
-  background: transparent;
-}
-
-.section-pricing::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse 80% 60% at 50% 30%,
-    rgba(246, 185, 76, 0.12) 0%,
-    transparent 60%
-  );
-  pointer-events: none;
-  z-index: 0;
-}
-
 .section-today {
   position: relative;
   background: transparent;
@@ -410,7 +392,7 @@ video::-moz-media-controls {
   }
 }
 
-@keyframes spark-flash {
+@keyframes spark-pulse {
   0%,
   100% {
     opacity: 0;
@@ -444,7 +426,7 @@ video::-moz-media-controls {
 }
 
 .animate-spark {
-  animation: spark-flash 0.3s ease-out;
+  animation: spark-pulse 0.3s ease-out;
 }
 
 /* Utilities for JS consumption */
@@ -684,7 +666,7 @@ video::-moz-media-controls {
   animation: shimmer-sweep 2s ease-in-out infinite;
 }
 
-/* Animated gradient text — teal shimmer */
+/* Animated gradient text â€” teal shimmer */
 @keyframes gradient-shift-teal {
   0% {
     background-position: 0% 50%;

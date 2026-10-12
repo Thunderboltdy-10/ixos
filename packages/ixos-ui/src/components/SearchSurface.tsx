@@ -652,10 +652,8 @@ export function SearchSurface({
                             style={{
                               fontFamily: "var(--font-ixo-mono), monospace",
                               fontSize: 15,
-                              fontWeight: isSelected ? 700 : 400,
-                              color: isSelected
-                                ? "#F8FAFC"
-                                : "rgba(243,245,247,0.7)",
+                              fontWeight: 700,
+                              color: "#F8FAFC",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
                               whiteSpace: "nowrap",

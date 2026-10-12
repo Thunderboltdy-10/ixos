@@ -13,8 +13,8 @@ const PAIN_POINTS = [
 const SOLUTION_POINTS = [
   "Search by meaning, not just keywords.",
   "PDFs, spreadsheets, docs, code, markdown -- all in one place.",
-  "Results ranked by relevance with evidence you can verify.",
-  "100% local. Your files never leave your device.",
+  "Results ranked by relevance with snippets you can inspect.",
+  "CPU search over the locations you choose.",
 ];
 
 export function ProblemSolutionSection() {
@@ -40,7 +40,7 @@ export function ProblemSolutionSection() {
                     key={point}
                     className="flex items-start gap-3 text-sm text-white/45 leading-relaxed"
                   >
-                    <span className="text-white/20 mt-0.5 shrink-0">—</span>
+                    <span className="text-white/20 mt-0.5 shrink-0">â€”</span>
                     {point}
                   </li>
                 ))}
@@ -66,7 +66,7 @@ export function ProblemSolutionSection() {
                     key={point}
                     className="flex items-start gap-3 text-sm text-white/55 leading-relaxed"
                   >
-                    <span className="text-amber-400/50 mt-0.5 shrink-0">▸</span>
+                    <span className="text-amber-400/50 mt-0.5 shrink-0">â–¸</span>
                     {point}
                   </li>
                 ))}

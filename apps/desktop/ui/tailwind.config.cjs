@@ -92,7 +92,6 @@ module.exports = {
                 warning: '#F59E0B',
                 error: '#EF4444',
 
-                // Legacy alias
                 stroke: {
                     hairline: 'rgba(243, 245, 247, 0.08)',
                 }

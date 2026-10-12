@@ -243,8 +243,6 @@ export function SearchInput({
             isSearching={activeSearch}
             autoFocus={autoFocus}
             tone={searchBarTone}
-            withFrame={false}
-            showClear={false}
             className="w-full"
             rightSlot={
               <div className="flex items-center gap-2">

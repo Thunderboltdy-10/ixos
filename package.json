@@ -2,9 +2,9 @@
   "name": "ixos",
   "version": "0.1.0",
   "private": true,
-  "description": "Privacy-first semantic file search",
+  "description": "Local hybrid search over code and documents",
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=22",
     "npm": ">=9.0.0"
   },
   "scripts": {
@@ -12,7 +12,6 @@
     "tauri:dev": "cd apps/desktop && tauri dev --no-watch",
     "tauri:dev:watch": "cd apps/desktop && tauri dev",
     "tauri:build": "cd apps/desktop && tauri build",
-    "tauri:build:prod": "cd apps/desktop && tauri build",
     "dev": "npm run dev --workspace ixos-ui",
     "build": "npm run build --workspace ixos-ui",
     "site:dev": "npm run dev --workspace ixos-site",

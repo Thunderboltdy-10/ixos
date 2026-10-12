@@ -24,11 +24,11 @@ export const metadata: Metadata = {
   description: "Local-first semantic search for your files.",
   icons: {
     icon: [
-      { url: "/assets/logo-v3.png", type: "image/png" },
+      { url: "/assets/logo.png", type: "image/png" },
       { url: "/favicon.ico", type: "image/x-icon" },
     ],
-    shortcut: ["/assets/logo-v3.png"],
-    apple: ["/assets/logo-v3.png"],
+    shortcut: ["/assets/logo.png"],
+    apple: ["/assets/logo.png"],
   },
 };
 

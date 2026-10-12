@@ -98,7 +98,9 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
                 if let Some(value) = value {
                     *slot = match slot {
                         serde_json::Value::Bool(_) => serde_json::json!(value.parse::<bool>()?),
-                        serde_json::Value::Number(_) => serde_json::from_str(&value)?,
+                        serde_json::Value::Number(_) | serde_json::Value::Array(_) => {
+                            serde_json::from_str(&value)?
+                        }
                         _ => serde_json::json!(value),
                     };
                     serde_json::from_value::<Config>(settings)?.save(&path)?;
@@ -166,32 +168,13 @@ mod doctor {
     pub fn run(config: &Config, location: Location) -> anyhow::Result<()> {
         let profile = location.profile.unwrap_or(config.profile);
         let path = config.model_path(profile, location.model_path);
-        let model = ixos_core::model::Model::load(&path)?;
+        let report = ixos_core::doctor::check(config, profile, &path)?;
         println!(
             "Model: {} ({} dimensions)",
             profile.name(),
-            model.dimensions()
+            report.dimensions
         );
-        let cache_dir = dirs::cache_dir()
-            .ok_or_else(|| anyhow::anyhow!("No application cache directory"))?
-            .join("ixos");
-        std::fs::create_dir_all(&cache_dir)?;
-        let check = tempfile::NamedTempFile::new_in(cache_dir)?;
-        drop(check);
         println!("Cache: writable");
-        let folder = tempfile::tempdir()?;
-        std::fs::write(folder.path().join("check.txt"), "Ixos search check")?;
-        let mut options = config.options(profile);
-        options.persist = false;
-        let mut engine = Engine::new(folder.path(), Some(&path), options)?;
-        let (raw, _) = engine.search("Ixos search check")?;
-        anyhow::ensure!(
-            !serde_json::from_slice::<serde_json::Value>(&raw)?["results"]
-                .as_array()
-                .unwrap()
-                .is_empty(),
-            "Search check returned no results"
-        );
         println!("Search: works");
         Ok(())
     }

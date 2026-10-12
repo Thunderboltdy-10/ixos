@@ -93,11 +93,10 @@ const THEMES: Record<SearchTone, AccentTheme> = {
 
 function inferStage(stageLabel: string, stage?: string) {
   const raw = (stage ?? stageLabel).toLowerCase();
-  if (raw === 'scan' || raw.includes('scanning')) return 'lexical';
+  if (raw === 'discover' || raw.includes('warming')) return 'discover';
   if (raw.includes('lexical')) return 'lexical';
   if (raw.includes('semantic')) return 'semantic';
-  if (raw.includes('refin')) return 'refining';
-  if (raw.includes('lock') || raw.includes('tail') || raw.includes('complete')) return 'locked';
+  if (raw.includes('complete')) return 'complete';
   return 'lexical';
 }
 
@@ -236,8 +235,6 @@ export function SearchSurface({
 
   const lexicalRatio = normalizeRatio(selected?.lexicalScore);
   const semanticRatio = normalizeRatio(selected?.semanticScore);
-  const boostRatio = normalizeRatio(selected?.boostScore);
-  const finalRatio = normalizeRatio(selected?.score ?? 0);
 
   const [copiedKind, setCopiedKind] = useState<'path' | 'context' | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState<'mode' | 'engine' | null>(null);
@@ -515,7 +512,7 @@ export function SearchSurface({
         <div className="ixos-search-results" data-scroll={allowResultsScroll}>
           <div className="ixos-search-meta-row">
             <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 10, color: 'rgba(255,255,255,0.55)' }}>
-              lexical {'->'} semantic {'->'} lock
+              discover {'->'} lexical {'->'} semantic
             </span>
             <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 10, color: theme.text }}>
               {pipelineStats?.candidates ?? visibleResults.length} matches | local-first
@@ -544,7 +541,6 @@ export function SearchSurface({
               {visibleResults.length > 0 ? (
                 visibleResults.map((result, index) => {
                   const isSelected = index === safeSelectedIndex;
-                  const ratio = normalizeRatio(result.score);
                   return (
                     <motion.div
                       key={`${result.id}-${index}`}
@@ -576,7 +572,7 @@ export function SearchSurface({
                           </span>
                         </div>
                         <span style={{ fontFamily: 'var(--font-ixo-mono), monospace', fontSize: 12, color: isSelected ? theme.text : 'rgba(255,255,255,0.64)', flexShrink: 0 }}>
-                          {(ratio * 100).toFixed(1)}%
+                          {result.score.toFixed(3)}
                         </span>
                       </div>
 
@@ -728,22 +724,12 @@ export function SearchSurface({
                   </div>
                 )}
 
-                {(selected.boostScore ?? 0) > 0.005 && (
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
-                      <span style={{ color: '#bdc1c6', fontFamily: 'var(--font-ixo-mono), monospace' }}>Quality Boost</span>
-                      <span style={{ color: '#a78bfa', fontWeight: 700, fontFamily: 'var(--font-ixo-mono), monospace' }}>+{formatPercent(selected.boostScore)}</span>
-                    </div>
-                    <div style={{ width: '100%', height: 4, background: 'rgba(124,92,255,0.15)', borderRadius: 2 }}>
-                      <div style={{ width: `${(boostRatio * 100).toFixed(1)}%`, height: '100%', background: '#a78bfa', borderRadius: 2 }} />
-                    </div>
-                  </div>
-                )}
+
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginTop: 4, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                  <span style={{ color: '#f3f5f7', fontWeight: 700, fontFamily: 'var(--font-ixo-mono), monospace' }}>Final Match Score</span>
+                  <span style={{ color: '#f3f5f7', fontWeight: 700, fontFamily: 'var(--font-ixo-mono), monospace' }}>Ranking score</span>
                   <span style={{ color: theme.text, fontWeight: 700, fontFamily: 'var(--font-ixo-mono), monospace' }}>
-                    {(finalRatio * 100).toFixed(1)}%
+                    {selected.score.toFixed(3)}
                   </span>
                 </div>
               </div>

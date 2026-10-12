@@ -98,6 +98,7 @@ export const SearchBar = React.forwardRef<HTMLInputElement, SearchBarProps>(
           {/* Input */}
           <input
             ref={ref}
+            data-search-input
             type="text"
             value={value}
             onChange={(e) => onChange(e.target.value)}

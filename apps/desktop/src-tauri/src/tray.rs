@@ -32,14 +32,10 @@ pub fn setup_tray(app: &App) -> Result<(), Box<dyn std::error::Error>> {
     let tray = TrayIconBuilder::new()
         .icon(icon)
         .menu(&menu)
-        .tooltip("Ixos - Privacy-First Search")
+        .tooltip("Ixos - Local Search")
         .on_menu_event(|app, event| match event.id.as_ref() {
             "show" => {
-                if let Some(main) = app.get_webview_window("main") {
-                    let _ = main.show();
-                    let _ = main.set_focus();
-                    let _ = main.unminimize();
-                }
+                let _ = crate::commands::system::show_overlay(app.clone());
             }
             "settings" => {
                 // Show main window and trigger settings open via event
@@ -57,11 +53,7 @@ pub fn setup_tray(app: &App) -> Result<(), Box<dyn std::error::Error>> {
         .on_tray_icon_event(|tray, event| {
             if let tauri::tray::TrayIconEvent::DoubleClick { .. } = event {
                 let app = tray.app_handle();
-                if let Some(main) = app.get_webview_window("main") {
-                    let _ = main.show();
-                    let _ = main.set_focus();
-                    let _ = main.unminimize();
-                }
+                let _ = crate::commands::system::show_overlay(app.clone());
             }
         })
         .build(app)?;

@@ -1,13 +1,14 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { useSearchStore } from '@/stores/searchStore';
-import { useLayoutStore } from '@/stores/layoutStore';
+import { useEffect, useRef, useCallback } from "react";
+import { useSearchStore } from "@/stores/searchStore";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { useLayoutStore } from "@/stores/layoutStore";
 
 // Animation constants
 const COLORS = {
-  teal: { r: 13, g: 148, b: 136 },      // #0d9488
-  amber: { r: 246, g: 185, b: 76 },     // #f6b94c
-  violet: { r: 124, g: 92, b: 255 },    // #7c5cff
-  cyan: { r: 6, g: 182, b: 212 },        // #06b6d4
+  teal: { r: 13, g: 148, b: 136 }, // #0d9488
+  amber: { r: 246, g: 185, b: 76 }, // #f6b94c
+  violet: { r: 124, g: 92, b: 255 }, // #7c5cff
+  cyan: { r: 6, g: 182, b: 212 }, // #06b6d4
   white: { r: 255, g: 255, b: 255 },
 };
 
@@ -15,24 +16,24 @@ const COLORS = {
 const ARC_CONFIG = {
   maxArcs: 5,
   minArcs: 1,
-  travelTime: 520,        // ms to travel full height
-  spawnInterval: 240,     // ms between arc spawns
+  travelTime: 520, // ms to travel full height
+  spawnInterval: 240, // ms between arc spawns
   width: 1.6,
   glowRadius: 9,
-  curveAmplitude: 36,     // max horizontal deviation
+  curveAmplitude: 36, // max horizontal deviation
 };
 
 // Dust configuration
 const DUST_CONFIG = {
   count: 48,
-  speed: 1.8,               // pixels per frame
+  speed: 1.8, // pixels per frame
   size: 1,
   alpha: 0.22,
 };
 
 // Spark configuration
 const SPARK_CONFIG = {
-  travelTime: 280,        // ms
+  travelTime: 280, // ms
   size: 4,
   glowRadius: 12,
   trailLength: 5,
@@ -40,15 +41,15 @@ const SPARK_CONFIG = {
 
 // Signal connector configuration
 const SIGNAL_CONFIG = {
-  travelTime: 200,        // ms - fast travel from search bar to deck
+  travelTime: 200, // ms - fast travel from search bar to deck
   width: 2,
   glowRadius: 8,
 };
 
 interface Arc {
   id: number;
-  progress: number;       // 0-1
-  curvePhase: number;     // random offset for curve
+  progress: number; // 0-1
+  curvePhase: number; // random offset for curve
   alpha: number;
 }
 
@@ -64,7 +65,7 @@ interface Spark {
   startY: number;
   targetY: number;
   startTime: number;
-  progress: number;       // 0-1
+  progress: number; // 0-1
   trail: { x: number; y: number; alpha: number }[];
   x: number;
   y: number;
@@ -106,16 +107,18 @@ export function SearchCorridor() {
   const pendingSparkTargets = useSearchStore((s) => s.pendingSparkTargets);
   const consumeSparkTarget = useSearchStore((s) => s.consumeSparkTarget);
   const hasSearchIntent = useSearchStore((s) => s.hasSearchIntent);
-  const cacheMode = useSearchStore((s) => s.cacheMode);
-  const deepSearchMode = useSearchStore((s) => s.deepSearchMode);
+  const profile = useSettingsStore((s) => s.config?.search.profile ?? "code");
 
   const searchBarBox = useLayoutStore((s) => s.searchBarBox);
   const deckUnderlineBox = useLayoutStore((s) => s.deckUnderlineBox);
   const resultBoxes = useLayoutStore((s) => s.resultBoxes);
-  const ghostSlotBoxes = useLayoutStore((s) => s.ghostSlotBoxes);
 
-  const isActive = phase === 'lexical' || phase === 'semantic' || phase === 'refining' || hasSearchIntent;
-  const isComplete = phase === 'complete';
+  const isActive =
+    phase === "lexical" ||
+    phase === "semantic" ||
+    phase === "discover" ||
+    hasSearchIntent;
+  const isComplete = phase === "complete";
 
   // Reset fade-out when starting new search
   useEffect(() => {
@@ -142,15 +145,15 @@ export function SearchCorridor() {
   useEffect(() => {
     if (pendingSparkTargets.length === 0 || !deckUnderlineBox) return;
 
-    const target = consumeSparkTarget();
+    const target = pendingSparkTargets[0];
     if (target === null) return;
 
     // Find target Y position from result boxes or ghost slots
     const resultBox = resultBoxes.get(target);
-    const ghostBox = ghostSlotBoxes.get(target);
-    const targetBox = resultBox || ghostBox;
+    const targetBox = resultBox;
 
     if (!targetBox) return;
+    consumeSparkTarget(target);
 
     const spark: Spark = {
       id: sparkIdRef.current++,
@@ -165,130 +168,195 @@ export function SearchCorridor() {
     };
 
     sparksRef.current.push(spark);
-  }, [pendingSparkTargets, consumeSparkTarget, deckUnderlineBox, resultBoxes, ghostSlotBoxes]);
+  }, [pendingSparkTargets, consumeSparkTarget, deckUnderlineBox, resultBoxes]);
 
   // Easing function
   const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-  const easeInOutQuad = (t: number) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  const easeInOutQuad = (t: number) =>
+    t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
   // Draw functions
-  const drawArc = useCallback((
-    ctx: CanvasRenderingContext2D,
-    arc: Arc,
-    centerX: number,
-    height: number,
-    color: typeof COLORS.teal
-  ) => {
-    const y = arc.progress * height;
-    const curveX = Math.sin(arc.progress * Math.PI * 2 + arc.curvePhase) * ARC_CONFIG.curveAmplitude;
-    const x = centerX + curveX;
+  const drawArc = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      arc: Arc,
+      centerX: number,
+      height: number,
+      color: typeof COLORS.teal,
+    ) => {
+      const y = arc.progress * height;
+      const curveX =
+        Math.sin(arc.progress * Math.PI * 2 + arc.curvePhase) *
+        ARC_CONFIG.curveAmplitude;
+      const x = centerX + curveX;
 
-    // Glow
-    const gradient = ctx.createRadialGradient(x, y, 0, x, y, ARC_CONFIG.glowRadius);
-    gradient.addColorStop(0, `rgba(${color.r}, ${color.g}, ${color.b}, ${arc.alpha * 0.6})`);
-    gradient.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, 0)`);
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(x, y, ARC_CONFIG.glowRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Core
-    ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${arc.alpha})`;
-    ctx.beginPath();
-    ctx.arc(x, y, ARC_CONFIG.width, 0, Math.PI * 2);
-    ctx.fill();
-  }, []);
-
-  const drawDust = useCallback((
-    ctx: CanvasRenderingContext2D,
-    dust: Dust,
-    color: typeof COLORS.teal
-  ) => {
-    ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${dust.alpha})`;
-    ctx.beginPath();
-    ctx.arc(dust.x, dust.y, DUST_CONFIG.size, 0, Math.PI * 2);
-    ctx.fill();
-  }, []);
-
-  const drawSpark = useCallback((
-    ctx: CanvasRenderingContext2D,
-    spark: Spark,
-    centerX: number,
-    color: typeof COLORS.cyan
-  ) => {
-    const y = spark.startY + (spark.targetY - spark.startY) * easeOutCubic(spark.progress);
-
-    // Draw trail
-    spark.trail.forEach((point: { x: number; y: number; alpha: number }, i: number) => {
-      const trailAlpha = (1 - i / spark.trail.length) * 0.5;
-      ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${trailAlpha})`;
+      // Glow
+      const gradient = ctx.createRadialGradient(
+        x,
+        y,
+        0,
+        x,
+        y,
+        ARC_CONFIG.glowRadius,
+      );
+      gradient.addColorStop(
+        0,
+        `rgba(${color.r}, ${color.g}, ${color.b}, ${arc.alpha * 0.6})`,
+      );
+      gradient.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, 0)`);
+      ctx.fillStyle = gradient;
       ctx.beginPath();
-      ctx.arc(point.x, point.y, SPARK_CONFIG.size * (1 - i / spark.trail.length), 0, Math.PI * 2);
+      ctx.arc(x, y, ARC_CONFIG.glowRadius, 0, Math.PI * 2);
       ctx.fill();
-    });
 
-    // Update trail
-    spark.trail.unshift({ x: centerX, y, alpha: 1 });
-    if (spark.trail.length > SPARK_CONFIG.trailLength) {
-      spark.trail.pop();
-    }
+      // Core
+      ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${arc.alpha})`;
+      ctx.beginPath();
+      ctx.arc(x, y, ARC_CONFIG.width, 0, Math.PI * 2);
+      ctx.fill();
+    },
+    [],
+  );
 
-    // Glow
-    const gradient = ctx.createRadialGradient(centerX, y, 0, centerX, y, SPARK_CONFIG.glowRadius);
-    gradient.addColorStop(0, `rgba(${COLORS.white.r}, ${COLORS.white.g}, ${COLORS.white.b}, 0.9)`);
-    gradient.addColorStop(0.3, `rgba(${color.r}, ${color.g}, ${color.b}, 0.7)`);
-    gradient.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, 0)`);
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(centerX, y, SPARK_CONFIG.glowRadius, 0, Math.PI * 2);
-    ctx.fill();
+  const drawDust = useCallback(
+    (ctx: CanvasRenderingContext2D, dust: Dust, color: typeof COLORS.teal) => {
+      ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${dust.alpha})`;
+      ctx.beginPath();
+      ctx.arc(dust.x, dust.y, DUST_CONFIG.size, 0, Math.PI * 2);
+      ctx.fill();
+    },
+    [],
+  );
 
-    // Core (bright white)
-    ctx.fillStyle = `rgba(255, 255, 255, 0.95)`;
-    ctx.beginPath();
-    ctx.arc(centerX, y, SPARK_CONFIG.size, 0, Math.PI * 2);
-    ctx.fill();
-  }, []);
+  const drawSpark = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      spark: Spark,
+      centerX: number,
+      color: typeof COLORS.cyan,
+    ) => {
+      const y =
+        spark.startY +
+        (spark.targetY - spark.startY) * easeOutCubic(spark.progress);
+
+      // Draw trail
+      spark.trail.forEach(
+        (point: { x: number; y: number; alpha: number }, i: number) => {
+          const trailAlpha = (1 - i / spark.trail.length) * 0.5;
+          ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${trailAlpha})`;
+          ctx.beginPath();
+          ctx.arc(
+            point.x,
+            point.y,
+            SPARK_CONFIG.size * (1 - i / spark.trail.length),
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+        },
+      );
+
+      // Update trail
+      spark.trail.unshift({ x: centerX, y, alpha: 1 });
+      if (spark.trail.length > SPARK_CONFIG.trailLength) {
+        spark.trail.pop();
+      }
+
+      // Glow
+      const gradient = ctx.createRadialGradient(
+        centerX,
+        y,
+        0,
+        centerX,
+        y,
+        SPARK_CONFIG.glowRadius,
+      );
+      gradient.addColorStop(
+        0,
+        `rgba(${COLORS.white.r}, ${COLORS.white.g}, ${COLORS.white.b}, 0.9)`,
+      );
+      gradient.addColorStop(
+        0.3,
+        `rgba(${color.r}, ${color.g}, ${color.b}, 0.7)`,
+      );
+      gradient.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, 0)`);
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(centerX, y, SPARK_CONFIG.glowRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Core (bright white)
+      ctx.fillStyle = `rgba(255, 255, 255, 0.95)`;
+      ctx.beginPath();
+      ctx.arc(centerX, y, SPARK_CONFIG.size, 0, Math.PI * 2);
+      ctx.fill();
+    },
+    [],
+  );
 
   // Draw signal connector pulse from search bar to deck
-  const drawSignalPulse = useCallback((
-    ctx: CanvasRenderingContext2D,
-    pulse: SignalPulse,
-    startY: number,
-    endY: number,
-    centerX: number,
-    color: typeof COLORS.teal
-  ) => {
-    const progress = easeInOutQuad(pulse.progress);
-    const y = startY + (endY - startY) * progress;
+  const drawSignalPulse = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      pulse: SignalPulse,
+      startY: number,
+      endY: number,
+      centerX: number,
+      color: typeof COLORS.teal,
+    ) => {
+      const progress = easeInOutQuad(pulse.progress);
+      const y = startY + (endY - startY) * progress;
 
-    // Trail effect
-    const trailLength = 20;
-    const trailStart = Math.max(startY, y - trailLength);
+      // Trail effect
+      const trailLength = 20;
+      const trailStart = Math.max(startY, y - trailLength);
 
-    // Draw gradient trail
-    const gradient = ctx.createLinearGradient(centerX, trailStart, centerX, y);
-    gradient.addColorStop(0, `rgba(${color.r}, ${color.g}, ${color.b}, 0)`);
-    gradient.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, 0.8)`);
+      // Draw gradient trail
+      const gradient = ctx.createLinearGradient(
+        centerX,
+        trailStart,
+        centerX,
+        y,
+      );
+      gradient.addColorStop(0, `rgba(${color.r}, ${color.g}, ${color.b}, 0)`);
+      gradient.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, 0.8)`);
 
-    ctx.strokeStyle = gradient;
-    ctx.lineWidth = SIGNAL_CONFIG.width;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(centerX, trailStart);
-    ctx.lineTo(centerX, y);
-    ctx.stroke();
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = SIGNAL_CONFIG.width;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(centerX, trailStart);
+      ctx.lineTo(centerX, y);
+      ctx.stroke();
 
-    // Glow at head
-    const glowGradient = ctx.createRadialGradient(centerX, y, 0, centerX, y, SIGNAL_CONFIG.glowRadius);
-    glowGradient.addColorStop(0, `rgba(${COLORS.white.r}, ${COLORS.white.g}, ${COLORS.white.b}, 0.9)`);
-    glowGradient.addColorStop(0.4, `rgba(${color.r}, ${color.g}, ${color.b}, 0.6)`);
-    glowGradient.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, 0)`);
-    ctx.fillStyle = glowGradient;
-    ctx.beginPath();
-    ctx.arc(centerX, y, SIGNAL_CONFIG.glowRadius, 0, Math.PI * 2);
-    ctx.fill();
-  }, []);
+      // Glow at head
+      const glowGradient = ctx.createRadialGradient(
+        centerX,
+        y,
+        0,
+        centerX,
+        y,
+        SIGNAL_CONFIG.glowRadius,
+      );
+      glowGradient.addColorStop(
+        0,
+        `rgba(${COLORS.white.r}, ${COLORS.white.g}, ${COLORS.white.b}, 0.9)`,
+      );
+      glowGradient.addColorStop(
+        0.4,
+        `rgba(${color.r}, ${color.g}, ${color.b}, 0.6)`,
+      );
+      glowGradient.addColorStop(
+        1,
+        `rgba(${color.r}, ${color.g}, ${color.b}, 0)`,
+      );
+      ctx.fillStyle = glowGradient;
+      ctx.beginPath();
+      ctx.arc(centerX, y, SIGNAL_CONFIG.glowRadius, 0, Math.PI * 2);
+      ctx.fill();
+    },
+    [],
+  );
 
   // Main animation loop
   useEffect(() => {
@@ -296,7 +364,7 @@ export function SearchCorridor() {
     const container = containerRef.current;
     if (!canvas || !container) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     // Handle resize
@@ -311,7 +379,7 @@ export function SearchCorridor() {
     };
 
     resize();
-    window.addEventListener('resize', resize);
+    window.addEventListener("resize", resize);
 
     const tick = (now: number) => {
       // Track delta time for frame-rate independent animation (currently unused)
@@ -325,14 +393,17 @@ export function SearchCorridor() {
       // Clear canvas
       ctx.clearRect(0, 0, rect.width, height);
 
-      const color = deepSearchMode ? COLORS.violet : cacheMode === 'native-cache' ? COLORS.teal : COLORS.amber;
+      const color = profile === "code" ? COLORS.teal : COLORS.amber;
 
       // Handle fade-out on complete
       if (isComplete) {
         if (fadeOutStartRef.current === null) {
           fadeOutStartRef.current = now;
         }
-        fadeOutProgressRef.current = Math.min(1, (now - fadeOutStartRef.current) / FADE_OUT_DURATION);
+        fadeOutProgressRef.current = Math.min(
+          1,
+          (now - fadeOutStartRef.current) / FADE_OUT_DURATION,
+        );
 
         // If fade-out is complete, clear all animations and stop drawing
         if (fadeOutProgressRef.current >= 1) {
@@ -364,8 +435,11 @@ export function SearchCorridor() {
         const searchBarY = searchBarBox.top + searchBarBox.height - rect.top;
         const deckY = deckUnderlineBox.top - rect.top;
 
-        signalPulsesRef.current = signalPulsesRef.current.filter(pulse => {
-          pulse.progress = Math.min(1, (now - pulse.startTime) / SIGNAL_CONFIG.travelTime);
+        signalPulsesRef.current = signalPulsesRef.current.filter((pulse) => {
+          pulse.progress = Math.min(
+            1,
+            (now - pulse.startTime) / SIGNAL_CONFIG.travelTime,
+          );
 
           if (pulse.progress >= 1) return false;
 
@@ -378,8 +452,11 @@ export function SearchCorridor() {
       }
 
       // Update and draw sparks (with fade multiplier)
-      sparksRef.current = sparksRef.current.filter(spark => {
-        spark.progress = Math.min(1, (now - spark.startTime) / SPARK_CONFIG.travelTime);
+      sparksRef.current = sparksRef.current.filter((spark) => {
+        spark.progress = Math.min(
+          1,
+          (now - spark.startTime) / SPARK_CONFIG.travelTime,
+        );
 
         if (spark.progress >= 1) return false;
 
@@ -397,13 +474,24 @@ export function SearchCorridor() {
     frameRef.current = requestAnimationFrame(tick);
 
     return () => {
-      window.removeEventListener('resize', resize);
+      window.removeEventListener("resize", resize);
       cancelAnimationFrame(frameRef.current);
     };
-  }, [isActive, isComplete, hasSearchIntent, searchBarBox, deckUnderlineBox, drawArc, drawDust, drawSpark, drawSignalPulse, cacheMode, deepSearchMode]);
+  }, [
+    isActive,
+    isComplete,
+    hasSearchIntent,
+    searchBarBox,
+    deckUnderlineBox,
+    drawArc,
+    drawDust,
+    drawSpark,
+    drawSignalPulse,
+    profile,
+  ]);
 
   // Don't render if no search intent
-  if (!hasSearchIntent && phase === 'idle') return null;
+  if (!hasSearchIntent && phase === "idle") return null;
 
   return (
     <div
@@ -411,10 +499,7 @@ export function SearchCorridor() {
       className="absolute inset-0 pointer-events-none overflow-hidden"
       style={{ zIndex: 0 }}
     >
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0"
-      />
+      <canvas ref={canvasRef} className="absolute inset-0" />
     </div>
   );
 }

@@ -6,12 +6,12 @@
   "build": {
     "beforeDevCommand": {
       "script": "npm run dev",
-      "cwd": "../.."
+      "cwd": "../ui"
     },
     "devUrl": "http://localhost:5173",
     "beforeBuildCommand": {
       "script": "npm run build",
-      "cwd": "../.."
+      "cwd": "../ui"
     },
     "frontendDist": "../ui/dist"
   },
@@ -33,6 +33,19 @@
         "resizable": true,
         "skipTaskbar": false,
         "transparent": false
+      },
+      {
+        "label": "overlay",
+        "title": "Ixos Search",
+        "fullscreen": true,
+        "visible": false,
+        "focus": false,
+        "decorations": false,
+        "resizable": false,
+        "skipTaskbar": true,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "shadow": false
       }
     ],
     "security": {

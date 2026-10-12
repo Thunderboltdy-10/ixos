@@ -55,6 +55,7 @@ pub struct Stats {
     pub searchable_files: usize,
     pub skipped_files: usize,
     pub source_bytes_read: u64,
+    pub source_text_bytes: u64,
     pub memory_cache_hits: usize,
     pub metadata_cache_hits: usize,
     pub native_cache_hits: usize,
@@ -134,7 +135,7 @@ struct LoadedSource {
 }
 
 pub struct Engine {
-    root: PathBuf,
+    roots: Vec<PathBuf>,
     model: Option<Model>,
     options: Options,
     cache: Option<cache::DocumentCache>,
@@ -147,6 +148,13 @@ pub struct Engine {
 
 impl Engine {
     pub fn new(root: &Path, model_path: Option<&Path>, options: Options) -> anyhow::Result<Self> {
+        Self::new_locations(&[root.to_owned()], model_path, options)
+    }
+    pub fn new_locations(
+        locations: &[PathBuf],
+        model_path: Option<&Path>,
+        options: Options,
+    ) -> anyhow::Result<Self> {
         anyhow::ensure!(
             options.limit > 0
                 && options.limit <= 10000
@@ -154,8 +162,17 @@ impl Engine {
                 && options.context <= 1000,
             "Invalid retrieval limits/threshold"
         );
-        let root = root.canonicalize()?;
-        anyhow::ensure!(root.is_dir(), "Search root must be a directory");
+        anyhow::ensure!(!locations.is_empty(), "Choose a search location");
+        let mut roots = locations
+            .iter()
+            .map(|path| path.canonicalize())
+            .collect::<std::io::Result<Vec<_>>>()?;
+        roots.sort();
+        roots.dedup();
+        anyhow::ensure!(
+            roots.iter().all(|root| root.is_dir()),
+            "Each location must be a directory"
+        );
         let model = if options.mode == RetrievalMode::Lexical {
             None
         } else {
@@ -176,7 +193,7 @@ impl Engine {
         };
         let io_pool = rayon::ThreadPoolBuilder::new().num_threads(4).build()?;
         Ok(Self {
-            root,
+            roots,
             model,
             options,
             cache,
@@ -199,7 +216,12 @@ impl Engine {
         let mut pending = Vec::new();
         let mut corpus_bytes = 0usize;
         let mut entries = Vec::new();
-        for entry in search_walk(&self.root, true, true, false, None).build() {
+        let mut discovered = HashSet::new();
+        for entry in self
+            .roots
+            .iter()
+            .flat_map(|root| search_walk(root, true, true, false, None).build())
+        {
             let entry = match entry {
                 Ok(entry) => entry,
                 Err(_) => {
@@ -208,6 +230,9 @@ impl Engine {
                 }
             };
             if !entry.file_type().is_some_and(|kind| kind.is_file()) {
+                continue;
+            }
+            if !discovered.insert(entry.path().to_owned()) {
                 continue;
             }
             stats.discovered_files += 1;
@@ -226,26 +251,19 @@ impl Engine {
                     .par_iter()
                     .map(|entry| {
                         let path = entry.path();
-                        let relative = path
-                            .strip_prefix(&self.root)
-                            .unwrap()
-                            .to_string_lossy()
-                            .replace('\\', "/");
+                        let display = if self.roots.len() == 1 {
+                            path.strip_prefix(&self.roots[0]).unwrap()
+                        } else {
+                            path
+                        };
+                        let relative = display.to_string_lossy().replace('\\', "/");
                         let mut loaded = LoadedSource {
                             relative,
                             stamp: Stamp::read(path).ok(),
                             observed: Some(SystemTime::now()),
                             ..Default::default()
                         };
-                        let reusable = self.documents.get(&loaded.relative).is_some_and(|doc| {
-                            self.model.as_ref().is_none_or(|m| {
-                                !doc.passages.is_empty()
-                                    && doc
-                                        .passages
-                                        .iter()
-                                        .all(|p| p.vector.len() == m.dimensions())
-                            })
-                        });
+                        let reusable = self.documents.contains_key(&loaded.relative);
                         if reusable
                             && loaded.stamp.as_ref().is_some_and(|stamp| {
                                 self.observations.get(&loaded.relative).is_some_and(
@@ -306,7 +324,7 @@ impl Engine {
                         let length = terms.values().sum();
                         let lines = text.split('\n').map(str::to_owned).collect();
                         loaded.stats.lexical_prepare_ms = started.elapsed().as_secs_f64() * 1000.0;
-                        if self.cache.is_some() {
+                        if self.cache.is_some() && self.options.mode != RetrievalMode::Lexical {
                             let started = Instant::now();
                             loaded.native = cache::prefetch(path);
                             loaded.stats.cache_read_ms = started.elapsed().as_secs_f64() * 1000.0;
@@ -358,41 +376,60 @@ impl Engine {
                 if loaded.reused {
                     stats.memory_cache_hits += 1;
                     stats.metadata_cache_hits += usize::from(loaded.metadata_hit);
-                    continue;
+                } else {
+                    let document = loaded.document.take().unwrap();
+                    if let Some(previous) = self.documents.remove(&loaded.relative) {
+                        self.remove_terms(&previous);
+                    }
+                    self.add_terms(&document);
+                    self.documents.insert(loaded.relative.clone(), document);
                 }
-                let mut document = loaded.document.take().unwrap();
-                if let Some(model) = &self.model {
-                    let started = Instant::now();
-                    let cached = self.cache.as_mut().and_then(|cache| {
-                        cache.get_prefetched(&document.path, &document.source_hash, loaded.native)
-                    });
-                    stats.cache_read_ms += started.elapsed().as_secs_f64() * 1000.0;
-                    if let Some((rows, backend)) = cached {
-                        if rows.iter().all(|p| {
-                            p.end_byte <= document.text.len()
-                                && document.text.is_char_boundary(p.start_byte)
-                                && document.text.is_char_boundary(p.end_byte)
-                                && p.end_line <= document.lines.len()
-                                && p.vector.len() == model.dimensions()
-                        }) {
-                            document.passages = rows;
-                            if backend == "native" {
-                                stats.native_cache_hits += 1;
-                            } else {
-                                stats.application_cache_hits += 1;
+                if let Some(model) = self
+                    .model
+                    .as_ref()
+                    .filter(|_| self.options.mode != RetrievalMode::Lexical)
+                {
+                    let document = self.documents.get_mut(&loaded.relative).unwrap();
+                    if document.passages.is_empty()
+                        || document
+                            .passages
+                            .iter()
+                            .any(|p| p.vector.len() != model.dimensions())
+                    {
+                        let started = Instant::now();
+                        let native = if loaded.reused && self.cache.is_some() {
+                            cache::prefetch(&document.path)
+                        } else {
+                            loaded.native
+                        };
+                        let cached = self.cache.as_mut().and_then(|cache| {
+                            cache.get_prefetched(&document.path, &document.source_hash, native)
+                        });
+                        stats.cache_read_ms += started.elapsed().as_secs_f64() * 1000.0;
+                        document.passages.clear();
+                        if let Some((rows, backend)) = cached {
+                            if rows.iter().all(|p| {
+                                p.end_byte <= document.text.len()
+                                    && document.text.is_char_boundary(p.start_byte)
+                                    && document.text.is_char_boundary(p.end_byte)
+                                    && p.end_line <= document.lines.len()
+                                    && p.vector.len() == model.dimensions()
+                            }) {
+                                document.passages = rows;
+                                if backend == "native" {
+                                    stats.native_cache_hits += 1;
+                                } else {
+                                    stats.application_cache_hits += 1;
+                                }
                             }
                         }
-                    }
-                    if document.passages.is_empty() {
-                        document.passages = representatives(&document.text, self.options.profile);
-                        pending.push(loaded.relative.clone());
+                        if document.passages.is_empty() {
+                            document.passages =
+                                representatives(&document.text, self.options.profile);
+                            pending.push(loaded.relative.clone());
+                        }
                     }
                 }
-                if let Some(previous) = self.documents.remove(&loaded.relative) {
-                    self.remove_terms(&previous);
-                }
-                self.add_terms(&document);
-                self.documents.insert(loaded.relative, document);
             }
         }
         let deleted = self
@@ -453,8 +490,18 @@ impl Engine {
                 .max(0.0);
         }
         stats.searchable_files = self.documents.len();
+        stats.source_text_bytes = corpus_bytes as u64;
         stats.refresh_ms = began.elapsed().as_secs_f64() * 1000.0;
         Ok(stats)
+    }
+    pub fn source_stats(&self, root: &Path) -> (usize, u64) {
+        let documents = self
+            .documents
+            .values()
+            .filter(|document| document.path.starts_with(root));
+        documents.fold((0, 0), |(count, bytes), document| {
+            (count + 1, bytes + document.text.len() as u64)
+        })
     }
     /// Result formatting and mode can change without discarding resident sources.
     pub fn configure_search(
@@ -503,6 +550,21 @@ impl Engine {
         }
     }
     pub fn search(&mut self, query: &str) -> anyhow::Result<(Vec<u8>, Stats)> {
+        self.search_location(query, None)
+    }
+    /// Search a chosen location without duplicating the resident corpus or model.
+    pub fn search_location(
+        &mut self,
+        query: &str,
+        location: Option<&Path>,
+    ) -> anyhow::Result<(Vec<u8>, Stats)> {
+        let location = location.map(Path::canonicalize).transpose()?;
+        anyhow::ensure!(
+            location
+                .as_ref()
+                .is_none_or(|path| self.roots.contains(path)),
+            "Location is not part of this engine"
+        );
         anyhow::ensure!(
             !query.trim().is_empty() && query.len() <= 65536,
             "Empty or oversized query"
@@ -539,6 +601,12 @@ impl Engine {
         let average = self.total_terms as f32 / (self.documents.len().max(1) as f32);
         let mut scores = Vec::new();
         for (path, document) in &self.documents {
+            if location
+                .as_ref()
+                .is_some_and(|location| !document.path.starts_with(location))
+            {
+                continue;
+            }
             let lexical = wanted
                 .iter()
                 .map(|term| {
@@ -547,14 +615,18 @@ impl Engine {
                         / (count + 1.2 * (0.25 + 0.75 * document.length as f32 / average.max(1.0)))
                 })
                 .sum::<f32>();
-            let (best, semantic) = document
-                .passages
-                .iter()
-                .enumerate()
-                .map(|(i, p)| (i, dot(&query_vector, &p.vector)))
-                .max_by(|a, b| a.1.total_cmp(&b.1).then_with(|| b.0.cmp(&a.0)))
-                .unwrap_or((0, 0.0));
-            stats.vectors_scored += document.passages.len();
+            let (best, semantic) = if self.options.mode == RetrievalMode::Lexical {
+                (0, 0.0)
+            } else {
+                stats.vectors_scored += document.passages.len();
+                document
+                    .passages
+                    .iter()
+                    .enumerate()
+                    .map(|(i, p)| (i, dot(&query_vector, &p.vector)))
+                    .max_by(|a, b| a.1.total_cmp(&b.1).then_with(|| b.0.cmp(&a.0)))
+                    .unwrap_or((0, 0.0))
+            };
             if lexical > 0.0 {
                 stats.lexical_candidates += 1;
             }
@@ -624,6 +696,11 @@ impl Engine {
         for (path, score, _lexical, _semantic, best) in ranked.into_iter().take(self.options.limit)
         {
             let document = &self.documents[&path];
+            let display_path = if self.roots.len() == 1 {
+                path.clone()
+            } else {
+                document.path.to_string_lossy().into_owned()
+            };
             let mut anchor = 0;
             let mut weight = 0.0;
             if let Some(selection) = selections.get(&path) {
@@ -641,10 +718,10 @@ impl Engine {
                 }
             }
             let mut row = ResultRow {
-                path: path.clone(),
+                path: display_path.clone(),
                 score,
                 snippet: Some(snippet_at(
-                    &path,
+                    &display_path,
                     &document.lines,
                     anchor + 1,
                     self.options.context,
@@ -652,7 +729,7 @@ impl Engine {
                 snippet_omitted: false,
             };
             if !rows.fits(&row)? {
-                row.snippet = Some(snippet_at(&path, &document.lines, anchor + 1, 0));
+                row.snippet = Some(snippet_at(&display_path, &document.lines, anchor + 1, 0));
             }
             if !rows.fits(&row)? {
                 row.snippet = None;
@@ -746,6 +823,91 @@ pub fn snippet_at(path: &str, lines: &[String], anchor: usize, context: usize) -
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn multiple_locations_share_ranking_and_do_not_duplicate_nested_files() {
+        let root = tempfile::tempdir().unwrap();
+        let a = root.path().join("a");
+        let b = root.path().join("b");
+        std::fs::create_dir(&a).unwrap();
+        std::fs::create_dir(&b).unwrap();
+        std::fs::write(a.join("source.txt"), "alpha alpha common").unwrap();
+        std::fs::write(b.join("source.txt"), "alpha common").unwrap();
+        let options = Options {
+            mode: RetrievalMode::Lexical,
+            persist: false,
+            ..Default::default()
+        };
+        let mut engine =
+            Engine::new_locations(&[a.clone(), b.clone()], None, options.clone()).unwrap();
+        let (raw, stats) = engine.search("alpha").unwrap();
+        assert_eq!(stats.searchable_files, 2);
+        let rows: serde_json::Value = serde_json::from_slice(&raw).unwrap();
+        assert!(rows["results"][0]["path"]
+            .as_str()
+            .unwrap()
+            .replace('\\', "/")
+            .ends_with("a/source.txt"));
+        assert!(Path::new(rows["results"][0]["path"].as_str().unwrap()).is_file());
+        let (scoped, stats) = engine.search_location("alpha", Some(&a)).unwrap();
+        let scoped: serde_json::Value = serde_json::from_slice(&scoped).unwrap();
+        assert_eq!(stats.searchable_files, 2);
+        assert_eq!(scoped["results"].as_array().unwrap().len(), 1);
+        assert!(Path::new(scoped["results"][0]["path"].as_str().unwrap())
+            .starts_with(a.canonicalize().unwrap()));
+        assert!(engine.search_location("alpha", Some(root.path())).is_err());
+        assert!(
+            rows["results"][0]["score"].as_f64().unwrap()
+                > rows["results"][1]["score"].as_f64().unwrap()
+        );
+        assert_eq!(engine.source_stats(&a.canonicalize().unwrap()).0, 1);
+        let mut overlapping =
+            Engine::new_locations(&[root.path().to_owned(), a], None, options).unwrap();
+        assert_eq!(overlapping.search("alpha").unwrap().0, raw);
+    }
+
+    #[test]
+    fn lexical_results_precede_embeddings_and_reuse_parsed_text() {
+        let model = crate::model::test_model();
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join("source.txt"), "hello world").unwrap();
+        let options = Options {
+            mode: RetrievalMode::Lexical,
+            persist: false,
+            ..Default::default()
+        };
+        let mut engine = Engine::new(root.path(), Some(model.path()), options).unwrap();
+        let (_, lexical) = engine.search("world").unwrap();
+        assert_eq!(lexical.passages_embedded, 0);
+        engine
+            .configure_search(RetrievalMode::Hybrid, 10, 2, Some(model.path()))
+            .unwrap();
+        let (hybrid, stats) = engine.search("world").unwrap();
+        assert_eq!(stats.lexical_prepare_ms, 0.0);
+        assert!(stats.passages_embedded > 0);
+        let mut fresh = Engine::new(
+            root.path(),
+            Some(model.path()),
+            Options {
+                persist: false,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(hybrid, fresh.search("world").unwrap().0);
+        engine
+            .configure_search(RetrievalMode::Lexical, 10, 2, None)
+            .unwrap();
+        std::fs::write(root.path().join("source.txt"), "hello hello").unwrap();
+        let (_, lexical) = engine.search("hello").unwrap();
+        assert_eq!(lexical.passages_embedded, 0);
+        engine
+            .configure_search(RetrievalMode::Hybrid, 10, 2, Some(model.path()))
+            .unwrap();
+        let (_, hybrid) = engine.search("hello").unwrap();
+        assert_eq!(hybrid.lexical_prepare_ms, 0.0);
+        assert!(hybrid.passages_embedded > 0);
+    }
+
     #[test]
     fn native_ephemeral_and_resident_results_match_and_edits_refresh() {
         let model = crate::model::test_model();

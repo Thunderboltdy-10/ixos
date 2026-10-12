@@ -1,171 +1,44 @@
-import { create } from 'zustand';
-import type { IxosConfig, ConsentStatus } from '@/lib/types';
-import * as tauri from '@/lib/tauri';
-
+import { create } from "zustand";
+import * as tauri from "@/lib/tauri";
+import type { Config, LocationStatus, ModelStatus, Profile } from "@/lib/types";
 interface SettingsState {
-  // Config
-  config: IxosConfig | null;
-  consent: ConsentStatus | null;
-  isLoading: boolean;
+  config: Config | null;
+  locations: LocationStatus[];
+  models: ModelStatus[];
   error: string | null;
-
-  // Actions
   loadConfig: () => Promise<void>;
-  updateConfig: (config: Partial<IxosConfig>) => Promise<void>;
-  resetConfig: () => Promise<void>;
-  loadConsent: () => Promise<void>;
-  grantConsent: () => Promise<void>;
-  withdrawConsent: () => Promise<void>;
+  loadModels: () => Promise<void>;
+  updateConfig: (patch: Partial<Config>) => Promise<void>;
+  setProfile: (profile: Profile) => Promise<void>;
+  setLocations: (locations: LocationStatus[]) => void;
 }
-
-const defaultConfig: IxosConfig = {
-  search: {
-    defaultLimit: 20,
-    defaultDirectory: null,
-    timeoutSeconds: 30,
-    enableSecureRanking: true,
-    progressiveByDefault: true,
-    cacheMode: 'native-cache',
-    modelType: 'ixos-flash-v2',
-    proModelType: 'ixos-pro-v2',
-    searchMode: 'auto',
-    askMode: 'auto',
-    personalRankingEnabled: false,
-    useStubModel: true,
-    secureTiming: false,
-    contextLines: 3,
-    minScoreThreshold: 0.1,
-  },
-  output: {
-    defaultFormat: 'human',
-    color: true,
-    showScores: false,
-    exitOnClose: false,
-  },
-  security: {
-    sandboxEnabled: false,
-    sandboxDirectories: [],
-    verifyIntegrity: true,
-    telemetryOptIn: false,
-  },
-};
-
 export const useSettingsStore = create<SettingsState>((set, get) => ({
   config: null,
-  consent: null,
-  isLoading: false,
+  locations: [],
+  models: [],
   error: null,
-
   loadConfig: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const config = await tauri.getConfig();
-
-
-      // Migrate only known legacy model values to v2 defaults.
-      // Only overwrite if the value is a known legacy model, preserving user preferences.
-      const LEGACY_FLASH_MODELS = ['ixos-flash-v1', 'flash-v1', 'flash', ''];
-      const LEGACY_PRO_MODELS = ['ixos-pro-v1', 'pro-v1', 'potion', 'pro', ''];
-
-      let needsUpdate = false;
-      if (LEGACY_FLASH_MODELS.includes(config.search.modelType)) {
-        config.search.modelType = 'ixos-flash-v2';
-        needsUpdate = true;
-      }
-      if (LEGACY_PRO_MODELS.includes(config.search.proModelType)) {
-        config.search.proModelType = 'ixos-pro-v2';
-        needsUpdate = true;
-      }
-
-      // Auto-increase timeout if it's too low (user report: "always exceeded")
-      if (config.search.timeoutSeconds < 15) {
-        config.search.timeoutSeconds = 30;
-        needsUpdate = true;
-      }
-
-      if (config.search.cacheMode === 'jit') {
-        config.search.cacheMode = 'ephemeral';
-        needsUpdate = true;
-      } else if (config.search.cacheMode === 'cache' || config.search.cacheMode === 'persistent') {
-        config.search.cacheMode = 'native-cache';
-        needsUpdate = true;
-      } else if (!['native-cache', 'ephemeral'].includes(config.search.cacheMode)) {
-        config.search.cacheMode = 'native-cache';
-        needsUpdate = true;
-      }
-
-      if (needsUpdate) {
-        try {
-          await tauri.updateConfig(config);
-        } catch (e) {
-          console.warn('Failed to auto-update config fix:', e);
-        }
-      }
-
-      set({ config, isLoading: false });
-    } catch (error) {
-      console.error('Failed to load config:', error);
-      set({ config: defaultConfig, isLoading: false, error: String(error) });
-    }
+    const config = await tauri.getConfig();
+    set({ config });
   },
-
-  updateConfig: async (updates) => {
-    const currentConfig = get().config;
-    if (!currentConfig) return;
-
-    const newConfig: IxosConfig = {
-      ...currentConfig,
-      search: { ...currentConfig.search, ...updates.search },
-      output: { ...currentConfig.output, ...updates.output },
-      security: { ...currentConfig.security, ...updates.security },
-    };
-
-    set({ isLoading: true, error: null });
+  loadModels: async () => set({ models: await tauri.getModelStatus() }),
+  updateConfig: async (patch) => {
+    const current = get().config;
+    if (!current) return;
     try {
-      await tauri.updateConfig(newConfig);
-      set({ config: newConfig, isLoading: false });
-    } catch (error) {
-      set({ isLoading: false, error: String(error) });
-    }
-  },
-
-  resetConfig: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      await tauri.resetConfig();
-      const config = await tauri.getConfig();
-      set({ config, isLoading: false });
-    } catch (error) {
-      set({ isLoading: false, error: String(error) });
-    }
-  },
-
-  loadConsent: async () => {
-    try {
-      const consent = await tauri.getConsentStatus();
-      set({ consent });
-    } catch (error) {
-      console.error('Failed to load consent:', error);
-    }
-  },
-
-  grantConsent: async () => {
-    try {
-      await tauri.grantConsent();
-      const consent = await tauri.getConsentStatus();
-      set({ consent });
+      const config = { ...current, ...patch };
+      await tauri.updateConfig(config);
+      set({ config, error: null });
     } catch (error) {
       set({ error: String(error) });
+      throw error;
     }
   },
-
-  withdrawConsent: async () => {
-    try {
-      await tauri.withdrawConsent();
-      const consent = await tauri.getConsentStatus();
-      set({ consent });
-    } catch (error) {
-      set({ error: String(error) });
+  setProfile: async (profile) => {
+    const config = get().config;
+    if (config && config.search.profile !== profile) {
+      await get().updateConfig({ search: { ...config.search, profile } });
     }
   },
+  setLocations: (locations) => set({ locations }),
 }));

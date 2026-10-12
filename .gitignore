@@ -57,3 +57,5 @@ build/
 
 # Vercel CLI
 .vercel/
+
+/apps/desktop/src-tauri/gen/

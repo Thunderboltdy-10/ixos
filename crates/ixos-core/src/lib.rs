@@ -4,6 +4,7 @@ pub mod cloud;
 pub mod config;
 pub mod digest;
 pub mod discover;
+pub mod doctor;
 pub mod engine;
 pub mod extract;
 #[cfg(windows)]

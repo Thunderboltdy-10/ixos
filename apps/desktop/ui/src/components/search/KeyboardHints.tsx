@@ -6,7 +6,8 @@ export function KeyboardHints() {
           <kbd className="kbd">Enter</kbd> Open
         </span>
         <span>
-          <kbd className="kbd">Ctrl</kbd>+<kbd className="kbd">Enter</kbd> Reveal
+          <kbd className="kbd">Ctrl</kbd>+<kbd className="kbd">Enter</kbd>{" "}
+          Reveal
         </span>
       </div>
       <div className="flex items-center gap-4">

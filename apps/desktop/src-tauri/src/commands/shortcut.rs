@@ -5,7 +5,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::AppHandle;
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
 // =============================================================================
@@ -192,17 +192,18 @@ pub async fn set_shortcut_config(app: AppHandle, config: ShortcutConfig) -> Resu
         .to_shortcut()
         .ok_or_else(|| format!("Invalid key: {}", config.key))?;
 
-    // Load old config to unregister old shortcut
-    let old_config = ShortcutConfig::load();
-    if let Some(old_shortcut) = old_config.to_shortcut() {
-        let _ = app.global_shortcut().unregister(old_shortcut);
+    let old_shortcut = ShortcutConfig::load().to_shortcut();
+    if old_shortcut == Some(new_shortcut) {
+        return config.save();
     }
-
-    // Save new config
-    config.save()?;
-
-    // Register new shortcut
     register_shortcut_internal(&app, new_shortcut)?;
+    if let Err(error) = config.save() {
+        let _ = app.global_shortcut().unregister(new_shortcut);
+        return Err(error);
+    }
+    if let Some(old) = old_shortcut {
+        let _ = app.global_shortcut().unregister(old);
+    }
 
     tracing::info!("Shortcut updated to: {}", config.display_string());
     Ok(())
@@ -211,70 +212,22 @@ pub async fn set_shortcut_config(app: AppHandle, config: ShortcutConfig) -> Resu
 /// Register shortcut with the given app handle
 fn register_shortcut_internal(app: &AppHandle, shortcut: Shortcut) -> Result<(), String> {
     let app_handle = app.clone();
-
-    // Try to unregister first in case it's already registered
-    let _ = app.global_shortcut().unregister(shortcut);
-
-    let register_result =
-        app.global_shortcut()
-            .on_shortcut(shortcut, move |_app, _shortcut, event| {
-                // Only trigger on key press, not release
-                if event.state == ShortcutState::Pressed {
-                    if let Some(main) = app_handle.get_webview_window("main") {
-                        // Force window to show and focus
-                        let _ = main.show();
-                        let _ = main.set_focus();
-
-                        // Emit event to frontend for handling
-                        let _ = main.emit("shortcut-triggered", ());
-                    }
-                }
-            });
-
-    register_result.map_err(|e| format!("Failed to register shortcut: {}", e))
+    app.global_shortcut()
+        .on_shortcut(shortcut, move |_app, _shortcut, event| {
+            if event.state == ShortcutState::Pressed {
+                let _ = super::system::show_overlay(app_handle.clone());
+            }
+        })
+        .map_err(|error| format!("Failed to register shortcut: {error}"))
 }
 
 /// Initialize global shortcut from saved config (called at app startup)
 pub fn setup_global_shortcut(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let config = ShortcutConfig::load();
-
     if let Some(shortcut) = config.to_shortcut() {
-        let app_handle = app.handle().clone();
-
-        // Try to unregister any existing shortcut first
-        let _ = app.global_shortcut().unregister(shortcut);
-
-        let register_result =
-            app.global_shortcut()
-                .on_shortcut(shortcut, move |_app, _shortcut, event| {
-                    // Only trigger on key press, not release
-                    if event.state == ShortcutState::Pressed {
-                        if let Some(main) = app_handle.get_webview_window("main") {
-                            // Force window to show and focus
-                            let _ = main.show();
-                            let _ = main.set_focus();
-
-                            // Emit event to frontend for handling
-                            let _ = main.emit("shortcut-triggered", ());
-                        }
-                    }
-                });
-
-        match register_result {
-            Ok(_) => {
-                tracing::info!("Global shortcut registered: {}", config.display_string());
-            }
-            Err(e) => {
-                tracing::warn!(
-                    "Global shortcut {} unavailable: {}. App will still work.",
-                    config.display_string(),
-                    e
-                );
-            }
+        if let Err(error) = register_shortcut_internal(app.handle(), shortcut) {
+            tracing::warn!("{error}");
         }
-    } else {
-        tracing::warn!("Invalid shortcut configuration, using fallback");
     }
-
     Ok(())
 }

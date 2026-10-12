@@ -1,12 +1,18 @@
 use ixos_core::config::Config;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use tauri::Emitter;
 
 #[derive(Clone, Default, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct Settings {
     pub search: Config,
     pub quit_on_close: bool,
+}
+#[derive(Default, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+struct DesktopOptions {
+    quit_on_close: bool,
 }
 impl Settings {
     fn path() -> PathBuf {
@@ -15,12 +21,14 @@ impl Settings {
             .join("ixos/desktop.json")
     }
     pub fn load() -> Self {
-        let mut settings: Self = std::fs::read(Self::path())
+        let desktop: DesktopOptions = std::fs::read(Self::path())
             .ok()
             .and_then(|bytes| serde_json::from_slice(&bytes).ok())
             .unwrap_or_default();
-        settings.search = Config::load(&Config::path()).unwrap_or_default();
-        settings
+        Self {
+            search: Config::load(&Config::path()).unwrap_or_default(),
+            quit_on_close: desktop.quit_on_close,
+        }
     }
     pub fn save(&self) -> Result<(), String> {
         self.search.validate().map_err(|e| e.to_string())?;
@@ -34,7 +42,10 @@ impl Settings {
         std::fs::create_dir_all(path.parent().unwrap()).map_err(|e| e.to_string())?;
         std::fs::write(
             path,
-            serde_json::to_vec_pretty(self).map_err(|e| e.to_string())?,
+            serde_json::to_vec_pretty(&DesktopOptions {
+                quit_on_close: self.quit_on_close,
+            })
+            .map_err(|e| e.to_string())?,
         )
         .map_err(|e| e.to_string())
     }
@@ -43,12 +54,24 @@ impl Settings {
 pub fn get_config() -> Settings {
     Settings::load()
 }
-#[tauri::command]
-pub fn update_config(
-    config: Settings,
-    state: tauri::State<'_, crate::state::AppState>,
-) -> Result<(), String> {
+pub fn apply(app: tauri::AppHandle, config: Settings) -> Result<(), String> {
+    use tauri::Manager;
     config.save()?;
-    state.engines.lock().map_err(|e| e.to_string())?.clear();
+    let state = app.state::<crate::state::AppState>();
+    state
+        .generation
+        .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+    state
+        .warming_generation
+        .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+    *state.engine.lock().map_err(|error| error.to_string())? = None;
+    let _ = app.emit("settings-changed", ());
+    super::search::warm(app);
     Ok(())
+}
+#[tauri::command]
+pub async fn update_config(config: Settings, app: tauri::AppHandle) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || apply(app, config))
+        .await
+        .map_err(|error| error.to_string())?
 }

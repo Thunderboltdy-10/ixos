@@ -117,7 +117,7 @@ pub fn read_range(
         bytes.len() <= 16 * 1024 * 1024,
         "Read source exceeds 16 MiB limit"
     );
-    let text = crate::parsers::extract_text_from_bytes(&resolved, &bytes, 16 * 1024 * 1024 + 1)
+    let text = crate::extract::extract_text_from_bytes(&resolved, &bytes, 16 * 1024 * 1024 + 1)
         .ok_or_else(|| anyhow::anyhow!("Source has no supported extractable text"))?;
     let text = normalize_text(&text);
     anyhow::ensure!(
@@ -285,7 +285,7 @@ fn grep_with_provenance(
         .collect();
     entries.sort_by(|a, b| a.path().cmp(b.path()));
     for entry in entries {
-        if crate::storage::cloud_detection::should_skip_cloud_file(entry.path()) {
+        if crate::cloud::should_skip_cloud_file(entry.path()) {
             skipped += 1;
             continue;
         }
@@ -302,7 +302,7 @@ fn grep_with_provenance(
             continue;
         }
         let text =
-            match crate::parsers::extract_text_from_bytes(entry.path(), &bytes, 16 * 1024 * 1024) {
+            match crate::extract::extract_text_from_bytes(entry.path(), &bytes, 16 * 1024 * 1024) {
                 Some(text) => normalize_text(&text),
                 None => {
                     skipped += 1;

@@ -1,5 +1,5 @@
 //! Query-time passage selection. Persistent document records stay unchanged.
-use super::{dot, quantize, record, tokens, Document, Model2VecEmbedder, RetrievalMode};
+use super::{dot, quantize, record, tokens, Document, Model, RetrievalMode};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::time::Instant;
@@ -154,7 +154,7 @@ pub(super) fn select(
     paths: &[String],
     query: &[f32],
     idfs: &HashMap<String, f32>,
-    model: &Model2VecEmbedder,
+    model: &Model,
 ) -> anyhow::Result<(HashMap<String, Selection>, EvidenceStats)> {
     anyhow::ensure!(paths.len() <= 10, "Evidence file ceiling exceeded");
     let started = Instant::now();

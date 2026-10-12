@@ -97,12 +97,6 @@ pub fn sha256(data: &[u8]) -> [u8; 32] {
     result
 }
 
-/// Compute SHA256 hash of a file
-pub fn sha256_file(path: &Path) -> std::io::Result<[u8; 32]> {
-    let content = fs::read(path)?;
-    Ok(sha256(&content))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

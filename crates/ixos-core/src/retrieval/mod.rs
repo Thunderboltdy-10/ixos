@@ -7,9 +7,9 @@ pub mod evidence;
 mod inspections;
 pub mod record;
 pub mod typo;
-use crate::ixos_embed::{EmbeddingModel, Model2VecEmbedder};
-use crate::ixos_rank::candidate_generator::path_engine::search_walk;
-use crate::security::crypto::sha256;
+use crate::digest::sha256;
+use crate::discover::search_walk;
+use crate::model::Model;
 use cache::quantize;
 pub use evidence::EvidencePolicy;
 use rayon::prelude::*;
@@ -190,7 +190,7 @@ struct Prior {
 
 pub struct Engine {
     root: PathBuf,
-    model: Option<Model2VecEmbedder>,
+    model: Option<Model>,
     options: Options,
     cache: Option<cache::DocumentCache>,
     documents: BTreeMap<String, Document>,
@@ -224,11 +224,9 @@ impl Engine {
         let model = if options.mode == RetrievalMode::Lexical {
             None
         } else {
-            Some(Model2VecEmbedder::from_path_encoded(
-                model_path.ok_or_else(|| {
-                    anyhow::anyhow!("Semantic/hybrid retrieval requires --model-path")
-                })?,
-            )?)
+            Some(Model::load(model_path.ok_or_else(|| {
+                anyhow::anyhow!("Semantic/hybrid retrieval requires --model-path")
+            })?)?)
         };
         let cache = if options.persist {
             model.as_ref().map(|model| {
@@ -289,7 +287,7 @@ impl Engine {
             }
             stats.discovered_files += 1;
             let path = entry.path();
-            if crate::storage::cloud_detection::should_skip_cloud_file(path) {
+            if crate::cloud::should_skip_cloud_file(path) {
                 stats.skipped_files += 1;
                 continue;
             }
@@ -362,7 +360,7 @@ impl Engine {
                     continue;
                 }
                 let extraction_started = Instant::now();
-                let extracted = crate::parsers::extract_text_from_bytes(
+                let extracted = crate::extract::extract_text_from_bytes(
                     path,
                     &bytes,
                     self.options.max_file_bytes + 1,
@@ -973,6 +971,73 @@ pub fn view_at(path: &str, lines: &[String], anchor: usize, context: usize) -> V
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn native_ephemeral_and_resident_results_match_and_edits_refresh() {
+        let model = crate::model::test_model();
+        let root = tempfile::tempdir().unwrap();
+        let source = root.path().join("source 中.rs");
+        let text = format!("hello\n{}\nworld\n", "ordinary notes 中😀\n".repeat(2400));
+        std::fs::write(&source, &text).unwrap();
+        std::fs::write(root.path().join(".gitignore"), "ignored.txt\n").unwrap();
+        std::fs::write(root.path().join("ignored.txt"), "world").unwrap();
+        let modified = std::fs::metadata(&source).unwrap().modified().unwrap();
+        let options = Options {
+            io_workers: 4,
+            limit: 5,
+            output_bytes: 6000,
+            ..Default::default()
+        };
+        let mut fresh = Engine::new(root.path(), Some(model.path()), options.clone()).unwrap();
+        let (first, first_stats) = fresh.search("world", "first", None).unwrap();
+        assert_eq!(first_stats.searchable_files, 1);
+        assert_eq!(first_stats.cache_writes, 1);
+        assert_eq!(first_stats.passages_embedded, 8);
+        let (resident, resident_stats) = fresh.search("world", "again", None).unwrap();
+        assert_eq!(first, resident);
+        assert_eq!(resident_stats.memory_cache_hits, 1);
+        let mut cached = Engine::new(root.path(), Some(model.path()), options.clone()).unwrap();
+        let (disk, disk_stats) = cached.search("world", "cached", None).unwrap();
+        assert_eq!(first, disk);
+        assert_eq!(
+            disk_stats.native_cache_hits + disk_stats.application_cache_hits,
+            1
+        );
+        assert_eq!(disk_stats.passages_embedded, 0);
+        let mut ephemeral = Engine::new(
+            root.path(),
+            Some(model.path()),
+            Options {
+                persist: false,
+                ..options
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            first,
+            ephemeral.search("world", "ephemeral", None).unwrap().0
+        );
+        assert_eq!(std::fs::read(&source).unwrap(), text.as_bytes());
+        assert_eq!(
+            std::fs::metadata(&source).unwrap().modified().unwrap(),
+            modified
+        );
+        std::fs::write(&source, text.replace("world", "hello")).unwrap();
+        let (_, stats) = fresh.search("hello", "edited", None).unwrap();
+        assert_eq!(stats.passages_embedded, 8);
+        let moved = root.path().join("moved 中.rs");
+        std::fs::rename(&source, &moved).unwrap();
+        let (_, stats) = fresh.search("hello", "moved", None).unwrap();
+        assert_eq!(stats.passages_embedded, 0);
+        std::fs::remove_file(&moved).unwrap();
+        let (raw, stats) = fresh.search("hello", "deleted", None).unwrap();
+        assert_eq!(stats.searchable_files, 0);
+        assert!(
+            serde_json::from_slice::<serde_json::Value>(&raw).unwrap()["results"]
+                .as_array()
+                .unwrap()
+                .is_empty()
+        );
+    }
     #[test]
     fn identifier_notation_uses_matching_quotes_and_all_whitespace() {
         for query in ["raw_hash", "\"raw_hash\"", "'raw_hash'", "  ' raw_hash '  "] {

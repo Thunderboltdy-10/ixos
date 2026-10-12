@@ -309,11 +309,11 @@ fn native_read(path: &Path) -> std::io::Result<Option<Vec<u8>>> {
 }
 #[cfg(windows)]
 fn native_write(path: &Path, data: &[u8]) -> std::io::Result<()> {
-    crate::storage::ads_windows::write_metadata_stream(path, ":ixos_document_v1", data)
+    crate::metadata_windows::write_metadata_stream(path, ":ixos_document_v1", data)
 }
 #[cfg(windows)]
 fn native_delete(path: &Path) -> std::io::Result<()> {
-    crate::storage::ads_windows::remove_metadata_stream(&stream(path))
+    crate::metadata_windows::remove_metadata_stream(&stream(path))
 }
 #[cfg(unix)]
 fn native_read(path: &Path) -> std::io::Result<Option<Vec<u8>>> {

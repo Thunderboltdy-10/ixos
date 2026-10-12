@@ -124,7 +124,7 @@ impl Inspections {
         &mut self,
         feedback: &Feedback,
         documents: &BTreeMap<String, Document>,
-        model: &Model2VecEmbedder,
+        model: &Model,
         query: &mut [f32],
     ) -> anyhow::Result<Option<InspectionStats>> {
         let Some(entry) = self

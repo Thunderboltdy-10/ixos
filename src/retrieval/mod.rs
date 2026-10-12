@@ -4,6 +4,7 @@
 pub mod cache;
 pub mod commands;
 pub mod evidence;
+mod inspections;
 pub mod record;
 pub mod typo;
 use crate::ixos_embed::{EmbeddingModel, Model2VecEmbedder};
@@ -122,6 +123,8 @@ pub struct Stats {
     pub tokenizer_settings: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub evidence: Option<evidence::EvidenceStats>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inspection: Option<inspections::InspectionStats>,
 }
 
 pub struct Document {
@@ -192,6 +195,7 @@ pub struct Engine {
     cache: Option<cache::DocumentCache>,
     documents: BTreeMap<String, Document>,
     history: VecDeque<Prior>,
+    inspections: inspections::Inspections,
     turn: u64,
     io_pool: rayon::ThreadPool,
 }
@@ -249,12 +253,14 @@ impl Engine {
             cache,
             documents: BTreeMap::new(),
             history: VecDeque::new(),
+            inspections: inspections::Inspections::default(),
             turn: 0,
             io_pool,
         })
     }
     pub fn reset(&mut self) {
         self.history.clear();
+        self.inspections.clear();
         self.turn = 0;
     }
     pub fn refresh(&mut self) -> anyhow::Result<Stats> {
@@ -550,6 +556,7 @@ impl Engine {
         };
         stats.query_embed_ms = began.elapsed().as_secs_f64() * 1000.0;
         let original = query_vector.clone();
+        self.inspections.prune(self.turn);
         let continuation = is_continuation(query)
             || self.options.session == SessionPolicy::Context
                 && tokens(query)
@@ -564,6 +571,7 @@ impl Engine {
                 .is_some_and(|p| !continuation && dot(&original, &p.query) < 0.2)
             {
                 self.history.clear();
+                self.inspections.clear();
                 stats.drift_reset = true;
             }
             if matches!(
@@ -583,6 +591,15 @@ impl Engine {
                 SessionPolicy::Feedback | SessionPolicy::Combined | SessionPolicy::Context
             ) {
                 if let Some(feedback) = feedback {
+                    if let Some(diagnostics) = self.inspections.apply(
+                        feedback,
+                        &self.documents,
+                        self.model.as_ref().unwrap(),
+                        &mut query_vector,
+                    )? {
+                        stats.feedback_consumed = diagnostics.feedback_views > 0;
+                        stats.inspection = Some(diagnostics);
+                    }
                     if let Some(prior) = self.history.iter().find(|prior| {
                         prior.id == feedback.query_id
                             && self.turn.saturating_sub(prior.turn) <= 4
@@ -836,6 +853,7 @@ impl Engine {
         let result_count = rows.len();
         let raw = rows.finish();
         if self.options.session != SessionPolicy::Off {
+            self.inspections.remove(id);
             self.history.retain(|prior| prior.id != id);
             self.history.push_back(Prior {
                 id: id.to_owned(),
@@ -852,6 +870,9 @@ impl Engine {
             }
         }
         stats.session_entries = self.history.len();
+        if stats.inspection.is_none() {
+            stats.inspection = self.inspections.stats();
+        }
         stats.returned_results = result_count;
         stats.output_bytes = raw.len();
         stats.query_ms = began.elapsed().as_secs_f64() * 1000.0;

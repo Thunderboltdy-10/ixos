@@ -1,0 +1,434 @@
+[
+  {
+    "profile": "code",
+    "persist": false,
+    "arm": "control",
+    "samples": 5,
+    "process_ms_median": 409.1550000000552,
+    "grep_ms_median": 19.363300000009076,
+    "follow_ms_median": 14.840200000094228,
+    "inspection_embed_ms_median": 0,
+    "stdout_tokens": 1027,
+    "diagnostic_tokens": 712,
+    "request_tokens": 67,
+    "initial_native_hits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "code",
+    "persist": false,
+    "arm": "default",
+    "samples": 5,
+    "process_ms_median": 339.5290999999361,
+    "grep_ms_median": 19.266800000082185,
+    "follow_ms_median": 14.870199999904798,
+    "inspection_embed_ms_median": 0,
+    "stdout_tokens": 1027,
+    "diagnostic_tokens": 707.8,
+    "request_tokens": 67,
+    "initial_native_hits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "code",
+    "persist": false,
+    "arm": "silence",
+    "samples": 5,
+    "process_ms_median": 328.892900000028,
+    "grep_ms_median": 18.513100000063787,
+    "follow_ms_median": 14.767000000006192,
+    "inspection_embed_ms_median": 0.0,
+    "stdout_tokens": 1032,
+    "diagnostic_tokens": 747.4,
+    "request_tokens": 71,
+    "initial_native_hits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "code",
+    "persist": false,
+    "arm": "accepted",
+    "samples": 5,
+    "process_ms_median": 343.06440000000293,
+    "grep_ms_median": 19.4510999999693,
+    "follow_ms_median": 15.263300000015079,
+    "inspection_embed_ms_median": 0.07239999999999999,
+    "stdout_tokens": 1031,
+    "diagnostic_tokens": 753.8,
+    "request_tokens": 83,
+    "initial_native_hits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "code",
+    "persist": true,
+    "arm": "control",
+    "samples": 5,
+    "process_ms_median": 343.3239999999387,
+    "grep_ms_median": 17.188499999974738,
+    "follow_ms_median": 14.260999999919477,
+    "inspection_embed_ms_median": 0,
+    "stdout_tokens": 1027,
+    "diagnostic_tokens": 714.8,
+    "request_tokens": 67,
+    "initial_native_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "code",
+    "persist": true,
+    "arm": "default",
+    "samples": 5,
+    "process_ms_median": 266.25000000001364,
+    "grep_ms_median": 17.907299999933457,
+    "follow_ms_median": 14.427499999897009,
+    "inspection_embed_ms_median": 0,
+    "stdout_tokens": 1027,
+    "diagnostic_tokens": 710.8,
+    "request_tokens": 67,
+    "initial_native_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "code",
+    "persist": true,
+    "arm": "silence",
+    "samples": 5,
+    "process_ms_median": 255.75109999999768,
+    "grep_ms_median": 17.44739999992362,
+    "follow_ms_median": 14.305299999932686,
+    "inspection_embed_ms_median": 0.0,
+    "stdout_tokens": 1032,
+    "diagnostic_tokens": 746.8,
+    "request_tokens": 71,
+    "initial_native_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "code",
+    "persist": true,
+    "arm": "accepted",
+    "samples": 5,
+    "process_ms_median": 258.3051000000296,
+    "grep_ms_median": 17.80539999992925,
+    "follow_ms_median": 14.533700000015415,
+    "inspection_embed_ms_median": 0.0737,
+    "stdout_tokens": 1031,
+    "diagnostic_tokens": 753.2,
+    "request_tokens": 83,
+    "initial_native_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "documents",
+    "persist": false,
+    "arm": "control",
+    "samples": 5,
+    "process_ms_median": 495.34269999992375,
+    "grep_ms_median": 19.69249999990552,
+    "follow_ms_median": 13.976400000046851,
+    "inspection_embed_ms_median": 0,
+    "stdout_tokens": 993,
+    "diagnostic_tokens": 713.6,
+    "request_tokens": 67,
+    "initial_native_hits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "documents",
+    "persist": false,
+    "arm": "default",
+    "samples": 5,
+    "process_ms_median": 415.8760999999913,
+    "grep_ms_median": 19.522300000062387,
+    "follow_ms_median": 13.602999999989152,
+    "inspection_embed_ms_median": 0,
+    "stdout_tokens": 993,
+    "diagnostic_tokens": 717.6,
+    "request_tokens": 67,
+    "initial_native_hits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "documents",
+    "persist": false,
+    "arm": "silence",
+    "samples": 5,
+    "process_ms_median": 426.5873000000511,
+    "grep_ms_median": 18.44169999992573,
+    "follow_ms_median": 14.043300000025738,
+    "inspection_embed_ms_median": 0.0,
+    "stdout_tokens": 998,
+    "diagnostic_tokens": 755.4,
+    "request_tokens": 71,
+    "initial_native_hits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "documents",
+    "persist": false,
+    "arm": "accepted",
+    "samples": 5,
+    "process_ms_median": 413.24859999997443,
+    "grep_ms_median": 19.385599999964143,
+    "follow_ms_median": 14.100900000016736,
+    "inspection_embed_ms_median": 0.0791,
+    "stdout_tokens": 998,
+    "diagnostic_tokens": 764.2,
+    "request_tokens": 83,
+    "initial_native_hits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "documents",
+    "persist": true,
+    "arm": "control",
+    "samples": 5,
+    "process_ms_median": 332.5293000000329,
+    "grep_ms_median": 17.027600000005805,
+    "follow_ms_median": 13.547800000083043,
+    "inspection_embed_ms_median": 0,
+    "stdout_tokens": 993,
+    "diagnostic_tokens": 712.6,
+    "request_tokens": 67,
+    "initial_native_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "documents",
+    "persist": true,
+    "arm": "default",
+    "samples": 5,
+    "process_ms_median": 251.25329999991663,
+    "grep_ms_median": 17.372999999906824,
+    "follow_ms_median": 13.424299999996947,
+    "inspection_embed_ms_median": 0,
+    "stdout_tokens": 993,
+    "diagnostic_tokens": 718.6,
+    "request_tokens": 67,
+    "initial_native_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "documents",
+    "persist": true,
+    "arm": "silence",
+    "samples": 5,
+    "process_ms_median": 250.00860000000102,
+    "grep_ms_median": 16.879699999890363,
+    "follow_ms_median": 13.675199999966026,
+    "inspection_embed_ms_median": 0.0,
+    "stdout_tokens": 998,
+    "diagnostic_tokens": 756,
+    "request_tokens": 71,
+    "initial_native_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  },
+  {
+    "profile": "documents",
+    "persist": true,
+    "arm": "accepted",
+    "samples": 5,
+    "process_ms_median": 254.03110000002016,
+    "grep_ms_median": 17.350200000009863,
+    "follow_ms_median": 13.920299999995223,
+    "inspection_embed_ms_median": 0.075,
+    "stdout_tokens": 998,
+    "diagnostic_tokens": 756.6,
+    "request_tokens": 83,
+    "initial_native_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ],
+    "follow_memory_hits": [
+      116,
+      116,
+      116,
+      116,
+      116
+    ]
+  }
+]

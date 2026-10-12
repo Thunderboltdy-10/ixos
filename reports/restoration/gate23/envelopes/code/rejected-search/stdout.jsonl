@@ -1,0 +1,2 @@
+{"message":"Response ID exceeds output budget","type":"error"}
+{"id":"follow","results":[{"evidence_omitted":true,"path":"cache_a.rs","score":0.5},{"evidence_omitted":true,"path":"cache_b.rs","score":0.5},{"evidence_omitted":true,"path":"cache_c.rs","score":0.5}]}

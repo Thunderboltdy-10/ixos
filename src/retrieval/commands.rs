@@ -225,6 +225,31 @@ pub fn grep_with_file_cap(
     budget: usize,
     max_matches_per_file: Option<usize>,
 ) -> anyhow::Result<(Vec<u8>, serde_json::Value)> {
+    let (raw, stats, _) = grep_with_provenance(
+        root,
+        pattern,
+        fixed,
+        ignore_case,
+        context,
+        limit,
+        budget,
+        max_matches_per_file,
+        false,
+    )?;
+    Ok((raw, stats))
+}
+
+fn grep_with_provenance(
+    root: &Path,
+    pattern: &str,
+    fixed: bool,
+    ignore_case: bool,
+    context: usize,
+    limit: usize,
+    budget: usize,
+    max_matches_per_file: Option<usize>,
+    capture: bool,
+) -> anyhow::Result<(Vec<u8>, serde_json::Value, HashMap<String, [u8; 32]>)> {
     anyhow::ensure!(
         !pattern.is_empty()
             && pattern.len() <= 65536
@@ -247,6 +272,7 @@ pub fn grep_with_file_cap(
         .case_insensitive(ignore_case)
         .build(&pattern)?;
     let mut rows = BoundedRows::new(budget);
+    let mut hashes = HashMap::new();
     let mut output_full = false;
     let mut searched = 0;
     let mut skipped = 0;
@@ -325,6 +351,17 @@ pub fn grep_with_file_cap(
                     row["evidence_omitted"] = json!(true);
                 }
                 output_full = !rows.push(&row)?;
+                if capture
+                    && !output_full
+                    && row.get("view").is_some()
+                    && !hashes.contains_key(&path)
+                {
+                    // Hash the exact bytes/text already used for this grep view;
+                    // a second file read could observe different source content.
+                    let mut identity = sha256(&bytes).to_vec();
+                    identity.extend_from_slice(&sha256(text.as_bytes()));
+                    hashes.insert(path.clone(), sha256(&identity));
+                }
             }
         }
     }
@@ -335,7 +372,7 @@ pub fn grep_with_file_cap(
         stats["maxMatchesPerFile"] = json!(cap);
         stats["matchesSuppressedByFileCap"] = json!(suppressed_by_file_cap);
     }
-    Ok((raw, stats))
+    Ok((raw, stats, hashes))
 }
 
 pub fn print_human(raw: &[u8]) -> anyhow::Result<()> {
@@ -390,6 +427,8 @@ enum Request {
         characters: Option<usize>,
         #[serde(default)]
         character_offset: usize,
+        #[serde(default)]
+        remember: bool,
     },
     Grep {
         id: String,
@@ -402,6 +441,8 @@ enum Request {
         max_matches_per_file: Option<usize>,
         #[serde(default)]
         stats: bool,
+        #[serde(default)]
+        remember: bool,
     },
 }
 fn one() -> usize {
@@ -464,6 +505,7 @@ pub fn serve_with_diagnostics(
         if data.is_empty() {
             break;
         }
+        let mut pending_inspection = None;
         let outcome = (|| -> anyhow::Result<(String, serde_json::Value)> {
             let request: Request = serde_json::from_slice(&data)?;
             let id = match &request {
@@ -512,18 +554,37 @@ pub fn serve_with_diagnostics(
                     lines,
                     characters,
                     character_offset,
-                } => Ok((
-                    id,
-                    serde_json::from_slice(&read_range(
+                    remember,
+                } => {
+                    let inner_budget =
+                        inspection_payload_budget(&engine, payload_budget, remember)?;
+                    let mut value: serde_json::Value = serde_json::from_slice(&read_range(
                         root,
                         &path,
                         start,
                         lines,
                         characters,
                         character_offset,
-                        payload_budget,
-                    )?)?,
-                )),
+                        inner_budget,
+                    )?)?;
+                    if remember {
+                        let view = value.get("view").or_else(|| value.get("slice")).unwrap();
+                        let hash: [u8; 32] = hex::decode(value["source_hash"].as_str().unwrap())?
+                            .try_into()
+                            .map_err(|_| anyhow::anyhow!("Invalid source hash"))?;
+                        let hashes =
+                            HashMap::from([(view["path"].as_str().unwrap().to_owned(), hash)]);
+                        let entry = inspections::Inspection::prepare(
+                            id.clone(),
+                            engine.turn,
+                            &value,
+                            &hashes,
+                        );
+                        value["remembered"] = json!(entry.indices());
+                        pending_inspection = Some(entry);
+                    }
+                    Ok((id, value))
+                }
                 Request::Grep {
                     id,
                     pattern,
@@ -531,21 +592,37 @@ pub fn serve_with_diagnostics(
                     ignore_case,
                     max_matches_per_file,
                     stats: requested_stats,
+                    remember,
                 } => {
-                    let (raw, stats) = grep_with_file_cap(
+                    let inner_budget =
+                        inspection_payload_budget(&engine, payload_budget, remember)?;
+                    let (raw, mut stats, hashes) = grep_with_provenance(
                         root,
                         &pattern,
                         fixed,
                         ignore_case,
                         context,
                         limit,
-                        payload_budget,
+                        inner_budget,
                         max_matches_per_file,
+                        remember,
                     )?;
+                    let mut value: serde_json::Value = serde_json::from_slice(&raw)?;
+                    if remember {
+                        let entry = inspections::Inspection::prepare(
+                            id.clone(),
+                            engine.turn,
+                            &value,
+                            &hashes,
+                        );
+                        value["remembered"] = json!(entry.indices());
+                        stats["rememberedViews"] = json!(entry.indices().len());
+                        pending_inspection = Some(entry);
+                    }
                     if !quiet_stats || requested_stats {
                         eprintln!("{}", json!({"id":id,"type":"stats","diagnostics":stats}));
                     }
-                    Ok((id, serde_json::from_slice(&raw)?))
+                    Ok((id, value))
                 }
             }
         })();
@@ -570,10 +647,43 @@ pub fn serve_with_diagnostics(
             )?)?;
         } else {
             output.write_all(&raw)?;
+            output.flush()?;
+            // Only a successfully emitted response can enter feedback history.
+            if let Some(entry) = pending_inspection {
+                engine
+                    .history
+                    .retain(|prior| prior.id != value["id"].as_str().unwrap());
+                engine.inspections.insert(entry);
+            }
         }
         output.flush()?;
     }
     Ok(())
+}
+
+fn inspection_payload_budget(
+    engine: &Engine,
+    budget: usize,
+    remember: bool,
+) -> anyhow::Result<usize> {
+    if !remember {
+        return Ok(budget);
+    }
+    anyhow::ensure!(
+        engine.model.is_some()
+            && matches!(
+                engine.options.session,
+                SessionPolicy::Feedback | SessionPolicy::Combined | SessionPolicy::Context
+            ),
+        "remember requires a semantic model and feedback/combined/context session"
+    );
+    // At most 16 indices <=9999 plus the field/comma fit in 128 bytes.
+    let budget = budget.checked_sub(128).filter(|bytes| *bytes >= 128);
+    anyhow::ensure!(
+        budget.is_some(),
+        "Output budget cannot hold remembered inspection metadata"
+    );
+    Ok(budget.unwrap())
 }
 
 #[cfg(test)]

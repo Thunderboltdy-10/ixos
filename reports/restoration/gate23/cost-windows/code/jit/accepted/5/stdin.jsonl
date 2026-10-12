@@ -1,0 +1,3 @@
+{"op":"search","id":"seed","query":"cache source freshness validation","stats":true}
+{"op":"grep","id":"inspect","pattern":"doc.source_hash == view.source_hash","fixed":true,"stats":true,"remember":true}
+{"op":"search","id":"follow","query":"cache source freshness validation","stats":true,"feedback":{"query_id":"inspect","accepted":[0]}}

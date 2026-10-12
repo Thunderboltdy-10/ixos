@@ -1,0 +1,7 @@
+{
+  "purpose": "Descriptive bounded inspection overhead on Ixos's own current Rust source; already-informed navigation, not relevance/task success",
+  "arms": ["G22-control", "G23-default", "remembered-silence", "remembered-acceptance"],
+  "fixed": "Pinned actual code/documents parents, same immutable source copy, query cache source freshness validation, fixed grep doc.source_hash == view.source_hash, limit5/context2/6000bytes/sessionfeedback/io1, three sequential calls per process",
+  "conditions": "JIT and persistence enabled. Seven fresh processes/arm/model/condition, alternating arm order; first two per arm excluded from descriptive medians. Follow-up is resident in both conditions; report actual initial native hits separately. No compilers or correctness probes overlap timing.",
+  "capture": "Exact requests/stdout/stderr, phases and wall duration, separate stdout/diagnostic/request token counts, raw source/binary/model/helper hashes, source bytes/mtime/ordinary inventory preserved. No quality metric/default selection from this authored consumed corpus."
+}

@@ -1,0 +1,7 @@
+error: unexpected argument '--mode' found
+
+  tip: a similar argument exists: '--model-path'
+
+Usage: ixos.exe serve --model-path <MODEL_PATH>
+
+For more information, try '--help'.

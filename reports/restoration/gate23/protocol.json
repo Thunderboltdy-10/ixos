@@ -1,0 +1,9 @@
+{
+  "source_git": "ed5505e",
+  "question": "Can explicit displayed read/grep views participate in bounded semantic feedback without silently changing query/topic history?",
+  "baseline": "Existing read/grep IDs cannot supply feedback; preserve source, stdout and baseline binaries before change.",
+  "candidate": "Opt-in remember:true on resident read/grep with an actual semantic model and feedback/combined/context policy. Separate bounded RAM inspection history, complete displayed views only; lazy view embedding only on explicit acceptance/rejection, current-source validation, deterministic references, four-search-turn age, reset and drift handling. No external tool observation or persistent learning.",
+  "checks": "Actual code/doc parents, default output/control equivalence; read/grep/character slices/file-only omission; unseen, stale, age, reset, silence, duplicate/permutation, ID replacement, escaped envelopes, memory bounds and source/ignore preservation. Sequential descriptive cost controls after builds stop. Authored checks are not new relevance labels.",
+  "selection": "Keep only optional if correctness/cost bounds pass; no default promotion or task-success claim. A fresh human ordered/test-backed workload is required for quality selection.",
+  "frozen_eval": "95afba09dd7c77e0fc56ed4e922d508116f701bb679f52c0844ed7725fc14297"
+}

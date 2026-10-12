@@ -1,0 +1,2 @@
+{"op":"grep","id":"r","pattern":"Cache","remember":true,"stats":true}
+{"op":"search","id":"follow","query":"cache freshness","stats":true,"feedback":{"query_id":"r","accepted":[0,9999,"unseen.rs"],"rejected":[]}}

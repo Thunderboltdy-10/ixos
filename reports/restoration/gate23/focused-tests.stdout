@@ -1,0 +1,27 @@
+
+running 22 tests
+test retrieval::evidence::tests::rejects_unbounded_or_model_free_policy ... ok
+test retrieval::cache::tests::compact_record_rejects_stale_tampered_and_keeps_all_dimensions ... ok
+test retrieval::record::tests::centroid_includes_entire_source ... ok
+test retrieval::inspections::tests::retains_complete_displayed_views_without_renumbering_or_unbounded_text ... ok
+test retrieval::inspections::tests::history_replaces_ids_bounds_responses_and_expires_on_search_turns ... ok
+test retrieval::tests::identifier_notation_uses_matching_quotes_and_all_whitespace ... ok
+test retrieval::typo::tests::unique_live_word_only_and_literals_are_preserved ... ok
+test retrieval::evidence::tests::partial_line_does_not_inherit_evidence_outside_its_bytes ... ok
+test retrieval::commands::tests::response_id_budget_counts_json_escapes_before_session_mutation ... ok
+test retrieval::record::tests::unicode_full_coverage_and_late_anchor ... ok
+test retrieval::cache::tests::native_record_survives_rename_and_never_modifies_primary_bytes ... ok
+test retrieval::cache::tests::serialized_original_rows_match_single_ram_round_trip_exactly ... ok
+test diagnostics::retrieval::tests::missing_required_model_fails_even_when_lexical_runtime_passes ... ok
+test diagnostics::retrieval::tests::lexical_doctor_needs_no_model_and_preserves_existing_sources ... ok
+test retrieval::commands::tests::grep_file_cap_validates_limits_and_preserves_file_only_budget ... ok
+test retrieval::commands::tests::grep_and_read_keep_unicode_lines_and_respect_ignores ... ok
+test retrieval::tests::quoted_identifiers_and_multiline_queries_retrieve_implementations ... ok
+test retrieval::commands::tests::long_line_preserves_file_and_exact_unicode_slice ... ok
+test retrieval::commands::tests::grep_file_cap_spreads_results_without_changing_match_counts ... ok
+test retrieval::tests::full_source_lexical_freshness_ignores_and_budget ... ok
+test retrieval::evidence::tests::bounded_union_reuses_stored_vectors_and_reaches_late_lexical_topic ... ok
+test retrieval::tests::equal_lexical_evidence_always_uses_earliest_line ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 536 filtered out; finished in 0.10s
+

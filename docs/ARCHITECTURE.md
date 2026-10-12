@@ -86,11 +86,15 @@ Same-filesystem renaming preserves native records, because their source identity
 
 ## Bounded session intelligence
 
-`serve` holds a model, parsed sources and optional session state across JSONL requests. It supports search, exact grep, bounded read and reset. Explicit feedback refers to a previous **search** response ID and its displayed file paths or zero-based result indices. Grep/read responses do not enter feedback history or update the topic anchor; their IDs cannot supply acceptance/rejection to a later search. Unseen search results and stale source identities cannot be accepted. Silence is unknown.
+`serve` holds a model, parsed sources and optional session state across JSONL requests. It supports search, exact grep, bounded read and reset. Explicit feedback refers to displayed file paths or zero-based result indices in a previous response. Ordinary grep/read responses remain untracked and do not update the topic anchor. Unseen results and stale source identities cannot contribute. Silence is unknown.
 
 Related/combined policies maintain a small semantic topic anchor. Pronoun follow-ups retain more context; an explicit low-similarity topic change clears it. Feedback applies Rocchio-style positive/negative adjustments to the query. Equivalent accepted/rejected sets are deduplicated and aggregated in canonical path order, so reference order, duplicate indices and process hash seeds do not change floating-point reduction order. History is capped at 16 search-response records and feedback at four turns. It does not store an unlimited lifelong user profile or observe external ripgrep calls.
 
 The experimental `context` policy additionally retains lexical topic terms for short anaphoric follow-ups. It adds a bounded 0.15 topic score in hybrid mode and can widen the candidate union. It remains optional: strong gains on authored ambiguous fixtures did not transfer equally to the more realistic own-code replay. Stateless retrieval is the baseline. A request to reset the task clears history explicitly.
+
+Optional `remember:true` on resident read/grep creates separate inspection records after successful output flush. The response explicitly lists eligible displayed indices; complete line views or exact character slices carry a hash derived from the same raw/extracted content used for their output. Grep captures hashes from its existing scan only when remembering, avoiding a second file read and leaving ordinary grep unchanged. File-only/oversized views are ineligible. Records hold at most 16 responses, with 16 views and an 8,192-byte text/path/record allowance per response, and expire after four intervening successful searches. They do not create queries, topic anchors or inferred acceptance.
+
+On explicit acceptance/rejection, current refreshed document hashes filter out edited/excluded sources. Missing view vectors are embedded in one batch and retained in that RAM record for reuse. Indices are deduplicated and reduced in canonical index order; a path aliases the first remembered view of that file. The existing +0.15/-0.07 query adjustments apply, then the query is normalized. Reset and detected topic drift clear these records. The feature requires an actual semantic model and feedback/combined/context policy. It adds no database or cache record, and remains optional pending fresh ordered-task quality evaluation. Diagnostic `inspection` counters isolate its inference and retained text; model dimensions also determine retained vector memory.
 
 ## Retained progressive desktop pipeline
 
@@ -103,6 +107,7 @@ The new CLI's full-source representations and new model profiles are not automat
 | Location | Responsibility |
 |---|---|
 | `src/retrieval/mod.rs` | Source refresh, lexical/semantic fusion, statistics, bounded session state |
+| `src/retrieval/inspections.rs` | Optional displayed-view history, freshness checks and lazy explicit-feedback vectors |
 | `src/retrieval/record.rs` | Full-source chunks and compact representatives |
 | `src/retrieval/evidence.rs` | Deterministic line weights and optional bounded query-time passage selection |
 | `src/retrieval/cache.rs` | Signed ADS/xattr records and application DB fallback |

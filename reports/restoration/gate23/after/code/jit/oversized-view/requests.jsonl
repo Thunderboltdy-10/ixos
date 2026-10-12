@@ -1,0 +1,2 @@
+{"op":"read","id":"r","path":"long.rs","start":1,"lines":1,"remember":true}
+{"op":"search","id":"follow","query":"cache freshness","stats":true,"feedback":{"query_id":"r","accepted":[0],"rejected":[]}}

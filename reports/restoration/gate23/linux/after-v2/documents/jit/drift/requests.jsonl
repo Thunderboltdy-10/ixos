@@ -1,0 +1,3 @@
+{"op":"search","id":"seed","query":"cache freshness","stats":true}
+{"op":"read","id":"r","path":"cache_a.rs","start":1,"lines":3,"remember":true}
+{"op":"search","id":"follow","query":"astronomical nebula telescope galaxy orbit","stats":true,"feedback":{"query_id":"r","accepted":[0,9999,"unseen.rs"],"rejected":[]}}

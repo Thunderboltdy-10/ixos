@@ -1,0 +1,35 @@
+usage: run_evaluation.py [-h] [-d DATASET_NAME] [-s SPLIT]
+                         [-i INSTANCE_IDS [INSTANCE_IDS ...]] -p
+                         PREDICTIONS_PATH [--max_workers MAX_WORKERS]
+                         [--open_file_limit OPEN_FILE_LIMIT] [-t TIMEOUT] -id
+                         RUN_ID [--rewrite_reports REWRITE_REPORTS]
+                         [--modal MODAL]
+
+Run evaluation harness for the given dataset and predictions.
+
+options:
+  -h, --help            show this help message and exit
+  -d DATASET_NAME, --dataset_name DATASET_NAME
+                        Name of dataset or path to JSON file. (default: SWE-
+                        bench/SWE-bench_Lite)
+  -s SPLIT, --split SPLIT
+                        Split of the dataset (default: test)
+  -i INSTANCE_IDS [INSTANCE_IDS ...], --instance_ids INSTANCE_IDS [INSTANCE_IDS ...]
+                        Instance IDs to run (space separated) (default: None)
+  -p PREDICTIONS_PATH, --predictions_path PREDICTIONS_PATH
+                        Path to predictions file - if 'gold', uses gold
+                        predictions (default: None)
+  --max_workers MAX_WORKERS
+                        Maximum number of workers (should be <= 75% of CPU
+                        cores) (default: 4)
+  --open_file_limit OPEN_FILE_LIMIT
+                        Open file limit (default: 4096)
+  -t TIMEOUT, --timeout TIMEOUT
+                        Timeout (in seconds) for running tests for each
+                        instance (default: 1800)
+  -id RUN_ID, --run_id RUN_ID
+                        Run ID - identifies the run (default: None)
+  --rewrite_reports REWRITE_REPORTS
+                        Doesn't run new instances, only writes reports for
+                        instances with existing test outputs (default: False)
+  --modal MODAL         Run on Modal (default: False)

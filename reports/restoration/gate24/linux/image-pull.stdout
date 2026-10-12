@@ -1,0 +1,45 @@
+latest: Pulling from swebench/sweb.eval.x86_64.marshmallow-code_1776_marshmallow-2123
+e791cd046f04: Pulling fs layer
+b393fde96e1f: Pulling fs layer
+b21591e4eb82: Pulling fs layer
+a8121f661a43: Pulling fs layer
+9cb31e2e37ea: Pulling fs layer
+7547b277c487: Pulling fs layer
+37c0c8bc662c: Pulling fs layer
+1ed28b743401: Pulling fs layer
+400078b4a384: Pulling fs layer
+e5ca3e8ddee3: Pulling fs layer
+4a4599d6cad2: Pulling fs layer
+b1f363631ad2: Pulling fs layer
+cdee707f1783: Pulling fs layer
+1ed28b743401: Pulling fs layer
+7547b277c487: Pulling fs layer
+37c0c8bc662c: Download complete
+b21591e4eb82: Download complete
+1ed28b743401: Download complete
+e5ca3e8ddee3: Download complete
+4a4599d6cad2: Download complete
+cdee707f1783: Download complete
+b393fde96e1f: Download complete
+7547b277c487: Download complete
+e791cd046f04: Download complete
+a8121f661a43: Download complete
+9cb31e2e37ea: Download complete
+9cb31e2e37ea: Pull complete
+400078b4a384: Download complete
+b1f363631ad2: Download complete
+400078b4a384: Pull complete
+37c0c8bc662c: Pull complete
+4a4599d6cad2: Pull complete
+b1f363631ad2: Pull complete
+1ed28b743401: Pull complete
+cdee707f1783: Pull complete
+b393fde96e1f: Pull complete
+b21591e4eb82: Pull complete
+e5ca3e8ddee3: Pull complete
+a8121f661a43: Pull complete
+7547b277c487: Pull complete
+e791cd046f04: Pull complete
+Digest: sha256:9da3669fe99dede23ecf75b8f5b50198d304808f51c9ba828ac26c9eaab3163f
+Status: Downloaded newer image for swebench/sweb.eval.x86_64.marshmallow-code_1776_marshmallow-2123:latest
+docker.io/swebench/sweb.eval.x86_64.marshmallow-code_1776_marshmallow-2123:latest

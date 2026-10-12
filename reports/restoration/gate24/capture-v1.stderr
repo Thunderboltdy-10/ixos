@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\Users\pablo\Downloads\Ixos\reports\restoration\gate24\capture-v1.py", line 58, in <module>
+    assert len(licenses) == 1
+           ^^^^^^^^^^^^^^^^^^
+AssertionError

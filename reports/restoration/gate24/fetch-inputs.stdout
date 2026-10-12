@@ -1,0 +1,7 @@
+{
+  "dataset_revision": "e48e2bd1e9fecd5bbd641e9414ac59da9f2e69f6",
+  "split": "dev",
+  "harness_commit": "02e7a74ffd0b707aab73d203fe87bdc7c76afc8e",
+  "uv_version": "0.13.0",
+  "benchmark_task_content_loaded": false
+}

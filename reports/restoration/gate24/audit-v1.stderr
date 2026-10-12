@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\Users\pablo\Downloads\Ixos\reports\restoration\gate24\audit.py", line 65, in <module>
+    assert all(value == 0 for value in train['nonempty'].values())
+                                       ~~~~~^^^^^^^^^^^^
+KeyError: 'nonempty'

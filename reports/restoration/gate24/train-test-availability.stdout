@@ -1,0 +1,17 @@
+{
+  "file_sha256": "0ba403a7060af657e1f0476937a703726c07da15b759836694b16e553705a10f",
+  "rows": 19008,
+  "available_test_columns": [
+    "test_patch",
+    "FAIL_TO_PASS",
+    "PASS_TO_PASS"
+  ],
+  "rows_with_nonempty": {
+    "test_patch": 0,
+    "FAIL_TO_PASS": 0,
+    "PASS_TO_PASS": 0
+  },
+  "reference_content_emitted": false,
+  "task_identities_loaded": false,
+  "boundary": "Aggregate availability only; no patch solution/hints/source/test names are output or assigned to actor tasks."
+}

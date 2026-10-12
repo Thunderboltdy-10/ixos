@@ -1,0 +1,29 @@
+{
+  "dataset_sha256": "d758d54540aa4140d0274ed0cc93b8288aa6f323c3c603e2557e7666a47fc41b",
+  "split": "dev",
+  "rows": 225,
+  "excluded_repositories": [
+    "docker/compose",
+    "marshmallow-code/marshmallow",
+    "pvlib/pvlib-python",
+    "pydicom/pydicom",
+    "pylint-dev/astroid",
+    "pypa/pip",
+    "pyvista/pyvista",
+    "sqlfluff/sqlfluff",
+    "sympy/sympy",
+    "tiangolo/fastapi"
+  ],
+  "candidate_metadata": [],
+  "control_metadata": {
+    "repo": "marshmallow-code/marshmallow",
+    "instance_id": "marshmallow-code__marshmallow-2123",
+    "base_commit": "5a10e83c557d2ee97799c2b85bec49fc90381656"
+  },
+  "control_reference_loaded": true,
+  "candidate_problem_reference_test_content_loaded": false,
+  "control_input_sha256": "accf3e5850df657a9f76a6196bfd933e67e50fa1d2d13cc628a50592bd366e40",
+  "eligible_repositories_remaining": 0,
+  "boundary": "All225full-dev rows belong to the six prospectively excluded Lite-dev repositories. No fresh actor candidates remain; use an excluded lightweight marshmallow control for harness validation only.",
+  "selection_rule": "First3eligible repositories by SHA256 name; first instance per repository by SHA256 ID. No task difficulty/solution inspection."
+}

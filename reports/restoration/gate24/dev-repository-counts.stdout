@@ -1,0 +1,1 @@
+{'sqlfluff/sqlfluff': 50, 'marshmallow-code/marshmallow': 9, 'pvlib/pvlib-python': 63, 'pylint-dev/astroid': 31, 'pyvista/pyvista': 16, 'pydicom/pydicom': 56}

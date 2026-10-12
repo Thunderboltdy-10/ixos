@@ -61,3 +61,7 @@ python reports/restoration/gate25/audit.py
 Use new native workspaces/run IDs for changed inputs; the checked-in shell recipes record original local research paths. Generated locks/raw receipts are immutable evidence, not additional product install requirements. Source/test excerpts retain [attribution and notices](gate25/ATTRIBUTION.md).
 
 **KEEP:** pinned executable synthetic training source and verified excluded control. Next, freeze metadata-only family/task selection for ordered retrieval development, retain stateless/search-feedback/inspection-feedback and lexical controls, verify source/citation/budget contracts, then measure evidence discovery and actual complete-task costs. Wrong acceptance, reset/drift and no-answer limits must remain visible. Reserve fresh human/held-out tasks for the final frozen comparison; no stronger defaults, training or commercial superiority claim follows from these setup controls.
+
+## Later input qualification — Gate26
+
+Gate25 established 50,908 rows with executable failing-test labels and image names. Gate26's separate aggregate input check finds 39,471 nonblank UTF-8 issue descriptors of at most 65,536 bytes and 11,437 blank/missing descriptors. Only the 39,471 can directly supply a prompt-driven actor task under the current contract. The original Gate25 label/image counts and excluded environment control remain valid; they did not establish usable prompts for every row. See [Gate26](GATE26.md) for the retained empty selected input, frozen pilot and prospective eligibility correction.

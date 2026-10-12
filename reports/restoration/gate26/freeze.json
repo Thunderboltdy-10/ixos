@@ -1,0 +1,97 @@
+{
+  "protocol_sha256": "0c980c32789556f59184c809f8691e903799704d5bce26b21d711207438bc538",
+  "selection_sha256": "5443d3152f5d6f50df6199908fff9f001e5dca1be5b20738becb0bbe28547c7b",
+  "preparation_sha256": "54e0f0790e666c7b584e478826fd2fa98037f605d1efcf000ae87694b7a03e81",
+  "amendment_sha256": "9d882325e68ee6b533a437f047d02f8cdf1099a9903a23293e61a23530002179",
+  "sessions": [
+    {
+      "folder": "S01",
+      "case": "S01",
+      "status": "incomplete",
+      "receipt_sha256": "cd30730da6ebdfb67c243134a782340c178ac90d3ccc0acf228ac7c55adcddad",
+      "wire_sha256": "795d4fcb10f71fc1de395960204f732339dc859e5d432d1e9bbd7eac862f201e",
+      "attempted_cli_requests": 2,
+      "error_responses": 1,
+      "wire_tokens": {
+        "stdin": 304,
+        "stdout": 566,
+        "stderr": 387
+      },
+      "source_preserved": true
+    },
+    {
+      "folder": "S01-recovery",
+      "case": "S01",
+      "status": "submitted",
+      "receipt_sha256": "ef346a2477c22d70ab5df5892b9b3bd860b37d3256a5ddb506b2d3a3324a123e",
+      "wire_sha256": "37cb3d1209efd6556010ee615f21e9e54b1ac5f06868b9fa8b6c45d8c6de1e72",
+      "attempted_cli_requests": 6,
+      "error_responses": 0,
+      "wire_tokens": {
+        "stdin": 435,
+        "stdout": 2979,
+        "stderr": 933
+      },
+      "source_preserved": true
+    },
+    {
+      "folder": "S02",
+      "case": "S02",
+      "status": "incomplete",
+      "receipt_sha256": "be1589f32e316e3c4b959c095f612c0cddfbded97adbb912c6efac52a8f0f38d",
+      "wire_sha256": "d2b9b9d7f1f1eaa7593ce8ae82fc2a00a46b4735f86aa53ec11b00667befd890",
+      "attempted_cli_requests": 1,
+      "error_responses": 1,
+      "wire_tokens": {
+        "stdin": 16,
+        "stdout": 15,
+        "stderr": 23
+      },
+      "source_preserved": true
+    },
+    {
+      "folder": "S03",
+      "case": "S03",
+      "status": "submitted",
+      "receipt_sha256": "21457eae077c800ea0cf711de97eb3baccd86d24379042d2442ad2adea372ff1",
+      "wire_sha256": "86f0d9227d230eb6014bb481084cec19fc3fbb8617fdd0ed6c260084f152c473",
+      "attempted_cli_requests": 2,
+      "error_responses": 0,
+      "wire_tokens": {
+        "stdin": 388,
+        "stdout": 1283,
+        "stderr": 385
+      },
+      "source_preserved": true
+    }
+  ],
+  "cases": [
+    {
+      "case": "S01",
+      "folder": "S01-recovery",
+      "instance_id": "pyutils__line_profiler.a646bf0f.combine_file__uplcxzyi",
+      "patch_sha256": "d3e3c01174e73db925382395a80ea738b5d084b080bdad24c3fe5653eb2360a5",
+      "repair_patch": "diff --git a/line_profiler/explicit_profiler.py b/line_profiler/explicit_profiler.py\n--- a/line_profiler/explicit_profiler.py\n+++ b/line_profiler/explicit_profiler.py\n@@ -240,7 +240,7 @@\n         }\n         self.output_prefix = 'profile_output'\n         self._profile = None\n-        self.enabled = False\n+        self.enabled = None\n \n         # Control which outputs will be written on exit\n         self.write_config = {\n@@ -323,7 +323,7 @@\n         if self.enabled is None:\n             # Force a setup if we haven't done it before.\n             self._implicit_setup()\n-        if self.enabled:  # This logic was inverted\n+        if not self.enabled:\n             return func\n         return self._profile(func)\n \n",
+      "submitted_status": "answered",
+      "source_commit": "4a5d2a2d69f1d68235d5db350ea949785b3ba18f"
+    },
+    {
+      "case": "S03",
+      "folder": "S03",
+      "instance_id": "alanjds__drf-nested-routers.6144169d.func_basic__keyt6hfq",
+      "patch_sha256": "1642cf7efabe624f4c4f3829aee0d6a18c8c34750b4967dbe39f25e223c667f3",
+      "repair_patch": "diff --git a/rest_framework_nested/relations.py b/rest_framework_nested/relations.py\n--- a/rest_framework_nested/relations.py\n+++ b/rest_framework_nested/relations.py\n@@ -48,13 +48,13 @@\n             lookups = underscored_lookup.split('__')\n \n             try:\n-                lookup_value = reduce(getattr, [obj] + lookups[:-1])  # type: ignore[operator,arg-type]\n+                lookup_value = reduce(getattr, [obj] + lookups)  # type: ignore[operator,arg-type]\n             except AttributeError:\n                 return None\n \n             kwargs.update({parent_lookup_kwarg: lookup_value})\n \n-        return self.reverse(view_name, kwargs=kwargs, request=None, format=format)\n+        return self.reverse(view_name, kwargs=kwargs, request=request, format=format)\n \n     def get_object(self, view_name: str, view_args: list[Any], view_kwargs: dict[str, Any]) -> T_Model:\n         \"\"\"\n",
+      "submitted_status": "answered",
+      "source_commit": "0159ece8e7191560b44569afc959225f18240f60"
+    }
+  ],
+  "unusable_cases": [
+    {
+      "case": "S02",
+      "reason": "Empty issue text in hash-first selected training row; CLI correctly rejects empty query. Retain the failed actor session; no resolution score for a task with no supplied retrieval prompt."
+    }
+  ],
+  "reference_fields_loaded": false,
+  "validation_problem_reference_fields_loaded": false,
+  "boundary": "Two valid synthetic task repairs, one unusable input and one caller-flag failure/recovery. All failed requests/repeated startup/query wire costs counted. No independent agent A/B or human benchmark claim."
+}

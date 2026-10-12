@@ -1,0 +1,4 @@
+{
+  "helper_sha256": "0d47b0d959f25eec3872ac5f02dc68553ced2e5adc5fec22a2de36dc53599ece",
+  "boundary": "Upstream main runner and normal profiles. Public-mirror/source/image preflight, baseline/gold controls and actual frozen actor patches. No source corpus edits."
+}

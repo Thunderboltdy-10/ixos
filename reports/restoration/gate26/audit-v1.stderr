@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Users\pablo\Downloads\Ixos\reports\restoration\gate26\audit.py", line 116, in <module>
+    f2p = set(json.loads(references[instance]['FAIL_TO_PASS']))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pablo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\json\__init__.py", line 339, in loads
+    raise TypeError(f'the JSON object must be str, bytes or bytearray, '
+TypeError: the JSON object must be str, bytes or bytearray, not list

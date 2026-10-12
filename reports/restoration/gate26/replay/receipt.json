@@ -1,0 +1,2685 @@
+{
+  "binary_sha256": "c16766b9f72eabccc48e9dc37112aa895803ba13f2904c8157caaccbf9147897",
+  "model": {
+    "path": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+    "files": {
+      "model.safetensors": "75cf7a6c2171b230ad19b1e7d8e0b1aee86da5a02af8e7cacedd9921d227623c",
+      "tokenizer.json": "936b2d026b9e81fb683eab537ea37c5a1a65a4d02ad9cb92ce269fb8bc561ebf",
+      "config.json": "148e5691a6fcc553437156859701fba017a1ba5d340b170f17e0f3668fb861a7"
+    },
+    "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+    "file_bytes": 33514284,
+    "tokenizer_settings": {
+      "truncation": null,
+      "padding": null
+    }
+  },
+  "helper_sha256": "29c7d7ddabb324514ffb0be7059b9dfa8f8f8caa331d07bf3461d9a371fd93b5",
+  "runs": [
+    {
+      "case": "S01",
+      "arm": "off",
+      "requests": [
+        {
+          "request": {
+            "op": "search",
+            "id": "q1",
+            "query": "GlobalProfiler decorator logic inverted causing functions to be profiled when disabled\n\n#### Description\n\nThe GlobalProfiler's `__call__` method has inverted logic that causes functions to be profiled when profiling is disabled and not profiled when profiling is enabled.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom line_profiler import profile\n\n# Test 1: Default behavior (should not profile)\n@profile\ndef func1():\n    return 42\n\nfunc1()  # This gets profiled when it shouldn't\n\n# Test 2: Explicitly enable profiling\nprofile.enable()\n\n@profile  \ndef func2():\n    return 42\n\nfunc2()  # This doesn't get profiled when it should\n```\n\nThe issue manifests when using explicit profiling where:\n- Functions decorated with `@profile` get profiled even when profiling is disabled by default\n- Functions decorated with `@profile` don't get profiled when profiling is explicitly enabled\n\nThis breaks the expected behavior where profiling should only occur when explicitly requested via environment variables, command line flags, or programmatic enabling.",
+            "stats": true
+          },
+          "response": {
+            "id": "q1",
+            "results": [
+              {
+                "path": "line_profiler/explicit_profiler.py",
+                "score": 0.8841564,
+                "view": {
+                  "end_line": 185,
+                  "path": "line_profiler/explicit_profiler.py",
+                  "start_line": 181,
+                  "text": "        setup_config (Dict[str, List[str]]):\n            Determines how the implicit setup behaves by defining which\n            environment variables / command line flags to look for.\n\n        output_prefix (str):"
+                }
+              },
+              {
+                "path": "tests/complex_example.py",
+                "score": 0.6398958,
+                "view": {
+                  "end_line": 40,
+                  "path": "tests/complex_example.py",
+                  "start_line": 36,
+                  "text": "python -m pstats ./complex_example.py.prof\n\n# Explicit decorator with environment enabling\nPROFILE_TYPE=explicit LINE_PROFILE=1 python complex_example.py\n"
+                }
+              },
+              {
+                "path": "README.rst",
+                "score": 0.6382565,
+                "view": {
+                  "end_line": 279,
+                  "path": "README.rst",
+                  "start_line": 275,
+                  "text": "      Profiler will be instantiated and inserted into your __builtins__ with the\n      name \"profile\". Like LineProfiler, it may be used as a decorator, or\n      enabled/disabled with ``enable_by_count()`` and ``disable_by_count()``, or\n      even as a context manager with the \"with profile:\" statement.\n"
+                }
+              },
+              {
+                "path": "line_profiler/ipython_extension.py",
+                "score": 0.6211841,
+                "view": {
+                  "end_line": 47,
+                  "path": "line_profiler/ipython_extension.py",
+                  "start_line": 43,
+                  "text": "        Usage:\n\n            %lprun -f func1 -f func2 <statement>\n\n        The given statement (which doesn't require quote marks) is run via the"
+                }
+              },
+              {
+                "path": "kernprof.py",
+                "score": 0.6034701,
+                "view": {
+                  "end_line": 68,
+                  "path": "kernprof.py",
+                  "start_line": 64,
+                  "text": "      -V, --version         show program's version number and exit\n      -l, --line-by-line    Use the line-by-line profiler instead of cProfile. Implies --builtin.\n      -b, --builtin         Put 'profile' in the builtins. Use 'profile.enable()'/'.disable()', '@profile' to decorate functions, or 'with profile:' to profile a section of code.\n      -o OUTFILE, --outfile OUTFILE\n                            Save stats to <outfile> (default: 'scriptname.lprof' with --line-by-line, 'scriptname.prof' without)"
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 525,
+          "diagnostic_tokens": 363,
+          "request_tokens": 258,
+          "wall_ms": 29.719800000748364,
+          "stats": {
+            "applicationCacheHits": 0,
+            "cacheReadMs": 6.638100000000001,
+            "cacheWriteErrors": 0,
+            "cacheWriteMs": 0.0,
+            "cacheWrites": 0,
+            "contextualLexical": false,
+            "discoveredFiles": 92,
+            "documentEmbedMs": 0.0047,
+            "driftReset": false,
+            "evidence": {
+              "candidatePassages": 34,
+              "extraEmbedMs": 2.0791,
+              "extraPassagesEmbedded": 7,
+              "policy": "bounded-rerank",
+              "selectionMs": 6.9657
+            },
+            "extractionMs": 0.3103,
+            "feedbackConsumed": false,
+            "ioBatchWallMs": 4.7200999999999995,
+            "ioReadMs": 6.830399999999999,
+            "ioWorkers": 4,
+            "lexicalCandidates": 82,
+            "lexicalPrepareMs": 8.491900000000001,
+            "literalGuard": false,
+            "memoryCacheHits": 0,
+            "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "nativeCacheHits": 89,
+            "outputBytes": 2038,
+            "passagesEmbedded": 0,
+            "queryEmbedMs": 0.43770000000000003,
+            "queryMs": 8.0307,
+            "refreshMs": 20.753600000000002,
+            "representation": "intro-uniform",
+            "requestMs": 28.7978,
+            "returnedResults": 5,
+            "searchableFiles": 89,
+            "semanticCandidates": 58,
+            "sessionEntries": 0,
+            "skippedFiles": 3,
+            "sourceBytesRead": 365932,
+            "sourceHashMs": 0.3881000000000002,
+            "tokenizerSettings": {
+              "padding": null,
+              "truncation": null
+            },
+            "vectorsScored": 201
+          }
+        },
+        {
+          "request": {
+            "op": "grep",
+            "id": "g1",
+            "pattern": "def __call__|def enable|def disable",
+            "max_matches_per_file": 3,
+            "stats": true
+          },
+          "response": {
+            "id": "g1",
+            "results": [
+              {
+                "line": 133,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 135,
+                  "path": "kernprof.py",
+                  "start_line": 131,
+                  "text": "        self.enable_count = 0\n\n    def enable_by_count(self, subcalls=True, builtins=True):\n        \"\"\" Enable the profiler if it hasn't been enabled before.\n        \"\"\""
+                }
+              },
+              {
+                "line": 140,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 142,
+                  "path": "kernprof.py",
+                  "start_line": 138,
+                  "text": "        self.enable_count += 1\n\n    def disable_by_count(self):\n        \"\"\" Disable the profiler if the number of disable requests matches the\n        number of enable requests."
+                }
+              },
+              {
+                "line": 149,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 151,
+                  "path": "kernprof.py",
+                  "start_line": 147,
+                  "text": "                self.disable()\n\n    def __call__(self, func):\n        \"\"\" Decorate a function to start the profiler on function entry and stop\n        it on function exit."
+                }
+              },
+              {
+                "line": 286,
+                "path": "line_profiler/_line_profiler.pyx",
+                "view": {
+                  "end_line": 288,
+                  "path": "line_profiler/_line_profiler.pyx",
+                  "start_line": 284,
+                  "text": "            self.threaddata.enable_count = value\n\n    def enable_by_count(self):\n        \"\"\" Enable the profiler if it hasn't been enabled before.\n        \"\"\""
+                }
+              },
+              {
+                "line": 293,
+                "path": "line_profiler/_line_profiler.pyx",
+                "view": {
+                  "end_line": 295,
+                  "path": "line_profiler/_line_profiler.pyx",
+                  "start_line": 291,
+                  "text": "        self.enable_count += 1\n\n    def disable_by_count(self):\n        \"\"\" Disable the profiler if the number of disable requests matches the\n        number of enable requests."
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 399,
+          "diagnostic_tokens": 69,
+          "request_tokens": 34,
+          "wall_ms": 11.111599998912425,
+          "stats": {
+            "filesSearched": 89,
+            "matchesSuppressedByFileCap": 1,
+            "matchingLines": 15,
+            "maxMatchesPerFile": 3,
+            "modelLoaded": false,
+            "requestMs": 10.685,
+            "returnedResults": 5,
+            "skippedFiles": 3,
+            "truncated": true
+          }
+        },
+        {
+          "request": {
+            "op": "grep",
+            "id": "g2",
+            "pattern": "def __call__",
+            "fixed": true,
+            "max_matches_per_file": 1,
+            "stats": true
+          },
+          "response": {
+            "id": "g2",
+            "results": [
+              {
+                "line": 149,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 151,
+                  "path": "kernprof.py",
+                  "start_line": 147,
+                  "text": "                self.disable()\n\n    def __call__(self, func):\n        \"\"\" Decorate a function to start the profiler on function entry and stop\n        it on function exit."
+                }
+              },
+              {
+                "line": 310,
+                "path": "line_profiler/explicit_profiler.py",
+                "view": {
+                  "end_line": 312,
+                  "path": "line_profiler/explicit_profiler.py",
+                  "start_line": 308,
+                  "text": "        self.enabled = False\n\n    def __call__(self, func):\n        \"\"\"\n        If the global profiler is enabled, decorate a function to start the"
+                }
+              },
+              {
+                "line": 23,
+                "path": "line_profiler/explicit_profiler.pyi",
+                "view": {
+                  "end_line": 25,
+                  "path": "line_profiler/explicit_profiler.pyi",
+                  "start_line": 21,
+                  "text": "        ...\n\n    def __call__(self, func: Callable) -> Callable:\n        ...\n"
+                }
+              },
+              {
+                "line": 71,
+                "path": "line_profiler/line_profiler.py",
+                "view": {
+                  "end_line": 73,
+                  "path": "line_profiler/line_profiler.py",
+                  "start_line": 69,
+                  "text": "    \"\"\"\n\n    def __call__(self, func):\n        \"\"\" Decorate a function to start the profiler on function entry and stop\n        it on function exit."
+                }
+              },
+              {
+                "line": 29,
+                "path": "line_profiler/line_profiler.pyi",
+                "view": {
+                  "end_line": 31,
+                  "path": "line_profiler/line_profiler.pyi",
+                  "start_line": 27,
+                  "text": "class LineProfiler(CLineProfiler):\n\n    def __call__(self, func):\n        ...\n"
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 374,
+          "diagnostic_tokens": 73,
+          "request_tokens": 32,
+          "wall_ms": 10.387300000729738,
+          "stats": {
+            "filesSearched": 89,
+            "matchesSuppressedByFileCap": 0,
+            "matchingLines": 5,
+            "maxMatchesPerFile": 1,
+            "modelLoaded": false,
+            "requestMs": 9.972999999999999,
+            "returnedResults": 5,
+            "skippedFiles": 3,
+            "truncated": false
+          }
+        },
+        {
+          "request": {
+            "op": "read",
+            "id": "r1",
+            "path": "line_profiler/explicit_profiler.py",
+            "start": 285,
+            "lines": 65
+          },
+          "response": {
+            "id": "r1",
+            "source_hash": "4d7dadee5fc5b1ff0bd8934def6a4a2d96fb0d282848e651b0827b44ce02aeac",
+            "total_lines": 397,
+            "truncated": false,
+            "view": {
+              "end_line": 349,
+              "path": "line_profiler/explicit_profiler.py",
+              "start_line": 285,
+              "text": "        else:\n            self.disable()\n\n    def enable(self, output_prefix=None):\n        \"\"\"\n        Explicitly enables global profiler and controls its settings.\n        \"\"\"\n        if self._profile is None:\n            # Try to only ever create one real LineProfiler object\n            atexit.register(self.show)\n            self._profile = LineProfiler()  # type: ignore\n\n        # The user can call this function more than once to update the final\n        # reporting or to re-enable the profiler after it a disable.\n        self.enabled = True\n\n        if output_prefix is not None:\n            self.output_prefix = output_prefix\n\n    def disable(self):\n        \"\"\"\n        Explicitly initialize and disable this global profiler.\n        \"\"\"\n        self.enabled = False\n\n    def __call__(self, func):\n        \"\"\"\n        If the global profiler is enabled, decorate a function to start the\n        profiler on function entry and stop it on function exit. Otherwise\n        return the input.\n\n        Args:\n            func (Callable): the function to profile\n\n        Returns:\n            Callable: a potentially wrapped function\n        \"\"\"\n\n        if self.enabled is None:\n            # Force a setup if we haven't done it before.\n            self._implicit_setup()\n        if self.enabled:  # This logic was inverted\n            return func\n        return self._profile(func)\n\n    def show(self):\n        \"\"\"\n        Write the managed profiler stats to enabled outputs.\n\n        If the implicit setup triggered, then this will be called by\n        :py:mod:`atexit`.\n        \"\"\"\n        import io\n        import pathlib\n\n        srite_stdout = self.write_config['stdout']\n        write_text = self.write_config['text']\n        write_timestamped_text = self.write_config['timestamped_text']\n        write_lprof = self.write_config['lprof']\n\n        if srite_stdout:\n            kwargs = self.show_config.copy()\n            self._profile.print_stats(**kwargs)\n\n        if write_text or write_timestamped_text:"
+            }
+          },
+          "stdout_tokens": 556,
+          "diagnostic_tokens": 0,
+          "request_tokens": 29,
+          "wall_ms": 8.941400001276634,
+          "stats": {}
+        },
+        {
+          "request": {
+            "op": "search",
+            "id": "q2",
+            "query": "GlobalProfiler implicit setup default enabled false environment and command line",
+            "stats": true
+          },
+          "response": {
+            "id": "q2",
+            "results": [
+              {
+                "path": "line_profiler/explicit_profiler.py",
+                "score": 0.77455294,
+                "view": {
+                  "end_line": 314,
+                  "path": "line_profiler/explicit_profiler.py",
+                  "start_line": 310,
+                  "text": "    def __call__(self, func):\n        \"\"\"\n        If the global profiler is enabled, decorate a function to start the\n        profiler on function entry and stop it on function exit. Otherwise\n        return the input."
+                }
+              },
+              {
+                "path": "kernprof.py",
+                "score": 0.47033858,
+                "view": {
+                  "end_line": 136,
+                  "path": "kernprof.py",
+                  "start_line": 132,
+                  "text": "\n    def enable_by_count(self, subcalls=True, builtins=True):\n        \"\"\" Enable the profiler if it hasn't been enabled before.\n        \"\"\"\n        if self.enable_count == 0:"
+                }
+              },
+              {
+                "path": "setup.py",
+                "score": 0.4532051,
+                "view": {
+                  "end_line": 236,
+                  "path": "setup.py",
+                  "start_line": 232,
+                  "text": "                    \"language_level\": 3,\n                    \"infer_types\": True,\n                    \"legacy_implicit_noexcept\": True,\n                    \"linetrace\": (True if os.getenv(\"DEV\") == \"true\" else False)\n                },"
+                }
+              },
+              {
+                "path": "tests/complex_example.py",
+                "score": 0.41740847,
+                "view": {
+                  "end_line": 20,
+                  "path": "tests/complex_example.py",
+                  "start_line": 16,
+                  "text": "\n# NOTE: this fails because we are not running with kernprof\nPROFILE_TYPE=implicit python complex_example.py\n\n"
+                }
+              },
+              {
+                "path": "pyproject.toml",
+                "score": 0.3957585,
+                "view": {
+                  "end_line": 80,
+                  "path": "pyproject.toml",
+                  "start_line": 76,
+                  "text": "\n[tool.pytest.ini_options]\naddopts = \"--ignore-glob=setup.py --ignore-glob=dev --ignore-glob=setup.py --ignore-glob=docs --ignore-glob=agentx\"\nnorecursedirs = \".git ignore build __pycache__ dev _skbuild docs agentx\"\nfilterwarnings = ["
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 456,
+          "diagnostic_tokens": 367,
+          "request_tokens": 28,
+          "wall_ms": 14.319800000521354,
+          "stats": {
+            "applicationCacheHits": 0,
+            "cacheReadMs": 0.19599999999999998,
+            "cacheWriteErrors": 0,
+            "cacheWriteMs": 0.0,
+            "cacheWrites": 0,
+            "contextualLexical": false,
+            "discoveredFiles": 92,
+            "documentEmbedMs": 0.0009,
+            "driftReset": false,
+            "evidence": {
+              "candidatePassages": 29,
+              "extraEmbedMs": 1.5215999999999998,
+              "extraPassagesEmbedded": 8,
+              "policy": "bounded-rerank",
+              "selectionMs": 5.5215000000000005
+            },
+            "extractionMs": 0.0018999999999999998,
+            "feedbackConsumed": false,
+            "ioBatchWallMs": 2.6143,
+            "ioReadMs": 5.890200000000001,
+            "ioWorkers": 4,
+            "lexicalCandidates": 75,
+            "lexicalPrepareMs": 0.0,
+            "literalGuard": false,
+            "memoryCacheHits": 89,
+            "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "nativeCacheHits": 0,
+            "outputBytes": 1666,
+            "passagesEmbedded": 0,
+            "queryEmbedMs": 0.0608,
+            "queryMs": 5.806900000000001,
+            "refreshMs": 7.548,
+            "representation": "intro-uniform",
+            "requestMs": 13.360999999999999,
+            "returnedResults": 5,
+            "searchableFiles": 89,
+            "semanticCandidates": 51,
+            "sessionEntries": 0,
+            "skippedFiles": 3,
+            "sourceBytesRead": 365932,
+            "sourceHashMs": 0.18300000000000005,
+            "tokenizerSettings": {
+              "padding": null,
+              "truncation": null
+            },
+            "vectorsScored": 201
+          }
+        },
+        {
+          "request": {
+            "op": "read",
+            "id": "r2",
+            "path": "line_profiler/explicit_profiler.py",
+            "start": 220,
+            "lines": 68
+          },
+          "response": {
+            "id": "r2",
+            "source_hash": "4d7dadee5fc5b1ff0bd8934def6a4a2d96fb0d282848e651b0827b44ce02aeac",
+            "total_lines": 397,
+            "truncated": false,
+            "view": {
+              "end_line": 287,
+              "path": "line_profiler/explicit_profiler.py",
+              "start_line": 220,
+              "text": "        >>>     return n\n        >>> # Disabled by default, implicitly checks to auto-enable on first wrap\n        >>> assert self.enabled is None\n        >>> wrapped = self(collatz)\n        >>> assert self.enabled is False\n        >>> assert wrapped is collatz\n        >>> # Can explicitly enable\n        >>> self.enable()\n        >>> wrapped = self(collatz)\n        >>> assert self.enabled is True\n        >>> assert wrapped is not collatz\n        >>> wrapped(100)\n        >>> # Can explicitly request output\n        >>> self.show()\n    \"\"\"\n\n    def __init__(self):\n        self.setup_config = {\n            'environ_flags': ['LINE_PROFILE'],\n            'cli_flags': ['--line-profile', '--line_profile'],\n        }\n        self.output_prefix = 'profile_output'\n        self._profile = None\n        self.enabled = False\n\n        # Control which outputs will be written on exit\n        self.write_config = {\n            'lprof': True,\n            'text': False,\n            'timestamped_text': True,\n            'stdout': True,\n        }\n\n        # Configuration for how output will be displayed\n        self.show_config = {\n            'sort': 1,\n            'stripzeros': 0,\n            'rich': 1,\n            'details': 0,\n            'summarize': 1,\n        }\n\n    def _kernprof_overwrite(self, profile):\n        \"\"\"\n        Kernprof will call this when it runs, so we can use its profile object\n        instead of our own. Note: when kernprof overwrites us we wont register\n        an atexit hook. This is what we want because kernprof wants us to use\n        another program to read its output file.\n        \"\"\"\n        self._profile = profile\n        self.enabled = True\n\n    def _implicit_setup(self):\n        \"\"\"\n        Called once the first time the user decorates a function with\n        ``line_profiler.profile`` and they have not explicitly setup the global\n        profiling options.\n        \"\"\"\n        environ_flags = self.setup_config['environ_flags']\n        cli_flags = self.setup_config['cli_flags']\n        is_profiling = any(os.environ.get(f, '').lower() not in _FALSY_STRINGS\n                           for f in environ_flags)\n        is_profiling |= any(f in sys.argv for f in cli_flags)\n        if is_profiling:\n            self.enable()\n        else:\n            self.disable()\n"
+            }
+          },
+          "stdout_tokens": 645,
+          "diagnostic_tokens": 0,
+          "request_tokens": 29,
+          "wall_ms": 9.252799998648698,
+          "stats": {}
+        }
+      ],
+      "wire_tokens": {
+        "stdin": 410,
+        "stdout": 2955,
+        "stderr": 898
+      },
+      "quality_scope": "Same observed actor queries/inspections, not independent adaptive agents.",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-open-loop-a87xoadl\\config.toml",
+        "serve",
+        "--dir",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate26\\sources\\S01",
+        "--profile",
+        "code",
+        "--model-path",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+        "--representation",
+        "intro-uniform",
+        "--session",
+        "off",
+        "--evidence-policy",
+        "bounded-rerank",
+        "--quiet-stats"
+      ],
+      "source_preserved": true
+    },
+    {
+      "case": "S01",
+      "arm": "search-feedback",
+      "requests": [
+        {
+          "request": {
+            "op": "search",
+            "id": "q1",
+            "query": "GlobalProfiler decorator logic inverted causing functions to be profiled when disabled\n\n#### Description\n\nThe GlobalProfiler's `__call__` method has inverted logic that causes functions to be profiled when profiling is disabled and not profiled when profiling is enabled.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom line_profiler import profile\n\n# Test 1: Default behavior (should not profile)\n@profile\ndef func1():\n    return 42\n\nfunc1()  # This gets profiled when it shouldn't\n\n# Test 2: Explicitly enable profiling\nprofile.enable()\n\n@profile  \ndef func2():\n    return 42\n\nfunc2()  # This doesn't get profiled when it should\n```\n\nThe issue manifests when using explicit profiling where:\n- Functions decorated with `@profile` get profiled even when profiling is disabled by default\n- Functions decorated with `@profile` don't get profiled when profiling is explicitly enabled\n\nThis breaks the expected behavior where profiling should only occur when explicitly requested via environment variables, command line flags, or programmatic enabling.",
+            "stats": true
+          },
+          "response": {
+            "id": "q1",
+            "results": [
+              {
+                "path": "line_profiler/explicit_profiler.py",
+                "score": 0.88415647,
+                "view": {
+                  "end_line": 185,
+                  "path": "line_profiler/explicit_profiler.py",
+                  "start_line": 181,
+                  "text": "        setup_config (Dict[str, List[str]]):\n            Determines how the implicit setup behaves by defining which\n            environment variables / command line flags to look for.\n\n        output_prefix (str):"
+                }
+              },
+              {
+                "path": "tests/complex_example.py",
+                "score": 0.6398959,
+                "view": {
+                  "end_line": 40,
+                  "path": "tests/complex_example.py",
+                  "start_line": 36,
+                  "text": "python -m pstats ./complex_example.py.prof\n\n# Explicit decorator with environment enabling\nPROFILE_TYPE=explicit LINE_PROFILE=1 python complex_example.py\n"
+                }
+              },
+              {
+                "path": "README.rst",
+                "score": 0.63825655,
+                "view": {
+                  "end_line": 279,
+                  "path": "README.rst",
+                  "start_line": 275,
+                  "text": "      Profiler will be instantiated and inserted into your __builtins__ with the\n      name \"profile\". Like LineProfiler, it may be used as a decorator, or\n      enabled/disabled with ``enable_by_count()`` and ``disable_by_count()``, or\n      even as a context manager with the \"with profile:\" statement.\n"
+                }
+              },
+              {
+                "path": "line_profiler/ipython_extension.py",
+                "score": 0.6211842,
+                "view": {
+                  "end_line": 47,
+                  "path": "line_profiler/ipython_extension.py",
+                  "start_line": 43,
+                  "text": "        Usage:\n\n            %lprun -f func1 -f func2 <statement>\n\n        The given statement (which doesn't require quote marks) is run via the"
+                }
+              },
+              {
+                "path": "kernprof.py",
+                "score": 0.6034701,
+                "view": {
+                  "end_line": 68,
+                  "path": "kernprof.py",
+                  "start_line": 64,
+                  "text": "      -V, --version         show program's version number and exit\n      -l, --line-by-line    Use the line-by-line profiler instead of cProfile. Implies --builtin.\n      -b, --builtin         Put 'profile' in the builtins. Use 'profile.enable()'/'.disable()', '@profile' to decorate functions, or 'with profile:' to profile a section of code.\n      -o OUTFILE, --outfile OUTFILE\n                            Save stats to <outfile> (default: 'scriptname.lprof' with --line-by-line, 'scriptname.prof' without)"
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 525,
+          "diagnostic_tokens": 366,
+          "request_tokens": 258,
+          "wall_ms": 30.95949999988079,
+          "stats": {
+            "applicationCacheHits": 0,
+            "cacheReadMs": 6.533100000000004,
+            "cacheWriteErrors": 0,
+            "cacheWriteMs": 0.0,
+            "cacheWrites": 0,
+            "contextualLexical": false,
+            "discoveredFiles": 92,
+            "documentEmbedMs": 0.0046,
+            "driftReset": false,
+            "evidence": {
+              "candidatePassages": 34,
+              "extraEmbedMs": 1.8706,
+              "extraPassagesEmbedded": 7,
+              "policy": "bounded-rerank",
+              "selectionMs": 6.7122
+            },
+            "extractionMs": 0.28539999999999993,
+            "feedbackConsumed": false,
+            "ioBatchWallMs": 4.894900000000001,
+            "ioReadMs": 7.151699999999999,
+            "ioWorkers": 4,
+            "lexicalCandidates": 82,
+            "lexicalPrepareMs": 8.026099999999998,
+            "literalGuard": false,
+            "memoryCacheHits": 0,
+            "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "nativeCacheHits": 89,
+            "outputBytes": 2040,
+            "passagesEmbedded": 0,
+            "queryEmbedMs": 0.3748,
+            "queryMs": 7.7017999999999995,
+            "refreshMs": 22.369699999999998,
+            "representation": "intro-uniform",
+            "requestMs": 30.0816,
+            "returnedResults": 5,
+            "searchableFiles": 89,
+            "semanticCandidates": 58,
+            "sessionEntries": 1,
+            "skippedFiles": 3,
+            "sourceBytesRead": 365932,
+            "sourceHashMs": 0.38520000000000004,
+            "tokenizerSettings": {
+              "padding": null,
+              "truncation": null
+            },
+            "vectorsScored": 201
+          }
+        },
+        {
+          "request": {
+            "op": "grep",
+            "id": "g1",
+            "pattern": "def __call__|def enable|def disable",
+            "max_matches_per_file": 3,
+            "stats": true
+          },
+          "response": {
+            "id": "g1",
+            "results": [
+              {
+                "line": 133,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 135,
+                  "path": "kernprof.py",
+                  "start_line": 131,
+                  "text": "        self.enable_count = 0\n\n    def enable_by_count(self, subcalls=True, builtins=True):\n        \"\"\" Enable the profiler if it hasn't been enabled before.\n        \"\"\""
+                }
+              },
+              {
+                "line": 140,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 142,
+                  "path": "kernprof.py",
+                  "start_line": 138,
+                  "text": "        self.enable_count += 1\n\n    def disable_by_count(self):\n        \"\"\" Disable the profiler if the number of disable requests matches the\n        number of enable requests."
+                }
+              },
+              {
+                "line": 149,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 151,
+                  "path": "kernprof.py",
+                  "start_line": 147,
+                  "text": "                self.disable()\n\n    def __call__(self, func):\n        \"\"\" Decorate a function to start the profiler on function entry and stop\n        it on function exit."
+                }
+              },
+              {
+                "line": 286,
+                "path": "line_profiler/_line_profiler.pyx",
+                "view": {
+                  "end_line": 288,
+                  "path": "line_profiler/_line_profiler.pyx",
+                  "start_line": 284,
+                  "text": "            self.threaddata.enable_count = value\n\n    def enable_by_count(self):\n        \"\"\" Enable the profiler if it hasn't been enabled before.\n        \"\"\""
+                }
+              },
+              {
+                "line": 293,
+                "path": "line_profiler/_line_profiler.pyx",
+                "view": {
+                  "end_line": 295,
+                  "path": "line_profiler/_line_profiler.pyx",
+                  "start_line": 291,
+                  "text": "        self.enable_count += 1\n\n    def disable_by_count(self):\n        \"\"\" Disable the profiler if the number of disable requests matches the\n        number of enable requests."
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 399,
+          "diagnostic_tokens": 70,
+          "request_tokens": 34,
+          "wall_ms": 11.55070000095293,
+          "stats": {
+            "filesSearched": 89,
+            "matchesSuppressedByFileCap": 1,
+            "matchingLines": 15,
+            "maxMatchesPerFile": 3,
+            "modelLoaded": false,
+            "requestMs": 11.1183,
+            "returnedResults": 5,
+            "skippedFiles": 3,
+            "truncated": true
+          }
+        },
+        {
+          "request": {
+            "op": "grep",
+            "id": "g2",
+            "pattern": "def __call__",
+            "fixed": true,
+            "max_matches_per_file": 1,
+            "stats": true
+          },
+          "response": {
+            "id": "g2",
+            "results": [
+              {
+                "line": 149,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 151,
+                  "path": "kernprof.py",
+                  "start_line": 147,
+                  "text": "                self.disable()\n\n    def __call__(self, func):\n        \"\"\" Decorate a function to start the profiler on function entry and stop\n        it on function exit."
+                }
+              },
+              {
+                "line": 310,
+                "path": "line_profiler/explicit_profiler.py",
+                "view": {
+                  "end_line": 312,
+                  "path": "line_profiler/explicit_profiler.py",
+                  "start_line": 308,
+                  "text": "        self.enabled = False\n\n    def __call__(self, func):\n        \"\"\"\n        If the global profiler is enabled, decorate a function to start the"
+                }
+              },
+              {
+                "line": 23,
+                "path": "line_profiler/explicit_profiler.pyi",
+                "view": {
+                  "end_line": 25,
+                  "path": "line_profiler/explicit_profiler.pyi",
+                  "start_line": 21,
+                  "text": "        ...\n\n    def __call__(self, func: Callable) -> Callable:\n        ...\n"
+                }
+              },
+              {
+                "line": 71,
+                "path": "line_profiler/line_profiler.py",
+                "view": {
+                  "end_line": 73,
+                  "path": "line_profiler/line_profiler.py",
+                  "start_line": 69,
+                  "text": "    \"\"\"\n\n    def __call__(self, func):\n        \"\"\" Decorate a function to start the profiler on function entry and stop\n        it on function exit."
+                }
+              },
+              {
+                "line": 29,
+                "path": "line_profiler/line_profiler.pyi",
+                "view": {
+                  "end_line": 31,
+                  "path": "line_profiler/line_profiler.pyi",
+                  "start_line": 27,
+                  "text": "class LineProfiler(CLineProfiler):\n\n    def __call__(self, func):\n        ...\n"
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 374,
+          "diagnostic_tokens": 70,
+          "request_tokens": 32,
+          "wall_ms": 10.883499999181367,
+          "stats": {
+            "filesSearched": 89,
+            "matchesSuppressedByFileCap": 0,
+            "matchingLines": 5,
+            "maxMatchesPerFile": 1,
+            "modelLoaded": false,
+            "requestMs": 10.4238,
+            "returnedResults": 5,
+            "skippedFiles": 3,
+            "truncated": false
+          }
+        },
+        {
+          "request": {
+            "op": "read",
+            "id": "r1",
+            "path": "line_profiler/explicit_profiler.py",
+            "start": 285,
+            "lines": 65
+          },
+          "response": {
+            "id": "r1",
+            "source_hash": "4d7dadee5fc5b1ff0bd8934def6a4a2d96fb0d282848e651b0827b44ce02aeac",
+            "total_lines": 397,
+            "truncated": false,
+            "view": {
+              "end_line": 349,
+              "path": "line_profiler/explicit_profiler.py",
+              "start_line": 285,
+              "text": "        else:\n            self.disable()\n\n    def enable(self, output_prefix=None):\n        \"\"\"\n        Explicitly enables global profiler and controls its settings.\n        \"\"\"\n        if self._profile is None:\n            # Try to only ever create one real LineProfiler object\n            atexit.register(self.show)\n            self._profile = LineProfiler()  # type: ignore\n\n        # The user can call this function more than once to update the final\n        # reporting or to re-enable the profiler after it a disable.\n        self.enabled = True\n\n        if output_prefix is not None:\n            self.output_prefix = output_prefix\n\n    def disable(self):\n        \"\"\"\n        Explicitly initialize and disable this global profiler.\n        \"\"\"\n        self.enabled = False\n\n    def __call__(self, func):\n        \"\"\"\n        If the global profiler is enabled, decorate a function to start the\n        profiler on function entry and stop it on function exit. Otherwise\n        return the input.\n\n        Args:\n            func (Callable): the function to profile\n\n        Returns:\n            Callable: a potentially wrapped function\n        \"\"\"\n\n        if self.enabled is None:\n            # Force a setup if we haven't done it before.\n            self._implicit_setup()\n        if self.enabled:  # This logic was inverted\n            return func\n        return self._profile(func)\n\n    def show(self):\n        \"\"\"\n        Write the managed profiler stats to enabled outputs.\n\n        If the implicit setup triggered, then this will be called by\n        :py:mod:`atexit`.\n        \"\"\"\n        import io\n        import pathlib\n\n        srite_stdout = self.write_config['stdout']\n        write_text = self.write_config['text']\n        write_timestamped_text = self.write_config['timestamped_text']\n        write_lprof = self.write_config['lprof']\n\n        if srite_stdout:\n            kwargs = self.show_config.copy()\n            self._profile.print_stats(**kwargs)\n\n        if write_text or write_timestamped_text:"
+            }
+          },
+          "stdout_tokens": 556,
+          "diagnostic_tokens": 0,
+          "request_tokens": 29,
+          "wall_ms": 8.864100000209874,
+          "stats": {}
+        },
+        {
+          "request": {
+            "op": "search",
+            "id": "q2",
+            "query": "GlobalProfiler implicit setup default enabled false environment and command line",
+            "feedback": {
+              "query_id": "q1",
+              "accepted": [
+                0
+              ]
+            },
+            "stats": true
+          },
+          "response": {
+            "id": "q2",
+            "results": [
+              {
+                "path": "line_profiler/explicit_profiler.py",
+                "score": 0.8262506,
+                "view": {
+                  "end_line": 314,
+                  "path": "line_profiler/explicit_profiler.py",
+                  "start_line": 310,
+                  "text": "    def __call__(self, func):\n        \"\"\"\n        If the global profiler is enabled, decorate a function to start the\n        profiler on function entry and stop it on function exit. Otherwise\n        return the input."
+                }
+              },
+              {
+                "path": "kernprof.py",
+                "score": 0.5064166,
+                "view": {
+                  "end_line": 136,
+                  "path": "kernprof.py",
+                  "start_line": 132,
+                  "text": "\n    def enable_by_count(self, subcalls=True, builtins=True):\n        \"\"\" Enable the profiler if it hasn't been enabled before.\n        \"\"\"\n        if self.enable_count == 0:"
+                }
+              },
+              {
+                "path": "setup.py",
+                "score": 0.48420048,
+                "view": {
+                  "end_line": 236,
+                  "path": "setup.py",
+                  "start_line": 232,
+                  "text": "                    \"language_level\": 3,\n                    \"infer_types\": True,\n                    \"legacy_implicit_noexcept\": True,\n                    \"linetrace\": (True if os.getenv(\"DEV\") == \"true\" else False)\n                },"
+                }
+              },
+              {
+                "path": "tests/complex_example.py",
+                "score": 0.47772118,
+                "view": {
+                  "end_line": 20,
+                  "path": "tests/complex_example.py",
+                  "start_line": 16,
+                  "text": "\n# NOTE: this fails because we are not running with kernprof\nPROFILE_TYPE=implicit python complex_example.py\n\n"
+                }
+              },
+              {
+                "path": "line_profiler/ipython_extension.py",
+                "score": 0.4475752,
+                "view": {
+                  "end_line": 50,
+                  "path": "line_profiler/ipython_extension.py",
+                  "start_line": 46,
+                  "text": "\n        The given statement (which doesn't require quote marks) is run via the\n        LineProfiler. Profiling is enabled for the functions specified by the -f\n        options. The statistics will be shown side-by-side with the code through the\n        pager once the statement has completed."
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 449,
+          "diagnostic_tokens": 357,
+          "request_tokens": 41,
+          "wall_ms": 15.56449999952747,
+          "stats": {
+            "applicationCacheHits": 0,
+            "cacheReadMs": 0.20860000000000004,
+            "cacheWriteErrors": 0,
+            "cacheWriteMs": 0.0,
+            "cacheWrites": 0,
+            "contextualLexical": false,
+            "discoveredFiles": 92,
+            "documentEmbedMs": 0.0003,
+            "driftReset": false,
+            "evidence": {
+              "candidatePassages": 31,
+              "extraEmbedMs": 1.7966,
+              "extraPassagesEmbedded": 8,
+              "policy": "bounded-rerank",
+              "selectionMs": 6.8467
+            },
+            "extractionMs": 0.0016999999999999997,
+            "feedbackConsumed": true,
+            "ioBatchWallMs": 2.6399000000000004,
+            "ioReadMs": 5.973799999999999,
+            "ioWorkers": 4,
+            "lexicalCandidates": 75,
+            "lexicalPrepareMs": 0.0,
+            "literalGuard": false,
+            "memoryCacheHits": 89,
+            "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "nativeCacheHits": 0,
+            "outputBytes": 1760,
+            "passagesEmbedded": 0,
+            "queryEmbedMs": 0.0603,
+            "queryMs": 7.1541,
+            "refreshMs": 7.4972,
+            "representation": "intro-uniform",
+            "requestMs": 14.656799999999999,
+            "returnedResults": 5,
+            "searchableFiles": 89,
+            "semanticCandidates": 65,
+            "sessionEntries": 2,
+            "skippedFiles": 3,
+            "sourceBytesRead": 365932,
+            "sourceHashMs": 0.1821,
+            "tokenizerSettings": {
+              "padding": null,
+              "truncation": null
+            },
+            "vectorsScored": 201
+          }
+        },
+        {
+          "request": {
+            "op": "read",
+            "id": "r2",
+            "path": "line_profiler/explicit_profiler.py",
+            "start": 220,
+            "lines": 68
+          },
+          "response": {
+            "id": "r2",
+            "source_hash": "4d7dadee5fc5b1ff0bd8934def6a4a2d96fb0d282848e651b0827b44ce02aeac",
+            "total_lines": 397,
+            "truncated": false,
+            "view": {
+              "end_line": 287,
+              "path": "line_profiler/explicit_profiler.py",
+              "start_line": 220,
+              "text": "        >>>     return n\n        >>> # Disabled by default, implicitly checks to auto-enable on first wrap\n        >>> assert self.enabled is None\n        >>> wrapped = self(collatz)\n        >>> assert self.enabled is False\n        >>> assert wrapped is collatz\n        >>> # Can explicitly enable\n        >>> self.enable()\n        >>> wrapped = self(collatz)\n        >>> assert self.enabled is True\n        >>> assert wrapped is not collatz\n        >>> wrapped(100)\n        >>> # Can explicitly request output\n        >>> self.show()\n    \"\"\"\n\n    def __init__(self):\n        self.setup_config = {\n            'environ_flags': ['LINE_PROFILE'],\n            'cli_flags': ['--line-profile', '--line_profile'],\n        }\n        self.output_prefix = 'profile_output'\n        self._profile = None\n        self.enabled = False\n\n        # Control which outputs will be written on exit\n        self.write_config = {\n            'lprof': True,\n            'text': False,\n            'timestamped_text': True,\n            'stdout': True,\n        }\n\n        # Configuration for how output will be displayed\n        self.show_config = {\n            'sort': 1,\n            'stripzeros': 0,\n            'rich': 1,\n            'details': 0,\n            'summarize': 1,\n        }\n\n    def _kernprof_overwrite(self, profile):\n        \"\"\"\n        Kernprof will call this when it runs, so we can use its profile object\n        instead of our own. Note: when kernprof overwrites us we wont register\n        an atexit hook. This is what we want because kernprof wants us to use\n        another program to read its output file.\n        \"\"\"\n        self._profile = profile\n        self.enabled = True\n\n    def _implicit_setup(self):\n        \"\"\"\n        Called once the first time the user decorates a function with\n        ``line_profiler.profile`` and they have not explicitly setup the global\n        profiling options.\n        \"\"\"\n        environ_flags = self.setup_config['environ_flags']\n        cli_flags = self.setup_config['cli_flags']\n        is_profiling = any(os.environ.get(f, '').lower() not in _FALSY_STRINGS\n                           for f in environ_flags)\n        is_profiling |= any(f in sys.argv for f in cli_flags)\n        if is_profiling:\n            self.enable()\n        else:\n            self.disable()\n"
+            }
+          },
+          "stdout_tokens": 645,
+          "diagnostic_tokens": 0,
+          "request_tokens": 29,
+          "wall_ms": 10.538900000028661,
+          "stats": {}
+        }
+      ],
+      "wire_tokens": {
+        "stdin": 423,
+        "stdout": 2948,
+        "stderr": 885
+      },
+      "quality_scope": "Same observed actor queries/inspections, not independent adaptive agents.",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-open-loop-u8t0ds7z\\config.toml",
+        "serve",
+        "--dir",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate26\\sources\\S01",
+        "--profile",
+        "code",
+        "--model-path",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+        "--representation",
+        "intro-uniform",
+        "--session",
+        "combined",
+        "--evidence-policy",
+        "bounded-rerank",
+        "--quiet-stats"
+      ],
+      "source_preserved": true
+    },
+    {
+      "case": "S01",
+      "arm": "inspection-silence",
+      "requests": [
+        {
+          "request": {
+            "op": "search",
+            "id": "q1",
+            "query": "GlobalProfiler decorator logic inverted causing functions to be profiled when disabled\n\n#### Description\n\nThe GlobalProfiler's `__call__` method has inverted logic that causes functions to be profiled when profiling is disabled and not profiled when profiling is enabled.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom line_profiler import profile\n\n# Test 1: Default behavior (should not profile)\n@profile\ndef func1():\n    return 42\n\nfunc1()  # This gets profiled when it shouldn't\n\n# Test 2: Explicitly enable profiling\nprofile.enable()\n\n@profile  \ndef func2():\n    return 42\n\nfunc2()  # This doesn't get profiled when it should\n```\n\nThe issue manifests when using explicit profiling where:\n- Functions decorated with `@profile` get profiled even when profiling is disabled by default\n- Functions decorated with `@profile` don't get profiled when profiling is explicitly enabled\n\nThis breaks the expected behavior where profiling should only occur when explicitly requested via environment variables, command line flags, or programmatic enabling.",
+            "stats": true
+          },
+          "response": {
+            "id": "q1",
+            "results": [
+              {
+                "path": "line_profiler/explicit_profiler.py",
+                "score": 0.88415647,
+                "view": {
+                  "end_line": 185,
+                  "path": "line_profiler/explicit_profiler.py",
+                  "start_line": 181,
+                  "text": "        setup_config (Dict[str, List[str]]):\n            Determines how the implicit setup behaves by defining which\n            environment variables / command line flags to look for.\n\n        output_prefix (str):"
+                }
+              },
+              {
+                "path": "tests/complex_example.py",
+                "score": 0.6398959,
+                "view": {
+                  "end_line": 40,
+                  "path": "tests/complex_example.py",
+                  "start_line": 36,
+                  "text": "python -m pstats ./complex_example.py.prof\n\n# Explicit decorator with environment enabling\nPROFILE_TYPE=explicit LINE_PROFILE=1 python complex_example.py\n"
+                }
+              },
+              {
+                "path": "README.rst",
+                "score": 0.63825655,
+                "view": {
+                  "end_line": 279,
+                  "path": "README.rst",
+                  "start_line": 275,
+                  "text": "      Profiler will be instantiated and inserted into your __builtins__ with the\n      name \"profile\". Like LineProfiler, it may be used as a decorator, or\n      enabled/disabled with ``enable_by_count()`` and ``disable_by_count()``, or\n      even as a context manager with the \"with profile:\" statement.\n"
+                }
+              },
+              {
+                "path": "line_profiler/ipython_extension.py",
+                "score": 0.6211842,
+                "view": {
+                  "end_line": 47,
+                  "path": "line_profiler/ipython_extension.py",
+                  "start_line": 43,
+                  "text": "        Usage:\n\n            %lprun -f func1 -f func2 <statement>\n\n        The given statement (which doesn't require quote marks) is run via the"
+                }
+              },
+              {
+                "path": "kernprof.py",
+                "score": 0.6034701,
+                "view": {
+                  "end_line": 68,
+                  "path": "kernprof.py",
+                  "start_line": 64,
+                  "text": "      -V, --version         show program's version number and exit\n      -l, --line-by-line    Use the line-by-line profiler instead of cProfile. Implies --builtin.\n      -b, --builtin         Put 'profile' in the builtins. Use 'profile.enable()'/'.disable()', '@profile' to decorate functions, or 'with profile:' to profile a section of code.\n      -o OUTFILE, --outfile OUTFILE\n                            Save stats to <outfile> (default: 'scriptname.lprof' with --line-by-line, 'scriptname.prof' without)"
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 525,
+          "diagnostic_tokens": 363,
+          "request_tokens": 258,
+          "wall_ms": 31.028800000058254,
+          "stats": {
+            "applicationCacheHits": 0,
+            "cacheReadMs": 6.749799999999999,
+            "cacheWriteErrors": 0,
+            "cacheWriteMs": 0.0,
+            "cacheWrites": 0,
+            "contextualLexical": false,
+            "discoveredFiles": 92,
+            "documentEmbedMs": 0.0070999999999999995,
+            "driftReset": false,
+            "evidence": {
+              "candidatePassages": 34,
+              "extraEmbedMs": 1.6079,
+              "extraPassagesEmbedded": 7,
+              "policy": "bounded-rerank",
+              "selectionMs": 6.4065
+            },
+            "extractionMs": 0.2411000000000001,
+            "feedbackConsumed": false,
+            "ioBatchWallMs": 5.0550999999999995,
+            "ioReadMs": 7.1274,
+            "ioWorkers": 4,
+            "lexicalCandidates": 82,
+            "lexicalPrepareMs": 9.493,
+            "literalGuard": false,
+            "memoryCacheHits": 0,
+            "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "nativeCacheHits": 89,
+            "outputBytes": 2040,
+            "passagesEmbedded": 0,
+            "queryEmbedMs": 0.627,
+            "queryMs": 7.7318,
+            "refreshMs": 22.268900000000002,
+            "representation": "intro-uniform",
+            "requestMs": 30.018199999999997,
+            "returnedResults": 5,
+            "searchableFiles": 89,
+            "semanticCandidates": 58,
+            "sessionEntries": 1,
+            "skippedFiles": 3,
+            "sourceBytesRead": 365932,
+            "sourceHashMs": 0.3897999999999999,
+            "tokenizerSettings": {
+              "padding": null,
+              "truncation": null
+            },
+            "vectorsScored": 201
+          }
+        },
+        {
+          "request": {
+            "op": "grep",
+            "id": "g1",
+            "pattern": "def __call__|def enable|def disable",
+            "max_matches_per_file": 3,
+            "remember": true,
+            "stats": true
+          },
+          "response": {
+            "id": "g1",
+            "remembered": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "results": [
+              {
+                "line": 133,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 135,
+                  "path": "kernprof.py",
+                  "start_line": 131,
+                  "text": "        self.enable_count = 0\n\n    def enable_by_count(self, subcalls=True, builtins=True):\n        \"\"\" Enable the profiler if it hasn't been enabled before.\n        \"\"\""
+                }
+              },
+              {
+                "line": 140,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 142,
+                  "path": "kernprof.py",
+                  "start_line": 138,
+                  "text": "        self.enable_count += 1\n\n    def disable_by_count(self):\n        \"\"\" Disable the profiler if the number of disable requests matches the\n        number of enable requests."
+                }
+              },
+              {
+                "line": 149,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 151,
+                  "path": "kernprof.py",
+                  "start_line": 147,
+                  "text": "                self.disable()\n\n    def __call__(self, func):\n        \"\"\" Decorate a function to start the profiler on function entry and stop\n        it on function exit."
+                }
+              },
+              {
+                "line": 286,
+                "path": "line_profiler/_line_profiler.pyx",
+                "view": {
+                  "end_line": 288,
+                  "path": "line_profiler/_line_profiler.pyx",
+                  "start_line": 284,
+                  "text": "            self.threaddata.enable_count = value\n\n    def enable_by_count(self):\n        \"\"\" Enable the profiler if it hasn't been enabled before.\n        \"\"\""
+                }
+              },
+              {
+                "line": 293,
+                "path": "line_profiler/_line_profiler.pyx",
+                "view": {
+                  "end_line": 295,
+                  "path": "line_profiler/_line_profiler.pyx",
+                  "start_line": 291,
+                  "text": "        self.enable_count += 1\n\n    def disable_by_count(self):\n        \"\"\" Disable the profiler if the number of disable requests matches the\n        number of enable requests."
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 412,
+          "diagnostic_tokens": 76,
+          "request_tokens": 38,
+          "wall_ms": 12.171700000180863,
+          "stats": {
+            "filesSearched": 89,
+            "matchesSuppressedByFileCap": 1,
+            "matchingLines": 15,
+            "maxMatchesPerFile": 3,
+            "modelLoaded": false,
+            "rememberedViews": 5,
+            "requestMs": 11.6368,
+            "returnedResults": 5,
+            "skippedFiles": 3,
+            "truncated": true
+          }
+        },
+        {
+          "request": {
+            "op": "grep",
+            "id": "g2",
+            "pattern": "def __call__",
+            "fixed": true,
+            "max_matches_per_file": 1,
+            "remember": true,
+            "stats": true
+          },
+          "response": {
+            "id": "g2",
+            "remembered": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "results": [
+              {
+                "line": 149,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 151,
+                  "path": "kernprof.py",
+                  "start_line": 147,
+                  "text": "                self.disable()\n\n    def __call__(self, func):\n        \"\"\" Decorate a function to start the profiler on function entry and stop\n        it on function exit."
+                }
+              },
+              {
+                "line": 310,
+                "path": "line_profiler/explicit_profiler.py",
+                "view": {
+                  "end_line": 312,
+                  "path": "line_profiler/explicit_profiler.py",
+                  "start_line": 308,
+                  "text": "        self.enabled = False\n\n    def __call__(self, func):\n        \"\"\"\n        If the global profiler is enabled, decorate a function to start the"
+                }
+              },
+              {
+                "line": 23,
+                "path": "line_profiler/explicit_profiler.pyi",
+                "view": {
+                  "end_line": 25,
+                  "path": "line_profiler/explicit_profiler.pyi",
+                  "start_line": 21,
+                  "text": "        ...\n\n    def __call__(self, func: Callable) -> Callable:\n        ...\n"
+                }
+              },
+              {
+                "line": 71,
+                "path": "line_profiler/line_profiler.py",
+                "view": {
+                  "end_line": 73,
+                  "path": "line_profiler/line_profiler.py",
+                  "start_line": 69,
+                  "text": "    \"\"\"\n\n    def __call__(self, func):\n        \"\"\" Decorate a function to start the profiler on function entry and stop\n        it on function exit."
+                }
+              },
+              {
+                "line": 29,
+                "path": "line_profiler/line_profiler.pyi",
+                "view": {
+                  "end_line": 31,
+                  "path": "line_profiler/line_profiler.pyi",
+                  "start_line": 27,
+                  "text": "class LineProfiler(CLineProfiler):\n\n    def __call__(self, func):\n        ...\n"
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 387,
+          "diagnostic_tokens": 76,
+          "request_tokens": 36,
+          "wall_ms": 12.51369999954477,
+          "stats": {
+            "filesSearched": 89,
+            "matchesSuppressedByFileCap": 0,
+            "matchingLines": 5,
+            "maxMatchesPerFile": 1,
+            "modelLoaded": false,
+            "rememberedViews": 5,
+            "requestMs": 11.9777,
+            "returnedResults": 5,
+            "skippedFiles": 3,
+            "truncated": false
+          }
+        },
+        {
+          "request": {
+            "op": "read",
+            "id": "r1",
+            "path": "line_profiler/explicit_profiler.py",
+            "start": 285,
+            "lines": 65,
+            "remember": true
+          },
+          "response": {
+            "id": "r1",
+            "remembered": [
+              0
+            ],
+            "source_hash": "4d7dadee5fc5b1ff0bd8934def6a4a2d96fb0d282848e651b0827b44ce02aeac",
+            "total_lines": 397,
+            "truncated": false,
+            "view": {
+              "end_line": 349,
+              "path": "line_profiler/explicit_profiler.py",
+              "start_line": 285,
+              "text": "        else:\n            self.disable()\n\n    def enable(self, output_prefix=None):\n        \"\"\"\n        Explicitly enables global profiler and controls its settings.\n        \"\"\"\n        if self._profile is None:\n            # Try to only ever create one real LineProfiler object\n            atexit.register(self.show)\n            self._profile = LineProfiler()  # type: ignore\n\n        # The user can call this function more than once to update the final\n        # reporting or to re-enable the profiler after it a disable.\n        self.enabled = True\n\n        if output_prefix is not None:\n            self.output_prefix = output_prefix\n\n    def disable(self):\n        \"\"\"\n        Explicitly initialize and disable this global profiler.\n        \"\"\"\n        self.enabled = False\n\n    def __call__(self, func):\n        \"\"\"\n        If the global profiler is enabled, decorate a function to start the\n        profiler on function entry and stop it on function exit. Otherwise\n        return the input.\n\n        Args:\n            func (Callable): the function to profile\n\n        Returns:\n            Callable: a potentially wrapped function\n        \"\"\"\n\n        if self.enabled is None:\n            # Force a setup if we haven't done it before.\n            self._implicit_setup()\n        if self.enabled:  # This logic was inverted\n            return func\n        return self._profile(func)\n\n    def show(self):\n        \"\"\"\n        Write the managed profiler stats to enabled outputs.\n\n        If the implicit setup triggered, then this will be called by\n        :py:mod:`atexit`.\n        \"\"\"\n        import io\n        import pathlib\n\n        srite_stdout = self.write_config['stdout']\n        write_text = self.write_config['text']\n        write_timestamped_text = self.write_config['timestamped_text']\n        write_lprof = self.write_config['lprof']\n\n        if srite_stdout:\n            kwargs = self.show_config.copy()\n            self._profile.print_stats(**kwargs)\n\n        if write_text or write_timestamped_text:"
+            }
+          },
+          "stdout_tokens": 561,
+          "diagnostic_tokens": 0,
+          "request_tokens": 33,
+          "wall_ms": 10.439100000439794,
+          "stats": {}
+        },
+        {
+          "request": {
+            "op": "search",
+            "id": "q2",
+            "query": "GlobalProfiler implicit setup default enabled false environment and command line",
+            "stats": true
+          },
+          "response": {
+            "id": "q2",
+            "results": [
+              {
+                "path": "line_profiler/explicit_profiler.py",
+                "score": 0.8005973,
+                "view": {
+                  "end_line": 314,
+                  "path": "line_profiler/explicit_profiler.py",
+                  "start_line": 310,
+                  "text": "    def __call__(self, func):\n        \"\"\"\n        If the global profiler is enabled, decorate a function to start the\n        profiler on function entry and stop it on function exit. Otherwise\n        return the input."
+                }
+              },
+              {
+                "path": "kernprof.py",
+                "score": 0.48236287,
+                "view": {
+                  "end_line": 136,
+                  "path": "kernprof.py",
+                  "start_line": 132,
+                  "text": "\n    def enable_by_count(self, subcalls=True, builtins=True):\n        \"\"\" Enable the profiler if it hasn't been enabled before.\n        \"\"\"\n        if self.enable_count == 0:"
+                }
+              },
+              {
+                "path": "setup.py",
+                "score": 0.46453667,
+                "view": {
+                  "end_line": 236,
+                  "path": "setup.py",
+                  "start_line": 232,
+                  "text": "                    \"language_level\": 3,\n                    \"infer_types\": True,\n                    \"legacy_implicit_noexcept\": True,\n                    \"linetrace\": (True if os.getenv(\"DEV\") == \"true\" else False)\n                },"
+                }
+              },
+              {
+                "path": "tests/complex_example.py",
+                "score": 0.44687605,
+                "view": {
+                  "end_line": 20,
+                  "path": "tests/complex_example.py",
+                  "start_line": 16,
+                  "text": "\n# NOTE: this fails because we are not running with kernprof\nPROFILE_TYPE=implicit python complex_example.py\n\n"
+                }
+              },
+              {
+                "path": "line_profiler/ipython_extension.py",
+                "score": 0.41616678,
+                "view": {
+                  "end_line": 50,
+                  "path": "line_profiler/ipython_extension.py",
+                  "start_line": 46,
+                  "text": "\n        The given statement (which doesn't require quote marks) is run via the\n        LineProfiler. Profiling is enabled for the functions specified by the -f\n        options. The statistics will be shown side-by-side with the code through the\n        pager once the statement has completed."
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 449,
+          "diagnostic_tokens": 400,
+          "request_tokens": 28,
+          "wall_ms": 14.602299999751267,
+          "stats": {
+            "applicationCacheHits": 0,
+            "cacheReadMs": 0.22590000000000005,
+            "cacheWriteErrors": 0,
+            "cacheWriteMs": 0.0,
+            "cacheWrites": 0,
+            "contextualLexical": false,
+            "discoveredFiles": 92,
+            "documentEmbedMs": 0.00039999999999999996,
+            "driftReset": false,
+            "evidence": {
+              "candidatePassages": 31,
+              "extraEmbedMs": 1.539,
+              "extraPassagesEmbedded": 8,
+              "policy": "bounded-rerank",
+              "selectionMs": 5.3991999999999996
+            },
+            "extractionMs": 0.0026,
+            "feedbackConsumed": false,
+            "inspection": {
+              "embedMs": 0.0,
+              "feedbackViews": 0,
+              "responses": 3,
+              "storedTextBytes": 3491,
+              "storedViews": 11,
+              "viewsEmbedded": 0
+            },
+            "ioBatchWallMs": 2.9592999999999994,
+            "ioReadMs": 6.6949999999999985,
+            "ioWorkers": 4,
+            "lexicalCandidates": 75,
+            "lexicalPrepareMs": 0.0,
+            "literalGuard": false,
+            "memoryCacheHits": 89,
+            "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "nativeCacheHits": 0,
+            "outputBytes": 1762,
+            "passagesEmbedded": 0,
+            "queryEmbedMs": 0.0658,
+            "queryMs": 5.7017,
+            "refreshMs": 7.943499999999999,
+            "representation": "intro-uniform",
+            "requestMs": 13.6527,
+            "returnedResults": 5,
+            "searchableFiles": 89,
+            "semanticCandidates": 52,
+            "sessionEntries": 2,
+            "skippedFiles": 3,
+            "sourceBytesRead": 365932,
+            "sourceHashMs": 0.1853000000000001,
+            "tokenizerSettings": {
+              "padding": null,
+              "truncation": null
+            },
+            "vectorsScored": 201
+          }
+        },
+        {
+          "request": {
+            "op": "read",
+            "id": "r2",
+            "path": "line_profiler/explicit_profiler.py",
+            "start": 220,
+            "lines": 68
+          },
+          "response": {
+            "id": "r2",
+            "source_hash": "4d7dadee5fc5b1ff0bd8934def6a4a2d96fb0d282848e651b0827b44ce02aeac",
+            "total_lines": 397,
+            "truncated": false,
+            "view": {
+              "end_line": 287,
+              "path": "line_profiler/explicit_profiler.py",
+              "start_line": 220,
+              "text": "        >>>     return n\n        >>> # Disabled by default, implicitly checks to auto-enable on first wrap\n        >>> assert self.enabled is None\n        >>> wrapped = self(collatz)\n        >>> assert self.enabled is False\n        >>> assert wrapped is collatz\n        >>> # Can explicitly enable\n        >>> self.enable()\n        >>> wrapped = self(collatz)\n        >>> assert self.enabled is True\n        >>> assert wrapped is not collatz\n        >>> wrapped(100)\n        >>> # Can explicitly request output\n        >>> self.show()\n    \"\"\"\n\n    def __init__(self):\n        self.setup_config = {\n            'environ_flags': ['LINE_PROFILE'],\n            'cli_flags': ['--line-profile', '--line_profile'],\n        }\n        self.output_prefix = 'profile_output'\n        self._profile = None\n        self.enabled = False\n\n        # Control which outputs will be written on exit\n        self.write_config = {\n            'lprof': True,\n            'text': False,\n            'timestamped_text': True,\n            'stdout': True,\n        }\n\n        # Configuration for how output will be displayed\n        self.show_config = {\n            'sort': 1,\n            'stripzeros': 0,\n            'rich': 1,\n            'details': 0,\n            'summarize': 1,\n        }\n\n    def _kernprof_overwrite(self, profile):\n        \"\"\"\n        Kernprof will call this when it runs, so we can use its profile object\n        instead of our own. Note: when kernprof overwrites us we wont register\n        an atexit hook. This is what we want because kernprof wants us to use\n        another program to read its output file.\n        \"\"\"\n        self._profile = profile\n        self.enabled = True\n\n    def _implicit_setup(self):\n        \"\"\"\n        Called once the first time the user decorates a function with\n        ``line_profiler.profile`` and they have not explicitly setup the global\n        profiling options.\n        \"\"\"\n        environ_flags = self.setup_config['environ_flags']\n        cli_flags = self.setup_config['cli_flags']\n        is_profiling = any(os.environ.get(f, '').lower() not in _FALSY_STRINGS\n                           for f in environ_flags)\n        is_profiling |= any(f in sys.argv for f in cli_flags)\n        if is_profiling:\n            self.enable()\n        else:\n            self.disable()\n"
+            }
+          },
+          "stdout_tokens": 645,
+          "diagnostic_tokens": 0,
+          "request_tokens": 29,
+          "wall_ms": 10.078100000100676,
+          "stats": {}
+        }
+      ],
+      "wire_tokens": {
+        "stdin": 422,
+        "stdout": 2979,
+        "stderr": 938
+      },
+      "quality_scope": "Same observed actor queries/inspections, not independent adaptive agents.",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-open-loop-am0e29_k\\config.toml",
+        "serve",
+        "--dir",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate26\\sources\\S01",
+        "--profile",
+        "code",
+        "--model-path",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+        "--representation",
+        "intro-uniform",
+        "--session",
+        "combined",
+        "--evidence-policy",
+        "bounded-rerank",
+        "--quiet-stats"
+      ],
+      "source_preserved": true
+    },
+    {
+      "case": "S01",
+      "arm": "inspection-feedback",
+      "requests": [
+        {
+          "request": {
+            "op": "search",
+            "id": "q1",
+            "query": "GlobalProfiler decorator logic inverted causing functions to be profiled when disabled\n\n#### Description\n\nThe GlobalProfiler's `__call__` method has inverted logic that causes functions to be profiled when profiling is disabled and not profiled when profiling is enabled.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom line_profiler import profile\n\n# Test 1: Default behavior (should not profile)\n@profile\ndef func1():\n    return 42\n\nfunc1()  # This gets profiled when it shouldn't\n\n# Test 2: Explicitly enable profiling\nprofile.enable()\n\n@profile  \ndef func2():\n    return 42\n\nfunc2()  # This doesn't get profiled when it should\n```\n\nThe issue manifests when using explicit profiling where:\n- Functions decorated with `@profile` get profiled even when profiling is disabled by default\n- Functions decorated with `@profile` don't get profiled when profiling is explicitly enabled\n\nThis breaks the expected behavior where profiling should only occur when explicitly requested via environment variables, command line flags, or programmatic enabling.",
+            "stats": true
+          },
+          "response": {
+            "id": "q1",
+            "results": [
+              {
+                "path": "line_profiler/explicit_profiler.py",
+                "score": 0.88415647,
+                "view": {
+                  "end_line": 185,
+                  "path": "line_profiler/explicit_profiler.py",
+                  "start_line": 181,
+                  "text": "        setup_config (Dict[str, List[str]]):\n            Determines how the implicit setup behaves by defining which\n            environment variables / command line flags to look for.\n\n        output_prefix (str):"
+                }
+              },
+              {
+                "path": "tests/complex_example.py",
+                "score": 0.6398959,
+                "view": {
+                  "end_line": 40,
+                  "path": "tests/complex_example.py",
+                  "start_line": 36,
+                  "text": "python -m pstats ./complex_example.py.prof\n\n# Explicit decorator with environment enabling\nPROFILE_TYPE=explicit LINE_PROFILE=1 python complex_example.py\n"
+                }
+              },
+              {
+                "path": "README.rst",
+                "score": 0.63825655,
+                "view": {
+                  "end_line": 279,
+                  "path": "README.rst",
+                  "start_line": 275,
+                  "text": "      Profiler will be instantiated and inserted into your __builtins__ with the\n      name \"profile\". Like LineProfiler, it may be used as a decorator, or\n      enabled/disabled with ``enable_by_count()`` and ``disable_by_count()``, or\n      even as a context manager with the \"with profile:\" statement.\n"
+                }
+              },
+              {
+                "path": "line_profiler/ipython_extension.py",
+                "score": 0.6211842,
+                "view": {
+                  "end_line": 47,
+                  "path": "line_profiler/ipython_extension.py",
+                  "start_line": 43,
+                  "text": "        Usage:\n\n            %lprun -f func1 -f func2 <statement>\n\n        The given statement (which doesn't require quote marks) is run via the"
+                }
+              },
+              {
+                "path": "kernprof.py",
+                "score": 0.6034701,
+                "view": {
+                  "end_line": 68,
+                  "path": "kernprof.py",
+                  "start_line": 64,
+                  "text": "      -V, --version         show program's version number and exit\n      -l, --line-by-line    Use the line-by-line profiler instead of cProfile. Implies --builtin.\n      -b, --builtin         Put 'profile' in the builtins. Use 'profile.enable()'/'.disable()', '@profile' to decorate functions, or 'with profile:' to profile a section of code.\n      -o OUTFILE, --outfile OUTFILE\n                            Save stats to <outfile> (default: 'scriptname.lprof' with --line-by-line, 'scriptname.prof' without)"
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 525,
+          "diagnostic_tokens": 357,
+          "request_tokens": 258,
+          "wall_ms": 33.29940000003262,
+          "stats": {
+            "applicationCacheHits": 0,
+            "cacheReadMs": 7.0071,
+            "cacheWriteErrors": 0,
+            "cacheWriteMs": 0.0,
+            "cacheWrites": 0,
+            "contextualLexical": false,
+            "discoveredFiles": 92,
+            "documentEmbedMs": 0.0053,
+            "driftReset": false,
+            "evidence": {
+              "candidatePassages": 34,
+              "extraEmbedMs": 1.8303,
+              "extraPassagesEmbedded": 7,
+              "policy": "bounded-rerank",
+              "selectionMs": 8.847900000000001
+            },
+            "extractionMs": 0.2505000000000001,
+            "feedbackConsumed": false,
+            "ioBatchWallMs": 5.3659,
+            "ioReadMs": 7.8822,
+            "ioWorkers": 4,
+            "lexicalCandidates": 82,
+            "lexicalPrepareMs": 8.577700000000004,
+            "literalGuard": false,
+            "memoryCacheHits": 0,
+            "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "nativeCacheHits": 89,
+            "outputBytes": 2040,
+            "passagesEmbedded": 0,
+            "queryEmbedMs": 0.5812999999999999,
+            "queryMs": 10.3351,
+            "refreshMs": 21.9589,
+            "representation": "intro-uniform",
+            "requestMs": 32.3097,
+            "returnedResults": 5,
+            "searchableFiles": 89,
+            "semanticCandidates": 58,
+            "sessionEntries": 1,
+            "skippedFiles": 3,
+            "sourceBytesRead": 365932,
+            "sourceHashMs": 0.4379999999999997,
+            "tokenizerSettings": {
+              "padding": null,
+              "truncation": null
+            },
+            "vectorsScored": 201
+          }
+        },
+        {
+          "request": {
+            "op": "grep",
+            "id": "g1",
+            "pattern": "def __call__|def enable|def disable",
+            "max_matches_per_file": 3,
+            "remember": true,
+            "stats": true
+          },
+          "response": {
+            "id": "g1",
+            "remembered": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "results": [
+              {
+                "line": 133,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 135,
+                  "path": "kernprof.py",
+                  "start_line": 131,
+                  "text": "        self.enable_count = 0\n\n    def enable_by_count(self, subcalls=True, builtins=True):\n        \"\"\" Enable the profiler if it hasn't been enabled before.\n        \"\"\""
+                }
+              },
+              {
+                "line": 140,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 142,
+                  "path": "kernprof.py",
+                  "start_line": 138,
+                  "text": "        self.enable_count += 1\n\n    def disable_by_count(self):\n        \"\"\" Disable the profiler if the number of disable requests matches the\n        number of enable requests."
+                }
+              },
+              {
+                "line": 149,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 151,
+                  "path": "kernprof.py",
+                  "start_line": 147,
+                  "text": "                self.disable()\n\n    def __call__(self, func):\n        \"\"\" Decorate a function to start the profiler on function entry and stop\n        it on function exit."
+                }
+              },
+              {
+                "line": 286,
+                "path": "line_profiler/_line_profiler.pyx",
+                "view": {
+                  "end_line": 288,
+                  "path": "line_profiler/_line_profiler.pyx",
+                  "start_line": 284,
+                  "text": "            self.threaddata.enable_count = value\n\n    def enable_by_count(self):\n        \"\"\" Enable the profiler if it hasn't been enabled before.\n        \"\"\""
+                }
+              },
+              {
+                "line": 293,
+                "path": "line_profiler/_line_profiler.pyx",
+                "view": {
+                  "end_line": 295,
+                  "path": "line_profiler/_line_profiler.pyx",
+                  "start_line": 291,
+                  "text": "        self.enable_count += 1\n\n    def disable_by_count(self):\n        \"\"\" Disable the profiler if the number of disable requests matches the\n        number of enable requests."
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 412,
+          "diagnostic_tokens": 79,
+          "request_tokens": 38,
+          "wall_ms": 11.088100000051782,
+          "stats": {
+            "filesSearched": 89,
+            "matchesSuppressedByFileCap": 1,
+            "matchingLines": 15,
+            "maxMatchesPerFile": 3,
+            "modelLoaded": false,
+            "rememberedViews": 5,
+            "requestMs": 10.703199999999999,
+            "returnedResults": 5,
+            "skippedFiles": 3,
+            "truncated": true
+          }
+        },
+        {
+          "request": {
+            "op": "grep",
+            "id": "g2",
+            "pattern": "def __call__",
+            "fixed": true,
+            "max_matches_per_file": 1,
+            "remember": true,
+            "stats": true
+          },
+          "response": {
+            "id": "g2",
+            "remembered": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "results": [
+              {
+                "line": 149,
+                "path": "kernprof.py",
+                "view": {
+                  "end_line": 151,
+                  "path": "kernprof.py",
+                  "start_line": 147,
+                  "text": "                self.disable()\n\n    def __call__(self, func):\n        \"\"\" Decorate a function to start the profiler on function entry and stop\n        it on function exit."
+                }
+              },
+              {
+                "line": 310,
+                "path": "line_profiler/explicit_profiler.py",
+                "view": {
+                  "end_line": 312,
+                  "path": "line_profiler/explicit_profiler.py",
+                  "start_line": 308,
+                  "text": "        self.enabled = False\n\n    def __call__(self, func):\n        \"\"\"\n        If the global profiler is enabled, decorate a function to start the"
+                }
+              },
+              {
+                "line": 23,
+                "path": "line_profiler/explicit_profiler.pyi",
+                "view": {
+                  "end_line": 25,
+                  "path": "line_profiler/explicit_profiler.pyi",
+                  "start_line": 21,
+                  "text": "        ...\n\n    def __call__(self, func: Callable) -> Callable:\n        ...\n"
+                }
+              },
+              {
+                "line": 71,
+                "path": "line_profiler/line_profiler.py",
+                "view": {
+                  "end_line": 73,
+                  "path": "line_profiler/line_profiler.py",
+                  "start_line": 69,
+                  "text": "    \"\"\"\n\n    def __call__(self, func):\n        \"\"\" Decorate a function to start the profiler on function entry and stop\n        it on function exit."
+                }
+              },
+              {
+                "line": 29,
+                "path": "line_profiler/line_profiler.pyi",
+                "view": {
+                  "end_line": 31,
+                  "path": "line_profiler/line_profiler.pyi",
+                  "start_line": 27,
+                  "text": "class LineProfiler(CLineProfiler):\n\n    def __call__(self, func):\n        ...\n"
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 387,
+          "diagnostic_tokens": 76,
+          "request_tokens": 36,
+          "wall_ms": 11.996299999736948,
+          "stats": {
+            "filesSearched": 89,
+            "matchesSuppressedByFileCap": 0,
+            "matchingLines": 5,
+            "maxMatchesPerFile": 1,
+            "modelLoaded": false,
+            "rememberedViews": 5,
+            "requestMs": 11.5496,
+            "returnedResults": 5,
+            "skippedFiles": 3,
+            "truncated": false
+          }
+        },
+        {
+          "request": {
+            "op": "read",
+            "id": "r1",
+            "path": "line_profiler/explicit_profiler.py",
+            "start": 285,
+            "lines": 65,
+            "remember": true
+          },
+          "response": {
+            "id": "r1",
+            "remembered": [
+              0
+            ],
+            "source_hash": "4d7dadee5fc5b1ff0bd8934def6a4a2d96fb0d282848e651b0827b44ce02aeac",
+            "total_lines": 397,
+            "truncated": false,
+            "view": {
+              "end_line": 349,
+              "path": "line_profiler/explicit_profiler.py",
+              "start_line": 285,
+              "text": "        else:\n            self.disable()\n\n    def enable(self, output_prefix=None):\n        \"\"\"\n        Explicitly enables global profiler and controls its settings.\n        \"\"\"\n        if self._profile is None:\n            # Try to only ever create one real LineProfiler object\n            atexit.register(self.show)\n            self._profile = LineProfiler()  # type: ignore\n\n        # The user can call this function more than once to update the final\n        # reporting or to re-enable the profiler after it a disable.\n        self.enabled = True\n\n        if output_prefix is not None:\n            self.output_prefix = output_prefix\n\n    def disable(self):\n        \"\"\"\n        Explicitly initialize and disable this global profiler.\n        \"\"\"\n        self.enabled = False\n\n    def __call__(self, func):\n        \"\"\"\n        If the global profiler is enabled, decorate a function to start the\n        profiler on function entry and stop it on function exit. Otherwise\n        return the input.\n\n        Args:\n            func (Callable): the function to profile\n\n        Returns:\n            Callable: a potentially wrapped function\n        \"\"\"\n\n        if self.enabled is None:\n            # Force a setup if we haven't done it before.\n            self._implicit_setup()\n        if self.enabled:  # This logic was inverted\n            return func\n        return self._profile(func)\n\n    def show(self):\n        \"\"\"\n        Write the managed profiler stats to enabled outputs.\n\n        If the implicit setup triggered, then this will be called by\n        :py:mod:`atexit`.\n        \"\"\"\n        import io\n        import pathlib\n\n        srite_stdout = self.write_config['stdout']\n        write_text = self.write_config['text']\n        write_timestamped_text = self.write_config['timestamped_text']\n        write_lprof = self.write_config['lprof']\n\n        if srite_stdout:\n            kwargs = self.show_config.copy()\n            self._profile.print_stats(**kwargs)\n\n        if write_text or write_timestamped_text:"
+            }
+          },
+          "stdout_tokens": 561,
+          "diagnostic_tokens": 0,
+          "request_tokens": 33,
+          "wall_ms": 9.527499998512212,
+          "stats": {}
+        },
+        {
+          "request": {
+            "op": "search",
+            "id": "q2",
+            "query": "GlobalProfiler implicit setup default enabled false environment and command line",
+            "feedback": {
+              "query_id": "r1",
+              "accepted": [
+                0
+              ]
+            },
+            "stats": true
+          },
+          "response": {
+            "id": "q2",
+            "results": [
+              {
+                "path": "line_profiler/explicit_profiler.py",
+                "score": 0.8382075,
+                "view": {
+                  "end_line": 314,
+                  "path": "line_profiler/explicit_profiler.py",
+                  "start_line": 310,
+                  "text": "    def __call__(self, func):\n        \"\"\"\n        If the global profiler is enabled, decorate a function to start the\n        profiler on function entry and stop it on function exit. Otherwise\n        return the input."
+                }
+              },
+              {
+                "path": "kernprof.py",
+                "score": 0.49931294,
+                "view": {
+                  "end_line": 136,
+                  "path": "kernprof.py",
+                  "start_line": 132,
+                  "text": "\n    def enable_by_count(self, subcalls=True, builtins=True):\n        \"\"\" Enable the profiler if it hasn't been enabled before.\n        \"\"\"\n        if self.enable_count == 0:"
+                }
+              },
+              {
+                "path": "setup.py",
+                "score": 0.47322756,
+                "view": {
+                  "end_line": 236,
+                  "path": "setup.py",
+                  "start_line": 232,
+                  "text": "                    \"language_level\": 3,\n                    \"infer_types\": True,\n                    \"legacy_implicit_noexcept\": True,\n                    \"linetrace\": (True if os.getenv(\"DEV\") == \"true\" else False)\n                },"
+                }
+              },
+              {
+                "path": "tests/complex_example.py",
+                "score": 0.46102583,
+                "view": {
+                  "end_line": 20,
+                  "path": "tests/complex_example.py",
+                  "start_line": 16,
+                  "text": "\n# NOTE: this fails because we are not running with kernprof\nPROFILE_TYPE=implicit python complex_example.py\n\n"
+                }
+              },
+              {
+                "path": "line_profiler/ipython_extension.py",
+                "score": 0.4339409,
+                "view": {
+                  "end_line": 50,
+                  "path": "line_profiler/ipython_extension.py",
+                  "start_line": 46,
+                  "text": "\n        The given statement (which doesn't require quote marks) is run via the\n        LineProfiler. Profiling is enabled for the functions specified by the -f\n        options. The statistics will be shown side-by-side with the code through the\n        pager once the statement has completed."
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 449,
+          "diagnostic_tokens": 395,
+          "request_tokens": 41,
+          "wall_ms": 16.755299999204,
+          "stats": {
+            "applicationCacheHits": 0,
+            "cacheReadMs": 0.19560000000000002,
+            "cacheWriteErrors": 0,
+            "cacheWriteMs": 0.0,
+            "cacheWrites": 0,
+            "contextualLexical": false,
+            "discoveredFiles": 92,
+            "documentEmbedMs": 0.0007,
+            "driftReset": false,
+            "evidence": {
+              "candidatePassages": 31,
+              "extraEmbedMs": 2.1607000000000003,
+              "extraPassagesEmbedded": 8,
+              "policy": "bounded-rerank",
+              "selectionMs": 7.009399999999999
+            },
+            "extractionMs": 0.002,
+            "feedbackConsumed": true,
+            "inspection": {
+              "embedMs": 0.7796,
+              "feedbackViews": 1,
+              "responses": 3,
+              "storedTextBytes": 3491,
+              "storedViews": 11,
+              "viewsEmbedded": 1
+            },
+            "ioBatchWallMs": 2.5624000000000002,
+            "ioReadMs": 6.018300000000001,
+            "ioWorkers": 4,
+            "lexicalCandidates": 75,
+            "lexicalPrepareMs": 0.0,
+            "literalGuard": false,
+            "memoryCacheHits": 89,
+            "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "nativeCacheHits": 0,
+            "outputBytes": 1761,
+            "passagesEmbedded": 0,
+            "queryEmbedMs": 0.0673,
+            "queryMs": 8.1099,
+            "refreshMs": 7.3038,
+            "representation": "intro-uniform",
+            "requestMs": 15.4203,
+            "returnedResults": 5,
+            "searchableFiles": 89,
+            "semanticCandidates": 62,
+            "sessionEntries": 2,
+            "skippedFiles": 3,
+            "sourceBytesRead": 365932,
+            "sourceHashMs": 0.17840000000000006,
+            "tokenizerSettings": {
+              "padding": null,
+              "truncation": null
+            },
+            "vectorsScored": 201
+          }
+        },
+        {
+          "request": {
+            "op": "read",
+            "id": "r2",
+            "path": "line_profiler/explicit_profiler.py",
+            "start": 220,
+            "lines": 68
+          },
+          "response": {
+            "id": "r2",
+            "source_hash": "4d7dadee5fc5b1ff0bd8934def6a4a2d96fb0d282848e651b0827b44ce02aeac",
+            "total_lines": 397,
+            "truncated": false,
+            "view": {
+              "end_line": 287,
+              "path": "line_profiler/explicit_profiler.py",
+              "start_line": 220,
+              "text": "        >>>     return n\n        >>> # Disabled by default, implicitly checks to auto-enable on first wrap\n        >>> assert self.enabled is None\n        >>> wrapped = self(collatz)\n        >>> assert self.enabled is False\n        >>> assert wrapped is collatz\n        >>> # Can explicitly enable\n        >>> self.enable()\n        >>> wrapped = self(collatz)\n        >>> assert self.enabled is True\n        >>> assert wrapped is not collatz\n        >>> wrapped(100)\n        >>> # Can explicitly request output\n        >>> self.show()\n    \"\"\"\n\n    def __init__(self):\n        self.setup_config = {\n            'environ_flags': ['LINE_PROFILE'],\n            'cli_flags': ['--line-profile', '--line_profile'],\n        }\n        self.output_prefix = 'profile_output'\n        self._profile = None\n        self.enabled = False\n\n        # Control which outputs will be written on exit\n        self.write_config = {\n            'lprof': True,\n            'text': False,\n            'timestamped_text': True,\n            'stdout': True,\n        }\n\n        # Configuration for how output will be displayed\n        self.show_config = {\n            'sort': 1,\n            'stripzeros': 0,\n            'rich': 1,\n            'details': 0,\n            'summarize': 1,\n        }\n\n    def _kernprof_overwrite(self, profile):\n        \"\"\"\n        Kernprof will call this when it runs, so we can use its profile object\n        instead of our own. Note: when kernprof overwrites us we wont register\n        an atexit hook. This is what we want because kernprof wants us to use\n        another program to read its output file.\n        \"\"\"\n        self._profile = profile\n        self.enabled = True\n\n    def _implicit_setup(self):\n        \"\"\"\n        Called once the first time the user decorates a function with\n        ``line_profiler.profile`` and they have not explicitly setup the global\n        profiling options.\n        \"\"\"\n        environ_flags = self.setup_config['environ_flags']\n        cli_flags = self.setup_config['cli_flags']\n        is_profiling = any(os.environ.get(f, '').lower() not in _FALSY_STRINGS\n                           for f in environ_flags)\n        is_profiling |= any(f in sys.argv for f in cli_flags)\n        if is_profiling:\n            self.enable()\n        else:\n            self.disable()\n"
+            }
+          },
+          "stdout_tokens": 645,
+          "diagnostic_tokens": 0,
+          "request_tokens": 29,
+          "wall_ms": 9.154299999863724,
+          "stats": {}
+        }
+      ],
+      "wire_tokens": {
+        "stdin": 435,
+        "stdout": 2979,
+        "stderr": 930
+      },
+      "quality_scope": "Same observed actor queries/inspections, not independent adaptive agents.",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-open-loop-486alzjq\\config.toml",
+        "serve",
+        "--dir",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate26\\sources\\S01",
+        "--profile",
+        "code",
+        "--model-path",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+        "--representation",
+        "intro-uniform",
+        "--session",
+        "combined",
+        "--evidence-policy",
+        "bounded-rerank",
+        "--quiet-stats"
+      ],
+      "source_preserved": true
+    },
+    {
+      "case": "S03",
+      "arm": "off",
+      "requests": [
+        {
+          "request": {
+            "op": "search",
+            "id": "q1",
+            "query": "NestedHyperlinkedRelatedField returns None instead of URL when request is None\n\n#### Description\n\nWhen using NestedHyperlinkedRelatedField in serializers, the field returns None instead of generating the proper nested URL. This happens because the field is not properly handling the request parameter when building URLs for nested relationships.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom rest_framework import serializers\nfrom rest_framework_nested.relations import NestedHyperlinkedRelatedField\nfrom myapp.models import Parent, Child\n\nclass ChildSerializer(serializers.ModelSerializer):\n    url = NestedHyperlinkedRelatedField(\n        many=False,\n        read_only=True,\n        view_name='child-detail',\n        parent_lookup_kwargs={'parent_pk': 'parent__pk'}\n    )\n    \n    class Meta:\n        model = Child\n        fields = ['url', 'name']\n\nclass ParentSerializer(serializers.ModelSerializer):\n    children = ChildSerializer(many=True, read_only=True)\n    \n    class Meta:\n        model = Parent\n        fields = ['id', 'name', 'children']\n\n# When serializing a parent with children\nparent = Parent.objects.get(pk=1)\nserializer = ParentSerializer(parent)\nprint(serializer.data)\n# Expected: children should have proper nested URLs like '/parent/1/child/1/'\n# Actual: children 'url' field returns None\n```\n\nThe issue affects nested URL generation in serializers where the NestedHyperlinkedRelatedField should generate URLs like `/parent/1/child/1/` but instead returns None for the url field.",
+            "stats": true
+          },
+          "response": {
+            "id": "q1",
+            "results": [
+              {
+                "path": "tests/serializers/models.py",
+                "score": 0.8739487,
+                "view": {
+                  "end_line": 51,
+                  "path": "tests/serializers/models.py",
+                  "start_line": 47,
+                  "text": "        'root_pk': 'parent__root__pk',\n    }\n    parent = relations.NestedHyperlinkedRelatedField(parent_lookup_kwargs={'root_pk': 'root__pk'},\n                                                     view_name='child2-detail', queryset=Child2.objects.all())\n"
+                }
+              },
+              {
+                "path": "README.md",
+                "score": 0.8640647,
+                "view": {
+                  "end_line": 133,
+                  "path": "README.md",
+                  "start_line": 129,
+                  "text": "```\n\n**(optional)** If you want a little bit more control over the fields displayed for the nested relations while looking at the parent, you need a custom serializer using NestedHyperlinkedModelSerializer.\n```python\nfrom rest_framework.serializers import HyperlinkedModelSerializer"
+                }
+              },
+              {
+                "path": "rest_framework_nested/serializers.py",
+                "score": 0.8490753,
+                "view": {
+                  "end_line": 25,
+                  "path": "rest_framework_nested/serializers.py",
+                  "start_line": 21,
+                  "text": "class NestedHyperlinkedModelSerializer(rest_framework.serializers.HyperlinkedModelSerializer[T_Model]):\n    \"\"\"\n    A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead\n    of primary key relationships.  Specifically:\n"
+                }
+              },
+              {
+                "path": "rest_framework_nested/relations.py",
+                "score": 0.78098685,
+                "view": {
+                  "end_line": 34,
+                  "path": "rest_framework_nested/relations.py",
+                  "start_line": 30,
+                  "text": "        super().__init__(*args, **kwargs)\n\n    def get_url(self, obj: Model, view_name: str, request: Request, format: str | None) -> str | None:\n        \"\"\"\n        Given an object, return the URL that hyperlinks to the object."
+                }
+              },
+              {
+                "path": "rest_framework_nested/viewsets.py",
+                "score": 0.6006906,
+                "view": {
+                  "end_line": 44,
+                  "path": "rest_framework_nested/viewsets.py",
+                  "start_line": 40,
+                  "text": "        if not parent_lookup_kwargs:\n            serializer_class: type[BaseSerializer[T_Model]] = self.get_serializer_class()  # type: ignore[attr-defined]\n            parent_lookup_kwargs = getattr(serializer_class, 'parent_lookup_kwargs', None)\n\n        if not parent_lookup_kwargs:"
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 500,
+          "diagnostic_tokens": 353,
+          "request_tokens": 357,
+          "wall_ms": 13.347999998586602,
+          "stats": {
+            "applicationCacheHits": 0,
+            "cacheReadMs": 2.5059,
+            "cacheWriteErrors": 0,
+            "cacheWriteMs": 0.0,
+            "cacheWrites": 0,
+            "contextualLexical": false,
+            "discoveredFiles": 39,
+            "documentEmbedMs": 0.005,
+            "driftReset": false,
+            "evidence": {
+              "candidatePassages": 15,
+              "extraEmbedMs": 0.8205,
+              "extraPassagesEmbedded": 2,
+              "policy": "bounded-rerank",
+              "selectionMs": 2.7052
+            },
+            "extractionMs": 0.06760000000000001,
+            "feedbackConsumed": false,
+            "ioBatchWallMs": 1.9508999999999994,
+            "ioReadMs": 2.8451,
+            "ioWorkers": 4,
+            "lexicalCandidates": 30,
+            "lexicalPrepareMs": 1.9856,
+            "literalGuard": false,
+            "memoryCacheHits": 0,
+            "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "nativeCacheHits": 34,
+            "outputBytes": 2072,
+            "passagesEmbedded": 0,
+            "queryEmbedMs": 0.7049,
+            "queryMs": 3.8552999999999997,
+            "refreshMs": 8.560599999999999,
+            "representation": "intro-uniform",
+            "requestMs": 12.4208,
+            "returnedResults": 5,
+            "searchableFiles": 34,
+            "semanticCandidates": 14,
+            "sessionEntries": 0,
+            "skippedFiles": 5,
+            "sourceBytesRead": 80161,
+            "sourceHashMs": 0.0955,
+            "tokenizerSettings": {
+              "padding": null,
+              "truncation": null
+            },
+            "vectorsScored": 61
+          }
+        },
+        {
+          "request": {
+            "op": "read",
+            "id": "r1",
+            "path": "rest_framework_nested/relations.py",
+            "start": 15,
+            "lines": 75
+          },
+          "response": {
+            "id": "r1",
+            "source_hash": "23dc68afb7ae3b365849cba384598985d520f5847d559aa8acae8e4a6006c044",
+            "total_lines": 99,
+            "truncated": false,
+            "view": {
+              "end_line": 89,
+              "path": "rest_framework_nested/relations.py",
+              "start_line": 15,
+              "text": "from rest_framework.exceptions import ValidationError\nfrom rest_framework.request import Request\n\n\nT_Model = TypeVar('T_Model', bound=Model)\n\n\nclass NestedHyperlinkedRelatedField(HyperlinkedRelatedField, Generic[T_Model]):\n    lookup_field = 'pk'\n    parent_lookup_kwargs = {\n        'parent_pk': 'parent__pk'\n    }\n\n    def __init__(self, *args: Any, **kwargs: Any) -> None:\n        self.parent_lookup_kwargs = kwargs.pop('parent_lookup_kwargs', self.parent_lookup_kwargs)\n        super().__init__(*args, **kwargs)\n\n    def get_url(self, obj: Model, view_name: str, request: Request, format: str | None) -> str | None:\n        \"\"\"\n        Given an object, return the URL that hyperlinks to the object.\n\n        May raise a `NoReverseMatch` if the `view_name` and `lookup_field`\n        attributes are not configured to correctly match the URL conf.\n        \"\"\"\n        if hasattr(obj, 'pk') and obj.pk in (None, ''):\n            return None\n\n        lookup_value = getattr(obj, self.lookup_field)\n        kwargs = {self.lookup_url_kwarg: lookup_value}\n\n        for parent_lookup_kwarg in list(self.parent_lookup_kwargs.keys()):\n            underscored_lookup = self.parent_lookup_kwargs[parent_lookup_kwarg]\n\n            lookups = underscored_lookup.split('__')\n\n            try:\n                lookup_value = reduce(getattr, [obj] + lookups[:-1])  # type: ignore[operator,arg-type]\n            except AttributeError:\n                return None\n\n            kwargs.update({parent_lookup_kwarg: lookup_value})\n\n        return self.reverse(view_name, kwargs=kwargs, request=None, format=format)\n\n    def get_object(self, view_name: str, view_args: list[Any], view_kwargs: dict[str, Any]) -> T_Model:\n        \"\"\"\n        Return the object corresponding to a matched URL.\n\n        Takes the matched URL conf arguments, and should return an\n        object instance, or raise an `ObjectDoesNotExist` exception.\n        \"\"\"\n        # default lookup from rest_framework.relations.HyperlinkedRelatedField\n        lookup_value = view_kwargs[self.lookup_url_kwarg]\n        kwargs = {self.lookup_url_kwarg: lookup_value}\n\n        # multi-level lookup\n        for parent_lookup_kwarg in list(self.parent_lookup_kwargs.keys()):\n            lookup_value = view_kwargs[parent_lookup_kwarg]\n            kwargs.update({self.parent_lookup_kwargs[parent_lookup_kwarg]: lookup_value})\n\n        return self.get_queryset().get(**kwargs)\n\n    def use_pk_only_optimization(self) -> bool:\n        return False\n\n    def to_internal_value(self, data: Any) -> T_Model:\n        try:\n            return super().to_internal_value(data)\n        except ValidationError as err:\n            if err.detail[0].code != 'no_match':  # type: ignore[union-attr,index]\n                raise\n\n            # data is probable the lookup value, not the resource URL\n            try:\n                return self.get_queryset().get(**{self.lookup_field: data})"
+            }
+          },
+          "stdout_tokens": 778,
+          "diagnostic_tokens": 0,
+          "request_tokens": 27,
+          "wall_ms": 4.290899998522946,
+          "stats": {}
+        }
+      ],
+      "wire_tokens": {
+        "stdin": 384,
+        "stdout": 1278,
+        "stderr": 376
+      },
+      "quality_scope": "Same observed actor queries/inspections, not independent adaptive agents.",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-open-loop-keqwzcv8\\config.toml",
+        "serve",
+        "--dir",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate26\\sources\\S03",
+        "--profile",
+        "code",
+        "--model-path",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+        "--representation",
+        "intro-uniform",
+        "--session",
+        "off",
+        "--evidence-policy",
+        "bounded-rerank",
+        "--quiet-stats"
+      ],
+      "source_preserved": true
+    },
+    {
+      "case": "S03",
+      "arm": "search-feedback",
+      "requests": [
+        {
+          "request": {
+            "op": "search",
+            "id": "q1",
+            "query": "NestedHyperlinkedRelatedField returns None instead of URL when request is None\n\n#### Description\n\nWhen using NestedHyperlinkedRelatedField in serializers, the field returns None instead of generating the proper nested URL. This happens because the field is not properly handling the request parameter when building URLs for nested relationships.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom rest_framework import serializers\nfrom rest_framework_nested.relations import NestedHyperlinkedRelatedField\nfrom myapp.models import Parent, Child\n\nclass ChildSerializer(serializers.ModelSerializer):\n    url = NestedHyperlinkedRelatedField(\n        many=False,\n        read_only=True,\n        view_name='child-detail',\n        parent_lookup_kwargs={'parent_pk': 'parent__pk'}\n    )\n    \n    class Meta:\n        model = Child\n        fields = ['url', 'name']\n\nclass ParentSerializer(serializers.ModelSerializer):\n    children = ChildSerializer(many=True, read_only=True)\n    \n    class Meta:\n        model = Parent\n        fields = ['id', 'name', 'children']\n\n# When serializing a parent with children\nparent = Parent.objects.get(pk=1)\nserializer = ParentSerializer(parent)\nprint(serializer.data)\n# Expected: children should have proper nested URLs like '/parent/1/child/1/'\n# Actual: children 'url' field returns None\n```\n\nThe issue affects nested URL generation in serializers where the NestedHyperlinkedRelatedField should generate URLs like `/parent/1/child/1/` but instead returns None for the url field.",
+            "stats": true
+          },
+          "response": {
+            "id": "q1",
+            "results": [
+              {
+                "path": "tests/serializers/models.py",
+                "score": 0.8739487,
+                "view": {
+                  "end_line": 51,
+                  "path": "tests/serializers/models.py",
+                  "start_line": 47,
+                  "text": "        'root_pk': 'parent__root__pk',\n    }\n    parent = relations.NestedHyperlinkedRelatedField(parent_lookup_kwargs={'root_pk': 'root__pk'},\n                                                     view_name='child2-detail', queryset=Child2.objects.all())\n"
+                }
+              },
+              {
+                "path": "README.md",
+                "score": 0.8640647,
+                "view": {
+                  "end_line": 133,
+                  "path": "README.md",
+                  "start_line": 129,
+                  "text": "```\n\n**(optional)** If you want a little bit more control over the fields displayed for the nested relations while looking at the parent, you need a custom serializer using NestedHyperlinkedModelSerializer.\n```python\nfrom rest_framework.serializers import HyperlinkedModelSerializer"
+                }
+              },
+              {
+                "path": "rest_framework_nested/serializers.py",
+                "score": 0.8490753,
+                "view": {
+                  "end_line": 25,
+                  "path": "rest_framework_nested/serializers.py",
+                  "start_line": 21,
+                  "text": "class NestedHyperlinkedModelSerializer(rest_framework.serializers.HyperlinkedModelSerializer[T_Model]):\n    \"\"\"\n    A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead\n    of primary key relationships.  Specifically:\n"
+                }
+              },
+              {
+                "path": "rest_framework_nested/relations.py",
+                "score": 0.78098685,
+                "view": {
+                  "end_line": 34,
+                  "path": "rest_framework_nested/relations.py",
+                  "start_line": 30,
+                  "text": "        super().__init__(*args, **kwargs)\n\n    def get_url(self, obj: Model, view_name: str, request: Request, format: str | None) -> str | None:\n        \"\"\"\n        Given an object, return the URL that hyperlinks to the object."
+                }
+              },
+              {
+                "path": "rest_framework_nested/viewsets.py",
+                "score": 0.6006906,
+                "view": {
+                  "end_line": 44,
+                  "path": "rest_framework_nested/viewsets.py",
+                  "start_line": 40,
+                  "text": "        if not parent_lookup_kwargs:\n            serializer_class: type[BaseSerializer[T_Model]] = self.get_serializer_class()  # type: ignore[attr-defined]\n            parent_lookup_kwargs = getattr(serializer_class, 'parent_lookup_kwargs', None)\n\n        if not parent_lookup_kwargs:"
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 500,
+          "diagnostic_tokens": 359,
+          "request_tokens": 357,
+          "wall_ms": 14.36939999985043,
+          "stats": {
+            "applicationCacheHits": 0,
+            "cacheReadMs": 2.4766999999999997,
+            "cacheWriteErrors": 0,
+            "cacheWriteMs": 0.0,
+            "cacheWrites": 0,
+            "contextualLexical": false,
+            "discoveredFiles": 39,
+            "documentEmbedMs": 0.0034000000000000002,
+            "driftReset": false,
+            "evidence": {
+              "candidatePassages": 15,
+              "extraEmbedMs": 0.9884,
+              "extraPassagesEmbedded": 2,
+              "policy": "bounded-rerank",
+              "selectionMs": 3.3384
+            },
+            "extractionMs": 0.06550000000000002,
+            "feedbackConsumed": false,
+            "ioBatchWallMs": 1.8895,
+            "ioReadMs": 2.6119,
+            "ioWorkers": 4,
+            "lexicalCandidates": 30,
+            "lexicalPrepareMs": 2.0346000000000006,
+            "literalGuard": false,
+            "memoryCacheHits": 0,
+            "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "nativeCacheHits": 34,
+            "outputBytes": 2072,
+            "passagesEmbedded": 0,
+            "queryEmbedMs": 0.58,
+            "queryMs": 4.3891,
+            "refreshMs": 8.6053,
+            "representation": "intro-uniform",
+            "requestMs": 12.9987,
+            "returnedResults": 5,
+            "searchableFiles": 34,
+            "semanticCandidates": 14,
+            "sessionEntries": 1,
+            "skippedFiles": 5,
+            "sourceBytesRead": 80161,
+            "sourceHashMs": 0.09479999999999997,
+            "tokenizerSettings": {
+              "padding": null,
+              "truncation": null
+            },
+            "vectorsScored": 61
+          }
+        },
+        {
+          "request": {
+            "op": "read",
+            "id": "r1",
+            "path": "rest_framework_nested/relations.py",
+            "start": 15,
+            "lines": 75
+          },
+          "response": {
+            "id": "r1",
+            "source_hash": "23dc68afb7ae3b365849cba384598985d520f5847d559aa8acae8e4a6006c044",
+            "total_lines": 99,
+            "truncated": false,
+            "view": {
+              "end_line": 89,
+              "path": "rest_framework_nested/relations.py",
+              "start_line": 15,
+              "text": "from rest_framework.exceptions import ValidationError\nfrom rest_framework.request import Request\n\n\nT_Model = TypeVar('T_Model', bound=Model)\n\n\nclass NestedHyperlinkedRelatedField(HyperlinkedRelatedField, Generic[T_Model]):\n    lookup_field = 'pk'\n    parent_lookup_kwargs = {\n        'parent_pk': 'parent__pk'\n    }\n\n    def __init__(self, *args: Any, **kwargs: Any) -> None:\n        self.parent_lookup_kwargs = kwargs.pop('parent_lookup_kwargs', self.parent_lookup_kwargs)\n        super().__init__(*args, **kwargs)\n\n    def get_url(self, obj: Model, view_name: str, request: Request, format: str | None) -> str | None:\n        \"\"\"\n        Given an object, return the URL that hyperlinks to the object.\n\n        May raise a `NoReverseMatch` if the `view_name` and `lookup_field`\n        attributes are not configured to correctly match the URL conf.\n        \"\"\"\n        if hasattr(obj, 'pk') and obj.pk in (None, ''):\n            return None\n\n        lookup_value = getattr(obj, self.lookup_field)\n        kwargs = {self.lookup_url_kwarg: lookup_value}\n\n        for parent_lookup_kwarg in list(self.parent_lookup_kwargs.keys()):\n            underscored_lookup = self.parent_lookup_kwargs[parent_lookup_kwarg]\n\n            lookups = underscored_lookup.split('__')\n\n            try:\n                lookup_value = reduce(getattr, [obj] + lookups[:-1])  # type: ignore[operator,arg-type]\n            except AttributeError:\n                return None\n\n            kwargs.update({parent_lookup_kwarg: lookup_value})\n\n        return self.reverse(view_name, kwargs=kwargs, request=None, format=format)\n\n    def get_object(self, view_name: str, view_args: list[Any], view_kwargs: dict[str, Any]) -> T_Model:\n        \"\"\"\n        Return the object corresponding to a matched URL.\n\n        Takes the matched URL conf arguments, and should return an\n        object instance, or raise an `ObjectDoesNotExist` exception.\n        \"\"\"\n        # default lookup from rest_framework.relations.HyperlinkedRelatedField\n        lookup_value = view_kwargs[self.lookup_url_kwarg]\n        kwargs = {self.lookup_url_kwarg: lookup_value}\n\n        # multi-level lookup\n        for parent_lookup_kwarg in list(self.parent_lookup_kwargs.keys()):\n            lookup_value = view_kwargs[parent_lookup_kwarg]\n            kwargs.update({self.parent_lookup_kwargs[parent_lookup_kwarg]: lookup_value})\n\n        return self.get_queryset().get(**kwargs)\n\n    def use_pk_only_optimization(self) -> bool:\n        return False\n\n    def to_internal_value(self, data: Any) -> T_Model:\n        try:\n            return super().to_internal_value(data)\n        except ValidationError as err:\n            if err.detail[0].code != 'no_match':  # type: ignore[union-attr,index]\n                raise\n\n            # data is probable the lookup value, not the resource URL\n            try:\n                return self.get_queryset().get(**{self.lookup_field: data})"
+            }
+          },
+          "stdout_tokens": 778,
+          "diagnostic_tokens": 0,
+          "request_tokens": 27,
+          "wall_ms": 4.464399999051238,
+          "stats": {}
+        }
+      ],
+      "wire_tokens": {
+        "stdin": 384,
+        "stdout": 1278,
+        "stderr": 382
+      },
+      "quality_scope": "Same observed actor queries/inspections, not independent adaptive agents.",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-open-loop-3_zlsban\\config.toml",
+        "serve",
+        "--dir",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate26\\sources\\S03",
+        "--profile",
+        "code",
+        "--model-path",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+        "--representation",
+        "intro-uniform",
+        "--session",
+        "combined",
+        "--evidence-policy",
+        "bounded-rerank",
+        "--quiet-stats"
+      ],
+      "source_preserved": true
+    },
+    {
+      "case": "S03",
+      "arm": "inspection-silence",
+      "requests": [
+        {
+          "request": {
+            "op": "search",
+            "id": "q1",
+            "query": "NestedHyperlinkedRelatedField returns None instead of URL when request is None\n\n#### Description\n\nWhen using NestedHyperlinkedRelatedField in serializers, the field returns None instead of generating the proper nested URL. This happens because the field is not properly handling the request parameter when building URLs for nested relationships.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom rest_framework import serializers\nfrom rest_framework_nested.relations import NestedHyperlinkedRelatedField\nfrom myapp.models import Parent, Child\n\nclass ChildSerializer(serializers.ModelSerializer):\n    url = NestedHyperlinkedRelatedField(\n        many=False,\n        read_only=True,\n        view_name='child-detail',\n        parent_lookup_kwargs={'parent_pk': 'parent__pk'}\n    )\n    \n    class Meta:\n        model = Child\n        fields = ['url', 'name']\n\nclass ParentSerializer(serializers.ModelSerializer):\n    children = ChildSerializer(many=True, read_only=True)\n    \n    class Meta:\n        model = Parent\n        fields = ['id', 'name', 'children']\n\n# When serializing a parent with children\nparent = Parent.objects.get(pk=1)\nserializer = ParentSerializer(parent)\nprint(serializer.data)\n# Expected: children should have proper nested URLs like '/parent/1/child/1/'\n# Actual: children 'url' field returns None\n```\n\nThe issue affects nested URL generation in serializers where the NestedHyperlinkedRelatedField should generate URLs like `/parent/1/child/1/` but instead returns None for the url field.",
+            "stats": true
+          },
+          "response": {
+            "id": "q1",
+            "results": [
+              {
+                "path": "tests/serializers/models.py",
+                "score": 0.8739487,
+                "view": {
+                  "end_line": 51,
+                  "path": "tests/serializers/models.py",
+                  "start_line": 47,
+                  "text": "        'root_pk': 'parent__root__pk',\n    }\n    parent = relations.NestedHyperlinkedRelatedField(parent_lookup_kwargs={'root_pk': 'root__pk'},\n                                                     view_name='child2-detail', queryset=Child2.objects.all())\n"
+                }
+              },
+              {
+                "path": "README.md",
+                "score": 0.8640647,
+                "view": {
+                  "end_line": 133,
+                  "path": "README.md",
+                  "start_line": 129,
+                  "text": "```\n\n**(optional)** If you want a little bit more control over the fields displayed for the nested relations while looking at the parent, you need a custom serializer using NestedHyperlinkedModelSerializer.\n```python\nfrom rest_framework.serializers import HyperlinkedModelSerializer"
+                }
+              },
+              {
+                "path": "rest_framework_nested/serializers.py",
+                "score": 0.8490753,
+                "view": {
+                  "end_line": 25,
+                  "path": "rest_framework_nested/serializers.py",
+                  "start_line": 21,
+                  "text": "class NestedHyperlinkedModelSerializer(rest_framework.serializers.HyperlinkedModelSerializer[T_Model]):\n    \"\"\"\n    A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead\n    of primary key relationships.  Specifically:\n"
+                }
+              },
+              {
+                "path": "rest_framework_nested/relations.py",
+                "score": 0.78098685,
+                "view": {
+                  "end_line": 34,
+                  "path": "rest_framework_nested/relations.py",
+                  "start_line": 30,
+                  "text": "        super().__init__(*args, **kwargs)\n\n    def get_url(self, obj: Model, view_name: str, request: Request, format: str | None) -> str | None:\n        \"\"\"\n        Given an object, return the URL that hyperlinks to the object."
+                }
+              },
+              {
+                "path": "rest_framework_nested/viewsets.py",
+                "score": 0.6006906,
+                "view": {
+                  "end_line": 44,
+                  "path": "rest_framework_nested/viewsets.py",
+                  "start_line": 40,
+                  "text": "        if not parent_lookup_kwargs:\n            serializer_class: type[BaseSerializer[T_Model]] = self.get_serializer_class()  # type: ignore[attr-defined]\n            parent_lookup_kwargs = getattr(serializer_class, 'parent_lookup_kwargs', None)\n\n        if not parent_lookup_kwargs:"
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 500,
+          "diagnostic_tokens": 362,
+          "request_tokens": 357,
+          "wall_ms": 14.793500000450877,
+          "stats": {
+            "applicationCacheHits": 0,
+            "cacheReadMs": 2.1645000000000003,
+            "cacheWriteErrors": 0,
+            "cacheWriteMs": 0.0,
+            "cacheWrites": 0,
+            "contextualLexical": false,
+            "discoveredFiles": 39,
+            "documentEmbedMs": 0.0045000000000000005,
+            "driftReset": false,
+            "evidence": {
+              "candidatePassages": 15,
+              "extraEmbedMs": 0.9232,
+              "extraPassagesEmbedded": 2,
+              "policy": "bounded-rerank",
+              "selectionMs": 3.7391
+            },
+            "extractionMs": 0.0686,
+            "feedbackConsumed": false,
+            "ioBatchWallMs": 1.8475000000000004,
+            "ioReadMs": 2.4860000000000007,
+            "ioWorkers": 4,
+            "lexicalCandidates": 30,
+            "lexicalPrepareMs": 2.1445999999999996,
+            "literalGuard": false,
+            "memoryCacheHits": 0,
+            "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "nativeCacheHits": 34,
+            "outputBytes": 2072,
+            "passagesEmbedded": 0,
+            "queryEmbedMs": 0.9486,
+            "queryMs": 5.2636,
+            "refreshMs": 8.668500000000002,
+            "representation": "intro-uniform",
+            "requestMs": 13.937,
+            "returnedResults": 5,
+            "searchableFiles": 34,
+            "semanticCandidates": 14,
+            "sessionEntries": 1,
+            "skippedFiles": 5,
+            "sourceBytesRead": 80161,
+            "sourceHashMs": 0.0924,
+            "tokenizerSettings": {
+              "padding": null,
+              "truncation": null
+            },
+            "vectorsScored": 61
+          }
+        },
+        {
+          "request": {
+            "op": "read",
+            "id": "r1",
+            "path": "rest_framework_nested/relations.py",
+            "start": 15,
+            "lines": 75,
+            "remember": true
+          },
+          "response": {
+            "id": "r1",
+            "remembered": [
+              0
+            ],
+            "source_hash": "23dc68afb7ae3b365849cba384598985d520f5847d559aa8acae8e4a6006c044",
+            "total_lines": 99,
+            "truncated": false,
+            "view": {
+              "end_line": 89,
+              "path": "rest_framework_nested/relations.py",
+              "start_line": 15,
+              "text": "from rest_framework.exceptions import ValidationError\nfrom rest_framework.request import Request\n\n\nT_Model = TypeVar('T_Model', bound=Model)\n\n\nclass NestedHyperlinkedRelatedField(HyperlinkedRelatedField, Generic[T_Model]):\n    lookup_field = 'pk'\n    parent_lookup_kwargs = {\n        'parent_pk': 'parent__pk'\n    }\n\n    def __init__(self, *args: Any, **kwargs: Any) -> None:\n        self.parent_lookup_kwargs = kwargs.pop('parent_lookup_kwargs', self.parent_lookup_kwargs)\n        super().__init__(*args, **kwargs)\n\n    def get_url(self, obj: Model, view_name: str, request: Request, format: str | None) -> str | None:\n        \"\"\"\n        Given an object, return the URL that hyperlinks to the object.\n\n        May raise a `NoReverseMatch` if the `view_name` and `lookup_field`\n        attributes are not configured to correctly match the URL conf.\n        \"\"\"\n        if hasattr(obj, 'pk') and obj.pk in (None, ''):\n            return None\n\n        lookup_value = getattr(obj, self.lookup_field)\n        kwargs = {self.lookup_url_kwarg: lookup_value}\n\n        for parent_lookup_kwarg in list(self.parent_lookup_kwargs.keys()):\n            underscored_lookup = self.parent_lookup_kwargs[parent_lookup_kwarg]\n\n            lookups = underscored_lookup.split('__')\n\n            try:\n                lookup_value = reduce(getattr, [obj] + lookups[:-1])  # type: ignore[operator,arg-type]\n            except AttributeError:\n                return None\n\n            kwargs.update({parent_lookup_kwarg: lookup_value})\n\n        return self.reverse(view_name, kwargs=kwargs, request=None, format=format)\n\n    def get_object(self, view_name: str, view_args: list[Any], view_kwargs: dict[str, Any]) -> T_Model:\n        \"\"\"\n        Return the object corresponding to a matched URL.\n\n        Takes the matched URL conf arguments, and should return an\n        object instance, or raise an `ObjectDoesNotExist` exception.\n        \"\"\"\n        # default lookup from rest_framework.relations.HyperlinkedRelatedField\n        lookup_value = view_kwargs[self.lookup_url_kwarg]\n        kwargs = {self.lookup_url_kwarg: lookup_value}\n\n        # multi-level lookup\n        for parent_lookup_kwarg in list(self.parent_lookup_kwargs.keys()):\n            lookup_value = view_kwargs[parent_lookup_kwarg]\n            kwargs.update({self.parent_lookup_kwargs[parent_lookup_kwarg]: lookup_value})\n\n        return self.get_queryset().get(**kwargs)\n\n    def use_pk_only_optimization(self) -> bool:\n        return False\n\n    def to_internal_value(self, data: Any) -> T_Model:\n        try:\n            return super().to_internal_value(data)\n        except ValidationError as err:\n            if err.detail[0].code != 'no_match':  # type: ignore[union-attr,index]\n                raise\n\n            # data is probable the lookup value, not the resource URL\n            try:\n                return self.get_queryset().get(**{self.lookup_field: data})"
+            }
+          },
+          "stdout_tokens": 783,
+          "diagnostic_tokens": 0,
+          "request_tokens": 31,
+          "wall_ms": 4.158199999437784,
+          "stats": {}
+        }
+      ],
+      "wire_tokens": {
+        "stdin": 388,
+        "stdout": 1283,
+        "stderr": 384
+      },
+      "quality_scope": "Same observed actor queries/inspections, not independent adaptive agents.",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-open-loop-xfuudflt\\config.toml",
+        "serve",
+        "--dir",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate26\\sources\\S03",
+        "--profile",
+        "code",
+        "--model-path",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+        "--representation",
+        "intro-uniform",
+        "--session",
+        "combined",
+        "--evidence-policy",
+        "bounded-rerank",
+        "--quiet-stats"
+      ],
+      "source_preserved": true
+    },
+    {
+      "case": "S03",
+      "arm": "inspection-feedback",
+      "requests": [
+        {
+          "request": {
+            "op": "search",
+            "id": "q1",
+            "query": "NestedHyperlinkedRelatedField returns None instead of URL when request is None\n\n#### Description\n\nWhen using NestedHyperlinkedRelatedField in serializers, the field returns None instead of generating the proper nested URL. This happens because the field is not properly handling the request parameter when building URLs for nested relationships.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom rest_framework import serializers\nfrom rest_framework_nested.relations import NestedHyperlinkedRelatedField\nfrom myapp.models import Parent, Child\n\nclass ChildSerializer(serializers.ModelSerializer):\n    url = NestedHyperlinkedRelatedField(\n        many=False,\n        read_only=True,\n        view_name='child-detail',\n        parent_lookup_kwargs={'parent_pk': 'parent__pk'}\n    )\n    \n    class Meta:\n        model = Child\n        fields = ['url', 'name']\n\nclass ParentSerializer(serializers.ModelSerializer):\n    children = ChildSerializer(many=True, read_only=True)\n    \n    class Meta:\n        model = Parent\n        fields = ['id', 'name', 'children']\n\n# When serializing a parent with children\nparent = Parent.objects.get(pk=1)\nserializer = ParentSerializer(parent)\nprint(serializer.data)\n# Expected: children should have proper nested URLs like '/parent/1/child/1/'\n# Actual: children 'url' field returns None\n```\n\nThe issue affects nested URL generation in serializers where the NestedHyperlinkedRelatedField should generate URLs like `/parent/1/child/1/` but instead returns None for the url field.",
+            "stats": true
+          },
+          "response": {
+            "id": "q1",
+            "results": [
+              {
+                "path": "tests/serializers/models.py",
+                "score": 0.8739487,
+                "view": {
+                  "end_line": 51,
+                  "path": "tests/serializers/models.py",
+                  "start_line": 47,
+                  "text": "        'root_pk': 'parent__root__pk',\n    }\n    parent = relations.NestedHyperlinkedRelatedField(parent_lookup_kwargs={'root_pk': 'root__pk'},\n                                                     view_name='child2-detail', queryset=Child2.objects.all())\n"
+                }
+              },
+              {
+                "path": "README.md",
+                "score": 0.8640647,
+                "view": {
+                  "end_line": 133,
+                  "path": "README.md",
+                  "start_line": 129,
+                  "text": "```\n\n**(optional)** If you want a little bit more control over the fields displayed for the nested relations while looking at the parent, you need a custom serializer using NestedHyperlinkedModelSerializer.\n```python\nfrom rest_framework.serializers import HyperlinkedModelSerializer"
+                }
+              },
+              {
+                "path": "rest_framework_nested/serializers.py",
+                "score": 0.8490753,
+                "view": {
+                  "end_line": 25,
+                  "path": "rest_framework_nested/serializers.py",
+                  "start_line": 21,
+                  "text": "class NestedHyperlinkedModelSerializer(rest_framework.serializers.HyperlinkedModelSerializer[T_Model]):\n    \"\"\"\n    A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead\n    of primary key relationships.  Specifically:\n"
+                }
+              },
+              {
+                "path": "rest_framework_nested/relations.py",
+                "score": 0.78098685,
+                "view": {
+                  "end_line": 34,
+                  "path": "rest_framework_nested/relations.py",
+                  "start_line": 30,
+                  "text": "        super().__init__(*args, **kwargs)\n\n    def get_url(self, obj: Model, view_name: str, request: Request, format: str | None) -> str | None:\n        \"\"\"\n        Given an object, return the URL that hyperlinks to the object."
+                }
+              },
+              {
+                "path": "rest_framework_nested/viewsets.py",
+                "score": 0.6006906,
+                "view": {
+                  "end_line": 44,
+                  "path": "rest_framework_nested/viewsets.py",
+                  "start_line": 40,
+                  "text": "        if not parent_lookup_kwargs:\n            serializer_class: type[BaseSerializer[T_Model]] = self.get_serializer_class()  # type: ignore[attr-defined]\n            parent_lookup_kwargs = getattr(serializer_class, 'parent_lookup_kwargs', None)\n\n        if not parent_lookup_kwargs:"
+                }
+              }
+            ]
+          },
+          "stdout_tokens": 500,
+          "diagnostic_tokens": 361,
+          "request_tokens": 357,
+          "wall_ms": 13.534900001104688,
+          "stats": {
+            "applicationCacheHits": 0,
+            "cacheReadMs": 2.3668000000000013,
+            "cacheWriteErrors": 0,
+            "cacheWriteMs": 0.0,
+            "cacheWrites": 0,
+            "contextualLexical": false,
+            "discoveredFiles": 39,
+            "documentEmbedMs": 0.0037,
+            "driftReset": false,
+            "evidence": {
+              "candidatePassages": 15,
+              "extraEmbedMs": 0.9301999999999999,
+              "extraPassagesEmbedded": 2,
+              "policy": "bounded-rerank",
+              "selectionMs": 2.8874
+            },
+            "extractionMs": 0.07280000000000002,
+            "feedbackConsumed": false,
+            "ioBatchWallMs": 2.143,
+            "ioReadMs": 2.7076000000000002,
+            "ioWorkers": 4,
+            "lexicalCandidates": 30,
+            "lexicalPrepareMs": 1.9398,
+            "literalGuard": false,
+            "memoryCacheHits": 0,
+            "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+            "nativeCacheHits": 34,
+            "outputBytes": 2072,
+            "passagesEmbedded": 0,
+            "queryEmbedMs": 0.7062,
+            "queryMs": 3.9673,
+            "refreshMs": 8.724499999999999,
+            "representation": "intro-uniform",
+            "requestMs": 12.6961,
+            "returnedResults": 5,
+            "searchableFiles": 34,
+            "semanticCandidates": 14,
+            "sessionEntries": 1,
+            "skippedFiles": 5,
+            "sourceBytesRead": 80161,
+            "sourceHashMs": 0.09160000000000003,
+            "tokenizerSettings": {
+              "padding": null,
+              "truncation": null
+            },
+            "vectorsScored": 61
+          }
+        },
+        {
+          "request": {
+            "op": "read",
+            "id": "r1",
+            "path": "rest_framework_nested/relations.py",
+            "start": 15,
+            "lines": 75,
+            "remember": true
+          },
+          "response": {
+            "id": "r1",
+            "remembered": [
+              0
+            ],
+            "source_hash": "23dc68afb7ae3b365849cba384598985d520f5847d559aa8acae8e4a6006c044",
+            "total_lines": 99,
+            "truncated": false,
+            "view": {
+              "end_line": 89,
+              "path": "rest_framework_nested/relations.py",
+              "start_line": 15,
+              "text": "from rest_framework.exceptions import ValidationError\nfrom rest_framework.request import Request\n\n\nT_Model = TypeVar('T_Model', bound=Model)\n\n\nclass NestedHyperlinkedRelatedField(HyperlinkedRelatedField, Generic[T_Model]):\n    lookup_field = 'pk'\n    parent_lookup_kwargs = {\n        'parent_pk': 'parent__pk'\n    }\n\n    def __init__(self, *args: Any, **kwargs: Any) -> None:\n        self.parent_lookup_kwargs = kwargs.pop('parent_lookup_kwargs', self.parent_lookup_kwargs)\n        super().__init__(*args, **kwargs)\n\n    def get_url(self, obj: Model, view_name: str, request: Request, format: str | None) -> str | None:\n        \"\"\"\n        Given an object, return the URL that hyperlinks to the object.\n\n        May raise a `NoReverseMatch` if the `view_name` and `lookup_field`\n        attributes are not configured to correctly match the URL conf.\n        \"\"\"\n        if hasattr(obj, 'pk') and obj.pk in (None, ''):\n            return None\n\n        lookup_value = getattr(obj, self.lookup_field)\n        kwargs = {self.lookup_url_kwarg: lookup_value}\n\n        for parent_lookup_kwarg in list(self.parent_lookup_kwargs.keys()):\n            underscored_lookup = self.parent_lookup_kwargs[parent_lookup_kwarg]\n\n            lookups = underscored_lookup.split('__')\n\n            try:\n                lookup_value = reduce(getattr, [obj] + lookups[:-1])  # type: ignore[operator,arg-type]\n            except AttributeError:\n                return None\n\n            kwargs.update({parent_lookup_kwarg: lookup_value})\n\n        return self.reverse(view_name, kwargs=kwargs, request=None, format=format)\n\n    def get_object(self, view_name: str, view_args: list[Any], view_kwargs: dict[str, Any]) -> T_Model:\n        \"\"\"\n        Return the object corresponding to a matched URL.\n\n        Takes the matched URL conf arguments, and should return an\n        object instance, or raise an `ObjectDoesNotExist` exception.\n        \"\"\"\n        # default lookup from rest_framework.relations.HyperlinkedRelatedField\n        lookup_value = view_kwargs[self.lookup_url_kwarg]\n        kwargs = {self.lookup_url_kwarg: lookup_value}\n\n        # multi-level lookup\n        for parent_lookup_kwarg in list(self.parent_lookup_kwargs.keys()):\n            lookup_value = view_kwargs[parent_lookup_kwarg]\n            kwargs.update({self.parent_lookup_kwargs[parent_lookup_kwarg]: lookup_value})\n\n        return self.get_queryset().get(**kwargs)\n\n    def use_pk_only_optimization(self) -> bool:\n        return False\n\n    def to_internal_value(self, data: Any) -> T_Model:\n        try:\n            return super().to_internal_value(data)\n        except ValidationError as err:\n            if err.detail[0].code != 'no_match':  # type: ignore[union-attr,index]\n                raise\n\n            # data is probable the lookup value, not the resource URL\n            try:\n                return self.get_queryset().get(**{self.lookup_field: data})"
+            }
+          },
+          "stdout_tokens": 783,
+          "diagnostic_tokens": 0,
+          "request_tokens": 31,
+          "wall_ms": 4.049400000440073,
+          "stats": {}
+        }
+      ],
+      "wire_tokens": {
+        "stdin": 388,
+        "stdout": 1283,
+        "stderr": 384
+      },
+      "quality_scope": "Same observed actor queries/inspections, not independent adaptive agents.",
+      "argv": [
+        "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+        "--config",
+        "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-open-loop-xxqzig6a\\config.toml",
+        "serve",
+        "--dir",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate26\\sources\\S03",
+        "--profile",
+        "code",
+        "--model-path",
+        "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+        "--representation",
+        "intro-uniform",
+        "--session",
+        "combined",
+        "--evidence-policy",
+        "bounded-rerank",
+        "--quiet-stats"
+      ],
+      "source_preserved": true
+    }
+  ],
+  "boundary": "Eight descriptive open-loop processes on two consumed synthetic development tasks. S03 has no follow-up search/feedback. No autonomous A/B, new independent sample, latency optimization, model/default selection or held-out claim."
+}

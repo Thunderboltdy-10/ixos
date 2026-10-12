@@ -1,0 +1,6 @@
+diff --git a/ixos_harness_control.txt b/ixos_harness_control.txt
+new file mode 100644
+--- /dev/null
++++ b/ixos_harness_control.txt
+@@ -0,0 +1 @@
++Frozen benchmark base control; no source behavior change.

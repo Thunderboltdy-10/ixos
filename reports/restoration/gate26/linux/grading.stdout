@@ -1,0 +1,13 @@
+All instances run.
+Resolved 0/2 instances.
+Wrote report to logs/run_evaluation/ixos-g26-base-20261012-v2/report.json
+{"completed_arm": "base"}
+Using gold predictions for eval (ignoring `predictions_path` argument)
+All instances run.
+Resolved 2/2 instances.
+Wrote report to logs/run_evaluation/ixos-g26-gold-20261012-v2/report.json
+{"completed_arm": "gold"}
+All instances run.
+Resolved 0/2 instances.
+Wrote report to logs/run_evaluation/ixos-g26-actor-20261012-v2/report.json
+{"completed_arm": "actor"}

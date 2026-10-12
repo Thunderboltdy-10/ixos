@@ -1,0 +1,44 @@
+diff --git a/line_profiler/explicit_profiler.py b/line_profiler/explicit_profiler.py
+index 0cac00c..36e1047 100644
+--- a/line_profiler/explicit_profiler.py
++++ b/line_profiler/explicit_profiler.py
+@@ -240,12 +240,12 @@ class GlobalProfiler:
+         }
+         self.output_prefix = 'profile_output'
+         self._profile = None
+-        self.enabled = None
++        self.enabled = False
+ 
+         # Control which outputs will be written on exit
+         self.write_config = {
+             'lprof': True,
+-            'text': True,
++            'text': False,
+             'timestamped_text': True,
+             'stdout': True,
+         }
+@@ -253,7 +253,7 @@ class GlobalProfiler:
+         # Configuration for how output will be displayed
+         self.show_config = {
+             'sort': 1,
+-            'stripzeros': 1,
++            'stripzeros': 0,
+             'rich': 1,
+             'details': 0,
+             'summarize': 1,
+@@ -319,14 +319,11 @@ class GlobalProfiler:
+         Returns:
+             Callable: a potentially wrapped function
+         """
+-        # from multiprocessing import current_process
+-        # if current_process().name != 'MainProcess':
+-        #     return func
+ 
+         if self.enabled is None:
+             # Force a setup if we haven't done it before.
+             self._implicit_setup()
+-        if not self.enabled:
++        if self.enabled:  # This logic was inverted
+             return func
+         return self._profile(func)
+ 

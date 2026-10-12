@@ -1,0 +1,505 @@
+{
+  "status": "incomplete",
+  "task": {
+    "repo": "swesmith/mahmoud__boltons.3bfcfdd0",
+    "instance_id": "mahmoud__boltons.3bfcfdd0.func_basic__qkd7exxz",
+    "image_name": "swebench/swesmith.x86_64.mahmoud_1776_boltons.3bfcfdd0",
+    "problem_statement": "",
+    "id": "S02",
+    "canonical_repository": "mahmoud/boltons",
+    "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate26\\sources\\S02",
+    "inventory_path": "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate26\\S02-source-inventory.json",
+    "inventory_identity": "79bbd3d56744698365300eb12ffc9c87d3776dc184c58155a4acb4d922aeef23",
+    "source_commit": "0ec2404c94ce1d862be95392c533f71a2da48a74",
+    "source_files": 110,
+    "source_bytes": 884775,
+    "excluded_links": [],
+    "archive_sha256": "846b002d3be729f40f56b6f95371ea03fcd23dd46d808ab7969dfaec6199f55f"
+  },
+  "task_identity": "c782e9fb458f73033ca3dd0127cb91a0149ab613c28038c71ec243446f421a79",
+  "binary_sha256": "c16766b9f72eabccc48e9dc37112aa895803ba13f2904c8157caaccbf9147897",
+  "model": {
+    "path": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+    "files": {
+      "model.safetensors": "75cf7a6c2171b230ad19b1e7d8e0b1aee86da5a02af8e7cacedd9921d227623c",
+      "tokenizer.json": "936b2d026b9e81fb683eab537ea37c5a1a65a4d02ad9cb92ce269fb8bc561ebf",
+      "config.json": "148e5691a6fcc553437156859701fba017a1ba5d340b170f17e0f3668fb861a7"
+    },
+    "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+    "file_bytes": 33514284,
+    "tokenizer_settings": {
+      "truncation": null,
+      "padding": null
+    }
+  },
+  "helper_sha256": "a2e18bca3bee08a7c5095f0095591335beb5c0057a376064e7419676f4ca506b",
+  "sources": {
+    ".gitignore": [
+      "7c466cd822e6eb68a227096ab475ed4bc4c01cf36059dff84aaffc87d13f7687",
+      1791797868579221900
+    ],
+    ".readthedocs.yaml": [
+      "ea2fbace132782241e2914de3960b827a0d4d6cce40f259c8e65799b8fedd59a",
+      1791797868580223600
+    ],
+    "boltons/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791797868582731100
+    ],
+    "boltons/cacheutils.py": [
+      "b34f4f1932f00b2d13c77b4718d3e947fddf90602d1482772de4148b86cd5726",
+      1791797868582731100
+    ],
+    "boltons/debugutils.py": [
+      "e701ab82126836aa661f7e9272a9a8b339814ae602977b47213f0aebacfda283",
+      1791797868582731100
+    ],
+    "boltons/deprutils.py": [
+      "d8f2c0fdce9d8276466127f093771e1a0a8844bcd1bd92e6880f30d2782e0151",
+      1791797868583732400
+    ],
+    "boltons/dictutils.py": [
+      "ab54e00ae375b64cdaa8bfa8da3dfaa3790aeb40ce0717188be97b199c32feb1",
+      1791797868584731100
+    ],
+    "boltons/easterutils.py": [
+      "1bfc6e9e05606689ab4087b00585c183ff4fcc4eb4a423f9be153a0be6818d40",
+      1791797868584731100
+    ],
+    "boltons/ecoutils.py": [
+      "fe8afbb804436495538d7e3009179212dde645adb2475d1f528e02db33aa8aad",
+      1791797868584731100
+    ],
+    "boltons/excutils.py": [
+      "6a2eddd26f46dbdceeda125bd20379d52ffc98a941fe867e3434d17b93119957",
+      1791797868585731100
+    ],
+    "boltons/fileutils.py": [
+      "923cf7e2288eda91304bed0a55a9d7a8dd890cd7e0a071c16b90f45793acd441",
+      1791797868585731100
+    ],
+    "boltons/formatutils.py": [
+      "15c7963d5c97b11ec7a419e9e4aec7c20ca765bcf701306510c9c57c7eaeb1a4",
+      1791797868585731100
+    ],
+    "boltons/funcutils.py": [
+      "54d826132a9796be4aadf0c30e3e62a58d61e4c5a7a5f6993a2b959d0bbb03a0",
+      1791797868586731100
+    ],
+    "boltons/gcutils.py": [
+      "e82a32093560c14bb8298532681a3338d2ec6f48d20ccf2f1a4496dd67a17f97",
+      1791797868586731100
+    ],
+    "boltons/ioutils.py": [
+      "36727e503a7483d1f91efc7cd837e502dc4b560e1bff5f7f9e66cda09421b6bc",
+      1791797868586731100
+    ],
+    "boltons/iterutils.py": [
+      "229f0f767aa3ca9fbc0b057dd7191170815bffb43599d3a293a246bd5a75afb6",
+      1791797868587732800
+    ],
+    "boltons/jsonutils.py": [
+      "f71876a97e818d3988b3296cf2a11788d0513cf251f269f8eb7fd42aab591094",
+      1791797868587732800
+    ],
+    "boltons/listutils.py": [
+      "aa680163cb34129c08d89e236b55e7d5be61cc321a48567d9d080b7ff633d110",
+      1791797868588733400
+    ],
+    "boltons/mathutils.py": [
+      "298f80d272dd69510a3c6ed50e6ad76f28ac5e9f92aec0aab81322f7c88369a4",
+      1791797868588733400
+    ],
+    "boltons/mboxutils.py": [
+      "426b5211f7b3ce6ee9d1c80d794b56d9544435865b48a016d1955cd0a1e0320d",
+      1791797868588733400
+    ],
+    "boltons/namedutils.py": [
+      "13f1273386f5695c474099cf22fcc00dcfcccda3719e1ff30df8a138c3dcdf96",
+      1791797868588733400
+    ],
+    "boltons/pathutils.py": [
+      "667a4bb46ed79f66af83b07fac419f3f91576c2e7ed404e11f28cd68b4645fbd",
+      1791797868590236300
+    ],
+    "boltons/queueutils.py": [
+      "a60f04f5f27803429c7a79f3f51f9b286cba3bd997f122161f252c66ca0499bb",
+      1791797868590236300
+    ],
+    "boltons/setutils.py": [
+      "6dc3c91b2c3bc30d319d62803a5ba1ac326022fce7b24e3402d455c897f3c478",
+      1791797868591240500
+    ],
+    "boltons/socketutils.py": [
+      "b2d5da2d58dd3d05c14153a83f36da928fe6285a4a44850c2eab9877c1959adc",
+      1791797868591240500
+    ],
+    "boltons/statsutils.py": [
+      "cfd6dd5fe727c4b168beeeeaf1ff9736e73dd195037fc8d1ad03c106d1579745",
+      1791797868592242400
+    ],
+    "boltons/strutils.py": [
+      "6d29480e26c6efaa5e89832718df2758dd5cf454e95e3b5796c958dfb6e10481",
+      1791797868592242400
+    ],
+    "boltons/tableutils.py": [
+      "00444911931f640d009710cfbda813f30b6839b82d3d6a28860a1bf5a472267e",
+      1791797868592242400
+    ],
+    "boltons/tbutils.py": [
+      "4314ef581fa5eb47294d31dc534c72ccf9863af491a69324f88de6b703d64652",
+      1791797868593241500
+    ],
+    "boltons/timeutils.py": [
+      "7aeb4b601b99929ef36e196c5b37006a428f5258556b4277547fb69dbef40fa9",
+      1791797868593241500
+    ],
+    "boltons/typeutils.py": [
+      "4da2b26d71386ee9010dfb52104e461ecba486ba5544a8cf50d9e26cd34e9c09",
+      1791797868593241500
+    ],
+    "boltons/urlutils.py": [
+      "8c0b344c4ca3fd9af94b6eb1e0d9836e4a4f6f1e4468bccf0ece747bbad5498e",
+      1791797868594240100
+    ],
+    "CHANGELOG.md": [
+      "b6f3508d006d93bc54e1aef3c6ee650c72dbc4520fc10173f13884766fbef60c",
+      1791797868580729600
+    ],
+    "docs/_templates/page.html": [
+      "d2ed50f2199cd0af386f201d4db4f76d8bc2c0bcdd8435ed402db747ec200a56",
+      1791797868595243600
+    ],
+    "docs/architecture.rst": [
+      "905b2359ba36dae554ecbc49f301faf1b181a7454eadd42c189f9d10557982f4",
+      1791797868595243600
+    ],
+    "docs/cacheutils.rst": [
+      "1c876fcaca68b47b80422be5f9ac495a6ef6af1f31eeb034bcc3c0b45bcf1c79",
+      1791797868596240700
+    ],
+    "docs/conf.py": [
+      "adf2a04b7fe37e777796d293e32308af1cfef111b4e70ae5ddd7bc1fdbeaddb0",
+      1791797868596240700
+    ],
+    "docs/debugutils.rst": [
+      "63ab9d7ab0b5fa4250927e53832adad303d8ae2b7cdf22853528a3f65f69b6c7",
+      1791797868596240700
+    ],
+    "docs/dictutils.rst": [
+      "61e9ce1513233b863908280bcde721c8640ab13e448cd83d25aae797685edd8a",
+      1791797868597241300
+    ],
+    "docs/ecoutils.rst": [
+      "57b078bbd17e9c779644a806e331dfdc0297aa96bee4978c01259d93aaa924c9",
+      1791797868597241300
+    ],
+    "docs/fileutils.rst": [
+      "3973b83c42b454c5a421e3423be8ca169d43dd4f8c8c9852881902226955f73f",
+      1791797868597241300
+    ],
+    "docs/formatutils.rst": [
+      "a5a84066778ac2ccb7d9cf8f397590418c3a73280fdc72c4ddb6910f08636f1d",
+      1791797868598240500
+    ],
+    "docs/funcutils.rst": [
+      "4039b3ff05396bee1a6bb72260672c72767f4dd51909b6c289f57a24bddefdcd",
+      1791797868598240500
+    ],
+    "docs/gcutils.rst": [
+      "0f03ba96685585087ee0a88e6bb1f2a0adbde641674a73773c46b8f7b4c86878",
+      1791797868599240300
+    ],
+    "docs/index.rst": [
+      "40de20bc495738b4644cb719996e3749a6b6c615111e725c783da24fda101d92",
+      1791797868599240300
+    ],
+    "docs/ioutils.rst": [
+      "270898d8d139d735afbf657a74b78fa0f4e9971222b555e4d48a60dec4157bc4",
+      1791797868599240300
+    ],
+    "docs/iterutils.rst": [
+      "4a1e11f1380a13f798d41fd2a821f1ad8e775e737bf88e7db3bfdfc5f4e294d6",
+      1791797868600241100
+    ],
+    "docs/jsonutils.rst": [
+      "d92c73c649de819d52b7214c89ea898962e7b7ccc5a27f2fd8d80d0df4210412",
+      1791797868600241100
+    ],
+    "docs/listutils.rst": [
+      "ea97bb06fba6e5933b573b7f8a5c4a60d3136329df54e5f965569a0f9c5fd9db",
+      1791797868600241100
+    ],
+    "docs/make.bat": [
+      "60ef34ac76affe07ca2dfc3a9666a142eee0b998a7f4a550c2b375d79d96d6c8",
+      1791797868600241100
+    ],
+    "docs/Makefile": [
+      "8f500268ab397297e6645f9b4c89fcc09f4292effedd09801e3f2411db98e921",
+      1791797868594240100
+    ],
+    "docs/mathutils.rst": [
+      "3ac9cca1497bfa70f4eacda8fa7c66061a2005729b5a7d65ebe72af0ad29bfe1",
+      1791797868601625500
+    ],
+    "docs/mboxutils.rst": [
+      "dca326ab25046a1186e248bbefd6610b131fb73774bbf76481cbea50ac949621",
+      1791797868601625500
+    ],
+    "docs/namedutils.rst": [
+      "4e794d23836ecbe21cbe8220c7f855f59ddd16219b0b293dd319f242e54de8c8",
+      1791797868601625500
+    ],
+    "docs/pathutils.rst": [
+      "8451c052f97924d63f2b21b33ff07490515a8418e00f2328f0d6f6f0441b36b0",
+      1791797868602625400
+    ],
+    "docs/queueutils.rst": [
+      "5d8993231c4976f7db64e80f8d81d3313e5e6d5cdc0fa94150211df0ce2b5f41",
+      1791797868602625400
+    ],
+    "docs/requirements-rtd.txt": [
+      "6033fe7b04426ab99217ddc542b6c27ca75d056989046c48d12f0e03bf027031",
+      1791797868602625400
+    ],
+    "docs/setutils.rst": [
+      "aaa648aa36d5b252540319769bdc49180164df96430a7286ec9a3c3febceb5c8",
+      1791797868603628200
+    ],
+    "docs/socketutils.rst": [
+      "767284b545e4521ecbf2056d1708c5add728e2969aa25c42cea5f9c7b2306adc",
+      1791797868603628200
+    ],
+    "docs/statsutils.rst": [
+      "a92d11717a0baeebe7b9ac0af5e32ee989bc1a01f2cf1c4507d4ef597fc66e11",
+      1791797868603628200
+    ],
+    "docs/strutils.rst": [
+      "d27d1caeabe2217cde0185d6279fc4ba3b787b56b0b336f541ab95d72185f200",
+      1791797868604625600
+    ],
+    "docs/tableutils.rst": [
+      "aad44b925fcf84b6a11f3669fc4fe741d2ee176e0166f4a4ca51b2083e907ea6",
+      1791797868604625600
+    ],
+    "docs/tbutils.rst": [
+      "ddb9eb58b41da00fb76c359a674b3d827dae2404c00cf98f71c13852b4a89229",
+      1791797868604625600
+    ],
+    "docs/timeutils.rst": [
+      "90b8f03d667ed5fc4dd1902bef13e4ea30fe150e069b94a94f08373caf24d3da",
+      1791797868605626000
+    ],
+    "docs/typeutils.rst": [
+      "240793f5417b70bc9d922680308c860c9598982e9e768cb073a4841cf8491cd9",
+      1791797868605626000
+    ],
+    "docs/urlutils.rst": [
+      "5aa9fa0a4908a161a8c7b1867936fd00dca99a2a860ec0e445bc6998681e4d1d",
+      1791797868605626000
+    ],
+    "LICENSE": [
+      "c301912653a8d8c99eab6212aa3aea8d164ea249d8ad53c941e0558a0a5ac1e3",
+      1791797868580729600
+    ],
+    "MANIFEST.in": [
+      "6adffe80226a20bee75913639400955761ca653848665bec33097e542545b5f6",
+      1791797868581731200
+    ],
+    "misc/bench_omd.py": [
+      "86a29952b3dfc1002f3311166e35bea0090f7459dc02a40712332a033677700b",
+      1791797868606625500
+    ],
+    "misc/linkify_changelog.py": [
+      "4abda6ffb41a90de9a4056aabf62e0225bb91431d6fa36429efbb431ffd5feba",
+      1791797868606625500
+    ],
+    "misc/table_html_app.py": [
+      "f401a03dc79d9e3ed9328962bf0ad3aa768223a4455f45af275445656c5105cc",
+      1791797868606625500
+    ],
+    "pytest.ini": [
+      "2440b5efa52f8b780b84e5a088ff4f9d62590520f06c654d6a9437bb83946f97",
+      1791797868607625300
+    ],
+    "README.md": [
+      "0ceadd28db4ac890aedb2d4f4da34641462a5d1e590b2fb47194b483b135c596",
+      1791797868581731200
+    ],
+    "requirements-test.txt": [
+      "abde8d34d99ae83bd24261c1f91d482d8e951b87845b4db98f16610f1fab0521",
+      1791797868607625300
+    ],
+    "setup.cfg": [
+      "4024bbca7672ce6a9cebfee0e4cd4017582ca0787dc1f603e859cd9c861147ac",
+      1791797868607625300
+    ],
+    "setup.py": [
+      "877d2839b3489b0edec513983f74a999cc7044bc969c3cce9adbb9d9870d7139",
+      1791797868608626200
+    ],
+    "tests/.coveragerc": [
+      "efe15fd9a92177c465290b3f0511e20e7a55151e6c720bec09bd2be161811288",
+      1791797868608626200
+    ],
+    "tests/__init__.py": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791797868608626200
+    ],
+    "tests/conftest.py": [
+      "c41d72fb69c1db601e8509929e65b758e24766268faa4f7797d458593ab12e80",
+      1791797868608626200
+    ],
+    "tests/jsonl_test_data.txt": [
+      "ddefe7742bdcc1eb0e372bd0649eedd51254d0ffa7ba71cbd23a37e509c5dd90",
+      1791797868608626200
+    ],
+    "tests/newlines_test_data.txt": [
+      "ec5ff35d69ce2c804c09975171cedfa5fc6fcb70d324f5d7b20f4dece4591861",
+      1791797868610130400
+    ],
+    "tests/test_debugutils_trace.py": [
+      "b4235e0cfbc84ae1dd0a423590a8901b6eaa46d41e8e1e342c2693887fa4ce55",
+      1791797868611139800
+    ],
+    "tests/test_dictutils.py": [
+      "0292bbab8acbc08e9420efa6977e8ad7b669d40bb05bd0de2415984b86fd1696",
+      1791797868611139800
+    ],
+    "tests/test_ecoutils.py": [
+      "d934e044d4be16e1e673bf540997806e43fb83a5bb6439004c1c19a530f3f542",
+      1791797868611139800
+    ],
+    "tests/test_fileutils.py": [
+      "88ba8737cc4e7cae3bedad50586562dda0d0df04986aa13bc259685a85c80a34",
+      1791797868612136600
+    ],
+    "tests/test_formatutils.py": [
+      "7dcee16a8e23f6a78311af4f7d91c5621a5988f00b92133cde258e5714441c7e",
+      1791797868612136600
+    ],
+    "tests/test_funcutils.py": [
+      "5fbe16f631353bf2c4c68546ba24f47d3af47ff00f634ed67003c1bb1aa7218e",
+      1791797868613134900
+    ],
+    "tests/test_funcutils_fb.py": [
+      "2f25f13c9b12e0b7ae80fcfa8c370ca15f47e162afefe3c8800df07692af59dc",
+      1791797868613134900
+    ],
+    "tests/test_funcutils_fb_py3.py": [
+      "3279a85658d8b40b1e0ea534e1d7f056f79b6a169240d16276c07d10b1e73c74",
+      1791797868613134900
+    ],
+    "tests/test_gcutils.py": [
+      "af77f6b9954a8eab25359846fa7feb3af5089b1afced1dd21c02f58e4e213df9",
+      1791797868613134900
+    ],
+    "tests/test_ioutils.py": [
+      "b6248a0d49a8610915acb1907d3c5f5e0540d281f23a51f7f9ccb8802c0491db",
+      1791797868613134900
+    ],
+    "tests/test_iterutils.py": [
+      "7f40ded82f1818bbdc800e79198bb39bfd339c0647d969d2891f5f170f4ab2f8",
+      1791797868614640000
+    ],
+    "tests/test_jsonutils.py": [
+      "f8e6acb01441cd23056fad01613d6165092d5db90dcc0b32bf6e6edc537eef7a",
+      1791797868614640000
+    ],
+    "tests/test_listutils.py": [
+      "346b9fb189b90f7c1c00b0f7f912b3abafe4f15aca6e51761181cc7c279de2e3",
+      1791797868614640000
+    ],
+    "tests/test_mathutils.py": [
+      "665225fa67ebee0138250d45023ccc0ed434fc85675b9213024f849f8997665c",
+      1791797868615644400
+    ],
+    "tests/test_namedutils.py": [
+      "77195d808abd5595b871c3a461f658ed66fc643f6ecfbd303c7e583185b6168f",
+      1791797868616645400
+    ],
+    "tests/test_queueutils.py": [
+      "e7140dcde4a96340ce29cfba5c26ee0a3a0e380b145d4e8b848a1970b374062c",
+      1791797868616645400
+    ],
+    "tests/test_setutils.py": [
+      "fcc144f552fd19e91949d8b0b5bc0d46e6e74971f22081a0b6e317bee077abfe",
+      1791797868617645600
+    ],
+    "tests/test_socketutils.py": [
+      "edfead38b00d1133b7cb33cd72cb411a3cfeb384137a206cd7db7e5d142b9cd5",
+      1791797868617645600
+    ],
+    "tests/test_statsutils.py": [
+      "94ab55d70ce3f9e63243fc1e8a099317a17113b96a92d8de11f1ef8f41f83520",
+      1791797868617645600
+    ],
+    "tests/test_statsutils_histogram.py": [
+      "9d91f83fe983c91823ffb61595bb6e91785ddbf36bb5385b99f62a75ae4c263a",
+      1791797868618644400
+    ],
+    "tests/test_strutils.py": [
+      "c420502dc79eca7dfd629e4e92107005ccd8404b17eb3b84c355462c3aa26a75",
+      1791797868618644400
+    ],
+    "tests/test_tableutils.py": [
+      "e0567acf08e42ac9882762c172bb049f3b911831d3cd131b9c7ddd45925ae4a8",
+      1791797868618644400
+    ],
+    "tests/test_tbutils.py": [
+      "c1a9d5ef6303d55f51484517d7fa6b820adbd38e0777d474ccf5114b3feb5d3a",
+      1791797868618644400
+    ],
+    "tests/test_tbutils_parsed_exc.py": [
+      "b10307006d07d66150f4aaa8b0dc6ee1e63a37e4cb4e658f035214bbe77d8847",
+      1791797868618644400
+    ],
+    "tests/test_timeutils.py": [
+      "1657b7da8184839667f50c1f260ad348398af9ce06e49b001778ffd200048c91",
+      1791797868620147500
+    ],
+    "tests/test_typeutils.py": [
+      "e8b3f2187ff3dffc3151f33667e9baba6e33b72f134c0383968db649e0a19661",
+      1791797868620147500
+    ],
+    "tests/test_urlutils.py": [
+      "60b962742c3dd58605b1fc5d233bf94b1020c7cabad1c033f37de9b2ed1b3c11",
+      1791797868621151700
+    ],
+    "TODO.rst": [
+      "0ee9e94498718650529370c292a65586b920191c5e4dcdee397ef9e88f9c3611",
+      1791797868581731200
+    ],
+    "tox.ini": [
+      "0c325c921a0e9e68ff3bf713d2dbb0fbc8b0858fabecbbcc3f46f0cf881b6cca",
+      1791797868621151700
+    ]
+  },
+  "calls": [],
+  "references_loaded_by_actor": false,
+  "stdout_tokens": 0,
+  "diagnostic_tokens": 0,
+  "request_tokens": 0,
+  "argv": [
+    "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+    "--config",
+    "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-agent-config-bh27kius\\config.toml",
+    "serve",
+    "--dir",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate26\\sources\\S02",
+    "--profile",
+    "code",
+    "--model-path",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+    "--representation",
+    "intro-uniform",
+    "--session",
+    "combined",
+    "--evidence-policy",
+    "bounded-rerank",
+    "--quiet-stats"
+  ],
+  "startup_ms": 144.34700000037992,
+  "ready_tokens": 23,
+  "source_preserved": true
+}

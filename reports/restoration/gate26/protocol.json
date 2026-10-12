@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-12",
+  "source_git": "868876f",
+  "stage": "Fresh synthetic code-task actor pilot followed by explicitly open-loop ordered retrieval comparisons; official synthetic runner controls precede scoring.",
+  "dataset": "SWE-bench/SWE-smith-py",
+  "revision": "77cab9055d42ab4a5c25c89a8f937096db13558e",
+  "split": "train",
+  "selection": "Normalize canonical owner/repo from benchmark fork metadata, preserve Gate24/25 exclusions, all prepared RepoQA/public source families and proactively reserve common human SWE-bench families. Sort remaining canonical families by SHA256; first3 are pilot development, next3 validation. One hash-first instance per family. No task difficulty/problem/patch/test fields in selection.",
+  "actor": "One current Codex actor uses actual Ixos search/grep/read with explicit optional remembered views, complete source citations and at most16retrieval calls/18000stdout tokens per task. References/tests remain hidden until all selected development submissions are frozen. Submit a concrete source-only repair patch when established; retain abstention/failure and grading errors. No independent multi-agent A/B claim.",
+  "sources": "Export complete tracked working source from the official buggy task branch, excluding Git history and the failing tests removed upstream. Verify archive paths, hash/byte/inventory identities, no ordinary cache sidecars and original corpus integrity. Patches are applied only in disposable test containers; never mutate source corpora or production Ixos for an actor task.",
+  "representation": "Current selected code parent, intro-uniform, bounded-rerank, actual JIT/native/resident conditions. No new model or default selection in the actor pilot.",
+  "comparison": "After submissions freeze, replay observed query/source-inspection sequences against stateless/search-feedback/inspection-feedback and lexical controls. Identical prompts and explicitly shown source views; any replay feedback must remain valid in its own response. Label this open-loop mechanism evaluation; evidence/cost differences are not autonomous task-success A/B.",
+  "costs": "Record request, stdout, ready and diagnostic tokens separately, tool calls, source/evidence coordinates, startup/first-fill/resident timings with verified cache hits. Agent reasoning is outside the wire-token totals. Do not count repeated commands as new labeled cases.",
+  "grading": "Official SWE-smith local runner on each frozen actor source-only patch, then localization/diagnosis interpretation with references allowed only after freeze. Verify actual failing/passing tests and environment failures; no solved flag based only on empty-patch behavior. Synthetic pilot is not official human SWE-bench performance or commercial superiority.",
+  "limits": "Fresh metadata-only validation families remain unopened. No tuning from frozen held-out results, paid APIs, public push/history rewrite/release, new training or forced accepted-file pins. Keep source bytes/ignore policy; no adjacent embedding sidecars. Preserve all failures."
+}

@@ -1,0 +1,1 @@
+{"rows": 50908, "aggregate": {"usable_nonempty_utf8_le65536": 39471, "blank_or_missing": 11437, "oversized": 0, "unexpected_type": 0}, "problem_reference_content_emitted": false, "boundary": "Input integrity, not quality-based selection. Empty selected S02 remains preserved; no claim all executable training tasks have usable retrieval prompts."}

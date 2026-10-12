@@ -1,0 +1,158 @@
+{
+  ".gitignore": {
+    "sha256": "166194c3f248c0e0589eaa71a2d8e90e9ed660c09f9010cbc4a336cf3b53275b",
+    "bytes": 461
+  },
+  "LICENSE": {
+    "sha256": "213f04066b7e183cbab865d51f9ba0cae4a69c3eeafd0dc30aa483c823144346",
+    "bytes": 10267
+  },
+  "MANIFEST.in": {
+    "sha256": "591924032341838037f4d1bc65be9bfee1a920abce9cdef19f0a665981068390",
+    "bytes": 132
+  },
+  "README.md": {
+    "sha256": "627617510bed1378d1325607338f174b23309aa7ad06f899f02b6b6c3fe30482",
+    "bytes": 10460
+  },
+  "docs/css/extra.css": {
+    "sha256": "15c222681d5122072f656380044f610a6a2a2bc8736c8f2cd5dcc872cda80e0a",
+    "bytes": 376
+  },
+  "docs/index.md": {
+    "sha256": "1a7a131a74d46ae1ca634ce94002290e53afac3606ad68ea750a86287d75ede7",
+    "bytes": 1391
+  },
+  "mkdocs.yml": {
+    "sha256": "ef7e037c047e1f5b9c593bd0665d9fe026d339659572655bcb5b3fe0eccb9f7f",
+    "bytes": 166
+  },
+  "mypy.ini": {
+    "sha256": "a17c32afbf3627a6333181a3b1bfd8e983de85e8bdd073289f3b75aa5bb1504f",
+    "bytes": 356
+  },
+  "pytest.ini": {
+    "sha256": "58e629a4ede054988dbe100383cab7ac84805781fd07e7506e176f51e6c3612e",
+    "bytes": 59
+  },
+  "requirements-tox.txt": {
+    "sha256": "57443a6a6a21fff4067e2701a38d57e034c29074d63b13018804ccafd057d96d",
+    "bytes": 312
+  },
+  "requirements.txt": {
+    "sha256": "946c7e2663add6cfb7400df8fb307c214d844baf29bfdeeab3eae21b78856ba5",
+    "bytes": 129
+  },
+  "rest_framework_nested/__init__.py": {
+    "sha256": "74355fa9b06b0810d6ba1587dca0b705c63e3995bf69bb3bcc955d725e9bbc3d",
+    "bytes": 631
+  },
+  "rest_framework_nested/py.typed": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  "rest_framework_nested/relations.py": {
+    "sha256": "96e0ad1632f929c09652ecdf42f55b50440d44bb0fe850219a1c269ca05d93f0",
+    "bytes": 3877
+  },
+  "rest_framework_nested/routers.py": {
+    "sha256": "fcdf8a09f5cc69dcd3f49cf285cd0e973e2e2e4f012689b7cc0a9d7d893c482c",
+    "bytes": 6090
+  },
+  "rest_framework_nested/runtests/__init__.py": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  "rest_framework_nested/runtests/runcoverage.py": {
+    "sha256": "201e0af327d914d0c2ff0e7dc539e10cdc5468c12b5f0121afd029c8938cf747",
+    "bytes": 2857
+  },
+  "rest_framework_nested/runtests/runtests.py": {
+    "sha256": "e8d992600e840c51c92a46c7c87ba9d0b614eb058bd2a6da7a453490e613ba9c",
+    "bytes": 1426
+  },
+  "rest_framework_nested/runtests/settings.py": {
+    "sha256": "2cd1e9aa3aac6e5f3f9022f390eb2be61245a8c450b29f1209c8403fc32abbb4",
+    "bytes": 4869
+  },
+  "rest_framework_nested/runtests/urls.py": {
+    "sha256": "a393e5735ec70277a2776c19ebb1c6b7d058f74215ddc10fb43da02ded63ea93",
+    "bytes": 156
+  },
+  "rest_framework_nested/serializers.py": {
+    "sha256": "a90804e1838ea408249474f784a9cd72f427fce0898f63a878f883d45ad9f654",
+    "bytes": 2402
+  },
+  "rest_framework_nested/viewsets.py": {
+    "sha256": "736a1461b40cb18a4470cb01c5179f4b26fee05de00e3ad2ae678958d4f748ff",
+    "bytes": 3396
+  },
+  "runtests.py": {
+    "sha256": "1ae26ec91a2f16b8e491a168ff2f38157b774bebcd849277ff345802be85ce61",
+    "bytes": 2306
+  },
+  "setup.cfg": {
+    "sha256": "1a75d20d7072725a9cf46b9f2853ddd39b3f508194cdcc302def35ea056fabd6",
+    "bytes": 182
+  },
+  "setup.py": {
+    "sha256": "8d7e5f7096c6cde76a68627bd5a03642ba208cbf97667a6293a2358b1790fd30",
+    "bytes": 3152
+  },
+  "tests/__init__.py": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  "tests/conftest.py": {
+    "sha256": "485660d3e505269f96d96ce0689919ae45c7af570a28d3375d2903d278871a10",
+    "bytes": 2652
+  },
+  "tests/description.py": {
+    "sha256": "136ef90deb9f6bc7e1e2eb628411bb12c69a1e03e95e27373cf39829ffabe5f3",
+    "bytes": 631
+  },
+  "tests/extras/__init__.py": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  "tests/extras/bad_import.py": {
+    "sha256": "3863bc550e8e9f516960ccd0eabead480d8612b17f6b76fe2b04f22475ce80ec",
+    "bytes": 17
+  },
+  "tests/helpers/__init__.py": {
+    "sha256": "ea0b7810164c6f4b9b42f794a6f69c541aa1fdc1f8f454866114756e3b3832c2",
+    "bytes": 199
+  },
+  "tests/models.py": {
+    "sha256": "42e00ce7cd97c889f9357863f349675529c726f635e271f46d37d5107632f47f",
+    "bytes": 4661
+  },
+  "tests/serializers/__init__.py": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  "tests/serializers/models.py": {
+    "sha256": "e3cb926bd712bcb7746ce949b9ea65833aaf7478c249f4925d6d900d61961cf7",
+    "bytes": 3156
+  },
+  "tests/serializers/urls.py": {
+    "sha256": "6dcef6418bd0fd648c4e98078674a1f889df289f1d3a866f3d8224c3db9ad6a6",
+    "bytes": 1169
+  },
+  "tests/test_dynamic_routers.py": {
+    "sha256": "5eff68acd5004e55610b6c517167e3117bc7da7dbc040bafd67bfc02cfe096a7",
+    "bytes": 3801
+  },
+  "tests/test_routers.py": {
+    "sha256": "48527d11a6b6f2359855d3c3701400457437acb240231d78a1fb95b27a9f53d3",
+    "bytes": 7458
+  },
+  "tests/urls.py": {
+    "sha256": "b7b27e63b0a047611ccb2eae0a32daf5935e5fbf17076966889b1ccd203b203e",
+    "bytes": 105
+  },
+  "tox.ini": {
+    "sha256": "ccf0eeb43063e90c59a55c3fdc6d9642ccc36c38d6af8be4d8685390001ad9e7",
+    "bytes": 859
+  }
+}

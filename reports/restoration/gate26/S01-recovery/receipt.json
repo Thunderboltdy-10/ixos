@@ -1,0 +1,815 @@
+{
+  "status": "submitted",
+  "task": {
+    "repo": "swesmith/pyutils__line_profiler.a646bf0f",
+    "instance_id": "pyutils__line_profiler.a646bf0f.combine_file__uplcxzyi",
+    "image_name": "swebench/swesmith.x86_64.pyutils_1776_line_profiler.a646bf0f",
+    "problem_statement": "GlobalProfiler decorator logic inverted causing functions to be profiled when disabled\n\n#### Description\n\nThe GlobalProfiler's `__call__` method has inverted logic that causes functions to be profiled when profiling is disabled and not profiled when profiling is enabled.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom line_profiler import profile\n\n# Test 1: Default behavior (should not profile)\n@profile\ndef func1():\n    return 42\n\nfunc1()  # This gets profiled when it shouldn't\n\n# Test 2: Explicitly enable profiling\nprofile.enable()\n\n@profile  \ndef func2():\n    return 42\n\nfunc2()  # This doesn't get profiled when it should\n```\n\nThe issue manifests when using explicit profiling where:\n- Functions decorated with `@profile` get profiled even when profiling is disabled by default\n- Functions decorated with `@profile` don't get profiled when profiling is explicitly enabled\n\nThis breaks the expected behavior where profiling should only occur when explicitly requested via environment variables, command line flags, or programmatic enabling.",
+    "id": "S01",
+    "canonical_repository": "pyutils/line_profiler",
+    "root": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate26\\sources\\S01",
+    "inventory_path": "C:\\Users\\pablo\\Downloads\\Ixos\\reports\\restoration\\gate26\\S01-source-inventory.json",
+    "inventory_identity": "8d01aa2a9bf2fa37923a021a20ac5a156f2b92cd73a2fad24740d6ef8466ff16",
+    "source_commit": "4a5d2a2d69f1d68235d5db350ea949785b3ba18f",
+    "source_files": 96,
+    "source_bytes": 367301,
+    "excluded_links": [],
+    "archive_sha256": "82dad4bf6daba24f0b5d0ee12d3238107cded4885e8aff56377143e19bb849c2"
+  },
+  "task_identity": "c782e9fb458f73033ca3dd0127cb91a0149ab613c28038c71ec243446f421a79",
+  "binary_sha256": "c16766b9f72eabccc48e9dc37112aa895803ba13f2904c8157caaccbf9147897",
+  "model": {
+    "path": "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+    "files": {
+      "model.safetensors": "75cf7a6c2171b230ad19b1e7d8e0b1aee86da5a02af8e7cacedd9921d227623c",
+      "tokenizer.json": "936b2d026b9e81fb683eab537ea37c5a1a65a4d02ad9cb92ce269fb8bc561ebf",
+      "config.json": "148e5691a6fcc553437156859701fba017a1ba5d340b170f17e0f3668fb861a7"
+    },
+    "fingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+    "file_bytes": 33514284,
+    "tokenizer_settings": {
+      "truncation": null,
+      "padding": null
+    }
+  },
+  "helper_sha256": "a2e18bca3bee08a7c5095f0095591335beb5c0057a376064e7419676f4ca506b",
+  "sources": {
+    ".codecov.yml": [
+      "ce50030a26ff9444b8ffbeeb0ff79cb1a872e0e0f9a9a4dd50c0bf3d3db53446",
+      1791797868444781400
+    ],
+    ".github/dependabot.yml": [
+      "d0e65f37bc1c986a48a7a61e2fb82a20b17a091b80a417c1ef88675f9b2d7f14",
+      1791797868444781400
+    ],
+    ".gitignore": [
+      "c2f7ccbdc8ffebab5452b6d4a1e9be304d16b75783aba50f3c95a543a9103ca2",
+      1791797868444781400
+    ],
+    ".readthedocs.yml": [
+      "c31b4fa198585b6f08f679116be5845074b724c5fdc888b163f7a508a4bef2ea",
+      1791797868445781200
+    ],
+    "build_wheels.sh": [
+      "4b850b186d3d456d2e770bec908257f5269b37f6a779da44780bc509deb201cd",
+      1791797868448782800
+    ],
+    "CHANGELOG.rst": [
+      "2dd83f54ebd22ae5fbad4c5349ef6d79bcee682c6f9afca3f85a9cea6afc8fff",
+      1791797868446785000
+    ],
+    "clean.sh": [
+      "3b85faa61b16416fa890e843497a2187ed134c884fa5b0900775ddbe9bc96222",
+      1791797868448782800
+    ],
+    "CMakeLists.txt": [
+      "a57f8bbbb78ed79c8b328cdf9ec5709fb931e3d4540135e73eb1aa49892831bb",
+      1791797868446785000
+    ],
+    "dev/autoprofile-poc.py": [
+      "88dd36e418dbcbdb8b88ce537bb99e6d6752dcd3068626426f3052045e9f79b5",
+      1791797868448782800
+    ],
+    "dev/ci_public_gpg_key.pgp.enc": [
+      "253380ee0785c46ab90465b8f6d94bded35cd3964858d6fb321389d91dc64df1",
+      1791797868450286400
+    ],
+    "dev/ci_secret_gpg_subkeys.pgp.enc": [
+      "52b99e11ade2ea0b3f708cc87e16c4711c2435063bb3c09c4798852b054f07f9",
+      1791797868450286400
+    ],
+    "dev/gpg_owner_trust.enc": [
+      "6944fcc1def881c4baa8eb3df59f098b6c7578bc63e07c66aae5178970abf086",
+      1791797868450286400
+    ],
+    "dev/maintain/port_utilities.py": [
+      "e915ae8f8d45ea4ac27cc37d4a505fbf11db4e761094b65337935338d16bd1fe",
+      1791797868451294100
+    ],
+    "dev/public_gpg_key": [
+      "abdb7a540fa02ef86a4212018b782d9b90d43aa01ebe77c1edf0fa2479edbb4d",
+      1791797868451294100
+    ],
+    "dev/secrets_configuration.sh": [
+      "be9df14ed5f74ee33dfccd3f7fae8a1a5ba910a243e769b2066aa940e5681ae4",
+      1791797868452291700
+    ],
+    "dev/setup_secrets.sh": [
+      "3a9b765b31bf6590480c459ce2d1723e4a645bd861f508aef88e6a24bff9b60f",
+      1791797868452291700
+    ],
+    "docs/for_developers/release_process.rst": [
+      "7adfa1c1838ffae0a60fdafd8e1593737bfd96b460a1fd31a0b761ba0d4771ae",
+      1791797868453290700
+    ],
+    "docs/make.bat": [
+      "f5480a19be1274fd34ebadb67c9885c5e153d417b271802cea10db575c703f2f",
+      1791797868453290700
+    ],
+    "docs/Makefile": [
+      "e33bf74d59130029ba24168a813112dd923d7044d780ce942db6645d93f56acf",
+      1791797868452291700
+    ],
+    "docs/source/auto/kernprof.rst": [
+      "3e0364850158506cd1a87b94a1c32e87a62e91d7e043723af447cce6ccb9986c",
+      1791797868454292100
+    ],
+    "docs/source/auto/line_profiler.__main__.rst": [
+      "2b6b6881e722e10355060639f2de25fd50976f572e0a56d3633d80710016f635",
+      1791797868454292100
+    ],
+    "docs/source/auto/line_profiler._line_profiler.rst": [
+      "4a53c42e772150144d8d893363be9fa339127039da14d68ab225e62eca3702e4",
+      1791797868455292100
+    ],
+    "docs/source/auto/line_profiler.autoprofile.ast_profle_transformer.rst": [
+      "676215575aa1514169d2f8a08753a50fefe701c265d010f65d2154105e91bb74",
+      1791797868455292100
+    ],
+    "docs/source/auto/line_profiler.autoprofile.ast_tree_profiler.rst": [
+      "4d1fe43a9162ced5d040f42a60de3206d6e1cdde795ff98cbd291a7b574ca5b5",
+      1791797868456290900
+    ],
+    "docs/source/auto/line_profiler.autoprofile.autoprofile.rst": [
+      "e3a86bb4b6f8be9ef148967e276e432f1a66b5cba3021a2d623a589faeb8b960",
+      1791797868456290900
+    ],
+    "docs/source/auto/line_profiler.autoprofile.line_profiler_utils.rst": [
+      "50d632a852187c54e45c4901f89e9981c20d27aa8b0edb02578df6cd8de20557",
+      1791797868457293600
+    ],
+    "docs/source/auto/line_profiler.autoprofile.profmod_extractor.rst": [
+      "2ba6c4f60cfb4393bcfff9e16caaaa45a5428a7ab406e229eafeef5d67e8561f",
+      1791797868457293600
+    ],
+    "docs/source/auto/line_profiler.autoprofile.rst": [
+      "8bc146d6fc3af7ba6c95b2ca10d9ae275f9ff577617e1885ba3b013bb45c00f7",
+      1791797868457293600
+    ],
+    "docs/source/auto/line_profiler.autoprofile.util_static.rst": [
+      "b903aef1c66bcf9cbb1799d360709d15f186879e718cd365f80420c455996029",
+      1791797868458291900
+    ],
+    "docs/source/auto/line_profiler.explicit_profiler.rst": [
+      "07fde66edb90d0389e5c17c0b44148ef9b012bd1d39fb11d9db210b683003d5e",
+      1791797868458291900
+    ],
+    "docs/source/auto/line_profiler.ipython_extension.rst": [
+      "2079582df9baaf0d15c45d5589ee76620740d225a34c91e592ff0808ebc95992",
+      1791797868458291900
+    ],
+    "docs/source/auto/line_profiler.line_profiler.rst": [
+      "bcbf0cbd3bd0c4b0bd4eb4b046e6caf71080637efa82d8a8d64685cfbf17c6d8",
+      1791797868459291500
+    ],
+    "docs/source/auto/line_profiler.rst": [
+      "f5e6e5b04f876f65f71f38ff0013266bd090606a96588900ca1d32d84694c434",
+      1791797868459291500
+    ],
+    "docs/source/auto/line_profiler.timers.rst": [
+      "327a0573821f5e07acdf3057f004890c7b903a852c695441b6026da13b3d5398",
+      1791797868459291500
+    ],
+    "docs/source/auto/line_profiler.unset_trace.rst": [
+      "011eb8ff2e069d0baaf75f15ea31543d713ac98b3187a9b68c0216dbe5e3eb71",
+      1791797868460290700
+    ],
+    "docs/source/auto/modules.rst": [
+      "5b7f0197a9c6c71f7a51eaa7b51fbf82e16ac7e244724f4c055bf13de600f937",
+      1791797868460795500
+    ],
+    "docs/source/conf.py": [
+      "8dca7b50192ac95b45af3a65ec34cc2dff684a292fba4d93a247e500b9bb5dd5",
+      1791797868460795500
+    ],
+    "docs/source/index.rst": [
+      "a31220715966ce00c0ecb6f44e420d24c94631b73259cafb0ff3b1f2f22d6a08",
+      1791797868460795500
+    ],
+    "docs/source/manual/examples/example_units.rst": [
+      "a222d280e874e1c9886fe91ac44d800313a6c730b09391bfdfcc100e0f9a2cf6",
+      1791797868461797700
+    ],
+    "docs/source/manual/examples/index.rst": [
+      "c2f5659e4f700b964ec494c6b9f8bdc92a6ae97419febaafd1bc4cabd711f582",
+      1791797868461797700
+    ],
+    "docs/source/modules.rst": [
+      "5b7f0197a9c6c71f7a51eaa7b51fbf82e16ac7e244724f4c055bf13de600f937",
+      1791797868462797700
+    ],
+    "kernprof.py": [
+      "3033193dfe95b4ce91dc5dc818e058f8a435182bfb1cbdbf7833556b4fec920c",
+      1791797868462797700
+    ],
+    "LICENSE.txt": [
+      "2476c54105c914973b2b114d48defc9cf02b14932465f12bfec38f9caaf52c66",
+      1791797868447784500
+    ],
+    "LICENSE_Python.txt": [
+      "7469e6368c7803fb1901458fffe3af52e3bdbf7f6b4ecca6b8a208043353d3f6",
+      1791797868447784500
+    ],
+    "line_profiler/__init__.py": [
+      "54a7f21b123f0e3dbcf1c5edf89d363f48fcddd03c70db4ad88a558fa1f41f60",
+      1791797868463796700
+    ],
+    "line_profiler/__main__.py": [
+      "cb774f3c42e439e600bb5fc4931bce11ef3423d1d8937043d7bf39963abbb0ba",
+      1791797868463796700
+    ],
+    "line_profiler/__main__.pyi": [
+      "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      1791797868464797000
+    ],
+    "line_profiler/_line_profiler.pyx": [
+      "850c9209a1aae5a4cde09d50d58abca885b016afca5ff2cd6fbd8c80050e13f2",
+      1791797868464797000
+    ],
+    "line_profiler/autoprofile/__init__.py": [
+      "5317f3f2d178011f9622e135a7aed77eee61ed67229ddf731b2f8f21acd6e425",
+      1791797868465797300
+    ],
+    "line_profiler/autoprofile/ast_profle_transformer.py": [
+      "fc6cf83c72c20e3b94c6b1c5344cc4c7bc5e8e9212e0aba7382201c74c9f0582",
+      1791797868465797300
+    ],
+    "line_profiler/autoprofile/ast_profle_transformer.pyi": [
+      "4db2045fb3b54cbe7e0a36cb252f1fcf529f20ffc91d8ea48937ece1701a6b94",
+      1791797868466797700
+    ],
+    "line_profiler/autoprofile/ast_tree_profiler.py": [
+      "23192a4dac2f0b8fc3db0f45a787a14e7c5de495189d2802638a5ae457017026",
+      1791797868466797700
+    ],
+    "line_profiler/autoprofile/ast_tree_profiler.pyi": [
+      "a2b94f9349fff90b5439f1f8d157ed163907db3fd8b12c42233dea15078ecff2",
+      1791797868466797700
+    ],
+    "line_profiler/autoprofile/autoprofile.py": [
+      "1d931a1a9694f55a4d25e1aec2470dba55981af4e97e48d97da06ac8b687ff2d",
+      1791797868467798200
+    ],
+    "line_profiler/autoprofile/autoprofile.pyi": [
+      "85e75f00d90d3c5af9c49d1d5d9e9310edfd996f4f59185a2f6488b893da7994",
+      1791797868467798200
+    ],
+    "line_profiler/autoprofile/line_profiler_utils.py": [
+      "b1f2d9ab798595264940e9a78baf4ace3bfa85615bf23824270fc68b08d06649",
+      1791797868467798200
+    ],
+    "line_profiler/autoprofile/line_profiler_utils.pyi": [
+      "df175ab41e9f77fedcd33fb12e74c4e4b0f8d2419671edcdf6bea9dbe7963564",
+      1791797868468799600
+    ],
+    "line_profiler/autoprofile/profmod_extractor.py": [
+      "0f130ec46e1c2f735fb6dbc6eb18a6de4f658db047cab911bc13b07b5a5443fe",
+      1791797868468799600
+    ],
+    "line_profiler/autoprofile/profmod_extractor.pyi": [
+      "2a24245b3808b4fa0e83179035934210bb4b33cc6b537b988371834c43c9222b",
+      1791797868468799600
+    ],
+    "line_profiler/autoprofile/util_static.py": [
+      "fe485da91c04b34089b42dabbcafc7da411e6e2d319e57e43b02f86b0e532727",
+      1791797868468799600
+    ],
+    "line_profiler/autoprofile/util_static.pyi": [
+      "1057cae1ee8c998d01154fa519286c3a36660227c2e1dafe096dee6182a4e5f9",
+      1791797868470304100
+    ],
+    "line_profiler/CMakeLists.txt": [
+      "9f7de3265b53c13b4aae6f8888b9c1f465f15be0d6bd09c0846ed263f0cc7290",
+      1791797868463796700
+    ],
+    "line_profiler/explicit_profiler.py": [
+      "4610d4336caeaed774e997dbdf43456bb73047a30d01089126baa660b879ca6f",
+      1791797868470304100
+    ],
+    "line_profiler/explicit_profiler.pyi": [
+      "5609fc2d4345834a27f7899dd2abdf39113ee185e40b13b5c125a225fb7f9a9b",
+      1791797868471309500
+    ],
+    "line_profiler/ipython_extension.py": [
+      "b86d1230bdcb0fa98dc8f26b0efc26d272acbd19b38b7cc64b6edb83c230242e",
+      1791797868471309500
+    ],
+    "line_profiler/ipython_extension.pyi": [
+      "96d91765e07a5b5aee7f8c4246058409e3ae00395ee1fd63b7c0fca7fe8b89f9",
+      1791797868472309800
+    ],
+    "line_profiler/line_profiler.py": [
+      "583bc00ac7ef13ed9478cd4e4f4f8c356f55dd2eb9dff9cf013428eba79c3e83",
+      1791797868472309800
+    ],
+    "line_profiler/line_profiler.pyi": [
+      "b8ac4cdede76ba7866715a8d2bb1357664af55f3447342e4ea7f0794738166ca",
+      1791797868472309800
+    ],
+    "line_profiler/py.typed": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791797868472309800
+    ],
+    "line_profiler/python25.pxd": [
+      "617153a15506c7e90b3cddc218e4d70d432fc05742749111e0c7570955afb7ce",
+      1791797868473310800
+    ],
+    "line_profiler/timers.c": [
+      "f3ce0674d7973ea0f0eecd81ae312043d1a7f37554fca16da8b3955f73cd919b",
+      1791797868473310800
+    ],
+    "line_profiler/timers.h": [
+      "49d7b3aba10169f1308e9a88f12ca28d0e751eebda92f7a858872b882aef2da1",
+      1791797868474311600
+    ],
+    "line_profiler/unset_trace.c": [
+      "a7779233be4d2a431af88e7a861a4c89264c311eda3f1d15a83dc1400f17e916",
+      1791797868474311600
+    ],
+    "line_profiler/unset_trace.h": [
+      "eb07cb6dbf94a6f7032420bdfa12eb811b2e2939701f6b26d8bb39034f028e83",
+      1791797868474311600
+    ],
+    "MANIFEST.in": [
+      "967373ccdd4c97dc87b143fa540277678faff83670badb92cd80c2633ceb071a",
+      1791797868447784500
+    ],
+    "publish.sh": [
+      "334ad8d8c6cbad387e84567fa7d599970ed8397a4b448aeefa6d625febfba5c1",
+      1791797868475309400
+    ],
+    "pyproject.toml": [
+      "0f27093fbf67749dfd61f0f6625cf0bb741a74da76c1a179fbb9d4044a2f4c1d",
+      1791797868475309400
+    ],
+    "README.rst": [
+      "472123d9a9fa8c2637f307cf7a8faa876f28bb531d0c92f68ece8cd1c4f5b9fb",
+      1791797868448782800
+    ],
+    "requirements/build.txt": [
+      "4ec12ad42b8d26406787eb6b857aafba4cb0f68206d60976d66d317c199be541",
+      1791797868476309100
+    ],
+    "requirements/docs.txt": [
+      "ac12a59496da442793ff28d435c9c5b982b59cff4d51378669635c43b27bb863",
+      1791797868476309100
+    ],
+    "requirements/ipython.txt": [
+      "b9eccae607a22ee1142fdc9d5aad2ed84476f325afa8afb7424f663a898b9ae3",
+      1791797868477308900
+    ],
+    "requirements/optional.txt": [
+      "e54dee308e0762ef0481669e2460f268b4b27adba6d4e27602fb9ab24135a2dd",
+      1791797868477308900
+    ],
+    "requirements/runtime.txt": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      1791797868477308900
+    ],
+    "requirements/tests.txt": [
+      "6306719177d951e82c6fb203c73a81935cdc96f024c28fce39387db434ad2871",
+      1791797868478309000
+    ],
+    "requirements.txt": [
+      "b7ee315319fbbc375fb708aa3e13ff3b6c979260373f794503ece9c492d04aee",
+      1791797868476309100
+    ],
+    "run_linter.sh": [
+      "86f8c43b26714ed68a86aeb086c240f16fb288ceb1eb1d66866e0df4667abdee",
+      1791797868479309400
+    ],
+    "run_tests.py": [
+      "315e4f606ead8b734b706485ef3a265607deba77a03be56ce08848b65aa14495",
+      1791797868479309400
+    ],
+    "setup.py": [
+      "0fb8b3fe73a954ae1fe06ea54d7f313a152c9b2fdaae7c0cd67a2806ac9eefe9",
+      1791797868479309400
+    ],
+    "tests/complex_example.py": [
+      "1d6afde390293fd4df49fe6dc942d0e5fd18643a52bf2cd55885d4ec4f5e2c12",
+      1791797868480308600
+    ],
+    "tests/test_autoprofile.py": [
+      "c3ad507543b975dca2c503c9323b3b7b3e1f0ff141fce02687ddcab7e88a8f53",
+      1791797868480813400
+    ],
+    "tests/test_cli.py": [
+      "93fe0e4bda72b75c34a9f9ce76ef79b63b0fadee9e836eefd5428a3222f61f50",
+      1791797868480813400
+    ],
+    "tests/test_duplicate_functions.py": [
+      "25f747a23dbaf663e52aaccc0c7ed04b5f18602d0bf21fc35a8e9159499279fd",
+      1791797868481815800
+    ],
+    "tests/test_import.py": [
+      "0648b339e4c52a865d8080f3c9eab83223bd8857f9bd40efdd4b5eaa5e0d71e9",
+      1791797868481815800
+    ],
+    "tests/test_ipython.py": [
+      "b2b495a5a7372e1fd7c510ce2d6fd99f2c572ccd6b491f6e2019366a12a17ae9",
+      1791797868482815100
+    ],
+    "tests/test_kernprof.py": [
+      "dba7f56d5214f0ad5ee6516d05f7926b9bbc7cc079aae18bbd8c1b71cd2eed0f",
+      1791797868482815100
+    ],
+    "tests/test_line_profiler.py": [
+      "690d223ddbdd73ff869e8edd67f323375be33f9c43dec15f3448a24bb95f4a31",
+      1791797868482815100
+    ]
+  },
+  "calls": [
+    {
+      "request": {
+        "op": "search",
+        "id": "q1",
+        "query": "GlobalProfiler decorator logic inverted causing functions to be profiled when disabled\n\n#### Description\n\nThe GlobalProfiler's `__call__` method has inverted logic that causes functions to be profiled when profiling is disabled and not profiled when profiling is enabled.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom line_profiler import profile\n\n# Test 1: Default behavior (should not profile)\n@profile\ndef func1():\n    return 42\n\nfunc1()  # This gets profiled when it shouldn't\n\n# Test 2: Explicitly enable profiling\nprofile.enable()\n\n@profile  \ndef func2():\n    return 42\n\nfunc2()  # This doesn't get profiled when it should\n```\n\nThe issue manifests when using explicit profiling where:\n- Functions decorated with `@profile` get profiled even when profiling is disabled by default\n- Functions decorated with `@profile` don't get profiled when profiling is explicitly enabled\n\nThis breaks the expected behavior where profiling should only occur when explicitly requested via environment variables, command line flags, or programmatic enabling.",
+        "stats": true
+      },
+      "wall_ms": 27.8879000006782,
+      "exposed_ranges": [
+        [
+          "line_profiler/explicit_profiler.py",
+          5002,
+          5216
+        ],
+        [
+          "tests/complex_example.py",
+          1235,
+          1389
+        ],
+        [
+          "README.rst",
+          11664,
+          11969
+        ],
+        [
+          "line_profiler/ipython_extension.py",
+          1193,
+          1337
+        ],
+        [
+          "kernprof.py",
+          1724,
+          2232
+        ]
+      ],
+      "stdout_tokens": 525,
+      "diagnostic_tokens": 361,
+      "diagnostics": {
+        "applicationCacheHits": 0,
+        "cacheReadMs": 5.960900000000001,
+        "cacheWriteErrors": 0,
+        "cacheWriteMs": 0.0,
+        "cacheWrites": 0,
+        "contextualLexical": false,
+        "discoveredFiles": 92,
+        "documentEmbedMs": 0.0029000000000000002,
+        "driftReset": false,
+        "evidence": {
+          "candidatePassages": 34,
+          "extraEmbedMs": 1.5509,
+          "extraPassagesEmbedded": 7,
+          "policy": "bounded-rerank",
+          "selectionMs": 6.953
+        },
+        "extractionMs": 0.23070000000000004,
+        "feedbackConsumed": false,
+        "ioBatchWallMs": 4.0944,
+        "ioReadMs": 5.9069999999999965,
+        "ioWorkers": 4,
+        "lexicalCandidates": 82,
+        "lexicalPrepareMs": 7.8129,
+        "literalGuard": false,
+        "memoryCacheHits": 0,
+        "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "nativeCacheHits": 89,
+        "outputBytes": 2040,
+        "passagesEmbedded": 0,
+        "queryEmbedMs": 0.3971,
+        "queryMs": 7.895599999999999,
+        "refreshMs": 19.0063,
+        "representation": "intro-uniform",
+        "requestMs": 26.9082,
+        "returnedResults": 5,
+        "searchableFiles": 89,
+        "semanticCandidates": 58,
+        "sessionEntries": 1,
+        "skippedFiles": 3,
+        "sourceBytesRead": 365932,
+        "sourceHashMs": 0.38570000000000015,
+        "tokenizerSettings": {
+          "padding": null,
+          "truncation": null
+        },
+        "vectorsScored": 201
+      }
+    },
+    {
+      "request": {
+        "op": "grep",
+        "id": "g1",
+        "pattern": "def __call__|def enable|def disable",
+        "max_matches_per_file": 3,
+        "remember": true,
+        "stats": true
+      },
+      "wall_ms": 12.392999999974563,
+      "exposed_ranges": [
+        [
+          "kernprof.py",
+          4655,
+          4824
+        ],
+        [
+          "kernprof.py",
+          4922,
+          5099
+        ],
+        [
+          "kernprof.py",
+          5220,
+          5391
+        ],
+        [
+          "line_profiler/_line_profiler.pyx",
+          9317,
+          9475
+        ],
+        [
+          "line_profiler/_line_profiler.pyx",
+          9537,
+          9714
+        ]
+      ],
+      "stdout_tokens": 412,
+      "diagnostic_tokens": 76,
+      "diagnostics": {
+        "filesSearched": 89,
+        "matchesSuppressedByFileCap": 1,
+        "matchingLines": 15,
+        "maxMatchesPerFile": 3,
+        "modelLoaded": false,
+        "rememberedViews": 5,
+        "requestMs": 11.8838,
+        "returnedResults": 5,
+        "skippedFiles": 3,
+        "truncated": true
+      }
+    },
+    {
+      "request": {
+        "op": "grep",
+        "id": "g2",
+        "pattern": "def __call__",
+        "fixed": true,
+        "max_matches_per_file": 1,
+        "remember": true,
+        "stats": true
+      },
+      "wall_ms": 11.399699999856239,
+      "exposed_ranges": [
+        [
+          "kernprof.py",
+          5220,
+          5391
+        ],
+        [
+          "line_profiler/explicit_profiler.py",
+          9732,
+          9879
+        ],
+        [
+          "line_profiler/explicit_profiler.pyi",
+          447,
+          524
+        ],
+        [
+          "line_profiler/line_profiler.py",
+          1706,
+          1854
+        ],
+        [
+          "line_profiler/line_profiler.pyi",
+          317,
+          395
+        ]
+      ],
+      "stdout_tokens": 387,
+      "diagnostic_tokens": 76,
+      "diagnostics": {
+        "filesSearched": 89,
+        "matchesSuppressedByFileCap": 0,
+        "matchingLines": 5,
+        "maxMatchesPerFile": 1,
+        "modelLoaded": false,
+        "rememberedViews": 5,
+        "requestMs": 10.8915,
+        "returnedResults": 5,
+        "skippedFiles": 3,
+        "truncated": false
+      }
+    },
+    {
+      "request": {
+        "op": "read",
+        "id": "r1",
+        "path": "line_profiler/explicit_profiler.py",
+        "start": 285,
+        "lines": 65,
+        "remember": true
+      },
+      "wall_ms": 11.350200000379118,
+      "exposed_ranges": [
+        [
+          "line_profiler/explicit_profiler.py",
+          8982,
+          11000
+        ]
+      ],
+      "stdout_tokens": 561,
+      "diagnostic_tokens": 0,
+      "diagnostics": {}
+    },
+    {
+      "request": {
+        "op": "search",
+        "id": "q2",
+        "query": "GlobalProfiler implicit setup default enabled false environment and command line",
+        "feedback": {
+          "query_id": "r1",
+          "accepted": [
+            0
+          ]
+        },
+        "stats": true
+      },
+      "wall_ms": 16.67619999989256,
+      "exposed_ranges": [
+        [
+          "line_profiler/explicit_profiler.py",
+          9762,
+          9980
+        ],
+        [
+          "kernprof.py",
+          4685,
+          4859
+        ],
+        [
+          "setup.py",
+          7863,
+          8098
+        ],
+        [
+          "tests/complex_example.py",
+          428,
+          538
+        ],
+        [
+          "line_profiler/ipython_extension.py",
+          1258,
+          1551
+        ]
+      ],
+      "stdout_tokens": 449,
+      "diagnostic_tokens": 397,
+      "diagnostics": {
+        "applicationCacheHits": 0,
+        "cacheReadMs": 0.25800000000000006,
+        "cacheWriteErrors": 0,
+        "cacheWriteMs": 0.0,
+        "cacheWrites": 0,
+        "contextualLexical": false,
+        "discoveredFiles": 92,
+        "documentEmbedMs": 0.0003,
+        "driftReset": false,
+        "evidence": {
+          "candidatePassages": 31,
+          "extraEmbedMs": 1.9024999999999999,
+          "extraPassagesEmbedded": 8,
+          "policy": "bounded-rerank",
+          "selectionMs": 5.8472
+        },
+        "extractionMs": 0.0021,
+        "feedbackConsumed": true,
+        "inspection": {
+          "embedMs": 0.5772,
+          "feedbackViews": 1,
+          "responses": 3,
+          "storedTextBytes": 3491,
+          "storedViews": 11,
+          "viewsEmbedded": 1
+        },
+        "ioBatchWallMs": 3.1992999999999996,
+        "ioReadMs": 7.980000000000001,
+        "ioWorkers": 4,
+        "lexicalCandidates": 75,
+        "lexicalPrepareMs": 0.0,
+        "literalGuard": false,
+        "memoryCacheHits": 89,
+        "modelFingerprint": "835fb9be0368efb6a64fd54039d4e79100add78ac50e2dc219daca32a62f5972",
+        "nativeCacheHits": 0,
+        "outputBytes": 1761,
+        "passagesEmbedded": 0,
+        "queryEmbedMs": 0.061500000000000006,
+        "queryMs": 6.7256,
+        "refreshMs": 8.5515,
+        "representation": "intro-uniform",
+        "requestMs": 15.2828,
+        "returnedResults": 5,
+        "searchableFiles": 89,
+        "semanticCandidates": 62,
+        "sessionEntries": 2,
+        "skippedFiles": 3,
+        "sourceBytesRead": 365932,
+        "sourceHashMs": 0.20229999999999998,
+        "tokenizerSettings": {
+          "padding": null,
+          "truncation": null
+        },
+        "vectorsScored": 201
+      }
+    },
+    {
+      "request": {
+        "op": "read",
+        "id": "r2",
+        "path": "line_profiler/explicit_profiler.py",
+        "start": 220,
+        "lines": 68
+      },
+      "wall_ms": 10.599100000035833,
+      "exposed_ranges": [
+        [
+          "line_profiler/explicit_profiler.py",
+          6717,
+          9023
+        ]
+      ],
+      "stdout_tokens": 645,
+      "diagnostic_tokens": 0,
+      "diagnostics": {}
+    }
+  ],
+  "references_loaded_by_actor": false,
+  "stdout_tokens": 2979,
+  "diagnostic_tokens": 910,
+  "request_tokens": 435,
+  "argv": [
+    "C:\\Users\\pablo\\Downloads\\Ixos\\target\\release\\ixos.exe",
+    "--config",
+    "C:\\Users\\pablo\\AppData\\Local\\Temp\\ixos-agent-config-o7v40ouo\\config.toml",
+    "serve",
+    "--dir",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate26\\sources\\S01",
+    "--profile",
+    "code",
+    "--model-path",
+    "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-models\\potion-code-16M-v2-unbounded",
+    "--representation",
+    "intro-uniform",
+    "--session",
+    "combined",
+    "--evidence-policy",
+    "bounded-rerank",
+    "--quiet-stats"
+  ],
+  "startup_ms": 149.12790000016685,
+  "ready_tokens": 23,
+  "submission": {
+    "op": "submit",
+    "status": "answered",
+    "diagnosis": "Two observed defects break the lazy enabled-state contract: initialization sets enabled=False instead of the documented None sentinel, bypassing first-use environment/CLI setup; __call__ returns the original function when enabled and invokes the profiler when disabled. The shown doctest, enable/disable methods and _implicit_setup establish the intended None -> bool state transition and conditional wrapping.",
+    "proposed_change": "Initialize enabled=None so first decoration runs implicit setup; return the original function when not enabled and wrap with the managed profiler when enabled. Preserve explicit enable/disable and output settings.",
+    "repair_patch": "diff --git a/line_profiler/explicit_profiler.py b/line_profiler/explicit_profiler.py\n--- a/line_profiler/explicit_profiler.py\n+++ b/line_profiler/explicit_profiler.py\n@@ -240,7 +240,7 @@\n         }\n         self.output_prefix = 'profile_output'\n         self._profile = None\n-        self.enabled = False\n+        self.enabled = None\n \n         # Control which outputs will be written on exit\n         self.write_config = {\n@@ -323,7 +323,7 @@\n         if self.enabled is None:\n             # Force a setup if we haven't done it before.\n             self._implicit_setup()\n-        if self.enabled:  # This logic was inverted\n+        if not self.enabled:\n             return func\n         return self._profile(func)\n \n",
+    "citations": [
+      {
+        "call_id": "r2",
+        "path": "line_profiler/explicit_profiler.py",
+        "start_line": 240,
+        "end_line": 246
+      },
+      {
+        "call_id": "r1",
+        "path": "line_profiler/explicit_profiler.py",
+        "start_line": 323,
+        "end_line": 329
+      }
+    ],
+    "source_ranges": {
+      "line_profiler/explicit_profiler.py": [
+        [
+          7425,
+          7625
+        ],
+        [
+          10133,
+          10370
+        ]
+      ]
+    }
+  },
+  "source_preserved": true
+}

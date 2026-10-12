@@ -1,2 +1,0 @@
-Changelog
-- Added progressive streaming

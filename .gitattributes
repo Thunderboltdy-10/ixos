@@ -1,8 +1,5 @@
-# Preserve raw evidence and archived originals byte-for-byte on every platform.
-reports/** -text
-docs/archive/pre-restoration/** -text
-legacy/release-workflows/** -text
-legacy/tools/run_settings_matrix.py -text
+# Preserve historical documents byte-for-byte on every platform.
+docs/history/** -text
 
 # Frozen evaluator hashes cover exact bytes, including older CRLF/mixed files.
 # Declare checkout endings so a fresh clone reproduces the measured harness.

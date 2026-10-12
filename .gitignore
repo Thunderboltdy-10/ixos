@@ -3,6 +3,7 @@ target/
 **/*.rs.bk
 
 # IDE
+.claude/
 .idea/
 .vscode/
 *.swp
@@ -21,6 +22,7 @@ Thumbs.db
 **/.clerk/
 __pycache__/
 *.pyc
+eval/runs/
 
 # Model files (large binaries)
 *.onnx

@@ -1,7 +1,0 @@
-{
-  "selection_file": "eval\\repoqa-test-selection-v1.json",
-  "selection_sha256": "52fd9a94331a603b4fa2e62f329a01396b10df299dd22b091d674044f9a9344d",
-  "harness_sha256": "95afba09dd7c77e0fc56ed4e922d508116f701bb679f52c0844ed7725fc14297",
-  "binary_sha256": "9596b928852289d5b3e4e8bd1c3e70bf397be9ed38b8455143e8bba679a3d351",
-  "test_targets_prepared": false
-}

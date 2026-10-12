@@ -1,5 +1,0 @@
-Traceback (most recent call last):
-  File "C:\Users\pablo\Downloads\Ixos\reports\restoration\gate24\select_metadata.py", line 27, in <module>
-    control = min([r for r in rows if r['repo'] == 'sympy/sympy'], key=lambda x: sha(x['instance_id'].encode()))
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-ValueError: min() iterable argument is empty

@@ -1,7 +1,0 @@
-{
-  "dataset": "SWE-bench/SWE-bench",
-  "revision": "c6fe717fd7a4c3ac1daa4055a4fd082c6a1d28a2",
-  "control_id": "marshmallow-code__marshmallow-2123",
-  "control_image": "swebench/sweb.eval.x86_64.marshmallow-code_1776_marshmallow-2123:latest",
-  "same_original_problem_reference_source": true
-}

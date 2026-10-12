@@ -1,3 +1,0 @@
-{"op":"search","id":"seed","query":"cache freshness","stats":true}
-{"op":"read","id":"r","path":"cache_a.rs","start":1,"lines":3,"remember":true}
-{"op":"search","id":"follow","query":"cache freshness","stats":true}

@@ -1,6 +1,0 @@
-fastapi: 46 sources, 20 queries, split=dev
-serde: 219 sources, 20 queries, split=dev
-axios: 67 sources, 20 queries, split=validation
-tokio: 375 sources, 20 queries, split=validation
-requests: 18 sources, 20 queries, split=test
-axum: 79 sources, 20 queries, split=test

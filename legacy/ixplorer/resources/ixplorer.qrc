@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>styles/ixplorer_dark.qss</file>
-        <file>fonts/GeistMono-Regular.otf</file>
-        <file>fonts/GeistMono-Medium.otf</file>
-        <file>fonts/GeistMono-SemiBold.otf</file>
-    </qresource>
-</RCC>

@@ -1,5 +1,0 @@
-   Compiling ixos-protocol v0.1.0 (/home/thunderboltdy/.cache/ixos-review-298088f-20261011/source)
-    Finished `release` profile [optimized] target(s) in 1m 31s
-     Running unittests src/lib.rs (target/release/deps/ixos_protocol-682dc5eacb61fd06)
-     Running unittests src/main.rs (target/release/deps/ixos-e7a5d82b39ddc65b)
-     Running tests/settings_matrix.rs (target/release/deps/settings_matrix-c112226dd9f56e74)

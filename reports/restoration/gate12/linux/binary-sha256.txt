@@ -1,2 +1,0 @@
-33e5ca0123ccd3c12483b3c43283b8280425a0a13eddc862403bbd2f6e12a738  target/release/ixos
-2c44574b9cda4c08216e91c9b89acd3af022668596c3e6f0f8609e89e8892a09  target/release/ixos-lab-embed

@@ -1,3 +1,0 @@
-{"paper_id":"S02","stream":"stderr","raw":"{\"modelLoadMs\":124.1521,\"protocol\":\"ixos-jsonl-v1\",\"type\":\"ready\"}\n"}
-{"paper_id":"S02","stream":"stdin","raw":"{\"op\":\"search\",\"id\":\"q1\",\"query\":\"\",\"stats\":true}\n"}
-{"paper_id":"S02","stream":"stdout","raw":"{\"message\":\"Empty/oversized query or id\",\"type\":\"error\"}\n"}

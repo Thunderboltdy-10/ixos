@@ -1,4 +1,0 @@
-Using gold predictions for eval (ignoring `predictions_path` argument)
-All instances run.
-Resolved 1/1 instances.
-Wrote report to logs/run_evaluation/ixos-g25-gold-20261012-v1/report.json

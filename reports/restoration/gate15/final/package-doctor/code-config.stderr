@@ -1,3 +1,0 @@
-2026-10-11T19:30:31.959136Z  INFO ixos_protocol::ixos_embed::model2vec: Loading Model2Vec model from: "C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate11\\package\\downloaded-models\\potion-code-16M-v2-unbounded"
-2026-10-11T19:30:32.097778Z DEBUG ignore::gitignore: opened gitignore file: C:\Users\pablo\.config\git/ignore
-2026-10-11T19:30:32.097845Z DEBUG globset: built glob set; 1 literals, 0 basenames, 0 extensions, 0 prefixes, 1 suffixes, 0 required extensions, 0 regexes

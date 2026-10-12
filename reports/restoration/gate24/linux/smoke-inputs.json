@@ -1,8 +1,0 @@
-{
-  "control_input_sha256": "0aaff1db97dfef1692d573669148cad5156921314481cd095233f88f87ddbd50",
-  "instance_id": "marshmallow-code__marshmallow-2123",
-  "image_digest": "swebench/sweb.eval.x86_64.marshmallow-code_1776_marshmallow-2123@sha256:9da3669fe99dede23ecf75b8f5b50198d304808f51c9ba828ac26c9eaab3163f",
-  "base_patch_sha256": "c60317c310bcf814e771cfda3dcbd5017c82f60efc57c0abf8c2654e3b3dc544",
-  "actor_task": false,
-  "boundary": "Nonempty harmless marker lets official harness test unpatched behavior; gold is original excluded reference, not an Ixos-generated patch."
-}

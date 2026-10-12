@@ -1,3 +1,0 @@
-{"id":"candidate","results":[{"path":"long.txt","score":0.5080086,"view":{"end_line":14004,"path":"long.txt","start_line":14000,"text":"ordinary routine notes 中😀\nordinary routine notes 中😀\nlate unique evidence witness describes cache freshness.\nother routine notes\nother routine notes"}}]}
-{"message":"unknown variant `unknown`, expected `global-line` or `bounded-rerank`","type":"error"}
-{"id":"control","results":[{"path":"long.txt","score":0.5080086,"view":{"end_line":14004,"path":"long.txt","start_line":14000,"text":"ordinary routine notes 中😀\nordinary routine notes 中😀\nlate unique evidence witness describes cache freshness.\nother routine notes\nother routine notes"}}]}

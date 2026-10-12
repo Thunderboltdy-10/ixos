@@ -1,1 +1,0 @@
-{"status": "passed", "search_paths": ["main.rs", "cli/commands.rs", "diagnostics/retrieval.rs", "cli/mod.rs", "diagnostics.rs", "cli/retrieval_config.rs", "cli/config.rs", "compliance/transparency.rs", "ixos_embed/model2vec.rs", "lib.rs"]}

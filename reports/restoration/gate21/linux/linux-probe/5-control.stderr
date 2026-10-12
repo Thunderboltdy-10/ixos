@@ -1,7 +1,0 @@
-[2m2026-10-11T21:17:19.470898Z[0m [34mDEBUG[0m [2mignore::gitignore[0m[2m:[0m opened gitignore file: /home/thunderboltdy/.cache/ixos-review-298088f-20261011/gate21-real-source/.gitignore
-[2m2026-10-11T21:17:19.470968Z[0m [34mDEBUG[0m [2mglobset[0m[2m:[0m built glob set; 4 literals, 2 basenames, 2 extensions, 0 prefixes, 0 suffixes, 0 required extensions, 0 regexes
-[2m2026-10-11T21:17:19.471745Z[0m [34mDEBUG[0m [2mignore::gitignore[0m[2m:[0m opened gitignore file: /home/thunderboltdy/.cache/ixos-review-298088f-20261011/gate21-real-source/tests/fixtures/no-composefile/.gitignore
-[2m2026-10-11T21:17:19.471789Z[0m [34mDEBUG[0m [2mignore::walk[0m[2m:[0m ignoring /home/thunderboltdy/.cache/ixos-review-298088f-20261011/gate21-real-source/tests/fixtures/no-composefile/.gitignore: Ignore(IgnoreMatch(Hidden))
-[2m2026-10-11T21:17:19.471923Z[0m [34mDEBUG[0m [2mignore::walk[0m[2m:[0m ignoring /home/thunderboltdy/.cache/ixos-review-298088f-20261011/gate21-real-source/.gitignore: Ignore(IgnoreMatch(Hidden))
-[2m2026-10-11T21:17:19.472076Z[0m [34mDEBUG[0m [2mignore::walk[0m[2m:[0m ignoring /home/thunderboltdy/.cache/ixos-review-298088f-20261011/gate21-real-source/.dockerignore: Ignore(IgnoreMatch(Hidden))
-{"filesSearched":119,"matchingLines":19,"modelLoaded":false,"requestMs":4.426565,"returnedResults":5,"skippedFiles":5,"truncated":true}

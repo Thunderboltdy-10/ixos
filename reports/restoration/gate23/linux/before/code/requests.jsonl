@@ -1,5 +1,0 @@
-{"op":"search","id":"seed","query":"cache freshness"}
-{"op":"read","id":"read","path":"cache_a.rs","start":1,"lines":2}
-{"op":"search","id":"after-read","query":"cache freshness","stats":true,"feedback":{"query_id":"read","accepted":[0]}}
-{"op":"grep","id":"grep","pattern":"freshness","stats":true}
-{"op":"search","id":"after-grep","query":"cache freshness","stats":true,"feedback":{"query_id":"grep","accepted":[0]}}

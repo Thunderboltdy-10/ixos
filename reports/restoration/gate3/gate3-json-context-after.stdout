@@ -1,6 +1,0 @@
-
-running 1 test
-test cli::output::tests::structured_context_preserves_source_without_terminal_highlighting ... ok
-
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 514 filtered out; finished in 0.00s
-

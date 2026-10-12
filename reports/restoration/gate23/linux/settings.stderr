@@ -1,3 +1,0 @@
-   Compiling ixos-protocol v0.1.0 (/home/thunderboltdy/.cache/ixos-review-298088f-20261011/source)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.94s
-     Running tests/settings_matrix.rs (target/debug/deps/settings_matrix-3597008f71193df3)

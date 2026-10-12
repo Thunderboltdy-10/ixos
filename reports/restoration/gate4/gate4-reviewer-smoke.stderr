@@ -1,9 +1,0 @@
-Traceback (most recent call last):
-  File "C:\Users\pablo\Downloads\Ixos\.tmp\gate4\reviewer_smoke.py", line 32, in <module>
-    run('grep', 'grep', 'is_supported', '--dir', root / 'src/storage', '--fixed', '--json')
-  File "C:\Users\pablo\Downloads\Ixos\.tmp\gate4\reviewer_smoke.py", line 20, in run
-    raw = subprocess.run(argv, env=environment, capture_output=True, timeout=120, check=True)
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\pablo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\subprocess.py", line 571, in run
-    raise CalledProcessError(retcode, process.args,
-subprocess.CalledProcessError: Command '['C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-target\\release\\ixos.exe', '--config', 'C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\reviewer-absent-config.toml', 'grep', 'is_supported', '--dir', 'C:\\Users\\pablo\\Downloads\\Ixos\\.tmp\\gate4\\clean-source\\src\\storage', '--fixed', '--json']' returned non-zero exit status 2.

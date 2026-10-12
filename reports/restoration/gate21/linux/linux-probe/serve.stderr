@@ -1,4 +1,0 @@
-{"modelLoadMs":0.298549,"protocol":"ixos-jsonl-v1","type":"ready"}
-{"diagnostics":{"filesSearched":3,"matchesSuppressedByFileCap":4,"matchingLines":7,"maxMatchesPerFile":1,"modelLoaded":false,"requestMs":0.9169379999999999,"returnedResults":3,"skippedFiles":0,"truncated":true},"id":"capped","type":"stats"}
-{"diagnostics":{"filesSearched":3,"matchingLines":7,"modelLoaded":false,"requestMs":0.13580499999999998,"returnedResults":3,"skippedFiles":0,"truncated":true},"id":"default","type":"stats"}
-{"diagnostics":{"filesSearched":3,"matchesSuppressedByFileCap":0,"matchingLines":0,"maxMatchesPerFile":1,"modelLoaded":false,"requestMs":0.158995,"returnedResults":0,"skippedFiles":0,"truncated":false},"id":"no-match","type":"stats"}

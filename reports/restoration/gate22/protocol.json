@@ -1,8 +1,0 @@
-{
-  "source_git": "7a7ea41",
-  "purpose": "Reproduce escaped-ID envelope rejection entering search/session history before visibility; correctness before inspection-feedback extension",
-  "contract": "IDs retain UTF8 limit256bytes; complete serialized stdout response must fit advertised budget. A rejected/unemitted search result must not create feedback/topic history. Ordinary IDs/default response bytes preserved. Per-request payload budget derives from actual serialized ID cost and existing reservation, restores after success/failure.",
-  "baseline_binary_sha256": "7aefee83a857f0592be6e320abe8729655ce2f35b2f18f3e9cc1204c96fb4c6f",
-  "cases": "Actual pinned code model,512byte resident output,feedback session,JIT; first search with256NUL ID, then ordinary ID with acceptance0 to rejected response. Add actual overescaped validlarge-budget IDs,quotes/backslashes,Unicode256bytes, malformed/cap/error/default-budget restoration and source integrity controls. Authored contracts, not independent quality labels.",
-  "next": "Only after envelope visibility fixed, proceed to explicit bounded source-inspection feedback and fresh test-backed tasks."
-}

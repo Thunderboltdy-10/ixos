@@ -11,8 +11,8 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev --no-watch",
     "tauri:dev:watch": "tauri dev",
-    "tauri:build": "node scripts/clean-tauri-output.js && tauri build",
-    "tauri:build:prod": "node scripts/clean-tauri-output.js && tauri build",
+    "tauri:build": "tauri build",
+    "tauri:build:prod": "tauri build",
     "dev": "cd ixos-search/ui && npm run dev",
     "build": "cd ixos-search/ui && npm run build",
     "site:dev": "cd ixos-site && npm run dev"

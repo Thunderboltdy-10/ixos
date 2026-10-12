@@ -1,8 +1,0 @@
-{
-  "schema": 1,
-  "purpose": "Installation-facing doctor correctness, no retrieval/model tuning",
-  "control_git": "a984493",
-  "control_windows_binary_sha256": "afbbbfe2df00d1fa6bfb031fb7a5fba5a29ace7cb1295552d66c7a38dbb06bb3",
-  "checks": ["current pinned code actual inference", "current pinned document actual inference", "explicit config path/profile/model selection", "missing required model gives report FAIL and nonzero JSON/human exit", "lexical mode requires no models", "malformed explicit config rejects without changing file", "actual ADS/xattr or application DB storage round trip distinctly reported", "existing root files byte/mtime unchanged", "isolated temporary probe directory cleaned", "retained desktop compatibility doctor remains callable"],
-  "boundaries": "Authored diagnostic contracts, not relevance quality or performance. Windows and native Linux/WSL; native Mac deferred. No default/model/cache recipe/evaluator changes. Storage probe writes only its own temporary file and removes its record; no source metadata mutation intended. No public push/release/history rewrite."
-}

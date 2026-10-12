@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "C:\Users\pablo\Downloads\Ixos\scripts\verify_restored_cli.py", line 118, in <module>
-    main()
-  File "C:\Users\pablo\Downloads\Ixos\scripts\verify_restored_cli.py", line 97, in main
-    assert [row.get('id') for row in diagnostics if row['type'] == 'stats'] == ['debug']
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError

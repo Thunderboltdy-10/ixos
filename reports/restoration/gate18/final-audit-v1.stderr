@@ -1,5 +1,0 @@
-Traceback (most recent call last):
-  File "C:\Users\pablo\Downloads\Ixos\reports\restoration\gate18\final_audit.py", line 23, in <module>
-    assert sha((root/'eval/evidence_run.py').read_bytes())=='95afba09dd7c77e0fc56ed4e922d508116f701bb679f52c0844ed7725fc14297'
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError

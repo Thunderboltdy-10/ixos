@@ -1,2 +1,0 @@
-{"op":"grep","id":"r","pattern":"absentWitness","remember":true}
-{"op":"search","id":"follow","query":"cache freshness","stats":true,"feedback":{"query_id":"r","accepted":[0],"rejected":[]}}

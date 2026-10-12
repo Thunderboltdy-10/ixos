@@ -1,7 +1,0 @@
-{"op": "grep", "id": "capped", "pattern": "needle", "fixed": true, "max_matches_per_file": 1, "stats": true}
-{"op": "grep", "id": "invalid-zero", "pattern": "needle", "max_matches_per_file": 0}
-{"op": "grep", "id": "invalid-large", "pattern": "needle", "max_matches_per_file": 10001}
-{"op": "grep", "id": "invalid-type", "pattern": "needle", "max_matches_per_file": "one"}
-{"op": "grep", "id": "default", "pattern": "needle", "fixed": true, "stats": true}
-{"op": "grep", "id": "explicit-null", "pattern": "needle", "fixed": true, "max_matches_per_file": null}
-{"op": "grep", "id": "no-match", "pattern": "absent", "max_matches_per_file": 1, "stats": true}

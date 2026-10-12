@@ -1,9 +1,0 @@
-{"op":"reset","id":"reset0"}
-{"op":"grep","id":"g","pattern":"Cache","remember":true,"stats":true}
-{"op":"search","id":"follow","query":"cache freshness","stats":true,"feedback":{"query_id":"g","accepted":[0,1,2],"rejected":[]}}
-{"op":"reset","id":"reset1"}
-{"op":"grep","id":"g","pattern":"Cache","remember":true,"stats":true}
-{"op":"search","id":"follow","query":"cache freshness","stats":true,"feedback":{"query_id":"g","accepted":[2,0,1,0],"rejected":[]}}
-{"op":"reset","id":"reset2"}
-{"op":"grep","id":"g","pattern":"Cache","remember":true,"stats":true}
-{"op":"search","id":"follow","query":"cache freshness","stats":true,"feedback":{"query_id":"g","accepted":[1,2,"cache_a.rs",0],"rejected":[]}}

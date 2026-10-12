@@ -1,4 +1,0 @@
-{"modelLoadMs":0.2387,"protocol":"ixos-jsonl-v1","type":"ready"}
-{"diagnostics":{"filesSearched":3,"matchesSuppressedByFileCap":4,"matchingLines":7,"maxMatchesPerFile":1,"modelLoaded":false,"requestMs":2.8822,"returnedResults":3,"skippedFiles":0,"truncated":true},"id":"capped","type":"stats"}
-{"diagnostics":{"filesSearched":3,"matchingLines":7,"modelLoaded":false,"requestMs":1.8607,"returnedResults":3,"skippedFiles":0,"truncated":true},"id":"default","type":"stats"}
-{"diagnostics":{"filesSearched":3,"matchesSuppressedByFileCap":0,"matchingLines":0,"maxMatchesPerFile":1,"modelLoaded":false,"requestMs":1.4887,"returnedResults":0,"skippedFiles":0,"truncated":false},"id":"no-match","type":"stats"}

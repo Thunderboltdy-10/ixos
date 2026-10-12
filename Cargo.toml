@@ -140,26 +140,9 @@ tokio-test = "0.4"
 name = "ixos"
 path = "src/main.rs"
 
-[[bin]]
-name = "ixos-big-bench"
-path = "src/bin/ixos-big-bench.rs"
-
 [lib]
 name = "ixos_protocol"
 path = "src/lib.rs"
-
-# Benchmark targets (P1)
-[[bench]]
-name = "candidate_generation"
-harness = false
-
-[[bench]]
-name = "search_e2e"
-harness = false
-
-[[bench]]
-name = "directory_centroids_boost"
-harness = false
 
 
 

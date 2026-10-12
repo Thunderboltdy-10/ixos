@@ -1,6 +1,0 @@
-{
-  "written_before_model_execution": true,
-  "finding": "Strict paragraph-only train audit:289unmatched evidence strings.147are exact other source strings (sampled section headings);119edge whitespace and23internal whitespace. Upstream paper alone does not imply all evidence strings equal body paragraphs.",
-  "decision": "Map original nonempty section headings as exact evidence units in addition to unchanged body paragraphs, with source byte ranges. Empty/null headings retain all their paragraphs. No whitespace normalization or fabricated source matching; remaining mismatches remain unsupported counters. Preserve paragraph-only first preparation/audit. Source corpus bytes/paper selection/queries do not change.",
-  "metrics": "Use text-unit F1/recall/contact rather than label this exact official paragraph Evidence F1. Byte recall remains actual exposed bytes of exact reference units; duplicate text at multiple locations counts one evidence string with max actual location overlap. Best-reference convention explicit. Body paragraphs/headings reported separately. Empty/no-answer/float-only/unmatched groups retain outputs and do not become successful answers. No comparable published leaderboard claim from this pilot."
-}

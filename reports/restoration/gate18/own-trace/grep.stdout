@@ -1,1 +1,0 @@
-{"results":[{"line":823,"path":"retrieval/mod.rs","view":{"end_line":825,"path":"retrieval/mod.rs","start_line":821,"text":"            }\n            if !rows.fits(&row)? {\n                row.view = None;\n                row.evidence_omitted = true;\n            }"}}]}

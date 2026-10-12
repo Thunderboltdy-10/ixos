@@ -1,2 +1,0 @@
-{"message":"Response envelope exceeds output budget","type":"error"}
-{"id":"follow","results":[{"evidence_omitted":true,"path":"cache_c.rs","score":0.5552275},{"evidence_omitted":true,"path":"cache_b.rs","score":0.55500937},{"evidence_omitted":true,"path":"cache_a.rs","score":0.5549748}]}

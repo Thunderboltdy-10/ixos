@@ -1,7 +1,0 @@
-{
-  "status": "passed",
-  "source_count": 113,
-  "source_bytes_and_mtime_preserved": true,
-  "binary_sha256": "9596b928852289d5b3e4e8bd1c3e70bf397be9ed38b8455143e8bba679a3d351",
-  "condition": "Authored own-source navigation and exact fallback, not independent quality or controlled performance. Concept query inspected first; no acceptance or synthetic success metric."
-}

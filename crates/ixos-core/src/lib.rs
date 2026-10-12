@@ -11,5 +11,6 @@ mod metadata_windows;
 pub mod model;
 pub mod record;
 pub mod snippet;
+mod source;
 pub mod tools;
 pub mod typo;

@@ -19,3 +19,14 @@ The restoration found a cache storing only 64 of 512 dimensions. After fixing it
 Session learning did not improve retrieval and is being removed. Accepting a correct file did not reliably put it in the following top five.
 
 Original outputs and configurations remain in Git at `restoration-end`. See [project history](history/README.md) for the development record.
+
+## Cleanup search timings
+
+One before/after check used a local NTFS location with 9,892 files (65.0 MB): four copies of the already prepared RepoQA development source snapshots. Both release binaries used the code model, native records and the same query; their JSON outputs were identical. The fresh-process number includes model loading; the warm number is the second search through MCP, after its initial search and a two-second pause.
+
+| Search | Before | After |
+|---|---:|---:|
+| Fresh process | 3,167 ms | 2,873 ms |
+| Warm MCP process | 981 ms | 573 ms |
+
+Resident searches now reuse text and vectors when size, modified time and file identity match outside the two-second timestamp window. BM25 statistics update only for changed files. These single observations show an improvement but miss the one-second fresh-process target and the few-hundred-millisecond resident target; directory walking and ranking still run on every request.

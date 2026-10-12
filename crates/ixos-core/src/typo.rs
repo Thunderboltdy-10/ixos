@@ -1,7 +1,7 @@
 //! Conservative adjacent-transposition recovery from the live corpus vocabulary.
 //! It never rewrites quotes, paths, numbers, identifiers or ambiguous candidates.
 use serde::Serialize;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Correction {
@@ -9,7 +9,7 @@ pub struct Correction {
     pub replacement: String,
 }
 
-pub fn correct(query: &str, vocabulary: &HashSet<String>) -> (String, Vec<Correction>) {
+pub fn correct(query: &str, vocabulary: &HashMap<String, usize>) -> (String, Vec<Correction>) {
     let mut rewritten = String::new();
     let mut corrections = Vec::new();
     let mut quote = None;
@@ -33,7 +33,7 @@ pub fn correct(query: &str, vocabulary: &HashSet<String>) -> (String, Vec<Correc
         if quote.is_some()
             || !(6..=32).contains(&word.len())
             || !word.bytes().all(|c| c.is_ascii_lowercase())
-            || vocabulary.contains(word)
+            || vocabulary.contains_key(word)
         {
             rewritten.push_str(piece);
             continue;
@@ -43,7 +43,7 @@ pub fn correct(query: &str, vocabulary: &HashSet<String>) -> (String, Vec<Correc
         for i in 0..letters.len() - 1 {
             letters.swap(i, i + 1);
             let candidate = String::from_utf8(letters.clone()).unwrap();
-            if candidate != word && vocabulary.contains(&candidate) {
+            if candidate != word && vocabulary.contains_key(&candidate) {
                 candidates.insert(candidate);
             }
             letters.swap(i, i + 1);
@@ -72,7 +72,7 @@ mod tests {
     fn unique_live_word_only_and_literals_are_preserved() {
         let vocabulary = ["dependency", "search", "abcdef", "bacdef", "abcdefg"]
             .into_iter()
-            .map(str::to_owned)
+            .map(|word| (word.to_owned(), 1))
             .collect();
         assert_eq!(
             correct("where is depnedency checked?", &vocabulary).0,

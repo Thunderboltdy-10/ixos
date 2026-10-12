@@ -2,6 +2,7 @@
 use crate::cache::quantize;
 use crate::config::Profile;
 use crate::model::Model;
+use crate::source::Stamp;
 use crate::{cache, record, snippet, tools, typo};
 use crate::{digest::sha256, discover::search_walk};
 use rayon::prelude::*;
@@ -10,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::io::Read;
 use std::path::{Path, PathBuf};
-use std::time::Instant;
+use std::time::{Instant, SystemTime};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, clap::ValueEnum, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -55,6 +56,7 @@ pub struct Stats {
     pub skipped_files: usize,
     pub source_bytes_read: u64,
     pub memory_cache_hits: usize,
+    pub metadata_cache_hits: usize,
     pub native_cache_hits: usize,
     pub application_cache_hits: usize,
     pub cache_writes: usize,
@@ -119,6 +121,17 @@ pub struct Output {
     pub results: Vec<ResultRow>,
 }
 
+#[derive(Default)]
+struct LoadedSource {
+    relative: String,
+    stamp: Option<Stamp>,
+    reused: bool,
+    metadata_hit: bool,
+    document: Option<Document>,
+    native: Option<Vec<u8>>,
+    stats: Stats,
+}
+
 pub struct Engine {
     root: PathBuf,
     model: Option<Model>,
@@ -126,6 +139,9 @@ pub struct Engine {
     cache: Option<cache::DocumentCache>,
     documents: BTreeMap<String, Document>,
     io_pool: rayon::ThreadPool,
+    observations: HashMap<String, (Stamp, SystemTime)>,
+    term_documents: HashMap<String, usize>,
+    total_terms: usize,
 }
 
 impl Engine {
@@ -165,6 +181,9 @@ impl Engine {
             cache,
             documents: BTreeMap::new(),
             io_pool,
+            observations: HashMap::new(),
+            term_documents: HashMap::new(),
+            total_terms: 0,
         })
     }
     pub fn refresh(&mut self) -> anyhow::Result<Stats> {
@@ -191,144 +210,170 @@ impl Engine {
                 continue;
             }
             stats.discovered_files += 1;
-            let path = entry.path();
-            if crate::cloud::should_skip_cloud_file(path) {
+            if crate::cloud::should_skip_cloud_file(entry.path()) {
                 stats.skipped_files += 1;
                 continue;
             }
             entries.push(entry);
         }
-        // Bounded batches retain at most eight raw source buffers.
+        // Four buffers bound transient raw input while extraction and tokenization
+        // run in parallel. Unchanged resident sources never allocate a buffer.
         for batch in entries.chunks(4) {
             let io_batch = Instant::now();
             let loaded = self.io_pool.install(|| {
                 batch
                     .par_iter()
                     .map(|entry| {
-                        let mut bytes = Vec::new();
-                        let start = Instant::now();
-                        let result = std::fs::File::open(entry.path()).and_then(|file| {
-                            file.take((self.options.max_file_bytes + 1) as u64)
-                                .read_to_end(&mut bytes)
-                        });
-                        let io_ms = start.elapsed().as_secs_f64() * 1000.0;
-                        let start = Instant::now();
-                        let relative = entry
-                            .path()
+                        let path = entry.path();
+                        let relative = path
                             .strip_prefix(&self.root)
                             .unwrap()
                             .to_string_lossy()
                             .replace('\\', "/");
-                        let native =
-                            if self.cache.is_some() && !self.documents.contains_key(&relative) {
-                                cache::prefetch(entry.path())
-                            } else {
-                                None
-                            };
-                        let cache_ms = start.elapsed().as_secs_f64() * 1000.0;
-                        (entry, result, bytes, io_ms, native, cache_ms)
+                        let mut loaded = LoadedSource {
+                            relative,
+                            stamp: Stamp::read(path).ok(),
+                            ..Default::default()
+                        };
+                        let reusable = self.documents.get(&loaded.relative).is_some_and(|doc| {
+                            self.model.as_ref().is_none_or(|m| {
+                                !doc.passages.is_empty()
+                                    && doc
+                                        .passages
+                                        .iter()
+                                        .all(|p| p.vector.len() == m.dimensions())
+                            })
+                        });
+                        if reusable
+                            && loaded.stamp.as_ref().is_some_and(|stamp| {
+                                self.observations.get(&loaded.relative).is_some_and(
+                                    |(previous, observed)| stamp.reusable(previous, *observed),
+                                )
+                            })
+                        {
+                            loaded.reused = true;
+                            loaded.metadata_hit = true;
+                            return loaded;
+                        }
+                        let mut bytes = Vec::new();
+                        let started = Instant::now();
+                        let read = std::fs::File::open(path).and_then(|file| {
+                            file.take((self.options.max_file_bytes + 1) as u64)
+                                .read_to_end(&mut bytes)
+                        });
+                        loaded.stats.io_read_ms = started.elapsed().as_secs_f64() * 1000.0;
+                        loaded.stats.source_bytes_read = bytes.len() as u64;
+                        if loaded.stamp != Stamp::read(path).ok() {
+                            loaded.stamp = None;
+                        }
+                        if read.is_err() || bytes.len() > self.options.max_file_bytes {
+                            return loaded;
+                        }
+                        let started = Instant::now();
+                        let raw_hash = sha256(&bytes);
+                        loaded.stats.source_hash_ms = started.elapsed().as_secs_f64() * 1000.0;
+                        if reusable && self.documents[&loaded.relative].raw_hash == raw_hash {
+                            loaded.reused = true;
+                            return loaded;
+                        }
+                        let started = Instant::now();
+                        let extracted = crate::extract::extract_text_from_bytes(
+                            path,
+                            &bytes,
+                            self.options.max_file_bytes + 1,
+                        );
+                        loaded.stats.extraction_ms = started.elapsed().as_secs_f64() * 1000.0;
+                        let Some(text) = extracted.map(|text| normalize_text(&text)) else {
+                            return loaded;
+                        };
+                        if text.trim().is_empty() || text.len() > self.options.max_file_bytes {
+                            return loaded;
+                        }
+                        let started = Instant::now();
+                        let mut identity = raw_hash.to_vec();
+                        identity.extend_from_slice(&sha256(text.as_bytes()));
+                        let source_hash = sha256(&identity);
+                        loaded.stats.source_hash_ms += started.elapsed().as_secs_f64() * 1000.0;
+                        let started = Instant::now();
+                        let mut terms = HashMap::new();
+                        for term in
+                            tokens(&format!("{text} {} {}", loaded.relative, loaded.relative))
+                        {
+                            *terms.entry(term).or_insert(0) += 1;
+                        }
+                        let length = terms.values().sum();
+                        let lines = text.split('\n').map(str::to_owned).collect();
+                        loaded.stats.lexical_prepare_ms = started.elapsed().as_secs_f64() * 1000.0;
+                        if self.cache.is_some() {
+                            let started = Instant::now();
+                            loaded.native = cache::prefetch(path);
+                            loaded.stats.cache_read_ms = started.elapsed().as_secs_f64() * 1000.0;
+                        }
+                        loaded.document = Some(Document {
+                            path: path.to_owned(),
+                            source_hash,
+                            raw_hash,
+                            text,
+                            lines,
+                            terms,
+                            length,
+                            passages: Vec::new(),
+                        });
+                        loaded
                     })
                     .collect::<Vec<_>>()
             });
             stats.io_batch_wall_ms += io_batch.elapsed().as_secs_f64() * 1000.0;
-            for (entry, loaded, bytes, io_ms, native, cache_ms) in loaded {
-                let path = entry.path();
-                stats.source_bytes_read += bytes.len() as u64;
-                stats.io_read_ms += io_ms;
-                stats.cache_read_ms += cache_ms;
-                if loaded.is_err() || bytes.len() > self.options.max_file_bytes {
+            for mut loaded in loaded {
+                stats.source_bytes_read += loaded.stats.source_bytes_read;
+                stats.io_read_ms += loaded.stats.io_read_ms;
+                stats.source_hash_ms += loaded.stats.source_hash_ms;
+                stats.extraction_ms += loaded.stats.extraction_ms;
+                stats.lexical_prepare_ms += loaded.stats.lexical_prepare_ms;
+                stats.cache_read_ms += loaded.stats.cache_read_ms;
+                if !loaded.reused && loaded.document.is_none() {
                     stats.skipped_files += 1;
                     continue;
                 }
-                corpus_bytes += bytes.len();
+                let text_bytes = loaded
+                    .document
+                    .as_ref()
+                    .unwrap_or_else(|| &self.documents[&loaded.relative])
+                    .text
+                    .len();
+                corpus_bytes += text_bytes;
                 anyhow::ensure!(
-                corpus_bytes <= self.options.max_corpus_bytes,
-                "Corpus exceeds in-memory source budget; narrow --dir (no silent partial search)"
-            );
-                let relative = path
-                    .strip_prefix(&self.root)?
-                    .to_string_lossy()
-                    .replace('\\', "/");
-                let hash_started = Instant::now();
-                let raw_hash = sha256(&bytes);
-                stats.source_hash_ms += hash_started.elapsed().as_secs_f64() * 1000.0;
-                if self.documents.get(&relative).is_some_and(|document| {
-                    document.raw_hash == raw_hash
-                        && (self.model.is_none()
-                            || !document.passages.is_empty()
-                                && document.passages.iter().all(|p| {
-                                    p.vector.len() == self.model.as_ref().unwrap().dimensions()
-                                }))
-                }) {
-                    alive.insert(relative);
-                    stats.memory_cache_hits += 1;
-                    continue;
-                }
-                let extraction_started = Instant::now();
-                let extracted = crate::extract::extract_text_from_bytes(
-                    path,
-                    &bytes,
-                    self.options.max_file_bytes + 1,
+                    corpus_bytes <= self.options.max_corpus_bytes,
+                    "Location exceeds the 256 MiB source text budget; choose a smaller location"
                 );
-                stats.extraction_ms += extraction_started.elapsed().as_secs_f64() * 1000.0;
-                let text = match extracted {
-                    Some(text) => normalize_text(&text),
-                    None => {
-                        stats.skipped_files += 1;
-                        continue;
-                    }
-                };
-                if text.trim().is_empty() || text.chars().count() > self.options.max_file_bytes {
-                    stats.skipped_files += 1;
-                    continue;
+                alive.insert(loaded.relative.clone());
+                if let Some(stamp) = loaded.stamp {
+                    self.observations
+                        .insert(loaded.relative.clone(), (stamp, SystemTime::now()));
+                } else {
+                    self.observations.remove(&loaded.relative);
                 }
-                let relative = path
-                    .strip_prefix(&self.root)?
-                    .to_string_lossy()
-                    .replace('\\', "/");
-                let hash_started = Instant::now();
-                let mut identity = raw_hash.to_vec();
-                identity.extend_from_slice(&sha256(text.as_bytes()));
-                let source_hash = sha256(&identity);
-                stats.source_hash_ms += hash_started.elapsed().as_secs_f64() * 1000.0;
-                alive.insert(relative.clone());
-                if self.documents.get(&relative).is_some_and(|document| {
-                    document.source_hash == source_hash
-                        && (self.model.is_none()
-                            || !document.passages.is_empty()
-                                && document.passages.iter().all(|p| {
-                                    p.vector.len() == self.model.as_ref().unwrap().dimensions()
-                                }))
-                }) {
+                if loaded.reused {
                     stats.memory_cache_hits += 1;
+                    stats.metadata_cache_hits += usize::from(loaded.metadata_hit);
                     continue;
                 }
-                let mut counts = HashMap::new();
-                let lexical_started = Instant::now();
-                for term in tokens(&format!("{text} {relative} {relative}")) {
-                    *counts.entry(term).or_insert(0) += 1;
-                }
-                let length = counts.values().sum();
-                let lines = text.split('\n').map(str::to_owned).collect();
-                stats.lexical_prepare_ms += lexical_started.elapsed().as_secs_f64() * 1000.0;
-                let mut passages = Vec::new();
-                if self.model.is_some() {
-                    let cache_started = Instant::now();
-                    let cached = self
-                        .cache
-                        .as_mut()
-                        .and_then(|cache| cache.get_prefetched(path, &source_hash, native));
-                    stats.cache_read_ms += cache_started.elapsed().as_secs_f64() * 1000.0;
-                    if let Some((cached, backend)) = cached {
-                        // Validate locators against the actual extracted snapshot too.
-                        if cached.iter().all(|p| {
-                            p.end_byte <= text.len()
-                                && text.is_char_boundary(p.start_byte)
-                                && text.is_char_boundary(p.end_byte)
-                                && p.end_line <= text.split('\n').count()
-                                && p.vector.len() == self.model.as_ref().unwrap().dimensions()
+                let mut document = loaded.document.take().unwrap();
+                if let Some(model) = &self.model {
+                    let started = Instant::now();
+                    let cached = self.cache.as_mut().and_then(|cache| {
+                        cache.get_prefetched(&document.path, &document.source_hash, loaded.native)
+                    });
+                    stats.cache_read_ms += started.elapsed().as_secs_f64() * 1000.0;
+                    if let Some((rows, backend)) = cached {
+                        if rows.iter().all(|p| {
+                            p.end_byte <= document.text.len()
+                                && document.text.is_char_boundary(p.start_byte)
+                                && document.text.is_char_boundary(p.end_byte)
+                                && p.end_line <= document.lines.len()
+                                && p.vector.len() == model.dimensions()
                         }) {
-                            passages = cached;
+                            document.passages = rows;
                             if backend == "native" {
                                 stats.native_cache_hits += 1;
                             } else {
@@ -336,36 +381,32 @@ impl Engine {
                             }
                         }
                     }
-                    if passages.is_empty() {
-                        passages = representatives(&text, self.options.profile);
-                        pending.push(relative.clone());
+                    if document.passages.is_empty() {
+                        document.passages = representatives(&document.text, self.options.profile);
+                        pending.push(loaded.relative.clone());
                     }
                 }
-                self.documents.insert(
-                    relative,
-                    Document {
-                        path: path.to_owned(),
-                        source_hash,
-                        raw_hash,
-                        text,
-                        lines,
-                        terms: counts,
-                        length,
-                        passages,
-                    },
-                );
+                if let Some(previous) = self.documents.remove(&loaded.relative) {
+                    self.remove_terms(&previous);
+                }
+                self.add_terms(&document);
+                self.documents.insert(loaded.relative, document);
             }
         }
-        self.documents.retain(|path, document| {
-            if alive.contains(path) {
-                true
-            } else {
-                if let Some(cache) = &mut self.cache {
-                    cache.remove_fallback(&document.path);
-                }
-                false
+        let deleted = self
+            .documents
+            .keys()
+            .filter(|path| !alive.contains(*path))
+            .cloned()
+            .collect::<Vec<_>>();
+        for path in deleted {
+            let document = self.documents.remove(&path).unwrap();
+            self.remove_terms(&document);
+            self.observations.remove(&path);
+            if let Some(cache) = &mut self.cache {
+                cache.remove_fallback(&document.path);
             }
-        });
+        }
         // Batch bounded selected passages rather than silently limiting files.
         if let Some(model) = &self.model {
             let embedding_started = Instant::now();
@@ -413,6 +454,22 @@ impl Engine {
         stats.refresh_ms = began.elapsed().as_secs_f64() * 1000.0;
         Ok(stats)
     }
+    fn add_terms(&mut self, document: &Document) {
+        self.total_terms += document.length;
+        for term in document.terms.keys() {
+            *self.term_documents.entry(term.clone()).or_insert(0) += 1;
+        }
+    }
+    fn remove_terms(&mut self, document: &Document) {
+        self.total_terms -= document.length;
+        for term in document.terms.keys() {
+            let count = self.term_documents.get_mut(term).unwrap();
+            *count -= 1;
+            if *count == 0 {
+                self.term_documents.remove(term);
+            }
+        }
+    }
     pub fn search(&mut self, query: &str) -> anyhow::Result<(Vec<u8>, Stats)> {
         anyhow::ensure!(
             !query.trim().is_empty() && query.len() <= 65536,
@@ -420,12 +477,7 @@ impl Engine {
         );
         let started = Instant::now();
         let mut stats = self.refresh()?;
-        let vocabulary = self
-            .documents
-            .values()
-            .flat_map(|doc| doc.terms.keys().cloned())
-            .collect();
-        let (corrected, corrections) = typo::correct(query, &vocabulary);
+        let (corrected, corrections) = typo::correct(query, &self.term_documents);
         stats.query_corrections = corrections;
         let query = corrected.as_str();
         let began = Instant::now();
@@ -441,19 +493,14 @@ impl Engine {
         let idfs: HashMap<_, _> = wanted
             .iter()
             .map(|term| {
-                let df = self
-                    .documents
-                    .values()
-                    .filter(|doc| doc.terms.contains_key(term))
-                    .count() as f32;
+                let df = self.term_documents.get(term).copied().unwrap_or(0) as f32;
                 (
                     term.clone(),
                     (1.0 + (self.documents.len() as f32 - df + 0.5) / (df + 0.5)).ln(),
                 )
             })
             .collect();
-        let average = self.documents.values().map(|d| d.length).sum::<usize>() as f32
-            / (self.documents.len().max(1) as f32);
+        let average = self.total_terms as f32 / (self.documents.len().max(1) as f32);
         let mut scores = Vec::new();
         for (path, document) in &self.documents {
             let lexical = wanted
@@ -530,7 +577,7 @@ impl Engine {
                 &idfs,
                 self.model
                     .as_ref()
-                    .ok_or_else(|| anyhow::anyhow!("Evidence model is unavailable"))?,
+                    .ok_or_else(|| anyhow::anyhow!("Snippet model is unavailable"))?,
             )?;
             stats.snippet = Some(diagnostics);
             selected
@@ -829,6 +876,61 @@ mod tests {
             assert_eq!(row["snippet"]["start_line"], 1);
         }
     }
+    #[test]
+    fn resident_metadata_reuse_and_incremental_terms_match_fresh_search() {
+        let dir = tempfile::tempdir().unwrap();
+        let source = dir.path().join("source.txt");
+        std::fs::write(&source, "dependency alpha alpha").unwrap();
+        let old = SystemTime::now() - std::time::Duration::from_secs(10);
+        std::fs::OpenOptions::new()
+            .write(true)
+            .open(&source)
+            .unwrap()
+            .set_times(std::fs::FileTimes::new().set_modified(old))
+            .unwrap();
+        let options = Options {
+            mode: RetrievalMode::Lexical,
+            persist: false,
+            ..Default::default()
+        };
+        let mut resident = Engine::new(dir.path(), None, options.clone()).unwrap();
+        let first = resident.search("alpha").unwrap().0;
+        let (again, stats) = resident.search("alpha").unwrap();
+        assert_eq!(first, again);
+        assert_eq!(stats.metadata_cache_hits, 1);
+        assert_eq!(stats.source_bytes_read, 0);
+        assert_eq!(stats.source_hash_ms, 0.0);
+
+        // A same-size recent edit needs hashing even if its timestamp is restored.
+        std::fs::write(&source, "dependency bravo bravo").unwrap();
+        resident.search("bravo").unwrap();
+        let recent = std::fs::metadata(&source).unwrap().modified().unwrap();
+        std::fs::write(&source, "dependency gamma gamma").unwrap();
+        std::fs::OpenOptions::new()
+            .write(true)
+            .open(&source)
+            .unwrap()
+            .set_times(std::fs::FileTimes::new().set_modified(recent))
+            .unwrap();
+        let (changed, stats) = resident.search("gamma").unwrap();
+        assert!(stats.source_bytes_read > 0);
+        let mut fresh = Engine::new(dir.path(), None, options.clone()).unwrap();
+        assert_eq!(changed, fresh.search("gamma").unwrap().0);
+
+        std::fs::write(dir.path().join("new.txt"), "gamma dependency").unwrap();
+        let updated = resident.search("gamma").unwrap().0;
+        let mut fresh = Engine::new(dir.path(), None, options.clone()).unwrap();
+        assert_eq!(updated, fresh.search("gamma").unwrap().0);
+        std::fs::write(dir.path().join(".gitignore"), "source.txt\n").unwrap();
+        let reduced = resident.search("gamma").unwrap().0;
+        let mut fresh = Engine::new(dir.path(), None, options.clone()).unwrap();
+        assert_eq!(reduced, fresh.search("gamma").unwrap().0);
+        std::fs::remove_file(dir.path().join("new.txt")).unwrap();
+        resident.refresh().unwrap();
+        assert!(resident.term_documents.is_empty());
+        assert_eq!(resident.total_terms, 0);
+    }
+
     #[test]
     fn full_source_lexical_freshness_ignores_and_budget() {
         let dir = tempfile::tempdir().unwrap();

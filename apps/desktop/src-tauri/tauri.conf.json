@@ -1,0 +1,74 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Ixos",
+  "version": "0.1.0",
+  "identifier": "com.ixos.desktop",
+  "build": {
+    "beforeDevCommand": {
+      "script": "npm run dev",
+      "cwd": "../.."
+    },
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": {
+      "script": "npm run build",
+      "cwd": "../.."
+    },
+    "frontendDist": "../ui/dist"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Ixos",
+        "width": 1440,
+        "height": 860,
+        "minWidth": 1100,
+        "minHeight": 700,
+        "maximized": true,
+        "visible": true,
+        "focus": true,
+        "center": true,
+        "decorations": false,
+        "resizable": true,
+        "skipTaskbar": false,
+        "transparent": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/IxosProtocol/ixos-releases/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZCNzJENzMzNzRCMEU4ODcKUldTSDZMQjBNOWR5K3p4ZUVrd2NLNmk5UDVaTHl6Mkw0VWhydkpSSElSZkkzUHJlUVV1UlFpYVoK"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "resources": [
+      "../../../models/ixos-flash-v2/*",
+      "../../../models/potion-base-8M-int8/*",
+      "../../../models/ixos-pro-v2/*"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    },
+    "category": "Utility",
+    "shortDescription": "Privacy-first semantic file search",
+    "longDescription": "Ixos is a privacy-first semantic file search tool that keeps your data local. Search your files by meaning, not just keywords.",
+    "copyright": "Copyright (c) 2026 Ixos Team"
+  }
+}

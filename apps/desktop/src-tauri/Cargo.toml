@@ -1,0 +1,70 @@
+[package]
+name = "ixos-app"
+version = "0.1.0"
+description = "Ixos - Privacy-first semantic file search"
+authors = ["Ixos Team"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/ixos/ixos-protocol"
+
+[lib]
+name = "ixos_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# Tauri framework
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-shell = "2"
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-os = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-updater = "2"
+
+# The core Ixos protocol library
+ixos-core = { path = "../../../crates/ixos-core" }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chacha20poly1305 = "0.10"
+
+# Async runtime (shared with ixos-protocol)
+tokio = { version = "1.43", features = ["full", "sync"] }
+tokio-util = "0.7"
+
+# Synchronization
+parking_lot = "0.12"
+
+# Error handling
+anyhow = "1"
+thiserror = "1"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Directory utilities
+dirs = "5.0"
+tauri-plugin-fs = "2.4.5"
+
+# HTTP Client
+reqwest = { version = "0.12", features = ["stream", "rustls-tls"] }
+futures-util = "0.3"
+
+# Environment variables
+dotenvy = "0.15"
+
+[dev-dependencies]
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[target.'cfg(target_os = "windows")'.dependencies]
+webview2-com = "0.38.2"
+windows = { version = "0.58.0", features = ["Win32_System_Com", "Win32_UI_WindowsAndMessaging", "implement"] }
+windows-core = "0.58.0"

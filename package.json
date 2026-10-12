@@ -8,20 +8,21 @@
     "npm": ">=9.0.0"
   },
   "scripts": {
-    "tauri": "tauri",
-    "tauri:dev": "tauri dev --no-watch",
-    "tauri:dev:watch": "tauri dev",
-    "tauri:build": "tauri build",
-    "tauri:build:prod": "tauri build",
-    "dev": "cd ixos-search/ui && npm run dev",
-    "build": "cd ixos-search/ui && npm run build",
-    "site:dev": "cd ixos-site && npm run dev"
+    "tauri": "cd apps/desktop && tauri",
+    "tauri:dev": "cd apps/desktop && tauri dev --no-watch",
+    "tauri:dev:watch": "cd apps/desktop && tauri dev",
+    "tauri:build": "cd apps/desktop && tauri build",
+    "tauri:build:prod": "cd apps/desktop && tauri build",
+    "dev": "npm run dev --workspace ixos-ui",
+    "build": "npm run build --workspace ixos-ui",
+    "site:dev": "npm run dev --workspace ixos-site",
+    "site:build": "npm run build --workspace ixos-site"
   },
   "workspaces": [
-    "ixos-search/ui",
+    "apps/desktop/ui",
+    "apps/site",
     "packages/ixos-ui",
-    "packages/ui",
-    "ixos-site"
+    "packages/ui"
   ],
   "devDependencies": {
     "@tauri-apps/cli": "^2.10.1",

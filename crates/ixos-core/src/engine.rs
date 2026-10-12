@@ -1,21 +1,13 @@
-//! Measured local retrieval: full-source lexical evidence, bounded semantic
-//! representatives and explicit session feedback. Historical desktop pipeline
-//! remains available while this engine is validated through the same evaluator.
-pub mod cache;
-pub mod commands;
-pub mod evidence;
-mod inspections;
-pub mod record;
-pub mod typo;
-use crate::digest::sha256;
-use crate::discover::search_walk;
+//! Searches complete source text and compact semantic records.
+use crate::cache::quantize;
+use crate::config::Profile;
 use crate::model::Model;
-use cache::quantize;
-pub use evidence::EvidencePolicy;
+use crate::{cache, record, snippet, tools, typo};
+use crate::{digest::sha256, discover::search_walk};
 use rayon::prelude::*;
-use record::{representatives, unit, Passage, Representation};
+use record::{representatives, Passage};
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -23,59 +15,34 @@ use std::time::Instant;
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, clap::ValueEnum, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum RetrievalMode {
-    Legacy,
     Lexical,
     Semantic,
     #[default]
     Hybrid,
 }
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, clap::ValueEnum, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum SessionPolicy {
-    #[default]
-    Off,
-    Related,
-    Feedback,
-    Combined,
-    /// Experimental bounded lexical topic context alongside semantic/feedback.
-    Context,
-}
-
 #[derive(Clone, Debug)]
 pub struct Options {
     pub mode: RetrievalMode,
-    pub representation: Representation,
+    pub profile: Profile,
     pub persist: bool,
     pub limit: usize,
     pub context: usize,
     pub output_bytes: usize,
-    pub semantic_floor: f32,
-    pub session: SessionPolicy,
     pub max_file_bytes: usize,
     pub max_corpus_bytes: usize,
-    pub explain: bool,
-    pub io_workers: usize,
-    pub typo_correction: bool,
-    pub evidence_policy: EvidencePolicy,
 }
 impl Default for Options {
     fn default() -> Self {
         Self {
             mode: RetrievalMode::Hybrid,
-            representation: Representation::IntroUniform,
+            profile: Profile::Code,
             persist: true,
             limit: 10,
             context: 2,
             output_bytes: 12000,
-            semantic_floor: 0.25,
-            session: SessionPolicy::Off,
             max_file_bytes: 16 * 1024 * 1024,
             max_corpus_bytes: 256 * 1024 * 1024,
-            explain: false,
-            io_workers: 1,
-            typo_correction: false,
-            evidence_policy: EvidencePolicy::GlobalLine,
         }
     }
 }
@@ -109,22 +76,15 @@ pub struct Stats {
     pub query_embed_ms: f64,
     pub query_ms: f64,
     pub request_ms: f64,
-    pub feedback_consumed: bool,
-    pub drift_reset: bool,
-    pub session_entries: usize,
     pub literal_guard: bool,
-    pub io_workers: usize,
     pub io_batch_wall_ms: f64,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub query_corrections: Vec<typo::Correction>,
-    pub contextual_lexical: bool,
-    pub representation: Option<Representation>,
+    pub profile: Option<Profile>,
     pub model_fingerprint: Option<String>,
     pub tokenizer_settings: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub evidence: Option<evidence::EvidenceStats>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub inspection: Option<inspections::InspectionStats>,
+    pub snippet: Option<snippet::Stats>,
 }
 
 pub struct Document {
@@ -139,7 +99,7 @@ pub struct Document {
 }
 
 #[derive(Clone, Debug, Serialize)]
-pub struct View {
+pub struct Snippet {
     pub path: String,
     pub start_line: usize,
     pub end_line: usize,
@@ -150,42 +110,13 @@ pub struct ResultRow {
     pub path: String,
     pub score: f32,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub semantic_score: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub lexical_score: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub view: Option<View>,
+    pub snippet: Option<Snippet>,
     #[serde(skip_serializing_if = "std::ops::Not::not")]
-    pub evidence_omitted: bool,
+    pub snippet_omitted: bool,
 }
 #[derive(Serialize)]
 pub struct Output {
     pub results: Vec<ResultRow>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Feedback {
-    pub query_id: String,
-    #[serde(default)]
-    pub accepted: Vec<FeedbackReference>,
-    #[serde(default)]
-    pub rejected: Vec<FeedbackReference>,
-}
-#[derive(Clone, Debug, Deserialize)]
-#[serde(untagged)]
-pub enum FeedbackReference {
-    Path(String),
-    Index(usize),
-}
-struct Prior {
-    id: String,
-    query: Vec<f32>,
-    topic: Vec<f32>,
-    topic_query: String,
-    turn: u64,
-    documents: HashMap<String, ([u8; 32], Vec<f32>)>,
-    paths: Vec<String>,
 }
 
 pub struct Engine {
@@ -194,29 +125,16 @@ pub struct Engine {
     options: Options,
     cache: Option<cache::DocumentCache>,
     documents: BTreeMap<String, Document>,
-    history: VecDeque<Prior>,
-    inspections: inspections::Inspections,
-    turn: u64,
     io_pool: rayon::ThreadPool,
 }
 
 impl Engine {
     pub fn new(root: &Path, model_path: Option<&Path>, options: Options) -> anyhow::Result<Self> {
-        options
-            .evidence_policy
-            .validate(options.mode, options.limit)?;
-        anyhow::ensure!(
-            options.mode != RetrievalMode::Legacy,
-            "Legacy retrieval uses the historical pipeline"
-        );
         anyhow::ensure!(
             options.limit > 0
                 && options.limit <= 10000
-                && (1..=8).contains(&options.io_workers)
                 && options.output_bytes >= 15
-                && options.context <= 1000
-                && options.semantic_floor.is_finite()
-                && (0.0..=1.0).contains(&options.semantic_floor),
+                && options.context <= 1000,
             "Invalid retrieval limits/threshold"
         );
         let root = root.canonicalize()?;
@@ -230,44 +148,31 @@ impl Engine {
         };
         let cache = if options.persist {
             model.as_ref().map(|model| {
-                let mut recipe = format!(
-                    "ixos:document-v1:physical-lf:extract-v1:1800chars:{:?}:all-tokens:int8-single-roundtrip-v2",
-                    options.representation
-                )
-                .into_bytes();
-                recipe.extend_from_slice(&model.fingerprint());
-                cache::DocumentCache::new(sha256(&recipe))
+                let mut model_fingerprint = b"ixos-record".to_vec();
+                model_fingerprint.push(1);
+                model_fingerprint.push(options.profile as u8);
+                model_fingerprint.extend_from_slice(&model.fingerprint());
+                cache::DocumentCache::new(sha256(&model_fingerprint))
             })
         } else {
             None
         };
-        let io_pool = rayon::ThreadPoolBuilder::new()
-            .num_threads(options.io_workers)
-            .build()?;
+        let io_pool = rayon::ThreadPoolBuilder::new().num_threads(4).build()?;
         Ok(Self {
             root,
             model,
             options,
             cache,
             documents: BTreeMap::new(),
-            history: VecDeque::new(),
-            inspections: inspections::Inspections::default(),
-            turn: 0,
             io_pool,
         })
-    }
-    pub fn reset(&mut self) {
-        self.history.clear();
-        self.inspections.clear();
-        self.turn = 0;
     }
     pub fn refresh(&mut self) -> anyhow::Result<Stats> {
         let began = Instant::now();
         let mut stats = Stats {
-            representation: Some(self.options.representation),
+            profile: Some(self.options.profile),
             model_fingerprint: self.model.as_ref().map(|m| hex::encode(m.fingerprint())),
             tokenizer_settings: self.model.as_ref().map(|m| m.tokenizer_settings().clone()),
-            io_workers: self.options.io_workers,
             ..Default::default()
         };
         let mut alive = HashSet::new();
@@ -294,7 +199,7 @@ impl Engine {
             entries.push(entry);
         }
         // Bounded batches retain at most eight raw source buffers.
-        for batch in entries.chunks(self.options.io_workers.min(8)) {
+        for batch in entries.chunks(4) {
             let io_batch = Instant::now();
             let loaded = self.io_pool.install(|| {
                 batch
@@ -432,7 +337,7 @@ impl Engine {
                         }
                     }
                     if passages.is_empty() {
-                        passages = representatives(&text, self.options.representation);
+                        passages = representatives(&text, self.options.profile);
                         pending.push(relative.clone());
                     }
                 }
@@ -508,44 +413,23 @@ impl Engine {
         stats.refresh_ms = began.elapsed().as_secs_f64() * 1000.0;
         Ok(stats)
     }
-    pub fn search(
-        &mut self,
-        query: &str,
-        id: &str,
-        feedback: Option<&Feedback>,
-    ) -> anyhow::Result<(Vec<u8>, Stats)> {
-        self.search_with_policy(query, id, feedback, self.options.evidence_policy)
-    }
-
-    /// A JSONL override applies to this request only, including on failure.
-    pub fn search_with_policy(
-        &mut self,
-        query: &str,
-        id: &str,
-        feedback: Option<&Feedback>,
-        evidence_policy: EvidencePolicy,
-    ) -> anyhow::Result<(Vec<u8>, Stats)> {
-        evidence_policy.validate(self.options.mode, self.options.limit)?;
+    pub fn search(&mut self, query: &str) -> anyhow::Result<(Vec<u8>, Stats)> {
         anyhow::ensure!(
-            !query.trim().is_empty() && query.len() <= 65536 && id.len() <= 256,
-            "Empty/oversized query or id"
+            !query.trim().is_empty() && query.len() <= 65536,
+            "Empty or oversized query"
         );
         let started = Instant::now();
         let mut stats = self.refresh()?;
-        let (corrected, corrections) = if self.options.typo_correction {
-            let vocabulary = self
-                .documents
-                .values()
-                .flat_map(|d| d.terms.keys().cloned())
-                .collect();
-            typo::correct(query, &vocabulary)
-        } else {
-            (query.to_owned(), Vec::new())
-        };
+        let vocabulary = self
+            .documents
+            .values()
+            .flat_map(|doc| doc.terms.keys().cloned())
+            .collect();
+        let (corrected, corrections) = typo::correct(query, &vocabulary);
         stats.query_corrections = corrections;
         let query = corrected.as_str();
         let began = Instant::now();
-        let mut query_vector = if let Some(model) = &self.model {
+        let query_vector = if let Some(model) = &self.model {
             model
                 .embed_batch_with_limit(&[query.to_owned()], None)?
                 .remove(0)
@@ -553,136 +437,7 @@ impl Engine {
             Vec::new()
         };
         stats.query_embed_ms = began.elapsed().as_secs_f64() * 1000.0;
-        let original = query_vector.clone();
-        self.inspections.prune(self.turn);
-        let continuation = is_continuation(query)
-            || self.options.session == SessionPolicy::Context
-                && tokens(query)
-                    .iter()
-                    .any(|t| ["it", "its", "they", "them", "their"].contains(&t.as_str()))
-                && query_terms(query).len() <= 12;
-        let mut topic = original.clone();
-        if self.options.session != SessionPolicy::Off && !query_vector.is_empty() {
-            if self
-                .history
-                .back()
-                .is_some_and(|p| !continuation && dot(&original, &p.query) < 0.2)
-            {
-                self.history.clear();
-                self.inspections.clear();
-                stats.drift_reset = true;
-            }
-            if matches!(
-                self.options.session,
-                SessionPolicy::Related | SessionPolicy::Combined | SessionPolicy::Context
-            ) {
-                if let Some(previous) = self.history.back() {
-                    add(
-                        &mut query_vector,
-                        &previous.topic,
-                        if continuation { 0.35 } else { 0.12 },
-                    );
-                }
-            }
-            if matches!(
-                self.options.session,
-                SessionPolicy::Feedback | SessionPolicy::Combined | SessionPolicy::Context
-            ) {
-                if let Some(feedback) = feedback {
-                    if let Some(diagnostics) = self.inspections.apply(
-                        feedback,
-                        &self.documents,
-                        self.model.as_ref().unwrap(),
-                        &mut query_vector,
-                    )? {
-                        stats.feedback_consumed = diagnostics.feedback_views > 0;
-                        stats.inspection = Some(diagnostics);
-                    }
-                    if let Some(prior) = self.history.iter().find(|prior| {
-                        prior.id == feedback.query_id
-                            && self.turn.saturating_sub(prior.turn) <= 4
-                            && (continuation || dot(&original, &prior.query) >= 0.2)
-                    }) {
-                        for (paths, weight) in
-                            [(&feedback.accepted, 0.15), (&feedback.rejected, -0.07)]
-                        {
-                            let mut centroid = vec![0.0; original.len()];
-                            let mut count = 0;
-                            for path in paths
-                                .iter()
-                                .filter_map(|reference| match reference {
-                                    FeedbackReference::Path(path) => Some(path.as_str()),
-                                    FeedbackReference::Index(index) => {
-                                        prior.paths.get(*index).map(String::as_str)
-                                    }
-                                })
-                                // Canonical path order keeps f32 accumulation
-                                // independent of request order and hash seeds.
-                                .collect::<BTreeSet<_>>()
-                            {
-                                if let Some((hash, vector)) = prior.documents.get(path) {
-                                    if self
-                                        .documents
-                                        .get(path)
-                                        .is_some_and(|doc| &doc.source_hash == hash)
-                                    {
-                                        add(&mut centroid, vector, 1.0);
-                                        count += 1;
-                                    }
-                                }
-                            }
-                            if count > 0 {
-                                unit(&mut centroid);
-                                add(&mut query_vector, &centroid, weight);
-                                stats.feedback_consumed = true;
-                            }
-                        }
-                    }
-                }
-            }
-            unit(&mut query_vector);
-            if continuation {
-                if let Some(previous) = self.history.back() {
-                    topic = previous.topic.clone();
-                }
-            }
-        }
         let wanted = query_terms(query);
-        let topic_query = if continuation {
-            self.history
-                .back()
-                .map(|p| p.topic_query.as_str())
-                .unwrap_or(query)
-        } else {
-            query
-        }
-        .to_owned();
-        let mut contextual = HashMap::new();
-        if continuation
-            && self.options.session == SessionPolicy::Context
-            && self.options.mode == RetrievalMode::Hybrid
-        {
-            if let Some(prior) = self.history.back() {
-                let terms = query_terms(&prior.topic_query);
-                let average = self.documents.values().map(|d| d.length).sum::<usize>() as f32
-                    / self.documents.len().max(1) as f32;
-                for term in terms {
-                    let df = self
-                        .documents
-                        .values()
-                        .filter(|doc| doc.terms.contains_key(&term))
-                        .count() as f32;
-                    let idf = (1.0 + (self.documents.len() as f32 - df + 0.5) / (df + 0.5)).ln();
-                    for (path, doc) in &self.documents {
-                        let count = *doc.terms.get(&term).unwrap_or(&0) as f32;
-                        *contextual.entry(path.clone()).or_insert(0.0) += idf * count * 2.2
-                            / (count + 1.2 * (0.25 + 0.75 * doc.length as f32 / average.max(1.0)));
-                    }
-                }
-            }
-        }
-        let max_context = contextual.values().copied().fold(0.0, f32::max).max(1e-12);
-        stats.contextual_lexical = !contextual.is_empty();
         let idfs: HashMap<_, _> = wanted
             .iter()
             .map(|term| {
@@ -720,7 +475,7 @@ impl Engine {
             if lexical > 0.0 {
                 stats.lexical_candidates += 1;
             }
-            if semantic > self.options.semantic_floor {
+            if semantic > 0.25 {
                 stats.semantic_candidates += 1;
             }
             scores.push((path.clone(), lexical, semantic, best));
@@ -728,25 +483,14 @@ impl Engine {
         let max_lexical = scores.iter().map(|r| r.1).fold(0.0, f32::max).max(1e-12);
         let mut lex_order: Vec<_> = scores.iter().filter(|r| r.1 > 0.0).collect();
         lex_order.sort_by(|a, b| b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
-        let mut sem_order: Vec<_> = scores
-            .iter()
-            .filter(|r| r.2 > self.options.semantic_floor)
-            .collect();
+        let mut sem_order: Vec<_> = scores.iter().filter(|r| r.2 > 0.25).collect();
         sem_order.sort_by(|a, b| b.2.total_cmp(&a.2).then_with(|| a.0.cmp(&b.0)));
-        let mut candidates: HashSet<_> = lex_order
+        let candidates: HashSet<_> = lex_order
             .into_iter()
             .take(100)
             .chain(sem_order.into_iter().take(100))
             .map(|r| r.0.clone())
             .collect();
-        let mut context_order: Vec<_> = contextual.iter().filter(|(_, v)| **v > 0.0).collect();
-        context_order.sort_by(|a, b| b.1.total_cmp(a.1).then_with(|| a.0.cmp(b.0)));
-        candidates.extend(
-            context_order
-                .into_iter()
-                .take(100)
-                .map(|(path, _)| path.clone()),
-        );
         let literal = identifier_literal(query).map(str::to_lowercase);
         stats.literal_guard = literal.is_some();
         let mut ranked: Vec<_> = scores
@@ -754,11 +498,11 @@ impl Engine {
             .filter(|(path, lexical, semantic, _)| {
                 let eligible = match self.options.mode {
                     RetrievalMode::Lexical => *lexical > 0.0,
-                    RetrievalMode::Semantic => *semantic > self.options.semantic_floor,
+                    RetrievalMode::Semantic => *semantic > 0.25,
                     _ => candidates.contains(path),
                 };
                 eligible
-                    && literal.as_ref().map_or(true, |literal| {
+                    && literal.as_ref().is_none_or(|literal| {
                         path.to_lowercase().contains(literal)
                             || self.documents[path].text.to_lowercase().contains(literal)
                     })
@@ -767,23 +511,19 @@ impl Engine {
                 let score = match self.options.mode {
                     RetrievalMode::Lexical => lexical,
                     RetrievalMode::Semantic => semantic,
-                    _ => {
-                        0.5 * semantic.max(0.0)
-                            + 0.5 * lexical / max_lexical
-                            + 0.15 * contextual.get(&path).copied().unwrap_or(0.0) / max_context
-                    }
+                    _ => 0.5 * semantic.max(0.0) + 0.5 * lexical / max_lexical,
                 };
                 (path, score, lexical, semantic, best)
             })
             .collect();
         ranked.sort_by(|a, b| b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
-        let selections = if evidence_policy == EvidencePolicy::BoundedRerank {
+        let selections = if self.model.is_some() {
             let paths = ranked
                 .iter()
                 .take(self.options.limit)
                 .map(|row| row.0.clone())
                 .collect::<Vec<_>>();
-            let (selected, diagnostics) = evidence::select(
+            let (selected, diagnostics) = snippet::select(
                 &self.documents,
                 &paths,
                 &query_vector,
@@ -792,15 +532,14 @@ impl Engine {
                     .as_ref()
                     .ok_or_else(|| anyhow::anyhow!("Evidence model is unavailable"))?,
             )?;
-            stats.evidence = Some(diagnostics);
+            stats.snippet = Some(diagnostics);
             selected
         } else {
             HashMap::new()
         };
-        let mut rows = commands::BoundedRows::new(self.options.output_bytes);
-        let mut returned = HashMap::new();
-        let mut returned_paths = Vec::new();
-        for (path, score, lexical, semantic, best) in ranked.into_iter().take(self.options.limit) {
+        let mut rows = tools::BoundedRows::new(self.options.output_bytes);
+        for (path, score, _lexical, _semantic, best) in ranked.into_iter().take(self.options.limit)
+        {
             let document = &self.documents[&path];
             let mut anchor = 0;
             let mut weight = 0.0;
@@ -808,7 +547,7 @@ impl Engine {
                 anchor = selection.anchor - 1;
             } else {
                 for (i, line) in document.lines.iter().enumerate() {
-                    let value = evidence::line_weight(line, &idfs);
+                    let value = snippet::line_weight(line, &idfs);
                     if value > weight {
                         weight = value;
                         anchor = i;
@@ -821,56 +560,27 @@ impl Engine {
             let mut row = ResultRow {
                 path: path.clone(),
                 score,
-                semantic_score: self.options.explain.then_some(semantic),
-                lexical_score: self.options.explain.then_some(lexical),
-                view: Some(view_at(
+                snippet: Some(snippet_at(
                     &path,
                     &document.lines,
                     anchor + 1,
                     self.options.context,
                 )),
-                evidence_omitted: false,
+                snippet_omitted: false,
             };
             if !rows.fits(&row)? {
-                row.view = Some(view_at(&path, &document.lines, anchor + 1, 0));
+                row.snippet = Some(snippet_at(&path, &document.lines, anchor + 1, 0));
             }
             if !rows.fits(&row)? {
-                row.view = None;
-                row.evidence_omitted = true;
+                row.snippet = None;
+                row.snippet_omitted = true;
             }
             if !rows.push(&row)? {
                 break;
             }
-            returned_paths.push(path.clone());
-            if let Some(selection) = selections.get(&path) {
-                returned.insert(path, (document.source_hash, selection.vector.clone()));
-            } else if let Some(passage) = document.passages.get(best) {
-                returned.insert(path, (document.source_hash, passage.vector.clone()));
-            }
         }
         let result_count = rows.len();
         let raw = rows.finish();
-        if self.options.session != SessionPolicy::Off {
-            self.inspections.remove(id);
-            self.history.retain(|prior| prior.id != id);
-            self.history.push_back(Prior {
-                id: id.to_owned(),
-                query: original,
-                topic,
-                topic_query,
-                documents: returned,
-                paths: returned_paths,
-                turn: self.turn,
-            });
-            self.turn += 1;
-            while self.history.len() > 16 {
-                self.history.pop_front();
-            }
-        }
-        stats.session_entries = self.history.len();
-        if stats.inspection.is_none() {
-            stats.inspection = self.inspections.stats();
-        }
         stats.returned_results = result_count;
         stats.output_bytes = raw.len();
         stats.query_ms = began.elapsed().as_secs_f64() * 1000.0;
@@ -935,32 +645,14 @@ fn identifier_literal(query: &str) -> Option<&str> {
                 && query.chars().any(char::is_lowercase)))
     .then_some(query)
 }
-fn is_continuation(query: &str) -> bool {
-    let pronouns: HashSet<_> = [
-        "it", "its", "they", "them", "their", "that", "this", "those",
-    ]
-    .into_iter()
-    .collect();
-    tokens(query).iter().any(|t| pronouns.contains(t.as_str()))
-        && query_terms(query)
-            .iter()
-            .filter(|t| !pronouns.contains(t.as_str()))
-            .count()
-            <= 3
-}
-fn dot(left: &[f32], right: &[f32]) -> f32 {
+pub(crate) fn dot(left: &[f32], right: &[f32]) -> f32 {
     left.iter().zip(right).map(|(a, b)| a * b).sum()
 }
-fn add(left: &mut [f32], right: &[f32], weight: f32) {
-    for (a, b) in left.iter_mut().zip(right) {
-        *a += weight * b;
-    }
-}
-pub fn view_at(path: &str, lines: &[String], anchor: usize, context: usize) -> View {
+pub fn snippet_at(path: &str, lines: &[String], anchor: usize, context: usize) -> Snippet {
     let anchor = anchor.clamp(1, lines.len().max(1));
     let start = anchor.saturating_sub(context).max(1);
     let end = anchor.saturating_add(context).min(lines.len());
-    View {
+    Snippet {
         path: path.to_owned(),
         start_line: start,
         end_line: end,
@@ -982,21 +674,20 @@ mod tests {
         std::fs::write(root.path().join("ignored.txt"), "world").unwrap();
         let modified = std::fs::metadata(&source).unwrap().modified().unwrap();
         let options = Options {
-            io_workers: 4,
             limit: 5,
             output_bytes: 6000,
             ..Default::default()
         };
         let mut fresh = Engine::new(root.path(), Some(model.path()), options.clone()).unwrap();
-        let (first, first_stats) = fresh.search("world", "first", None).unwrap();
+        let (first, first_stats) = fresh.search("world").unwrap();
         assert_eq!(first_stats.searchable_files, 1);
         assert_eq!(first_stats.cache_writes, 1);
         assert_eq!(first_stats.passages_embedded, 8);
-        let (resident, resident_stats) = fresh.search("world", "again", None).unwrap();
+        let (resident, resident_stats) = fresh.search("world").unwrap();
         assert_eq!(first, resident);
         assert_eq!(resident_stats.memory_cache_hits, 1);
         let mut cached = Engine::new(root.path(), Some(model.path()), options.clone()).unwrap();
-        let (disk, disk_stats) = cached.search("world", "cached", None).unwrap();
+        let (disk, disk_stats) = cached.search("world").unwrap();
         assert_eq!(first, disk);
         assert_eq!(
             disk_stats.native_cache_hits + disk_stats.application_cache_hits,
@@ -1012,24 +703,21 @@ mod tests {
             },
         )
         .unwrap();
-        assert_eq!(
-            first,
-            ephemeral.search("world", "ephemeral", None).unwrap().0
-        );
+        assert_eq!(first, ephemeral.search("world").unwrap().0);
         assert_eq!(std::fs::read(&source).unwrap(), text.as_bytes());
         assert_eq!(
             std::fs::metadata(&source).unwrap().modified().unwrap(),
             modified
         );
         std::fs::write(&source, text.replace("world", "hello")).unwrap();
-        let (_, stats) = fresh.search("hello", "edited", None).unwrap();
+        let (_, stats) = fresh.search("hello").unwrap();
         assert_eq!(stats.passages_embedded, 8);
         let moved = root.path().join("moved 中.rs");
         std::fs::rename(&source, &moved).unwrap();
-        let (_, stats) = fresh.search("hello", "moved", None).unwrap();
+        let (_, stats) = fresh.search("hello").unwrap();
         assert_eq!(stats.passages_embedded, 0);
         std::fs::remove_file(&moved).unwrap();
-        let (raw, stats) = fresh.search("hello", "deleted", None).unwrap();
+        let (raw, stats) = fresh.search("hello").unwrap();
         assert_eq!(stats.searchable_files, 0);
         assert!(
             serde_json::from_slice::<serde_json::Value>(&raw).unwrap()["results"]
@@ -1078,9 +766,9 @@ mod tests {
             },
         )
         .unwrap();
-        let (bare, _) = engine.search("raw_hash", "bare", None).unwrap();
+        let (bare, _) = engine.search("raw_hash").unwrap();
         for query in ["\"raw_hash\"", "'raw_hash'"] {
-            let (quoted, stats) = engine.search(query, "quoted", None).unwrap();
+            let (quoted, stats) = engine.search(query).unwrap();
             assert_eq!(quoted, bare);
             assert!(stats.literal_guard);
         }
@@ -1089,7 +777,7 @@ mod tests {
             "raw_hash\tcache_key",
             "raw_hash\ncache_key",
         ] {
-            let (raw, stats) = engine.search(query, "separated", None).unwrap();
+            let (raw, stats) = engine.search(query).unwrap();
             let value: serde_json::Value = serde_json::from_slice(&raw).unwrap();
             assert_eq!(value["results"][0]["path"], "implementation.rs");
             assert!(!stats.literal_guard);
@@ -1130,7 +818,7 @@ mod tests {
         )
         .unwrap();
         for _ in 0..20 {
-            let (raw, _) = engine.search(&words.join(" "), "same", None).unwrap();
+            let (raw, _) = engine.search(&words.join(" ")).unwrap();
             let value: serde_json::Value = serde_json::from_slice(&raw).unwrap();
             let row = value["results"]
                 .as_array()
@@ -1138,7 +826,7 @@ mod tests {
                 .iter()
                 .find(|row| row["path"] == "main.txt")
                 .unwrap();
-            assert_eq!(row["view"]["start_line"], 1);
+            assert_eq!(row["snippet"]["start_line"], 1);
         }
     }
     #[test]
@@ -1149,7 +837,7 @@ mod tests {
         let path = dir.path().join("source.txt");
         std::fs::write(
             &path,
-            format!("{}\nneedle LateWitness\n", "filler\n".repeat(10000)),
+            format!("{}\nneedle LateMarker\n", "filler\n".repeat(10000)),
         )
         .unwrap();
         let mut engine = Engine::new(
@@ -1162,13 +850,13 @@ mod tests {
             },
         )
         .unwrap();
-        let (raw, stats) = engine.search("LateWitness", "one", None).unwrap();
+        let (raw, stats) = engine.search("LateMarker").unwrap();
         let value: serde_json::Value = serde_json::from_slice(&raw).unwrap();
         assert_eq!(stats.searchable_files, 1);
-        assert_eq!(value["results"][0]["view"]["start_line"], 10000);
+        assert_eq!(value["results"][0]["snippet"]["start_line"], 10000);
         assert!(raw.len() <= 12000);
         std::fs::write(&path, "changed").unwrap();
-        let (raw, _) = engine.search("LateWitness", "two", None).unwrap();
+        let (raw, _) = engine.search("LateMarker").unwrap();
         assert_eq!(
             serde_json::from_slice::<serde_json::Value>(&raw).unwrap()["results"]
                 .as_array()

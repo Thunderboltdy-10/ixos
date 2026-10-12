@@ -139,7 +139,7 @@ pub fn extract_text_from_bytes(path: &Path, bytes: &[u8], max_chars: usize) -> O
 /// Decode BOM-tagged UTF-16 and UTF-8. Untagged NUL data is binary.
 pub(crate) fn decode_text(bytes: &[u8]) -> Option<String> {
     let text = if bytes.starts_with(&[0xFF, 0xFE]) || bytes.starts_with(&[0xFE, 0xFF]) {
-        if bytes.len() % 2 != 0 {
+        if !bytes.len().is_multiple_of(2) {
             return None;
         }
         let little = bytes[0] == 0xFF;

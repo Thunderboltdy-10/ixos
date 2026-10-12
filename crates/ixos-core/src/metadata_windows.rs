@@ -45,6 +45,7 @@ pub(crate) fn write_metadata_stream(path: &Path, name: &str, data: &[u8]) -> std
     let mut file = fs::OpenOptions::new()
         .write(true)
         .create(true)
+        .truncate(false)
         .open(stream)?;
     suppress_handle_times(&file)?;
     file.set_len(0)?;

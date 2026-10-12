@@ -1,5 +1,6 @@
 mod args;
 mod commands;
+mod mcp;
 use clap::Parser;
 
 fn main() {

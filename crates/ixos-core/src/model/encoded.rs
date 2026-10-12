@@ -1,9 +1,6 @@
-//! Owned encoded rows: decode only vocabulary entries used by the input.
-//!
-//! Tokenization/pooling semantics follow model2vec-rs 0.1.4 (The Minish Lab,
-//! MIT; see docs/licenses/model2vec-rs-MIT.txt). This is a loader experiment,
-//! not training, integer inference or memory mapping. Owned bytes avoid mapping
-//! lifetime/truncation hazards; no source file is needed after construction.
+//! Decode only the vocabulary rows used by each input.
+//! Tokenization and pooling follow model2vec-rs (Minish Lab, MIT;
+//! see docs/licenses/model2vec-rs-MIT.txt). The model owns its encoded bytes.
 
 use super::ModelError;
 use half::f16;

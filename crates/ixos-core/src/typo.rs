@@ -15,8 +15,8 @@ pub fn correct(query: &str, vocabulary: &HashSet<String>) -> (String, Vec<Correc
     let mut quote = None;
     for piece in query.split_inclusive(char::is_whitespace) {
         let trim = piece.trim_end_matches(char::is_whitespace);
-        let protected = quote.is_some() || trim.contains(['"', '`']);
-        for c in trim.chars().filter(|c| ['"', '`'].contains(c)) {
+        let protected = quote.is_some() || trim.contains(['"', '`', '\'']);
+        for c in trim.chars().filter(|c| ['"', '`', '\''].contains(c)) {
             if quote == Some(c) {
                 quote = None;
             } else if quote.is_none() {
@@ -84,6 +84,8 @@ mod tests {
             "path/depnedency",
             "\"depnedency search\"",
             "`depnedency`",
+            "'depnedency'",
+            "'depnedency search'",
             "depnedency2",
             "depnedency.txt",
         ] {

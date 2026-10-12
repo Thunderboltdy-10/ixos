@@ -1,13 +1,4 @@
-//! Cloud storage file detection
-//!
-//! Detects if files are cloud-only (not locally available) to prevent
-//! accidental downloads when searching in OneDrive, iCloud, Dropbox, etc.
-//!
-//! ## Platform Support
-//!
-//! - **Windows**: Uses FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS and FILE_ATTRIBUTE_RECALL_ON_OPEN
-//! - **macOS**: Uses NSURLIsUbiquitousItemKey and NSURLUbiquitousItemDownloadingStatusKey
-//! - **Linux**: Limited support - checks for common cloud sync markers
+//! Skip cloud placeholders so discovery does not trigger a download.
 
 use std::path::Path;
 
@@ -30,19 +21,6 @@ pub enum CloudStorageStatus {
 /// and not locally available. Returns `CloudStorageStatus::Local` if the file
 /// is stored locally or if cloud status cannot be determined.
 ///
-/// # Examples
-///
-/// ```rust,ignore
-/// use std::path::Path;
-/// use ixos_core::cloud::get_cloud_storage_status;
-///
-/// let path = Path::new("/Users/me/OneDrive/document.txt");
-/// match get_cloud_storage_status(path) {
-///     CloudStorageStatus::CloudOnly => println!("File is in cloud only - skip to avoid download"),
-///     CloudStorageStatus::Local => println!("File is local - safe to access"),
-///     _ => println!("Unknown status - proceed with caution"),
-/// }
-/// ```
 pub fn get_cloud_storage_status(path: &Path) -> CloudStorageStatus {
     // First check if the path is in a known cloud storage location
     if is_cloud_storage_path(path) {

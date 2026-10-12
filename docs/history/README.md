@@ -91,7 +91,6 @@ This period expanded the desktop surfaces, progress animations and site variants
 
 Model work explored static embeddings, quantization, ranking and cache behavior. The documents include proposed optimizations as well as results, and do not establish that every proposal shipped. Later evaluation selected two upstream model derivatives and a simple lexical/semantic combination. AI agents implemented and evaluated the alternatives under Pablo’s direction.
 
-- [readme](2026-02-models-and-ranking/readme.md)
 - [section 0 executive decision](2026-02-models-and-ranking/section-0-executive-decision.pdf)
 - [implementation roadmap6](2026-02-models-and-ranking/old-plans/implementation-roadmap6.md)
 - [ixos model lab report](2026-02-models-and-ranking/old-plans/ixos-model-lab-report.md)
@@ -135,9 +134,6 @@ Model work explored static embeddings, quantization, ranking and cache behavior.
 - [model installation system report](2026-02-models-and-ranking/root/model-installation-system-report.md)
 - [production and strategy gaps 2026 02 10](2026-02-models-and-ranking/root/production-and-strategy-gaps-2026-02-10.md)
 - [project review report](2026-02-models-and-ranking/root/project-review-report.md)
-- [installation](2026-02-models-and-ranking/getting-started/installation.md)
-- [publishing](2026-02-models-and-ranking/models/publishing.md)
-- [readme](2026-02-models-and-ranking/models/readme.md)
 - [canonical results](2026-02-models-and-ranking/models/lab/canonical-results.md)
 
 ## March: desktop and site
@@ -158,12 +154,16 @@ The restoration found a cache that kept only 64 of 512 dimensions, stale cache r
 Session learning was tried and removed because it did not improve retrieval. Even accepting the correct file did not put it in the next top five. The cleanup also removes the old pipeline, paid tiers, compliance machinery and raw report trees. Original restoration reports remain available at the local `restoration-end` tag.
 
 - [features](2026-10-restoration/features.md)
+- [readme](2026-10-restoration/readme.md)
 - [release](2026-10-restoration/engineering/release.md)
 - [resources](2026-10-restoration/engineering/resources.md)
 - [anchors](2026-10-restoration/evaluation/anchors.md)
 - [contextbench](2026-10-restoration/evaluation/contextbench.md)
 - [repoqa](2026-10-restoration/evaluation/repoqa.md)
 - [trajectories](2026-10-restoration/evaluation/trajectories.md)
+- [installation](2026-10-restoration/getting-started/installation.md)
+- [publishing](2026-10-restoration/models/publishing.md)
+- [readme](2026-10-restoration/models/readme.md)
 
 ## Research
 

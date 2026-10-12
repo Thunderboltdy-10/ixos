@@ -1,14 +1,6 @@
 //! Query-independent representative passages. All input is chunked before the
 //! bounded introduction/spaced selection; locators refer to extracted text.
-use serde::{Deserialize, Serialize};
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, clap::ValueEnum, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum Representation {
-    #[default]
-    IntroUniform,
-    WholeTokenCentroid,
-}
+use crate::config::Profile;
 
 #[derive(Clone, Debug)]
 pub struct Passage {
@@ -61,12 +53,12 @@ fn round_even(numerator: usize, denominator: usize) -> usize {
     base + usize::from(remainder * 2 > denominator || remainder * 2 == denominator && base % 2 == 1)
 }
 
-pub fn representatives(text: &str, policy: Representation) -> Vec<Passage> {
+pub fn representatives(text: &str, profile: Profile) -> Vec<Passage> {
     let parts = chunks(text);
     if parts.is_empty() {
         return parts;
     }
-    if policy == Representation::WholeTokenCentroid {
+    if profile == Profile::Documents {
         return vec![Passage {
             start_byte: 0,
             end_byte: text.len(),
@@ -108,7 +100,7 @@ mod tests {
             text
         );
         assert!(every.iter().all(|p| p.end_line >= p.start_line));
-        let selected = representatives(&text, Representation::IntroUniform);
+        let selected = representatives(&text, Profile::Code);
         assert_eq!(selected.len(), 8);
         assert_eq!(selected[0].start_byte, 0);
         assert_eq!(selected.last().unwrap().end_byte, text.len());
@@ -116,7 +108,7 @@ mod tests {
     #[test]
     fn centroid_includes_entire_source() {
         let text = "x\n".repeat(3000);
-        let rows = representatives(&text, Representation::WholeTokenCentroid);
+        let rows = representatives(&text, Profile::Documents);
         assert_eq!(rows.len(), 1);
         assert_eq!(rows[0].end_byte, text.len());
     }

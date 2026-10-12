@@ -92,7 +92,8 @@ fn normalize(vectors: Vec<Vec<f32>>) -> Vec<Vec<f32>> {
 }
 
 fn artifact_fingerprint(path: &Path) -> Result<[u8; 32], ModelError> {
-    let mut identity = b"ixos:model2vec-rs:0.1.4:unit-normalization-v1".to_vec();
+    let mut identity = b"ixos:static-model:unit-normalization".to_vec();
+    identity.push(1);
     for name in ["model.safetensors", "tokenizer.json", "config.json"] {
         identity.extend_from_slice(name.as_bytes());
         identity.extend_from_slice(

@@ -1,5 +1,6 @@
 # Preserve historical documents byte-for-byte on every platform.
 docs/history/** -text
+docs/history/README.md text eol=lf
 
 # Frozen evaluator hashes cover exact bytes, including older CRLF/mixed files.
 # Declare checkout endings so a fresh clone reproduces the measured harness.

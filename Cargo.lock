@@ -2430,6 +2430,7 @@ dependencies = [
  "clap",
  "dirs 5.0.1",
  "ixos-core",
+ "serde",
  "serde_json",
  "tempfile",
  "toml 0.8.2",
@@ -2456,7 +2457,6 @@ dependencies = [
  "quick-xml 0.31.0",
  "rayon",
  "regex",
- "ring",
  "safetensors",
  "serde",
  "serde_json",
@@ -2469,6 +2469,7 @@ dependencies = [
  "ureq",
  "windows-sys 0.59.0",
  "xattr",
+ "xxhash-rust",
  "zip",
 ]
 
@@ -6917,6 +6918,12 @@ name = "xkeysym"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9cc00251562a284751c9973bace760d86c0276c471b4be569fe6b068ee97a56"
+
+[[package]]
+name = "xxhash-rust"
+version = "0.8.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "550a2b930b62486a393c52d5c3b84bff264b28aa437ed64694d31e93b1757af7"
 
 [[package]]
 name = "yoke"

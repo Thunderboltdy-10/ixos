@@ -1,8 +1,5 @@
 use clap::{Args, Parser, Subcommand};
-use ixos_core::{
-    config::Profile,
-    retrieval::{EvidencePolicy, RetrievalMode, SessionPolicy},
-};
+use ixos_core::{config::Profile, engine::RetrievalMode};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -30,10 +27,6 @@ pub struct Search {
     pub context: Option<usize>,
     #[arg(long)]
     pub json: bool,
-    #[arg(long)]
-    pub typo_correction: bool,
-    #[arg(long, value_enum, default_value = "global-line")]
-    pub evidence_policy: EvidencePolicy,
 }
 #[derive(Args)]
 pub struct Location {
@@ -81,11 +74,10 @@ pub enum Command {
         #[arg(long)]
         json: bool,
     },
-    Serve {
+    /// Serve search, grep and read tools over MCP stdio.
+    Mcp {
         #[command(flatten)]
         location: Location,
-        #[arg(long, value_enum, default_value = "off")]
-        session: SessionPolicy,
     },
     /// Inspect or remove Ixos metadata.
     Cache {

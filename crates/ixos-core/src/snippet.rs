@@ -1,47 +1,25 @@
 //! Query-time passage selection. Persistent document records stay unchanged.
-use super::{dot, quantize, record, tokens, Document, Model, RetrievalMode};
-use serde::{Deserialize, Serialize};
+use crate::{
+    cache::quantize,
+    engine::{dot, tokens, Document},
+    model::Model,
+    record,
+};
+use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::time::Instant;
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, clap::ValueEnum, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum EvidencePolicy {
-    #[default]
-    GlobalLine,
-    /// Experimental: stored representatives plus up to eight lexical chunks/file.
-    BoundedRerank,
-}
-
-impl EvidencePolicy {
-    pub fn validate(self, mode: RetrievalMode, limit: usize) -> anyhow::Result<()> {
-        if self == Self::BoundedRerank {
-            anyhow::ensure!(
-                matches!(mode, RetrievalMode::Hybrid | RetrievalMode::Semantic),
-                "bounded-rerank evidence requires semantic or hybrid retrieval"
-            );
-            anyhow::ensure!(
-                limit <= 10,
-                "bounded-rerank evidence supports at most 10 results"
-            );
-        }
-        Ok(())
-    }
-}
-
 #[derive(Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct EvidenceStats {
-    pub policy: EvidencePolicy,
+pub struct Stats {
     pub candidate_passages: usize,
     pub extra_passages_embedded: usize,
     pub extra_embed_ms: f64,
     pub selection_ms: f64,
 }
 
-pub(super) struct Selection {
+pub(crate) struct Selection {
     pub anchor: usize,
-    pub vector: Vec<f32>,
 }
 
 struct Candidate {
@@ -51,7 +29,7 @@ struct Candidate {
 }
 
 // Stable unique-term order avoids HashSet-dependent floating-point ties.
-pub(super) fn line_weight(line: &str, idfs: &HashMap<String, f32>) -> f64 {
+pub(crate) fn line_weight(line: &str, idfs: &HashMap<String, f32>) -> f64 {
     tokens(line)
         .into_iter()
         .collect::<BTreeSet<_>>()
@@ -149,19 +127,15 @@ fn candidates(document: &Document, idfs: &HashMap<String, f32>) -> Vec<Candidate
         .collect()
 }
 
-pub(super) fn select(
+pub(crate) fn select(
     documents: &BTreeMap<String, Document>,
     paths: &[String],
     query: &[f32],
     idfs: &HashMap<String, f32>,
     model: &Model,
-) -> anyhow::Result<(HashMap<String, Selection>, EvidenceStats)> {
-    anyhow::ensure!(paths.len() <= 10, "Evidence file ceiling exceeded");
+) -> anyhow::Result<(HashMap<String, Selection>, Stats)> {
     let started = Instant::now();
-    let mut stats = EvidenceStats {
-        policy: EvidencePolicy::BoundedRerank,
-        ..Default::default()
-    };
+    let mut stats = Stats::default();
     let mut files = Vec::new();
     let mut inputs = Vec::new();
     let mut locations = Vec::new();
@@ -215,7 +189,6 @@ pub(super) fn select(
                 path,
                 Selection {
                     anchor: part.anchor,
-                    vector: part.passage.vector,
                 },
             );
         }
@@ -235,7 +208,7 @@ mod tests {
             lines: text.split('\n').map(str::to_owned).collect(),
             terms: HashMap::new(),
             length: 0,
-            passages: record::representatives(&text, record::Representation::IntroUniform),
+            passages: record::representatives(&text, crate::config::Profile::Code),
             text,
         }
     }
@@ -276,17 +249,5 @@ mod tests {
             ),
             (1.0, 5)
         );
-    }
-    #[test]
-    fn rejects_unbounded_or_model_free_policy() {
-        assert!(EvidencePolicy::BoundedRerank
-            .validate(RetrievalMode::Lexical, 10)
-            .is_err());
-        assert!(EvidencePolicy::BoundedRerank
-            .validate(RetrievalMode::Hybrid, 11)
-            .is_err());
-        assert!(EvidencePolicy::GlobalLine
-            .validate(RetrievalMode::Lexical, 10000)
-            .is_ok());
     }
 }

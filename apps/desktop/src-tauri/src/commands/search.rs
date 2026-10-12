@@ -1,5 +1,5 @@
 use crate::{commands::settings::Settings, state::AppState};
-use ixos_core::retrieval::{Engine, RetrievalMode};
+use ixos_core::engine::{Engine, RetrievalMode};
 use serde_json::{json, Value};
 use std::sync::atomic::Ordering;
 use tauri::{ipc::Channel, Manager, State};
@@ -43,7 +43,7 @@ pub async fn search_progressive(
                     let path=settings.search.model_path(settings.search.profile,None);
                     engines.insert(key.clone(),Engine::new(location,Some(&path),options).map_err(|e|e.to_string())?);
                 }
-                let (raw,_)=engines.get_mut(&key).unwrap().search(&query,"desktop",None).map_err(|e|e.to_string())?;
+                let (raw,_)=engines.get_mut(&key).unwrap().search(&query).map_err(|e|e.to_string())?;
                 let value:Value=serde_json::from_slice(&raw).map_err(|e|e.to_string())?;
                 for row in value["results"].as_array().unwrap() {
                     let path=location.join(row["path"].as_str().unwrap());
@@ -51,7 +51,7 @@ pub async fn search_progressive(
                     result["path"]=json!(path);
                     result["filename"]=json!(path.file_name().unwrap_or_default().to_string_lossy());
                     result["directory"]=json!(location);
-                    result["snippet"]=json!(row["view"]["text"].as_str().unwrap_or(""));
+                    result["snippet"]=json!(row["snippet"]["text"].as_str().unwrap_or(""));
                     results.push(result);
                 }
             }

@@ -16,7 +16,7 @@ toml = "0.8"
 dirs = "5"
 sha2 = "0.10"
 hex = "0.4"
-ring = "0.17"
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
 half = { version = "2.4", features = ["bytemuck"] }
 bytemuck = "=1.25.0"
 safetensors = "=0.5.3"

@@ -1,5 +1,5 @@
 //! Shared search settings for the CLI and desktop.
-use crate::retrieval::{record::Representation, Options};
+use crate::engine::Options;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
@@ -78,16 +78,11 @@ impl Config {
     }
     pub fn options(&self, profile: Profile) -> Options {
         Options {
-            representation: if profile == Profile::Code {
-                Representation::IntroUniform
-            } else {
-                Representation::WholeTokenCentroid
-            },
+            profile,
             limit: self.limit,
             context: self.context,
             persist: self.cache,
             output_bytes: 6000,
-            io_workers: 4,
             ..Default::default()
         }
     }

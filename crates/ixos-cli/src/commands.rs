@@ -1,7 +1,7 @@
 use crate::args::*;
 use ixos_core::{
     config::Config,
-    retrieval::{self, Engine, RetrievalMode},
+    engine::{Engine, RetrievalMode},
 };
 use std::io::Write;
 
@@ -15,11 +15,9 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
             options.mode = args.mode.unwrap_or(RetrievalMode::Hybrid);
             options.limit = args.limit.unwrap_or(options.limit);
             options.context = args.context.unwrap_or(options.context);
-            options.typo_correction = args.typo_correction;
-            options.evidence_policy = args.evidence_policy;
             let model = config.model_path(profile, args.location.model_path);
             let mut engine = Engine::new(&args.location.dir, Some(&model), options)?;
-            let (raw, _) = engine.search(&args.query, "search", None)?;
+            let (raw, _) = engine.search(&args.query)?;
             output(&raw, args.json)?;
         }
         Command::Grep {
@@ -31,15 +29,8 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
             limit,
             json,
         } => {
-            let (raw, _) = retrieval::commands::grep(
-                &dir,
-                &pattern,
-                fixed,
-                ignore_case,
-                context,
-                limit,
-                6000,
-            )?;
+            let (raw, _) =
+                ixos_core::tools::grep(&dir, &pattern, fixed, ignore_case, context, limit, 6000)?;
             output(&raw, json)?;
         }
         Command::Read {
@@ -51,7 +42,7 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
             character_offset,
             json,
         } => {
-            let raw = retrieval::commands::read_range(
+            let raw = ixos_core::tools::read_range(
                 &dir,
                 &path,
                 start,
@@ -64,17 +55,11 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
                 std::io::stdout().write_all(&raw)?;
             } else {
                 let value: serde_json::Value = serde_json::from_slice(&raw)?;
-                let snippet = value.get("view").or_else(|| value.get("slice")).unwrap();
+                let snippet = value.get("snippet").or_else(|| value.get("slice")).unwrap();
                 println!("{}", snippet["text"].as_str().unwrap_or(""));
             }
         }
-        Command::Serve { location, session } => {
-            let profile = location.profile.unwrap_or(config.profile);
-            let mut options = config.options(profile);
-            options.session = session;
-            let model = config.model_path(profile, location.model_path);
-            retrieval::commands::serve(&location.dir, Some(&model), options)?;
-        }
+        Command::Mcp { location } => crate::mcp::serve(config, location)?,
         Command::Cache { command } => cache::run(command)?,
         Command::Model { command } => match command {
             ModelCommand::Install { profile, from } => {
@@ -134,7 +119,7 @@ fn output(raw: &[u8], json: bool) -> anyhow::Result<()> {
     if json {
         std::io::stdout().write_all(raw)?;
     } else {
-        retrieval::commands::print_human(raw)?;
+        ixos_core::tools::print_human(raw)?;
     }
     Ok(())
 }
@@ -148,7 +133,7 @@ mod cache {
         };
         let root = dir.canonicalize()?;
         anyhow::ensure!(root.is_dir(), "Location must be a directory");
-        let mut cache = retrieval::cache::DocumentCache::new([0; 32]);
+        let mut cache = ixos_core::cache::DocumentCache::new([0; 32]);
         let mut records = 0;
         let mut bytes = 0;
         for entry in ixos_core::discover::search_walk(&root, true, true, false, None)
@@ -210,7 +195,7 @@ mod doctor {
         let mut options = config.options(profile);
         options.persist = false;
         let mut engine = Engine::new(folder.path(), Some(&path), options)?;
-        let (raw, _) = engine.search("Ixos search check", "doctor", None)?;
+        let (raw, _) = engine.search("Ixos search check")?;
         anyhow::ensure!(
             !serde_json::from_slice::<serde_json::Value>(&raw)?["results"]
                 .as_array()

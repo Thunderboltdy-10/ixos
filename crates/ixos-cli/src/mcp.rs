@@ -199,6 +199,9 @@ impl Server {
                 options.context = args.context.unwrap_or(options.context);
                 let key = format!("{}:{}", dir.display(), profile.name());
                 let model = self.config.model_path(profile, self.model_path.clone());
+                if options.mode != RetrievalMode::Lexical {
+                    ixos_core::model::install::ensure(&self.config, profile, &model)?;
+                }
                 if !self.engines.contains_key(&key) {
                     self.engines.insert(
                         key.clone(),

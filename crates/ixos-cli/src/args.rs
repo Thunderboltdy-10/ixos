@@ -40,6 +40,8 @@ pub struct Location {
 }
 #[derive(Subcommand)]
 pub enum Command {
+    /// Complete installation by downloading both verified models for offline use.
+    Setup,
     /// Find files by concept, keywords, or both.
     Search(Search),
     /// Find exact text or a regular expression.

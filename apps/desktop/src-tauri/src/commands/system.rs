@@ -52,13 +52,78 @@ pub async fn select_directory(app: AppHandle) -> Result<Option<String>, String> 
     .await
     .map_err(|error| error.to_string())?
 }
-#[tauri::command]
-pub fn get_model_status() -> serde_json::Value {
+/// Download models during first-launch setup, outside the installer executable.
+/// Failed downloads leave keyword search available and can be retried in Settings.
+pub fn setup_models(app: AppHandle) {
+    use crate::state::{AppState, ModelStatus};
+    use ixos_core::config::Profile;
+    let profiles = [Profile::Code, Profile::Documents];
+    if let Ok(mut statuses) = app.state::<AppState>().models.lock() {
+        *statuses = profiles
+            .iter()
+            .map(|&profile| ModelStatus {
+                profile,
+                installed: false,
+                downloading: true,
+                error: None,
+            })
+            .collect();
+    }
+    let _ = tauri::Emitter::emit(&app, "models-changed", ());
+    drop(tauri::async_runtime::spawn_blocking(move || {
+        for profile in profiles {
+            let _ = install_profile(&app, profile, None);
+        }
+    }));
+}
+
+fn install_profile(
+    app: &AppHandle,
+    profile: ixos_core::config::Profile,
+    source: Option<std::path::PathBuf>,
+) -> Result<(), String> {
+    use crate::state::{AppState, ModelStatus};
+    let update = |installed, downloading, error| {
+        if let Ok(mut statuses) = app.state::<AppState>().models.lock() {
+            statuses.retain(|status| status.profile != profile);
+            statuses.push(ModelStatus {
+                profile,
+                installed,
+                downloading,
+                error,
+            });
+        }
+        let _ = tauri::Emitter::emit(app, "models-changed", ());
+    };
+    update(false, true, None);
     let config = Settings::load().search;
-    serde_json::json!(ixos_core::model::install::MODELS.iter().map(|model| {
-        let path=config.model_path(model.profile,None);
-        serde_json::json!({"profile":model.profile,"installed":ixos_core::model::install::verify(&path,model.profile).is_ok()})
-    }).collect::<Vec<_>>())
+    let path = config.model_path(profile, None);
+    let result = if source.is_none() && path != config.model_dir.join(profile.name()) {
+        ixos_core::model::install::verify(&path, profile).map(|_| path)
+    } else {
+        ixos_core::model::install::install(profile, &config.model_dir, source.as_deref())
+    }
+    .map_err(|error| format!("{error:#}"));
+    match result {
+        Ok(_) => {
+            update(true, false, None);
+            super::search::warm(app.clone());
+            Ok(())
+        }
+        Err(error) => {
+            update(false, false, Some(error.clone()));
+            Err(error)
+        }
+    }
+}
+
+#[tauri::command]
+pub fn get_model_status(app: AppHandle) -> Result<Vec<crate::state::ModelStatus>, String> {
+    app.state::<crate::state::AppState>()
+        .models
+        .lock()
+        .map(|statuses| statuses.clone())
+        .map_err(|error| error.to_string())
 }
 #[tauri::command]
 pub async fn install_model(
@@ -66,19 +131,9 @@ pub async fn install_model(
     profile: ixos_core::config::Profile,
     source: Option<std::path::PathBuf>,
 ) -> Result<(), String> {
-    tauri::async_runtime::spawn_blocking(move || {
-        ixos_core::model::install::install(
-            profile,
-            &Settings::load().search.model_dir,
-            source.as_deref(),
-        )
-        .map(|_| {
-            super::search::warm(app);
-        })
-        .map_err(|e| e.to_string())
-    })
-    .await
-    .map_err(|e| e.to_string())?
+    tauri::async_runtime::spawn_blocking(move || install_profile(&app, profile, source))
+        .await
+        .map_err(|error| error.to_string())?
 }
 
 #[tauri::command]

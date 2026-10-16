@@ -56,6 +56,7 @@ pub fn get_config() -> Settings {
 }
 pub fn apply(app: tauri::AppHandle, config: Settings) -> Result<(), String> {
     use tauri::Manager;
+    let model_directory_changed = Settings::load().search.model_dir != config.search.model_dir;
     config.save()?;
     let state = app.state::<crate::state::AppState>();
     state
@@ -66,6 +67,9 @@ pub fn apply(app: tauri::AppHandle, config: Settings) -> Result<(), String> {
         .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
     *state.engine.lock().map_err(|error| error.to_string())? = None;
     let _ = app.emit("settings-changed", ());
+    if model_directory_changed {
+        super::system::setup_models(app.clone());
+    }
     super::search::warm(app);
     Ok(())
 }

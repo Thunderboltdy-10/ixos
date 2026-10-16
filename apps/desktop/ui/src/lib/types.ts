@@ -36,6 +36,8 @@ export interface LocationStatus {
 export interface ModelStatus {
   profile: Profile;
   installed: boolean;
+  downloading: boolean;
+  error: string | null;
 }
 export interface DoctorReport {
   profile: Profile;

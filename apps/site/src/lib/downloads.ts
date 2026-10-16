@@ -1,6 +1,6 @@
 // Pablo will confirm the repository before publishing the site.
 export const RELEASES_URL =
-  "https://github.com/PABLO_GITHUB_USER/ixos/releases";
+  "https://github.com/Thunderboltdy-10/ixos/releases";
 export const REPOSITORY_URL = RELEASES_URL.replace(/\/releases$/, "");
 export const CLI_INSTALL_COMMANDS = {
   windows: {

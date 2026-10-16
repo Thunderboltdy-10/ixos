@@ -9,6 +9,17 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
     let path = cli.config.unwrap_or_else(Config::path);
     let config = Config::load(&path)?;
     match cli.command {
+        Command::Setup => {
+            for profile in [
+                ixos_core::config::Profile::Code,
+                ixos_core::config::Profile::Documents,
+            ] {
+                eprintln!("Setting up the {} model…", profile.name());
+                let destination =
+                    ixos_core::model::install::install(profile, &config.model_dir, None)?;
+                println!("Installed {} at {}", profile.name(), destination.display());
+            }
+        }
         Command::Search(args) => {
             let profile = args.location.profile.unwrap_or(config.profile);
             let mut options = config.options(profile);
@@ -16,6 +27,9 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
             options.limit = args.limit.unwrap_or(options.limit);
             options.context = args.context.unwrap_or(options.context);
             let model = config.model_path(profile, args.location.model_path);
+            if options.mode != RetrievalMode::Lexical {
+                ixos_core::model::install::ensure(&config, profile, &model)?;
+            }
             let mut engine = Engine::new(&args.location.dir, Some(&model), options)?;
             let (raw, _) = engine.search(&args.query)?;
             output(&raw, args.json)?;
@@ -168,6 +182,7 @@ mod doctor {
     pub fn run(config: &Config, location: Location) -> anyhow::Result<()> {
         let profile = location.profile.unwrap_or(config.profile);
         let path = config.model_path(profile, location.model_path);
+        ixos_core::model::install::ensure(config, profile, &path)?;
         let report = ixos_core::doctor::check(config, profile, &path)?;
         println!(
             "Model: {} ({} dimensions)",

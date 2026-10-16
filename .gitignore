@@ -41,6 +41,7 @@ dataset/
 
 # Benchmarks
 /criterion/
+/release-dist/
 
 # Dependencies (all subprojects)
 node_modules/

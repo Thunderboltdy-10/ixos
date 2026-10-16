@@ -1,6 +1,12 @@
 ---
 license: mit
 language: en
+base_model: minishlab/potion-code-16M-v2
+tags:
+- embeddings
+- static-embeddings
+- retrieval
+- ixos
 ---
 
 # Ixos Code
@@ -15,3 +21,13 @@ Ixos uses the static token embeddings on CPU, mean pools and normalizes them.
 Longer input does not guarantee better retrieval. Model scores rank files; they are not probabilities.
 Run `python scripts/models.py build` to reproduce the files and verify the hashes against the Rust installer table.
 The publication includes `UPSTREAM_MODEL_CARD.md` with the original authorship, license and training details.
+
+## Use with Ixos
+
+This is a runtime artifact for [Ixos](https://github.com/Thunderboltdy-10/ixos), a local CPU search engine. Install it with:
+
+```sh
+ixos model install code
+```
+
+Ixos downloads the three runtime files at a pinned revision, verifies their SHA-256 hashes and loads them with its Rust loader. The model files are stored outside the executable and reused offline. This repository does not provide a general-purpose Transformers pipeline.

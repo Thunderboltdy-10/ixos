@@ -183,14 +183,14 @@ These papers, bibliographies and design explorations considered ranking, routing
 
 ## Code snapshots
 
-These annotated tags are available locally. Run `git switch --detach TAG` to inspect a period. The links below use the same pending repository URL as the site; Pablo will confirm it before publishing.
+These annotated tags are available locally and on GitHub. Run `git switch --detach TAG` to inspect a period, or use the snapshot links below.
 
 | Period | Tag | Snapshot |
 |---|---|---|
-| January | [history/2026-01-prototype](https://github.com/PABLO_GITHUB_USER/ixos/tree/history%2F2026-01-prototype) | First monorepo, 23 January 2026 |
-| February | [history/2026-02-models](https://github.com/PABLO_GITHUB_USER/ixos/tree/history%2F2026-02-models) | Model and ranking work, 2 February 2026 |
-| March | [history/2026-03-desktop](https://github.com/PABLO_GITHUB_USER/ixos/tree/history%2F2026-03-desktop) | Desktop and site, 20 March 2026 |
-| October restoration | [history/2026-10-restoration-end](https://github.com/PABLO_GITHUB_USER/ixos/tree/history%2F2026-10-restoration-end) | Restoration code and original reports |
-| October cleanup | [history/2026-10-cleanup](https://github.com/PABLO_GITHUB_USER/ixos/tree/history%2F2026-10-cleanup) | Simplified engine, desktop, site and evaluation |
+| January | [history/2026-01-prototype](https://github.com/Thunderboltdy-10/ixos/tree/history%2F2026-01-prototype) | First monorepo, 23 January 2026 |
+| February | [history/2026-02-models](https://github.com/Thunderboltdy-10/ixos/tree/history%2F2026-02-models) | Model and ranking work, 2 February 2026 |
+| March | [history/2026-03-desktop](https://github.com/Thunderboltdy-10/ixos/tree/history%2F2026-03-desktop) | Desktop and site, 20 March 2026 |
+| October restoration | [history/2026-10-restoration-end](https://github.com/Thunderboltdy-10/ixos/tree/history%2F2026-10-restoration-end) | Restoration code and original reports |
+| October cleanup | [history/2026-10-cleanup](https://github.com/Thunderboltdy-10/ixos/tree/history%2F2026-10-cleanup) | Simplified engine, desktop, site and evaluation |
 
 The existing `restoration-end` tag points to the same restoration snapshot. The historical documents above remain unchanged; the human index describes decisions that survived or were abandoned.

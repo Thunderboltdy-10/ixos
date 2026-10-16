@@ -3,3 +3,5 @@ docs/history/** -text
 docs/history/README.md text eol=lf
 
 /eval/*.py text eol=lf
+
+/scripts/*.sh text eol=lf

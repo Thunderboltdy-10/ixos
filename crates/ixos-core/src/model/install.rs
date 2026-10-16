@@ -1,7 +1,9 @@
 //! Install the two attributed model derivatives, checking every runtime file.
 use crate::{config::Profile, digest::sha256_file};
+use anyhow::Context;
 use std::io::Read;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 pub struct ModelSpec {
     pub profile: Profile,
@@ -10,12 +12,12 @@ pub struct ModelSpec {
     pub hashes: [&'static str; 3],
 }
 pub const FILES: [&str; 3] = ["model.safetensors", "tokenizer.json", "config.json"];
-// Pablo will confirm these repository names and immutable published revisions.
+// Immutable Hugging Face revisions; runtime bytes are verified independently.
 pub const MODELS: [ModelSpec; 2] = [
     ModelSpec {
         profile: Profile::Code,
-        repository: "PABLO_HF_USER/ixos-code",
-        revision: "main",
+        repository: "Thunderboltdy10/ixos-code",
+        revision: "dfc6e3a26c732efcd3b5f623d9497a16eae9d23a",
         hashes: [
             "75cf7a6c2171b230ad19b1e7d8e0b1aee86da5a02af8e7cacedd9921d227623c",
             "936b2d026b9e81fb683eab537ea37c5a1a65a4d02ad9cb92ce269fb8bc561ebf",
@@ -24,8 +26,8 @@ pub const MODELS: [ModelSpec; 2] = [
     },
     ModelSpec {
         profile: Profile::Documents,
-        repository: "PABLO_HF_USER/ixos-documents",
-        revision: "main",
+        repository: "Thunderboltdy10/ixos-documents",
+        revision: "179b9c586ca8744d3a73dbfd82b9b5ed357748f4",
         hashes: [
             "f3a9a9297a228914ca7cd0dc9601616ccb81a198676172ff6ff52658f5251ee2",
             "7d75cbc54318138807c401b0f0c9721117c628b39de8e8e0edb6cb17e0ee7d18",
@@ -50,6 +52,15 @@ pub fn install(
     source: Option<&Path>,
 ) -> anyhow::Result<PathBuf> {
     std::fs::create_dir_all(directory)?;
+    // CLI and desktop share storage. Serialize installation across processes so
+    // neither can observe or replace another installer's partial download.
+    let lock = std::fs::OpenOptions::new()
+        .create(true)
+        .truncate(false)
+        .read(true)
+        .write(true)
+        .open(directory.join(format!(".{}.lock", profile.name())))?;
+    lock.lock()?;
     let target = directory.join(profile.name());
     if target.exists() {
         verify(&target, profile)?;
@@ -57,25 +68,93 @@ pub fn install(
     }
     let work = tempfile::tempdir_in(directory)?;
     let spec = MODELS.iter().find(|s| s.profile == profile).unwrap();
+    let agent = ureq::AgentBuilder::new()
+        .timeout_connect(Duration::from_secs(20))
+        .timeout_read(Duration::from_secs(60))
+        .timeout(Duration::from_secs(300))
+        .build();
     for name in FILES {
         let path = work.path().join(name);
         if let Some(source) = source {
             std::fs::copy(source.join(name), path)?;
         } else {
-            anyhow::ensure!(
-                !spec.repository.starts_with("PABLO_HF_USER"),
-                "Model repository is awaiting publication; install local artifacts with --from"
-            );
             let url = format!(
                 "https://huggingface.co/{}/resolve/{}/{name}",
                 spec.repository, spec.revision
             );
-            let response = ureq::get(&url).call()?;
-            let mut input = response.into_reader().take(256 * 1024 * 1024);
-            std::io::copy(&mut input, &mut std::fs::File::create(path)?)?;
+            let response = agent.get(&url).call().with_context(|| {
+                format!("Cannot download the {} model ({name}). Check your connection and retry, or use `ixos model install {} --from PATH`", profile.name(), profile.name())
+            })?;
+            let maximum = 256 * 1024 * 1024;
+            let mut input = response.into_reader().take(maximum + 1);
+            let copied = std::io::copy(&mut input, &mut std::fs::File::create(path)?)?;
+            anyhow::ensure!(
+                copied <= maximum,
+                "Model download exceeds size limit: {name}"
+            );
         }
     }
     verify(work.path(), profile)?;
     std::fs::rename(work.path(), &target)?;
     Ok(target)
+}
+
+/// Install a missing managed model on first use. Explicit paths remain local
+/// overrides: a typo must never silently download a different model there.
+pub fn ensure(config: &crate::config::Config, profile: Profile, path: &Path) -> anyhow::Result<()> {
+    if path == config.model_dir.join(profile.name()) && !path.exists() {
+        eprintln!(
+            "Downloading the {} model from Hugging Face…",
+            profile.name()
+        );
+        install(profile, &config.model_dir, None)?;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn invalid_local_artifacts_are_never_installed() {
+        let root = tempfile::tempdir().unwrap();
+        let source = root.path().join("source");
+        let destination = root.path().join("installed");
+        std::fs::create_dir(&source).unwrap();
+        for name in FILES {
+            std::fs::write(source.join(name), b"invalid").unwrap();
+        }
+        let error = install(Profile::Code, &destination, Some(&source)).unwrap_err();
+        assert!(error.to_string().contains("checksum mismatch"));
+        assert!(!destination.join("code").exists());
+        // No partial downloads remain; only the reusable lock file survives.
+        assert_eq!(std::fs::read_dir(destination).unwrap().count(), 1);
+    }
+
+    #[test]
+    fn failed_install_preserves_existing_artifacts() {
+        let root = tempfile::tempdir().unwrap();
+        let target = root.path().join("code");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("model.safetensors"), b"existing").unwrap();
+        assert!(install(Profile::Code, root.path(), Some(root.path())).is_err());
+        assert_eq!(
+            std::fs::read(target.join("model.safetensors")).unwrap(),
+            b"existing"
+        );
+    }
+
+    #[test]
+    fn explicit_missing_paths_do_not_trigger_downloads() {
+        let root = tempfile::tempdir().unwrap();
+        let config = crate::config::Config {
+            model_dir: root.path().join("managed"),
+            ..Default::default()
+        };
+        let explicit = root.path().join("custom");
+        ensure(&config, Profile::Code, &explicit).unwrap();
+        assert!(!explicit.exists());
+        assert!(!config.model_dir.exists());
+    }
 }

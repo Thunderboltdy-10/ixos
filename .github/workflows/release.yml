@@ -78,5 +78,5 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'The release tag does not exist' }
           $taskFiles = @(Get-ChildItem -LiteralPath artifacts -Recurse -File | ForEach-Object { $_.FullName })
           if ($taskFiles.Count -lt 6) { throw 'CLI and desktop artifacts are incomplete' }
-          gh release create $env:RELEASE_TAG --verify-tag --draft --title "Ixos $env:RELEASE_TAG" --notes 'Local hybrid search over code and documents. Install a model after downloading; see the README.' @taskFiles
+          gh release create $env:RELEASE_TAG --verify-tag --draft --title "Ixos $env:RELEASE_TAG" --notes 'Local hybrid search over code and documents. Desktop models download during first-launch setup. Run ixos setup after installing the CLI; see the README.' @taskFiles
           if ($LASTEXITCODE -ne 0) { throw 'Draft release creation failed' }

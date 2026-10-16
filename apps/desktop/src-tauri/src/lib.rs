@@ -15,6 +15,7 @@ pub fn run() {
         .setup(|app| {
             tray::setup_tray(app)?;
             commands::shortcut::setup_global_shortcut(app)?;
+            commands::system::setup_models(app.handle().clone());
             commands::search::warm(app.handle().clone());
             if !commands::settings::Settings::load()
                 .search

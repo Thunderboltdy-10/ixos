@@ -23,6 +23,9 @@ export function useAppInit() {
         "recent-searches-changed",
         () => void useHistoryStore.getState().load(),
       ).then(keep);
+      await listen("models-changed", () => {
+        void useSettingsStore.getState().loadModels();
+      }).then(keep);
       await listen("settings-changed", () => {
         void useSettingsStore.getState().loadConfig();
         void useSettingsStore.getState().loadModels();

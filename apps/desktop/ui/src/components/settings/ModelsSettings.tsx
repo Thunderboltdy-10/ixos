@@ -53,8 +53,9 @@ export function ModelsSettings() {
       <div>
         <h2 className="text-xl font-semibold text-porcelain mb-2">Models</h2>
         <p className="text-fg-secondary">
-          Install the code or documents model for hybrid search. Keyword search
-          works without a model.
+          Both models download automatically during first-launch setup. You can
+          retry a download or install local files here. Keyword search works offline
+          while setup is incomplete.
         </p>
       </div>
       <div className="rounded-xl border border-white/10 bg-graphite-2/55 backdrop-blur-md p-4 space-y-2">
@@ -63,7 +64,14 @@ export function ModelsSettings() {
             key={profile}
             className="flex items-center justify-between gap-3 bg-graphite-2/55 rounded-lg border border-white/8 px-3 py-2"
           >
-            <span className="text-sm text-porcelain capitalize">{profile}</span>
+            <div>
+              <span className="text-sm text-porcelain capitalize">{profile}</span>
+              {models.find((model) => model.profile === profile)?.error && (
+                <p role="alert" className="text-xs text-danger mt-1 max-w-md">
+                  {models.find((model) => model.profile === profile)?.error}
+                </p>
+              )}
+            </div>
             <div className="flex items-center gap-3">
               {models.find((model) => model.profile === profile)?.installed && (
                 <span className="flex items-center gap-1.5 text-xs text-accent-teal">
@@ -72,15 +80,17 @@ export function ModelsSettings() {
                 </span>
               )}
               <button
-                disabled={busy !== null}
+                disabled={busy !== null || models.some((model) => model.downloading)}
                 onClick={() => void install(profile, false)}
                 className="flex items-center gap-1.5 h-7 px-2 text-xs text-accent-teal hover:bg-accent-teal/10 rounded-md disabled:opacity-50"
               >
                 <DownloadCloud className="w-3.5 h-3.5" />
-                {busy === profile ? "Installing…" : "Download"}
+                {busy === profile || models.find((model) => model.profile === profile)?.downloading
+                  ? "Installing…" : models.find((model) => model.profile === profile)?.error
+                    ? "Retry download" : "Download"}
               </button>
               <button
-                disabled={busy !== null}
+                disabled={busy !== null || models.some((model) => model.downloading)}
                 onClick={() => void install(profile, true)}
                 title="Install from a model folder"
                 className="p-1.5 rounded-md text-fg-dim hover:text-porcelain hover:bg-graphite-3 disabled:opacity-50"

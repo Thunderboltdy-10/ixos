@@ -19,8 +19,17 @@ pub struct LocationStatus {
 }
 #[derive(Default)]
 pub struct AppState {
+    pub models: Mutex<Vec<ModelStatus>>,
     pub engine: Mutex<Option<Engine>>,
     pub locations: Mutex<Vec<LocationStatus>>,
     pub generation: AtomicU64,
     pub warming_generation: AtomicU64,
+}
+
+#[derive(Clone, Serialize)]
+pub struct ModelStatus {
+    pub profile: ixos_core::config::Profile,
+    pub installed: bool,
+    pub downloading: bool,
+    pub error: Option<String>,
 }

@@ -1,6 +1,12 @@
 ---
 license: mit
 language: en
+base_model: minishlab/potion-retrieval-32M
+tags:
+- embeddings
+- static-embeddings
+- retrieval
+- ixos
 ---
 
 # Ixos Documents
@@ -13,3 +19,13 @@ The 512-dimensional vocabulary rows are stored as symmetric int8 values. For eac
 No training or distillation was done. The encoded Rust loader decodes the used rows and pools in float32 on CPU; this is a storage transformation, not integer inference.
 Run `python scripts/models.py build` to reproduce the files and verify the hashes against the Rust installer table.
 The publication includes `UPSTREAM_MODEL_CARD.md` with the original authorship, license and training details.
+
+## Use with Ixos
+
+This is a runtime artifact for [Ixos](https://github.com/Thunderboltdy-10/ixos), a local CPU search engine. Install it with:
+
+```sh
+ixos model install documents
+```
+
+Ixos downloads the three runtime files at a pinned revision, verifies their SHA-256 hashes and loads them with its Rust loader. The model files are stored outside the executable and reused offline. This repository does not provide a general-purpose Transformers pipeline.

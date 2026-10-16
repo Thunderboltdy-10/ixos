@@ -4,21 +4,30 @@ Ixos is local hybrid search over code and documents, running on CPU. Use it from
 
 ## Install
 
-Build the CLI from source with Rust:
+Install the CLI from source with Rust, including both model downloads:
+
+```powershell
+# Windows (PowerShell)
+./scripts/install-cli.ps1
+```
+
+```sh
+# macOS / Linux
+sh scripts/install-cli.sh
+```
+
+Or run the two installation steps yourself:
 
 ```sh
 cargo install --path crates/ixos-cli --locked
+ixos setup
 ```
 
-Build the models with Python and `numpy==2.3.5`, then install the local artifacts:
+`ixos setup` downloads and verifies both models from the public Hugging Face repositories. Models are stored in your local application-data directory, outside the executable, and shared by the CLI and desktop. After setup, search works offline. The desktop performs the same download automatically in the background on first launch; Settings → Models shows setup errors and lets you retry.
 
-```sh
-python scripts/models.py build
-ixos model install code --from models/code
-ixos model install documents --from models/documents
-```
+If you skip setup, CLI and MCP semantic/hybrid search download a missing selected model automatically. Lexical search, grep and read do not require a model or network access. Individual downloads use `ixos model install code` and `ixos model install documents`.
 
-The model downloader also supports published artifacts with `ixos model install code` and `ixos model install documents`, without Python. See [CONTRIBUTING.md](CONTRIBUTING.md) for desktop and site builds.
+For an offline installation, copy the three runtime files for each profile from [Ixos Code](https://huggingface.co/Thunderboltdy10/ixos-code) and [Ixos Documents](https://huggingface.co/Thunderboltdy10/ixos-documents), then use `ixos model install code --from PATH` or `ixos model install documents --from PATH`. Developers can reproduce these artifacts with `python scripts/models.py build` using `numpy==2.3.5`. See [CONTRIBUTING.md](CONTRIBUTING.md) for desktop and site builds.
 
 ## Use
 

@@ -824,6 +824,43 @@ pub fn snippet_at(path: &str, lines: &[String], anchor: usize, context: usize) -
 mod tests {
     use super::*;
     #[test]
+    fn resident_search_refreshes_an_in_place_edit_with_restored_mtime() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("source.rs");
+        let old = SystemTime::now() - std::time::Duration::from_secs(60);
+        let write = |value: &str| {
+            std::fs::write(&path, format!("// cache state\nfn {value}() {{}}\n")).unwrap();
+            std::fs::OpenOptions::new()
+                .write(true)
+                .open(&path)
+                .unwrap()
+                .set_times(std::fs::FileTimes::new().set_modified(old))
+                .unwrap();
+        };
+        write("old_value");
+        let mut engine = Engine::new(
+            dir.path(),
+            None,
+            Options {
+                mode: RetrievalMode::Lexical,
+                persist: false,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let (before, _) = engine.search("cache state").unwrap();
+        assert!(String::from_utf8(before).unwrap().contains("old_value"));
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        write("new_value");
+        let (after, _) = engine.search("cache state").unwrap();
+        let after = String::from_utf8(after).unwrap();
+        assert!(after.contains("new_value"));
+        assert!(!after.contains("old_value"));
+        let (_, unchanged) = engine.search("cache state").unwrap();
+        assert_eq!(unchanged.metadata_cache_hits, 1);
+        assert_eq!(unchanged.source_bytes_read, 0);
+    }
+    #[test]
     fn multiple_locations_share_ranking_and_do_not_duplicate_nested_files() {
         let root = tempfile::tempdir().unwrap();
         let a = root.path().join("a");

@@ -372,7 +372,7 @@ pub(crate) mod tests {
                 .collect::<Vec<_>>()
         );
         let mut unaligned = vec![0_u8; raw.len() + 1];
-        let offset = usize::from(unaligned.as_ptr() as usize % 2 == 0);
+        let offset = usize::from(unaligned.as_ptr() as usize & 1 == 0);
         unaligned[offset..offset + raw.len()].copy_from_slice(&raw);
         let slice = &unaligned[offset..offset + raw.len()];
         assert_eq!(slice.as_ptr() as usize % 2, 1);
@@ -412,7 +412,7 @@ pub(crate) mod tests {
     fn encoded_rows_preserve_reference_f32_bits_and_input_rules() {
         let texts: Vec<_> = [
             "",
-            "unknown ðŸ˜€ ä¸­",
+            "unknown ðŸ˜€ ä¸\u{ad}",
             "hello",
             "hello world",
             "hello unknown world",

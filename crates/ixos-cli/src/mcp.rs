@@ -3,6 +3,7 @@ use crate::args::Location;
 use ixos_core::{
     config::{Config, Profile},
     engine::{Engine, RetrievalMode},
+    evidence::EvidenceMode,
     tools,
 };
 use serde::Deserialize;
@@ -22,6 +23,7 @@ pub fn serve(config: Config, location: Location) -> anyhow::Result<()> {
         config,
         model_path: location.model_path,
         engines: HashMap::new(),
+        diagnostics: None,
     };
     run(
         std::io::stdin().lock(),
@@ -35,6 +37,7 @@ struct Server {
     profile: Profile,
     model_path: Option<PathBuf>,
     engines: HashMap<String, Engine>,
+    diagnostics: Option<Value>,
 }
 fn run(mut input: impl BufRead, mut output: impl Write, server: &mut Server) -> anyhow::Result<()> {
     let mut initialized = false;
@@ -89,7 +92,7 @@ fn run(mut input: impl BufRead, mut output: impl Write, server: &mut Server) -> 
                     "2025-11-25"
                 };
                 Ok(
-                    json!({"protocolVersion":protocol,"capabilities":{"tools":{}},"serverInfo":{"name":"ixos","version":env!("CARGO_PKG_VERSION")}}),
+                    json!({"protocolVersion":protocol,"capabilities":{"tools":{}},"serverInfo":{"name":"ixos","version":env!("CARGO_PKG_VERSION")},"instructions":"Local source retrieval: search by concept, grep exact identifiers, read known ranges. Use evidence=functions for code alternatives; view=numbered for compact source. Scores are ranking signals, not confidence probabilities."}),
                 )
             }
             "ping" => Ok(json!({})),
@@ -99,9 +102,37 @@ fn run(mut input: impl BufRead, mut output: impl Write, server: &mut Server) -> 
                     value["params"]["name"].as_str().unwrap_or(""),
                     value["params"]["arguments"].clone(),
                 ) {
-                    Ok(result) => Ok(
-                        json!({"content":[{"type":"text","text":serde_json::to_string(&result)?}],"structuredContent":result,"isError":false}),
-                    ),
+                    Ok(mut result) => {
+                        let numbered = value["params"]["arguments"]["view"] == "numbered";
+                        let budget = value["params"]["arguments"]["max_bytes"]
+                            .as_u64()
+                            .unwrap_or(6000) as usize;
+                        let batch =
+                            result.get("results").is_some() && value["params"]["name"] == "read";
+                        if numbered && value["params"]["name"] == "read" && !batch {
+                            crate::agent_view::fit_read(&mut result, budget);
+                        }
+                        let rendered = if numbered && !batch {
+                            crate::agent_view::render(
+                                value["params"]["name"].as_str().unwrap_or(""),
+                                &result,
+                                budget,
+                            )
+                        } else {
+                            None
+                        };
+                        let text = match rendered {
+                            Some(text) => text,
+                            None => serde_json::to_string(&result)?,
+                        };
+                        let mut response = json!({"content":[{"type":"text","text":text}],"structuredContent":result,"isError":false});
+                        if value["params"]["_meta"]["io.ixos/diagnostics"] == true {
+                            if let Some(stats) = server.diagnostics.take() {
+                                response["_meta"] = json!({"io.ixos/diagnostics":stats});
+                            }
+                        }
+                        Ok(response)
+                    }
                     Err(error) => Ok(
                         json!({"content":[{"type":"text","text":error.to_string()}],"isError":true}),
                     ),
@@ -150,6 +181,7 @@ struct Search {
     mode: Option<RetrievalMode>,
     limit: Option<usize>,
     context: Option<usize>,
+    evidence: Option<EvidenceMode>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -162,17 +194,6 @@ struct Grep {
     ignore_case: bool,
     limit: Option<usize>,
     context: Option<usize>,
-}
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct ReadArgs {
-    path: PathBuf,
-    dir: Option<PathBuf>,
-    start: Option<usize>,
-    lines: Option<usize>,
-    characters: Option<usize>,
-    #[serde(default)]
-    character_offset: usize,
 }
 impl Server {
     fn dir(&self, path: Option<PathBuf>) -> anyhow::Result<PathBuf> {
@@ -187,7 +208,14 @@ impl Server {
             .unwrap_or_else(|| self.root.clone());
         Ok(path.canonicalize()?)
     }
-    fn call(&mut self, name: &str, args: Value) -> anyhow::Result<Value> {
+    fn call(&mut self, name: &str, mut args: Value) -> anyhow::Result<Value> {
+        self.diagnostics = None;
+        if let Some(view) = args.as_object_mut().and_then(|a| a.remove("view")) {
+            anyhow::ensure!(
+                view == "json" || view == "numbered",
+                "View must be json or numbered"
+            );
+        }
         let raw = match name {
             "search" => {
                 let args: Search = serde_json::from_value(args)?;
@@ -209,17 +237,25 @@ impl Server {
                     );
                 }
                 let engine = self.engines.get_mut(&key).unwrap();
+                let evidence = args.evidence.unwrap_or_default();
+                anyhow::ensure!(
+                    evidence != EvidenceMode::Functions || cfg!(feature = "evidence-functions"),
+                    "This build has no function evidence support; use passages"
+                );
+                engine.configure_evidence(evidence);
                 engine.configure_search(
                     options.mode,
                     options.limit,
                     options.context,
                     Some(&model),
                 )?;
-                engine.search(&args.query)?.0
+                let (raw, stats) = engine.search(&args.query)?;
+                self.diagnostics = Some(serde_json::to_value(stats)?);
+                raw
             }
             "grep" => {
                 let args: Grep = serde_json::from_value(args)?;
-                tools::grep(
+                let (raw, stats) = tools::grep(
                     &self.dir(args.dir)?,
                     &args.pattern,
                     args.fixed,
@@ -227,20 +263,64 @@ impl Server {
                     args.context.unwrap_or(self.config.context),
                     args.limit.unwrap_or(self.config.limit),
                     6000,
-                )?
-                .0
+                )?;
+                self.diagnostics = Some(stats);
+                raw
             }
             "read" => {
-                let args: ReadArgs = serde_json::from_value(args)?;
-                tools::read_range(
-                    &self.dir(args.dir)?,
-                    &args.path,
-                    args.start.unwrap_or(1),
-                    args.lines.unwrap_or(40),
-                    args.characters,
-                    args.character_offset,
-                    6000,
-                )?
+                let dir = args
+                    .as_object_mut()
+                    .and_then(|a| a.remove("dir"))
+                    .map(serde_json::from_value::<Option<PathBuf>>)
+                    .transpose()?
+                    .flatten();
+                let dir = self.dir(dir)?;
+                let advanced = has_source_selector(&args)
+                    || args.get("requests").is_some()
+                    || args.get("max_bytes").is_some();
+                if !advanced {
+                    return crate::source_read::execute(&dir, args);
+                }
+                let mut aggregate = ixos_core::inspect::Stats::default();
+                return crate::source_read::execute_with(&dir, args, |spec, budget| {
+                    let selection = if spec.has_symbol_selector() {
+                        Some(spec.selection()?)
+                    } else {
+                        None
+                    };
+                    let profile = self.profile;
+                    let key = format!("{}:{}", dir.display(), profile.name());
+                    let mut options = self.config.options(profile);
+                    options.mode = RetrievalMode::Lexical;
+                    if !self.engines.contains_key(&key) {
+                        self.engines
+                            .insert(key.clone(), Engine::new(&dir, None, options.clone())?);
+                    }
+                    let engine = self.engines.get_mut(&key).unwrap();
+                    let (result, stats) = if let Some(selection) = selection {
+                        engine.inspect(
+                            &dir,
+                            &spec.path,
+                            &selection,
+                            budget,
+                            spec.expected_source_hash.as_deref(),
+                        )?
+                    } else {
+                        engine.read_slice(
+                            &dir,
+                            &spec.path,
+                            spec.range()?,
+                            budget,
+                            spec.expected_source_hash.as_deref(),
+                        )?
+                    };
+                    aggregate.source_cache_hits += stats.source_cache_hits;
+                    aggregate.resident_source_hits += stats.resident_source_hits;
+                    aggregate.source_bytes_read += stats.source_bytes_read;
+                    aggregate.retained_bytes = stats.retained_bytes;
+                    self.diagnostics = Some(serde_json::to_value(&aggregate)?);
+                    Ok(result)
+                });
             }
             _ => anyhow::bail!("Unknown tool: {name}"),
         };
@@ -248,13 +328,22 @@ impl Server {
     }
 }
 
+fn has_source_selector(args: &Value) -> bool {
+    ["within", "body"].iter().any(|key| args.get(key).is_some())
+        || args
+            .get("requests")
+            .and_then(Value::as_array)
+            .is_some_and(|items| items.iter().any(has_source_selector))
+}
+
 fn tool_definitions() -> Vec<Value> {
     let dir = json!({"type":"string","description":"Location; defaults to the server location"});
     let limit = json!({"type":"integer","minimum":1,"maximum":10000});
+    let view = json!({"type":"string","enum":["json","numbered"],"description":"Optional compact numbered source view; structuredContent remains machine readable"});
     let context = json!({"type":"integer","minimum":0,"maximum":1000});
     vec![
-        json!({"name":"search","description":"Find files by concept or keywords; then read the useful result.","inputSchema":{"type":"object","required":["query"],"additionalProperties":false,"properties":{"query":{"type":"string"},"dir":dir,"profile":{"type":"string","enum":["code","documents"]},"mode":{"type":"string","enum":["lexical","semantic","hybrid"]},"limit":limit,"context":context}}}),
-        json!({"name":"grep","description":"Find an exact identifier, text, or regular expression.","inputSchema":{"type":"object","required":["pattern"],"additionalProperties":false,"properties":{"pattern":{"type":"string"},"dir":dir,"fixed":{"type":"boolean"},"ignore_case":{"type":"boolean"},"limit":limit,"context":context}}}),
-        json!({"name":"read","description":"Read source lines from a known path, including extracted documents.","inputSchema":{"type":"object","required":["path"],"additionalProperties":false,"properties":{"path":{"type":"string"},"dir":dir,"start":{"type":"integer","minimum":1},"lines":{"type":"integer","minimum":1,"maximum":10000},"characters":{"type":"integer","minimum":1,"maximum":1000000},"character_offset":{"type":"integer","minimum":0}}}}),
+        json!({"name":"search","description":"Find source by concept or keywords. evidence=functions adds bounded alternatives and source-grounded symbol extents without changing file rank. First match preserves the original excerpt. Expand through read; verify alternatives before editing.","inputSchema":{"type":"object","required":["query"],"additionalProperties":false,"properties":{"query":{"type":"string"},"dir":dir,"profile":{"type":"string","enum":["code","documents"]},"mode":{"type":"string","enum":["lexical","semantic","hybrid"]},"evidence":{"type":"string","enum":["none","passages","functions"]},"limit":limit,"context":context,"view":view}}}),
+        json!({"name":"grep","description":"Find an exact identifier, text, or regular expression.","inputSchema":{"type":"object","required":["pattern"],"additionalProperties":false,"properties":{"pattern":{"type":"string"},"dir":dir,"fixed":{"type":"boolean"},"ignore_case":{"type":"boolean"},"limit":limit,"context":context,"view":view}}}),
+        json!({"name":"read","description":"Read exact source from a known path. Use inclusive start/end or start/lines, or within for an exact function name (optionally Owner::name). Ambiguous names return coordinates instead of choosing. Optional body skips a leading Python docstring; the default preserves documentation. Batch 1..8 known regions with requests and optional ids. max_bytes defaults to 6000, at most 24000, shared fairly across a batch. Pass expected_source_hash to reject stale coordinates. Follow next_start_line or next_character_offset after truncation. No model is needed.","inputSchema":crate::source_read::schema(dir, view)}),
     ]
 }

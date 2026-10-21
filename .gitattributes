@@ -5,3 +5,6 @@ docs/history/README.md text eol=lf
 /eval/*.py text eol=lf
 
 /scripts/*.sh text eol=lf
+
+# The embedded and native-linked agent skill must have identical bytes.
+/skills/ixos/SKILL.md text eol=lf

@@ -10,12 +10,17 @@ description = "Local hybrid search for code and documents"
 name = "ixos"
 path = "src/main.rs"
 
+[features]
+default = ["evidence-functions"]
+evidence-functions = ["ixos-core/evidence-functions"]
+
 [dependencies]
+ixos-runtime = { path = "../ixos-runtime" }
 ixos-core = { path = "../ixos-core" }
 anyhow = "1"
 clap = { version = "4.5", features = ["derive"] }
 serde_json = "1"
 serde = { version = "1", features = ["derive"] }
 toml = "0.8"
-[dev-dependencies]
+dirs = "5"
 tempfile = "3.15"

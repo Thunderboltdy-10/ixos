@@ -21,6 +21,9 @@ pub struct Search {
     pub location: Location,
     #[arg(long, value_enum)]
     pub mode: Option<RetrievalMode>,
+    /// Additional bounded source evidence, independent of file ranking.
+    #[arg(long, value_enum, default_value = "none")]
+    pub evidence: ixos_core::evidence::EvidenceMode,
     #[arg(long)]
     pub limit: Option<usize>,
     #[arg(long)]
@@ -40,8 +43,17 @@ pub struct Location {
 }
 #[derive(Subcommand)]
 pub enum Command {
+    /// Desktop runtime transport and compatibility information. Agents use mcp.
+    Runtime {
+        #[command(subcommand)]
+        command: RuntimeCommand,
+    },
     /// Complete installation by downloading both verified models for offline use.
-    Setup,
+    Setup {
+        /// Provision agent skills without downloading models.
+        #[arg(long)]
+        skip_models: bool,
+    },
     /// Find files by concept, keywords, or both.
     Search(Search),
     /// Find exact text or a regular expression.
@@ -67,8 +79,13 @@ pub enum Command {
         dir: PathBuf,
         #[arg(long, default_value_t = 1)]
         start: usize,
-        #[arg(long, default_value_t = 40)]
-        lines: usize,
+        #[arg(long, conflicts_with = "end")]
+        lines: Option<usize>,
+        /// Inclusive final source line, instead of --lines.
+        #[arg(long)]
+        end: Option<usize>,
+        #[arg(long)]
+        expected_source_hash: Option<String>,
         #[arg(long)]
         characters: Option<usize>,
         #[arg(long, default_value_t = 0)]
@@ -133,4 +150,14 @@ pub enum ModelCommand {
         from: Option<PathBuf>,
     },
     List,
+}
+
+#[derive(Subcommand)]
+pub enum RuntimeCommand {
+    /// Print Ixos and bundled third-party source notices.
+    Licenses,
+    /// Report protocol version and compiled capabilities as JSON.
+    Info,
+    /// Serve the private resident desktop protocol on stdio.
+    Serve,
 }

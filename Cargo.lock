@@ -2428,7 +2428,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
+ "dirs 5.0.1",
  "ixos-core",
+ "ixos-runtime",
  "serde",
  "serde_json",
  "tempfile",

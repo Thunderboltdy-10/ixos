@@ -9,7 +9,23 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
     let path = cli.config.unwrap_or_else(Config::path);
     let config = Config::load(&path)?;
     match cli.command {
-        Command::Setup => {
+        Command::Runtime { command } => match command {
+            RuntimeCommand::Licenses => println!(
+                "{}\n{}\n{}",
+                include_str!("../../../LICENSE"),
+                include_str!("../../../docs/licenses/model2vec-rs-MIT.txt"),
+                include_str!("../../../docs/licenses/evidence-MIT.txt")
+            ),
+            RuntimeCommand::Info => println!("{}", crate::runtime::info()),
+            RuntimeCommand::Serve => crate::runtime::serve(config)?,
+        },
+        Command::Setup { skip_models } => {
+            for path in crate::skill::ensure()? {
+                println!("Ixos skill: {}", path.display());
+            }
+            if skip_models {
+                return Ok(());
+            }
             for profile in [
                 ixos_core::config::Profile::Code,
                 ixos_core::config::Profile::Documents,
@@ -31,6 +47,12 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
                 ixos_core::model::install::ensure(&config, profile, &model)?;
             }
             let mut engine = Engine::new(&args.location.dir, Some(&model), options)?;
+            anyhow::ensure!(
+                args.evidence != ixos_core::evidence::EvidenceMode::Functions
+                    || cfg!(feature = "evidence-functions"),
+                "This build has no function evidence support; use passages"
+            );
+            engine.configure_evidence(args.evidence);
             let (raw, _) = engine.search(&args.query)?;
             output(&raw, args.json)?;
         }
@@ -52,19 +74,35 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
             dir,
             start,
             lines,
+            end,
+            expected_source_hash,
             characters,
             character_offset,
             json,
         } => {
+            let count = match end {
+                Some(end) => end
+                    .checked_sub(start)
+                    .and_then(|n| n.checked_add(1))
+                    .ok_or_else(|| anyhow::anyhow!("End must be at least start"))?,
+                None => lines.unwrap_or(40),
+            };
             let raw = ixos_core::tools::read_range(
                 &dir,
                 &path,
                 start,
-                lines,
+                count,
                 characters,
                 character_offset,
                 6000,
             )?;
+            if let Some(expected) = expected_source_hash {
+                let v: serde_json::Value = serde_json::from_slice(&raw)?;
+                anyhow::ensure!(
+                    v["source_hash"].as_str() == Some(expected.as_str()),
+                    "Source changed; inspect the current source before reusing coordinates"
+                );
+            }
             if json {
                 std::io::stdout().write_all(&raw)?;
             } else {

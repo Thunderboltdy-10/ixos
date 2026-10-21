@@ -65,19 +65,8 @@ pub fn read(
     read_range(root, path, start, count, None, 0, budget)
 }
 
-pub fn read_range(
-    root: &Path,
-    path: &Path,
-    start: usize,
-    count: usize,
-    characters: Option<usize>,
-    character_offset: usize,
-    budget: usize,
-) -> anyhow::Result<Vec<u8>> {
-    anyhow::ensure!(
-        start > 0 && count > 0 && count <= 10000 && budget >= 128,
-        "Invalid source range/budget"
-    );
+/// Validate traversal and extraction through the same path used by legacy reads.
+pub(crate) fn resolve_source(root: &Path, path: &Path) -> anyhow::Result<std::path::PathBuf> {
     let root = root.canonicalize()?;
     anyhow::ensure!(root.is_dir(), "Read root must be a directory");
     let requested = if path.is_absolute() {
@@ -101,6 +90,20 @@ pub fn read_range(
             .any(|entry| entry.path().canonicalize().ok().as_ref() == Some(&resolved)),
         "Read path is excluded by the traversal/ignore rules"
     );
+    Ok(resolved)
+}
+
+pub(crate) fn load_source(root: &Path, path: &Path) -> anyhow::Result<Document> {
+    load_source_inner(root, path, false)
+}
+
+pub(crate) fn load_source_for_inspection(root: &Path, path: &Path) -> anyhow::Result<Document> {
+    load_source_inner(root, path, true)
+}
+
+fn load_source_inner(root: &Path, path: &Path, bounded_lines: bool) -> anyhow::Result<Document> {
+    let resolved = resolve_source(root, path)?;
+    let root = root.canonicalize()?;
     let mut bytes = Vec::new();
     std::fs::File::open(&resolved)?
         .take((16 * 1024 * 1024 + 1) as u64)
@@ -116,18 +119,67 @@ pub fn read_range(
         text.chars().count() <= 16 * 1024 * 1024,
         "Extracted source exceeds text limit"
     );
-    let lines: Vec<_> = text.split('\n').map(str::to_owned).collect();
+    // A byte limit alone allows millions of empty lines, each owning a String
+    // header. Bound inspection allocations before constructing the line vector.
     anyhow::ensure!(
-        start <= lines.len(),
-        "Requested line is past the end of the source"
+        !bounded_lines || text.split('\n').take(500_001).count() <= 500_000,
+        "Inspection source exceeds 500000 extracted lines; use a conventional range read"
     );
     let relative = resolved
         .strip_prefix(&root)?
         .to_string_lossy()
         .replace('\\', "/");
-    let mut end = start.saturating_add(count - 1).min(lines.len());
-    let mut identity = sha256(&bytes).to_vec();
+    let raw_hash = sha256(&bytes);
+    let mut identity = raw_hash.to_vec();
     identity.extend_from_slice(&sha256(text.as_bytes()));
+    Ok(Document {
+        path: relative.into(),
+        source_hash: sha256(&identity),
+        raw_hash,
+        lines: text.split('\n').map(str::to_owned).collect(),
+        text,
+        terms: Default::default(),
+        length: 0,
+        passages: Vec::new(),
+    })
+}
+
+pub fn read_range(
+    root: &Path,
+    path: &Path,
+    start: usize,
+    count: usize,
+    characters: Option<usize>,
+    character_offset: usize,
+    budget: usize,
+) -> anyhow::Result<Vec<u8>> {
+    anyhow::ensure!(
+        start > 0 && count > 0 && count <= 10000 && budget >= 128,
+        "Invalid source range/budget"
+    );
+    let source = load_source(root, path)?;
+    read_source(&source, start, count, characters, character_offset, budget)
+}
+
+pub(crate) fn read_source(
+    source: &Document,
+    start: usize,
+    count: usize,
+    characters: Option<usize>,
+    character_offset: usize,
+    budget: usize,
+) -> anyhow::Result<Vec<u8>> {
+    anyhow::ensure!(
+        start > 0 && count > 0 && count <= 10000 && budget >= 128,
+        "Invalid source range/budget"
+    );
+    let lines = &source.lines;
+    anyhow::ensure!(
+        start <= lines.len(),
+        "Requested line is past the end of the source"
+    );
+    let relative = source.path.to_string_lossy().replace('\\', "/");
+    let mut end = start.saturating_add(count - 1).min(lines.len());
     if let Some(characters) = characters {
         anyhow::ensure!(
             characters > 0 && characters <= 1000000,
@@ -153,7 +205,7 @@ pub fn read_range(
             .sum::<usize>();
         loop {
             let raw = json_bytes(
-                &json!({"slice":{"path":relative,"coordinate_space":"extracted-text-utf8","start_byte":base+begin,"end_byte":base+offsets[finish],"text":&range[begin..offsets[finish]]},"total_lines":lines.len(),"source_hash":hex::encode(sha256(&identity)),"next_character_offset":finish,"truncated":finish<offsets.len()-1}),
+                &json!({"slice":{"path":relative,"coordinate_space":"extracted-text-utf8","start_byte":base+begin,"end_byte":base+offsets[finish],"text":&range[begin..offsets[finish]]},"total_lines":lines.len(),"source_hash":hex::encode(source.source_hash),"next_character_offset":finish,"truncated":finish<offsets.len()-1}),
             )?;
             if raw.len() <= budget {
                 return Ok(raw);
@@ -171,10 +223,20 @@ pub fn read_range(
     );
     loop {
         let raw = json_bytes(
-            &json!({"snippet":Snippet {path:relative.clone(),start_line:start,end_line:end,text:lines[start-1..end].join("\n")},"total_lines":lines.len(),"source_hash":hex::encode(sha256(&identity)),"truncated":end<start.saturating_add(count-1).min(lines.len())}),
+            &json!({"snippet":Snippet {path:relative.clone(),start_line:start,end_line:end,text:lines[start-1..end].join("\n")},"total_lines":lines.len(),"source_hash":hex::encode(source.source_hash),"truncated":end<start.saturating_add(count-1).min(lines.len())}),
         )?;
         if raw.len() <= budget {
-            return Ok(raw);
+            // Preserve the compact legacy shape for complete reads.
+            if end < start.saturating_add(count - 1).min(lines.len()) {
+                let mut v: serde_json::Value = serde_json::from_slice(&raw)?;
+                v["next_start_line"] = json!(end + 1);
+                let extended = json_bytes(&v)?;
+                if extended.len() <= budget {
+                    return Ok(extended);
+                }
+            } else {
+                return Ok(raw);
+            }
         }
         anyhow::ensure!(
             end > start,
@@ -182,6 +244,49 @@ pub fn read_range(
         );
         end = start + (end - start) / 2;
     }
+}
+
+/// Fill an explicitly requested/batched budget without the legacy halving slack.
+/// Default single reads keep their exact historical serialization and extents.
+pub(crate) fn read_filled(
+    source: &Document,
+    start: usize,
+    count: usize,
+    characters: Option<usize>,
+    character_offset: usize,
+    budget: usize,
+) -> anyhow::Result<Vec<u8>> {
+    let initial = read_source(source, start, count, characters, character_offset, budget)?;
+    let mut best: serde_json::Value = serde_json::from_slice(&initial)?;
+    if characters.is_some() || best["truncated"] != true {
+        return Ok(initial);
+    }
+    let target = start.saturating_add(count - 1).min(source.lines.len());
+    let mut low = best["snippet"]["end_line"].as_u64().unwrap() as usize;
+    let mut high = target + 1;
+    while low + 1 < high {
+        let mid = low + (high - low) / 2;
+        let mut value: serde_json::Value = serde_json::from_slice(&read_source(
+            source,
+            start,
+            mid - start + 1,
+            None,
+            0,
+            budget,
+        )?)?;
+        let actual = value["snippet"]["end_line"].as_u64().unwrap() as usize;
+        value["truncated"] = json!(mid < target);
+        if mid < target {
+            value["next_start_line"] = json!(mid + 1);
+        }
+        if actual == mid && json_bytes(&value)?.len() <= budget {
+            low = mid;
+            best = value;
+        } else {
+            high = mid;
+        }
+    }
+    json_bytes(&best)
 }
 
 pub fn grep(
@@ -294,13 +399,34 @@ pub fn grep(
 }
 
 pub fn print_human(raw: &[u8]) -> anyhow::Result<()> {
+    write_human(raw, &mut io::stdout().lock())
+}
+fn write_human(raw: &[u8], stdout: &mut impl Write) -> anyhow::Result<()> {
     let payload: serde_json::Value = serde_json::from_slice(raw)?;
-    let mut stdout = io::stdout().lock();
     for row in payload["results"]
         .as_array()
         .ok_or_else(|| anyhow::anyhow!("Missing results"))?
     {
         let path = row["path"].as_str().unwrap_or("");
+        if let Some(matches) = row["matches"].as_array() {
+            for m in matches {
+                if let Some(symbol) = m["symbol"].as_array() {
+                    writeln!(
+                        stdout,
+                        "{path}:{}: function {} (L{}-L{})",
+                        symbol[1],
+                        symbol[0].as_str().unwrap_or(""),
+                        symbol[1],
+                        symbol[2]
+                    )?;
+                }
+                let first = m["lines"][0].as_u64().unwrap_or(1);
+                for (offset, line) in m["text"].as_str().unwrap_or("").split('\n').enumerate() {
+                    writeln!(stdout, "{path}:{}:{line}", first + offset as u64)?;
+                }
+            }
+            continue;
+        }
         if row.get("snippet").is_none() {
             writeln!(stdout, "{path}: snippet omitted by output budget")?;
             continue;
@@ -321,6 +447,50 @@ pub fn print_human(raw: &[u8]) -> anyhow::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn explicit_budget_fits_a_larger_exact_prefix_with_truthful_continuation() {
+        let dir = tempfile::tempdir().unwrap();
+        let source = (0..80)
+            .map(|i| format!("line {i:03} 中😀 {}\n", "content ".repeat(8)))
+            .collect::<String>();
+        std::fs::write(dir.path().join("source.txt"), &source).unwrap();
+        let doc = load_source(dir.path(), Path::new("source.txt")).unwrap();
+        let legacy: serde_json::Value =
+            serde_json::from_slice(&read_source(&doc, 1, 80, None, 0, 1200).unwrap()).unwrap();
+        let raw = read_filled(&doc, 1, 80, None, 0, 1200).unwrap();
+        let filled: serde_json::Value = serde_json::from_slice(&raw).unwrap();
+        let end = filled["snippet"]["end_line"].as_u64().unwrap() as usize;
+        assert!(raw.len() <= 1200);
+        assert!(end > legacy["snippet"]["end_line"].as_u64().unwrap() as usize);
+        assert_eq!(
+            filled["snippet"]["text"],
+            source.lines().take(end).collect::<Vec<_>>().join("\n")
+        );
+        assert_eq!(filled["next_start_line"], end + 1);
+        assert_eq!(filled["truncated"], true);
+        let mut larger = filled.clone();
+        larger["snippet"]["text"] =
+            json!(source.lines().take(end + 1).collect::<Vec<_>>().join("\n"));
+        larger["snippet"]["end_line"] = json!(end + 1);
+        larger["next_start_line"] = json!(end + 2);
+        assert!(json_bytes(&larger).unwrap().len() > 1200);
+    }
+    #[test]
+    fn human_search_preserves_legacy_lines_and_displays_explicit_alternatives() {
+        let mut out = Vec::new();
+        write_human(
+            br#"{"results":[{"path":"a.rs","snippet":{"start_line":2,"text":"// docs"}}]}"#,
+            &mut out,
+        )
+        .unwrap();
+        assert_eq!(String::from_utf8(out).unwrap(), "a.rs:2:// docs\n");
+        let mut out = Vec::new();
+        write_human(br#"{"results":[{"path":"a.rs","matches":[{"lines":[2,2],"text":"// docs"},{"lines":[8,8],"text":"fn target() {}","symbol":["target",8,8]}]}]}"#, &mut out).unwrap();
+        let text = String::from_utf8(out).unwrap();
+        assert!(text
+            .contains("a.rs:2:// docs\na.rs:8: function target (L8-L8)\na.rs:8:fn target() {}\n"));
+        assert!(!text.contains("omitted"));
+    }
     #[test]
     fn grep_and_read_keep_unicode_lines_and_respect_ignores() {
         let dir = tempfile::tempdir().unwrap();

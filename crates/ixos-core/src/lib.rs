@@ -6,7 +6,9 @@ pub mod digest;
 pub mod discover;
 pub mod doctor;
 pub mod engine;
+pub mod evidence;
 pub mod extract;
+pub mod inspect;
 #[cfg(windows)]
 mod metadata_windows;
 pub mod model;

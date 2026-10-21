@@ -20,6 +20,16 @@ pub struct Stats {
 
 pub(crate) struct Selection {
     pub anchor: usize,
+    pub candidates: Vec<Scored>,
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct Scored {
+    pub start_byte: usize,
+    pub start_line: usize,
+    pub end_line: usize,
+    pub anchor: usize,
+    pub score: f64,
 }
 
 struct Candidate {
@@ -133,6 +143,7 @@ pub(crate) fn select(
     query: &[f32],
     idfs: &HashMap<String, f32>,
     model: &Model,
+    retain_candidates: bool,
 ) -> anyhow::Result<(HashMap<String, Selection>, Stats)> {
     let started = Instant::now();
     let mut stats = Stats::default();
@@ -177,9 +188,19 @@ pub(crate) fn select(
             .fold(0.0, f64::max)
             .max(1e-12);
         let mut winner: Option<(f64, Candidate)> = None;
+        let mut scored = Vec::new();
         for part in parts {
             let score = 0.5 * f64::from(dot(query, &part.passage.vector).max(0.0))
                 + 0.5 * part.weight / maximum;
+            if retain_candidates {
+                scored.push(Scored {
+                    start_byte: part.passage.start_byte,
+                    start_line: part.passage.start_line,
+                    end_line: part.passage.end_line,
+                    anchor: part.anchor,
+                    score,
+                });
+            }
             if winner.as_ref().is_none_or(|(best, _)| score > *best) {
                 winner = Some((score, part));
             }
@@ -189,6 +210,7 @@ pub(crate) fn select(
                 path,
                 Selection {
                     anchor: part.anchor,
+                    candidates: scored,
                 },
             );
         }

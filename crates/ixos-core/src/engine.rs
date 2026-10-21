@@ -3,50 +3,17 @@ use crate::cache::quantize;
 use crate::config::Profile;
 use crate::model::Model;
 use crate::source::Stamp;
-use crate::{cache, record, snippet, tools, typo};
+use crate::{cache, evidence, record, snippet, tools, typo};
 use crate::{digest::sha256, discover::search_walk};
 use rayon::prelude::*;
 use record::{representatives, Passage};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::time::{Instant, SystemTime};
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, clap::ValueEnum, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum RetrievalMode {
-    Lexical,
-    Semantic,
-    #[default]
-    Hybrid,
-}
-
-#[derive(Clone, Debug)]
-pub struct Options {
-    pub mode: RetrievalMode,
-    pub profile: Profile,
-    pub persist: bool,
-    pub limit: usize,
-    pub context: usize,
-    pub output_bytes: usize,
-    pub max_file_bytes: usize,
-    pub max_corpus_bytes: usize,
-}
-impl Default for Options {
-    fn default() -> Self {
-        Self {
-            mode: RetrievalMode::Hybrid,
-            profile: Profile::Code,
-            persist: true,
-            limit: 10,
-            context: 2,
-            output_bytes: 12000,
-            max_file_bytes: 16 * 1024 * 1024,
-            max_corpus_bytes: 256 * 1024 * 1024,
-        }
-    }
-}
+pub use ixos_runtime::protocol::{Options, RetrievalMode};
 
 #[derive(Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -88,6 +55,8 @@ pub struct Stats {
     pub tokenizer_settings: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub snippet: Option<snippet::Stats>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub evidence: Option<evidence::Stats>,
 }
 
 pub struct Document {
@@ -144,6 +113,8 @@ pub struct Engine {
     observations: HashMap<String, (Stamp, SystemTime)>,
     term_documents: HashMap<String, usize>,
     total_terms: usize,
+    evidence: evidence::State,
+    inspection: crate::inspect::State,
 }
 
 impl Engine {
@@ -202,7 +173,93 @@ impl Engine {
             observations: HashMap::new(),
             term_documents: HashMap::new(),
             total_terms: 0,
+            evidence: evidence::State::default(),
+            inspection: crate::inspect::State::default(),
         })
+    }
+    /// Select optional source evidence independently of file ranking.
+    pub fn configure_evidence(&mut self, mode: evidence::EvidenceMode) {
+        self.evidence.mode = mode;
+    }
+    /// Inspect one known source without refreshing or embedding the entire corpus.
+    pub fn inspect(
+        &mut self,
+        root: &Path,
+        path: &Path,
+        selection: &crate::inspect::Selection,
+        budget: usize,
+        expected_hash: Option<&str>,
+    ) -> anyhow::Result<(serde_json::Value, crate::inspect::Stats)> {
+        let mut stats = crate::inspect::Stats::default();
+        let resolved = tools::resolve_source(root, path)?;
+        let relative = resolved
+            .strip_prefix(root.canonicalize()?)?
+            .to_string_lossy()
+            .replace('\\', "/");
+        let stamp = Stamp::read(&resolved).ok();
+        let resident = self
+            .observations
+            .get(&relative)
+            .filter(|(old, observed)| {
+                stamp
+                    .as_ref()
+                    .is_some_and(|new| new.reusable(old, *observed))
+            })
+            .and_then(|_| self.documents.get(&relative));
+        let loaded;
+        let doc = if let Some(doc) = resident {
+            stats.resident_source_hits += 1;
+            doc
+        } else {
+            loaded = self.inspection.source(root, path, &mut stats)?;
+            &loaded
+        };
+        anyhow::ensure!(
+            expected_hash.is_none_or(|hash| hash == hex::encode(doc.source_hash)),
+            "Source changed; discard old coordinates and inspect the current source"
+        );
+        let mut result =
+            self.inspection
+                .select(doc, &relative, &mut self.evidence, selection, budget)?;
+        // Resident search documents keep their absolute extraction path. The
+        // public inspection identity and locator cache use the workspace path.
+        if result.get("snippet").is_some() {
+            result["snippet"]["path"] = serde_json::json!(relative);
+        } else {
+            result["path"] = serde_json::json!(relative);
+        }
+        stats.retained_bytes = self.inspection.retained();
+        Ok((result, stats))
+    }
+    /// Conventional batch ranges share validated extracted source without loading a model.
+    pub fn read_slice(
+        &mut self,
+        root: &Path,
+        path: &Path,
+        range: crate::inspect::SourceRange,
+        budget: usize,
+        expected_hash: Option<&str>,
+    ) -> anyhow::Result<(serde_json::Value, crate::inspect::Stats)> {
+        anyhow::ensure!(
+            range.start > 0 && range.count > 0 && range.count <= 10000 && budget >= 128,
+            "Invalid source range/budget"
+        );
+        let mut stats = crate::inspect::Stats::default();
+        let doc = self.inspection.source(root, path, &mut stats)?;
+        anyhow::ensure!(
+            expected_hash.is_none_or(|hash| hash == hex::encode(doc.source_hash)),
+            "Source changed; discard old coordinates and inspect the current source"
+        );
+        let raw = tools::read_filled(
+            &doc,
+            range.start,
+            range.count,
+            range.characters,
+            range.character_offset,
+            budget,
+        )?;
+        stats.retained_bytes = self.inspection.retained();
+        Ok((serde_json::from_slice(&raw)?, stats))
     }
     pub fn refresh(&mut self) -> anyhow::Result<Stats> {
         let began = Instant::now();
@@ -672,6 +729,17 @@ impl Engine {
             })
             .collect();
         ranked.sort_by(|a, b| b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+        let evidence_enabled = self.evidence.mode != evidence::EvidenceMode::None
+            && self.options.profile == Profile::Code;
+        let evidence_paths = if evidence_enabled {
+            ranked
+                .iter()
+                .take(self.options.limit)
+                .map(|r| r.0.clone())
+                .collect::<Vec<_>>()
+        } else {
+            Vec::new()
+        };
         let selections = if self.model.is_some() && self.options.mode != RetrievalMode::Lexical {
             let paths = ranked
                 .iter()
@@ -686,6 +754,7 @@ impl Engine {
                 self.model
                     .as_ref()
                     .ok_or_else(|| anyhow::anyhow!("Snippet model is unavailable"))?,
+                evidence_enabled,
             )?;
             stats.snippet = Some(diagnostics);
             selected
@@ -740,7 +809,29 @@ impl Engine {
             }
         }
         let result_count = rows.len();
-        let raw = rows.finish();
+        let mut raw = rows.finish();
+        if evidence_enabled && self.options.mode != RetrievalMode::Lexical {
+            if let Some(model) = self.model.as_ref() {
+                match self.evidence.attach(evidence::Request {
+                    raw: &raw,
+                    docs: &self.documents,
+                    paths: &evidence_paths,
+                    selections: &selections,
+                    query,
+                    qvector: &query_vector,
+                    model,
+                    budget: self.options.output_bytes,
+                }) {
+                    Ok((output, diagnostics)) => {
+                        raw = output;
+                        stats.evidence = Some(diagnostics);
+                    }
+                    Err(error) => {
+                        tracing::warn!(%error, "Optional source evidence unavailable; returning original excerpts")
+                    }
+                }
+            }
+        }
         stats.returned_results = result_count;
         stats.output_bytes = raw.len();
         stats.query_ms = began.elapsed().as_secs_f64() * 1000.0;
@@ -1064,6 +1155,49 @@ mod tests {
             assert_eq!(value["results"][0]["path"], "implementation.rs");
             assert!(!stats.literal_guard);
         }
+    }
+
+    #[test]
+    #[cfg(feature = "evidence-functions")]
+    fn inspection_reuses_search_source_and_relative_symbol_identity() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("source.rs");
+        std::fs::write(&file, "fn selected() { let source = 1; }\n").unwrap();
+        std::fs::OpenOptions::new()
+            .write(true)
+            .open(&file)
+            .unwrap()
+            .set_times(
+                std::fs::FileTimes::new()
+                    .set_modified(SystemTime::now() - std::time::Duration::from_secs(10)),
+            )
+            .unwrap();
+        let mut engine = Engine::new(
+            dir.path(),
+            None,
+            Options {
+                mode: RetrievalMode::Lexical,
+                persist: false,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        engine.refresh().unwrap();
+        let selection = crate::inspect::Selection {
+            within: Some("selected".into()),
+            ..Default::default()
+        };
+        let (out, stats) = engine
+            .inspect(dir.path(), Path::new("source.rs"), &selection, 6000, None)
+            .unwrap();
+        assert_eq!(stats.resident_source_hits, 1);
+        assert_eq!(stats.source_bytes_read, 0);
+        assert_eq!(out["snippet"]["path"], "source.rs");
+        let mut parse = evidence::Stats::default();
+        engine
+            .evidence
+            .units("source.rs", &engine.documents["source.rs"], &mut parse);
+        assert_eq!(parse.parse_cache_hits, 1);
     }
 
     #[test]

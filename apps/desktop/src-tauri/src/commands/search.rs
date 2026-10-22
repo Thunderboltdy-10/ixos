@@ -1,6 +1,9 @@
 use super::{recent, settings::Settings};
 use crate::state::{AppState, LocationStatus};
-use ixos_core::engine::{Engine, RetrievalMode};
+use ixos_runtime::{
+    client::{Cancellation, Engine},
+    protocol::RetrievalMode,
+};
 use serde_json::{json, Value};
 use std::{path::PathBuf, sync::atomic::Ordering};
 use tauri::{ipc::Channel, Emitter, Manager, State};
@@ -27,12 +30,8 @@ fn publish(
             let (file_count, source_bytes) = engine
                 .map(|engine| engine.source_stats(directory))
                 .unwrap_or_default();
-            let discovered = if engine.is_some() {
-                ixos_core::discover::search_walk(directory, true, true, false, None)
-                    .build()
-                    .filter_map(Result::ok)
-                    .filter(|entry| entry.file_type().is_some_and(|kind| kind.is_file()))
-                    .count()
+            let discovered = if let Some(engine) = engine {
+                engine.discovered_files(directory)
             } else {
                 0
             };
@@ -75,15 +74,28 @@ pub fn warm(app: tauri::AppHandle) {
         publish(&app, &locations, None, "discover", None);
         let result = (|| -> Result<(), String> {
             let mut resident = state.engine.lock().map_err(|error| error.to_string())?;
+            if state.warming_generation.load(Ordering::Acquire) != generation {
+                return Ok(());
+            }
+            if resident.as_ref().is_some_and(|engine| !engine.is_healthy()) {
+                *resident = None;
+            }
+            let cancellation = Cancellation::new(state.warming_generation.clone(), generation);
             let mut options = settings.search.options(settings.search.profile);
             options.mode = RetrievalMode::Lexical;
             if resident.is_none() {
                 *resident = Some(
-                    Engine::new_locations(&locations, None, options)
-                        .map_err(|error| error.to_string())?,
+                    Engine::new_locations_cancelled(
+                        &locations,
+                        None,
+                        options,
+                        Some(cancellation.clone()),
+                    )
+                    .map_err(|error| error.to_string())?,
                 );
             }
             let engine = resident.as_mut().unwrap();
+            engine.set_cancellation(cancellation);
             engine
                 .configure_search(
                     RetrievalMode::Lexical,
@@ -118,7 +130,9 @@ pub fn warm(app: tauri::AppHandle) {
             Ok(())
         })();
         if let Err(error) = result {
-            publish(&app, &locations, None, "error", Some(error));
+            if state.warming_generation.load(Ordering::Acquire) == generation {
+                publish(&app, &locations, None, "error", Some(error));
+            }
         }
     }));
 }
@@ -156,16 +170,25 @@ pub async fn search_progressive(
         .generation
         .fetch_add(1, Ordering::SeqCst)
         + 1;
+    // Search takes precedence over a background warm that may own the engine.
+    app.state::<AppState>()
+        .warming_generation
+        .fetch_add(1, Ordering::AcqRel);
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let state = app.state::<AppState>();
+        let result = (|| -> Result<(), String> {
         let mut resident = state.engine.lock().map_err(|error| error.to_string())?;
+        if state.generation.load(Ordering::Acquire) != generation { return Ok(()); }
+        if resident.as_ref().is_some_and(|engine| !engine.is_healthy()) { *resident = None; }
+        let cancellation = Cancellation::new(state.generation.clone(), generation);
         let mut options = settings.search.options(settings.search.profile);
         options.mode = RetrievalMode::Lexical;
         if resident.is_none() {
-            *resident = Some(Engine::new_locations(&locations, None, options)
+            *resident = Some(Engine::new_locations_cancelled(&locations, None, options, Some(cancellation.clone()))
                 .map_err(|error| error.to_string())?);
         }
         let engine = resident.as_mut().unwrap();
+        engine.set_cancellation(cancellation);
         let model = settings.search.model_path(settings.search.profile, None);
         let emit = |event| on_event.send(event).map_err(|error| error.to_string());
         for mode in [RetrievalMode::Lexical, RetrievalMode::Hybrid] {
@@ -183,7 +206,7 @@ pub async fn search_progressive(
             if let Err(error) = engine.configure_search(
                 mode, settings.search.limit, settings.search.context, Some(&model),
             ) {
-                if mode == RetrievalMode::Lexical {
+                if mode == RetrievalMode::Lexical || !engine.is_healthy() {
                     return Err(error.to_string());
                 }
                 emit(json!({"type": "warning", "message": format!("Using keyword search. The model could not load: {error}")}))?;
@@ -218,6 +241,8 @@ pub async fn search_progressive(
         let directory = directory.map(|path| dunce::simplified(&path).to_path_buf());
         let _ = recent::record(&app, &query, directory);
         emit(json!({"type": "complete"}))
+        })();
+        if state.generation.load(Ordering::Acquire) != generation { Ok(()) } else { result }
     }).await.map_err(|error| error.to_string())?
 }
 #[tauri::command]

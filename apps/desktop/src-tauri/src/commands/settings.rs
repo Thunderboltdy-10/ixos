@@ -1,4 +1,4 @@
-use ixos_core::config::Config;
+use ixos_runtime::config::Config;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tauri::Emitter;
@@ -16,9 +16,7 @@ struct DesktopOptions {
 }
 impl Settings {
     fn path() -> PathBuf {
-        dirs::config_dir()
-            .unwrap_or_else(std::env::temp_dir)
-            .join("ixos/desktop.json")
+        ixos_runtime::config::settings_dir().join("desktop.json")
     }
     pub fn load() -> Self {
         let desktop: DesktopOptions = std::fs::read(Self::path())

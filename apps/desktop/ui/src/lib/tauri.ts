@@ -47,3 +47,10 @@ export const setShortcutConfig = (config: ShortcutConfig) =>
 export const listRecentSearches = () =>
   invoke<RecentSearch[]>("list_recent_searches");
 export const clearRecentSearches = () => invoke<void>("clear_recent_searches");
+
+export interface SkillReport {
+  bundled_version: string;
+  bundled_sha256: string;
+  targets: { path: string; status: "installed" | "current" | "linked" | "preserved" | "failed"; installed_sha256: string | null; detail: string | null }[];
+}
+export const getSkillStatus = () => invoke<SkillReport>("get_skill_status");

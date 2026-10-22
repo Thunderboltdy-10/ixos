@@ -104,9 +104,7 @@ impl Fallback {
 /// `yes` is false for both inspection and a clear dry run. `all` also selects
 /// orphaned application-cache entries whose original files no longer exist.
 pub fn manage(locations: &[PathBuf], all: bool, yes: bool) -> anyhow::Result<CacheStats> {
-    let directory = dirs::cache_dir()
-        .ok_or_else(|| anyhow::anyhow!("No application cache directory"))?
-        .join("ixos");
+    let directory = ixos_runtime::config::cache_dir();
     manage_at(locations, &directory, all, yes)
 }
 

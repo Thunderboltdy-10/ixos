@@ -3,6 +3,24 @@ use crate::protocol::Options;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
+/// Explicit portable/test root; defaults retain the native platform locations.
+/// Skill discovery has its own IXOS_SKILL_HOME and is never redirected implicitly.
+fn application_dir(kind: &str, native: Option<PathBuf>) -> PathBuf {
+    std::env::var_os("IXOS_HOME")
+        .filter(|p| !p.is_empty())
+        .map(|p| PathBuf::from(p).join(kind))
+        .unwrap_or_else(|| native.unwrap_or_else(std::env::temp_dir).join("ixos"))
+}
+pub fn settings_dir() -> PathBuf {
+    application_dir("config", dirs::config_dir())
+}
+pub fn data_dir() -> PathBuf {
+    application_dir("data", dirs::data_local_dir())
+}
+pub fn cache_dir() -> PathBuf {
+    application_dir("cache", dirs::cache_dir())
+}
+
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, clap::ValueEnum, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Profile {
@@ -37,17 +55,13 @@ impl Default for Config {
             limit: 10,
             context: 2,
             cache: true,
-            model_dir: dirs::data_local_dir()
-                .unwrap_or_else(std::env::temp_dir)
-                .join("ixos/models"),
+            model_dir: data_dir().join("models"),
         }
     }
 }
 impl Config {
     pub fn path() -> PathBuf {
-        dirs::config_dir()
-            .unwrap_or_else(std::env::temp_dir)
-            .join("ixos/settings.toml")
+        settings_dir().join("settings.toml")
     }
     pub fn load(path: &Path) -> anyhow::Result<Self> {
         let result = match std::fs::read_to_string(path) {

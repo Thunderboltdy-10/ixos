@@ -2409,7 +2409,7 @@ version = "0.1.0"
 dependencies = [
  "dirs 5.0.1",
  "dunce",
- "ixos-core",
+ "ixos-runtime",
  "serde",
  "serde_json",
  "tauri",
@@ -2445,7 +2445,6 @@ dependencies = [
  "bytemuck",
  "calamine",
  "clap",
- "dirs 5.0.1",
  "grep-regex",
  "grep-searcher",
  "half",
@@ -2494,7 +2493,11 @@ dependencies = [
  "dirs 5.0.1",
  "serde",
  "serde_json",
+ "sha2",
+ "tempfile",
  "toml 0.8.2",
+ "ureq",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]

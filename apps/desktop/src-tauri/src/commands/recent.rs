@@ -10,9 +10,7 @@ pub struct RecentSearch {
     timestamp: u64,
 }
 fn path() -> PathBuf {
-    dirs::config_dir()
-        .unwrap_or_else(std::env::temp_dir)
-        .join("ixos/recent-searches.json")
+    ixos_runtime::config::settings_dir().join("recent-searches.json")
 }
 #[tauri::command]
 pub fn list_recent_searches() -> Vec<RecentSearch> {

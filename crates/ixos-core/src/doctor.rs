@@ -19,9 +19,7 @@ pub fn check(config: &Config, profile: Profile, model_path: &Path) -> anyhow::Re
     let model = Model::load(model_path)?;
     let dimensions = model.dimensions();
     drop(model);
-    let cache_dir = dirs::cache_dir()
-        .ok_or_else(|| anyhow::anyhow!("No application cache directory"))?
-        .join("ixos");
+    let cache_dir = ixos_runtime::config::cache_dir();
     std::fs::create_dir_all(&cache_dir)?;
     drop(tempfile::NamedTempFile::new_in(cache_dir)?);
     let folder = tempfile::tempdir()?;

@@ -9,8 +9,19 @@ use clap::Parser;
 
 fn main() {
     let cli = args::Cli::parse();
-    if let Err(error) = skill::ensure() {
-        eprintln!("Ixos skill setup: {error:#}");
+    match skill::ensure() {
+        Ok(report) if report.needs_attention() => {
+            for target in report.targets.iter().filter(|t| t.detail.is_some()) {
+                eprintln!(
+                    "Ixos skill {:?} at {}: {}",
+                    target.status,
+                    target.path.display(),
+                    target.detail.as_deref().unwrap()
+                );
+            }
+        }
+        Err(error) => eprintln!("Ixos skill setup: {error:#}"),
+        _ => {}
     }
     if let Err(error) = commands::run(cli) {
         eprintln!("{error:#}");

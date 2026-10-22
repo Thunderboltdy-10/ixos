@@ -1,4 +1,6 @@
 //! Versioned contracts shared by the runtime and its clients. No embedding engine is linked here.
+#[cfg(feature = "client")]
+pub mod client;
 pub mod config;
 pub mod protocol;
 /// Breaking wire changes increment this major independently of product versions.

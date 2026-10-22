@@ -34,7 +34,7 @@ impl Default for ShortcutConfig {
 impl ShortcutConfig {
     /// Get the config file path
     fn config_path() -> Option<PathBuf> {
-        dirs::config_dir().map(|p| p.join("ixos").join("shortcut.json"))
+        Some(ixos_runtime::config::settings_dir().join("shortcut.json"))
     }
 
     /// Load shortcut config from file

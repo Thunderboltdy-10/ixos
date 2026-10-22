@@ -24,3 +24,6 @@ serde = { version = "1", features = ["derive"] }
 toml = "0.8"
 dirs = "5"
 tempfile = "3.15"
+
+[dev-dependencies]
+ixos-runtime = { path = "../ixos-runtime", features = ["client"] }

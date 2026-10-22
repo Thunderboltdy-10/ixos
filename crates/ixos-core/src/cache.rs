@@ -30,9 +30,7 @@ impl DocumentCache {
     }
     fn database(&mut self) -> anyhow::Result<&(Env, Database<Bytes, Bytes>)> {
         if self.fallback.is_none() {
-            let directory = dirs::cache_dir()
-                .ok_or_else(|| anyhow::anyhow!("No application cache directory"))?
-                .join("ixos/records");
+            let directory = ixos_runtime::config::cache_dir().join("records");
             std::fs::create_dir_all(&directory)?;
             // Opening one environment per DocumentCache/engine keeps ownership
             // explicit. LMDB serializes process writes; no source folder files.
@@ -65,7 +63,7 @@ impl DocumentCache {
         }
         // A successful native write avoids creating the fallback database. On
         // misses, consult an existing fallback only, never initialize it to read.
-        let directory = dirs::cache_dir()?.join("ixos/records");
+        let directory = ixos_runtime::config::cache_dir().join("records");
         if self.fallback.is_none() && !directory.join("data.mdb").exists() {
             return None;
         }

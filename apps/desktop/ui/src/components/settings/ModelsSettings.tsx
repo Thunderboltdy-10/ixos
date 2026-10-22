@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Check, DownloadCloud, FolderOpen } from "lucide-react";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -9,6 +9,13 @@ export function ModelsSettings() {
   const [busy, setBusy] = useState<Profile | "doctor" | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [skill, setSkill] = useState<tauri.SkillReport | null>(null);
+  const [skillError, setSkillError] = useState<string | null>(null);
+  async function loadSkill() {
+    try { setSkill(await tauri.getSkillStatus()); setSkillError(null); }
+    catch (error) { setSkillError(String(error)); }
+  }
+  useEffect(() => { void loadSkill(); }, []);
   async function install(profile: Profile, local: boolean) {
     setError(null);
     setMessage(null);
@@ -38,6 +45,7 @@ export function ModelsSettings() {
     setError(null);
     setMessage(null);
     try {
+      await loadSkill();
       const report = await tauri.doctor();
       setMessage(
         `${report.profile} model loads (${report.dimensions} dimensions). Cache is writable. Search works.`,
@@ -108,6 +116,16 @@ export function ModelsSettings() {
       >
         {busy === "doctor" ? "Checking…" : "Check installation"}
       </button>
+      <div className="space-y-2 text-sm text-fg-secondary">
+        <h3 className="font-medium text-porcelain">Agent skill</h3>
+        <p>The bundled skill is installed for detected agent hosts. MCP must also be registered in your agent host; restart the host after changing its configuration.</p>
+        {skill && <p>Bundled version {skill.bundled_version} · SHA256 <code className="break-all text-xs">{skill.bundled_sha256}</code></p>}
+        {skill?.targets.map((target) => <div key={target.path}>
+          <p className="break-all"><span className="capitalize">{target.status}</span>: {target.path}</p>
+          {target.detail && <p role="status">{target.detail}</p>}
+        </div>)}
+        {skillError && <p role="alert" className="text-danger">{skillError}</p>}
+      </div>
       {message && (
         <p role="status" className="text-sm text-accent-teal">
           {message}

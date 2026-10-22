@@ -524,22 +524,23 @@ export function SearchSurface({
               </div>
             </div>
           </div>
+        </div>
+      )}
 
-          {errorMessage && (
-            <div
-              style={{
-                marginTop: 10,
-                border: "1px solid rgba(239, 68, 68, 0.5)",
-                borderRadius: 8,
-                background: "rgba(239, 68, 68, 0.08)",
-                padding: "10px 12px",
-                color: "#fca5a5",
-                fontSize: 12,
-              }}
-            >
-              {errorMessage}
-            </div>
-          )}
+      {errorMessage && (
+        <div
+          role="alert"
+          style={{
+            marginTop: 10,
+            border: "1px solid rgba(239, 68, 68, 0.5)",
+            borderRadius: 8,
+            background: "rgba(239, 68, 68, 0.08)",
+            padding: "10px 12px",
+            color: "#fca5a5",
+            fontSize: 12,
+          }}
+        >
+          {errorMessage}
         </div>
       )}
 
@@ -739,7 +740,9 @@ export function SearchSurface({
                 >
                   {isSearching
                     ? "warming first ranked results..."
-                    : "no results found."}
+                    : errorMessage
+                      ? "Search did not complete. Submit again to retry."
+                      : "no results found."}
                 </motion.div>
               )}
             </AnimatePresence>

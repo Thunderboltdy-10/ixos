@@ -56,10 +56,19 @@ pub fn run() {
             commands::system::suggested_locations,
             commands::system::doctor,
             commands::system::get_model_status,
+            commands::system::get_skill_status,
             commands::system::install_model,
             commands::shortcut::get_shortcut_config,
             commands::shortcut::set_shortcut_config,
         ])
-        .run(tauri::generate_context!())
-        .expect("Cannot run Ixos");
+        .build(tauri::generate_context!())
+        .expect("Cannot run Ixos")
+        .run(|app, event| {
+            if matches!(
+                event,
+                tauri::RunEvent::ExitRequested { .. } | tauri::RunEvent::Exit
+            ) {
+                app.state::<state::AppState>().stop();
+            }
+        });
 }

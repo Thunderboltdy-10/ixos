@@ -56,7 +56,7 @@ pub async fn select_directory(app: AppHandle) -> Result<Option<String>, String> 
 /// Failed downloads leave keyword search available and can be retried in Settings.
 pub fn setup_models(app: AppHandle) {
     use crate::state::{AppState, ModelStatus};
-    use ixos_core::config::Profile;
+    use ixos_runtime::config::Profile;
     let profiles = [Profile::Code, Profile::Documents];
     if let Ok(mut statuses) = app.state::<AppState>().models.lock() {
         *statuses = profiles
@@ -79,7 +79,7 @@ pub fn setup_models(app: AppHandle) {
 
 fn install_profile(
     app: &AppHandle,
-    profile: ixos_core::config::Profile,
+    profile: ixos_runtime::config::Profile,
     source: Option<std::path::PathBuf>,
 ) -> Result<(), String> {
     use crate::state::{AppState, ModelStatus};
@@ -96,13 +96,13 @@ fn install_profile(
         let _ = tauri::Emitter::emit(app, "models-changed", ());
     };
     update(false, true, None);
-    let config = Settings::load().search;
-    let path = config.model_path(profile, None);
-    let result = if source.is_none() && path != config.model_dir.join(profile.name()) {
-        ixos_core::model::install::verify(&path, profile).map(|_| path)
-    } else {
-        ixos_core::model::install::install(profile, &config.model_dir, source.as_deref())
-    }
+    let generation = app.state::<AppState>().lifecycle.clone();
+    let expected = generation.load(std::sync::atomic::Ordering::Acquire);
+    let result = ixos_runtime::client::manage_cancelled(
+        "model-install",
+        serde_json::json!({"profile":profile,"source":source}),
+        ixos_runtime::client::Cancellation::new(generation, expected),
+    )
     .map_err(|error| format!("{error:#}"));
     match result {
         Ok(_) => {
@@ -128,7 +128,7 @@ pub fn get_model_status(app: AppHandle) -> Result<Vec<crate::state::ModelStatus>
 #[tauri::command]
 pub async fn install_model(
     app: AppHandle,
-    profile: ixos_core::config::Profile,
+    profile: ixos_runtime::config::Profile,
     source: Option<std::path::PathBuf>,
 ) -> Result<(), String> {
     tauri::async_runtime::spawn_blocking(move || install_profile(&app, profile, source))
@@ -145,15 +145,33 @@ pub fn suggested_locations() -> Vec<std::path::PathBuf> {
         .collect()
 }
 #[tauri::command]
-pub async fn doctor() -> Result<ixos_core::doctor::Report, String> {
+pub async fn doctor(app: AppHandle) -> Result<serde_json::Value, String> {
     tauri::async_runtime::spawn_blocking(move || {
-        let config = Settings::load().search;
-        ixos_core::doctor::check(
-            &config,
-            config.profile,
-            &config.model_path(config.profile, None),
+        let generation = app.state::<crate::state::AppState>().lifecycle.clone();
+        let expected = generation.load(std::sync::atomic::Ordering::Acquire);
+        ixos_runtime::client::manage_cancelled(
+            "doctor",
+            serde_json::json!({}),
+            ixos_runtime::client::Cancellation::new(generation, expected),
         )
-        .map_err(|error| error.to_string())
+    })
+    .await
+    .map_err(|error| error.to_string())?
+    .map_err(|error| error.to_string())
+}
+
+/// Reports each detected skill host independently, including preserved user edits.
+#[tauri::command]
+pub async fn get_skill_status(app: AppHandle) -> Result<serde_json::Value, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let generation = app.state::<crate::state::AppState>().lifecycle.clone();
+        let expected = generation.load(std::sync::atomic::Ordering::Acquire);
+        ixos_runtime::client::manage_cancelled(
+            "skill",
+            serde_json::json!({}),
+            ixos_runtime::client::Cancellation::new(generation, expected),
+        )
+        .map_err(|error| format!("{error:#}"))
     })
     .await
     .map_err(|error| error.to_string())?

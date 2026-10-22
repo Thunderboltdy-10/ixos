@@ -20,10 +20,13 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
             RuntimeCommand::Serve => crate::runtime::serve(config)?,
         },
         Command::Setup { skip_models } => {
-            for path in crate::skill::ensure()? {
-                println!("Ixos skill: {}", path.display());
-            }
+            let report = crate::skill::ensure()?;
+            report.print();
             if skip_models {
+                anyhow::ensure!(
+                    !report.needs_attention(),
+                    "Some skill targets need attention; see the per-host report above"
+                );
                 return Ok(());
             }
             for profile in [
@@ -35,6 +38,10 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
                     ixos_core::model::install::install(profile, &config.model_dir, None)?;
                 println!("Installed {} at {}", profile.name(), destination.display());
             }
+            anyhow::ensure!(
+                !report.needs_attention(),
+                "Models are ready; some skill targets need attention in the per-host report above"
+            );
         }
         Command::Search(args) => {
             let profile = args.location.profile.unwrap_or(config.profile);
@@ -218,6 +225,7 @@ mod cache {
 mod doctor {
     use super::*;
     pub fn run(config: &Config, location: Location) -> anyhow::Result<()> {
+        crate::skill::ensure()?.print();
         let profile = location.profile.unwrap_or(config.profile);
         let path = config.model_path(profile, location.model_path);
         ixos_core::model::install::ensure(config, profile, &path)?;

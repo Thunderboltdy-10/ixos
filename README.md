@@ -23,7 +23,7 @@ cargo install --path crates/ixos-cli --locked
 ixos setup
 ```
 
-`ixos setup` downloads and verifies both models from the public Hugging Face repositories. Models are stored in your local application-data directory, outside the executable, and shared by the CLI and desktop. After setup, search works offline. The desktop performs the same download automatically in the background on first launch; Settings → Models shows setup errors and lets you retry.
+`ixos setup` installs the bundled agent skill and downloads and verifies both models from the public Hugging Face repositories. Models are stored in your local application-data directory, outside the executable, and shared by the CLI and desktop. After setup, search works offline. The desktop performs the same download automatically in the background on first launch; Settings → Models shows setup errors and lets you retry.
 
 If you skip setup, CLI and MCP semantic/hybrid search download a missing selected model automatically. Lexical search, grep and read do not require a model or network access. Individual downloads use `ixos model install code` and `ixos model install documents`.
 
@@ -47,7 +47,9 @@ Register with Codex, replacing the absolute project location:
 codex mcp add ixos -- ixos mcp --dir /absolute/project --profile code
 ```
 
-The server exposes search, grep and read. [MCP setup for Codex and Claude Code](docs/MCP.md).
+The same `ixos` executable supplies the CLI, agent MCP server and resident desktop worker. The desktop reuses a compatible installed engine or acquires a verified pinned runtime; it does not bundle a second search engine. [Installation and offline setup](docs/INSTALLATION.md).
+
+The server exposes search, grep and read. Search optionally returns bounded function evidence (`evidence:"functions"`); exact function/range reads, grouped grep, compact numbered views and batches make follow-up inspection precise. Default search remains unchanged. The installed skill explains these capabilities; MCP registration enables the tools. [MCP setup for Codex and Claude Code](docs/MCP.md).
 
 ## How it works
 
@@ -57,10 +59,10 @@ An ignore-aware walk discovers sources, which Ixos extracts into text and ranks 
 
 | Suite | Hybrid nDCG@10 | BM25 nDCG@10 | Ranked rg nDCG@10 |
 |---|---:|---:|---:|
-| RepoQA, 260 held-out descriptions | 0.6937 | 0.6066 | 0.4469 |
-| SciFact, 300 test claims | 0.6950 | 0.6645 | 0.5361 |
+| RepoQA, 260 descriptions | 0.6937 | 0.6066 | 0.4469 |
+| SciFact, 300 claims | 0.6950 | 0.6645 | 0.5361 |
 
-These are file-retrieval results from the final binary, with a 6,000-byte response ceiling. The held-out sets were evaluated earlier during development; no cleanup choice was tuned on them. [Results and timings](docs/RESULTS.md), [reproduction](eval/README.md).
+These are recorded baseline file-retrieval results, with a 6,000-byte response ceiling. These sets were inspected repeatedly during development and are diagnostic evidence, not fresh independent confirmation. Optional function evidence historically raised labeled-function overlap from 101/260 to 171/260; this measures source availability, not agent task accuracy. Later agent comparisons did not establish a reliable correctness or total-context advantage over ordinary tools. [Agent evidence and limits](docs/AGENT-EVIDENCE.md), [results and timings](docs/RESULTS.md), [reproduction](eval/README.md).
 
 ## Limitations
 

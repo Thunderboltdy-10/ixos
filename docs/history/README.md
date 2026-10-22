@@ -194,3 +194,5 @@ These annotated tags are available locally and on GitHub. Run `git switch --deta
 | October cleanup | [history/2026-10-cleanup](https://github.com/Thunderboltdy-10/ixos/tree/history%2F2026-10-cleanup) | Simplified engine, desktop, site and evaluation |
 
 The existing `restoration-end` tag points to the same restoration snapshot. The historical documents above remain unchanged; the human index describes decisions that survived or were abandoned.
+
+The final selected retrieval scope and the limits of the later agent evidence are summarized in [Agent evidence](../AGENT-EVIDENCE.md). Historical plans and recorded results remain unchanged.

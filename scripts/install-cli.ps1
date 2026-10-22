@@ -7,4 +7,4 @@ $taskCargoHome = if ($env:CARGO_HOME) { $env:CARGO_HOME } else { Join-Path $HOME
 $taskBinary = Join-Path $taskCargoHome 'bin/ixos.exe'
 if (-not (Test-Path -LiteralPath $taskBinary)) { $taskBinary = Join-Path $taskCargoHome 'bin/ixos' }
 & $taskBinary setup
-if ($LASTEXITCODE -ne 0) { throw 'Model setup failed. Check your connection and retry with ixos setup.' }
+if ($LASTEXITCODE -ne 0) { throw 'Ixos setup did not complete. Review the skill/model report and retry with ixos setup.' }

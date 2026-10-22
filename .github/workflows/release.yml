@@ -2,8 +2,13 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
+      kind:
+        description: Component to build (independent release cadence)
+        required: true
+        type: choice
+        options: [engine, desktop]
       tag:
-        description: Existing tag to build and attach to a draft release
+        description: Existing engine-vX.Y.Z or desktop-vX.Y.Z tag
         required: true
         type: string
 permissions:
@@ -13,44 +18,69 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        include:
+          - {os: windows-latest, platform: Windows-X64}
+          - {os: ubuntu-latest, platform: Linux-X64}
+          - {os: macos-latest, platform: macOS-ARM64}
+          - {os: macos-15-intel, platform: macOS-X64}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
           persist-credentials: false
+      - name: Validate component tag
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_KIND: ${{ inputs.kind }}
+        run: |
+          if ($env:RELEASE_TAG -notmatch "^$($env:RELEASE_KIND)-v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$") { throw 'Tag must name the selected component and version' }
+          $taskManifest = if ($env:RELEASE_KIND -eq 'engine') { 'crates/ixos-cli/Cargo.toml' } else { 'apps/desktop/src-tauri/Cargo.toml' }
+          $taskVersion = (Select-String -LiteralPath $taskManifest -Pattern '^version = "([^"]+)"$').Matches[0].Groups[1].Value
+          if ($env:RELEASE_TAG -ne "$($env:RELEASE_KIND)-v$taskVersion") { throw 'Tag must match the component package version' }
+          if ($env:RELEASE_KIND -eq 'desktop' -and (Get-Content -Raw apps/desktop/src-tauri/tauri.conf.json | ConvertFrom-Json).version -ne $taskVersion) { throw 'Tauri and desktop package versions must agree' }
+      - uses: dtolnay/rust-toolchain@1.92.0
       - uses: actions/setup-node@v7
+        if: inputs.kind == 'desktop'
         with:
           node-version: 22
           package-manager-cache: false
-      - uses: dtolnay/rust-toolchain@1.92.0
       - name: Linux desktop libraries
-        if: runner.os == 'Linux'
+        if: inputs.kind == 'desktop' && runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libssl-dev patchelf
-      - run: npm ci
-      - run: npm run build
-      - run: cargo test --workspace --locked
-      - run: cargo build --release --locked -p ixos-cli
-      - run: npm run tauri:build
-      - name: Collect CLI and desktop installers
+      - if: inputs.kind == 'engine'
+        run: cargo test --locked -p ixos-core -p ixos-cli -p ixos-runtime --all-features
+      - if: inputs.kind == 'engine'
+        run: cargo build --release --locked -p ixos-cli
+      - if: inputs.kind == 'desktop'
+        run: npm ci
+      - if: inputs.kind == 'desktop'
+        run: npm run build
+      - if: inputs.kind == 'desktop'
+        run: npm run tauri:build
+      - name: Collect component artifacts
         shell: pwsh
         env:
-          PLATFORM: ${{ runner.os }}-${{ runner.arch }}
+          PLATFORM: ${{ matrix.platform }}
+          RELEASE_KIND: ${{ inputs.kind }}
         run: |
           New-Item -ItemType Directory -Path release-dist | Out-Null
-          $taskSuffix = if ($IsWindows) { '.exe' } else { '' }
-          Copy-Item -LiteralPath "target/release/ixos$taskSuffix" -Destination "release-dist/ixos-$env:PLATFORM$taskSuffix"
-          $taskInstallers = Get-ChildItem -LiteralPath target/release/bundle -Recurse -File | Where-Object { $_.Extension -in @('.msi', '.exe', '.deb', '.rpm', '.AppImage', '.dmg') }
-          if (-not $taskInstallers) { throw 'No desktop installers were built' }
-          foreach ($taskInstaller in $taskInstallers) {
-            Copy-Item -LiteralPath $taskInstaller.FullName -Destination (Join-Path release-dist $taskInstaller.Name)
+          if ($env:RELEASE_KIND -eq 'engine') {
+            $taskSuffix = if ($IsWindows) { '.exe' } else { '' }
+            Copy-Item -LiteralPath "target/release/ixos$taskSuffix" -Destination "release-dist/ixos-$env:PLATFORM$taskSuffix"
+          } else {
+            $taskInstallers = Get-ChildItem -LiteralPath target/release/bundle -Recurse -File | Where-Object { $_.Extension -in @('.msi', '.exe', '.deb', '.rpm', '.AppImage', '.dmg') }
+            if (-not $taskInstallers) { throw 'No desktop installers were built' }
+            foreach ($taskInstaller in $taskInstallers) {
+              Copy-Item -LiteralPath $taskInstaller.FullName -Destination (Join-Path release-dist $taskInstaller.Name)
+            }
           }
       - uses: actions/upload-artifact@v7
         with:
-          name: binaries-${{ runner.os }}-${{ runner.arch }}
+          name: binaries-${{ matrix.platform }}
           path: release-dist/
           if-no-files-found: error
   draft:
@@ -68,7 +98,12 @@ jobs:
         with:
           pattern: binaries-*
           path: artifacts
-      - name: Attach binaries to a draft release
+      - name: Build runtime manifest
+        if: inputs.kind == 'engine'
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: python scripts/runtime-manifest.py artifacts --version "${RELEASE_TAG#engine-v}" --output artifacts/runtime-manifest.json
+      - name: Attach artifacts to a draft release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -77,6 +112,5 @@ jobs:
           git rev-parse --verify "refs/tags/$env:RELEASE_TAG"
           if ($LASTEXITCODE -ne 0) { throw 'The release tag does not exist' }
           $taskFiles = @(Get-ChildItem -LiteralPath artifacts -Recurse -File | ForEach-Object { $_.FullName })
-          if ($taskFiles.Count -lt 6) { throw 'CLI and desktop artifacts are incomplete' }
-          gh release create $env:RELEASE_TAG --verify-tag --draft --title "Ixos $env:RELEASE_TAG" --notes 'Local hybrid search over code and documents. Desktop models download during first-launch setup. Run ixos setup after installing the CLI; see the README.' @taskFiles
+          gh release create $env:RELEASE_TAG --verify-tag --draft --title "Ixos $env:RELEASE_TAG" --notes 'See README and docs/INSTALLATION.md for runtime, models, skill and MCP setup.' @taskFiles
           if ($LASTEXITCODE -ne 0) { throw 'Draft release creation failed' }

@@ -16,7 +16,7 @@ npm run tauri:build -- --debug --no-bundle
 
 Build the desktop UI before workspace Rust tests: Tauri embeds `apps/desktop/ui/dist`. `npm run tauri:dev` runs the desktop development server; `npm run site:dev` starts the site. Evaluation needs `eval/requirements.txt`; ordinary Rust tests do not download models.
 
-The workspace contains `crates/ixos-core` for search and storage, `crates/ixos-cli` for the CLI and MCP, and `apps/desktop/src-tauri` for the tray process. React and Next.js live in `apps/desktop/ui` and `apps/site`; `packages/` holds their shared UI. `eval/` reproduces retrieval results, `scripts/models.py` builds models, and `docs/history/` preserves historical documents.
+The workspace contains `crates/ixos-core` for search and storage, `crates/ixos-cli` for the CLI/MCP/worker, `crates/ixos-runtime` for shared contracts and the lightweight client, and `apps/desktop/src-tauri` for the tray process. React and Next.js live in `apps/desktop/ui` and `apps/site`; `packages/` holds their shared UI. `eval/` reproduces retrieval results, `scripts/models.py` builds models, and `docs/history/` preserves historical documents.
 
 Use the same domain names throughout: location for a searched folder, profile for code or documents, mode for lexical/semantic/hybrid, result for a ranked file, snippet for its excerpt, record for per-file embedding data, and cache for all records. Keep one implementation per behavior, remove unused flags and dead code, and add only real user choices.
 

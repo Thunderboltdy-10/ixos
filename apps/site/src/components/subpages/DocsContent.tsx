@@ -31,12 +31,13 @@ const DOC_CONTENT = {
         Getting started
       </h2>
       <p className="opacity-80">
-        Download a binary from Releases, or run this build command in a clone of
+        Download an engine binary from Releases, or run these build/setup commands in a clone of
         the repository.
       </p>
       <pre className="p-6 bg-black/40 border border-current rounded font-mono text-sm overflow-auto">{`cargo install --path crates/ixos-cli --locked
-ixos model install code
+ixos setup
 ixos search "cache freshness" --dir . --profile code`}</pre>
+      <p className="opacity-80">The same executable provides CLI, agent MCP tools and the desktop worker. Setup installs the bundled agent skill and verifies both models. Register MCP separately in your host. The desktop acquires or reuses a compatible engine at first launch; models remain shared.</p>
     </div>
   ),
   "cli-reference": (

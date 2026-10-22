@@ -1,6 +1,6 @@
 # Architecture
 
-`ixos-core` owns discovery, extraction, models, records, cache management, ranking and snippets. The CLI, MCP and Tauri backend call the same library.
+`ixos-core` owns discovery, extraction, models, records, cache management, ranking and snippets. The CLI and MCP call the same library. The desktop uses the lightweight `ixos-runtime` client to talk to an owned instance of that same executable; it no longer links a separate core.
 
 ## Pipeline
 
@@ -34,7 +34,7 @@ A record is `80 + count * (28 + dimensions)` bytes. The code model has 256 dimen
 
 ## Freshness and resident state
 
-Each search walks the locations again to discover new and deleted files. A resident engine remembers size, modified time and file identity. Matching metadata permits reuse only when the timestamp is outside the two-second race window; otherwise Ixos reads and hashes the file. Filesystems without usable identity use the full-hash path. Changed primary bytes force re-extraction, and source/model fingerprints decide whether a stored record remains valid.
+Each search walks the locations again to discover new and deleted files. A resident engine remembers size, modified time, file identity and an OS change indicator. Matching metadata permits reuse only when the timestamp is outside the two-second race window; otherwise Ixos reads and hashes the file. Filesystems without usable identity use the full-hash path. Changed primary bytes force re-extraction, and source/model fingerprints decide whether a stored record remains valid.
 
 MCP and the desktop keep models, parsed text, vectors and BM25 statistics in RAM. Only changed files update document frequencies and total length. Lexical searches reuse parsed sources without embedding them; switching to hybrid fills missing vectors. The desktop maintains one corpus across chosen locations, so changing location scope does not duplicate the engine or model.
 
@@ -45,3 +45,9 @@ BM25 uses `k1=1.2` and `b=0.75`. Hybrid candidates are the union of the top 100 
 With a model, snippet selection considers the stored passages plus up to eight query-relevant passages, at most 16 per file. A blend of cosine similarity and lexical line weight chooses a passage, then the strongest lexical line anchors the excerpt. Lexical mode uses the best lexical line directly. Snippets have exact source coordinates; responses are capped at 6,000 bytes, shortening or omitting snippets before reducing returned files.
 
 `cache clear` shares one core function across the CLI and desktop. It removes only Ixos metadata and matching database entries. It never opens a primary file for writing or follows symlinks; tests verify bytes, modified time and unrelated metadata survive on Windows and Linux.
+
+## Optional evidence and exact inspection
+
+File ranking, models and primary snippets remain the baseline. Explicit code evidence can expose a compact alternative from existing passages or parse bounded function units for the top three ranked files. Function parsing is limited by source bytes, time, node count and unit count; unsupported sources fall back to passages. Resident source-versioned function vectors are bounded and are not a persistent passage index. Names, declarations and extents come from actual source. JavaScript/TypeScript static assigned functions use their public binding identity, including prototype assignments; dynamic receivers and computed keys are not guessed.
+
+`read` remains exact: inclusive ranges, exact parsed definitions, optional bodies and independent batches. It validates source hashes and reports truncation/continuation. A small validated resident source cache avoids repeated extraction. It contains no approximate source ranking, related-code expansion or automatic implementation packages. See [MCP](MCP.md) and [installation/runtime reliability](INSTALLATION.md).

@@ -4,7 +4,7 @@ import { QuickSearch, queryTerms, type Passage } from "@ixos/ui";
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { DEMOS, sourceLines, toHit, type RankedFile } from "@/lib/demo";
-import { EASE } from "./Stage";
+import { EASE, useActive } from "./Stage";
 
 type Step = "empty" | "keywords" | "ranked";
 
@@ -12,6 +12,8 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** The quick search overlay, typing each demo query and ranking it the way the app does. */
 export function HeroSearch() {
+  const root = useRef<HTMLDivElement>(null);
+  const visible = useActive(root);
   const [demo, setDemo] = useState(0);
   const [typed, setTyped] = useState("");
   const [stage, setStage] = useState<Step>("empty");
@@ -22,7 +24,7 @@ export function HeroSearch() {
   const still = useReducedMotion();
 
   useEffect(() => {
-    if (still) return;
+    if (still || !visible) return;
     let live = true;
     // Waits stretch while the pointer is over the panel, so it can be read.
     const wait = async (ms: number) => {
@@ -36,6 +38,7 @@ export function HeroSearch() {
         const index = round % DEMOS.length;
         const text = DEMOS[index].query;
         setDemo(index);
+        setTyped(""); setStage("empty"); setOpened(false); setActive(0); setProgress(null);
         for (let end = 1; end <= text.length; end++) {
           setTyped(text.slice(0, end));
           await wait(34 + Math.random() * 46);
@@ -64,7 +67,7 @@ export function HeroSearch() {
     return () => {
       live = false;
     };
-  }, [still]);
+  }, [still, visible]);
 
   // With reduced motion, the finished search is shown and stays still.
   const query = still ? DEMOS[0].query : typed;
@@ -76,6 +79,8 @@ export function HeroSearch() {
 
   return (
     <motion.div
+      ref={root}
+      data-active={visible}
       className="hero-search"
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}

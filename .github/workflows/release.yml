@@ -55,12 +55,23 @@ jobs:
         run: cargo test --locked -p ixos-core -p ixos-cli -p ixos-runtime --all-features
       - if: inputs.kind == 'engine'
         run: cargo build --release --locked -p ixos-cli
+      - name: Build the lightweight installer (included in both release kinds)
+        run: cargo build --release --locked -p ixos-install
       - if: inputs.kind == 'desktop'
         run: npm ci
       - if: inputs.kind == 'desktop'
         run: npm run build
       - if: inputs.kind == 'desktop'
-        run: npm run tauri:build
+        name: Build signed desktop updates
+        shell: pwsh
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          IXOS_UPDATER_PUBLIC_KEY: ${{ vars.IXOS_UPDATER_PUBLIC_KEY }}
+        run: |
+          if (-not $env:TAURI_SIGNING_PRIVATE_KEY -or -not $env:IXOS_UPDATER_PUBLIC_KEY) { throw 'Configure the desktop update signing key and public verification key before releasing' }
+          npm run tauri:build
+          if ($LASTEXITCODE -ne 0) { throw 'Signed desktop build failed' }
       - name: Collect component artifacts
         shell: pwsh
         env:
@@ -68,15 +79,25 @@ jobs:
           RELEASE_KIND: ${{ inputs.kind }}
         run: |
           New-Item -ItemType Directory -Path release-dist | Out-Null
+          $taskSuffix = if ($IsWindows) { '.exe' } else { '' }
+          $taskBootstrap = switch ($env:PLATFORM) { 'Windows-X64' { 'Windows-X64' }; 'Linux-X64' { 'Linux-x86_64' }; 'macOS-ARM64' { 'Darwin-arm64' }; 'macOS-X64' { 'Darwin-x86_64' } }
+          Copy-Item -LiteralPath "target/release/ixos-install$taskSuffix" -Destination "release-dist/ixos-install-$taskBootstrap$taskSuffix"
           if ($env:RELEASE_KIND -eq 'engine') {
             $taskSuffix = if ($IsWindows) { '.exe' } else { '' }
             Copy-Item -LiteralPath "target/release/ixos$taskSuffix" -Destination "release-dist/ixos-$env:PLATFORM$taskSuffix"
           } else {
-            $taskInstallers = Get-ChildItem -LiteralPath target/release/bundle -Recurse -File | Where-Object { $_.Extension -in @('.msi', '.exe', '.deb', '.rpm', '.AppImage', '.dmg') }
-            if (-not $taskInstallers) { throw 'No desktop installers were built' }
-            foreach ($taskInstaller in $taskInstallers) {
-              Copy-Item -LiteralPath $taskInstaller.FullName -Destination (Join-Path release-dist $taskInstaller.Name)
+            $taskPattern = if ($IsWindows) { '*-setup.exe' } elseif ($IsMacOS) { '*.dmg' } else { '*.AppImage' }
+            $taskInstallers = @(Get-ChildItem -LiteralPath target/release/bundle -Recurse -File -Filter $taskPattern)
+            if ($taskInstallers.Count -ne 1) { throw 'Expected exactly one desktop installer for the platform' }
+            $taskExtension = if ($IsWindows) { '-setup.exe' } elseif ($IsMacOS) { '.dmg' } else { '.AppImage' }
+            Copy-Item -LiteralPath $taskInstallers[0].FullName -Destination "release-dist/Ixos-$env:PLATFORM$taskExtension"
+            $taskUpdate = if ($IsMacOS) { @(Get-ChildItem -LiteralPath target/release/bundle -Recurse -File -Filter '*.app.tar.gz')[0] } else { $taskInstallers[0] }
+            if (-not $taskUpdate -or -not (Test-Path -LiteralPath "$($taskUpdate.FullName).sig")) { throw 'Signed desktop update artifact missing' }
+            $taskUpdateName = if ($IsMacOS) { "Ixos-$env:PLATFORM.app.tar.gz" } else { "Ixos-$env:PLATFORM$taskExtension" }
+            if ($IsMacOS) {
+              Copy-Item -LiteralPath $taskUpdate.FullName -Destination "release-dist/$taskUpdateName"
             }
+            Copy-Item -LiteralPath "$($taskUpdate.FullName).sig" -Destination "release-dist/$taskUpdateName.sig"
           }
       - uses: actions/upload-artifact@v7
         with:
@@ -103,6 +124,17 @@ jobs:
         env:
           RELEASE_TAG: ${{ inputs.tag }}
         run: python scripts/runtime-manifest.py artifacts --version "${RELEASE_TAG#engine-v}" --output artifacts/runtime-manifest.json
+      - name: Build desktop manifests
+        if: inputs.kind == 'desktop'
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: python scripts/runtime-manifest.py artifacts --kind desktop --version "${RELEASE_TAG#desktop-v}" --output artifacts/desktop-manifest.json
+      - name: Checksum the installers and attach bootstrap scripts
+        shell: pwsh
+        run: |
+          Copy-Item scripts/install-cli.ps1,scripts/install-cli.sh -Destination artifacts
+          $taskLines = Get-ChildItem -LiteralPath artifacts -Recurse -File | ForEach-Object { "$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLower())  $($_.Name)" }
+          [IO.File]::WriteAllText((Join-Path $PWD artifacts/SHA256SUMS), (($taskLines -join "`n") + "`n"))
       - name: Attach artifacts to a draft release
         shell: pwsh
         env:

@@ -2,12 +2,13 @@
 
 import { CheckIcon, CopyIcon } from "@ixos/ui";
 import { useState } from "react";
+import type { ReactNode } from "react";
 
-export function Copy({ text, label = "Copy command" }: { text: string; label?: string }) {
+export function Copy({ text, label = "Copy command", className = "copy", children = "Copy" }: { text: string; label?: string; className?: string; children?: ReactNode }) {
   const [copied, setCopied] = useState(false);
   return (
     <button
-      className="copy"
+      className={className}
       aria-label={label}
       onClick={() =>
         navigator.clipboard.writeText(text).then(() => {
@@ -17,7 +18,7 @@ export function Copy({ text, label = "Copy command" }: { text: string; label?: s
       }
     >
       {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
-      {copied ? "Copied" : "Copy"}
+      {copied ? "Copied" : children}
     </button>
   );
 }

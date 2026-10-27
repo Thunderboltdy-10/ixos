@@ -1,9 +1,8 @@
-//! Reuse a compatible installed runtime or download the desktop's pinned version.
+//! Reuse the shared CLI, or provision it through the same verified binary installer.
 use super::*;
 use sha2::{Digest, Sha256};
-use std::{sync::Mutex, time::Duration};
+use std::sync::Mutex;
 const VERSION: &str = env!("CARGO_PKG_VERSION");
-const RELEASES: &str = "https://github.com/Thunderboltdy-10/ixos/releases/download";
 static INSTALL: Mutex<()> = Mutex::new(());
 fn executable() -> &'static str {
     if cfg!(windows) {
@@ -87,12 +86,12 @@ pub fn ensure_runtime() -> anyhow::Result<PathBuf> {
         return Ok(path);
     }
     let home = crate::config::data_dir().join("runtime").join(VERSION);
-    let installed = home.join(executable());
-    if installed.is_file() && compatible(&installed) {
-        return Ok(installed);
-    }
     if let Some(source) = std::env::var_os("IXOS_RUNTIME_FROM") {
         return install_offline(&home, Path::new(&source));
+    }
+    let shared = crate::releases::engine_path();
+    if shared.is_file() && compatible(&shared) {
+        return Ok(shared);
     }
     if let Some(path) = std::env::var_os("PATH").and_then(|paths| {
         std::env::split_paths(&paths)
@@ -101,30 +100,19 @@ pub fn ensure_runtime() -> anyhow::Result<PathBuf> {
     }) {
         return Ok(path);
     }
-    std::fs::create_dir_all(&home)?;
-    let agent = ureq::AgentBuilder::new()
-        .timeout(Duration::from_secs(120))
-        .build();
-    let base = format!("{RELEASES}/engine-v{VERSION}");
-    let mut bytes = Vec::new();
-    agent
-        .get(&format!("{base}/runtime-manifest.json"))
-        .call()
-        .context(
-            "Download the compatible Ixos runtime, or install ixos-cli and set IXOS_ENGINE_PATH",
-        )?
-        .into_reader()
-        .take(512 * 1024 + 1)
-        .read_to_end(&mut bytes)?;
-    anyhow::ensure!(bytes.len() <= 512 * 1024, "Runtime manifest exceeds limit");
-    let manifest: Manifest = serde_json::from_slice(&bytes)?;
-    let asset = asset(&manifest, target()?)?;
-    let input = agent
-        .get(&format!("{base}/{}", asset.file))
-        .call()?
-        .into_reader();
-    install_asset(&home, &installed, asset, input)?;
-    Ok(installed)
+    let latest = crate::releases::latest("engine")?;
+    let release = if latest.manifest()?.protocol_major == PROTOCOL_MAJOR {
+        latest
+    } else {
+        crate::releases::Release {
+            tag_name: format!("engine-v{VERSION}"),
+            draft: false,
+            prerelease: false,
+        }
+    };
+    crate::releases::install_engine(&release)?;
+    crate::releases::add_to_path()?;
+    Ok(shared)
 }
 /// The manifest and asset use the same verification path for online and offline installs.
 fn install_asset(

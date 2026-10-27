@@ -1,0 +1,11 @@
+[package]
+name = "ixos-install"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Lightweight Ixos binary installer (no search engine)"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4.5", features = ["derive"] }
+ixos-runtime = { path = "../ixos-runtime", features = ["client"] }

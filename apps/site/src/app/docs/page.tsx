@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Code } from "@/components/Code";
 import { GITHUB, HUGGING_FACE, RELEASES } from "@/lib/github";
+import { installCommand } from "@/lib/install";
 import { MEDIAN, MEMORY_MB, P95 } from "@/lib/latency";
 import { Sidebar, type Group } from "./Sidebar";
 
@@ -119,24 +120,18 @@ export default function Docs() {
 
         <Page id="install" title="Install">
           <p>
-            <strong>The desktop app.</strong> Download the installer for your system from the{" "}
-            <a href={RELEASES}>releases page</a>. On first launch it downloads the search engine and both models, then
-            asks which folders to search. Windows and Linux on x86-64 and macOS on Apple silicon and Intel are supported.
+            <strong>One installer.</strong> The small bootstrap executable from the{" "}
+            <a href={RELEASES}>releases page</a> installs the shared CLI/engine, MCP and agent skill, verifies both models,
+            and includes desktop by default. Windows and Linux on x86-64 and macOS on Apple silicon and Intel are supported.
           </p>
           <p>
-            <strong>The command.</strong> Building from source needs <a href="https://rustup.rs">Rust</a>. The script
-            builds <code>ixos</code>, puts it on your path and runs <code>ixos setup</code>, which downloads the two
-            models from <a href={HUGGING_FACE}>Hugging Face</a>.
+            <strong>Agent installation.</strong> These scripts download and verify the same binary installer. No Rust
+            or Node is needed. They add <code>ixos</code> to your user PATH and verify the models from <a href={HUGGING_FACE}>Hugging Face</a>.
           </p>
-          <Code label="Windows, PowerShell">{`git clone ${GITHUB}
-cd ixos
-./scripts/install-cli.ps1`}</Code>
-          <Code label="macOS and Linux">{`git clone ${GITHUB}
-cd ixos
-sh scripts/install-cli.sh`}</Code>
-          <p>The script runs these two steps, which you can also run yourself:</p>
-          <Code label="Any system">{`cargo install --path crates/ixos-cli --locked
-ixos setup`}</Code>
+          <Code label="Windows, PowerShell">{installCommand("windows", true)}</Code>
+          <Code label="macOS and Linux">{installCommand("unix", true)}</Code>
+          <p>For CLI/MCP/skill only, append <code>-NoDesktop</code> on Windows, or use <code>sh -s -- --no-desktop</code> after the pipe on macOS/Linux. Open a new terminal after installation. Published engine and desktop releases are required for these links.</p>
+          <p><code>ixos update</code> updates the CLI/MCP/skill; <code>ixos update --desktop</code> includes desktop. CLI and MCP suggest available updates, while desktop applies compatible engine and signed app updates on launch/login and restarts. Custom engine overrides are preserved.</p>
           <p>
             After setup, everything works offline. Keyword search, <code>grep</code> and <code>read</code> never need a
             model. To install without a network, see <a href="#setup">setup and model</a>.
@@ -144,8 +139,8 @@ ixos setup`}</Code>
         </Page>
 
         <Page id="first-search" title="First search">
-          <p>From inside the cloned repository, ask for something by what it does:</p>
-          <Code label="Terminal">{`ixos search "skip files that are still in the cloud" --dir crates --limit 3`}</Code>
+          <p>From a project folder, ask for something by what it does. This example shows results from Ixos&apos;s source:</p>
+          <Code label="Terminal">{`ixos search "skip files that are still in the cloud" --dir . --limit 3`}</Code>
           <p>Each result is the file and the passage that matched best, with line numbers:</p>
           <pre className="doc-output">{`ixos-core/src/cloud.rs:184:/// Check if we should skip processing this file to avoid triggering a cloud download
 ixos-core/src/cloud.rs:185:///

@@ -4,6 +4,7 @@ pub mod commands;
 mod hook;
 pub mod state;
 pub mod tray;
+mod updates;
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -13,6 +14,11 @@ pub fn run() {
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {
             commands::system::show_main(app)
         }))
+        .plugin(
+            tauri_plugin_updater::Builder::new()
+                .pubkey(option_env!("IXOS_UPDATER_PUBLIC_KEY").unwrap_or(""))
+                .build(),
+        )
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec!["--hidden"]),
@@ -27,6 +33,7 @@ pub fn run() {
             commands::shortcut::setup_global_shortcut(app)?;
             commands::system::setup_models(app.handle().clone());
             commands::search::warm(app.handle().clone());
+            updates::start(app.handle().clone());
             // Launch at login starts in the tray; any other launch shows the window.
             if !std::env::args().any(|argument| argument == "--hidden") {
                 commands::system::show_main(app.handle());

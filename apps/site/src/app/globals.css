@@ -303,6 +303,13 @@ h2 {
 .install-tabs button[aria-selected="true"] {
   color: var(--ix-text);
 }
+.install-option { display: flex; align-items: center; gap: 8px; padding: 12px 18px 0; font-size: 13px; color: var(--ix-text-2); }
+.install-option input { accent-color: var(--ix-yellow); }
+.install-option span { color: var(--ix-text-3); font-size: 11px; }
+.command .install-option { padding: 0 0 12px; }
+#agents { scroll-margin-top: 90px; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 .install-tab-line {
   position: absolute;
   right: 0;
@@ -315,9 +322,12 @@ h2 {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  min-height: 108px;
+  height: 148px;
+  overflow: auto;
   padding: 16px 12px 16px 18px;
 }
+.stage[data-active="false"] *, .hero-search[data-active="false"] * { animation-play-state: paused !important; }
+.shortcut-overlay .ix-side { display: none; }
 .install-lines {
   display: flex;
   flex: 1 1 auto;
@@ -524,6 +534,7 @@ h2 {
   transform: translateX(-50%);
   white-space: nowrap;
 }
+.histogram-axis span:last-child { transform: translateX(-100%); }
 
 /* Keywords and meaning */
 .ranking-parts {

@@ -12,6 +12,8 @@ Only query, pattern, or a read selector (`path` or `requests`) is required. Omit
 
 ## Codex and Claude Code
 
+Run the common [binary installation](../README.md#install) once before registering either host. It includes the MCP server and skill, with desktop optional. The landing page's registration commands use the absolute installed engine path so they also work before a terminal refreshes PATH.
+
 Register with [Codex](https://learn.chatgpt.com/docs/extend/mcp?surface=cli):
 
 ```sh

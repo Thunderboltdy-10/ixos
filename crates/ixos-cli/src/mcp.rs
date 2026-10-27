@@ -126,6 +126,12 @@ fn run(mut input: impl BufRead, mut output: impl Write, server: &mut Server) -> 
                             None => serde_json::to_string(&result)?,
                         };
                         let mut response = json!({"content":[{"type":"text","text":text}],"structuredContent":result,"isError":false});
+                        if let Some(notice) = crate::updates::notice() {
+                            response["content"]
+                                .as_array_mut()
+                                .unwrap()
+                                .push(json!({"type":"text","text":notice}));
+                        }
                         if value["params"]["_meta"]["io.ixos/diagnostics"] == true {
                             if let Some(stats) = server.diagnostics.take() {
                                 response["_meta"] = json!({"io.ixos/diagnostics":stats});

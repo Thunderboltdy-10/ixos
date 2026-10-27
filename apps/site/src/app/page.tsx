@@ -8,10 +8,8 @@ import { Speed } from "@/components/Speed";
 import { Reveal } from "@/components/Stage";
 import { Window } from "@/components/Window";
 import Link from "next/link";
-import { installers } from "@/lib/github";
 
-export default async function Home() {
-  const release = await installers();
+export default function Home() {
   return (
     <main>
       <section id="install" className="hero">
@@ -26,7 +24,7 @@ export default async function Home() {
             </p>
           </Reveal>
           <Reveal delay={0.16}>
-            <Install release={release} />
+            <Install />
           </Reveal>
         </div>
         <HeroSearch />

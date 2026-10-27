@@ -1,11 +1,22 @@
 "use client";
 
 import { animate, motion, useInView } from "framer-motion";
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 
 export const EASE = [0.2, 0.7, 0.2, 1] as const;
 
 const Shown = createContext(false);
+const Active = createContext(false);
+const subscribeVisibility = (changed: () => void) => {
+  document.addEventListener("visibilitychange", changed);
+  return () => document.removeEventListener("visibilitychange", changed);
+};
+export function useActive(ref: RefObject<HTMLElement | null>, amount = 0.1) {
+  const visible = useInView(ref, { amount });
+  const foreground = useSyncExternalStore(subscribeVisibility, () => !document.hidden, () => false);
+  return visible && foreground;
+}
+export const useActiveDemo = () => useContext(Active);
 
 /** True once the surrounding stage has scrolled into view. */
 export const useShown = () => useContext(Shown);
@@ -33,8 +44,9 @@ export function Reveal({ children, delay = 0, className }: { children: ReactNode
 export function Stage({ children, className = "" }: { children: ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const shown = useInView(ref, { once: true, amount: 0.3 });
+  const active = useActive(ref);
   return (
-    <div ref={ref} className={`stage ${className}`}>
+    <div ref={ref} className={`stage ${className}`} data-active={active}>
       <motion.span
         className="stage-line"
         aria-hidden
@@ -48,7 +60,7 @@ export function Stage({ children, className = "" }: { children: ReactNode; class
         animate={shown ? { opacity: 1, y: 0 } : undefined}
         transition={{ delay: 0.45, duration: 0.6, ease: EASE }}
       >
-        <Shown.Provider value={shown}>{children}</Shown.Provider>
+        <Shown.Provider value={shown}><Active.Provider value={active}>{children}</Active.Provider></Shown.Provider>
       </motion.div>
     </div>
   );

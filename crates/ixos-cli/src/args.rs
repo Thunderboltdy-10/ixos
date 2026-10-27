@@ -43,6 +43,15 @@ pub struct Location {
 }
 #[derive(Subcommand)]
 pub enum Command {
+    /// Update the shared CLI/MCP/skill. Add --desktop to install/update desktop too.
+    Update {
+        #[arg(long)]
+        check: bool,
+        #[arg(long)]
+        desktop: bool,
+        #[arg(long, hide = true)]
+        background: bool,
+    },
     /// Desktop runtime transport and compatibility information. Agents use mcp.
     Runtime {
         #[command(subcommand)]

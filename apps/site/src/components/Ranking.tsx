@@ -4,7 +4,7 @@ import { ResultRow, useFlip } from "@ixos/ui";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { DEMOS, toHit } from "@/lib/demo";
-import { EASE, Reveal, Stage, useShown } from "./Stage";
+import { EASE, Reveal, Stage, useShown, useActiveDemo } from "./Stage";
 
 const DEMO = DEMOS[0];
 
@@ -50,6 +50,7 @@ export function Ranking() {
 /** The same search ranked by keywords alone, then with meaning added. */
 function Toggle() {
   const shown = useShown();
+  const visible = useActiveDemo();
   const [both, setBoth] = useState(false);
   const touched = useRef(false);
   const list = useRef<HTMLOListElement>(null);
@@ -57,10 +58,10 @@ function Toggle() {
   useFlip(list, hits.map((hit) => hit.key).join("\n"));
 
   useEffect(() => {
-    if (!shown) return;
+    if (!shown || !visible) return;
     const timer = window.setTimeout(() => !touched.current && setBoth(true), 1800);
     return () => window.clearTimeout(timer);
-  }, [shown]);
+  }, [shown, visible]);
 
   const choose = (value: boolean) => {
     touched.current = true;

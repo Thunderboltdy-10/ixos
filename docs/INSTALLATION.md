@@ -4,8 +4,13 @@ Ixos has one engine executable, `ixos` (`ixos.exe` on Windows). It provides the 
 
 ## CLI installation
 
-Run `scripts/install-cli.ps1` on Windows or `sh scripts/install-cli.sh` on macOS/Linux from a source checkout. These build the runtime with Cargo and run `ixos setup`, provisioning the bundled agent skill and both verified models. Node is not required. A downloaded engine release binary is the same executable: place it on PATH and run `ixos setup` once. `ixos setup --skip-models` provisions skills without network access. Lexical search, grep and read need no model.
+The lightweight `ixos-install-<platform>` binary is the one installation entry point. It downloads the latest published stable `engine-vX.Y.Z` release and, by default, the latest compatible `desktop-vX.Y.Z` release. `--no-desktop` installs only CLI/MCP/skill. The bootstrap links only the small runtime client, with no search engine or models. Both engine and desktop releases contain this bootstrap and the two wrapper scripts, so GitHub's `/releases/latest/download/` works whichever component shipped last.
 
+The PowerShell and shell commands in the README download and SHA-256-check that bootstrap against the release's `SHA256SUMS`, then invoke it with the selected desktop option. The bootstrap validates the component manifests and protocol before installing, checks the engine checksum and actual handshake/version, then runs that engine's `setup` before replacing the existing executable. Setup provisions the embedded skill, verifies all three files of each pinned Hugging Face model and loads both models. Corrupt or older model revisions are repaired through verified temporary directories; failed downloads retain existing files. Setup failure prevents desktop installation and leaves an existing engine executable intact.
+
+Normal installations share `~/.ixos/bin/ixos[.exe]` (or `$IXOS_HOME/bin/ixos[.exe]`). The installer adds this directory to the user PATH; open a new terminal afterwards. Desktop is installed per user: NSIS on Windows, `~/Applications/Ixos.app` on macOS, and `~/.ixos/Ixos.AppImage` plus a user application entry on Linux. Linux desktop still needs the host's AppImage/FUSE and WebKit/GTK system support. CLI-only installations do not need those GUI libraries. MCP registration remains an explicit host command after the common installation; no global agent configuration is rewritten.
+
+Source developers can still use `cargo install --path crates/ixos-cli --locked` followed by `ixos setup`. `ixos setup --skip-models` provisions skills without network access; lexical search, grep and read need no model.
 The runtime also checks skill installation on ordinary commands, including MCP and desktop worker startup. `--help` and `--version` exit before setup. Setup errors are explicit; routine commands warn on stderr and continue rather than overwrite custom skills. Semantic/hybrid search installs a missing managed model when first needed. Explicit model overrides are local-only. See [CLI](CLI.md) for offline model installation.
 
 ## Agent skill and MCP
@@ -18,27 +23,37 @@ For hosts supported by the optional [Agent Skills CLI](https://github.com/vercel
 
 ## Desktop installation
 
-Install the desktop application normally. At first launch it resolves the engine in this order:
+The bootstrap installs the CLI first; desktop never includes a second engine. At launch it resolves:
 
 1. Explicit `IXOS_ENGINE_PATH`.
-2. A compatible managed engine at the desktop's pinned fallback version.
-3. An explicit offline release directory in `IXOS_RUNTIME_FROM`, if provided.
+2. An explicit verified offline release in `IXOS_RUNTIME_FROM`, if provided.
+3. The shared engine at `~/.ixos/bin/ixos[.exe]`.
 4. A compatible `ixos` on PATH.
-5. Download the pinned engine release into the platform local-data directory, `ixos/runtime/<version>/ixos[.exe]`.
+5. Installation of the latest compatible engine into the same shared location (falling back to the desktop's protocol baseline if the newest engine needs a different major).
 
 The client verifies protocol major and required capabilities using a five-second handshake. Downloads use a versioned HTTPS release manifest, fixed platform filenames and SHA-256 verification, then verify the executable before atomic installation. Downloads are bounded; partial files are temporary. Supported prebuilt targets are Windows/Linux x86-64 and macOS ARM64/x86-64. Other targets can build the runtime and set `IXOS_ENGINE_PATH`.
 
 The downloaded runtime provisions the skill and supplies model setup, settings, cache operations and resident search. There is no additional manual engine installation. Models remain shared with the CLI and MCP. Download failures are shown through the existing setup/location error surfaces and can be retried. For offline desktop use, put the release manifest and matching platform binary in a directory, set `IXOS_RUNTIME_FROM` to it, and install verified models ahead of time. This uses the same checksum, handshake and atomic installation path as HTTPS. `IXOS_ENGINE_PATH` remains available for a directly managed compatible runtime. An explicit offline source fails visibly rather than silently downloading another copy.
 
-A desktop-managed engine need not be on PATH: agents can register its absolute executable path. Ixos does not modify the user's PATH or agent configuration silently. An existing CLI on PATH is reused when compatible; changing that binary affects new workers, while an already running worker retains its version until restarted.
+The normal installer adds the shared engine to the user PATH; agent hosts may also register its absolute executable path. Explicit offline and engine-path overrides do not modify PATH or agent configuration. An existing CLI on PATH is reused when compatible; changing that binary affects new workers, while an already running worker retains its version until restarted.
 
 ## Independent releases and compatibility
 
 The manual release workflow builds either `engine-vX.Y.Z` or `desktop-vX.Y.Z` into a draft. Engine drafts contain four platform binaries and `runtime-manifest.json`, generated from the actual artifact checksums. CLI package version and the runtime crate's pinned fallback version must match the engine tag. Desktop versions may advance independently; update the fallback engine version only when intentionally changing its supported installation baseline.
 
-The private protocol is newline-delimited JSON with request IDs, a protocol major, required capabilities, and a 4 MiB frame bound. Add compatible operations without changing the major; incompatible wire behavior requires a new major. A newer compatible engine on PATH can serve an older desktop. The fallback remains pinned rather than silently following the latest release. MCP is separate and remains the agent interface.
+The private protocol is newline-delimited JSON with request IDs, a protocol major, required capabilities, and a 4 MiB frame bound. Add compatible operations without changing the major; incompatible wire behavior requires a new major. A newer compatible engine on PATH can serve an older desktop. Automatic engine updates retain the protocol-major/capability contract; incompatible releases are rejected. MCP is separate and remains the agent interface.
 
 Release preparation is not publication. An engine release and its manifest must be published before a desktop relying on that fallback is distributed. CI builds and platform packaging must pass on all supported targets. The bootstrap cannot download an unpublished draft; development can use `IXOS_ENGINE_PATH`.
+
+### Updates and signing
+
+`ixos update --check` checks immediately. Ordinary CLI commands start at most one background probe daily; cached notices appear on stderr without delaying search or contaminating JSON/stdout. MCP tool responses include an additional text notice with the command and a request to ask the user before updating. `ixos update` updates the shared engine, models as required by its pinned revisions, and owned/unmodified skills. `ixos update --desktop` also runs the desktop installer. Independently installed CLI executables must use their original package/source installation method. Restart running MCP connections after an update. `IXOS_NO_UPDATE_CHECK=1` disables automatic checks.
+
+Production desktop checks on each launch/login. A compatible shared-engine update is verified and installed, then desktop restarts so workers use it. Explicit `IXOS_ENGINE_PATH`/`IXOS_RUNTIME_FROM` overrides are not auto-updated. Desktop updates use Tauri's signed updater with a separate `desktop-update.json` on the latest desktop release. Signatures are mandatory; failed checks/downloads retain the installed app and log the error. Windows' updater closes/relaunches the app through its per-user installer; macOS/Linux restart after successful installation. Development builds skip automatic updates.
+
+Before producing desktop release builds, generate a Tauri signing key, keep the private key outside the repository, configure repository secrets `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, and set repository variable `IXOS_UPDATER_PUBLIC_KEY` to the public-key contents. The workflow refuses unsigned desktop releases. Keep the same verification key across releases. An ordinary local build without a key can run, but cannot verify desktop updates. No keys or releases are created by changing this repository.
+
+The workflow stages drafts only. Publish engine and desktop releases with complete artifacts before using the default public installer. Every draft contains the bootstrap, wrapper scripts and checksums; engine releases add the runtime manifest, while desktop releases add installer hashes, signed updater assets and the updater manifest. Component tags and versions remain independent.
 
 `ixos runtime licenses` prints the project and bundled third-party source notices, including the optional parser dependencies. The notices are also in `docs/licenses/`.
 

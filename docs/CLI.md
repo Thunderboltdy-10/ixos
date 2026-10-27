@@ -19,6 +19,9 @@ ixos cache clear --dir .
 ixos cache clear --dir . --yes
 ixos cache clear --all --yes
 ixos setup
+ixos update --check
+ixos update
+ixos update --desktop
 ixos model install code
 ixos model list
 ixos doctor --dir . --profile code

@@ -5,7 +5,7 @@ import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-mot
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DEMOS, toHit } from "@/lib/demo";
 import { MEDIAN, MEMORY_MB, P95, SAMPLES } from "@/lib/latency";
-import { Count, EASE, Reveal, Stage, useShown } from "./Stage";
+import { Count, EASE, Reveal, Stage, useShown, useActive } from "./Stage";
 
 /** Label, width in key units, and the KeyboardEvent code that lights it. */
 type Key = [string, number, string];
@@ -97,7 +97,7 @@ function SpeedNumber() {
 function Shortcut() {
   const shown = useShown();
   const root = useRef<HTMLDivElement>(null);
-  const visible = useInView(root, { amount: 0.4 });
+  const visible = useActive(root, 0.4);
   const still = useReducedMotion();
   const [down, setDown] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
@@ -129,6 +129,7 @@ function Shortcut() {
       while (live) {
         await run();
         await sleep(2600);
+        if (!live) return;
         setOpen(false);
         await sleep(1600);
       }
@@ -141,6 +142,8 @@ function Shortcut() {
   useEffect(() => {
     if (!visible) return;
     const press = (event: KeyboardEvent) => {
+      if (event.target instanceof Element && event.target.closest("input, textarea, select, button, a, [contenteditable]")) return;
+      if (event.code === "Space") event.preventDefault();
       if (event.ctrlKey && event.code === "Space") {
         event.preventDefault();
         run();

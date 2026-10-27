@@ -9,6 +9,11 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
     let path = cli.config.unwrap_or_else(Config::path);
     let config = Config::load(&path)?;
     match cli.command {
+        Command::Update {
+            check,
+            desktop,
+            background,
+        } => crate::updates::run(check, desktop, background)?,
         Command::Runtime { command } => match command {
             RuntimeCommand::Licenses => println!(
                 "{}\n{}\n{}",

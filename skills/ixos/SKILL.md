@@ -36,3 +36,5 @@ Examples of independent operations:
 Returned line ranges describe displayed source; a symbol extent may be larger. Follow `next_start_line` after truncation, retaining the requested end when bounded. For an oversized physical line, use `characters` and continue with `next_character_offset` in the same line range. When source-version consistency matters, pass a returned `source_hash` as `expected_source_hash`; discard stale coordinates on mismatch. Numbered views aid citations but spend more space per source line. Scores are relative ranking signals, not confidence probabilities.
 
 If Ixos tools are missing or the schema lacks a shown argument, use available ordinary tools and report the capability mismatch when relevant. A discovered skill does not register MCP. Setup is in the project's `docs/MCP.md`; do not rewrite agent configuration merely to complete a source investigation.
+
+When a tool response reports an Ixos update, show its update command and ask the user whether to run it. After approval, run the command through the ordinary shell and reconnect/restart the MCP server. Do not update silently or claim an already running server has switched versions.

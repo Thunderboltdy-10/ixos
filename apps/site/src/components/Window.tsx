@@ -18,7 +18,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { DEMOS, sourceLines, toHit } from "@/lib/demo";
-import { EASE, Reveal, Stage, useShown } from "./Stage";
+import { EASE, Reveal, Stage, useShown, useActiveDemo } from "./Stage";
 
 const DEMO = DEMOS[1];
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -50,6 +50,8 @@ type Step = "starting" | "empty" | "keywords" | "ranked";
 /** The main window, starting up and then running a search. Rows can be clicked. */
 function Desktop() {
   const shown = useShown();
+  const visible = useActiveDemo();
+  const finished = useRef(false);
   const still = useReducedMotion();
   const [stage, setStage] = useState<Step>("starting");
   const [typed, setTyped] = useState("");
@@ -59,7 +61,7 @@ function Desktop() {
   const list = useRef<HTMLOListElement>(null);
 
   useEffect(() => {
-    if (!shown || still) return;
+    if (!shown || !visible || still || finished.current) return;
     let live = true;
     (async () => {
       await sleep(1500);
@@ -73,12 +75,12 @@ function Desktop() {
       await sleep(150);
       if (live) setStage("keywords");
       await sleep(900);
-      if (live) setStage("ranked");
+      if (live) { setStage("ranked"); finished.current = true; }
     })();
     return () => {
       live = false;
     };
-  }, [shown, still]);
+  }, [shown, visible, still]);
 
   // With reduced motion, the finished search is shown and stays still.
   const step = still ? "ranked" : stage;

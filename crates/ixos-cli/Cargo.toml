@@ -15,7 +15,7 @@ default = ["evidence-functions"]
 evidence-functions = ["ixos-core/evidence-functions"]
 
 [dependencies]
-ixos-runtime = { path = "../ixos-runtime" }
+ixos-runtime = { path = "../ixos-runtime", features = ["client"] }
 ixos-core = { path = "../ixos-core" }
 anyhow = "1"
 clap = { version = "4.5", features = ["derive"] }

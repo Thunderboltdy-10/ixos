@@ -62,8 +62,7 @@ pub fn install(
         .open(directory.join(format!(".{}.lock", profile.name())))?;
     lock.lock()?;
     let target = directory.join(profile.name());
-    if target.exists() {
-        verify(&target, profile)?;
+    if target.exists() && verify(&target, profile).is_ok() {
         return Ok(target);
     }
     let work = tempfile::tempdir_in(directory)?;
@@ -95,7 +94,19 @@ pub fn install(
         }
     }
     verify(work.path(), profile)?;
-    std::fs::rename(work.path(), &target)?;
+    // A changed pinned revision or interrupted/corrupt old model can be repaired.
+    // Keep the old directory until every new byte has passed verification.
+    let previous = tempfile::tempdir_in(directory)?;
+    let backup = previous.path().join("model");
+    if target.exists() {
+        std::fs::rename(&target, &backup)?;
+    }
+    if let Err(error) = std::fs::rename(work.path(), &target) {
+        if backup.exists() {
+            let _ = std::fs::rename(&backup, &target);
+        }
+        return Err(error.into());
+    }
     Ok(target)
 }
 

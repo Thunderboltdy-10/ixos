@@ -31,5 +31,6 @@ jobs:
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --locked -- -D warnings
       - run: cargo test --workspace --locked
+      - run: cargo build --locked -p ixos-cli -p ixos-install
       - run: python -m unittest discover -s eval -p 'test_*.py'
       - run: npm run site:build

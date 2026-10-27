@@ -11,7 +11,7 @@ use std::{
 };
 
 pub fn info() -> Value {
-    json!({"name":"ixos","version":env!("CARGO_PKG_VERSION"),"protocol_major":ixos_runtime::PROTOCOL_MAJOR,"capabilities":["resident-search","shared-settings","models","cache","skill"],"function_evidence":cfg!(feature="evidence-functions")})
+    json!({"name":"ixos","version":env!("CARGO_PKG_VERSION"),"protocol_major":ixos_runtime::PROTOCOL_MAJOR,"capabilities":["resident-search","shared-settings","models","cache","skill","read"],"function_evidence":cfg!(feature="evidence-functions")})
 }
 #[derive(Default)]
 struct Worker {
@@ -27,13 +27,13 @@ impl Worker {
             .roots
             .iter()
             .map(|root| {
-                let (files, bytes) = engine.source_stats(root);
+                let (files, bytes, lines) = engine.source_stats(root);
                 let discovered = ixos_core::discover::search_walk(root, true, true, false, None)
                     .build()
                     .filter_map(Result::ok)
                     .filter(|entry| entry.file_type().is_some_and(|kind| kind.is_file()))
                     .count();
-                json!({"root":root,"files":files,"bytes":bytes,"discovered":discovered})
+                json!({"root":root,"files":files,"bytes":bytes,"lines":lines,"discovered":discovered})
             })
             .collect::<Vec<_>>())
     }
@@ -117,6 +117,14 @@ impl Worker {
                 &config.model_path(config.profile, None),
             )?)?),
             "skill" => Ok(json!(crate::skill::ensure()?)),
+            "read" => {
+                let root = PathBuf::from(p["root"].as_str().context("Missing root")?);
+                let path = PathBuf::from(p["path"].as_str().context("Missing path")?);
+                let start = p["start"].as_u64().unwrap_or(1) as usize;
+                let lines = p["lines"].as_u64().unwrap_or(40) as usize;
+                let raw = ixos_core::tools::read(&root, &path, start, lines, 24_000)?;
+                Ok(serde_json::from_slice(&raw)?)
+            }
             _ => anyhow::bail!("Unknown runtime operation: {op}"),
         }
     }

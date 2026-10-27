@@ -57,6 +57,9 @@ pub struct Stats {
     pub snippet: Option<snippet::Stats>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub evidence: Option<evidence::Stats>,
+    /// Keyword and meaning halves of the hybrid score for each returned file, in order.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub score_parts: Vec<[f32; 2]>,
 }
 
 pub struct Document {
@@ -551,13 +554,18 @@ impl Engine {
         stats.refresh_ms = began.elapsed().as_secs_f64() * 1000.0;
         Ok(stats)
     }
-    pub fn source_stats(&self, root: &Path) -> (usize, u64) {
+    /// Files, extracted text bytes and lines held for one root.
+    pub fn source_stats(&self, root: &Path) -> (usize, u64, usize) {
         let documents = self
             .documents
             .values()
             .filter(|document| document.path.starts_with(root));
-        documents.fold((0, 0), |(count, bytes), document| {
-            (count + 1, bytes + document.text.len() as u64)
+        documents.fold((0, 0, 0), |(count, bytes, lines), document| {
+            (
+                count + 1,
+                bytes + document.text.len() as u64,
+                lines + document.lines.len(),
+            )
         })
     }
     /// Result formatting and mode can change without discarding resident sources.
@@ -762,8 +770,14 @@ impl Engine {
             HashMap::new()
         };
         let mut rows = tools::BoundedRows::new(self.options.output_bytes);
-        for (path, score, _lexical, _semantic, best) in ranked.into_iter().take(self.options.limit)
-        {
+        for (path, score, lexical, semantic, best) in ranked.into_iter().take(self.options.limit) {
+            let keyword = 0.5 * lexical / max_lexical;
+            let meaning = 0.5 * semantic.max(0.0);
+            let parts = match self.options.mode {
+                RetrievalMode::Lexical => [keyword, 0.0],
+                RetrievalMode::Semantic => [0.0, meaning],
+                RetrievalMode::Hybrid => [keyword, meaning],
+            };
             let document = &self.documents[&path];
             let display_path = if self.roots.len() == 1 {
                 path.clone()
@@ -807,6 +821,7 @@ impl Engine {
             if !rows.push(&row)? {
                 break;
             }
+            stats.score_parts.push(parts);
         }
         let result_count = rows.len();
         let mut raw = rows.finish();

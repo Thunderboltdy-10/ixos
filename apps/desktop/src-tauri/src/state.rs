@@ -14,6 +14,7 @@ use std::{
 pub struct LocationStatus {
     pub directory: PathBuf,
     pub file_count: usize,
+    pub line_count: usize,
     pub skipped_files: usize,
     pub source_bytes: u64,
     pub budget_bytes: u64,

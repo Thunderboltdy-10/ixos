@@ -19,6 +19,9 @@
     "global-shortcut:default",
     "global-shortcut:allow-register",
     "dialog:allow-confirm",
-    "dialog:allow-open"
+    "dialog:allow-open",
+    "core:window:allow-unminimize",
+    "core:window:allow-start-dragging",
+    "core:window:allow-is-maximized"
   ]
 }

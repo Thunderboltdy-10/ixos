@@ -4,3 +4,4 @@ pub mod settings;
 pub mod shortcut;
 pub mod storage;
 pub mod system;
+pub mod usage;

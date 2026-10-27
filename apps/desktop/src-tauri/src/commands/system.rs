@@ -29,6 +29,15 @@ pub fn open_file(app: AppHandle, path: String) -> Result<(), String> {
         .map_err(|e| e.to_string())
 }
 #[tauri::command]
+pub fn open_link(app: AppHandle, url: String) -> Result<(), String> {
+    if !url.starts_with("https://") {
+        return Err("Only web links can be opened".into());
+    }
+    app.opener()
+        .open_url(url, None::<&str>)
+        .map_err(|e| e.to_string())
+}
+#[tauri::command]
 pub fn reveal_in_explorer(app: AppHandle, path: String) -> Result<(), String> {
     app.opener()
         .reveal_item_in_dir(path)
@@ -175,4 +184,30 @@ pub async fn get_skill_status(app: AppHandle) -> Result<serde_json::Value, Strin
     })
     .await
     .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+pub fn get_launch_at_login(app: AppHandle) -> Result<bool, String> {
+    use tauri_plugin_autostart::ManagerExt;
+    app.autolaunch()
+        .is_enabled()
+        .map_err(|error| error.to_string())
+}
+#[tauri::command]
+pub fn set_launch_at_login(app: AppHandle, enabled: bool) -> Result<(), String> {
+    use tauri_plugin_autostart::ManagerExt;
+    let launcher = app.autolaunch();
+    if enabled {
+        launcher.enable()
+    } else {
+        launcher.disable()
+    }
+    .map_err(|error| error.to_string())
+}
+pub fn show_main(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.unminimize();
+        let _ = window.show();
+        let _ = window.set_focus();
+    }
 }

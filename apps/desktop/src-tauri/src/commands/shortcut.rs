@@ -6,7 +6,9 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use tauri::AppHandle;
-use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
+use tauri_plugin_global_shortcut::{Code, Modifiers, Shortcut};
+#[cfg(not(windows))]
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
 // =============================================================================
 // Types
@@ -192,24 +194,42 @@ pub async fn set_shortcut_config(app: AppHandle, config: ShortcutConfig) -> Resu
         .to_shortcut()
         .ok_or_else(|| format!("Invalid key: {}", config.key))?;
 
-    let old_shortcut = ShortcutConfig::load().to_shortcut();
+    let old = ShortcutConfig::load();
+    let old_shortcut = old.to_shortcut();
+    config.save()?;
     if old_shortcut == Some(new_shortcut) {
-        return config.save();
+        return Ok(());
     }
-    register_shortcut_internal(&app, new_shortcut)?;
-    if let Err(error) = config.save() {
-        let _ = app.global_shortcut().unregister(new_shortcut);
+    if let Err(error) = register_shortcut_internal(&app, new_shortcut) {
+        let _ = old.save();
         return Err(error);
     }
     if let Some(old) = old_shortcut {
-        let _ = app.global_shortcut().unregister(old);
+        unregister_shortcut(&app, old);
     }
 
     tracing::info!("Shortcut updated to: {}", config.display_string());
     Ok(())
 }
 
-/// Register shortcut with the given app handle
+/// Windows gives a combination to whichever app registered it first, so there a
+/// keyboard hook catches it before them instead.
+#[cfg(windows)]
+fn register_shortcut_internal(app: &AppHandle, shortcut: Shortcut) -> Result<(), String> {
+    crate::hook::listen(app, shortcut)
+}
+
+#[cfg(windows)]
+fn unregister_shortcut(_app: &AppHandle, shortcut: Shortcut) {
+    crate::hook::forget(shortcut);
+}
+
+#[cfg(not(windows))]
+fn unregister_shortcut(app: &AppHandle, shortcut: Shortcut) {
+    let _ = app.global_shortcut().unregister(shortcut);
+}
+
+#[cfg(not(windows))]
 fn register_shortcut_internal(app: &AppHandle, shortcut: Shortcut) -> Result<(), String> {
     let app_handle = app.clone();
     app.global_shortcut()

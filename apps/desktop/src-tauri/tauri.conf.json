@@ -21,22 +21,23 @@
       {
         "label": "main",
         "title": "Ixos",
-        "width": 1440,
-        "height": 860,
-        "minWidth": 1100,
-        "minHeight": 700,
-        "maximized": true,
-        "visible": true,
+        "width": 1200,
+        "height": 800,
+        "minWidth": 760,
+        "minHeight": 540,
+        "maximized": false,
+        "visible": false,
         "focus": true,
         "center": true,
         "decorations": false,
         "resizable": true,
         "skipTaskbar": false,
-        "transparent": false
+        "transparent": false,
+        "backgroundColor": "#0F0F0E"
       },
       {
         "label": "overlay",
-        "title": "Ixos Search",
+        "title": "Ixos quick search",
         "fullscreen": true,
         "visible": false,
         "focus": false,
@@ -45,7 +46,8 @@
         "skipTaskbar": true,
         "transparent": true,
         "alwaysOnTop": true,
-        "shadow": false
+        "shadow": false,
+        "backgroundColor": "#00000000"
       }
     ],
     "security": {
@@ -68,8 +70,8 @@
       "timestampUrl": ""
     },
     "category": "Utility",
-    "shortDescription": "Local hybrid search",
-    "longDescription": "Search local code and documents on CPU.",
+    "shortDescription": "Search your code and documents by meaning",
+    "longDescription": "Ixos finds files on your computer from a description, using keywords and meaning together. It runs locally on the CPU.",
     "copyright": "Copyright (c) 2026 Ixos Team"
   }
 }

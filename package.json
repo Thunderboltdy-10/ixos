@@ -2,7 +2,7 @@
   "name": "ixos",
   "version": "0.1.0",
   "private": true,
-  "description": "Local hybrid search over code and documents",
+  "description": "Search your code and documents by meaning, locally",
   "engines": {
     "node": ">=22",
     "npm": ">=9.0.0"
@@ -12,15 +12,14 @@
     "tauri:dev": "cd apps/desktop && tauri dev --no-watch",
     "tauri:dev:watch": "cd apps/desktop && tauri dev",
     "tauri:build": "cd apps/desktop && tauri build",
-    "dev": "npm run dev --workspace ixos-ui",
-    "build": "npm run build --workspace ixos-ui",
+    "dev": "npm run dev --workspace ixos-desktop-ui",
+    "build": "npm run build --workspace ixos-desktop-ui",
     "site:dev": "npm run dev --workspace ixos-site",
     "site:build": "npm run build --workspace ixos-site"
   },
   "workspaces": [
     "apps/desktop/ui",
     "apps/site",
-    "packages/ixos-ui",
     "packages/ui"
   ],
   "devDependencies": {

@@ -1,58 +1,29 @@
-import type { Metadata } from "next";
-import { Space_Grotesk, Geist_Mono } from "next/font/google";
+import "@fontsource-variable/instrument-sans";
+import "@fontsource-variable/jetbrains-mono";
+import "@ixos/ui/theme.css";
 import "./globals.css";
-
-import { IxosNav } from "@/components/IxosNav";
-import { GridBackground } from "@/components/effects/GridBackground";
-import { PageGlow } from "@/components/effects/PageGlow";
-
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-ixo-heading",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-ixo-mono",
-  weight: ["400", "500", "600"],
-  subsets: ["latin"],
-  display: "swap",
-});
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import { Footer, Nav } from "@/components/Nav";
+import { Motion } from "@/components/Motion";
+import { starCount } from "@/lib/github";
 
 export const metadata: Metadata = {
   title: "Ixos",
-  description: "Local-first semantic search for your files.",
-  icons: {
-    icon: [
-      { url: "/assets/logo.png", type: "image/png" },
-      { url: "/favicon.ico", type: "image/x-icon" },
-    ],
-    shortcut: ["/assets/logo.png"],
-    apple: ["/assets/logo.png"],
-  },
+  description: "Search your code and documents by meaning, on your own computer.",
+  icons: { icon: "/assets/logo.png", apple: "/assets/logo.png" },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const stars = await starCount();
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${spaceGrotesk.variable} ${geistMono.variable} antialiased`}
-        style={{ backgroundColor: "#0A0D0F" }}
-      >
-        <>
-          <>
-            <div id="app-root" className="relative min-h-screen flex flex-col">
-              <GridBackground />
-              <PageGlow color="amber" />
-              <IxosNav />
-              <div className="flex-1 flex flex-col">{children}</div>
-            </div>
-          </>
-        </>
+    <html lang="en">
+      <body>
+        <Motion>
+          <Nav stars={stars} />
+          {children}
+          <Footer />
+        </Motion>
       </body>
     </html>
   );

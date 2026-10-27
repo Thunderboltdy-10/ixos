@@ -27,19 +27,15 @@ fn publish(
     let statuses = locations
         .iter()
         .map(|directory| {
-            let (file_count, source_bytes) = engine
-                .map(|engine| engine.source_stats(directory))
+            let source = engine
+                .map(|engine| engine.source(directory))
                 .unwrap_or_default();
-            let discovered = if let Some(engine) = engine {
-                engine.discovered_files(directory)
-            } else {
-                0
-            };
             LocationStatus {
                 directory: dunce::simplified(directory).to_path_buf(),
-                file_count,
-                source_bytes,
-                skipped_files: discovered.saturating_sub(file_count),
+                file_count: source.files,
+                line_count: source.lines,
+                source_bytes: source.bytes,
+                skipped_files: source.discovered.saturating_sub(source.files),
                 budget_bytes: 256 * 1024 * 1024,
                 stage: stage.into(),
                 error: error.clone(),
@@ -174,8 +170,10 @@ pub async fn search_progressive(
     app.state::<AppState>()
         .warming_generation
         .fetch_add(1, Ordering::AcqRel);
+    let started = std::time::Instant::now();
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let state = app.state::<AppState>();
+        let mut first_results = None;
         let result = (|| -> Result<(), String> {
         let mut resident = state.engine.lock().map_err(|error| error.to_string())?;
         if state.generation.load(Ordering::Acquire) != generation { return Ok(()); }
@@ -232,11 +230,21 @@ pub async fn search_progressive(
                     snippet["path"] = json!(path);
                 }
             }
+            let elapsed = started.elapsed().as_secs_f32() * 1000.0;
+            first_results.get_or_insert(elapsed);
             let event_type = if mode == RetrievalMode::Lexical { "lexicalResults" } else { "semanticResults" };
-            emit(json!({"type": event_type, "results": value["results"], "stats": stats}))?;
+            emit(json!({"type": event_type, "results": value["results"], "stats": stats, "elapsedMs": elapsed}))?;
         }
         if state.generation.load(Ordering::SeqCst) != generation {
             return Ok(());
+        }
+        let searched = locations
+            .iter()
+            .filter(|root| directory.as_ref().is_none_or(|directory| directory == *root))
+            .map(|root| engine.source(root))
+            .fold((0, 0), |(files, lines), source| (files + source.files, lines + source.lines));
+        if let Some(wait) = first_results {
+            let _ = super::usage::record(searched.0, searched.1, wait);
         }
         let directory = directory.map(|path| dunce::simplified(&path).to_path_buf());
         let _ = recent::record(&app, &query, directory);
@@ -248,4 +256,31 @@ pub async fn search_progressive(
 #[tauri::command]
 pub fn cancel_search(state: State<'_, AppState>) {
     state.generation.fetch_add(1, Ordering::SeqCst);
+}
+
+/// Lines around a result for the preview column. Paths must belong to a chosen location.
+#[tauri::command]
+pub async fn read_preview(
+    app: tauri::AppHandle,
+    path: PathBuf,
+    start: usize,
+    lines: usize,
+) -> Result<Value, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let locations = key(&Settings::load().search.locations)?;
+        let file = path.canonicalize().map_err(|error| error.to_string())?;
+        let root = locations
+            .iter()
+            .filter(|root| file.starts_with(root))
+            .max_by_key(|root| root.as_os_str().len())
+            .ok_or("This file is outside your folders")?;
+        let state = app.state::<AppState>();
+        let mut resident = state.engine.lock().map_err(|error| error.to_string())?;
+        let engine = resident.as_mut().ok_or("Search is still starting")?;
+        engine
+            .read(root, &file, start.max(1), lines.clamp(1, 400))
+            .map_err(|error| error.to_string())
+    })
+    .await
+    .map_err(|error| error.to_string())?
 }

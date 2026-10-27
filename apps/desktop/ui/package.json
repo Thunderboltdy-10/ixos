@@ -1,41 +1,26 @@
 {
-  "name": "ixos-ui",
+  "name": "ixos-desktop-ui",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
-  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@ixos/ixos-ui": "*",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@ixos/ui": "*",
     "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-dialog": "^2.5.0",
-    "@tauri-apps/plugin-os": "^2",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "framer-motion": "^11.15.0",
-    "lucide-react": "^0.469.0",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3",
-    "tailwind-merge": "^2.6.0",
-    "zustand": "^5.0.9"
+    "react-dom": "^19.2.3"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.10.1",
+    "@types/node": "^20",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2",
     "vite": "^6.0.5"
   }

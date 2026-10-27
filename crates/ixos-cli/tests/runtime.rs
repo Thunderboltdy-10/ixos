@@ -97,10 +97,9 @@ fn runtime_client_uses_real_engine_and_recovers_after_invalid_requests() {
     )
     .unwrap();
     engine.refresh().unwrap();
-    assert_eq!(
-        engine.source_stats(&root.path().canonicalize().unwrap()).0,
-        1
-    );
+    let source = engine.source(&root.path().canonicalize().unwrap());
+    assert_eq!(source.files, 1);
+    assert!(source.lines > 0);
     engine
         .configure_search(RetrievalMode::Lexical, 1, 2, None)
         .unwrap();

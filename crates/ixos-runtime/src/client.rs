@@ -265,10 +265,19 @@ pub fn manage_cancelled(
     Session::start_with_cancellation(&ensure_runtime()?, Some(cancellation))?.call(op, params)
 }
 
+/// What the worker holds for one location after a refresh.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Source {
+    pub files: usize,
+    pub bytes: u64,
+    pub lines: usize,
+    pub discovered: usize,
+}
+
 /// Desktop adapter mirrors the core's resident operations without embedding it.
 pub struct Engine {
     session: Session,
-    sources: BTreeMap<PathBuf, (usize, u64, usize)>,
+    sources: BTreeMap<PathBuf, Source>,
 }
 impl Engine {
     pub fn new_locations(
@@ -322,23 +331,31 @@ impl Engine {
         {
             self.sources.insert(
                 PathBuf::from(source["root"].as_str().context("Missing source root")?),
-                (
-                    source["files"].as_u64().unwrap_or(0) as usize,
-                    source["bytes"].as_u64().unwrap_or(0),
-                    source["discovered"].as_u64().unwrap_or(0) as usize,
-                ),
+                Source {
+                    files: source["files"].as_u64().unwrap_or(0) as usize,
+                    bytes: source["bytes"].as_u64().unwrap_or(0),
+                    lines: source["lines"].as_u64().unwrap_or(0) as usize,
+                    discovered: source["discovered"].as_u64().unwrap_or(0) as usize,
+                },
             );
         }
         Ok(value["stats"].clone())
     }
-    pub fn source_stats(&self, root: &Path) -> (usize, u64) {
-        self.sources
-            .get(root)
-            .map(|&(files, bytes, _)| (files, bytes))
-            .unwrap_or_default()
+    pub fn source(&self, root: &Path) -> Source {
+        self.sources.get(root).copied().unwrap_or_default()
     }
-    pub fn discovered_files(&self, root: &Path) -> usize {
-        self.sources.get(root).map_or(0, |s| s.2)
+    /// Lines of one discovered file, including extracted PDF and Office text.
+    pub fn read(
+        &mut self,
+        root: &Path,
+        path: &Path,
+        start: usize,
+        lines: usize,
+    ) -> anyhow::Result<Value> {
+        self.session.call(
+            "read",
+            json!({"root":root,"path":path,"start":start,"lines":lines}),
+        )
     }
     pub fn search_location(
         &mut self,

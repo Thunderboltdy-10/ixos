@@ -1,5 +1,7 @@
 //! Tray process and commands for local search.
 pub mod commands;
+#[cfg(windows)]
+mod hook;
 pub mod state;
 pub mod tray;
 use tauri::Manager;
@@ -7,6 +9,14 @@ use tauri::Manager;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        // Opening Ixos again, for example from the Start menu, shows the running app.
+        .plugin(tauri_plugin_single_instance::init(|app, _, _| {
+            commands::system::show_main(app)
+        }))
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            Some(vec!["--hidden"]),
+        ))
         .manage(state::AppState::default())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
@@ -17,14 +27,9 @@ pub fn run() {
             commands::shortcut::setup_global_shortcut(app)?;
             commands::system::setup_models(app.handle().clone());
             commands::search::warm(app.handle().clone());
-            if !commands::settings::Settings::load()
-                .search
-                .locations
-                .is_empty()
-            {
-                if let Some(window) = app.get_webview_window("main") {
-                    let _ = window.hide();
-                }
+            // Launch at login starts in the tray; any other launch shows the window.
+            if !std::env::args().any(|argument| argument == "--hidden") {
+                commands::system::show_main(app.handle());
             }
             Ok(())
         })
@@ -42,6 +47,10 @@ pub fn run() {
             commands::search::search_progressive,
             commands::search::cancel_search,
             commands::search::get_location_status,
+            commands::search::read_preview,
+            commands::usage::get_usage,
+            commands::system::get_launch_at_login,
+            commands::system::set_launch_at_login,
             commands::recent::list_recent_searches,
             commands::recent::clear_recent_searches,
             commands::settings::get_config,
@@ -52,6 +61,7 @@ pub fn run() {
             commands::system::hide_overlay,
             commands::system::open_file,
             commands::system::reveal_in_explorer,
+            commands::system::open_link,
             commands::system::select_directory,
             commands::system::suggested_locations,
             commands::system::doctor,

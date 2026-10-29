@@ -14,6 +14,9 @@ fn main() {
     }
 }
 fn install(args: Args) -> anyhow::Result<()> {
+    if releases::relaunch_installer_if_packaged()? {
+        return Ok(());
+    }
     let engine = releases::latest("engine")?;
     // Preflight both manifests before changing an existing installation.
     let desktop = if args.no_desktop {

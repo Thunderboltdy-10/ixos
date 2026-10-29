@@ -5,14 +5,32 @@ mod hook;
 pub mod state;
 pub mod tray;
 mod updates;
+use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::Manager;
+
+#[derive(Default)]
+struct LaunchRequests {
+    ready: AtomicBool,
+    open: AtomicBool,
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .manage(LaunchRequests::default())
         // Opening Ixos again, for example from the Start menu, shows the running app.
-        .plugin(tauri_plugin_single_instance::init(|app, _, _| {
-            commands::system::show_main(app)
+        .plugin(tauri_plugin_single_instance::init(|app, arguments, _| {
+            if arguments.iter().any(|argument| argument == "--hidden") {
+                return;
+            }
+            // Native windows exist before Tauri has registered its webviews.
+            // Remember an early launch until Ready instead of losing the request.
+            let launch = app.state::<LaunchRequests>();
+            launch.open.store(true, Ordering::Release);
+            if launch.ready.load(Ordering::Acquire) {
+                launch.open.store(false, Ordering::Release);
+                commands::system::show_main(app);
+            }
         }))
         .plugin(
             tauri_plugin_updater::Builder::new()
@@ -81,6 +99,13 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("Cannot run Ixos")
         .run(|app, event| {
+            if matches!(event, tauri::RunEvent::Ready) {
+                let launch = app.state::<LaunchRequests>();
+                launch.ready.store(true, Ordering::Release);
+                if launch.open.swap(false, Ordering::AcqRel) {
+                    commands::system::show_main(app);
+                }
+            }
             if matches!(
                 event,
                 tauri::RunEvent::ExitRequested { .. } | tauri::RunEvent::Exit

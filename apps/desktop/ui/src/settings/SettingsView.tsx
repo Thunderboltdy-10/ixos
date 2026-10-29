@@ -87,12 +87,12 @@ export function SettingsView({ config, locations, models, save }: SettingsViewPr
               }
             />
           </Row>
-          <Row label="Remember files" detail="Saved keeps a small record on each file so the next search is fast.">
+          <Row label="Remember files" detail="Cached keeps a small record on each file so the next search is fast.">
             <Segmented
               value={search.cache}
               choices={[
-                [true, "Saved"],
-                [false, "Fresh"],
+                [true, "Cached"],
+                [false, "JIT"],
               ]}
               onChange={(cache) => set({ cache })}
             />
@@ -126,7 +126,7 @@ export function SettingsView({ config, locations, models, save }: SettingsViewPr
           </Row>
         </Section>
 
-        <Section title="Saved records" note="One small record per file, kept in its metadata. Removing them is safe; Ixos rebuilds them on the next search.">
+        <Section title="Cached records" note="One small record per file, kept in its metadata. Removing them is safe; Ixos rebuilds them on the next search.">
           {search.locations.map((path) => (
             <SavedRow key={path} path={path} />
           ))}

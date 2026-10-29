@@ -32,17 +32,24 @@ pub fn record(
     if query.len() > 512 {
         return Ok(());
     }
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis() as u64;
     let mut entries = list_recent_searches();
-    entries.retain(|entry| entry.query != query || entry.directory != directory);
+    // Searches run as the user types, so a query that grows or shrinks within a
+    // few seconds replaces the one before it instead of adding a row per key.
+    let typing = |entry: &RecentSearch| {
+        timestamp.saturating_sub(entry.timestamp) < 3_000
+            && (query.starts_with(&entry.query) || entry.query.starts_with(query))
+    };
+    entries.retain(|entry| (entry.query != query && !typing(entry)) || entry.directory != directory);
     entries.insert(
         0,
         RecentSearch {
             query: query.into(),
             directory,
-            timestamp: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_millis() as u64,
+            timestamp,
         },
     );
     entries.truncate(20);

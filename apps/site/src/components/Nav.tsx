@@ -15,8 +15,8 @@ export function Nav({ stars }: { stars: number | null }) {
         </Link>
         <div className="nav-links">
           <Link href="/docs">Docs</Link>
-          <a className="nav-hf" href={HUGGING_FACE}>Hugging Face</a>
-          <a href={GITHUB} className="nav-github">
+          <a className="nav-hf" href={HUGGING_FACE} target="_blank" rel="noopener noreferrer">Hugging Face</a>
+          <a href={GITHUB} className="nav-github" target="_blank" rel="noopener noreferrer">
             <GitHubIcon size={17} />
             GitHub
             <span className="nav-stars">

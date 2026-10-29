@@ -72,6 +72,13 @@ jobs:
           if (-not $env:TAURI_SIGNING_PRIVATE_KEY -or -not $env:IXOS_UPDATER_PUBLIC_KEY) { throw 'Configure the desktop update signing key and public verification key before releasing' }
           npm run tauri:build
           if ($LASTEXITCODE -ne 0) { throw 'Signed desktop build failed' }
+      - name: Verify Windows desktop installation and launch
+        if: inputs.kind == 'desktop' && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $taskInstallers = @(Get-ChildItem -LiteralPath target/release/bundle/nsis -File -Filter '*-setup.exe')
+          if ($taskInstallers.Count -ne 1) { throw 'Expected exactly one Windows desktop installer' }
+          ./scripts/test-desktop-install.ps1 -Installer $taskInstallers[0].FullName
       - name: Collect component artifacts
         shell: pwsh
         env:

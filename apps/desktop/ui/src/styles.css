@@ -110,25 +110,146 @@ input:focus-visible {
 .status--error {
   color: var(--ix-danger);
 }
+.ix-search > .ix-split {
+  margin-inline: 0;
+}
+.search-split {
+  position: relative;
+  grid-template-columns: minmax(240px, var(--results-width, 40%)) minmax(0, 1fr);
+  animation: split-in 140ms var(--ix-ease);
+}
+.search-split > .ix-preview {
+  animation: preview-in 200ms var(--ix-ease);
+}
+@keyframes split-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes preview-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+.split-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: max(240px, var(--results-width, 40%));
+  z-index: 2;
+  width: 9px;
+  margin-left: -5px;
+  cursor: col-resize;
+  touch-action: none;
+}
+.split-handle::after {
+  content: "";
+  position: absolute;
+  inset: 0 4px;
+  background: transparent;
+  transition: background 120ms;
+}
+.split-handle:hover::after,
+.split-handle:focus-visible::after,
+.resizing .split-handle::after {
+  background: var(--ix-yellow);
+}
+.split-handle:focus-visible {
+  outline: none;
+}
+.resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+.search-home > .recent {
+  animation: split-in 160ms var(--ix-ease);
+}
+/* The home list hangs off the query bar: its icons sit under the search
+   icon and its text starts where typed text starts. */
+.search-home {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 6px 0 32px;
+  overflow-y: auto;
+}
+.recent {
+  max-width: 880px;
+}
+.recent-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 14px 8px 50px;
+}
 .recent-title {
-  margin: 0 0 8px;
+  margin: 0;
   color: var(--ix-text-3);
   font-size: 12.5px;
 }
-.recent-item {
-  display: block;
-  max-width: 100%;
-  padding: 6px 0;
-  overflow: hidden;
+.recent-clear {
+  padding: 0;
   border: 0;
   background: transparent;
+  color: var(--ix-text-3);
+  font-size: 12.5px;
+}
+.recent-clear:hover {
+  color: var(--ix-text);
+}
+.recent-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.recent-item {
+  display: grid;
+  grid-template-columns: 19px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 40px;
+  padding: 0 14px 0 19px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
   color: var(--ix-text-2);
+  font-size: 15px;
   text-align: left;
+}
+.recent-item:hover,
+.recent-item:focus-visible {
+  background: var(--ix-panel);
+  color: var(--ix-text);
+  outline: none;
+}
+.recent-icon {
+  justify-self: center;
+  color: var(--ix-faint);
+}
+.recent-item:hover .recent-icon {
+  color: var(--ix-text-3);
+}
+.recent-query {
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.recent-item:hover {
-  color: var(--ix-text);
+.recent-scope,
+.recent-when {
+  color: var(--ix-faint);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.recent-when {
+  min-width: 72px;
+  text-align: right;
+}
+.recent-empty {
+  margin: 0;
+  padding: 4px 14px 0 50px;
+  color: var(--ix-text-3);
 }
 
 .first-run {
@@ -374,6 +495,11 @@ input:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .search-split,
+  .search-split > .ix-preview,
+  .search-home > .recent {
+    animation: none;
+  }
   .overlay-panel {
     animation: none;
   }

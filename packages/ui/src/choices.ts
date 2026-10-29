@@ -8,6 +8,6 @@ export const PROFILE_CHOICES: Choice<"auto" | "code" | "documents">[] = [
 ];
 
 export const CACHE_CHOICES: Choice<boolean>[] = [
-  { value: true, label: "Saved", detail: "Keeps a small record on each file, so the next search is fast" },
-  { value: false, label: "Fresh", detail: "Reads every file each time and writes nothing" },
+  { value: true, label: "Cached", detail: "Keeps a small record on each file, so the next search is fast" },
+  { value: false, label: "JIT", detail: "Reads every file each time and writes nothing" },
 ];

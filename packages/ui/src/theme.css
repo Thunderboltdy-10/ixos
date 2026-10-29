@@ -576,8 +576,13 @@
   flex: 0 0 auto;
   color: var(--ix-yellow);
 }
+.ix-menu-item > span {
+  min-width: 0;
+}
 .ix-menu-label {
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .ix-menu-detail {
   display: block;
@@ -586,6 +591,7 @@
   color: var(--ix-text-3);
   font-size: 12.5px;
   text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 .ix-menu hr {
   margin: 6px 0;

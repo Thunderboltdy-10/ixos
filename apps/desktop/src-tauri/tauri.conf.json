@@ -67,7 +67,10 @@
       "icons/icon.ico"
     ],
     "windows": {
-      "nsis": { "installMode": "currentUser" },
+      "nsis": {
+        "installMode": "currentUser",
+        "installerHooks": "windows/installer-hooks.nsh"
+      },
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",
       "timestampUrl": ""

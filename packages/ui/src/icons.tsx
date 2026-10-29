@@ -23,6 +23,13 @@ export const SearchIcon = (props: IconProps) => (
     <path d="M16.5 16.5 21 21" />
   </svg>
 );
+export const HistoryIcon = (props: IconProps) => (
+  <svg {...stroke(props)}>
+    <path d="M3.5 12a8.5 8.5 0 1 0 2.5-6" />
+    <path d="M3.5 4v4h4" />
+    <path d="M12 8v4.2l2.8 1.8" />
+  </svg>
+);
 export const ChevronDown = (props: IconProps) => (
   <svg {...stroke({ size: 10, ...props })} viewBox="0 0 12 12" strokeWidth={1.5}>
     <path d="M2 4l4 4 4-4" />

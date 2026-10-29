@@ -9,6 +9,27 @@ use std::{
 };
 
 pub const REPO: &str = "Thunderboltdy-10/ixos";
+#[cfg(windows)]
+#[path = "windows_install.rs"]
+mod windows_install;
+
+/// Install into the user's Windows environment, not a packaged terminal's
+/// private AppData/registry overlay. This also keeps model setup in the same
+/// environment as the desktop which will use it.
+pub fn relaunch_installer_if_packaged() -> anyhow::Result<bool> {
+    #[cfg(windows)]
+    if windows_install::is_packaged()? {
+        anyhow::ensure!(std::env::var_os("IXOS_INSTALL_UNVIRTUALIZED").is_none(),
+            "Windows still redirects this installation into a packaged app. Run the installer from Windows Terminal outside the packaged app.");
+        let executable = std::fs::canonicalize(std::env::current_exe()?)?;
+        windows_install::run_outside_package(
+            &executable,
+            &std::env::args_os().skip(1).collect::<Vec<_>>(),
+        )?;
+        return Ok(true);
+    }
+    Ok(false)
+}
 fn server() -> Option<String> {
     // Local release fixtures are available only in development/test binaries.
     if cfg!(debug_assertions) {
@@ -345,7 +366,14 @@ pub fn install_desktop(release: &Release) -> anyhow::Result<()> {
             asset.file.ends_with("-setup.exe"),
             "Expected per-user NSIS installer"
         );
-        run(std::process::Command::new(&file).args(["/S", "/CURRENTUSER"]))?;
+        if windows_install::is_packaged()? {
+            windows_install::run_outside_package(
+                &std::fs::canonicalize(&file)?,
+                &["/S".into(), "/CURRENTUSER".into()],
+            )?;
+        } else {
+            run(std::process::Command::new(&file).args(["/S", "/CURRENTUSER"]))?;
+        }
         let app = dirs::data_local_dir()
             .context("Local application directory")?
             .join("Ixos/Ixos.exe");

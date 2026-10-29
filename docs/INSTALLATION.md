@@ -23,6 +23,10 @@ For hosts supported by the optional [Agent Skills CLI](https://github.com/vercel
 
 ## Desktop installation
 
+When launched from an MSIX-packaged terminal or agent, the bootstrap checks the physical destination of AppData writes as well as package identity. It hands installation to the user's Explorer desktop so the executable, models and Start menu entry are installed into the normal Windows environment. Without this handoff, Windows can redirect them into the terminal's private package cache, making an apparently successful installation invisible to normal app search. If Explorer is unavailable, installation reports an error instead of silently using that private cache.
+
+On Windows, installing Ixos adds **Ixos** to the Start menu and Windows app search. Launching it opens its window; launching it again restores the existing window. Only the launch-at-login entry uses `--hidden` to start in the tray. NSIS installations and updates rebuild the Start menu shortcut with the current executable, icon and application ID, and notify the Windows shell. The explicit installer `/NS` option still opts out of shortcut creation. The Windows release workflow tests silent installation, recovery of a missing shortcut during an update, hidden startup, repeated launch and minimized-window restoration before collecting release artifacts. Run `scripts/test-desktop-install.ps1 -Installer <setup.exe> -RequireAppList` on an interactive Windows desktop to also verify Windows app-list discovery.
+
 The bootstrap installs the CLI first; desktop never includes a second engine. At launch it resolves:
 
 1. Explicit `IXOS_ENGINE_PATH`.

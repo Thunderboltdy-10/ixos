@@ -2,17 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { useReducedMotion } from "framer-motion";
 import { EXCHANGE } from "@/lib/agent";
 import { Copy } from "./Copy";
-import { Reveal, Stage, useShown, useActiveDemo } from "./Stage";
-import { DesktopOption, detect, noChange } from "./Install";
+import { Reveal, Stage, useShown, useActiveDemo, useReducedMotion } from "./Stage";
+import { detect, noChange } from "./Install";
 import { installCommand } from "@/lib/install";
 
 export function Agents() {
   const system = useSyncExternalStore(noChange, detect, () => null);
-  const [desktop, setDesktop] = useState(true);
-  const command = installCommand(system === "mac" || system === "linux" ? "unix" : "windows", desktop);
+  const command = installCommand(system === "mac" || system === "linux" ? "unix" : "windows");
   const engine = system === "mac" || system === "linux" ? '"$HOME/.ixos/bin/ixos"' : '"$env:USERPROFILE/.ixos/bin/ixos.exe"';
   const project = system === "mac" || system === "linux" ? "/your/project" : "C:/your/project";
   const commands = [
@@ -34,7 +32,6 @@ export function Agents() {
         <Reveal delay={0.16} className="commands">
           <div className="command">
             <div className="command-head"><span>1. Install once · {system === "mac" || system === "linux" ? "macOS / Linux" : "PowerShell"}</span><Copy text={command} label="Copy installation command" /></div>
-            <DesktopOption checked={desktop} onChange={setDesktop} />
             <code>{command}</code>
             <p className="aside">Includes the CLI, MCP and skill. The commands below use the installed engine directly.</p>
           </div>

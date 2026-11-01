@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       kind:
-        description: Component to build (independent release cadence)
+        description: Component to build
         required: true
         type: choice
         options: [engine, desktop]
@@ -11,6 +11,10 @@ on:
         description: Existing engine-vX.Y.Z or desktop-vX.Y.Z tag
         required: true
         type: string
+      signed_updates:
+        description: Sign automatic desktop updates (requires repository signing keys)
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -19,98 +23,53 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {os: windows-latest, platform: Windows-X64}
-          - {os: ubuntu-latest, platform: Linux-X64}
-          - {os: macos-latest, platform: macOS-ARM64}
-          - {os: macos-15-intel, platform: macOS-X64}
+          - {os: windows-latest, platform: Windows-X64, python: '3.11'}
+          - {os: ubuntu-24.04, platform: Linux-X64, python: '3.12'}
+          - {os: macos-latest, platform: macOS-ARM64, python: '3.12'}
+          - {os: macos-15-intel, platform: macOS-X64, python: '3.12'}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
           persist-credentials: false
-      - name: Validate component tag
-        shell: pwsh
-        env:
-          RELEASE_TAG: ${{ inputs.tag }}
-          RELEASE_KIND: ${{ inputs.kind }}
-        run: |
-          if ($env:RELEASE_TAG -notmatch "^$($env:RELEASE_KIND)-v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$") { throw 'Tag must name the selected component and version' }
-          $taskManifest = if ($env:RELEASE_KIND -eq 'engine') { 'crates/ixos-cli/Cargo.toml' } else { 'apps/desktop/src-tauri/Cargo.toml' }
-          $taskVersion = (Select-String -LiteralPath $taskManifest -Pattern '^version = "([^"]+)"$').Matches[0].Groups[1].Value
-          if ($env:RELEASE_TAG -ne "$($env:RELEASE_KIND)-v$taskVersion") { throw 'Tag must match the component package version' }
-          if ($env:RELEASE_KIND -eq 'desktop' -and (Get-Content -Raw apps/desktop/src-tauri/tauri.conf.json | ConvertFrom-Json).version -ne $taskVersion) { throw 'Tauri and desktop package versions must agree' }
       - uses: dtolnay/rust-toolchain@1.92.0
+        with:
+          components: rustfmt, clippy
       - uses: actions/setup-node@v7
         if: inputs.kind == 'desktop'
         with:
           node-version: 22
           package-manager-cache: false
-      - name: Linux desktop libraries
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Linux desktop libraries and launch-test tools
         if: inputs.kind == 'desktop' && runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libssl-dev patchelf
-      - if: inputs.kind == 'engine'
-        run: cargo test --locked -p ixos-core -p ixos-cli -p ixos-runtime --all-features
-      - if: inputs.kind == 'engine'
-        run: cargo build --release --locked -p ixos-cli
-      - name: Build the lightweight installer (included in both release kinds)
-        run: cargo build --release --locked -p ixos-install
-      - if: inputs.kind == 'desktop'
-        run: npm ci
-      - if: inputs.kind == 'desktop'
-        run: npm run build
-      - if: inputs.kind == 'desktop'
-        name: Build signed desktop updates
+          sudo apt-get install -y pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libssl-dev patchelf desktop-file-utils xvfb xauth xdotool libfuse2
+      - name: Build, test and save release artifacts
         shell: pwsh
         env:
+          RELEASE_KIND: ${{ inputs.kind }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_PLATFORM: ${{ matrix.platform }}
+          SIGNED_UPDATES: ${{ inputs.kind == 'desktop' && inputs.signed_updates }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           IXOS_UPDATER_PUBLIC_KEY: ${{ vars.IXOS_UPDATER_PUBLIC_KEY }}
         run: |
-          if (-not $env:TAURI_SIGNING_PRIVATE_KEY -or -not $env:IXOS_UPDATER_PUBLIC_KEY) { throw 'Configure the desktop update signing key and public verification key before releasing' }
-          npm run tauri:build
-          if ($LASTEXITCODE -ne 0) { throw 'Signed desktop build failed' }
-      - name: Verify Windows desktop installation and launch
-        if: inputs.kind == 'desktop' && runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $taskInstallers = @(Get-ChildItem -LiteralPath target/release/bundle/nsis -File -Filter '*-setup.exe')
-          if ($taskInstallers.Count -ne 1) { throw 'Expected exactly one Windows desktop installer' }
-          ./scripts/test-desktop-install.ps1 -Installer $taskInstallers[0].FullName
-      - name: Collect component artifacts
-        shell: pwsh
-        env:
-          PLATFORM: ${{ matrix.platform }}
-          RELEASE_KIND: ${{ inputs.kind }}
-        run: |
-          New-Item -ItemType Directory -Path release-dist | Out-Null
-          $taskSuffix = if ($IsWindows) { '.exe' } else { '' }
-          $taskBootstrap = switch ($env:PLATFORM) { 'Windows-X64' { 'Windows-X64' }; 'Linux-X64' { 'Linux-x86_64' }; 'macOS-ARM64' { 'Darwin-arm64' }; 'macOS-X64' { 'Darwin-x86_64' } }
-          Copy-Item -LiteralPath "target/release/ixos-install$taskSuffix" -Destination "release-dist/ixos-install-$taskBootstrap$taskSuffix"
-          if ($env:RELEASE_KIND -eq 'engine') {
-            $taskSuffix = if ($IsWindows) { '.exe' } else { '' }
-            Copy-Item -LiteralPath "target/release/ixos$taskSuffix" -Destination "release-dist/ixos-$env:PLATFORM$taskSuffix"
-          } else {
-            $taskPattern = if ($IsWindows) { '*-setup.exe' } elseif ($IsMacOS) { '*.dmg' } else { '*.AppImage' }
-            $taskInstallers = @(Get-ChildItem -LiteralPath target/release/bundle -Recurse -File -Filter $taskPattern)
-            if ($taskInstallers.Count -ne 1) { throw 'Expected exactly one desktop installer for the platform' }
-            $taskExtension = if ($IsWindows) { '-setup.exe' } elseif ($IsMacOS) { '.dmg' } else { '.AppImage' }
-            Copy-Item -LiteralPath $taskInstallers[0].FullName -Destination "release-dist/Ixos-$env:PLATFORM$taskExtension"
-            $taskUpdate = if ($IsMacOS) { @(Get-ChildItem -LiteralPath target/release/bundle -Recurse -File -Filter '*.app.tar.gz')[0] } else { $taskInstallers[0] }
-            if (-not $taskUpdate -or -not (Test-Path -LiteralPath "$($taskUpdate.FullName).sig")) { throw 'Signed desktop update artifact missing' }
-            $taskUpdateName = if ($IsMacOS) { "Ixos-$env:PLATFORM.app.tar.gz" } else { "Ixos-$env:PLATFORM$taskExtension" }
-            if ($IsMacOS) {
-              Copy-Item -LiteralPath $taskUpdate.FullName -Destination "release-dist/$taskUpdateName"
-            }
-            Copy-Item -LiteralPath "$($taskUpdate.FullName).sig" -Destination "release-dist/$taskUpdateName.sig"
-          }
+          $taskArgs = @('scripts/build-release.py', '--kind', $env:RELEASE_KIND, '--tag', $env:RELEASE_TAG, '--platform', $env:RELEASE_PLATFORM)
+          if ($env:SIGNED_UPDATES -eq 'true') { $taskArgs += '--signed-updates' }
+          python @taskArgs
+          if ($LASTEXITCODE -ne 0) { throw 'Release validation failed' }
       - uses: actions/upload-artifact@v7
         with:
-          name: binaries-${{ matrix.platform }}
-          path: release-dist/
+          name: ${{ inputs.kind }}-${{ matrix.platform }}
+          path: release-dist/${{ inputs.tag }}/${{ matrix.platform }}/
           if-no-files-found: error
+          retention-days: 30
   draft:
     needs: build
     runs-on: ubuntu-latest
@@ -122,26 +81,25 @@ jobs:
           ref: ${{ inputs.tag }}
           fetch-depth: 0
           persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
       - uses: actions/download-artifact@v8
         with:
-          pattern: binaries-*
+          pattern: ${{ inputs.kind }}-*
           path: artifacts
-      - name: Build runtime manifest
-        if: inputs.kind == 'engine'
+      - name: Assemble verified release assets
         env:
           RELEASE_TAG: ${{ inputs.tag }}
-        run: python scripts/runtime-manifest.py artifacts --version "${RELEASE_TAG#engine-v}" --output artifacts/runtime-manifest.json
-      - name: Build desktop manifests
-        if: inputs.kind == 'desktop'
-        env:
-          RELEASE_TAG: ${{ inputs.tag }}
-        run: python scripts/runtime-manifest.py artifacts --kind desktop --version "${RELEASE_TAG#desktop-v}" --output artifacts/desktop-manifest.json
-      - name: Checksum the installers and attach bootstrap scripts
-        shell: pwsh
-        run: |
-          Copy-Item scripts/install-cli.ps1,scripts/install-cli.sh -Destination artifacts
-          $taskLines = Get-ChildItem -LiteralPath artifacts -Recurse -File | ForEach-Object { "$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLower())  $($_.Name)" }
-          [IO.File]::WriteAllText((Join-Path $PWD artifacts/SHA256SUMS), (($taskLines -join "`n") + "`n"))
+          RELEASE_KIND: ${{ inputs.kind }}
+          SIGNED_UPDATES: ${{ inputs.kind == 'desktop' && inputs.signed_updates }}
+        run: python scripts/assemble-release.py artifacts release-assets
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.tag }}-release-assets
+          path: release-assets/
+          if-no-files-found: error
+          retention-days: 30
       - name: Attach artifacts to a draft release
         shell: pwsh
         env:
@@ -150,6 +108,6 @@ jobs:
         run: |
           git rev-parse --verify "refs/tags/$env:RELEASE_TAG"
           if ($LASTEXITCODE -ne 0) { throw 'The release tag does not exist' }
-          $taskFiles = @(Get-ChildItem -LiteralPath artifacts -Recurse -File | ForEach-Object { $_.FullName })
-          gh release create $env:RELEASE_TAG --verify-tag --draft --title "Ixos $env:RELEASE_TAG" --notes 'See README and docs/INSTALLATION.md for runtime, models, skill and MCP setup.' @taskFiles
+          $taskFiles = @(Get-ChildItem -LiteralPath release-assets -File | ForEach-Object { $_.FullName })
+          gh release create $env:RELEASE_TAG --verify-tag --draft --title "Ixos $env:RELEASE_TAG" --notes 'Download the installer for your system, open it, and launch Ixos from your applications. Agent setup commands are in the README.' @taskFiles
           if ($LASTEXITCODE -ne 0) { throw 'Draft release creation failed' }

@@ -75,6 +75,10 @@
       "digestAlgorithm": "sha256",
       "timestampUrl": ""
     },
+    "linux": {
+      "deb": { "desktopTemplate": "linux/ixos.desktop" },
+      "rpm": { "desktopTemplate": "linux/ixos.desktop" }
+    },
     "category": "Utility",
     "shortDescription": "Search your code and documents by meaning",
     "longDescription": "Ixos finds files on your computer from a description, using keywords and meaning together. It runs locally on the CPU.",

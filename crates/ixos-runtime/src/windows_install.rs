@@ -53,6 +53,21 @@ pub(super) fn run_outside_package(program: &Path, args: &[OsString]) -> anyhow::
         .collect::<anyhow::Result<Vec<_>>>()?
         .join(", ");
     script.write_all(&[0xef, 0xbb, 0xbf])?; // Windows PowerShell reads UTF-8 with a BOM.
+
+    // Explorer starts with its own environment. Keep explicit Ixos locations and
+    // overrides while allowing Windows to restore the normal AppData paths.
+    for (name, value) in std::env::vars_os().filter(|(name, _)| {
+        name.to_string_lossy()
+            .to_ascii_uppercase()
+            .starts_with("IXOS_")
+    }) {
+        writeln!(
+            script,
+            "[Environment]::SetEnvironmentVariable({}, {}, 'Process')",
+            literal(&name)?,
+            literal(&value)?
+        )?;
+    }
     write!(script, "$ErrorActionPreference = 'Continue'\n$env:IXOS_INSTALL_UNVIRTUALIZED = '1'\ntry {{\n  & {} @({arguments}) 2>&1 | Out-File -LiteralPath {} -Encoding utf8 -ErrorAction Stop\n  $taskExit = $LASTEXITCODE\n  if ($null -eq $taskExit) {{ $taskExit = 1 }}\n}} catch {{\n  $_ | Out-File -LiteralPath {} -Append -Encoding utf8\n  $taskExit = 1\n}}\n[IO.File]::WriteAllText({}, [string]$taskExit)\n",
         literal(program.as_os_str())?, literal(output.as_os_str())?, literal(output.as_os_str())?, literal(result.as_os_str())?)?;
     script.flush()?;
@@ -76,10 +91,14 @@ pub(super) fn run_outside_package(program: &Path, args: &[OsString]) -> anyhow::
             "Windows did not finish the desktop installation. Run the installer from Windows Terminal outside the packaged app. Diagnostic log: {}", output.display());
         std::thread::sleep(Duration::from_millis(200));
     };
-    if let Ok(log) = std::fs::read_to_string(&output) {
-        print!("{log}");
-    }
     let success = status.trim() == "0";
+    if let Ok(log) = std::fs::read_to_string(&output) {
+        if success {
+            print!("{log}");
+        } else {
+            eprint!("{log}");
+        }
+    }
     let _ = std::fs::remove_file(&result);
     if success {
         let _ = std::fs::remove_file(&output);

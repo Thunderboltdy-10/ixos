@@ -1,15 +1,13 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import { useState, useSyncExternalStore } from "react";
-import { RELEASES, type System } from "@/lib/github";
-import { executableCommand, type Platform } from "@/lib/install";
-import { Copy } from "./Copy";
-import { EASE } from "./Stage";
+import type { System } from "@/lib/github";
+import { downloadUrl, LINUX_APPIMAGE, type DesktopTarget } from "@/lib/downloads";
 
 const TABS = [
   { id: "windows", label: "Windows" },
-  { id: "unix", label: "macOS and Linux" },
+  { id: "mac", label: "macOS" },
+  { id: "linux", label: "Linux" },
 ];
 
 const NAMES: Record<System, string> = { windows: "Windows", mac: "macOS", linux: "Linux" };
@@ -23,67 +21,36 @@ export function detect(): System {
 
 export const noChange = () => () => {};
 
-export function DesktopOption({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) {
-  return <label className="install-option">
-    <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
-    Include desktop app <span>Recommended</span>
-  </label>;
-}
-
 export function Install() {
   // The system is only known in the browser; the server renders the Windows tab.
   const system = useSyncExternalStore(noChange, detect, () => null);
-  const [chosen, setTab] = useState<Platform | null>(null);
-  const [desktop, setDesktop] = useState(true);
-  const tab = chosen ?? (system === "mac" || system === "linux" ? "unix" : "windows");
-  const command = executableCommand(tab, desktop);
+  const [chosen, setTab] = useState<System | null>(null);
+  const tab = chosen ?? system ?? "windows";
+  const targets: Record<System, DesktopTarget> = { windows: "Windows-X64", mac: "macOS-ARM64", linux: "Linux-X64" };
+  const instructions: Record<System, string> = {
+    windows: "Windows x64. Open the installer, then find Ixos on your desktop or in Start.",
+    mac: "Apple silicon. Open the disk image and drag Ixos to Applications.",
+    linux: "Linux x64. Open the Debian package, then find Ixos in Applications.",
+  };
 
   return (
     <div className="install">
-      <div className="install-box">
-        <div className="install-tabs" role="tablist" aria-label="Install">
-          {TABS.map((entry) => (
-            <button key={entry.id} role="tab" aria-selected={entry.id === tab} onClick={() => setTab(entry.id as Platform)}>
-              {entry.label}
-              {entry.id === tab && <motion.span className="install-tab-line" layoutId="install-tab" transition={{ duration: 0.35, ease: EASE }} />}
-            </button>
-          ))}
-          <button role="tab" aria-selected={false} onClick={() => {
-            const target = document.getElementById("agents");
-            target?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
-            target?.focus({ preventScroll: true });
-          }}>AI agents <span aria-hidden>↓</span></button>
-        </div>
-        <DesktopOption checked={desktop} onChange={setDesktop} />
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={tab}
-            className="install-body"
-            role="tabpanel"
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18 }}
-          >
-            <div className="install-lines">
-                <code>
-                  <span aria-hidden>$ </span>
-                  {command}
-                </code>
-            </div>
-            <Copy text={command} label="Copy commands" />
-          </motion.div>
-        </AnimatePresence>
+      <div className="install-tabs" role="group" aria-label="Your operating system">
+        {TABS.map((entry) => (
+          <button key={entry.id} aria-pressed={entry.id === tab} onClick={() => setTab(entry.id as System)}>
+            {entry.label}
+          </button>
+        ))}
       </div>
-      <p className="install-note">Latest stable binaries. CLI, MCP and skill{desktop ? ", plus desktop" : ""}. No Rust needed.</p>
       <div className="download">
-        <Copy text={command} label="Copy executable install command" className="ix-button ix-button--primary ix-button--large">
-          Copy {tab === "windows" ? "Windows" : system && system !== "windows" ? NAMES[system] : "macOS / Linux"} install
-        </Copy>
-        <a className="download-other" href={RELEASES}>
-          All systems
+        <a href={downloadUrl(targets[tab])} download className="ix-button ix-button--primary ix-button--large">
+          Install for {NAMES[tab]}
         </a>
+        {tab === "mac" && <a className="download-other" href={downloadUrl("macOS-X64")} download>Intel Mac</a>}
+        {tab === "linux" && <a className="download-other" href={LINUX_APPIMAGE} download>AppImage</a>}
+        <a className="download-other" href="#agents">Claude Code and Codex</a>
       </div>
+      <p className="install-note">{instructions[tab]}</p>
     </div>
   );
 }

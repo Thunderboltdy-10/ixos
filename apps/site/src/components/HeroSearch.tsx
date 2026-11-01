@@ -1,10 +1,10 @@
 "use client";
 
 import { QuickSearch, queryTerms, type Passage } from "@ixos/ui";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { DEMOS, sourceLines, toHit, type RankedFile } from "@/lib/demo";
-import { EASE, useActive } from "./Stage";
+import { EASE, useActive, useReducedMotion } from "./Stage";
 
 type Step = "empty" | "keywords" | "ranked";
 

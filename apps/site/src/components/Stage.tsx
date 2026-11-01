@@ -5,6 +5,15 @@ import { createContext, useContext, useEffect, useRef, useState, useSyncExternal
 
 export const EASE = [0.2, 0.7, 0.2, 1] as const;
 
+const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const subscribeMotion = (changed: () => void) => {
+  const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+  media.addEventListener("change", changed);
+  return () => media.removeEventListener("change", changed);
+};
+// Keep the server and first client render identical before reading OS preferences.
+export const useReducedMotion = () => useSyncExternalStore(subscribeMotion, reducedMotion, () => false);
+
 const Shown = createContext(false);
 const Active = createContext(false);
 const subscribeVisibility = (changed: () => void) => {

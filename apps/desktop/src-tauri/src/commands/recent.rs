@@ -43,7 +43,8 @@ pub fn record(
         timestamp.saturating_sub(entry.timestamp) < 3_000
             && (query.starts_with(&entry.query) || entry.query.starts_with(query))
     };
-    entries.retain(|entry| (entry.query != query && !typing(entry)) || entry.directory != directory);
+    entries
+        .retain(|entry| (entry.query != query && !typing(entry)) || entry.directory != directory);
     entries.insert(
         0,
         RecentSearch {

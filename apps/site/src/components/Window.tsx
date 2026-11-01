@@ -14,11 +14,11 @@ import {
   queryTerms,
   useFlip,
 } from "@ixos/ui";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { DEMOS, sourceLines, toHit } from "@/lib/demo";
-import { EASE, Reveal, Stage, useShown, useActiveDemo } from "./Stage";
+import { EASE, Reveal, Stage, useShown, useActiveDemo, useReducedMotion } from "./Stage";
 
 const DEMO = DEMOS[1];
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

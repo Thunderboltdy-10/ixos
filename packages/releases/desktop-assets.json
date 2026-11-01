@@ -1,0 +1,6 @@
+{
+  "Windows-X64": { "download": "Ixos-Windows-X64-setup.exe", "update": "Ixos-Windows-X64-setup.exe" },
+  "macOS-ARM64": { "download": "Ixos-macOS-ARM64.dmg", "update": "Ixos-macOS-ARM64.dmg" },
+  "macOS-X64": { "download": "Ixos-macOS-X64.dmg", "update": "Ixos-macOS-X64.dmg" },
+  "Linux-X64": { "download": "Ixos-Linux-X64.deb", "update": "Ixos-Linux-X64.AppImage" }
+}

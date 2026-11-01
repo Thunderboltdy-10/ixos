@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Code } from "@/components/Code";
-import { GITHUB, HUGGING_FACE, RELEASES } from "@/lib/github";
+import { GITHUB, HUGGING_FACE } from "@/lib/github";
 import { installCommand } from "@/lib/install";
+import { downloadUrl, LINUX_APPIMAGE } from "@/lib/downloads";
 import { MEDIAN, MEMORY_MB, P95 } from "@/lib/latency";
 import { Sidebar, type Group } from "./Sidebar";
 
@@ -120,17 +121,21 @@ export default function Docs() {
 
         <Page id="install" title="Install">
           <p>
-            <strong>One installer.</strong> The small bootstrap executable from the{" "}
-            <a href={RELEASES}>releases page</a> installs the shared CLI/engine, MCP and agent skill, verifies both models,
-            and includes desktop by default. Windows and Linux on x86-64 and macOS on Apple silicon and Intel are supported.
+            Download Ixos for your computer and open the installer. No terminal, Rust or Node is needed.
           </p>
           <p>
-            <strong>Agent installation.</strong> These scripts download and verify the same binary installer. No Rust
-            or Node is needed. They add <code>ixos</code> to your user PATH and verify the models from <a href={HUGGING_FACE}>Hugging Face</a>.
+            <a href={downloadUrl("Windows-X64")} download>Install for Windows</a> ·{" "}
+            <a href={downloadUrl("macOS-ARM64")} download>Install for Apple silicon</a> ·{" "}
+            <a href={downloadUrl("macOS-X64")} download>Install for Intel Mac</a> ·{" "}
+            <a href={downloadUrl("Linux-X64")} download>Install for Linux</a>
           </p>
-          <Code label="Windows, PowerShell">{installCommand("windows", true)}</Code>
-          <Code label="macOS and Linux">{installCommand("unix", true)}</Code>
-          <p>For CLI/MCP/skill only, append <code>-NoDesktop</code> on Windows, or use <code>sh -s -- --no-desktop</code> after the pipe on macOS/Linux. Open a new terminal after installation. Published engine and desktop releases are required for these links.</p>
+          <p>
+            On Windows x64, run the setup executable; it adds desktop and Start menu shortcuts.
+            On macOS, open the disk image and drag Ixos to Applications.
+            On Linux x64, open the Debian package with your software installer; it adds Ixos to Applications.
+            For other Linux distributions, <a href={LINUX_APPIMAGE} download>download the AppImage</a>.
+          </p>
+          <p>Launch Ixos from your applications. On first launch, it downloads the shared engine and verifies both models from <a href={HUGGING_FACE}>Hugging Face</a>. For Claude Code and Codex, use <a href="#agents">agent setup</a> below.</p>
           <p><code>ixos update</code> updates the CLI/MCP/skill; <code>ixos update --desktop</code> includes desktop. CLI and MCP suggest available updates, while desktop applies compatible engine and signed app updates on launch/login and restarts. Custom engine overrides are preserved.</p>
           <p>
             After setup, everything works offline. Keyword search, <code>grep</code> and <code>read</code> never need a
@@ -386,6 +391,9 @@ ixos model install documents --from ./ixos-documents`}</Code>
         </Page>
 
         <Page id="agents" title="Claude Code and Codex">
+          <p>Install the CLI, MCP server and agent skill with the command for your system. These scripts download and verify the small binary installer, add <code>ixos</code> to your user PATH and set up both models. Open a new terminal afterwards.</p>
+          <Code label="Windows, PowerShell">{installCommand("windows")}</Code>
+          <Code label="macOS and Linux">{installCommand("unix")}</Code>
           <p>
             <code>ixos mcp</code> starts an MCP server over stdio that gives an agent three tools: search, grep and read.
             Register it once per project, with the project&apos;s full path:

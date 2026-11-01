@@ -1,11 +1,11 @@
 "use client";
 
 import { QuickSearch } from "@ixos/ui";
-import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useInView } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DEMOS, toHit } from "@/lib/demo";
 import { MEDIAN, MEMORY_MB, P95, SAMPLES } from "@/lib/latency";
-import { Count, EASE, Reveal, Stage, useShown, useActive } from "./Stage";
+import { Count, EASE, Reveal, Stage, useShown, useActive, useReducedMotion } from "./Stage";
 
 /** Label, width in key units, and the KeyboardEvent code that lights it. */
 type Key = [string, number, string];

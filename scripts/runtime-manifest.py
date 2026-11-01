@@ -7,13 +7,14 @@ import re
 import tomllib
 
 TARGETS = ("Windows-X64", "Linux-X64", "macOS-ARM64", "macOS-X64")
+DESKTOP_ASSETS = json.loads((Path(__file__).resolve().parents[1] / "packages/releases/desktop-assets.json").read_text(encoding="utf8"))
 
 
-def manifest(directory: Path, version: str, protocol: int, kind: str = "engine") -> dict:
+def manifest(directory: Path, version: str, protocol: int, kind: str = "engine", targets=TARGETS) -> dict:
     if not re.fullmatch(r"\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?", version):
         raise ValueError("Expected an engine semantic version")
     assets = []
-    for target in TARGETS:
+    for target in targets:
         name = (f"ixos-{target}" + (".exe" if target.startswith("Windows") else "")) if kind == "engine" else desktop_name(target)
         matches = list(directory.rglob(name))
         if len(matches) != 1 or not matches[0].is_file():
@@ -25,13 +26,14 @@ def manifest(directory: Path, version: str, protocol: int, kind: str = "engine")
 
 
 def desktop_name(target: str) -> str:
-    suffix = "-setup.exe" if target.startswith("Windows") else ".dmg" if target.startswith("macOS") else ".AppImage"
-    return f"Ixos-{target}{suffix}"
+    return DESKTOP_ASSETS[target]["update"]
 
 
-def desktop_update(directory: Path, version: str) -> dict:
+def desktop_update(directory: Path, version: str, targets=TARGETS) -> dict:
     platforms = {}
     for target, key in zip(TARGETS, ("windows-x86_64", "linux-x86_64", "darwin-aarch64", "darwin-x86_64")):
+        if target not in targets:
+            continue
         name = f"Ixos-{target}.app.tar.gz" if target.startswith("macOS") else desktop_name(target)
         files = list(directory.rglob(name))
         if len(files) != 1:

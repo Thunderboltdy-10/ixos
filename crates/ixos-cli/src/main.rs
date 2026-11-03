@@ -1,6 +1,7 @@
 mod agent_view;
 mod args;
 mod commands;
+mod install;
 mod mcp;
 mod runtime;
 mod skill;

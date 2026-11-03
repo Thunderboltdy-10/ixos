@@ -1,22 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EXCHANGE } from "@/lib/agent";
-import { Copy } from "./Copy";
 import { Reveal, Stage, useShown, useActiveDemo, useReducedMotion } from "./Stage";
-import { detect, noChange } from "./Install";
-import { installCommand } from "@/lib/install";
+import { Code } from "./Code";
+import { RELEASES } from "@/lib/github";
+
+const PROMPT = `Install Ixos on this computer from ${RELEASES}/latest and open it once. It gives you local search of my code and documents by meaning, through the MCP tools search, grep and read. Tell me when to restart you so they load.`;
 
 export function Agents() {
-  const system = useSyncExternalStore(noChange, detect, () => null);
-  const command = installCommand(system === "mac" || system === "linux" ? "unix" : "windows");
-  const engine = system === "mac" || system === "linux" ? '"$HOME/.ixos/bin/ixos"' : '"$env:USERPROFILE/.ixos/bin/ixos.exe"';
-  const project = system === "mac" || system === "linux" ? "/your/project" : "C:/your/project";
-  const commands = [
-    { name: "Claude Code", command: `claude mcp add --transport stdio ixos -- ${engine} mcp --dir "${project}" --profile code` },
-    { name: "Codex", command: `codex mcp add ixos -- ${engine} mcp --dir "${project}" --profile code` },
-  ];
   return (
     <section id="agents" tabIndex={-1} className="section section--split agents">
       <div className="section-text">
@@ -25,29 +18,13 @@ export function Agents() {
         </Reveal>
         <Reveal delay={0.08}>
           <p className="lede">
-            Add Ixos as an MCP server and your agent can search, grep and read with exact line numbers. Answers stay
+            Your agent can search, grep and read with exact line numbers through Ixos. Answers stay
             under 6 KB, so they don&apos;t fill up its context.
           </p>
         </Reveal>
         <Reveal delay={0.16} className="commands">
-          <div className="command">
-            <div className="command-head"><span>1. Install once · {system === "mac" || system === "linux" ? "macOS / Linux" : "PowerShell"}</span><Copy text={command} label="Copy installation command" /></div>
-            <code>{command}</code>
-            <p className="aside">Includes the CLI, MCP and skill. The commands below use the installed engine directly.</p>
-          </div>
-          <p className="aside">2. Register with your agent. Replace the example project path with your own.</p>
-          {commands.map(({ name, command }) => (
-            <div key={name} className="command">
-              <div className="command-head">
-                <span>{name}</span>
-                <Copy text={command} label={`Copy the ${name} command`} />
-              </div>
-              <code>{command}</code>
-            </div>
-          ))}
-          <p className="aside">
-            Any MCP client works. <Link href="/docs#agents">Setup for other agents</Link>
-          </p>
+          <Code label="Paste this to your agent">{PROMPT}</Code>
+          <p className="aside">Other MCP clients can use <code>ixos mcp</code>. <Link href="/docs#agents">Read the docs</Link></p>
         </Reveal>
       </div>
       <Stage>

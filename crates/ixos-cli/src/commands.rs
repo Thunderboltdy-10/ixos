@@ -9,11 +9,7 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
     let path = cli.config.unwrap_or_else(Config::path);
     let config = Config::load(&path)?;
     match cli.command {
-        Command::Update {
-            check,
-            desktop,
-            background,
-        } => crate::updates::run(check, desktop, background)?,
+        Command::Update { check, background } => crate::updates::run(check, background)?,
         Command::Runtime { command } => match command {
             RuntimeCommand::Licenses => println!(
                 "{}\n{}\n{}",
@@ -24,12 +20,23 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
             RuntimeCommand::Info => println!("{}", crate::runtime::info()),
             RuntimeCommand::Serve => crate::runtime::serve(config)?,
         },
-        Command::Setup { skip_models } => {
+        Command::Setup {
+            skip_models,
+            install,
+        } => {
+            if install {
+                crate::install::provision()?;
+            }
             let report = crate::skill::ensure()?;
             report.print();
             if skip_models {
+                // Installation keeps edited skills; only a failed write stops it.
                 anyhow::ensure!(
-                    !report.needs_attention(),
+                    !if install {
+                        report.failed()
+                    } else {
+                        report.needs_attention()
+                    },
                     "Some skill targets need attention; see the per-host report above"
                 );
                 return Ok(());

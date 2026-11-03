@@ -1,4 +1,4 @@
-//! Published component releases. The CLI, installers and desktop share this contract.
+//! Published Ixos releases. The CLI, installers and desktop share this contract.
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -13,23 +13,6 @@ pub const REPO: &str = "Thunderboltdy-10/ixos";
 #[path = "windows_install.rs"]
 mod windows_install;
 
-/// Install into the user's Windows environment, not a packaged terminal's
-/// private AppData/registry overlay. This also keeps model setup in the same
-/// environment as the desktop which will use it.
-pub fn relaunch_installer_if_packaged() -> anyhow::Result<bool> {
-    #[cfg(windows)]
-    if windows_install::is_packaged()? {
-        anyhow::ensure!(std::env::var_os("IXOS_INSTALL_UNVIRTUALIZED").is_none(),
-            "Windows still redirects this installation into a packaged app. Run the installer from Windows Terminal outside the packaged app.");
-        let executable = std::fs::canonicalize(std::env::current_exe()?)?;
-        windows_install::run_outside_package(
-            &executable,
-            &std::env::args_os().skip(1).collect::<Vec<_>>(),
-        )?;
-        return Ok(true);
-    }
-    Ok(false)
-}
 fn server() -> Option<String> {
     // Local release fixtures are available only in development/test binaries.
     if cfg!(debug_assertions) {
@@ -157,9 +140,8 @@ impl Release {
     pub fn version(&self) -> anyhow::Result<semver::Version> {
         Ok(semver::Version::parse(
             self.tag_name
-                .split_once("-v")
-                .context("Invalid component tag")?
-                .1,
+                .strip_prefix('v')
+                .context("Invalid Ixos tag")?,
         )?)
     }
     pub fn url(&self, file: &str) -> String {
@@ -172,11 +154,7 @@ impl Release {
         )
     }
     pub fn manifest(&self) -> anyhow::Result<Manifest> {
-        let file = if self.tag_name.starts_with("engine-") {
-            "runtime-manifest.json"
-        } else {
-            "desktop-manifest.json"
-        };
+        let file = "desktop-manifest.json";
         let manifest: Manifest = json(&self.url(file))?;
         anyhow::ensure!(
             semver::Version::parse(&manifest.version)? == self.version()?,
@@ -185,15 +163,15 @@ impl Release {
         Ok(manifest)
     }
 }
-pub fn select(releases: Vec<Release>, component: &str) -> Option<Release> {
+pub fn select(releases: Vec<Release>) -> Option<Release> {
     releases
         .into_iter()
-        .filter(|r| !r.draft && !r.prerelease && r.tag_name.starts_with(&format!("{component}-v")))
+        .filter(|r| !r.draft && !r.prerelease && r.tag_name.starts_with('v'))
         .filter(|r| r.version().is_ok_and(|v| v.pre.is_empty()))
         .max_by_key(|r| r.version().ok())
 }
-pub fn latest(component: &str) -> anyhow::Result<Release> {
-    // Pagination matters when one component ships much more frequently than the other.
+pub fn latest() -> anyhow::Result<Release> {
+    // Include older releases when the repository has more than one page.
     let mut releases = Vec::new();
     for page in 1..=10 {
         let base = server().unwrap_or_else(|| format!("https://api.github.com/repos/{REPO}"));
@@ -204,7 +182,7 @@ pub fn latest(component: &str) -> anyhow::Result<Release> {
             break;
         }
     }
-    select(releases, component).context("No published stable component release yet")
+    select(releases).context("No published stable Ixos release yet")
 }
 #[derive(Deserialize)]
 pub struct Manifest {
@@ -286,63 +264,6 @@ pub fn download(
     file.as_file().sync_all()?;
     Ok(file)
 }
-pub fn install_engine(release: &Release) -> anyhow::Result<bool> {
-    let manifest = release.manifest()?;
-    let asset = manifest.asset()?;
-    let expected = format!(
-        "ixos-{}{}",
-        platform()?,
-        if cfg!(windows) { ".exe" } else { "" }
-    );
-    anyhow::ensure!(asset.file == expected, "Unexpected engine asset name");
-    let destination = engine_path();
-    let directory = destination.parent().unwrap();
-    std::fs::create_dir_all(directory)?;
-    let lock = std::fs::OpenOptions::new()
-        .create(true)
-        .truncate(false)
-        .read(true)
-        .write(true)
-        .open(directory.join(".install.lock"))?;
-    lock.lock()?;
-    let download = download(release, asset, directory)?;
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt;
-        download
-            .as_file()
-            .set_permissions(std::fs::Permissions::from_mode(0o755))?;
-    }
-    // Close the writable handle before Windows executes it, then verify capabilities.
-    let download = download.into_temp_path();
-    let mut session = crate::client::Session::start(&download)?;
-    let info = session.call("hello", serde_json::json!({}))?;
-    drop(session);
-    anyhow::ensure!(
-        info["version"].as_str() == Some(&manifest.version),
-        "Downloaded engine version mismatch"
-    );
-    // The new executable verifies both HF models and provisions its embedded skill
-    // before the current engine is replaced. Failures leave the working engine intact.
-    run(std::process::Command::new(&download).arg("setup"))?;
-    let backup = directory.join("ixos-previous");
-    if backup.exists() {
-        std::fs::remove_file(&backup)
-            .context("Previous engine is still running; restart Ixos and retry")?;
-    }
-    if destination.exists() {
-        std::fs::rename(&destination, &backup)?;
-    }
-    if let Err(error) = download.persist(&destination) {
-        if backup.exists() {
-            let _ = std::fs::rename(&backup, &destination);
-        }
-        return Err(error.error.into());
-    }
-    let _ = std::fs::remove_file(backup); // Windows may retain an in-use image until next update.
-    Ok(true)
-}
-
 fn run(command: &mut std::process::Command) -> anyhow::Result<()> {
     #[cfg(windows)]
     {
@@ -350,13 +271,18 @@ fn run(command: &mut std::process::Command) -> anyhow::Result<()> {
         command.creation_flags(0x08000000);
     }
     anyhow::ensure!(
-        command.status()?.success(),
+        command
+            .status()
+            .with_context(|| format!("Installer command failed: {command:?}"))?
+            .success(),
         "Installer command failed: {command:?}"
     );
     Ok(())
 }
-/// Initial desktop installation. Subsequent desktop updates use Tauri's signed updater.
-pub fn install_desktop(release: &Release) -> anyhow::Result<()> {
+/// Install or update everything from the release's verified native package.
+/// `restart` reopens the app on Windows, where the installer closes the running one.
+#[cfg_attr(not(windows), allow(unused_variables))]
+pub fn install_desktop(release: &Release, restart: bool) -> anyhow::Result<()> {
     let manifest = release.manifest()?;
     let asset = manifest.asset()?;
     let file = download(release, asset, &install_dir().join("downloads"))?.into_temp_path();
@@ -366,13 +292,18 @@ pub fn install_desktop(release: &Release) -> anyhow::Result<()> {
             asset.file.ends_with("-setup.exe"),
             "Expected per-user NSIS installer"
         );
+        let args: &[&str] = if restart {
+            &["/S", "/CURRENTUSER", "/R"]
+        } else {
+            &["/S", "/CURRENTUSER"]
+        };
         if windows_install::is_packaged()? {
             windows_install::run_outside_package(
                 &std::fs::canonicalize(&file)?,
-                &["/S".into(), "/CURRENTUSER".into()],
+                &args.iter().map(Into::into).collect::<Vec<_>>(),
             )?;
         } else {
-            run(std::process::Command::new(&file).args(["/S", "/CURRENTUSER"]))?;
+            run(std::process::Command::new(&file).args(args))?;
         }
         let app = dirs::data_local_dir()
             .context("Local application directory")?
@@ -391,9 +322,15 @@ pub fn install_desktop(release: &Release) -> anyhow::Result<()> {
             .arg(&file)
             .args(["-nobrowse", "-readonly", "-mountpoint"])
             .arg(mount.path()))?;
-        let app = dirs::home_dir()
-            .context("Home directory")?
-            .join("Applications/Ixos.app");
+        // Update the copy dragged to Applications instead of adding a second one.
+        let system = PathBuf::from("/Applications/Ixos.app");
+        let app = if system.exists() {
+            system
+        } else {
+            dirs::home_dir()
+                .context("Home directory")?
+                .join("Applications/Ixos.app")
+        };
         std::fs::create_dir_all(app.parent().unwrap())?;
         let result = run(std::process::Command::new("ditto")
             .arg(mount.path().join("Ixos.app"))
@@ -403,6 +340,13 @@ pub fn install_desktop(release: &Release) -> anyhow::Result<()> {
             .arg(mount.path()));
         result?;
         detach?;
+        run(
+            std::process::Command::new(app.join("Contents/MacOS/ixos-engine")).args([
+                "setup",
+                "--install",
+                "--skip-models",
+            ]),
+        )?;
         anyhow::ensure!(
             app.join("Contents/MacOS/Ixos").is_file(),
             "Desktop installation is incomplete"
@@ -410,25 +354,11 @@ pub fn install_desktop(release: &Release) -> anyhow::Result<()> {
     }
     #[cfg(target_os = "linux")]
     {
-        use std::os::unix::fs::PermissionsExt;
-        anyhow::ensure!(asset.file.ends_with(".AppImage"), "Expected Linux AppImage");
-        std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o755))?;
-        file.persist(install_dir().join("Ixos.AppImage"))?;
-        let applications = dirs::data_dir()
-            .context("User applications directory")?
-            .join("applications");
-        std::fs::create_dir_all(&applications)?;
-        let path = install_dir().join("Ixos.AppImage");
-        let escaped = path
-            .to_string_lossy()
-            .replace('\\', "\\\\")
-            .replace('"', "\\\"")
-            .replace('`', "\\`")
-            .replace('$', "\\$")
-            .replace('%', "%%");
-        std::fs::write(applications.join("ixos.desktop"), format!("[Desktop Entry]\nType=Application\nName=Ixos\nExec=\"{escaped}\"\nTerminal=false\nCategories=Utility;\n"))?;
+        anyhow::ensure!(asset.file.ends_with(".deb"), "Expected Debian package");
+        run(std::process::Command::new("pkexec")
+            .args(["dpkg", "-i"])
+            .arg(&file))?;
     }
-    std::fs::write(install_dir().join("desktop-version"), &manifest.version)?;
     Ok(())
 }
 pub fn add_to_path() -> anyhow::Result<()> {
@@ -474,14 +404,14 @@ pub fn add_to_path() -> anyhow::Result<()> {
 mod tests {
     use super::*;
     #[test]
-    fn components_select_highest_stable_version_independently() {
+    fn selects_highest_stable_unified_release() {
         let releases = vec![
             ("desktop-v9.0.0", false, false),
-            ("engine-v1.9.0", false, false),
-            ("engine-v1.10.0", false, false),
-            ("engine-v2.0.0", true, false),
-            ("engine-v3.0.0-beta.1", false, false),
-            ("engine-v4.0.0", false, true),
+            ("v1.9.0", false, false),
+            ("v1.10.0", false, false),
+            ("v2.0.0", true, false),
+            ("v3.0.0-beta.1", false, false),
+            ("v4.0.0", false, true),
         ]
         .into_iter()
         .map(|(tag, draft, prerelease)| Release {
@@ -490,14 +420,7 @@ mod tests {
             prerelease,
         })
         .collect::<Vec<_>>();
-        assert_eq!(
-            select(releases.clone(), "engine").unwrap().tag_name,
-            "engine-v1.10.0"
-        );
-        assert_eq!(
-            select(releases, "desktop").unwrap().tag_name,
-            "desktop-v9.0.0"
-        );
+        assert_eq!(select(releases.clone()).unwrap().tag_name, "v1.10.0");
     }
     #[test]
     fn incompatible_manifest_is_rejected() {

@@ -43,12 +43,10 @@ pub struct Location {
 }
 #[derive(Subcommand)]
 pub enum Command {
-    /// Update the shared CLI/MCP/skill. Add --desktop to install/update desktop too.
+    /// Update Ixos, including the desktop, engine, skills and MCP.
     Update {
         #[arg(long)]
         check: bool,
-        #[arg(long)]
-        desktop: bool,
         #[arg(long, hide = true)]
         background: bool,
     },
@@ -59,6 +57,9 @@ pub enum Command {
     },
     /// Complete installation by downloading both verified models for offline use.
     Setup {
+        /// Install the bundled engine and register Codex and Claude Code.
+        #[arg(long)]
+        install: bool,
         /// Provision agent skills without downloading models.
         #[arg(long)]
         skip_models: bool,

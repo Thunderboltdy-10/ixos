@@ -12,21 +12,11 @@ Only query, pattern, or a read selector (`path` or `requests`) is required. Omit
 
 ## Codex and Claude Code
 
-Run the common [binary installation](../README.md#install) once before registering either host. It includes the MCP server and skill, with desktop optional. The landing page's registration commands use the absolute installed engine path so they also work before a terminal refreshes PATH.
+The [Ixos installer](../README.md#install) installs the desktop and engine together, adds the bundled skills and registers the `ixos` MCP server in Codex and Claude Code automatically. Restart the host after installation. Existing settings and other servers are preserved.
 
-Register with [Codex](https://learn.chatgpt.com/docs/extend/mcp?surface=cli):
+Codex uses `~/.codex/config.toml` (or `CODEX_HOME/config.toml`); Claude Code uses the user-scoped `~/.claude.json`. Both entries run the absolute installed engine path with `mcp`, without fixing a project directory. The host's working directory is the default; tool calls may specify `dir` explicitly. Host permissions and sandbox policies still apply.
 
-```sh
-codex mcp add ixos -- ixos mcp --dir /absolute/project --profile code
-```
-
-Register with [Claude Code](https://code.claude.com/docs/en/mcp#option-3-add-a-local-stdio-server):
-
-```sh
-claude mcp add --transport stdio ixos -- ixos mcp --dir /absolute/project --profile code
-```
-
-Use the host's MCP connection/settings view to confirm `search`, `grep` and `read` are enabled. Quote Windows paths containing spaces. Use the absolute runtime path if it is not on PATH, including the desktop-managed runtime path if applicable. Reload the host after installation when needed. Host approval and sandbox policy still apply; the installer does not weaken them. The skill is installed into native host/shared locations described in [Installation](INSTALLATION.md). Successful setup should be checked with an actual tool call, not only a visible skill entry.
+For other MCP clients, register the absolute path to `~/.ixos/bin/ixos` (`ixos.exe` on Windows), with arguments `["mcp"]`. Check setup with an actual search, grep or read call after restarting the host.
 
 ## Evidence and compact views
 

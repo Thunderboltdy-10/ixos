@@ -1,10 +1,9 @@
-"""Exercise the real installer/CLI against an isolated local release server.
+"""Exercise the real CLI and update path against an isolated local release server.
 
-Run cargo build -p ixos-cli -p ixos-install first. No user PATH/config is changed.
+Run cargo build -p ixos-cli first. No user PATH/config is changed.
 """
 import contextlib
 import hashlib
-import importlib.util
 import http.server
 import json
 import os
@@ -19,10 +18,9 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 SUFFIX = ".exe" if os.name == "nt" else ""
 CLI = ROOT / "target/debug" / f"ixos{SUFFIX}"
-INSTALL = ROOT / "target/debug" / f"ixos-install{SUFFIX}"
 
 
-@unittest.skipUnless(CLI.is_file() and INSTALL.is_file(), "Build CLI and installer first")
+@unittest.skipUnless(CLI.is_file(), "Build the CLI first")
 class Installation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -36,8 +34,8 @@ class Installation(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.home = Path(self.temp.name)
         self.env = dict(os.environ, IXOS_HOME=str(self.home), IXOS_SKILL_HOME=str(self.home / "agents"), IXOS_NO_UPDATE_CHECK="1")
-        self.tag = f"engine-v{self.version}"
-        self.asset = f"ixos-{self.target}{SUFFIX}"
+        self.tag = f"v{self.version}"
+        self.asset = {"Windows-X64":"Ixos-Windows-X64-setup.exe", "Linux-X64":"Ixos-Linux-X64.deb", "macOS-ARM64":"Ixos-macOS-ARM64.dmg", "macOS-X64":"Ixos-macOS-X64.dmg"}[self.target]
         self.payload = self.binary
         self.probes = 0
         self.delay = 0
@@ -51,7 +49,7 @@ class Installation(unittest.TestCase):
                     test.probes += 1
                     time.sleep(test.delay)
                     data = json.dumps(test.releases).encode()
-                elif self.path.endswith("runtime-manifest.json"):
+                elif self.path.endswith("desktop-manifest.json"):
                     data = json.dumps(test.manifest).encode()
                 elif self.path.endswith(test.asset):
                     data = test.payload
@@ -83,33 +81,43 @@ class Installation(unittest.TestCase):
         shutil.copy2(CLI, path)
         return path
 
+    def publish_newer(self):
+        self.releases[0]["tag_name"] = "v999.0.0"
+        self.manifest["version"] = "999.0.0"
+
     def seed_models(self):
         if (ROOT / "models/code/model.safetensors").is_file():
-            shutil.copytree(ROOT / "models", self.home / "data/models")
+            for name in ("code", "documents"):
+                shutil.copytree(ROOT / "models" / name, self.home / "data/models" / name)
         else:
             result = self.command(CLI, "setup")
             self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_checksum_failure_preserves_existing_engine(self):
         path = self.managed()
+        self.publish_newer()
         self.payload = b"corrupt release bytes"
-        result = self.command(INSTALL, "--no-desktop")
+        result = self.command(path, "update")
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("SHA256 mismatch", result.stderr)
         self.assertEqual(path.read_bytes(), self.binary)
 
     def test_protocol_failure_happens_before_install(self):
+        path = self.managed()
+        self.publish_newer()
         self.manifest["protocol_major"] = 99
-        result = self.command(INSTALL, "--no-desktop")
+        result = self.command(path, "update")
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("protocol", result.stderr)
-        self.assertFalse((self.home / "bin/ixos").exists())
+        self.assertEqual(path.read_bytes(), self.binary)
 
     def test_desktop_preflight_prevents_partial_default_install(self):
-        result = self.command(INSTALL)
+        path = self.managed()
+        self.releases = []
+        result = self.command(path, "update")
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("No published stable", result.stderr)
-        self.assertFalse((self.home / "bin").exists())
+        self.assertEqual(path.read_bytes(), self.binary)
 
     def test_real_setup_shared_engine_and_mcp_then_repeat_install(self):
         self.seed_models()
@@ -118,14 +126,24 @@ class Installation(unittest.TestCase):
         worker = subprocess.Popen([path, "runtime", "serve"], env=self.env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
         self.addCleanup(worker.wait)
         self.addCleanup(worker.kill)
-        result = self.command(INSTALL, "--no-desktop")
+        result = self.command(CLI, "setup", "--install", "--skip-models")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue((self.home / "agents/.agents/skills/ixos/SKILL.md").is_file())
+        import tomllib
+        codex = tomllib.loads((self.home / "agents/.codex/config.toml").read_text())
+        claude = json.loads((self.home / "agents/.claude.json").read_text())
+        for entry in (codex["mcp_servers"]["ixos"], claude["mcpServers"]["ixos"]):
+            self.assertEqual(Path(entry["command"]), path)
+            self.assertEqual(entry["args"], ["mcp"])
+            request = [{"jsonrpc":"2.0", "id":0, "method":"initialize"}, {"jsonrpc":"2.0", "id":1, "method":"tools/list"}]
+            result = subprocess.run([entry["command"], *entry["args"]], env=self.env, input="\n".join(map(json.dumps,request))+"\n", text=True, capture_output=True, timeout=10)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual({tool["name"] for tool in json.loads(result.stdout.splitlines()[-1])["result"]["tools"]}, {"search","grep","read"})
         self.assertEqual(self.command(path, "--version").stdout.strip(), f"ixos {self.version}")
-        result = self.command(INSTALL, "--no-desktop")
+        result = self.command(CLI, "setup", "--install", "--skip-models")
         # The old image can still be in use on Windows; failure is explicit and safe.
         if result.returncode:
-            self.assertIn("Previous engine is still running", result.stderr)
+            self.assertIn("Restart running Ixos clients", result.stderr)
         self.assertEqual(path.read_bytes(), self.binary)
         worker.stdin.write(b'{"id":1,"op":"hello","params":{}}\n')
         worker.stdin.flush()
@@ -142,9 +160,12 @@ class Installation(unittest.TestCase):
         skill = self.home / "agents/.agents/skills/ixos"
         skill.mkdir(parents=True)
         (skill / "SKILL.md").write_text("user-owned custom skill")
-        result = self.command(INSTALL, "--no-desktop")
+        result = self.command(CLI, "setup", "--skip-models")
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("skill", result.stderr.lower())
+        # Installing must still succeed and leave the edited skill alone.
+        result = self.command(CLI, "setup", "--install", "--skip-models")
+        self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(path.read_bytes(), self.binary)
         self.assertEqual((skill / "SKILL.md").read_text(), "user-owned custom skill")
 
@@ -161,7 +182,7 @@ class Installation(unittest.TestCase):
     def test_update_notice_reaches_cli_and_mcp_without_polluting_json(self):
         path = self.managed()
         future = "999.0.0"
-        self.releases[0]["tag_name"] = f"engine-v{future}"
+        self.releases[0]["tag_name"] = f"v{future}"
         self.manifest["version"] = future
         result = self.command(path, "update", "--check")
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -176,10 +197,10 @@ class Installation(unittest.TestCase):
         output = subprocess.run([path, "mcp", "--dir", str(self.home)], env=self.env, input="\n".join(map(json.dumps, requests)) + "\n", text=True, capture_output=True, timeout=30)
         response = json.loads(output.stdout.splitlines()[-1])["result"]
         self.assertIn("Ask the user", response["content"][-1]["text"])
-        # Metadata advertises a newer version but serves the old binary: reject it.
+        # A hash-valid CLI executable is not a native package: installation must fail safely.
         result = self.command(path, "update")
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("version mismatch", result.stderr)
+        self.assertRegex(result.stderr.lower(), r"installer command failed|desktop installation failed")
         self.assertEqual(path.read_bytes(), self.binary)
 
     def test_offline_or_slow_update_check_does_not_delay_cli(self):
@@ -201,31 +222,6 @@ class Installation(unittest.TestCase):
             time.sleep(0.1)
         self.assertTrue((self.home / "cache/updates.json").exists())
         self.assertEqual(self.probes, 1)
-
-
-class ReleaseManifests(unittest.TestCase):
-    def test_all_platform_assets_hashes_and_signed_update_urls(self):
-        spec = importlib.util.spec_from_file_location("release_manifest", ROOT / "scripts/runtime-manifest.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            for target in module.TARGETS:
-                name = module.desktop_name(target)
-                (root / name).write_bytes(target.encode())
-                update = f"Ixos-{target}.app.tar.gz" if target.startswith("macOS") else name
-                (root / update).write_bytes(target.encode())
-                (root / (update + ".sig")).write_text("fixture-signature")
-            manifest = module.manifest(root, "1.2.3", 1, "desktop")
-            self.assertEqual(len(manifest["assets"]), 4)
-            for asset in manifest["assets"]:
-                self.assertEqual(asset["sha256"], hashlib.sha256((root / asset["file"]).read_bytes()).hexdigest())
-            update = module.desktop_update(root, "1.2.3")
-            self.assertEqual(set(update["platforms"]), {"windows-x86_64", "linux-x86_64", "darwin-aarch64", "darwin-x86_64"})
-            self.assertTrue(all("/desktop-v1.2.3/" in value["url"] for value in update["platforms"].values()))
-            (root / "Ixos-Windows-X64-setup.exe.sig").unlink()
-            with self.assertRaises(FileNotFoundError):
-                module.desktop_update(root, "1.2.3")
 
 
 if __name__ == "__main__":

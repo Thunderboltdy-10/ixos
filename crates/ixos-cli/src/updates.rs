@@ -7,7 +7,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 struct Notice {
     checked: u64,
     engine: Option<String>,
-    desktop: Option<String>,
 }
 fn path() -> std::path::PathBuf {
     ixos_runtime::config::cache_dir().join("updates.json")
@@ -30,14 +29,7 @@ pub fn notice() -> Option<String> {
         .engine
         .as_deref()
         .is_some_and(|v| newer(v, env!("CARGO_PKG_VERSION")));
-    let installed = std::fs::read_to_string(releases::install_dir().join("desktop-version")).ok();
-    let desktop = installed
-        .as_deref()
-        .zip(saved.desktop.as_deref())
-        .is_some_and(|(old, new)| newer(new, old.trim()));
-    (engine || desktop).then(|| format!("Ixos update available{}. Run `{}`. Ask the user whether to update before running it; restart the MCP connection afterwards.",
-        if engine && desktop { " for CLI and desktop" } else if desktop { " for desktop" } else { " for CLI/MCP/skill" },
-        if desktop { "ixos update --desktop" } else { "ixos update" }))
+    engine.then(|| "Ixos update available. Run `ixos update`. Ask the user whether to update before running it; restart the MCP connection afterwards.".into())
 }
 fn newer(new: &str, old: &str) -> bool {
     releases::is_newer(new, old)
@@ -87,24 +79,12 @@ pub fn suggest() {
         let _ = std::fs::remove_file(lock);
     }
 }
-pub fn run(check: bool, desktop: bool, background: bool) -> anyhow::Result<()> {
-    let engine = releases::latest("engine")?;
-    // Validate protocol before suggesting or applying an incompatible upgrade.
-    engine.manifest()?.asset()?;
-    let app = if desktop || releases::install_dir().join("desktop-version").exists() {
-        let release = releases::latest("desktop")?;
-        release.manifest()?.asset()?;
-        Some(release)
-    } else {
-        None
-    };
+pub fn run(check: bool, background: bool) -> anyhow::Result<()> {
+    let release = releases::latest()?;
+    release.manifest()?.asset()?;
     let saved = Notice {
         checked: now(),
-        engine: Some(engine.version()?.to_string()),
-        desktop: app
-            .as_ref()
-            .map(|r| r.version().map(|v| v.to_string()))
-            .transpose()?,
+        engine: Some(release.version()?.to_string()),
     };
     std::fs::create_dir_all(path().parent().unwrap())?;
     let mut file = tempfile::NamedTempFile::new_in(path().parent().unwrap())?;
@@ -126,13 +106,9 @@ pub fn run(check: bool, desktop: bool, background: bool) -> anyhow::Result<()> {
         .canonicalize()
         .context("Run the binary installer before using self-update")?;
     anyhow::ensure!(current == managed, "This CLI is managed outside the Ixos installer; update it through its original installation method");
-    if newer(&engine.version()?.to_string(), env!("CARGO_PKG_VERSION")) {
-        releases::install_engine(&engine)?;
-        println!("Updated the shared CLI/MCP/skill. Restart running clients to use it.");
+    if newer(&release.version()?.to_string(), env!("CARGO_PKG_VERSION")) {
+        releases::install_desktop(&release, false)?;
     }
-    if desktop {
-        releases::install_desktop(app.as_ref().context("No desktop release")?)?;
-    }
-    println!("Ixos update complete.");
+    println!("Ixos update complete. Restart your agent to use it.");
     Ok(())
 }

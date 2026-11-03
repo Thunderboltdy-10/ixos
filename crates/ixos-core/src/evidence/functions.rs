@@ -53,14 +53,15 @@ impl State {
                 s.fallbacks += 1;
                 return vec![];
             }
-            #[allow(deprecated)]
-            p.set_timeout_micros(50_000);
             self.parsers.insert(lang.into(), p);
             s.parser_init_ms += ms(t);
         }
         let t = Instant::now();
         let parser = self.parsers.get_mut(lang).unwrap();
         parser.reset();
+        // The source-size and node-count limits bound this operation. A wall-clock
+        // timeout can expire while the OS pauses a test/worker and silently turn
+        // an exact function lookup into "not found". Parse bounded input fully.
         let tree = parser.parse(doc.text.as_bytes(), None);
         s.parse_ms += ms(t);
         s.parsed_files += 1;

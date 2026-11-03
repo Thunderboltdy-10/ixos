@@ -3,6 +3,12 @@
 ; an old link's icon when the executable name changes. Rebuild it with the app ID
 ; and notify the shell so Windows can discover the new target without a reboot.
 !macro NSIS_HOOK_POSTINSTALL
+  nsExec::ExecToLog '"$INSTDIR\ixos-engine.exe" setup --install --skip-models'
+  Pop $0
+  ${If} $0 != 0
+    SetErrorLevel 1
+    Abort "Could not set up the Ixos engine and agents. Close running Ixos clients and run the installer again."
+  ${EndIf}
   ${If} $NoShortcutMode != 1
     CreateDirectory "$SMPROGRAMS"
     ClearErrors

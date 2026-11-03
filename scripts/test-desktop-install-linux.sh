@@ -37,6 +37,7 @@ task_package=$(realpath "${1:?Usage: test-desktop-install-linux.sh package.deb}"
 dpkg -i "$task_package"
 task_entry=/usr/share/applications/Ixos.desktop
 test -x /usr/bin/Ixos
+test -x /usr/bin/ixos-engine
 test -f "$task_entry"
 desktop-file-validate "$task_entry"
 grep -qx 'Name=Ixos' "$task_entry"
@@ -46,6 +47,13 @@ echo 'PASS: Linux package installs Ixos and a searchable application entry'
 
 task_temp=$(mktemp -d /tmp/ixos-install-test.XXXXXXXX)
 trap 'if [[ "$task_temp" == /tmp/ixos-install-test.* ]]; then rm -rf -- "$task_temp"; fi' EXIT
+# Verify local setup from the actual packaged engine without a model download.
+env IXOS_HOME="$task_temp/home" IXOS_SKILL_HOME="$task_temp/agents" /usr/bin/ixos-engine setup --install --skip-models
+test -x "$task_temp/home/bin/ixos"
+test -f "$task_temp/agents/.codex/config.toml"
+test -f "$task_temp/agents/.claude.json"
+test -f "$task_temp/agents/.claude/skills/ixos/SKILL.md"
+echo 'PASS: bundled engine, Codex/Claude MCP and skills installed automatically'
 # All app data is disposable. The sandbox override is restricted to this root-run
 # package smoke test; it is never included in the installed application's launcher.
 xvfb-run -a dbus-run-session -- env IXOS_HOME="$task_temp/home" IXOS_SKILL_HOME="$task_temp/skills" IXOS_ENGINE_PATH="$task_temp/missing-engine" IXOS_NO_UPDATE_CHECK=1 WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1 bash "$0" --launch "$task_temp/launch.log"

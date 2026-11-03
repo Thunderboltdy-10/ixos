@@ -59,7 +59,9 @@ fn exact_function_reads_preserve_scopes_ranges_and_ambiguity() {
     );
     assert_eq!(
         calls[0]["structuredContent"]["selection"]["symbol"],
-        json!(["visit", 2, 6])
+        json!(["visit", 2, 6]),
+        "unexpected MCP response: {}",
+        calls[0]
     );
     assert_eq!(
         calls[0]["structuredContent"]["snippet"]["text"],

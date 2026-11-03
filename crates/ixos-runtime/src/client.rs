@@ -381,7 +381,7 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use super::*;
-    pub(super) fn fixture() -> (tempfile::TempDir, PathBuf) {
+    fn fixture() -> (tempfile::TempDir, PathBuf) {
         let dir = tempfile::tempdir().unwrap();
         let source = dir.path().join("worker.rs");
         std::fs::write(&source, include_str!("../tests/fixtures/worker.rs")).unwrap();
@@ -441,7 +441,8 @@ mod tests {
         let (_dir, path) = fixture();
         let started = Instant::now();
         assert!(start_fixture(&path, "no-hello", Duration::from_millis(80), None).is_err());
-        assert!(started.elapsed() < Duration::from_secs(3));
+        // Include cold process startup/antivirus time; the handshake still has an 80 ms deadline.
+        assert!(started.elapsed() < Duration::from_secs(10));
         for mode in ["hang", "blocked-write"] {
             let mut client = start_fixture(&path, mode, Duration::from_secs(2), None).unwrap();
             let started = Instant::now();

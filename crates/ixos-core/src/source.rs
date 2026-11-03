@@ -107,7 +107,8 @@ mod tests {
         };
         write("before");
         let before = Stamp::read(&path).unwrap();
-        std::thread::sleep(Duration::from_millis(5));
+        // WSL/filesystems can update ctime on a coarse clock tick.
+        std::thread::sleep(Duration::from_millis(50));
         write("edited");
         let after = Stamp::read(&path).unwrap();
         assert_eq!(before.size, after.size);

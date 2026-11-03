@@ -63,3 +63,6 @@ build/
 
 # Private working material and archive backups
 /private-process/
+
+# Staged engine sidecar for native packages
+/apps/desktop/src-tauri/binaries/

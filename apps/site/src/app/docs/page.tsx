@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Code } from "@/components/Code";
 import { GITHUB, HUGGING_FACE } from "@/lib/github";
-import { installCommand } from "@/lib/install";
-import { downloadUrl, LINUX_APPIMAGE } from "@/lib/downloads";
+import { downloadUrl } from "@/lib/downloads";
 import { MEDIAN, MEMORY_MB, P95 } from "@/lib/latency";
 import { Sidebar, type Group } from "./Sidebar";
 
@@ -132,11 +131,10 @@ export default function Docs() {
           <p>
             On Windows x64, run the setup executable; it adds desktop and Start menu shortcuts.
             On macOS, open the disk image and drag Ixos to Applications.
-            On Linux x64, open the Debian package with your software installer; it adds Ixos to Applications.
-            For other Linux distributions, <a href={LINUX_APPIMAGE} download>download the AppImage</a>.
+            On Debian or Ubuntu x64, open the package with your software installer; it adds Ixos to Applications.
           </p>
-          <p>Launch Ixos from your applications. On first launch, it downloads the shared engine and verifies both models from <a href={HUGGING_FACE}>Hugging Face</a>. For Claude Code and Codex, use <a href="#agents">agent setup</a> below.</p>
-          <p><code>ixos update</code> updates the CLI/MCP/skill; <code>ixos update --desktop</code> includes desktop. CLI and MCP suggest available updates, while desktop applies compatible engine and signed app updates on launch/login and restarts. Custom engine overrides are preserved.</p>
+          <p>Launch Ixos from your applications. The engine, skills and agent connections are included. On first launch, it downloads both models from <a href={HUGGING_FACE}>Hugging Face</a>. Restart Claude Code or Codex after installation to load the tools.</p>
+          <p>The desktop offers new versions when it opens, and the CLI and MCP tools show <code>ixos update</code> when one is available. Models remain separate downloads from Hugging Face.</p>
           <p>
             After setup, everything works offline. Keyword search, <code>grep</code> and <code>read</code> never need a
             model. To install without a network, see <a href="#setup">setup and model</a>.
@@ -391,15 +389,8 @@ ixos model install documents --from ./ixos-documents`}</Code>
         </Page>
 
         <Page id="agents" title="Claude Code and Codex">
-          <p>Install the CLI, MCP server and agent skill with the command for your system. These scripts download and verify the small binary installer, add <code>ixos</code> to your user PATH and set up both models. Open a new terminal afterwards.</p>
-          <Code label="Windows, PowerShell">{installCommand("windows")}</Code>
-          <Code label="macOS and Linux">{installCommand("unix")}</Code>
-          <p>
-            <code>ixos mcp</code> starts an MCP server over stdio that gives an agent three tools: search, grep and read.
-            Register it once per project, with the project&apos;s full path:
-          </p>
-          <Code label="Claude Code">{`claude mcp add --transport stdio ixos -- ixos mcp --dir /your/project --profile code`}</Code>
-          <Code label="Codex">{`codex mcp add ixos -- ixos mcp --dir /your/project --profile code`}</Code>
+          <p>The normal installer includes the engine and skills and registers Ixos with Codex and Claude Code. No separate setup command is needed. Restart your agent after installing, then ask it to search your project.</p>
+          <p><a href="#install">Download Ixos for your computer</a></p>
           <p>Other MCP clients take the same command in their settings file:</p>
           <Code label="JSON">{`{
   "mcpServers": {
@@ -412,7 +403,7 @@ ixos model install documents --from ./ixos-documents`}</Code>
           <p>
             If <code>ixos</code> is not on your path, use its full path. Quote Windows paths that contain spaces. Reload
             the agent afterwards and check the tools with a real call. <code>ixos setup</code> also installs a short skill
-            for Claude Code and Codex that explains when each tool helps; it does not register the server.
+            for Claude Code and Codex that explains when each tool helps; the installer registers the server automatically.
           </p>
         </Page>
 
@@ -553,7 +544,6 @@ ixos model install documents --from ./ixos-documents`}</Code>
               [<code key="v">IXOS_SKILL_HOME</code>, "Installs the agent skill under this folder instead of your home folder."],
               [<code key="v">IXOS_MODEL_PATH</code>, "Loads a model from this folder, like --model-path."],
               [<code key="v">IXOS_ENGINE_PATH</code>, "Makes the desktop app use this ixos executable."],
-              [<code key="v">IXOS_RUNTIME_FROM</code>, "Makes the desktop app install its engine from this folder instead of downloading it."],
             ]}
           />
         </Page>

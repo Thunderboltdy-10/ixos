@@ -35,6 +35,11 @@ impl Report {
             .iter()
             .any(|t| matches!(t.status, Status::Preserved | Status::Failed))
     }
+    pub fn failed(&self) -> bool {
+        self.targets
+            .iter()
+            .any(|t| matches!(t.status, Status::Failed))
+    }
     pub fn print(&self) {
         println!(
             "Ixos skill {} ({})",

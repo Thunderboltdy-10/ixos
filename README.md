@@ -10,11 +10,11 @@ https://github.com/user-attachments/assets/d931b23f-20b1-46ba-ae11-4c5144c7ad9c
 
 Use the Install button on [ixos.dev](https://ixos.dev), or download your native installer directly below. No terminal, Rust, Node or source checkout is needed.
 
-- Windows x64: open the [Windows installer](https://github.com/Thunderboltdy-10/ixos/releases/download/desktop-v0.1.0/Ixos-Windows-X64-setup.exe). It creates desktop and Start menu shortcuts.
-- macOS: open the [Apple silicon disk image](https://github.com/Thunderboltdy-10/ixos/releases/download/desktop-v0.1.0/Ixos-macOS-ARM64.dmg) or [Intel disk image](https://github.com/Thunderboltdy-10/ixos/releases/download/desktop-v0.1.0/Ixos-macOS-X64.dmg). Drag Ixos to Applications.
-- Linux x64: open the [Debian package](https://github.com/Thunderboltdy-10/ixos/releases/download/desktop-v0.1.0/Ixos-Linux-X64.deb) with your software installer, then launch Ixos from Applications. An [AppImage](https://github.com/Thunderboltdy-10/ixos/releases/download/desktop-v0.1.0/Ixos-Linux-X64.AppImage) is also available.
+- Windows x64: open the [Windows installer](https://github.com/Thunderboltdy-10/ixos/releases/latest/download/Ixos-Windows-X64-setup.exe). It creates desktop and Start menu shortcuts.
+- macOS: open the [Apple silicon disk image](https://github.com/Thunderboltdy-10/ixos/releases/latest/download/Ixos-macOS-ARM64.dmg) or [Intel disk image](https://github.com/Thunderboltdy-10/ixos/releases/latest/download/Ixos-macOS-X64.dmg). Drag Ixos to Applications.
+- Debian or Ubuntu x64: open the [Debian package](https://github.com/Thunderboltdy-10/ixos/releases/latest/download/Ixos-Linux-X64.deb) with your software installer, then launch Ixos from Applications.
 
-Ixos downloads the shared engine and both models on first launch. After setup, search works offline. Settings → Models shows download errors and lets you retry.
+The installer includes the desktop and engine, installs the skills and registers MCP for Codex and Claude Code. Restart your agent after installing. Models download from Hugging Face on first use. After setup, search works offline. Settings → Models shows download errors and lets you retry. The desktop offers new versions when it opens, and the CLI and MCP tools show `ixos update` when one is available.
 
 See the [installation guide](docs/INSTALLATION.md) for CLI installation and offline setup, or [CONTRIBUTING.md](CONTRIBUTING.md) to build from source.
 
@@ -32,28 +32,9 @@ Add `--json` for structured results. Search supports `lexical`, `semantic` and `
 
 ### Claude Code and Codex
 
-Install the CLI, MCP server and bundled agent skill with the command for your system. These wrappers download and SHA-256-check the lightweight binary installer, which installs the shared engine and verifies both models. Open a new terminal afterwards so agent hosts can find `ixos` on PATH.
+The normal installer sets up both agents automatically. Restart Codex or Claude Code after installation, then ask it to search your project. Existing settings and other MCP servers are preserved.
 
-```powershell
-# Windows (PowerShell)
-& ([scriptblock]::Create((irm https://github.com/Thunderboltdy-10/ixos/releases/latest/download/install-cli.ps1))) -NoDesktop
-```
-
-```sh
-# macOS / Linux
-curl -fsSL https://github.com/Thunderboltdy-10/ixos/releases/latest/download/install-cli.sh | sh -s -- --no-desktop
-```
-
-Register with your agent, replacing the absolute project location:
-
-```sh
-codex mcp add ixos -- ixos mcp --dir /absolute/project --profile code
-claude mcp add --transport stdio ixos -- ixos mcp --dir /absolute/project --profile code
-```
-
-The same `ixos` executable supplies the CLI, agent MCP server and resident desktop worker. The desktop reuses the shared engine at `~/.ixos/bin/ixos[.exe]`, or a compatible explicitly managed CLI; it does not bundle a second search engine. [Installation and offline setup](docs/INSTALLATION.md).
-
-CLI commands check for updates in the background at most daily and suggest `ixos update`. MCP responses carry the same notice so your agent can ask before updating. `ixos update --desktop` includes the desktop. Desktop checks on launch/login, applies compatible engine updates and signed desktop updates, and restarts to use them. Models/settings are shared, and component versions can advance independently. Set `IXOS_NO_UPDATE_CHECK=1` to disable automatic checks. Automatic desktop updates require the signing configuration described in [installation](docs/INSTALLATION.md#independent-releases-and-compatibility).
+The same installed engine supplies the CLI, MCP server and desktop worker. `ixos update` updates the complete installation. Set `IXOS_NO_UPDATE_CHECK=1` to disable automatic update checks. Models stay separate on Hugging Face. [Installation and offline setup](docs/INSTALLATION.md).
 
 The server exposes search, grep and read. Search optionally returns bounded function evidence (`evidence:"functions"`); exact function/range reads, grouped grep, compact numbered views and batches make follow-up inspection precise. Default search remains unchanged. The installed skill explains these capabilities; MCP registration enables the tools. [MCP setup for Codex and Claude Code](docs/MCP.md).
 

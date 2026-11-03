@@ -133,6 +133,22 @@ if (Get-Process -Name 'Ixos','ixos-app' -ErrorAction SilentlyContinue | Where-Ob
 }
 Install-Desktop @('/S', '/CURRENTUSER')
 Write-Output 'PASS: silent installation creates valid Start menu and desktop shortcuts'
+$taskEngine = Join-Path $env:USERPROFILE '.ixos/bin/ixos.exe'
+if (!(Test-Path -LiteralPath $taskEngine)) { throw 'Installer did not provision the engine' }
+$taskCodexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $env:USERPROFILE '.codex' }
+if ((Get-Content (Join-Path $taskCodexHome 'config.toml') -Raw) -notmatch '\[mcp_servers.ixos\]') { throw 'Codex MCP was not registered' }
+# Windows PowerShell treats JSON keys as case-insensitive. Claude can contain
+# project paths that differ only by case, so use Python's JSON parser instead.
+@'
+import json, pathlib, sys
+config = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert pathlib.Path(config["mcpServers"]["ixos"]["command"]) == pathlib.Path(sys.argv[2]), "Claude MCP was not registered"
+'@ | python - (Join-Path $env:USERPROFILE '.claude.json') $taskEngine
+if ($LASTEXITCODE -ne 0) { throw 'Claude MCP was not registered' }
+foreach ($taskSkill in @((Join-Path $taskCodexHome 'skills/ixos/SKILL.md'), (Join-Path $env:USERPROFILE '.claude/skills/ixos/SKILL.md'))) {
+    if (!(Test-Path -LiteralPath $taskSkill)) { throw "Missing installed skill: $taskSkill" }
+}
+Write-Output 'PASS: bundled engine, Codex/Claude MCP and skills installed automatically'
 
 # Reproduce the updater edge case: no link, then /UPDATE. Restore it even when
 # testing an older/broken installer, so a failed test does not remove app access.

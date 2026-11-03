@@ -22,15 +22,14 @@ Use the same domain names throughout: location for a searched folder, profile fo
 
 Comments should explain why. Keep modules and docs short, and use ordinary readable code. Tests should prove behavior, especially source freshness, output coordinates and metadata clearing; they must not modify a user's primary file. Honor ignore rules and do not follow source symlinks.
 
-Historical documents are immutable; edit their human index rather than their contents. Keep models, raw evaluation outputs, local credentials and development notes out of Git. Use conventional commit messages without generated trailers. Workflows are manual-only until the owner enables them.
+Historical documents are immutable; edit their human index rather than their contents. Keep models, raw evaluation outputs, local credentials and development notes out of Git. Use conventional commit messages without generated trailers. The release workflow runs when a `vX.Y.Z` tag is pushed; other workflows are manual-only until the owner enables them.
 
 The site deployment project root must be `apps/site`. Release URLs are in `apps/site/src/lib/github.ts`; desktop download filenames are shared with the builder through `packages/releases/desktop-assets.json`. Confirm published model repository IDs and immutable revisions in `crates/ixos-core/src/model/install.rs`; run the maintainer publish command only when the owner is ready to upload.
 
-The manual release workflow and local validation use the same runner:
+The release workflow and local validation use the same runner:
 
 ```sh
-python scripts/build-release.py --kind engine --tag engine-v0.1.0 --platform Windows-X64
-python scripts/build-release.py --kind desktop --tag desktop-v0.1.0 --platform Windows-X64
+python scripts/build-release.py --tag v0.2.0 --platform Windows-X64
 ```
 
-Run on the native OS, selecting `Linux-X64`, `macOS-ARM64` or `macOS-X64` as appropriate. Use Rust 1.92.0 and Node.js 22. The tag must match the component package version. Linux desktop checks install the built Debian package with sudo and use Xvfb; Windows checks install the application and verify shortcuts. Saved output is under `release-dist/<tag>/<platform>/`, with checksums and a verified build receipt. The workflow requires all four platforms before assembling a draft; local assembly can explicitly select a subset. Automatic desktop updates are optional and require `--signed-updates` plus the signing configuration in [installation](docs/INSTALLATION.md#updates-and-signing).
+Run on the native OS, selecting `Linux-X64`, `macOS-ARM64` or `macOS-X64` as appropriate. Use Rust 1.92.0 and Node.js 22. The tag sets the Ixos version; discard the version edits it makes in a local working tree. Linux desktop checks install the built Debian package with sudo and use Xvfb; Windows checks install the application and verify shortcuts. Saved output is under `release-dist/<tag>/<platform>/`, with a verified build receipt. The workflow requires all four platforms before publishing; local assembly can explicitly select a subset.

@@ -278,37 +278,9 @@ h2 {
   flex-direction: column;
   gap: 14px;
 }
-.install-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--ix-line);
-}
-.install-tabs button {
-  position: relative;
-  flex: 1 1 0;
-  min-height: 44px;
-  border: 0;
-  background: transparent;
-  color: var(--ix-text-3);
-  font-size: 14px;
-  font-weight: 600;
-  transition: color 160ms ease;
-}
-.install-tabs button:hover,
-.install-tabs button[aria-pressed="true"] {
-  color: var(--ix-text);
-}
 #agents { scroll-margin-top: 90px; }
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-.install-tabs button[aria-pressed="true"]::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  height: 2px;
-  background: var(--ix-yellow);
-}
 .stage[data-active="false"] *, .hero-search[data-active="false"] * { animation-play-state: paused !important; }
 .shortcut-overlay .ix-side { display: none; }
 .install-note {
@@ -1049,11 +1021,6 @@ html { scroll-behavior: smooth; }
   }
   .nav-links > a.nav-hf {
     display: none;
-  }
-  .install-tabs button {
-    padding: 0 6px;
-    font-size: 13px;
-    white-space: nowrap;
   }
   .hero-search .ix-side,
   .shortcut-try {

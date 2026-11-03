@@ -32,11 +32,6 @@ pub fn run() {
                 commands::system::show_main(app);
             }
         }))
-        .plugin(
-            tauri_plugin_updater::Builder::new()
-                .pubkey(option_env!("IXOS_UPDATER_PUBLIC_KEY").unwrap_or(""))
-                .build(),
-        )
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec!["--hidden"]),

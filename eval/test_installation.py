@@ -154,9 +154,7 @@ class Installation(unittest.TestCase):
 
     def test_model_setup_failure_retains_previous_engine(self):
         path = self.managed()
-        # Keep the failure offline and deterministic: an edited, user-managed skill
-        # makes setup return failure after validating the existing local models.
-        self.seed_models()
+        # Offline and deterministic: an edited, user-managed skill makes setup fail.
         skill = self.home / "agents/.agents/skills/ixos"
         skill.mkdir(parents=True)
         (skill / "SKILL.md").write_text("user-owned custom skill")

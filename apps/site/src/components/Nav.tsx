@@ -2,8 +2,7 @@ import { GitHubIcon, StarIcon } from "@ixos/ui";
 import Image from "next/image";
 import Link from "next/link";
 import { GITHUB, HUGGING_FACE } from "@/lib/github";
-
-const compact = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 });
+import { GitHubStars } from "./GitHubStars";
 
 export function Nav({ stars }: { stars: number | null }) {
   return (
@@ -21,7 +20,7 @@ export function Nav({ stars }: { stars: number | null }) {
             GitHub
             <span className="nav-stars">
               <StarIcon size={13} />
-              {stars === null ? "Star" : compact.format(stars)}
+              <GitHubStars initialStars={stars} />
             </span>
           </a>
         </div>

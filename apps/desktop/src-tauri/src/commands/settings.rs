@@ -51,7 +51,14 @@ impl Settings {
     }
     pub fn save(&self) -> Result<(), String> {
         self.search.validate().map_err(|e| e.to_string())?;
-        if self.search.locations.iter().any(|path| !path.is_dir()) {
+        // A chosen folder that has since gone must not stop other changes, such as removing it.
+        let known = Self::load().search.locations;
+        if self
+            .search
+            .locations
+            .iter()
+            .any(|path| !path.is_dir() && !known.contains(path))
+        {
             return Err("Each location must be a directory".into());
         }
         self.search

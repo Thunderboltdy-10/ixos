@@ -2,16 +2,20 @@
 use anyhow::Context;
 use ixos_core::{
     config::Config,
-    engine::{Engine, Options, RetrievalMode},
+    engine::{Engine, Options, Progress, RetrievalMode},
 };
 use serde_json::{json, Value};
 use std::{
     io::{BufRead, Read, Write},
     path::PathBuf,
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        mpsc, Arc, Mutex,
+    },
 };
 
 pub fn info() -> Value {
-    json!({"name":"ixos","version":env!("CARGO_PKG_VERSION"),"protocol_major":ixos_runtime::PROTOCOL_MAJOR,"capabilities":["resident-search","shared-settings","models","cache","skill","read"],"function_evidence":cfg!(feature="evidence-functions")})
+    json!({"name":"ixos","version":env!("CARGO_PKG_VERSION"),"protocol_major":ixos_runtime::PROTOCOL_MAJOR,"capabilities":["resident-search","shared-settings","models","cache","skill","read","progress"],"function_evidence":cfg!(feature="evidence-functions")})
 }
 #[derive(Default)]
 struct Worker {
@@ -28,16 +32,19 @@ impl Worker {
             .iter()
             .map(|root| {
                 let (files, bytes, lines) = engine.source_stats(root);
-                let discovered = ixos_core::discover::search_walk(root, true, true, false, None)
-                    .build()
-                    .filter_map(Result::ok)
-                    .filter(|entry| entry.file_type().is_some_and(|kind| kind.is_file()))
-                    .count();
+                let discovered = engine.discovered(root);
                 json!({"root":root,"files":files,"bytes":bytes,"lines":lines,"discovered":discovered})
             })
             .collect::<Vec<_>>())
     }
-    fn call(&mut self, op: &str, p: Value, config: &Config) -> anyhow::Result<Value> {
+    fn call(
+        &mut self,
+        op: &str,
+        p: Value,
+        config: &Config,
+        cancelled: &dyn Fn() -> bool,
+        report: &mut dyn FnMut(Progress),
+    ) -> anyhow::Result<Value> {
         match op {
             "hello" => Ok(info()),
             "open" => {
@@ -68,7 +75,7 @@ impl Worker {
                     .engine
                     .as_mut()
                     .context("Open a source scope first")?
-                    .refresh()?;
+                    .refresh_with(cancelled, report)?;
                 Ok(json!({"stats":stats,"sources":self.reports()}))
             }
             "search" => {
@@ -78,7 +85,7 @@ impl Worker {
                     .engine
                     .as_mut()
                     .context("Open a source scope first")?
-                    .search_location(query, directory.as_deref())?;
+                    .search_location_with(query, directory.as_deref(), cancelled, report)?;
                 Ok(json!({"output":serde_json::from_slice::<Value>(&raw)?,"stats":stats}))
             }
             "model-verify" => {
@@ -130,40 +137,86 @@ impl Worker {
     }
 }
 pub fn serve(config: Config) -> anyhow::Result<()> {
-    let mut worker = Worker::default();
-    let mut input = std::io::stdin().lock();
-    let mut output = std::io::stdout().lock();
-    let mut bytes = Vec::new();
-    loop {
-        bytes.clear();
-        let count = input
-            .by_ref()
-            .take(ixos_runtime::MAX_FRAME_BYTES + 1)
-            .read_until(b'\n', &mut bytes)?;
-        if count == 0 {
-            break;
-        }
-        anyhow::ensure!(
-            count as u64 <= ixos_runtime::MAX_FRAME_BYTES,
-            "Runtime request exceeds frame limit"
-        );
-        let request: Value = serde_json::from_slice(&bytes)?;
-        let result = match worker.call(
-            request["op"].as_str().unwrap_or(""),
-            request["params"].clone(),
-            &config,
-        ) {
-            Ok(value) => json!({"id":request["id"],"result":value}),
-            Err(error) => json!({"id":request["id"],"error":format!("{error:#}")}),
-        };
-        let frame = serde_json::to_vec(&result)?;
+    let output = Mutex::new(crate::stdio::protocol_output()?);
+    let send = |value: &Value| -> anyhow::Result<()> {
+        let frame = serde_json::to_vec(value)?;
         anyhow::ensure!(
             (frame.len() as u64) < ixos_runtime::MAX_FRAME_BYTES,
             "Runtime response exceeds frame limit"
         );
+        let mut output = output.lock().map_err(|_| anyhow::anyhow!("Output failed"))?;
         output.write_all(&frame)?;
         output.write_all(b"\n")?;
         output.flush()?;
+        Ok(())
+    };
+    // Requests are read beside the work, so one can be cancelled while it runs.
+    let cancelled_through = Arc::new(AtomicU64::new(0));
+    let (requests, incoming) = mpsc::channel();
+    std::thread::spawn({
+        let cancelled_through = cancelled_through.clone();
+        move || read_requests(requests, &cancelled_through)
+    });
+    let mut worker = Worker::default();
+    for request in incoming {
+        let request: Value = request?;
+        let id = request["id"].as_u64().unwrap_or(u64::MAX);
+        let params = request["params"].clone();
+        let wants_progress = params["progress"] == true;
+        let cancelled = || id <= cancelled_through.load(Ordering::Acquire);
+        let mut report = |progress: Progress| {
+            if wants_progress {
+                // A closed pipe ends the session when the response is written.
+                let _ = send(&json!({"progress":progress}));
+            }
+        };
+        let result = match worker.call(
+            request["op"].as_str().unwrap_or(""),
+            params,
+            &config,
+            &cancelled,
+            &mut report,
+        ) {
+            Ok(value) => json!({"id":request["id"],"result":value}),
+            Err(error) => json!({"id":request["id"],"error":format!("{error:#}")}),
+        };
+        send(&result)?;
     }
     Ok(())
+}
+fn read_requests(requests: mpsc::Sender<anyhow::Result<Value>>, cancelled_through: &AtomicU64) {
+    let mut input = std::io::stdin().lock();
+    let mut bytes = Vec::new();
+    loop {
+        bytes.clear();
+        let frame = input
+            .by_ref()
+            .take(ixos_runtime::MAX_FRAME_BYTES + 1)
+            .read_until(b'\n', &mut bytes)
+            .map_err(anyhow::Error::from)
+            .and_then(|count| {
+                anyhow::ensure!(
+                    count as u64 <= ixos_runtime::MAX_FRAME_BYTES,
+                    "Runtime request exceeds frame limit"
+                );
+                Ok(count)
+            });
+        let request = match frame {
+            Ok(0) => return,
+            Ok(_) => serde_json::from_slice::<Value>(&bytes).map_err(anyhow::Error::from),
+            Err(error) => Err(error),
+        };
+        let failed = request.is_err();
+        if let Ok(frame) = &request {
+            if frame["op"] == "cancel" {
+                if let Some(id) = frame["params"]["id"].as_u64() {
+                    cancelled_through.fetch_max(id, Ordering::AcqRel);
+                }
+                continue;
+            }
+        }
+        if requests.send(request).is_err() || failed {
+            return;
+        }
+    }
 }

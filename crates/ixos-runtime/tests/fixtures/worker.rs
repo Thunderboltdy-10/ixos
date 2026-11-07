@@ -11,13 +11,28 @@ fn main() {
     let mut input=std::io::stdin().lock();let mut out=std::io::stdout().lock();
     let mut line=String::new();input.read_line(&mut line).unwrap();let first=id(&line);
     let major=if mode=="bad-major" {99}else{1};
-    let caps=if mode=="missing-capability" {"[]"}else{r#"["resident-search","shared-settings","models","cache","skill"]"#};
+    let caps=if mode=="missing-capability" {"[]"}
+        else if mode=="progress" || mode=="cancellable" {r#"["resident-search","shared-settings","models","cache","skill","progress"]"#}
+        else{r#"["resident-search","shared-settings","models","cache","skill"]"#};
     writeln!(out,r#"{{"id":{first},"result":{{"protocol_major":{major},"version":"99.0.0","capabilities":{caps}}}}}"#).unwrap();out.flush().unwrap();
     if mode=="hang" || mode=="blocked-write" {sleep_forever();}
     loop {
         line.clear();if input.read_line(&mut line).unwrap()==0 {break;}
         let identifier=id(&line);
         match mode.as_str() {
+            "progress" if line.contains("\"op\":\"refresh\"")=>{
+                for _ in 0..5 {
+                    std::thread::sleep(std::time::Duration::from_millis(60));
+                    writeln!(out,r#"{{"progress":{{"stage":"reading","done":1,"total":2,"fraction":0.5}}}}"#).unwrap();
+                    out.flush().unwrap();
+                }
+                writeln!(out,r#"{{"id":{identifier},"result":{{"ok":true}}}}"#).unwrap();
+            },
+            "cancellable" if line.contains("\"op\":\"refresh\"")=>{
+                line.clear();input.read_line(&mut line).unwrap();
+                assert!(line.contains("\"op\":\"cancel\""));
+                writeln!(out,r#"{{"id":{identifier},"error":"Runtime request cancelled"}}"#).unwrap();
+            },
             "crash"=>std::process::exit(3),
             "incomplete"=>{write!(out,"{{}}").unwrap();out.flush().unwrap();break;},
             "oversized"=>{out.write_all(&vec![b' ';4*1024*1024+1]).unwrap();out.flush().unwrap();break;},

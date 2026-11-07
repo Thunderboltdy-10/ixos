@@ -12,6 +12,44 @@ pub fn show_overlay(app: AppHandle) -> Result<(), String> {
     let _ = tauri::Emitter::emit(&window, "shortcut-triggered", ());
     window.set_focus().map_err(|e| e.to_string())
 }
+/// Stops Windows drawing a title bar on the overlay. It can paint one on a window with no
+/// frame as focus arrives, and the transparent overlay leaves that visible at the top of
+/// the screen. Nothing outside the overlay's content is ever meant to be drawn.
+#[cfg(windows)]
+pub fn draw_no_title_bar(window: &tauri::WebviewWindow) {
+    use windows_sys::Win32::{
+        Foundation::{HWND, LPARAM, LRESULT, WPARAM},
+        UI::{
+            Shell::{DefSubclassProc, SetWindowSubclass},
+            WindowsAndMessaging::{WM_NCACTIVATE, WM_NCPAINT},
+        },
+    };
+    // Undocumented messages the visual styles engine paints the caption and frame with.
+    const WM_NCUAHDRAWCAPTION: u32 = 0xAE;
+    const WM_NCUAHDRAWFRAME: u32 = 0xAF;
+    unsafe extern "system" fn paint_nothing(
+        window: HWND,
+        message: u32,
+        wparam: WPARAM,
+        lparam: LPARAM,
+        _id: usize,
+        _data: usize,
+    ) -> LRESULT {
+        match message {
+            WM_NCPAINT | WM_NCUAHDRAWCAPTION | WM_NCUAHDRAWFRAME => 0,
+            // An lparam of -1 keeps the activation change but skips its repaint.
+            WM_NCACTIVATE => DefSubclassProc(window, message, wparam, -1),
+            _ => DefSubclassProc(window, message, wparam, lparam),
+        }
+    }
+    if let Ok(handle) = window.hwnd() {
+        // SAFETY: setup runs on the thread that owns the window, and the callback is a
+        // plain function that lives as long as the process.
+        unsafe {
+            SetWindowSubclass(handle.0 as HWND, Some(paint_nothing), 1, 0);
+        }
+    }
+}
 #[tauri::command]
 pub fn hide_overlay(app: AppHandle) -> Result<(), String> {
     app.get_webview_window("overlay")

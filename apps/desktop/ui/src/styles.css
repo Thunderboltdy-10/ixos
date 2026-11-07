@@ -110,6 +110,11 @@ input:focus-visible {
 .status--error {
   color: var(--ix-danger);
 }
+.reading-note {
+  margin-left: 14px;
+  color: var(--ix-text-3);
+  font-variant-numeric: tabular-nums;
+}
 .ix-search > .ix-split {
   margin-inline: 0;
 }

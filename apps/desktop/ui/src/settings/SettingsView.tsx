@@ -53,13 +53,20 @@ export function SettingsView({ config, locations, models, save }: SettingsViewPr
       <div className="settings-column">
         <Summary locations={locations} />
 
-        <Section title="Folders" note="Ixos only reads these folders and everything inside them.">
+        <Section
+          title="Folders"
+          note="Ixos only reads these folders and everything inside them. Remove from Ixos stops searching a folder and clears what Ixos cached about it. The folder and its files stay where they are."
+        >
           {search.locations.map((path) => (
             <FolderRow
               key={path}
               path={path}
               status={locations.find((location) => location.directory === path)}
-              onRemove={() => set({ locations: search.locations.filter((location) => location !== path) })}
+              onRemove={async () => {
+                await set({ locations: search.locations.filter((location) => location !== path) });
+                // Stop searching first, so nothing is cached again after clearing.
+                await cacheClear(path).catch(() => {});
+              }}
             />
           ))}
           <div className="row">
@@ -87,7 +94,7 @@ export function SettingsView({ config, locations, models, save }: SettingsViewPr
               }
             />
           </Row>
-          <Row label="Remember files" detail="Cached keeps a small record on each file so the next search is fast.">
+          <Row label="Remember files" detail="Cached keeps a small record on each file and a copy of its text on this computer, so the next search is fast.">
             <Segmented
               value={search.cache}
               choices={[
@@ -126,7 +133,7 @@ export function SettingsView({ config, locations, models, save }: SettingsViewPr
           </Row>
         </Section>
 
-        <Section title="Cached records" note="One small record per file, kept in its metadata. Removing them is safe; Ixos rebuilds them on the next search.">
+        <Section title="Cached records" note="One small record per file, kept in its metadata, and a copy of its text in Ixos's cache. Removing them is safe; Ixos rebuilds them on the next search.">
           {search.locations.map((path) => (
             <SavedRow key={path} path={path} />
           ))}
@@ -246,7 +253,7 @@ function Toggle({ checked, disabled, onChange }: { checked: boolean; disabled?: 
   );
 }
 
-function FolderRow({ path, status, onRemove }: { path: string; status?: LocationStatus; onRemove: () => void }) {
+function FolderRow({ path, status, onRemove }: { path: string; status?: LocationStatus; onRemove: () => Promise<void> }) {
   let detail = path;
   if (status?.error) detail = status.error;
   else if (status?.stage === "discover") detail = "Reading files…";
@@ -263,7 +270,7 @@ function FolderRow({ path, status, onRemove }: { path: string; status?: Location
         </span>
         <span className={`row-detail${status?.error ? " status--error" : ""}`}>{detail}</span>
       </div>
-      <ConfirmButton action="Remove" run={async () => onRemove()} />
+      <ConfirmButton action="Remove from Ixos" run={onRemove} />
     </div>
   );
 }

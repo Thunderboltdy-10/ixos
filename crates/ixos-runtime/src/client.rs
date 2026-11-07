@@ -1,7 +1,7 @@
 //! A synchronous owned child process, used from the desktop's blocking workers.
 //! The desktop never links the search engine, tokenizers, models, or grammars.
 use crate::{
-    protocol::{Options, RetrievalMode},
+    protocol::{Options, Progress, RetrievalMode, CANCELLED},
     MAX_FRAME_BYTES, PROTOCOL_MAJOR,
 };
 use anyhow::Context;
@@ -39,6 +39,11 @@ impl Cancellation {
         self.generation.load(Ordering::Acquire) != self.expected
     }
 }
+/// How long a worker that supports cancelling has to answer before it is stopped.
+const CANCEL_GRACE: Duration = Duration::from_millis(1500);
+
+/// How long a worker may stay silent. Progress restarts the clock, so reading a large
+/// folder can take as long as it needs while a worker that has stopped is still caught.
 fn timeout_for(op: &str) -> Duration {
     Duration::from_secs(match op {
         "hello" => 5,
@@ -69,6 +74,9 @@ pub struct Session {
     id: u64,
     healthy: bool,
     cancellation: Option<Cancellation>,
+    /// The worker reports progress and answers cancel requests.
+    live: bool,
+    on_progress: Option<Box<dyn FnMut(Progress) + Send>>,
     _owner: ownership::Owner,
 }
 impl Drop for Session {
@@ -138,6 +146,8 @@ impl Session {
             id: 0,
             healthy: true,
             cancellation,
+            live: false,
+            on_progress: None,
             _owner: owner,
         };
         let hello = session.request("hello", json!({}), timeout)?;
@@ -159,6 +169,9 @@ impl Session {
                 "Ixos runtime lacks required capability: {capability}"
             );
         }
+        session.live = hello["capabilities"]
+            .as_array()
+            .is_some_and(|values| values.iter().any(|v| v == "progress"));
         Ok(session)
     }
     pub fn call(&mut self, op: &str, params: Value) -> anyhow::Result<Value> {
@@ -170,6 +183,9 @@ impl Session {
     pub fn set_cancellation(&mut self, cancellation: Cancellation) {
         self.cancellation = Some(cancellation);
     }
+    pub fn set_progress(&mut self, on_progress: impl FnMut(Progress) + Send + 'static) {
+        self.on_progress = Some(Box::new(on_progress));
+    }
     fn stop(&mut self) {
         if self.healthy {
             self.healthy = false;
@@ -177,11 +193,14 @@ impl Session {
             let _ = self.child.wait();
         }
     }
-    fn request(&mut self, op: &str, params: Value, timeout: Duration) -> anyhow::Result<Value> {
+    fn request(&mut self, op: &str, mut params: Value, timeout: Duration) -> anyhow::Result<Value> {
         anyhow::ensure!(
             self.healthy,
             "Ixos runtime session stopped; create a new session"
         );
+        if self.live && matches!(op, "refresh" | "search") {
+            params["progress"] = json!(true);
+        }
         self.id += 1;
         let mut frame = serde_json::to_vec(&json!({"id":self.id,"op":op,"params":params}))?;
         anyhow::ensure!(
@@ -189,18 +208,29 @@ impl Session {
             "Runtime request exceeds frame limit"
         );
         frame.push(b'\n');
-        let deadline = Instant::now() + timeout;
+        let mut deadline = Instant::now() + timeout;
+        let mut give_up = None;
         let response = (|| {
             self.input
                 .try_send(frame)
                 .context("Runtime write queue stopped or is full")?;
             loop {
+                let cancelled = self
+                    .cancellation
+                    .as_ref()
+                    .is_some_and(Cancellation::cancelled);
+                if cancelled && give_up.is_none() {
+                    anyhow::ensure!(self.live, CANCELLED);
+                    let mut cancel = serde_json::to_vec(
+                        &json!({"id":0,"op":"cancel","params":{"id":self.id}}),
+                    )?;
+                    cancel.push(b'\n');
+                    let _ = self.input.try_send(cancel);
+                    give_up = Some(Instant::now() + CANCEL_GRACE);
+                }
                 anyhow::ensure!(
-                    !self
-                        .cancellation
-                        .as_ref()
-                        .is_some_and(Cancellation::cancelled),
-                    "Runtime request cancelled"
+                    give_up.is_none_or(|give_up| Instant::now() < give_up),
+                    CANCELLED
                 );
                 let remaining = deadline.saturating_duration_since(Instant::now());
                 anyhow::ensure!(
@@ -212,6 +242,15 @@ impl Session {
                     .output
                     .recv_timeout(remaining.min(Duration::from_millis(25)))
                 {
+                    Ok(Ok(value)) if value.get("progress").is_some() => {
+                        deadline = Instant::now() + timeout;
+                        if let (Some(on_progress), Ok(progress)) = (
+                            self.on_progress.as_mut(),
+                            serde_json::from_value(value["progress"].clone()),
+                        ) {
+                            on_progress(progress);
+                        }
+                    }
                     Ok(value) => return value,
                     Err(RecvTimeoutError::Timeout) => {}
                     Err(RecvTimeoutError::Disconnected) => {
@@ -277,6 +316,7 @@ pub struct Source {
 /// Desktop adapter mirrors the core's resident operations without embedding it.
 pub struct Engine {
     session: Session,
+    roots: Vec<PathBuf>,
     sources: BTreeMap<PathBuf, Source>,
 }
 impl Engine {
@@ -300,11 +340,19 @@ impl Engine {
         )?;
         Ok(Self {
             session,
+            roots: roots.to_vec(),
             sources: BTreeMap::new(),
         })
     }
     pub fn set_cancellation(&mut self, cancellation: Cancellation) {
         self.session.set_cancellation(cancellation);
+    }
+    /// Called while the worker reads files; keeps a long read from looking stopped.
+    pub fn set_progress(&mut self, on_progress: impl FnMut(Progress) + Send + 'static) {
+        self.session.set_progress(on_progress);
+    }
+    pub fn roots(&self) -> &[PathBuf] {
+        &self.roots
     }
     pub fn is_healthy(&self) -> bool {
         self.session.is_healthy()
@@ -489,6 +537,41 @@ mod tests {
         assert!(client.child.try_wait().unwrap().is_some());
     }
     #[test]
+    fn progress_keeps_a_long_request_alive_past_its_silence_limit() {
+        let (_dir, path) = fixture();
+        let mut client = start_fixture(&path, "progress", Duration::from_secs(2), None).unwrap();
+        let seen = Arc::new(AtomicU64::new(0));
+        let counted = seen.clone();
+        client.set_progress(move |progress| {
+            assert_eq!(progress.done, 1);
+            counted.fetch_add(1, Ordering::AcqRel);
+        });
+        // Five frames 60 ms apart outlast a 150 ms limit that any one gap stays within.
+        let value = client
+            .request("refresh", json!({}), Duration::from_millis(150))
+            .unwrap();
+        assert_eq!(value["ok"], true);
+        assert_eq!(seen.load(Ordering::Acquire), 5);
+    }
+    #[test]
+    fn a_worker_that_answers_cancel_stays_usable() {
+        let (_dir, path) = fixture();
+        let generation = Arc::new(AtomicU64::new(1));
+        let mut client = start_fixture(
+            &path,
+            "cancellable",
+            Duration::from_secs(2),
+            Some(Cancellation::new(generation.clone(), 1)),
+        )
+        .unwrap();
+        generation.store(2, Ordering::Release);
+        let error = client.call("refresh", json!({})).unwrap_err();
+        assert_eq!(error.to_string(), CANCELLED);
+        assert!(client.is_healthy());
+        client.set_cancellation(Cancellation::new(generation, 2));
+        assert_eq!(client.call("ping", json!({})).unwrap()["ok"], true);
+    }
+    #[test]
     fn transport_failures_invalidate_session_but_operation_errors_do_not() {
         let (_dir, path) = fixture();
         for mode in [
@@ -520,6 +603,7 @@ mod tests {
         let session = start_fixture(&path, "normal", Duration::from_secs(2), None).unwrap();
         let mut engine = Engine {
             session,
+            roots: Vec::new(),
             sources: BTreeMap::new(),
         };
         assert!(engine.search_location("query", None).is_err());

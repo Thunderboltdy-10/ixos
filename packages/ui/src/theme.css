@@ -267,6 +267,26 @@
   background: var(--ix-yellow);
   transition: width 360ms var(--ix-ease), opacity 400ms ease;
 }
+/* A long read: light crosses the finished part now and then. */
+.ix-progress--glimmer > span {
+  position: relative;
+  overflow: hidden;
+}
+.ix-progress--glimmer > span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.75), transparent);
+  transform: translateX(-100%);
+  animation: ix-glimmer 4s var(--ix-ease) infinite;
+}
+/* The sweep takes the first part of each cycle; the rest is rest. */
+@keyframes ix-glimmer {
+  45%,
+  100% {
+    transform: translateX(100%);
+  }
+}
 /* For waits with no known length. */
 .ix-progress--busy {
   overflow: hidden;
@@ -724,6 +744,9 @@
     width: 100%;
     animation: none;
     opacity: 0.5;
+  }
+  .ix-progress--glimmer > span::after {
+    animation: none;
   }
   .ix-score > span,
   .ix-side,

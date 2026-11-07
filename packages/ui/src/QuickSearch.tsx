@@ -24,6 +24,8 @@ interface QuickSearchProps {
   passage?: Passage | null;
   empty?: ReactNode;
   status?: ReactNode;
+  busy?: boolean;
+  glimmer?: boolean;
 }
 
 /** The quick search panel. The active result's passage opens to its right. */
@@ -39,6 +41,8 @@ export function QuickSearch({
   passage,
   empty,
   status,
+  busy,
+  glimmer,
 }: QuickSearchProps) {
   const list = useRef<HTMLOListElement>(null);
   useFlip(list, hits.map((hit) => hit.key).join("\n"));
@@ -51,7 +55,7 @@ export function QuickSearch({
           {query}
           {scope}
         </div>
-        <Progress value={progress} />
+        <Progress value={progress} busy={busy} glimmer={glimmer} />
         {hits.length ? (
           <ol ref={list} className="ix-rows" role="listbox" aria-label="Results">
             {hits.map((hit, index) => (

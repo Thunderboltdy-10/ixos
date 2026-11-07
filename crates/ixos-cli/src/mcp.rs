@@ -27,7 +27,7 @@ pub fn serve(config: Config, location: Location) -> anyhow::Result<()> {
     };
     run(
         std::io::stdin().lock(),
-        std::io::stdout().lock(),
+        crate::stdio::protocol_output()?,
         &mut server,
     )
 }

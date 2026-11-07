@@ -163,14 +163,28 @@ impl EncodedModel {
                     }
                 })
                 .collect();
+            // Padding and truncation depend on the whole input, so those stay in one piece.
+            let splittable =
+                self.tokenizer.get_padding().is_none() && self.tokenizer.get_truncation().is_none();
+            let mut parts = Vec::with_capacity(inputs.len());
+            let mut spans = Vec::with_capacity(inputs.len());
+            for input in inputs {
+                let first = parts.len();
+                if splittable {
+                    parts.extend(pieces(input).map(str::to_owned));
+                } else {
+                    parts.push(input.to_owned());
+                }
+                spans.push(first..parts.len());
+            }
             let encodings = self
                 .tokenizer
-                .encode_batch_fast::<String>(inputs.into_iter().map(Into::into).collect(), false)
+                .encode_batch_fast::<String>(parts, false)
                 .map_err(|error| ModelError::Inference(format!("Tokenization: {error}")))?;
-            for encoding in encodings {
-                let ids = encoding
-                    .get_ids()
+            for span in spans {
+                let ids = encodings[span]
                     .iter()
+                    .flat_map(|encoding| encoding.get_ids())
                     .copied()
                     .filter(|id| *id != self.unknown)
                     .take(max_tokens.unwrap_or(usize::MAX));
@@ -243,6 +257,28 @@ impl EncodedModel {
         }
         Ok(vectors)
     }
+}
+
+/// Long enough that tokenizing a piece is worth a thread of its own.
+const PIECE_BYTES: usize = 64 * 1024;
+
+/// Cuts long text so one large document can use every core. Cutting after whitespace
+/// keeps the tokens, and so the vector, exactly as they would be in one piece.
+fn pieces(text: &str) -> impl Iterator<Item = &str> {
+    let mut rest = text;
+    std::iter::from_fn(move || {
+        if rest.is_empty() {
+            return None;
+        }
+        let cut = rest
+            .as_bytes()
+            .get(PIECE_BYTES..)
+            .and_then(|tail| tail.iter().position(u8::is_ascii_whitespace))
+            .map_or(rest.len(), |offset| PIECE_BYTES + offset + 1);
+        let (piece, after) = rest.split_at(cut);
+        rest = after;
+        Some(piece)
+    })
 }
 
 fn decode_half_row(raw: &[u8], output: &mut [f32]) {
@@ -447,6 +483,30 @@ pub(crate) mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn long_documents_cut_into_pieces_keep_their_exact_vector() {
+        let text = "hello world unknown\nhello ".repeat(10_000);
+        assert!(text.len() > 3 * PIECE_BYTES);
+        assert!(pieces(&text).count() > 2);
+        assert_eq!(pieces(&text).collect::<String>(), text);
+        let dir = fixture(Dtype::F16, None, true, true, false, false);
+        let texts = [text];
+        assert_eq!(
+            bits(
+                ReferenceModel::load(dir.path())
+                    .unwrap()
+                    .embed_batch(&texts)
+                    .unwrap()
+            ),
+            bits(
+                Model::load(dir.path())
+                    .unwrap()
+                    .embed_batch(&texts)
+                    .unwrap()
+            )
+        );
     }
 
     #[test]

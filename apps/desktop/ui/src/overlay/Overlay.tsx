@@ -6,6 +6,8 @@ import logo from "../assets/ixos-icon.png";
 import { hideOverlay, openFile, readPreview, showInFolder, type Config } from "../lib/api";
 import { folderName } from "../lib/format";
 import { snippetLines, toHits } from "../lib/hits";
+import { ReadingNote } from "../lib/ReadingNote";
+import { useReading } from "../lib/useReading";
 import { progressOf, useSearch } from "../lib/useSearch";
 
 export function Overlay({ config }: { config: Config }) {
@@ -15,6 +17,7 @@ export function Overlay({ config }: { config: Config }) {
   const input = useRef<HTMLInputElement>(null);
   const folders = config.search.locations;
   const state = useSearch(query, null);
+  const live = useReading();
   // The overlay stays short; the main window shows the full list.
   const hits = useMemo(() => toHits(state, folders).slice(0, 8), [state, folders]);
   const selected = state.results[Math.min(active, state.results.length - 1)];
@@ -100,7 +103,9 @@ export function Overlay({ config }: { config: Config }) {
             />
           }
           scope={<span className="ix-qs-scope">{scope}</span>}
-          progress={progressOf(state.stage)}
+          progress={live ? live.percent : progressOf(state.stage)}
+          busy={live?.stage === "walking"}
+          glimmer={Boolean(live)}
           hits={hits}
           active={active}
           onActive={setActive}
@@ -115,7 +120,16 @@ export function Overlay({ config }: { config: Config }) {
                   ? "Nothing matched. Try describing it another way."
                   : "Describe what you are looking for."
           }
-          status={status}
+          status={
+            live ? (
+              <>
+                Reading · {Math.round(live.percent * 100)}%
+                <ReadingNote reading={live} />
+              </>
+            ) : (
+              status
+            )
+          }
         />
       </div>
     </div>

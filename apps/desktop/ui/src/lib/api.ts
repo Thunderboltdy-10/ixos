@@ -26,6 +26,14 @@ export interface LocationStatus {
   error?: string;
 }
 
+/** How far the first read of the chosen folders has got. */
+export interface Reading {
+  stage: "walking" | "reading" | "embedding";
+  percent: number;
+  done: number;
+  total: number;
+}
+
 export interface ModelStatus {
   profile: Profile;
   installed: boolean;

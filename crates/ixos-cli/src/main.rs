@@ -6,6 +6,7 @@ mod mcp;
 mod runtime;
 mod skill;
 mod source_read;
+mod stdio;
 mod updates;
 use clap::Parser;
 

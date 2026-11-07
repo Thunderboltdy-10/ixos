@@ -10,11 +10,14 @@ import {
   type Config,
   type LocationStatus,
   type Profile,
+  type Reading,
   type RecentSearch,
 } from "../lib/api";
 import { count, folderName, plural, relativeDir } from "../lib/format";
 import { toHits } from "../lib/hits";
+import { useReading } from "../lib/useReading";
 import { progressOf, useSearch, type SearchState } from "../lib/useSearch";
+import { ReadingNote } from "../lib/ReadingNote";
 import { Preview } from "./Preview";
 
 const WIDTH_KEY = "ixos.resultsWidth";
@@ -45,6 +48,7 @@ export function SearchView({ config, locations, save }: SearchViewProps) {
   const [width, setWidth] = useState(readWidth);
   const folders = config.search.locations;
   const state = useSearch(query, folder || null);
+  const live = useReading();
   const hits = useMemo(() => toHits(state, folders), [state, folders]);
   useFlip(list, hits.map((hit) => hit.key).join("\n"));
 
@@ -83,15 +87,16 @@ export function SearchView({ config, locations, save }: SearchViewProps) {
 
   const selected = state.results[Math.min(active, state.results.length - 1)];
   const profile = config.search.profile === "code" ? "Code" : "Documents";
-  const reading = locations.some(
+  const warming = locations.some(
     (location) => (!folder || location.directory === folder) && location.stage !== "ready" && location.stage !== "error",
   );
 
   return (
     <main className="ix-search">
       <QueryBar
-        progress={progressOf(state.stage)}
-        busy={state.stage === "idle" && reading}
+        progress={live ? live.percent : progressOf(state.stage)}
+        busy={live ? live.stage === "walking" : state.stage === "idle" && warming}
+        glimmer={Boolean(live)}
         input={
           <input
             ref={input}
@@ -156,7 +161,7 @@ export function SearchView({ config, locations, save }: SearchViewProps) {
           </>
         }
       />
-      <Status state={state} query={query} locations={locations} folder={folder} />
+      <Status state={state} query={query} locations={locations} folder={folder} live={live} />
 
       {!query.trim() ? (
         <div id="results" className="search-home">
@@ -218,7 +223,14 @@ export function SearchView({ config, locations, save }: SearchViewProps) {
   );
 }
 
-function Status({ state, query, locations, folder }: { state: SearchState; query: string; locations: LocationStatus[]; folder: string }) {
+function reading(live: Reading, scope: LocationStatus[]) {
+  const where = scope.length === 1 ? folderName(scope[0].directory) : `${scope.length} folders`;
+  if (live.stage === "walking") return `Looking through ${where}.`;
+  const percent = `${Math.round(live.percent * 100)}%`;
+  return live.stage === "reading" ? `Reading ${where} · ${percent}` : `Adding meaning to ${where} · ${percent}`;
+}
+
+function Status({ state, query, locations, folder, live }: { state: SearchState; query: string; locations: LocationStatus[]; folder: string; live: Reading | null }) {
   const scope = locations.filter((location) => !folder || location.directory === folder);
   const warming = scope.find((location) => location.stage !== "ready" && location.stage !== "error");
   const failed = scope.find((location) => location.error);
@@ -226,10 +238,12 @@ function Status({ state, query, locations, folder }: { state: SearchState; query
   let note = "";
   if (state.stage === "error") {
     text = state.message ?? "Search failed.";
+  } else if (live && !state.results.length) {
+    text = reading(live, scope);
   } else if (!query.trim()) {
     const files = scope.reduce((sum, location) => sum + location.fileCount, 0);
     if (failed) text = failed.error!;
-    else if (warming?.stage === "discover") text = `Reading ${folderName(warming.directory)} for the first time.`;
+    else if (warming?.stage === "discover") text = `Reading ${folderName(warming.directory)}.`;
     else if (warming) text = `${count(files)} files ready for keyword search. Meaning follows in a moment.`;
     else text = files ? `${count(files)} files ready to search.` : "Ready to search.";
   } else if (state.stage === "keywords" && !state.results.length) {
@@ -245,11 +259,12 @@ function Status({ state, query, locations, folder }: { state: SearchState; query
     ? `Searched for “${state.corrections.map((c) => c.replacement).join(", ")}” instead of “${state.corrections.map((c) => c.original).join(", ")}”.`
     : "";
   return (
-    <p className={`status${state.stage === "error" || (failed && !query.trim()) ? " status--error" : ""}`} role="status">
+    <p className={`status${state.stage === "error" || (failed && !query.trim() && !live) ? " status--error" : ""}`} role="status">
       <span>
         {text} {fixed}
       </span>
       {note && <span className="ix-status-note">{note}</span>}
+      {live && <ReadingNote reading={live} />}
     </p>
   );
 }

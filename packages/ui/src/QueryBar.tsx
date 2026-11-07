@@ -8,10 +8,11 @@ interface QueryBarProps {
   pickers?: ReactNode;
   progress: number | null;
   busy?: boolean;
+  glimmer?: boolean;
 }
 
 /** The main window's search field, with its pickers and progress line. */
-export function QueryBar({ input, pickers, progress, busy }: QueryBarProps) {
+export function QueryBar({ input, pickers, progress, busy, glimmer }: QueryBarProps) {
   return (
     <div className="ix-query">
       <div className="ix-query-row">
@@ -19,7 +20,7 @@ export function QueryBar({ input, pickers, progress, busy }: QueryBarProps) {
         {input}
         {pickers && <div className="ix-pickers">{pickers}</div>}
       </div>
-      <Progress value={progress} busy={busy} />
+      <Progress value={progress} busy={busy} glimmer={glimmer} />
     </div>
   );
 }

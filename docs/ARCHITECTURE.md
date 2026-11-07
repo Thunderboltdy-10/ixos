@@ -10,11 +10,15 @@
 4. Reuse matching cache records or embed missing passages on CPU. The encoded loader decodes vocabulary rows as needed, pools in float32 and normalizes vectors.
 5. Rank files, select a query-time snippet and serialize a bounded response.
 
-Code text is split into passages of up to 1,800 Unicode characters, preferring nearby line or word boundaries. Up to four passages are selected for shorter sources and eight for longer sources, spaced from the introduction to the end. Documents use one normalized whole-text vector. Search limits are 16 MiB per file and 256 MiB of combined extracted text; exceeding the combined limit returns an error.
+Code text is split into passages of up to 1,800 Unicode characters, preferring nearby line or word boundaries. Up to four passages are selected for shorter sources and eight for longer sources, spaced from the introduction to the end. Documents use one normalized whole-text vector. Search limits are 16 MiB per plain-text file, 512 MiB per PDF or Office file, and 256 MiB of combined extracted text; exceeding the combined limit returns an error.
 
 ## Records
 
 Records live in `:ixos` on Windows or `user.ixos` on Unix. File metadata travels with the source on filesystems and copy tools that preserve it, and avoids a separate persistent search index. Unsupported metadata storage falls back to one LMDB database under the application cache. Records are portable when source content and the model recipe match.
+
+Cached mode also stores each file's extracted text under the application cache, keyed by the hash of its bytes, so a changed location or a restarted first read does not parse the file again. This text is a copy of document content on the local disk. `cache_clear` and removing a folder delete it; JIT mode never writes it.
+
+In cached mode the desktop app follows the chosen folders and refreshes five seconds after changes settle, so changed files are ready before the next search.
 
 All multibyte integers are little-endian. The checksum covers all preceding bytes.
 

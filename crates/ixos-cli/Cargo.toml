@@ -26,5 +26,10 @@ toml_edit = "0.23"
 dirs = "5"
 tempfile = "3.15"
 
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_System_Console"] }
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
 [dev-dependencies]
 ixos-runtime = { path = "../ixos-runtime", features = ["client"] }

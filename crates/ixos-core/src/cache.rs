@@ -10,6 +10,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use xxhash_rust::xxh3::xxh3_64;
 mod management;
+pub(crate) mod text;
 pub use management::{manage, CacheStats};
 
 const MAX_RECORD: usize = 40 * 1024;

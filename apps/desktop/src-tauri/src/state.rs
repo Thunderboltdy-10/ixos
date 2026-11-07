@@ -1,5 +1,6 @@
 //! Resident search state belongs to the tray process.
 use ixos_runtime::client::Engine;
+use notify::RecommendedWatcher;
 use serde::Serialize;
 use std::{
     path::PathBuf,
@@ -29,6 +30,7 @@ pub struct AppState {
     pub generation: Arc<AtomicU64>,
     pub warming_generation: Arc<AtomicU64>,
     pub lifecycle: Arc<AtomicU64>,
+    pub watcher: Mutex<Option<RecommendedWatcher>>,
 }
 impl AppState {
     pub fn stop(&self) {

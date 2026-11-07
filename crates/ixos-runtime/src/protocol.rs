@@ -10,6 +10,26 @@ pub enum RetrievalMode {
     Hybrid,
 }
 
+/// The error a cancelled request answers with. The session remains usable.
+pub const CANCELLED: &str = "Runtime request cancelled";
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Stage {
+    Walking,
+    Reading,
+    Embedding,
+}
+
+/// How far a refresh has got. `fraction` covers the current stage only.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Progress {
+    pub stage: Stage,
+    pub done: usize,
+    pub total: usize,
+    pub fraction: f32,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Options {
     pub mode: RetrievalMode,

@@ -5,6 +5,7 @@ mod hook;
 pub mod state;
 pub mod tray;
 mod updates;
+mod watcher;
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::Manager;
 
@@ -42,6 +43,10 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
+            #[cfg(windows)]
+            if let Some(overlay) = tauri::Manager::get_webview_window(app, "overlay") {
+                commands::system::draw_no_title_bar(&overlay);
+            }
             tray::setup_tray(app)?;
             commands::shortcut::setup_global_shortcut(app)?;
             commands::system::setup_models(app.handle().clone());

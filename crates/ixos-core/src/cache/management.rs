@@ -129,6 +129,11 @@ fn manage_at(
             "Location must be a directory, not a symlink"
         );
         let root = location.canonicalize()?;
+        let texts = text::directory(directory, &root);
+        stats.record_bytes += text::size(&texts);
+        if yes {
+            let _ = std::fs::remove_dir_all(&texts);
+        }
         for entry in search_walk(&root, true, true, false, None).build() {
             let entry = entry?;
             if !entry.file_type().is_some_and(|kind| kind.is_file()) {

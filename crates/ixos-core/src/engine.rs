@@ -5,15 +5,28 @@ use crate::model::Model;
 use crate::source::Stamp;
 use crate::{cache, evidence, record, snippet, tools, typo};
 use crate::{digest::sha256, discover::search_walk};
-use rayon::prelude::*;
 use record::{representatives, Passage};
 use serde::Serialize;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::io::Read;
+use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::{Path, PathBuf};
-use std::time::{Instant, SystemTime};
+use std::sync::mpsc;
+use std::time::{Duration, Instant, SystemTime};
 
-pub use ixos_runtime::protocol::{Options, RetrievalMode};
+pub use ixos_runtime::protocol::{Options, Progress, RetrievalMode, Stage, CANCELLED};
+
+/// PDF and Office files hold far more than their text, unlike the plain text limit.
+const MAX_CONTAINER_BYTES: usize = 512 * 1024 * 1024;
+/// Raw input held at once, unless a single file alone is larger.
+const IN_FLIGHT_BYTES: u64 = 512 * 1024 * 1024;
+/// How long one file may take before it is treated as unreadable.
+const FILE_BUDGET: Duration = Duration::from_secs(180);
+const SNIFF_BYTES: u64 = 8192;
+/// Files have room for deep PDF object trees on these threads.
+/// Text embedded between progress reports and chances to cancel.
+const EMBED_GROUP_BYTES: usize = 1024 * 1024;
+const READER_STACK_BYTES: usize = 32 * 1024 * 1024;
 
 #[derive(Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -101,9 +114,180 @@ struct LoadedSource {
     observed: Option<SystemTime>,
     reused: bool,
     metadata_hit: bool,
+    raw_hash: Option<[u8; 32]>,
     document: Option<Document>,
     native: Option<Vec<u8>>,
     stats: Stats,
+}
+
+/// One file to read, owned so that it can outlive a cancelled refresh.
+struct Job {
+    path: PathBuf,
+    relative: String,
+    stamp: Option<Stamp>,
+    observed: SystemTime,
+    limit: usize,
+    max_text: usize,
+    previous: Option<[u8; 32]>,
+    texts: Option<PathBuf>,
+    prefetch: bool,
+}
+
+struct Running {
+    started: Instant,
+    size: u64,
+    weight: u64,
+    stamp: Option<Stamp>,
+    observed: SystemTime,
+}
+
+/// What one refresh has found so far.
+#[derive(Default)]
+struct Pass {
+    alive: HashSet<String>,
+    pending: Vec<String>,
+    corpus_bytes: usize,
+}
+
+/// Reports only waits long enough to notice, at a rate a window can follow.
+struct Reporter<'a> {
+    report: &'a mut dyn FnMut(Progress),
+    began: Instant,
+    sent: Option<Instant>,
+}
+impl<'a> Reporter<'a> {
+    fn new(report: &'a mut dyn FnMut(Progress)) -> Self {
+        Self {
+            report,
+            began: Instant::now(),
+            sent: None,
+        }
+    }
+    fn send(&mut self, stage: Stage, done: usize, total: usize, fraction: f32) {
+        let due = self.began.elapsed() >= Duration::from_millis(250)
+            && self
+                .sent
+                .is_none_or(|sent| sent.elapsed() >= Duration::from_millis(80));
+        if due {
+            self.sent = Some(Instant::now());
+            (self.report)(Progress {
+                stage,
+                done,
+                total,
+                fraction: fraction.clamp(0.0, 1.0),
+            });
+        }
+    }
+}
+
+/// Roughly how long a file takes to read, relative to other files.
+fn weigh(path: &Path, size: u64) -> u64 {
+    let cost = match path.extension().and_then(|ext| ext.to_str()) {
+        Some(ext) if ext.eq_ignore_ascii_case("pdf") => 16,
+        _ if crate::extract::is_container(path) => 4,
+        _ => 1,
+    };
+    size * cost + 4096
+}
+
+fn looks_binary(head: &[u8]) -> bool {
+    head.contains(&0) && !head.starts_with(&[0xFF, 0xFE]) && !head.starts_with(&[0xFE, 0xFF])
+}
+
+/// Read, parse and tokenize one file, away from the refresh that asked for it.
+fn load(job: Job) -> LoadedSource {
+    let Job {
+        path,
+        relative,
+        stamp,
+        observed,
+        limit,
+        max_text,
+        previous,
+        texts,
+        prefetch,
+    } = job;
+    let mut loaded = LoadedSource {
+        relative,
+        stamp,
+        observed: Some(observed),
+        ..Default::default()
+    };
+    let mut bytes = Vec::new();
+    let started = Instant::now();
+    let read = std::fs::File::open(&path).and_then(|mut file| {
+        (&mut file).take(SNIFF_BYTES).read_to_end(&mut bytes)?;
+        if !crate::extract::is_container(&path) && looks_binary(&bytes) {
+            return Ok(false);
+        }
+        let rest = (limit + 1).saturating_sub(bytes.len());
+        file.take(rest as u64).read_to_end(&mut bytes)?;
+        Ok(true)
+    });
+    loaded.stats.io_read_ms = started.elapsed().as_secs_f64() * 1000.0;
+    loaded.stats.source_bytes_read = bytes.len() as u64;
+    if loaded.stamp != Stamp::read(&path).ok() {
+        loaded.stamp = None;
+    }
+    if !matches!(read, Ok(true)) || bytes.len() > limit {
+        return loaded;
+    }
+    let started = Instant::now();
+    let raw_hash = sha256(&bytes);
+    loaded.stats.source_hash_ms = started.elapsed().as_secs_f64() * 1000.0;
+    if previous == Some(raw_hash) {
+        loaded.reused = true;
+        return loaded;
+    }
+    loaded.raw_hash = Some(raw_hash);
+    let started = Instant::now();
+    let parse = || crate::extract::extract_text_from_bytes(&path, &bytes, max_text + 1);
+    let extracted = match &texts {
+        Some(directory) => cache::text::load(directory, &raw_hash).unwrap_or_else(|| {
+            // Keep the outcome, so a damaged file is not tried again on the next launch.
+            let text = catch_unwind(AssertUnwindSafe(parse)).ok().flatten();
+            cache::text::save(directory, &raw_hash, text.as_deref());
+            text
+        }),
+        None => parse(),
+    };
+    drop(bytes);
+    loaded.stats.extraction_ms = started.elapsed().as_secs_f64() * 1000.0;
+    let Some(text) = extracted.map(|text| normalize_text(&text)) else {
+        return loaded;
+    };
+    if text.trim().is_empty() || text.len() > max_text {
+        return loaded;
+    }
+    let started = Instant::now();
+    let mut identity = raw_hash.to_vec();
+    identity.extend_from_slice(&sha256(text.as_bytes()));
+    let source_hash = sha256(&identity);
+    loaded.stats.source_hash_ms += started.elapsed().as_secs_f64() * 1000.0;
+    let started = Instant::now();
+    let mut terms = HashMap::new();
+    for term in tokens(&format!("{text} {} {}", loaded.relative, loaded.relative)) {
+        *terms.entry(term).or_insert(0) += 1;
+    }
+    let length = terms.values().sum();
+    let lines = text.split('\n').map(str::to_owned).collect();
+    loaded.stats.lexical_prepare_ms = started.elapsed().as_secs_f64() * 1000.0;
+    if prefetch {
+        let started = Instant::now();
+        loaded.native = cache::prefetch(&path);
+        loaded.stats.cache_read_ms = started.elapsed().as_secs_f64() * 1000.0;
+    }
+    loaded.document = Some(Document {
+        path,
+        source_hash,
+        raw_hash,
+        text,
+        lines,
+        terms,
+        length,
+        passages: Vec::new(),
+    });
+    loaded
 }
 
 pub struct Engine {
@@ -113,7 +297,13 @@ pub struct Engine {
     cache: Option<cache::DocumentCache>,
     documents: BTreeMap<String, Document>,
     io_pool: rayon::ThreadPool,
+    /// Files being read, which a later refresh picks up if this one is cancelled.
+    running: HashMap<String, Running>,
+    results: (mpsc::Sender<LoadedSource>, mpsc::Receiver<LoadedSource>),
     observations: HashMap<String, (Stamp, SystemTime)>,
+    /// Unchanged files that held no searchable text, so they are not parsed every search.
+    rejected: HashMap<String, (Stamp, SystemTime, Option<[u8; 32]>)>,
+    discovered: HashMap<PathBuf, usize>,
     term_documents: HashMap<String, usize>,
     total_terms: usize,
     evidence: evidence::State,
@@ -165,7 +355,13 @@ impl Engine {
         } else {
             None
         };
-        let io_pool = rayon::ThreadPoolBuilder::new().num_threads(4).build()?;
+        let readers = std::thread::available_parallelism()
+            .map_or(2, |cores| cores.get().saturating_sub(1))
+            .clamp(1, 6);
+        let io_pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(readers)
+            .stack_size(READER_STACK_BYTES)
+            .build()?;
         Ok(Self {
             roots,
             model,
@@ -173,7 +369,11 @@ impl Engine {
             cache,
             documents: BTreeMap::new(),
             io_pool,
+            running: HashMap::new(),
+            results: mpsc::channel(),
             observations: HashMap::new(),
+            rejected: HashMap::new(),
+            discovered: HashMap::new(),
             term_documents: HashMap::new(),
             total_terms: 0,
             evidence: evidence::State::default(),
@@ -265,6 +465,15 @@ impl Engine {
         Ok((serde_json::from_slice(&raw)?, stats))
     }
     pub fn refresh(&mut self) -> anyhow::Result<Stats> {
+        self.refresh_with(&|| false, &mut |_| {})
+    }
+    /// Bring resident sources up to date. A cancelled refresh keeps everything it has
+    /// read and files still being read, so the next one continues from there.
+    pub fn refresh_with(
+        &mut self,
+        cancelled: &dyn Fn() -> bool,
+        report: &mut dyn FnMut(Progress),
+    ) -> anyhow::Result<Stats> {
         let began = Instant::now();
         let mut stats = Stats {
             profile: Some(self.options.profile),
@@ -272,232 +481,192 @@ impl Engine {
             tokenizer_settings: self.model.as_ref().map(|m| m.tokenizer_settings().clone()),
             ..Default::default()
         };
-        let mut alive = HashSet::new();
-        let mut pending = Vec::new();
-        let mut corpus_bytes = 0usize;
+        let mut reporter = Reporter::new(report);
+        let first_read = self.documents.is_empty();
         let mut entries = Vec::new();
-        let mut discovered = HashSet::new();
-        for entry in self
-            .roots
-            .iter()
-            .flat_map(|root| search_walk(root, true, true, false, None).build())
-        {
-            let entry = match entry {
-                Ok(entry) => entry,
-                Err(_) => {
+        let mut visited = HashSet::new();
+        let mut discovered = HashMap::new();
+        for root in &self.roots {
+            let found = discovered.entry(root.clone()).or_insert(0);
+            for entry in search_walk(root, true, true, false, None).build() {
+                anyhow::ensure!(!cancelled(), CANCELLED);
+                let entry = match entry {
+                    Ok(entry) => entry,
+                    Err(_) => {
+                        stats.skipped_files += 1;
+                        continue;
+                    }
+                };
+                if !entry.file_type().is_some_and(|kind| kind.is_file()) {
+                    continue;
+                }
+                if !visited.insert(entry.path().to_owned()) {
+                    continue;
+                }
+                *found += 1;
+                stats.discovered_files += 1;
+                if first_read {
+                    reporter.send(Stage::Walking, stats.discovered_files, 0, 0.0);
+                }
+                if crate::cloud::should_skip_cloud_file(entry.path()) {
                     stats.skipped_files += 1;
                     continue;
                 }
-            };
-            if !entry.file_type().is_some_and(|kind| kind.is_file()) {
-                continue;
+                entries.push(entry);
             }
-            if !discovered.insert(entry.path().to_owned()) {
-                continue;
-            }
-            stats.discovered_files += 1;
-            if crate::cloud::should_skip_cloud_file(entry.path()) {
-                stats.skipped_files += 1;
-                continue;
-            }
-            entries.push(entry);
         }
-        // Four buffers bound transient raw input while extraction and tokenization
-        // run in parallel. Unchanged resident sources never allocate a buffer.
-        for batch in entries.chunks(4) {
-            let io_batch = Instant::now();
-            let loaded = self.io_pool.install(|| {
-                batch
-                    .par_iter()
-                    .map(|entry| {
-                        let path = entry.path();
-                        let display = if self.roots.len() == 1 {
-                            path.strip_prefix(&self.roots[0]).unwrap()
-                        } else {
-                            path
-                        };
-                        let relative = display.to_string_lossy().replace('\\', "/");
-                        let mut loaded = LoadedSource {
+        self.discovered = discovered;
+
+        let mut pass = Pass::default();
+        let mut queue = VecDeque::new();
+        let total_files = entries.len();
+        let (mut total_work, mut done_work, mut done_files) = (0u64, 0u64, 0usize);
+        let mut seen = HashSet::new();
+        for entry in &entries {
+            anyhow::ensure!(!cancelled(), CANCELLED);
+            let path = entry.path();
+            let relative = self.relative(path);
+            let stamp = Stamp::read(path).ok();
+            let observed = SystemTime::now();
+            let size = stamp.as_ref().map_or(0, |stamp| stamp.size);
+            let limit = if crate::extract::is_container(path) {
+                self.options.max_file_bytes.max(MAX_CONTAINER_BYTES)
+            } else {
+                self.options.max_file_bytes
+            };
+            // Files too large to read pass instantly, so they take no share of the bar.
+            let weight = weigh(path, if size > limit as u64 { 0 } else { size });
+            total_work += weight;
+            seen.insert(relative.clone());
+            // Still being read for a refresh that was cancelled; its result arrives below.
+            if self.running.contains_key(&relative) {
+                continue;
+            }
+            let unchanged = |known: Option<(&Stamp, SystemTime)>| {
+                stamp.as_ref().is_some_and(|stamp| {
+                    known.is_some_and(|(previous, seen)| stamp.reusable(previous, seen))
+                })
+            };
+            let observation = self.observations.get(&relative).map(|(s, o)| (s, *o));
+            let refused = self.rejected.get(&relative).map(|(s, o, _)| (s, *o));
+            if self.documents.contains_key(&relative) && unchanged(observation) {
+                let loaded = LoadedSource {
+                    relative,
+                    stamp,
+                    observed: Some(observed),
+                    reused: true,
+                    metadata_hit: true,
+                    ..Default::default()
+                };
+                self.commit(loaded, &mut pass, &mut stats)?;
+            } else if unchanged(refused) {
+                stats.skipped_files += 1;
+            } else if size > limit as u64 {
+                self.rejected.remove(&relative);
+                stats.skipped_files += 1;
+            } else {
+                queue.push_back(Job {
+                    previous: self.documents.get(&relative).map(|doc| doc.raw_hash),
+                    path: path.to_owned(),
+                    relative,
+                    stamp,
+                    observed,
+                    limit,
+                    max_text: self.options.max_file_bytes,
+                    texts: self.text_directory(path),
+                    prefetch: self.cache.is_some() && self.options.mode != RetrievalMode::Lexical,
+                });
+                continue;
+            }
+            done_work += weight;
+            done_files += 1;
+        }
+        let reads = queue.len() + self.running.len();
+        let reading = Instant::now();
+        let workers = self.io_pool.current_num_threads();
+        while !queue.is_empty() || !self.running.is_empty() {
+            anyhow::ensure!(!cancelled(), CANCELLED);
+            // Parsing runs beside this loop so one large file never stops it responding.
+            let mut in_flight: u64 = self.running.values().map(|file| file.size).sum();
+            while self.running.len() < workers {
+                let Some(job) = queue.front() else { break };
+                let size = job.stamp.as_ref().map_or(0, |stamp| stamp.size);
+                if !self.running.is_empty() && in_flight + size > IN_FLIGHT_BYTES {
+                    break;
+                }
+                let job = queue.pop_front().unwrap();
+                in_flight += size;
+                self.running.insert(
+                    job.relative.clone(),
+                    Running {
+                        started: Instant::now(),
+                        size,
+                        weight: weigh(&job.path, size),
+                        stamp: job.stamp.clone(),
+                        observed: job.observed,
+                    },
+                );
+                let results = self.results.0.clone();
+                self.io_pool.spawn(move || {
+                    let relative = job.relative.clone();
+                    // A parser panic costs this file, not the refresh.
+                    let loaded =
+                        catch_unwind(AssertUnwindSafe(|| load(job))).unwrap_or(LoadedSource {
                             relative,
-                            stamp: Stamp::read(path).ok(),
-                            observed: Some(SystemTime::now()),
+                            ..Default::default()
+                        });
+                    let _ = results.send(loaded);
+                });
+            }
+            match self.results.1.recv_timeout(Duration::from_millis(50)) {
+                Ok(loaded) => {
+                    let Some(file) = self.running.remove(&loaded.relative) else {
+                        continue;
+                    };
+                    done_work += file.weight;
+                    done_files += 1;
+                    self.commit(loaded, &mut pass, &mut stats)?;
+                }
+                Err(_) => {
+                    // A parser that never returns occupies a thread but not the refresh.
+                    let late: Vec<String> = self
+                        .running
+                        .iter()
+                        .filter(|(_, file)| file.started.elapsed() > FILE_BUDGET)
+                        .map(|(relative, _)| relative.clone())
+                        .collect();
+                    for relative in late {
+                        let file = self.running.remove(&relative).unwrap();
+                        tracing::warn!("Gave up reading {relative}");
+                        done_work += file.weight;
+                        done_files += 1;
+                        let loaded = LoadedSource {
+                            relative,
+                            stamp: file.stamp,
+                            observed: Some(file.observed),
                             ..Default::default()
                         };
-                        let reusable = self.documents.contains_key(&loaded.relative);
-                        if reusable
-                            && loaded.stamp.as_ref().is_some_and(|stamp| {
-                                self.observations.get(&loaded.relative).is_some_and(
-                                    |(previous, observed)| stamp.reusable(previous, *observed),
-                                )
-                            })
-                        {
-                            loaded.reused = true;
-                            loaded.metadata_hit = true;
-                            return loaded;
-                        }
-                        let mut bytes = Vec::new();
-                        let started = Instant::now();
-                        let read = std::fs::File::open(path).and_then(|file| {
-                            file.take((self.options.max_file_bytes + 1) as u64)
-                                .read_to_end(&mut bytes)
-                        });
-                        loaded.stats.io_read_ms = started.elapsed().as_secs_f64() * 1000.0;
-                        loaded.stats.source_bytes_read = bytes.len() as u64;
-                        if loaded.stamp != Stamp::read(path).ok() {
-                            loaded.stamp = None;
-                        }
-                        if read.is_err() || bytes.len() > self.options.max_file_bytes {
-                            return loaded;
-                        }
-                        let started = Instant::now();
-                        let raw_hash = sha256(&bytes);
-                        loaded.stats.source_hash_ms = started.elapsed().as_secs_f64() * 1000.0;
-                        if reusable && self.documents[&loaded.relative].raw_hash == raw_hash {
-                            loaded.reused = true;
-                            return loaded;
-                        }
-                        let started = Instant::now();
-                        let extracted = crate::extract::extract_text_from_bytes(
-                            path,
-                            &bytes,
-                            self.options.max_file_bytes + 1,
-                        );
-                        loaded.stats.extraction_ms = started.elapsed().as_secs_f64() * 1000.0;
-                        let Some(text) = extracted.map(|text| normalize_text(&text)) else {
-                            return loaded;
-                        };
-                        if text.trim().is_empty() || text.len() > self.options.max_file_bytes {
-                            return loaded;
-                        }
-                        let started = Instant::now();
-                        let mut identity = raw_hash.to_vec();
-                        identity.extend_from_slice(&sha256(text.as_bytes()));
-                        let source_hash = sha256(&identity);
-                        loaded.stats.source_hash_ms += started.elapsed().as_secs_f64() * 1000.0;
-                        let started = Instant::now();
-                        let mut terms = HashMap::new();
-                        for term in
-                            tokens(&format!("{text} {} {}", loaded.relative, loaded.relative))
-                        {
-                            *terms.entry(term).or_insert(0) += 1;
-                        }
-                        let length = terms.values().sum();
-                        let lines = text.split('\n').map(str::to_owned).collect();
-                        loaded.stats.lexical_prepare_ms = started.elapsed().as_secs_f64() * 1000.0;
-                        if self.cache.is_some() && self.options.mode != RetrievalMode::Lexical {
-                            let started = Instant::now();
-                            loaded.native = cache::prefetch(path);
-                            loaded.stats.cache_read_ms = started.elapsed().as_secs_f64() * 1000.0;
-                        }
-                        loaded.document = Some(Document {
-                            path: path.to_owned(),
-                            source_hash,
-                            raw_hash,
-                            text,
-                            lines,
-                            terms,
-                            length,
-                            passages: Vec::new(),
-                        });
-                        loaded
-                    })
-                    .collect::<Vec<_>>()
-            });
-            stats.io_batch_wall_ms += io_batch.elapsed().as_secs_f64() * 1000.0;
-            for mut loaded in loaded {
-                stats.source_bytes_read += loaded.stats.source_bytes_read;
-                stats.io_read_ms += loaded.stats.io_read_ms;
-                stats.source_hash_ms += loaded.stats.source_hash_ms;
-                stats.extraction_ms += loaded.stats.extraction_ms;
-                stats.lexical_prepare_ms += loaded.stats.lexical_prepare_ms;
-                stats.cache_read_ms += loaded.stats.cache_read_ms;
-                if !loaded.reused && loaded.document.is_none() {
-                    stats.skipped_files += 1;
-                    continue;
-                }
-                let text_bytes = loaded
-                    .document
-                    .as_ref()
-                    .unwrap_or_else(|| &self.documents[&loaded.relative])
-                    .text
-                    .len();
-                corpus_bytes += text_bytes;
-                anyhow::ensure!(
-                    corpus_bytes <= self.options.max_corpus_bytes,
-                    "Location exceeds the 256 MiB source text budget; choose a smaller location"
-                );
-                alive.insert(loaded.relative.clone());
-                if let Some(stamp) = loaded.stamp {
-                    self.observations
-                        .insert(loaded.relative.clone(), (stamp, loaded.observed.unwrap()));
-                } else {
-                    self.observations.remove(&loaded.relative);
-                }
-                if loaded.reused {
-                    stats.memory_cache_hits += 1;
-                    stats.metadata_cache_hits += usize::from(loaded.metadata_hit);
-                } else {
-                    let document = loaded.document.take().unwrap();
-                    if let Some(previous) = self.documents.remove(&loaded.relative) {
-                        self.remove_terms(&previous);
-                    }
-                    self.add_terms(&document);
-                    self.documents.insert(loaded.relative.clone(), document);
-                }
-                if let Some(model) = self
-                    .model
-                    .as_ref()
-                    .filter(|_| self.options.mode != RetrievalMode::Lexical)
-                {
-                    let document = self.documents.get_mut(&loaded.relative).unwrap();
-                    if document.passages.is_empty()
-                        || document
-                            .passages
-                            .iter()
-                            .any(|p| p.vector.len() != model.dimensions())
-                    {
-                        let started = Instant::now();
-                        let native = if loaded.reused && self.cache.is_some() {
-                            cache::prefetch(&document.path)
-                        } else {
-                            loaded.native
-                        };
-                        let cached = self.cache.as_mut().and_then(|cache| {
-                            cache.get_prefetched(&document.path, &document.source_hash, native)
-                        });
-                        stats.cache_read_ms += started.elapsed().as_secs_f64() * 1000.0;
-                        document.passages.clear();
-                        if let Some((rows, backend)) = cached {
-                            if rows.iter().all(|p| {
-                                p.end_byte <= document.text.len()
-                                    && document.text.is_char_boundary(p.start_byte)
-                                    && document.text.is_char_boundary(p.end_byte)
-                                    && p.end_line <= document.lines.len()
-                                    && p.vector.len() == model.dimensions()
-                            }) {
-                                document.passages = rows;
-                                if backend == "native" {
-                                    stats.native_cache_hits += 1;
-                                } else {
-                                    stats.application_cache_hits += 1;
-                                }
-                            }
-                        }
-                        if document.passages.is_empty() {
-                            document.passages =
-                                representatives(&document.text, self.options.profile);
-                            pending.push(loaded.relative.clone());
-                        }
+                        self.commit(loaded, &mut pass, &mut stats)?;
                     }
                 }
             }
+            reporter.send(
+                Stage::Reading,
+                done_files.min(total_files),
+                total_files,
+                done_work as f32 / total_work.max(1) as f32,
+            );
         }
+        stats.io_batch_wall_ms = reading.elapsed().as_secs_f64() * 1000.0;
+
+        // Only a complete refresh knows what no longer exists.
         let deleted = self
             .documents
             .keys()
-            .filter(|path| !alive.contains(*path))
+            .filter(|path| !pass.alive.contains(*path))
             .cloned()
             .collect::<Vec<_>>();
+        let pruned = reads > 0 || !deleted.is_empty();
         for path in deleted {
             let document = self.documents.remove(&path).unwrap();
             self.remove_terms(&document);
@@ -506,29 +675,72 @@ impl Engine {
                 cache.remove_fallback(&document.path);
             }
         }
-        // Batch bounded selected passages rather than silently limiting files.
-        if let Some(model) = &self.model {
-            let embedding_started = Instant::now();
+        self.rejected.retain(|relative, _| seen.contains(relative));
+        if pruned {
+            self.prune_text();
+        }
+        self.embed(&pass.pending, cancelled, &mut reporter, &mut stats)?;
+        stats.searchable_files = self.documents.len();
+        stats.source_text_bytes = pass.corpus_bytes as u64;
+        stats.refresh_ms = began.elapsed().as_secs_f64() * 1000.0;
+        Ok(stats)
+    }
+    /// Batch bounded selected passages rather than silently limiting files. Each group
+    /// of files is finished before the next, so cancelling loses no completed work.
+    fn embed(
+        &mut self,
+        pending: &[String],
+        cancelled: &dyn Fn() -> bool,
+        reporter: &mut Reporter,
+        stats: &mut Stats,
+    ) -> anyhow::Result<()> {
+        let Some(model) = &self.model else {
+            return Ok(());
+        };
+        let started = Instant::now();
+        let text_of = |document: &Document| -> usize {
+            document
+                .passages
+                .iter()
+                .map(|passage| passage.end_byte - passage.start_byte)
+                .sum()
+        };
+        let total: usize = pending
+            .iter()
+            .map(|path| text_of(&self.documents[path]))
+            .sum();
+        let mut done = 0;
+        let mut next = 0;
+        while next < pending.len() {
+            // Passages without vectors are selected again by the next refresh.
+            anyhow::ensure!(!cancelled(), CANCELLED);
             let mut locators = Vec::new();
             let mut inputs = Vec::new();
-            for path in &pending {
-                let document = &self.documents[path];
+            let first = next;
+            let group_start = done;
+            while next < pending.len()
+                && inputs.len() < 64
+                && done - group_start < EMBED_GROUP_BYTES
+            {
+                let document = &self.documents[&pending[next]];
                 for (i, passage) in document.passages.iter().enumerate() {
-                    locators.push((path.clone(), i));
+                    locators.push((&pending[next], i));
                     inputs.push(document.text[passage.start_byte..passage.end_byte].to_owned());
                 }
+                done += text_of(document);
+                next += 1;
             }
             for (batch, targets) in inputs.chunks(64).zip(locators.chunks(64)) {
                 let vectors = model.embed_batch_with_limit(batch, None)?;
                 stats.passages_embedded += vectors.len();
                 for ((path, index), vector) in targets.iter().zip(vectors) {
-                    self.documents.get_mut(path).unwrap().passages[*index].vector = vector;
+                    self.documents.get_mut(*path).unwrap().passages[*index].vector = vector;
                 }
             }
-            for path in pending {
+            for path in &pending[first..next] {
                 if let Some(cache) = &mut self.cache {
                     let cache_started = Instant::now();
-                    let doc = &self.documents[&path];
+                    let doc = &self.documents[path];
                     match cache.set(&doc.path, &doc.source_hash, &doc.passages) {
                         Ok(_) => stats.cache_writes += 1,
                         Err(error) => {
@@ -541,18 +753,161 @@ impl Engine {
                 // Serialize original model rows once, then reproduce precisely
                 // the same byte/scale decode for live JIT/resident vectors.
                 // A failed write still receives the same bounded RAM precision.
-                for passage in &mut self.documents.get_mut(&path).unwrap().passages {
+                for passage in &mut self.documents.get_mut(path).unwrap().passages {
                     quantize(&mut passage.vector);
                 }
             }
-            stats.document_embed_ms = (embedding_started.elapsed().as_secs_f64() * 1000.0
-                - stats.cache_write_ms)
-                .max(0.0);
+            reporter.send(
+                Stage::Embedding,
+                next,
+                pending.len(),
+                done as f32 / total.max(1) as f32,
+            );
         }
-        stats.searchable_files = self.documents.len();
-        stats.source_text_bytes = corpus_bytes as u64;
-        stats.refresh_ms = began.elapsed().as_secs_f64() * 1000.0;
-        Ok(stats)
+        stats.document_embed_ms =
+            (started.elapsed().as_secs_f64() * 1000.0 - stats.cache_write_ms).max(0.0);
+        Ok(())
+    }
+    /// Record one read result in the resident corpus.
+    fn commit(
+        &mut self,
+        mut loaded: LoadedSource,
+        pass: &mut Pass,
+        stats: &mut Stats,
+    ) -> anyhow::Result<()> {
+        stats.source_bytes_read += loaded.stats.source_bytes_read;
+        stats.io_read_ms += loaded.stats.io_read_ms;
+        stats.source_hash_ms += loaded.stats.source_hash_ms;
+        stats.extraction_ms += loaded.stats.extraction_ms;
+        stats.lexical_prepare_ms += loaded.stats.lexical_prepare_ms;
+        stats.cache_read_ms += loaded.stats.cache_read_ms;
+        if !loaded.reused && loaded.document.is_none() {
+            stats.skipped_files += 1;
+            // Remember what cannot be read, so unchanged files are not tried on every search.
+            match (loaded.stamp, loaded.observed) {
+                (Some(stamp), Some(observed)) => {
+                    self.rejected
+                        .insert(loaded.relative, (stamp, observed, loaded.raw_hash));
+                }
+                _ => {
+                    self.rejected.remove(&loaded.relative);
+                }
+            }
+            return Ok(());
+        }
+        self.rejected.remove(&loaded.relative);
+        let text_bytes = loaded
+            .document
+            .as_ref()
+            .unwrap_or_else(|| &self.documents[&loaded.relative])
+            .text
+            .len();
+        pass.corpus_bytes += text_bytes;
+        anyhow::ensure!(
+            pass.corpus_bytes <= self.options.max_corpus_bytes,
+            "Location exceeds the 256 MiB source text budget; choose a smaller location"
+        );
+        pass.alive.insert(loaded.relative.clone());
+        if let Some(stamp) = loaded.stamp {
+            self.observations
+                .insert(loaded.relative.clone(), (stamp, loaded.observed.unwrap()));
+        } else {
+            self.observations.remove(&loaded.relative);
+        }
+        if loaded.reused {
+            stats.memory_cache_hits += 1;
+            stats.metadata_cache_hits += usize::from(loaded.metadata_hit);
+        } else {
+            let document = loaded.document.take().unwrap();
+            if let Some(previous) = self.documents.remove(&loaded.relative) {
+                self.remove_terms(&previous);
+            }
+            self.add_terms(&document);
+            self.documents.insert(loaded.relative.clone(), document);
+        }
+        if let Some(model) = self
+            .model
+            .as_ref()
+            .filter(|_| self.options.mode != RetrievalMode::Lexical)
+        {
+            let document = self.documents.get_mut(&loaded.relative).unwrap();
+            if document.passages.is_empty()
+                || document
+                    .passages
+                    .iter()
+                    .any(|p| p.vector.len() != model.dimensions())
+            {
+                let started = Instant::now();
+                let native = if loaded.reused && self.cache.is_some() {
+                    cache::prefetch(&document.path)
+                } else {
+                    loaded.native
+                };
+                let cached = self.cache.as_mut().and_then(|cache| {
+                    cache.get_prefetched(&document.path, &document.source_hash, native)
+                });
+                stats.cache_read_ms += started.elapsed().as_secs_f64() * 1000.0;
+                document.passages.clear();
+                if let Some((rows, backend)) = cached {
+                    if rows.iter().all(|p| {
+                        p.end_byte <= document.text.len()
+                            && document.text.is_char_boundary(p.start_byte)
+                            && document.text.is_char_boundary(p.end_byte)
+                            && p.end_line <= document.lines.len()
+                            && p.vector.len() == model.dimensions()
+                    }) {
+                        document.passages = rows;
+                        if backend == "native" {
+                            stats.native_cache_hits += 1;
+                        } else {
+                            stats.application_cache_hits += 1;
+                        }
+                    }
+                }
+                if document.passages.is_empty() {
+                    document.passages = representatives(&document.text, self.options.profile);
+                    pass.pending.push(loaded.relative.clone());
+                }
+            }
+        }
+        Ok(())
+    }
+    fn relative(&self, path: &Path) -> String {
+        let display = if self.roots.len() == 1 {
+            path.strip_prefix(&self.roots[0]).unwrap()
+        } else {
+            path
+        };
+        display.to_string_lossy().replace('\\', "/")
+    }
+    fn text_directory(&self, path: &Path) -> Option<PathBuf> {
+        if !self.options.persist || !crate::extract::is_container(path) {
+            return None;
+        }
+        let root = self.roots.iter().find(|root| path.starts_with(root))?;
+        Some(cache::text::directory(
+            &ixos_runtime::config::cache_dir(),
+            root,
+        ))
+    }
+    /// Text is kept for what each location still contains, including files without any.
+    fn prune_text(&self) {
+        if !self.options.persist {
+            return;
+        }
+        for root in &self.roots {
+            let mut keep: HashSet<[u8; 32]> = self
+                .documents
+                .values()
+                .filter(|document| document.path.starts_with(root))
+                .map(|document| document.raw_hash)
+                .collect();
+            keep.extend(self.rejected.values().filter_map(|(.., hash)| *hash));
+            cache::text::prune(
+                &cache::text::directory(&ixos_runtime::config::cache_dir(), root),
+                &keep,
+            );
+        }
     }
     /// Files, extracted text bytes and lines held for one root.
     pub fn source_stats(&self, root: &Path) -> (usize, u64, usize) {
@@ -567,6 +922,10 @@ impl Engine {
                 lines + document.lines.len(),
             )
         })
+    }
+    /// Files found under one root by the last refresh, whether searchable or not.
+    pub fn discovered(&self, root: &Path) -> usize {
+        self.discovered.get(root).copied().unwrap_or(0)
     }
     /// Result formatting and mode can change without discarding resident sources.
     pub fn configure_search(
@@ -623,6 +982,15 @@ impl Engine {
         query: &str,
         location: Option<&Path>,
     ) -> anyhow::Result<(Vec<u8>, Stats)> {
+        self.search_location_with(query, location, &|| false, &mut |_| {})
+    }
+    pub fn search_location_with(
+        &mut self,
+        query: &str,
+        location: Option<&Path>,
+        cancelled: &dyn Fn() -> bool,
+        report: &mut dyn FnMut(Progress),
+    ) -> anyhow::Result<(Vec<u8>, Stats)> {
         let location = location.map(Path::canonicalize).transpose()?;
         anyhow::ensure!(
             location
@@ -635,7 +1003,7 @@ impl Engine {
             "Empty or oversized query"
         );
         let started = Instant::now();
-        let mut stats = self.refresh()?;
+        let mut stats = self.refresh_with(cancelled, report)?;
         let (corrected, corrections) = typo::correct(query, &self.term_documents);
         stats.query_corrections = corrections;
         let query = corrected.as_str();
@@ -929,6 +1297,140 @@ pub fn snippet_at(path: &str, lines: &[String], anchor: usize, context: usize) -
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn lexical(root: &Path) -> Engine {
+        let options = Options {
+            mode: RetrievalMode::Lexical,
+            persist: false,
+            ..Default::default()
+        };
+        Engine::new(root, None, options).unwrap()
+    }
+    /// Paths of the files a query finds, as a fresh search sees them.
+    fn found(engine: &mut Engine, query: &str) -> Vec<String> {
+        let (raw, _) = engine.search(query).unwrap();
+        let output: serde_json::Value = serde_json::from_slice(&raw).unwrap();
+        output["results"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|row| row["path"].as_str().unwrap().to_owned())
+            .collect()
+    }
+    fn age(path: &Path) {
+        let old = SystemTime::now() - Duration::from_secs(60);
+        std::fs::OpenOptions::new()
+            .write(true)
+            .open(path)
+            .unwrap()
+            .set_times(std::fs::FileTimes::new().set_modified(old))
+            .unwrap();
+    }
+    #[test]
+    fn renames_moves_edits_and_deletes_reach_the_next_search() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path();
+        std::fs::create_dir(root.join("notes")).unwrap();
+        std::fs::write(root.join("notes/first.txt"), "photosynthesis in leaves").unwrap();
+        std::fs::write(root.join("other.txt"), "unrelated words").unwrap();
+        let mut engine = lexical(root);
+        assert_eq!(found(&mut engine, "photosynthesis"), ["notes/first.txt"]);
+
+        std::fs::rename(root.join("notes/first.txt"), root.join("notes/renamed.txt")).unwrap();
+        assert_eq!(found(&mut engine, "photosynthesis"), ["notes/renamed.txt"]);
+
+        std::fs::create_dir(root.join("biology")).unwrap();
+        std::fs::rename(
+            root.join("notes/renamed.txt"),
+            root.join("biology/moved.txt"),
+        )
+        .unwrap();
+        assert_eq!(found(&mut engine, "photosynthesis"), ["biology/moved.txt"]);
+
+        std::fs::rename(root.join("biology"), root.join("science")).unwrap();
+        assert_eq!(found(&mut engine, "photosynthesis"), ["science/moved.txt"]);
+
+        std::fs::write(root.join("science/moved.txt"), "mitochondria").unwrap();
+        assert!(found(&mut engine, "photosynthesis").is_empty());
+        assert_eq!(found(&mut engine, "mitochondria"), ["science/moved.txt"]);
+
+        std::fs::remove_dir_all(root.join("science")).unwrap();
+        assert!(found(&mut engine, "mitochondria").is_empty());
+        assert_eq!(engine.refresh().unwrap().searchable_files, 1);
+    }
+    #[test]
+    fn unreadable_files_are_not_read_again_until_they_change() {
+        let dir = tempfile::tempdir().unwrap();
+        let broken = dir.path().join("broken.pdf");
+        std::fs::write(&broken, b"%PDF not really").unwrap();
+        age(&broken);
+        let mut engine = lexical(dir.path());
+        let first = engine.refresh().unwrap();
+        assert_eq!(first.skipped_files, 1);
+        assert!(first.source_bytes_read > 0);
+        let second = engine.refresh().unwrap();
+        assert_eq!(second.skipped_files, 1);
+        assert_eq!(second.source_bytes_read, 0);
+        std::fs::write(&broken, b"%PDF still broken").unwrap();
+        assert!(engine.refresh().unwrap().source_bytes_read > 0);
+    }
+    #[test]
+    fn large_and_binary_files_are_passed_over_without_reading_them() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut binary = vec![0u8; 64 * 1024];
+        binary[0] = 1;
+        std::fs::write(dir.path().join("program.bin"), &binary).unwrap();
+        let oversized = std::fs::File::create(dir.path().join("data.json")).unwrap();
+        oversized.set_len(32 * 1024 * 1024).unwrap();
+        let stats = lexical(dir.path()).refresh().unwrap();
+        assert_eq!(stats.skipped_files, 2);
+        assert_eq!(stats.source_bytes_read, SNIFF_BYTES);
+    }
+    #[test]
+    fn a_cancelled_refresh_keeps_its_work_and_the_next_one_continues() {
+        let dir = tempfile::tempdir().unwrap();
+        for index in 0..200 {
+            std::fs::write(dir.path().join(format!("{index}.txt")), "shared words").unwrap();
+        }
+        let mut engine = lexical(dir.path());
+        let checks = std::cell::Cell::new(0);
+        // The walk and the plan check once per file; stop as reading begins.
+        let cancelled = || {
+            checks.set(checks.get() + 1);
+            checks.get() > 410
+        };
+        let error = engine.refresh_with(&cancelled, &mut |_| {}).unwrap_err();
+        assert_eq!(error.to_string(), CANCELLED);
+        let stats = engine.refresh().unwrap();
+        assert_eq!(stats.searchable_files, 200);
+
+        // Files already searchable survive a cancelled refresh that never finished.
+        let error = engine.refresh_with(&|| true, &mut |_| {}).unwrap_err();
+        assert_eq!(error.to_string(), CANCELLED);
+        assert_eq!(engine.documents.len(), 200);
+    }
+    #[test]
+    fn long_reads_report_progress_that_only_moves_forward() {
+        let dir = tempfile::tempdir().unwrap();
+        for index in 0..4000 {
+            std::fs::write(dir.path().join(format!("{index}.txt")), "shared words").unwrap();
+        }
+        let mut engine = lexical(dir.path());
+        let mut seen = Vec::new();
+        let started = Instant::now();
+        engine
+            .refresh_with(&|| false, &mut |progress| seen.push(progress))
+            .unwrap();
+        if started.elapsed() > Duration::from_millis(600) {
+            assert!(!seen.is_empty());
+        }
+        let fractions: Vec<f32> = seen
+            .iter()
+            .filter(|progress| progress.stage == Stage::Reading)
+            .map(|progress| progress.fraction)
+            .collect();
+        assert!(fractions.windows(2).all(|pair| pair[0] <= pair[1]));
+        assert!(seen.iter().all(|p| p.fraction <= 1.0 && p.done <= 4000));
+    }
     #[test]
     fn resident_search_refreshes_an_in_place_edit_with_restored_mtime() {
         let dir = tempfile::tempdir().unwrap();

@@ -1,7 +1,6 @@
 //! Lightweight parsers for text, PDF and Office sources.
 
 use crate::cloud::should_skip_cloud_file;
-use regex::Regex;
 use std::fs::File;
 use std::io::{Cursor, Read};
 use std::path::Path;
@@ -108,16 +107,17 @@ pub fn extract_text_from_bytes(path: &Path, bytes: &[u8], max_chars: usize) -> O
         .unwrap_or("")
         .to_ascii_lowercase();
     if matches!(ext.as_str(), "docx" | "xlsx" | "pptx") {
-        // Reject expanded containers before a parser allocates their contents.
-        // Limits are honest failures, never successful partial XML extraction.
+        // Reject expanded XML before a parser allocates it. Limits are honest
+        // failures, never partial extraction. Images and media are never expanded.
         let mut archive = ZipArchive::new(Cursor::new(bytes)).ok()?;
         let mut expanded = 0u64;
         for i in 0..archive.len() {
             let entry = archive.by_index(i).ok()?;
+            if !entry.name().ends_with(".xml") {
+                continue;
+            }
             expanded = expanded.checked_add(entry.size())?;
-            if expanded > 32 * 1024 * 1024
-                || entry.name().ends_with(".xml") && entry.size() > 8 * 1024 * 1024
-            {
+            if expanded > 32 * 1024 * 1024 || entry.size() > 8 * 1024 * 1024 {
                 return None;
             }
         }
@@ -169,47 +169,16 @@ pub(crate) fn decode_text(bytes: &[u8]) -> Option<String> {
 }
 
 fn extract_pdf(bytes: &[u8]) -> Option<String> {
-    if let Ok(text) = pdf_extract::extract_text_from_mem(bytes) {
-        if !text.trim().is_empty() {
-            return Some(text);
-        }
-    }
-
-    if let Ok(doc) = lopdf::Document::load_mem(bytes) {
-        let mut pages: Vec<u32> = doc.get_pages().keys().copied().collect();
-        pages.sort_unstable();
-        if let Ok(fallback) = doc.extract_text(&pages) {
-            if !fallback.trim().is_empty() {
-                return Some(fallback);
-            }
-        }
-    }
-
-    extract_pdf_literal_text(bytes)
-}
-
-fn extract_pdf_literal_text(bytes: &[u8]) -> Option<String> {
-    let content = String::from_utf8_lossy(bytes);
-    let pattern = Regex::new(r"\(([^()]*)\)\s*Tj").ok()?;
+    let document = pdf_oxide::PdfDocument::from_bytes(bytes.to_vec()).ok()?;
     let mut out = String::new();
-    let mut last_space = true;
-
-    for capture in pattern.captures_iter(&content) {
-        let token = capture.get(1)?.as_str();
-        let decoded = token
-            .replace("\\\\", "\\")
-            .replace("\\(", "(")
-            .replace("\\)", ")");
-        push_clean_text(&mut out, &decoded, &mut last_space);
-        out.push('\n');
-        last_space = true;
+    for page in 0..document.page_count().ok()? {
+        // A damaged page does not make the rest of the document unsearchable.
+        if let Ok(text) = document.extract_text(page) {
+            out.push_str(&text);
+            out.push('\n');
+        }
     }
-
-    if out.trim().is_empty() {
-        None
-    } else {
-        Some(out)
-    }
+    Some(out)
 }
 
 fn extract_docx(bytes: &[u8]) -> Option<String> {
@@ -371,6 +340,13 @@ fn truncate_chars(text: &str, max_chars: usize) -> String {
 
 fn is_heavy_ext(ext: &str) -> bool {
     matches!(ext, "pdf" | "docx" | "xlsx" | "xls" | "pptx")
+}
+
+/// Formats whose text must be parsed out of a much larger container.
+pub(crate) fn is_container(path: &Path) -> bool {
+    path.extension()
+        .and_then(|ext| ext.to_str())
+        .is_some_and(|ext| is_heavy_ext(&ext.to_ascii_lowercase()))
 }
 
 #[cfg(test)]

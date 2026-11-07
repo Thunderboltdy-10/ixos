@@ -53,7 +53,7 @@ These are recorded baseline file-retrieval results, with a 6,000-byte response c
 
 ## Limitations
 
-- Search accepts at most 16 MiB per file and 256 MiB of combined extracted source text per engine.
+- Search accepts at most 16 MiB per plain-text file, 512 MiB per PDF or Office file, and 256 MiB of combined extracted source text per engine.
 - Extraction supports text, PDF and Office files; it has no OCR for scanned pages.
 - Ignore rules, symlinks and unhydrated cloud placeholders can exclude sources.
 - The 6,000-byte response ceiling can shorten or omit snippets and reduce returned files.

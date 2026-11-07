@@ -34,7 +34,12 @@ if [[ ${1:-} == --launch ]]; then
 fi
 
 task_package=$(realpath "${1:?Usage: test-desktop-install-linux.sh package.deb}")
-dpkg -i "$task_package"
+task_install=$(dpkg -i "$task_package" 2>&1) || { echo "$task_install"; exit 1; }
+echo "$task_install"
+if grep -q 'finish setup' <<<"$task_install"; then
+  echo 'Package setup did not finish during installation' >&2
+  exit 1
+fi
 task_entry=/usr/share/applications/Ixos.desktop
 test -x /usr/bin/Ixos
 test -x /usr/bin/ixos-engine

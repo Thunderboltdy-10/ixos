@@ -6,6 +6,7 @@ if [ -z "$task_user" ] && [ -n "${PKEXEC_UID:-}" ]; then
   task_user=$(getent passwd "$PKEXEC_UID" | cut -d: -f1)
 fi
 if [ -n "$task_user" ] && [ "$task_user" != root ]; then
-  runuser -u "$task_user" -- /usr/bin/ixos-engine setup --install --skip-models \n    || echo "Ixos will finish setup when it is first opened." >&2
+  runuser -u "$task_user" -- /usr/bin/ixos-engine setup --install --skip-models \
+    || echo "Ixos will finish setup when it is first opened." >&2
 fi
 # Direct root/package-manager installs without a user finish setup on first launch.

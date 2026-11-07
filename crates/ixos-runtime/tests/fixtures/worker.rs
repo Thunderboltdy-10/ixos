@@ -21,8 +21,8 @@ fn main() {
         let identifier=id(&line);
         match mode.as_str() {
             "progress" if line.contains("\"op\":\"refresh\"")=>{
-                for _ in 0..5 {
-                    std::thread::sleep(std::time::Duration::from_millis(60));
+                for _ in 0..30 {
+                    std::thread::sleep(std::time::Duration::from_millis(50));
                     writeln!(out,r#"{{"progress":{{"stage":"reading","done":1,"total":2,"fraction":0.5}}}}"#).unwrap();
                     out.flush().unwrap();
                 }

@@ -550,12 +550,12 @@ mod tests {
             assert_eq!(progress.done, 1);
             counted.fetch_add(1, Ordering::AcqRel);
         });
-        // Five frames 60 ms apart outlast a 150 ms limit that any one gap stays within.
+        // Frames 50 ms apart run for 1.5 s, past a limit no gap comes near on a slow machine.
         let value = client
-            .request("refresh", json!({}), Duration::from_millis(150))
+            .request("refresh", json!({}), Duration::from_secs(1))
             .unwrap();
         assert_eq!(value["ok"], true);
-        assert_eq!(seen.load(Ordering::Acquire), 5);
+        assert_eq!(seen.load(Ordering::Acquire), 30);
     }
     #[test]
     fn a_worker_that_answers_cancel_stays_usable() {

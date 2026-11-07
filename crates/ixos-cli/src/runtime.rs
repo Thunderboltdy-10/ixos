@@ -144,7 +144,9 @@ pub fn serve(config: Config) -> anyhow::Result<()> {
             (frame.len() as u64) < ixos_runtime::MAX_FRAME_BYTES,
             "Runtime response exceeds frame limit"
         );
-        let mut output = output.lock().map_err(|_| anyhow::anyhow!("Output failed"))?;
+        let mut output = output
+            .lock()
+            .map_err(|_| anyhow::anyhow!("Output failed"))?;
         output.write_all(&frame)?;
         output.write_all(b"\n")?;
         output.flush()?;

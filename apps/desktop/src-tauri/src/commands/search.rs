@@ -95,11 +95,15 @@ pub fn warm(app: tauri::AppHandle) {
 }
 /// Catch up with changed files without telling the windows, unless a read is already showing.
 pub fn refresh_quietly(app: tauri::AppHandle) {
-    let settled = app.state::<AppState>().locations.lock().is_ok_and(|locations| {
-        locations
-            .iter()
-            .all(|location| matches!(location.stage.as_str(), "ready" | "error"))
-    });
+    let settled = app
+        .state::<AppState>()
+        .locations
+        .lock()
+        .is_ok_and(|locations| {
+            locations
+                .iter()
+                .all(|location| matches!(location.stage.as_str(), "ready" | "error"))
+        });
     if settled {
         start_warming(app, Settings::load(), true);
     }

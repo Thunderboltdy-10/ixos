@@ -210,6 +210,7 @@ impl Session {
         frame.push(b'\n');
         let mut deadline = Instant::now() + timeout;
         let mut give_up = None;
+        let mut cancel_sent = false;
         let response = (|| {
             self.input
                 .try_send(frame)
@@ -219,14 +220,17 @@ impl Session {
                     .cancellation
                     .as_ref()
                     .is_some_and(Cancellation::cancelled);
-                if cancelled && give_up.is_none() {
+                if cancelled {
                     anyhow::ensure!(self.live, CANCELLED);
-                    let mut cancel = serde_json::to_vec(
-                        &json!({"id":0,"op":"cancel","params":{"id":self.id}}),
-                    )?;
-                    cancel.push(b'\n');
-                    let _ = self.input.try_send(cancel);
-                    give_up = Some(Instant::now() + CANCEL_GRACE);
+                    give_up.get_or_insert_with(|| Instant::now() + CANCEL_GRACE);
+                    // The queue may still hold the request itself, so keep offering this.
+                    if !cancel_sent {
+                        let mut cancel = serde_json::to_vec(
+                            &json!({"id":0,"op":"cancel","params":{"id":self.id}}),
+                        )?;
+                        cancel.push(b'\n');
+                        cancel_sent = self.input.try_send(cancel).is_ok();
+                    }
                 }
                 anyhow::ensure!(
                     give_up.is_none_or(|give_up| Instant::now() < give_up),

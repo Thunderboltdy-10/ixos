@@ -7,7 +7,15 @@ import { Records } from "@/components/Records";
 import { Speed } from "@/components/Speed";
 import { Reveal } from "@/components/Stage";
 import { Window } from "@/components/Window";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Ixos — Open-Source Local AI & Semantic File Search",
+  description:
+    "Find files and information on your computer by meaning, not just filename. Ixos is a fast, private, open-source semantic search engine for your desktop.",
+  alternates: { canonical: "https://ixos.dev/" },
+};
 
 export default function Home() {
   return (

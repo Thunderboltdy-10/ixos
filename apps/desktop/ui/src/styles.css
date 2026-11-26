@@ -21,6 +21,10 @@ html[data-window="overlay"],
 html[data-window="overlay"] body {
   background: transparent;
 }
+html[data-window="overlay"] #root {
+  overflow: hidden;
+  overflow: clip;
+}
 button {
   font: inherit;
   color: inherit;
@@ -278,9 +282,91 @@ input:focus-visible {
   color: var(--ix-text-2);
 }
 .first-run .first-run-hint {
-  margin: 18px 0 0;
+  margin: 22px 0 0;
   color: var(--ix-text-3);
   font-size: 13px;
+}
+.first-run-folders {
+  width: min(520px, 100%);
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--ix-line);
+  border-radius: 10px;
+  overflow: hidden;
+  text-align: left;
+}
+.first-run-folders li + li {
+  border-top: 1px solid var(--ix-line-soft);
+}
+.first-run-folder {
+  display: grid;
+  grid-template-columns: auto auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 16px;
+  cursor: pointer;
+}
+.first-run-folder:hover {
+  background: var(--ix-raised);
+}
+.first-run-folder:has(input:checked) {
+  background: var(--ix-yellow-wash);
+}
+.first-run-folder input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--ix-yellow);
+}
+.first-run-icon {
+  color: var(--ix-faint);
+}
+.first-run-folder:has(input:checked) .first-run-icon {
+  color: var(--ix-yellow);
+}
+.first-run-name {
+  font-weight: 600;
+}
+.first-run-path {
+  overflow: hidden;
+  color: var(--ix-text-3);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.first-run-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.shortcut-keys {
+  display: inline-flex;
+  gap: 3px;
+  margin: 0 2px;
+  vertical-align: middle;
+}
+.shortcut-keys .ix-kbd {
+  height: 20px;
+  font-size: 11.5px;
+}
+.shortcut-try {
+  margin: 0 0 18px;
+  padding: 0 14px 0 50px;
+  color: var(--ix-text-2);
+}
+.ix-qs-action {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ix-yellow);
+  font-weight: 600;
+  cursor: pointer;
+}
+.ix-qs-action:hover {
+  color: var(--ix-yellow-hover);
 }
 
 /* Settings */
@@ -480,22 +566,72 @@ input:focus-visible {
 
 /* Quick search overlay */
 .overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(10, 10, 9, 0.3);
+  max-height: 640px;
 }
 .overlay-panel {
-  position: absolute;
-  top: 18vh;
-  left: 50%;
-  width: 680px;
-  transform: translateX(-50%);
-  animation: overlay-in 160ms var(--ix-ease);
+  max-height: inherit;
 }
-@keyframes overlay-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -6px);
+.overlay-panel .ix-qs {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, auto) auto;
+  max-height: inherit;
+  overflow: hidden;
+  background: var(--ix-panel);
+  border: 1px solid var(--ix-line);
+  border-radius: 12px;
+}
+.overlay-panel .ix-qs-panel {
+  display: contents;
+}
+.overlay-panel .ix-qs-panel > * {
+  grid-column: 1 / -1;
+}
+.overlay-panel .ix-qs-scope {
+  max-width: 35%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.overlay[data-compact="true"] .ix-qs-panel > :not(.ix-qs-bar),
+.overlay[data-compact="true"] .ix-side,
+.overlay-panel .ix-side[data-open="false"] {
+  display: none;
+}
+.overlay[data-preview="true"] .ix-rows {
+  grid-column: 1;
+}
+.overlay-panel :is(.ix-rows, .ix-side) {
+  overflow: auto;
+}
+.overlay-panel .ix-side {
+  grid-area: 3 / 2;
+  position: static;
+  width: auto;
+  border: 0;
+  border-left: 1px solid var(--ix-line);
+  border-radius: 0;
+  box-shadow: none;
+}
+.overlay-panel .ix-side-head > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.overlay-panel .ix-side-head > span:last-child {
+  flex-shrink: 0;
+}
+.overlay-panel .ix-side .ix-code {
+  width: max-content;
+  min-width: 100%;
+  overflow: visible;
+}
+.overlay-panel .ix-qs-foot {
+  gap: 4px 14px;
+}
+
+@media (max-width: 560px) {
+  .overlay[data-preview="true"] .ix-score {
+    display: none;
   }
 }
 
@@ -503,9 +639,6 @@ input:focus-visible {
   .search-split,
   .search-split > .ix-preview,
   .search-home > .recent {
-    animation: none;
-  }
-  .overlay-panel {
     animation: none;
   }
   .toggle,

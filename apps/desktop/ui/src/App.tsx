@@ -22,7 +22,7 @@ export function App() {
     };
   }, []);
 
-  if (overlay) return config ? <Overlay config={config} /> : null;
+  if (overlay) return config ? <Overlay config={config} save={save} /> : null;
   return (
     <div className="app">
       <TitleBar

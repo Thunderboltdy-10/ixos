@@ -3,17 +3,20 @@ import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect, useMemo, useRef, useState } from "react";
 import logo from "../assets/ixos-icon.png";
-import { hideOverlay, openFile, readPreview, showInFolder, type Config } from "../lib/api";
+import { addFolders, hideOverlay, openFile, readPreview, resizeOverlay, showInFolder, showOverlay, type Config } from "../lib/api";
 import { folderName } from "../lib/format";
 import { snippetLines, toHits } from "../lib/hits";
 import { ReadingNote } from "../lib/ReadingNote";
+import { markQuickSearchTried } from "../lib/ShortcutKeys";
 import { useReading } from "../lib/useReading";
 import { progressOf, useSearch } from "../lib/useSearch";
 
-export function Overlay({ config }: { config: Config }) {
+export function Overlay({ config, save }: { config: Config; save: (config: Config) => void }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const [passage, setPassage] = useState<Passage | null>(null);
+  const [maxHeight, setMaxHeight] = useState<number>();
+  const panel = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
   const folders = config.search.locations;
   const state = useSearch(query, null);
@@ -29,7 +32,11 @@ export function Overlay({ config }: { config: Config }) {
       input.current?.select();
     };
     focus();
-    const shown = listen("shortcut-triggered", focus);
+    const shown = listen<number>("shortcut-triggered", ({ payload }) => {
+      setMaxHeight(payload);
+      markQuickSearchTried();
+      focus();
+    });
     const blurred = getCurrentWindow().onFocusChanged(({ payload }) => {
       if (!payload) hideOverlay();
     });
@@ -37,6 +44,16 @@ export function Overlay({ config }: { config: Config }) {
       shown.then((stop) => stop());
       blurred.then((stop) => stop());
     };
+  }, []);
+
+  useEffect(() => {
+    const element = panel.current;
+    if (!element) return;
+    const resize = new ResizeObserver(() => {
+      resizeOverlay(Math.ceil(element.getBoundingClientRect().height)).catch(console.error);
+    });
+    resize.observe(element);
+    return () => resize.disconnect();
   }, []);
 
   useEffect(() => {
@@ -70,12 +87,25 @@ export function Overlay({ config }: { config: Config }) {
     (reveal ? showInFolder : openFile)(result.path).then(() => hideOverlay(), () => {});
   };
 
-  const scope = folders.length === 1 ? folderName(folders[0]) : "All folders";
+  // The picker opens below an always-on-top panel, so step aside and come back after.
+  const chooseFolders = async () => {
+    await hideOverlay();
+    const picked = await addFolders(config, save).catch(() => []);
+    if (picked.length) await showOverlay();
+  };
+
+  const scope = folders.length === 1 ? folderName(folders[0]) : folders.length ? "All folders" : "";
   const status =
     state.stage === "done" && state.elapsedMs !== null ? `${Math.round(state.elapsedMs)} ms` : state.stage === "meaning" ? "Adding meaning…" : "";
 
   return (
-    <div className="overlay" onMouseDown={(event) => event.target === event.currentTarget && hideOverlay()}>
+    <div
+      className="overlay"
+      ref={panel}
+      style={{ maxHeight }}
+      data-compact={folders.length > 0 && !query.trim() && !live}
+      data-preview={Boolean(passage) && active < hits.length}
+    >
       <div className="overlay-panel">
         <QuickSearch
           logo={logo}
@@ -92,12 +122,15 @@ export function Overlay({ config }: { config: Config }) {
                 if (event.key === "ArrowDown" || event.key === "ArrowUp") {
                   event.preventDefault();
                   const step = event.key === "ArrowDown" ? 1 : -1;
-                  setActive((index) => Math.max(0, Math.min(hits.length - 1, index + step)));
+                  const next = Math.max(0, Math.min(hits.length - 1, active + step));
+                  setActive(next);
+                  panel.current?.querySelectorAll(".ix-row")[next]?.scrollIntoView({ block: "nearest" });
                 } else if (event.key === "Enter") {
-                  open(active, event.ctrlKey || event.metaKey);
+                  if (!folders.length) chooseFolders();
+                  else open(active, event.ctrlKey || event.metaKey);
                 } else if (event.key === "Escape") {
-                  if (query) setQuery("");
-                  else hideOverlay();
+                  setQuery("");
+                  hideOverlay();
                 }
               }}
             />
@@ -112,8 +145,14 @@ export function Overlay({ config }: { config: Config }) {
           onOpen={(index) => open(index)}
           passage={passage}
           empty={
-            !folders.length
-              ? "Add a folder in Ixos first."
+            !folders.length ? (
+              <>
+                Ixos has no folders to search yet.{" "}
+                <button className="ix-qs-action" onClick={chooseFolders}>
+                  Choose folders
+                </button>
+              </>
+            )
               : state.stage === "error"
                 ? state.message
                 : query.trim() && state.stage === "done"

@@ -1,7 +1,10 @@
 //! The quick search shortcut on Windows. A low-level keyboard hook installed after
 //! other apps sees key presses before them, so a combination another app also
 //! claims, such as Ctrl+Space, still reaches Ixos.
-use std::sync::{Mutex, Once};
+use std::{
+    cell::Cell,
+    sync::{Mutex, Once},
+};
 use tauri::AppHandle;
 use tauri_plugin_global_shortcut::{Code, Modifiers, Shortcut};
 use windows_sys::Win32::{
@@ -13,7 +16,7 @@ use windows_sys::Win32::{
         },
         WindowsAndMessaging::{
             CallNextHookEx, GetMessageW, SetWindowsHookExW, HC_ACTION, KBDLLHOOKSTRUCT,
-            WH_KEYBOARD_LL, WM_KEYDOWN, WM_SYSKEYDOWN,
+            WH_KEYBOARD_LL, WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN, WM_SYSKEYUP,
         },
     },
 };
@@ -26,6 +29,10 @@ struct Listening {
 
 static LISTENING: Mutex<Option<Listening>> = Mutex::new(None);
 static START: Once = Once::new();
+
+thread_local! {
+    static CAPTURED_KEY: Cell<Option<u32>> = const { Cell::new(None) };
+}
 
 /// Opens quick search on `shortcut`, replacing the one before.
 pub fn listen(app: &AppHandle, shortcut: Shortcut) -> Result<(), String> {
@@ -111,16 +118,30 @@ fn held() -> Modifiers {
     modifiers
 }
 
-/// Windows drops a hook that takes too long, so the overlay opens on another thread.
 unsafe extern "system" fn on_key(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
-    if code == HC_ACTION as i32 && matches!(wparam as u32, WM_KEYDOWN | WM_SYSKEYDOWN) {
+    if code == HC_ACTION as i32 {
         let event = &*(lparam as *const KBDLLHOOKSTRUCT);
-        if let Ok(listening) = LISTENING.try_lock() {
-            if let Some(listening) = listening.as_ref().filter(|listening| {
-                event.vkCode == listening.key && held() == listening.shortcut.mods
-            }) {
-                let app = listening.app.clone();
-                std::thread::spawn(move || crate::commands::system::show_overlay(app));
+        // One toggle per press. Swallow repeats and the matching release even if
+        // the modifiers were released first.
+        if CAPTURED_KEY.get() == Some(event.vkCode) {
+            if matches!(wparam as u32, WM_KEYUP | WM_SYSKEYUP) {
+                CAPTURED_KEY.set(None);
+            }
+            return 1;
+        }
+        if matches!(wparam as u32, WM_KEYDOWN | WM_SYSKEYDOWN) {
+            let app = LISTENING.try_lock().ok().and_then(|listening| {
+                listening
+                    .as_ref()
+                    .filter(|listening| {
+                        event.vkCode == listening.key && held() == listening.shortcut.mods
+                    })
+                    .map(|listening| listening.app.clone())
+            });
+            if let Some(app) = app {
+                CAPTURED_KEY.set(Some(event.vkCode));
+                // Schedule the toggle and return immediately to the keyboard hook.
+                let _ = crate::commands::system::show_overlay(app);
                 return 1;
             }
         }

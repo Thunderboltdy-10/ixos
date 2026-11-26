@@ -1,7 +1,7 @@
 import { CheckIcon, CopyIcon, FolderIcon } from "@ixos/ui";
 import { useEffect, useState, type ReactNode } from "react";
 import {
-  addFolder,
+  addFolders,
   cacheClear,
   cacheStats,
   clearRecent,
@@ -70,8 +70,8 @@ export function SettingsView({ config, locations, models, save }: SettingsViewPr
             />
           ))}
           <div className="row">
-            <button className="ix-button" onClick={() => addFolder()}>
-              Add a folder
+            <button className="ix-button" onClick={() => addFolders(config, save)}>
+              Add folders
             </button>
           </div>
         </Section>

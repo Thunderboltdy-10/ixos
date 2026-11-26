@@ -105,7 +105,14 @@ export const readPreview = (path: string, start: number, lines: number) =>
 export const getConfig = () => invoke<Config>("get_config");
 export const updateConfig = (config: Config) => invoke<void>("update_config", { config });
 export const getLocationStatus = () => invoke<LocationStatus[]>("get_location_status");
-export const addFolder = () => invoke<string | null>("select_directory");
+export const pickFolders = () => invoke<string[]>("pick_folders");
+/** Asks for folders and adds the new ones. Resolves to the folders chosen. */
+export async function addFolders(config: Config, save: (config: Config) => unknown) {
+  const picked = await pickFolders();
+  const locations = [...new Set([...config.search.locations, ...picked])];
+  if (locations.length > config.search.locations.length) await save({ ...config, search: { ...config.search, locations } });
+  return picked;
+}
 export const suggestedFolders = () => invoke<string[]>("suggested_locations");
 
 export const getModelStatus = () => invoke<ModelStatus[]>("get_model_status");
@@ -118,7 +125,9 @@ export const getUsage = () => invoke<Usage>("get_usage");
 export const openFile = (path: string) => invoke<void>("open_file", { path });
 export const showInFolder = (path: string) => invoke<void>("reveal_in_explorer", { path });
 export const openLink = (url: string) => invoke<void>("open_link", { url });
+export const showOverlay = () => invoke<void>("show_overlay");
 export const hideOverlay = () => invoke<void>("hide_overlay");
+export const resizeOverlay = (height: number) => invoke<void>("resize_overlay", { height });
 
 export const getShortcut = () => invoke<ShortcutConfig>("get_shortcut_config");
 export const setShortcut = (config: ShortcutConfig) => invoke<void>("set_shortcut_config", { config });

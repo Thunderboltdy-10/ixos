@@ -43,9 +43,9 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            #[cfg(windows)]
-            if let Some(overlay) = tauri::Manager::get_webview_window(app, "overlay") {
-                commands::system::draw_no_title_bar(&overlay);
+            #[cfg(any(windows, target_os = "macos"))]
+            if let Some(overlay) = app.get_webview_window("overlay") {
+                commands::system::configure_overlay(&overlay)?;
             }
             tray::setup_tray(app)?;
             commands::shortcut::setup_global_shortcut(app)?;
@@ -83,11 +83,12 @@ pub fn run() {
             commands::storage::cache_stats,
             commands::storage::cache_clear,
             commands::system::show_overlay,
+            commands::system::resize_overlay,
             commands::system::hide_overlay,
             commands::system::open_file,
             commands::system::reveal_in_explorer,
             commands::system::open_link,
-            commands::system::select_directory,
+            commands::system::pick_folders,
             commands::system::suggested_locations,
             commands::system::doctor,
             commands::system::get_model_status,

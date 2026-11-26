@@ -10,7 +10,7 @@
 4. Reuse matching cache records or embed missing passages on CPU. The encoded loader decodes vocabulary rows as needed, pools in float32 and normalizes vectors.
 5. Rank files, select a query-time snippet and serialize a bounded response.
 
-Code text is split into passages of up to 1,800 Unicode characters, preferring nearby line or word boundaries. Up to four passages are selected for shorter sources and eight for longer sources, spaced from the introduction to the end. Documents use one normalized whole-text vector. Search limits are 16 MiB per plain-text file, 512 MiB per PDF or Office file, and 256 MiB of combined extracted text; exceeding the combined limit returns an error.
+Code text is split into passages of up to 1,800 Unicode characters, preferring nearby line or word boundaries. Up to four passages are selected for shorter sources and eight for longer sources, spaced from the introduction to the end. Documents use one normalized whole-text vector. Search limits are 16 MiB per plain-text file, 512 MiB per PDF or Office file, and 256 MiB of combined extracted text, which stays in memory. Files past the combined limit are skipped and counted, and the rest stay searchable.
 
 ## Records
 

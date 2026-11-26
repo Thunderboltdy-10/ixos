@@ -17,6 +17,7 @@
     "frontendDist": "../ui/dist"
   },
   "app": {
+    "macOSPrivateApi": true,
     "withGlobalTauri": true,
     "windows": [
       {
@@ -39,11 +40,14 @@
       {
         "label": "overlay",
         "title": "Ixos quick search",
-        "fullscreen": true,
+        "width": 680,
+        "height": 66,
         "visible": false,
         "focus": false,
         "decorations": false,
         "resizable": false,
+        "minimizable": false,
+        "maximizable": false,
         "skipTaskbar": true,
         "transparent": true,
         "alwaysOnTop": true,

@@ -1,10 +1,11 @@
-import { CACHE_CHOICES, HistoryIcon, PROFILE_CHOICES, Picker, QueryBar, ResultRow, useFlip } from "@ixos/ui";
+import { CACHE_CHOICES, FolderIcon, HistoryIcon, PROFILE_CHOICES, Picker, QueryBar, ResultRow, useFlip } from "@ixos/ui";
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import {
-  addFolder,
+  addFolders,
   clearRecent,
   listRecent,
   openFile,
+  pickFolders,
   showInFolder,
   suggestedFolders,
   type Config,
@@ -18,6 +19,7 @@ import { toHits } from "../lib/hits";
 import { useReading } from "../lib/useReading";
 import { progressOf, useSearch, type SearchState } from "../lib/useSearch";
 import { ReadingNote } from "../lib/ReadingNote";
+import { ShortcutKeys, useQuickSearchTried } from "../lib/ShortcutKeys";
 import { Preview } from "./Preview";
 
 const WIDTH_KEY = "ixos.resultsWidth";
@@ -49,6 +51,7 @@ export function SearchView({ config, locations, save }: SearchViewProps) {
   const folders = config.search.locations;
   const state = useSearch(query, folder || null);
   const live = useReading();
+  const tried = useQuickSearchTried();
   const hits = useMemo(() => toHits(state, folders), [state, folders]);
   useFlip(list, hits.map((hit) => hit.key).join("\n"));
 
@@ -59,7 +62,7 @@ export function SearchView({ config, locations, save }: SearchViewProps) {
   useEffect(() => {
     document.getElementById(`result-${active}`)?.scrollIntoView({ block: "nearest" });
   }, [active]);
-  if (!folders.length) return <FirstRun onAdd={addFolder} />;
+  if (!folders.length) return <FirstRun config={config} save={save} />;
 
   const resize = (percent: number) => {
     const next = Math.max(22, Math.min(70, percent));
@@ -133,7 +136,7 @@ export function SearchView({ config, locations, save }: SearchViewProps) {
                 ...folders.map((path) => ({ value: path, label: folderName(path), detail: path })),
               ]}
               onChange={setFolder}
-              action={{ label: "Add a folder", run: () => addFolder() }}
+              action={{ label: "Add folders", run: () => addFolders(config, save) }}
             />
             <span className="ix-picker-rule" />
             <Picker<Profile | "auto">
@@ -165,6 +168,11 @@ export function SearchView({ config, locations, save }: SearchViewProps) {
 
       {!query.trim() ? (
         <div id="results" className="search-home">
+          {!tried && (
+            <p className="shortcut-try">
+              Try quick search: press <ShortcutKeys /> in any app to search without opening this window.
+            </p>
+          )}
           <Recent
             onPick={(text, directory) => {
               setFolder(directory && folders.includes(directory) ? directory : "");
@@ -325,23 +333,62 @@ function ago(timestamp: number) {
   return new Date(timestamp).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-function FirstRun({ onAdd }: { onAdd: () => Promise<string | null> }) {
+function FirstRun({ config, save }: { config: Config; save: (config: Config) => void }) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [picked, setPicked] = useState<string[]>([]);
+  const [chosen, setChosen] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     suggestedFolders().then(setSuggestions, () => {});
   }, []);
+  const folders = [...new Set([...suggestions, ...picked])];
+  const toggle = (path: string) =>
+    setChosen((current) => (current.includes(path) ? current.filter((item) => item !== path) : [...current, path]));
+  const browse = () =>
+    pickFolders().then(
+      (paths) => {
+        setPicked((current) => [...new Set([...current, ...paths])]);
+        setChosen((current) => [...new Set([...current, ...paths])]);
+        setError(null);
+      },
+      (reason) => setError(String(reason)),
+    );
   return (
     <main className="first-run">
-      <h1>Choose a folder to search</h1>
-      <p>Ixos only reads the folders you pick. You can add more later in Settings.</p>
-      <button className="ix-button ix-button--primary ix-button--large" onClick={() => onAdd().catch((reason) => setError(String(reason)))}>
-        Choose a folder
-      </button>
-      {suggestions.length > 0 && (
-        <p className="first-run-hint">Common places to start: {suggestions.map(folderName).join(" or ")}.</p>
+      <h1>Choose folders to search</h1>
+      <p>Pick as many as you like, from anywhere on this computer. Ixos only reads the folders you pick.</p>
+      {folders.length > 0 && (
+        <ul className="first-run-folders" aria-label="Folders">
+          {folders.map((path) => (
+            <li key={path}>
+              <label className="first-run-folder">
+                <input type="checkbox" checked={chosen.includes(path)} onChange={() => toggle(path)} />
+                <FolderIcon className="first-run-icon" />
+                <span className="first-run-name">{folderName(path)}</span>
+                <span className="first-run-path">{path}</span>
+              </label>
+            </li>
+          ))}
+        </ul>
       )}
+      <div className="first-run-actions">
+        <button className={`ix-button ix-button--large${folders.length ? "" : " ix-button--primary"}`} onClick={browse}>
+          {folders.length ? "Choose other folders" : "Choose folders"}
+        </button>
+        {folders.length > 0 && (
+          <button
+            className="ix-button ix-button--primary ix-button--large"
+            disabled={!chosen.length}
+            onClick={() => save({ ...config, search: { ...config.search, locations: chosen } })}
+          >
+            {chosen.length > 1 ? `Search ${chosen.length} folders` : "Search this folder"}
+          </button>
+        )}
+      </div>
       {error && <p className="ix-status--error">{error}</p>}
+      <p className="first-run-hint">
+        Then press <ShortcutKeys /> in any app to search without opening Ixos.
+      </p>
     </main>
   );
 }

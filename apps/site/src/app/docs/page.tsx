@@ -589,7 +589,7 @@ ixos model install documents --from ./ixos-documents`}</Code>
               ["Answer size", "6,000 bytes by default. Passages are shortened first, then fewer files are returned."],
               ["read with max_bytes", "128 to 24,000 bytes"],
               ["One file", "16 MiB"],
-              ["All extracted text in one search", "256 MiB"],
+              ["All extracted text in one search", "256 MiB. Files past it are skipped."],
               ["Batched reads", "8 per call"],
             ]}
           />

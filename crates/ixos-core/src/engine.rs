@@ -781,6 +781,20 @@ impl Engine {
         stats.extraction_ms += loaded.stats.extraction_ms;
         stats.lexical_prepare_ms += loaded.stats.lexical_prepare_ms;
         stats.cache_read_ms += loaded.stats.cache_read_ms;
+        let text_bytes = match &loaded.document {
+            Some(document) => document.text.len(),
+            None if loaded.reused => self.documents[&loaded.relative].text.len(),
+            None => 0,
+        };
+        // Text stays in memory, so past the budget the remaining files are left out
+        // rather than failing the whole location. They count as skipped.
+        if pass.corpus_bytes + text_bytes > self.options.max_corpus_bytes {
+            if loaded.reused {
+                loaded.raw_hash = Some(self.documents[&loaded.relative].raw_hash);
+            }
+            loaded.reused = false;
+            loaded.document = None;
+        }
         if !loaded.reused && loaded.document.is_none() {
             stats.skipped_files += 1;
             // Remember what cannot be read, so unchanged files are not tried on every search.
@@ -796,17 +810,7 @@ impl Engine {
             return Ok(());
         }
         self.rejected.remove(&loaded.relative);
-        let text_bytes = loaded
-            .document
-            .as_ref()
-            .unwrap_or_else(|| &self.documents[&loaded.relative])
-            .text
-            .len();
         pass.corpus_bytes += text_bytes;
-        anyhow::ensure!(
-            pass.corpus_bytes <= self.options.max_corpus_bytes,
-            "Location exceeds the 256 MiB source text budget; choose a smaller location"
-        );
         pass.alive.insert(loaded.relative.clone());
         if let Some(stamp) = loaded.stamp {
             self.observations
@@ -1372,6 +1376,25 @@ mod tests {
         assert_eq!(second.source_bytes_read, 0);
         std::fs::write(&broken, b"%PDF still broken").unwrap();
         assert!(engine.refresh().unwrap().source_bytes_read > 0);
+    }
+    #[test]
+    fn files_past_the_text_budget_are_skipped_without_failing_the_location() {
+        let dir = tempfile::tempdir().unwrap();
+        for index in 0..10 {
+            std::fs::write(dir.path().join(format!("{index}.txt")), "shared words here").unwrap();
+        }
+        let options = Options {
+            mode: RetrievalMode::Lexical,
+            persist: false,
+            max_corpus_bytes: 4 * "shared words here".len(),
+            ..Default::default()
+        };
+        let mut engine = Engine::new(dir.path(), None, options).unwrap();
+        let stats = engine.refresh().unwrap();
+        assert_eq!(stats.searchable_files, 4);
+        assert_eq!(stats.skipped_files, 6);
+        assert_eq!(found(&mut engine, "shared").len(), 4);
+        assert_eq!(engine.refresh().unwrap().searchable_files, 4);
     }
     #[test]
     fn large_and_binary_files_are_passed_over_without_reading_them() {
